@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Google API キーが欠落しています。Google Chrome の一部の機能は無効になります。</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
 <translation id="2316129865977710310">いいえ</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2346876346033403680">別のユーザーが前回このパソコンから <ph name="ACCOUNT_EMAIL_LAST" /> として Chrome にログインしました。このメール アドレスがご自分のアカウントでない場合は、新しい Chrome ユーザーを作成して情報を個別に保持してください。
 
 このままログインすると、ブックマーク、履歴、その他の設定などの Chrome データが <ph name="ACCOUNT_EMAIL_NEW" /> と統合されます。</translation>
@@ -136,10 +135,10 @@
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> では通常、ユーザーの情報を保護するために暗号化が行われています。今回、Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が止まっている可能性があります。データのやり取りが行われる前に Chrome によって接続が中断されたため、情報は引き続き保護されています。</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
+<translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="5785746630574083988">Windows 8 モードで再起動すると、Chrome アプリが終了して再起動します。</translation>
 <translation id="5799551393681493217">iframe を使った Chrome ログインフローを有効にする。この設定は「ウェブベースのログインを有効にする」よりも優先されます。</translation>
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>

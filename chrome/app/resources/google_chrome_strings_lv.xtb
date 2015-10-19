@@ -45,7 +45,6 @@
 <translation id="2290014774651636340">Trūkst Google API atslēgu. Tiks atspējotas dažas Google Chrome funkcijas.</translation>
 <translation id="2290095356545025170">Vai tiešām vēlaties atinstalēt Google Chrome?</translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
-<translation id="2334084861041072223">Autortiesības <ph name="YEAR" /> Google Inc. Visas tiesības paturētas.</translation>
 <translation id="2346876346033403680">Kāds iepriekš pierakstījās pārlūkā Chrome šajā datorā, izmantojot e-pasta adresi <ph name="ACCOUNT_EMAIL_LAST" />. Ja tas nav jūsu konts, izveidojiet jaunu Chrome profilu, lai jūsu informācija tiktu glabāta atsevišķi.
 
 Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, vēsture un citi iestatījumi, tiks apvienota ar konta <ph name="ACCOUNT_EMAIL_NEW" /> informāciju.</translation>
@@ -140,10 +139,10 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
 <translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
-<translation id="5618769508111928343">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūks Chrome mēģināja izveidot savienojumu ar vietni <ph name="SITE" />, tika uzrādīti neparasti un nepareizi akreditācijas dati. Vai nu uzbrucējs mēģina uzdoties par vietni <ph name="SITE" />, vai arī tika pārtraukts savienojums ar Wi-Fi pierakstīšanās ekrānu. Jūsu informācija joprojām ir drošībā, jo pārlūkā Chrome tika pārtraukts savienojums, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="5620765574781326016">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu.</translation>
 <translation id="568643307450491754">Skatiet savas grāmatzīmes Chrome izvēlnē vai grāmatzīmju joslā.</translation>
 <translation id="573759479754913123">Par &amp;Chrome OS</translation>
+<translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5785746630574083988">Restartējot Windows 8 režīmā, Chrome lietotnes tiks aizvērtas.</translation>
 <translation id="5799551393681493217">Tiek iespējotas uz iFrame balstītās Chrome pierakstīšanās plūsmas. Šis karogs ignorē opciju “--enable-web-based-signin”.</translation>
 <translation id="5855036575689098185">Programmatūra, kas darbojas jūsu datorā, nav saderīga ar pārlūku Google Chrome.</translation>

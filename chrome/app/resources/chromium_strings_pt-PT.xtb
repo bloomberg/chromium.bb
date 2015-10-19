@@ -4,8 +4,6 @@
 <translation id="1065672644894730302">Não é possível ler as suas preferências. Algumas funcionalidades poderão estar indisponíveis e as alterações efetuadas às preferências não serão guardadas.</translation>
 <translation id="108122890477367602">&amp;Reiniciar o Chromium no modo Windows 8</translation>
 <translation id="1115445892567829615">O Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso da Sincronização.</translation>
-<translation id="1144202035120576837">O <ph name="SITE" /> normalmente utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou ligar-se a <ph name="SITE" /> desta vez, o Website devolveu credenciais
-invulgares e incorretas. É possível que um utilizador mal intencionado esteja a tentar simular ser <ph name="SITE" /> ou que um ecrã de início de sessão Wi-Fi tenha interrompido a ligação. As suas informações ainda estão seguras, porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="1174473354587728743">Partilha um computador? Agora pode configurar o Chromium exatamente como pretende.</translation>
 <translation id="1185134272377778587">Acerca do Chromium</translation>
 <translation id="1221340462641866827">O SO Chromium não suporta a abertura de uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
@@ -106,7 +104,6 @@ invulgares e incorretas. É possível que um utilizador mal intencionado esteja 
 <translation id="4230135487732243613">Associar os seus dados do Chromium a esta conta?</translation>
 <translation id="4285930937574705105">A instalação falhou devido a um erro não especificado. Se o Chromium estiver em execução, feche-o e tente de novo.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
-<translation id="4365115785552740256">O lançamento do Chromium foi possível devido ao projeto de código aberto do <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> e outro <ph name="BEGIN_LINK_OSS" />software de código aberto<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
 <translation id="442817494342774222">O Chromium é configurado para iniciar automaticamente quando inicia o computador.</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>

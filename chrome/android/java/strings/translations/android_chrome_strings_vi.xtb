@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Đã phát hiện kết nối chậm.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
 <translation id="2870560284913253234">Trang web</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL lân cận}other{# URL lân cận}}</translation>
 <translation id="2888126860611144412">Giới thiệu Chrome</translation>
 <translation id="2891154217021530873">Ngừng tải trang</translation>
 <translation id="2902702728133930130">Chrome khởi động không thành công với lỗi không mong muốn.</translation>
@@ -159,7 +160,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3410346880900521918">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
 <translation id="3455798674391346847">Sử dụng ít dữ liệu hơn bằng cách sử dụng Google để tối ưu hóa các trang bạn truy cập. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng HTTPS hoặc Chế độ ẩn danh.</translation>
-<translation id="346339498574870680">Sao chép URL hình ảnh</translation>
 <translation id="3485544713029068372">Smart Lock cho Mật khẩu</translation>
 <translation id="3492207499832628349">Tab ẩn danh mới</translation>
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
@@ -206,6 +206,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4297410240212242334">Phân tách tab và ứng dụng</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="4333969446981951071">Bằng cách sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
+<translation id="4334294535648607276">Quá trình tải xuống hoàn tất.</translation>
 <translation id="4350413759959745971">Di chuyển các trang đã lưu</translation>
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
 <translation id="4357362091209756047">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK1" />Tìm kiếm lại<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />Nhận trợ giúp<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4532845899244822526">Chọn thư mục</translation>
 <translation id="4543087392704641517">Tiêu đề dấu trang</translation>
 <translation id="4543661749405994812">Sao chép địa chỉ email</translation>
-<translation id="4619298195800598081">Mở ảnh gốc trong tab mới</translation>
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
 <translation id="4665282149850138822">Đã thêm <ph name="NAME" /> vào Màn hình chính của bạn</translation>
@@ -315,6 +315,7 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
 <translation id="5733727110006255111">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Trang ẩn danh và SSL sẽ không được bao gồm.</translation>
+<translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="5763382633136178763">Tab ẩn danh</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5771382037724542929">Bạn có muốn thay thế <ph name="FILE_NAME" /> hiện tại trong <ph name="DIRECTORY_NAME" /> không?</translation>
@@ -323,6 +324,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5817918615728894473">Ghép nối</translation>
 <translation id="5832934273103296195">Đã mở rộng - Nhấp để thu gọn</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
+<translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
 <translation id="588258955323874662">Toàn màn hình</translation>
@@ -385,7 +387,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="666268767214822976">Sử dụng dịch vụ dự đoán để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
 <translation id="666981079809192359">Thông báo bảo mật của Chrome</translation>
-<translation id="6671495933530132209">Sao chép ảnh</translation>
 <translation id="6697251040310467641">Trang đã lưu ngoại tuyến</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu được đồng bộ hóa</translation>
 <translation id="6699351163704950317">Tất cả các trang đã lưu</translation>
@@ -425,6 +426,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7096034533295549981">Đang tải video</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7201341158316793215">Đang xóa...</translation>
+<translation id="7208788139759694678">Đã tắt Trình tiết kiệm dữ liệu</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
 <translation id="7299721129597238157">Xóa dấu trang</translation>
@@ -456,6 +458,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7648422057306047504">Mã hóa mật khẩu bằng thông tin đăng nhập Google</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
+<translation id="7761240775244195612">Xóa <ph name="PAGES_NUMBER" /> bản sao ngoại tuyến không được sử dụng trong tháng qua? Thao tác này sẽ giải phóng <ph name="TOTAL_PAGE_SIZE" /> dung lượng.</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7767746238359002192">Truy cập trang để lưu bản sao ngoại tuyến</translation>
@@ -484,7 +487,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8050319187894766337">Đã lưu trang ngoại tuyến. Bộ nhớ sắp đầy.</translation>
 <translation id="8068648041423924542">Không thể chọn chứng chỉ.</translation>
 <translation id="8069239273282989646">Sau khi nén</translation>
-<translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8084156870963450514">Đăng nhập để truy cập tất cả nội dung trên trang web của bạn từ mọi thiết bị</translation>
 <translation id="8106211421800660735">Số thẻ tín dụng</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
@@ -495,6 +497,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8168435359814927499">Nội dung</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
 <translation id="8218346974737627104">Xác nhận đăng nhập</translation>
+<translation id="8218934717680664417">Bạn hiện có thể tìm kiếm bằng một lần chạm</translation>
 <translation id="8237438615979997762">Dữ liệu đã lưu trên thiết bị này cũng như dữ liệu đã lưu trong tài khoản Google của bạn sẽ vẫn ở cả hai vị trí. Tuy nhiên, dữ liệu mới hoặc các thay đổi mà bạn thực hiện đối với dữ liệu sẽ không được đồng bộ hóa giữa hai vị trí.</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8275818695183729150">Cho phép (dành cho tìm kiếm bằng thanh địa chỉ)</translation>

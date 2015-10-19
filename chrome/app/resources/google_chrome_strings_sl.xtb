@@ -47,7 +47,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2290014774651636340">Manjkajo ključi za Google API. Nekatere funkcije Google Chroma bodo onemogočene.</translation>
 <translation id="2290095356545025170">Ali ste prepričani, da želite odstraniti Google Chrome?</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Vse pravice pridržane.</translation>
 <translation id="2346876346033403680">Nekdo se je prijavil v Chrome v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST" />. Če to ni vaš račun, ustvarite nov uporabniški profil za Chrome, da bodo vaši podatki ločeni.
 
 Če se boste kljub temu prijavili, bodo podatki v Chromu, na primer zaznamki, zgodovina in druge nastavitve, združeni v računu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -144,10 +143,10 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="556024056938947818">Google Chrome poskuša prikazati gesla.</translation>
 <translation id="5563479599352954471">Iskanje z enim dotikom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chrome tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to poslalo nazaj nenavadne in nepravilne poverilnice. Ali se torej napadalec izdaja za spletno mesto <ph name="SITE" /> ali pa je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chrome ustavil povezavo, preden bi prišlo do izmenjave podatkov.</translation>
 <translation id="5620765574781326016">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran.</translation>
 <translation id="568643307450491754">Poiščite svoje zaznamke v meniju Chroma ali v vrstici z zaznamki.</translation>
 <translation id="573759479754913123">O sistemu Chrome OS</translation>
+<translation id="5749068826913805084">Chrome potrebuje za prenos datotek dostop do shrambe.</translation>
 <translation id="5785746630574083988">Če znova zaženete v načinu sistema WIndows 8, se bodo aplikacije za Chrome zaprle in znova zagnale.</translation>
 <translation id="5799551393681493217">Omogoči poteke prijave v Chromu na podlagi oznake »iframe«. Ta zastavica preglasi zastavico »enable-web-based-signin«.</translation>
 <translation id="5855036575689098185">Programska oprema, ki se izvaja v računalniku, ni združljiva z Google Chromom.</translation>

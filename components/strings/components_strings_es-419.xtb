@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1339601241726513588">Inscripción de dominio:</translation>
 <translation id="1344588688991793829">Configuración de la función Autocompletar de Chromium…</translation>
+<translation id="1375198122581997741">Acerca de la versión</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455235771979731432">Se produjo un problema al verificar la tarjeta. Verifica la conexión a Internet y vuelve a intentarlo.</translation>
 <translation id="1491151370853475546">Volver a cargar esta página</translation>
+<translation id="1519264250979466059">Fecha de compilación</translation>
 <translation id="1549470594296187301">JavaScript debe estar habilitado para usar esta función.</translation>
+<translation id="1559528461873125649">El archivo o directorio no existe</translation>
 <translation id="1640180200866533862">Políticas de usuario</translation>
 <translation id="1644184664548287040">La configuración de red no es válida y no se pudo importar.</translation>
 <translation id="1655462015569774233">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; el certificado de seguridad venció ayer. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión. Actualmente, el reloj de la computadora está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, a continuación, actualiza la página.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; el certificado de seguridad venció hace # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión. Actualmente, el reloj de la computadora está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, a continuación, actualiza la página.}}</translation>
 <translation id="168841957122794586">El certificado del servidor contiene una clave criptográfica no segura.</translation>
 <translation id="1693754753824026215">La página en <ph name="SITE" /> dice:</translation>
 <translation id="1706954506755087368">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia mañana. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia en # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}}</translation>
+<translation id="1710259589646384581">SO</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Incluir error</translation>
+<translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo del dispositivo no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1821930232296380041">Solicitud o parámetros de solicitud no válidos</translation>
 <translation id="1871208020102129563">El proxy está configurado para usar servidores proxy fijos, no una URL de script .pac.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">¿Quieres que <ph name="PRODUCT_NAME" /> ofrezca traducir <ph name="LANGUAGE_NAME" /> páginas de este sitio la próxima vez?</translation>
 <translation id="2587841377698384444">ID de API de directorio:</translation>
 <translation id="2597378329261239068">Este documento está protegido por contraseña. Ingresa una contraseña.</translation>
+<translation id="2609632851001447353">Variaciones</translation>
 <translation id="2625385379895617796">El reloj está adelantado</translation>
 <translation id="2639739919103226564">Estado:</translation>
 <translation id="2653659639078652383">Enviar</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3648607100222897006">Estas funciones experimentales pueden modificarse, dejar de funcionar o desaparecer en cualquier momento. No ofrecemos ninguna garantía para lo que pueda ocurrir si activas alguno de estos experimentos, y es posible que tu navegador se bloquee repentinamente. Bromas aparte, ten en cuenta que el navegador puede eliminar todos tus datos y que tu seguridad y tu privacidad se podrían ver comprometidas de forma inesperada. Cualquier experimento que actives, se activará  para todos los usuarios de este navegador, así que te recomendamos que actúes con precaución.</translation>
 <translation id="3650584904733503804">Validación correcta</translation>
+<translation id="3658742229777143148">Revisión</translation>
 <translation id="370665806235115550">Cargando...</translation>
 <translation id="3712624925041724820">Licencias agotadas</translation>
 <translation id="3739623965217189342">Vínculo copiado</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad contiene errores. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
+<translation id="4744603770635761495">Ruta ejecutable</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
 <translation id="4800132727771399293">Verifica la fecha de vencimiento y el CVC, y vuelve a intentarlo.</translation>
 <translation id="4813512666221746211">Error de red</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="5095208057601539847">Provincia</translation>
+<translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5145883236150621069">Código de error en la respuesta de la política</translation>
 <translation id="5172758083709347301">Equipo</translation>
 <translation id="5179510805599951267">¿No está en <ph name="ORIGINAL_LANGUAGE" />? Informa este error</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
+<translation id="6355080345576803305">Anulación de sesión pública</translation>
 <translation id="6387478394221739770">Si estás interesado en probar nuevas e interesantes funciones de Chrome, visita nuestro canal beta en chrome.com/beta.</translation>
-<translation id="6426993025560594914">Todos los experimentos están disponibles en tu plataforma.</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6458467102616083041">Se ignora porque la política inhabilita la búsqueda predeterminada.</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Área</translation>
 <translation id="6874604403660855544">&amp;Rehacer Agregar</translation>
 <translation id="6891596781022320156">No se admite el nivel de políticas.</translation>
+<translation id="6897140037006041989">User agent</translation>
 <translation id="6915804003454593391">Usuario:</translation>
 <translation id="6957887021205513506">El certificado del servidor parece falso.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Esta página se tradujo de<ph name="ORIGINAL_LANGUAGE" />a<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Buscar <ph name="SEARCH_TERMS" /> con <ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">Id. de compilación</translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del equipo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
 <translation id="7275334191706090484">Marcadores administrados</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7334320624316649418">&amp;Rehacer Reorganizar</translation>
+<translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Verifica tu CVC y vuelve a intentarlo.</translation>
 <translation id="7935318582918952113">Filtro de DOM</translation>
 <translation id="7938958445268990899">El certificado del servidor aún no es válido.</translation>
+<translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7956713633345437162">Marcadores del celular</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7977590112176369853">&lt;escribir consulta&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Permanecer en esta página</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="917450738466192189">El certificado del servidor no es válido.</translation>
-<translation id="9187827965378254003">Parece que actualmente no hay ningún experimento disponible.</translation>
 <translation id="9207861905230894330">Error al agregar artículo</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">BORRAR FORMULARIO</translation>
+<translation id="969892804517981540">Build oficial</translation>
 <translation id="988159990683914416">Build para desarrolladores</translation>
 </translationbundle>

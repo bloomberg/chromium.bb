@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
 <translation id="108122890477367602">‏راه‌اندازی مجدد Chromium در حالت Windows 8‏ (‎&amp;R)</translation>
 <translation id="1115445892567829615">‏Chromium قادر به همگام‌سازی داده‌های شما نبود. لطفاً رمز عبارتی همگام‌سازی خود را به‌روز کنید.</translation>
-<translation id="1144202035120576837">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. یا مهاجمی در تلاش است که خود را به جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده است. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل اطلاعات، اتصال را قطع کرد.</translation>
 <translation id="1174473354587728743">‏این رایانه را به اشتراک می‌گذارید؟ اکنون می‌توانید Chromium را آنطور که می‌خواهید تنظیم کنید.</translation>
 <translation id="1185134272377778587">‏درباره Chromium</translation>
 <translation id="1221340462641866827">‏سیستم عامل Chromium از راه‌اندازی یک برنامه خارجی برای کار با پیوندهای <ph name="SCHEME" /> پشتیبانی نمی‌کند. پیوند موردنیاز، <ph name="PROTOLINK" /> است.</translation>
@@ -38,7 +37,7 @@
 <translation id="2233513990531887259">‏راه‌اندازی مجدد در حالت تمرکز برمحتوای Chromium</translation>
 <translation id="2241627712206172106">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chromium را به صورتی که مایلند تنظیم کنند.</translation>
 <translation id="225614027745146050">خوش آمدید</translation>
-<translation id="2316129865977710310">خیر، سپاسگزارم</translation>
+<translation id="2316129865977710310">نه سپاسگزارم</translation>
 <translation id="2347108572062610441">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chromium نشان داده می‌شود.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Chromium خارج شوید؟}one{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Chromium خارج شوید؟}other{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلودها را لغو کنید و از Chromium خارج شوید؟}}</translation>
 <translation id="2396765026452590966">‏افزونه «<ph name="EXTENSION_NAME" />»، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chromium نشان داده می‌شود.</translation>
@@ -104,7 +103,6 @@
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4330585738697551178">‏این مدول با Chromium تداخل دارد.</translation>
-<translation id="4365115785552740256">‏Chromium با پروژه منبع باز <ph name="BEGIN_LINK_CHROMIUM" />Chromium <ph name="END_LINK_CHROMIUM" /> و سایر <ph name="BEGIN_LINK_OSS" />نرم‌افزار منبع باز<ph name="END_LINK_OSS" /> امکان‌پذیر است.</translation>
 <translation id="4423735387467980091">‏سفارشی کردن و کنترل Chromium</translation>
 <translation id="442817494342774222">‏Chromium طوری تنظیم شده است که هنگام روشن شدن رایانهٔ شما، به‌طور خودکار اجرا شود.</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
@@ -167,6 +165,7 @@
 <translation id="6475912303565314141">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="6485906693002546646">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chromium خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chromium بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
 <translation id="6510925080656968729">‏حذف نصب Chromium </translation>
+<translation id="6526111688217511984">‏Chromium برای دانلود فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
 <translation id="6637001341228460105">‏Chromium نیاز به مجوز دسترسی به میکروفن دارد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="6638567566961868659">‏نشانک‌های خود را در منوی Chromium یا از نوار نشانک‌ها پیدا کنید.</translation>
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
@@ -203,7 +202,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7419987137528340081">‏اگر ترجیح می‌دهید داده‌های Chromium خود را جدا نگهدارید، می‌توانید برای <ph name="USER_NAME" />، کاربر Chromium جدیدی ایجاد کنید.</translation>
 <translation id="7421823331379285070">‏Chromium به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
 <translation id="7463979740390522693">‏Chromium - اعلان‌ها (<ph name="QUANTITY" /> خوانده نشده)</translation>
-<translation id="7473891865547856676">خیر سپاسگزارم</translation>
+<translation id="7473891865547856676">نه سپاسگزارم</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="750717762378961310">‏این فایل مخرب است و Chromium آن را مسدود کرده است.</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>

@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
+<translation id="1375198122581997741">关于版本</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="1455235771979731432">验证您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="1491151370853475546">重新加载此页</translation>
+<translation id="1519264250979466059">构建日期</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
+<translation id="1559528461873125649">不存在此类文件或目录</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
 <translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1693754753824026215"><ph name="SITE" /> 上的网页显示：</translation>
 <translation id="1706954506755087368">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书明天才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书 # 天后才会生效。出现此问题的原因可能是配置有误，或有攻击者拦截了您的连接。}}</translation>
+<translation id="1710259589646384581">操作系统</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1737968601308870607">提交错误</translation>
+<translation id="1753706481035618306">页码</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">您希望 <ph name="PRODUCT_NAME" /> 下次翻译此网站的<ph name="LANGUAGE_NAME" />网页吗？</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
+<translation id="2609632851001447353">其他变体</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
 <translation id="2639739919103226564">状态：</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">显示值</translation>
 <translation id="3648607100222897006">这些实验性功能随时可能会更改、中止或取消。因此，我们完全无法保证您启用某项实验性功能后会发生什么情况，您的浏览器甚至可能会自动崩溃。请注意，您的浏览器可能会删除您的所有数据，您的安全和隐私也有可能受到意外伤害。您启用的所有实验性功能将用于此浏览器的所有用户。启用前，请务必三思。</translation>
 <translation id="3650584904733503804">验证成功</translation>
+<translation id="3658742229777143148">修订版本</translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="3712624925041724820">许可已用尽</translation>
 <translation id="3739623965217189342">您复制的链接</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
+<translation id="4744603770635761495">可执行文件路径</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
 <translation id="4813512666221746211">网络错误</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5095208057601539847">省</translation>
+<translation id="5115563688576182185">（64 位）</translation>
 <translation id="5145883236150621069">策略响应中存在错误代码</translation>
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
+<translation id="6355080345576803305">覆盖公开会话</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
-<translation id="6426993025560594914">所有实验功能均可在您的平台上使用！</translation>
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6458467102616083041">由于默认搜索被政策停用，政策值已被忽略。</translation>
 <translation id="647261751007945333">设备政策</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">地域</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
+<translation id="6897140037006041989">用户代理</translation>
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">已将此网页从<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">用 <ph name="SITE_NAME" /> 搜索“<ph name="SEARCH_TERMS" />”</translation>
+<translation id="7225807090967870017">版本号 ID</translation>
 <translation id="725866823122871198">您计算机的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="7275334191706090484">受管理的书签</translation>
 <translation id="7298195798382681320">推荐</translation>
 <translation id="7334320624316649418">恢复顺序调整(&amp;R)</translation>
+<translation id="7353601530677266744">命令行</translation>
 <translation id="7378627244592794276">否</translation>
 <translation id="7400418766976504921">网址</translation>
+<translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">服务器的证书尚未生效。</translation>
+<translation id="7951415247503192394">（32 位）</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7977590112176369853">&lt;输入查询&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">留在此页</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="917450738466192189">服务器证书无效。</translation>
-<translation id="9187827965378254003">目前似乎没有任何实验。</translation>
 <translation id="9207861905230894330">无法添加文章。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表单内容</translation>
+<translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
 </translationbundle>

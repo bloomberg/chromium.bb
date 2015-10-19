@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1339601241726513588">Tên miền đăng ký:</translation>
 <translation id="1344588688991793829">Cài đặt tự động điền trong Chromium...</translation>
+<translation id="1375198122581997741">Giới thiệu Phiên bản</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1430915738399379752">In</translation>
 <translation id="1455235771979731432">Đã xảy ra sự cố khi xác minh thẻ của bạn. Hãy kiểm tra kết nối Internet của bạn và thử lại.</translation>
 <translation id="1491151370853475546">Tải lại trang này</translation>
+<translation id="1519264250979466059">Ngày tạo</translation>
 <translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
+<translation id="1559528461873125649">Không có tệp hoặc thư mục nào như vậy</translation>
 <translation id="1640180200866533862">Chính sách người dùng</translation>
 <translation id="1644184664548287040">Cấu hình mạng không hợp lệ và không thể nhập được.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn hôm qua. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn cách đây # ngày. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Đồng hồ máy tính của bạn hiện được đặt là <ph name="CURRENT_DATE" />. Ngày này có đúng không? Nếu không đúng, bạn phải sửa lại đồng hồ của hệ thống rồi làm mới trang này.}}</translation>
 <translation id="168841957122794586">Chứng chỉ máy chủ chứa khóa mật mã yếu.</translation>
 <translation id="1693754753824026215">Trang trên <ph name="SITE" /> cho biết:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này được đề từ ngày mai. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này được đề # ngày trong tương lai. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Lỗi tệp</translation>
+<translation id="1753706481035618306">Số trang</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Bạn có muốn <ph name="PRODUCT_NAME" /> đưa ra đề nghị dịch các trang <ph name="LANGUAGE_NAME" /> từ trang web này vào lần sau không?</translation>
 <translation id="2587841377698384444">ID API thư mục:</translation>
 <translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
+<translation id="2609632851001447353">Các biến thể</translation>
 <translation id="2625385379895617796">Đồng hồ của bạn chạy nhanh</translation>
 <translation id="2639739919103226564">Trạng thái:</translation>
 <translation id="2653659639078652383">Gửi</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Hiển thị giá trị</translation>
 <translation id="3648607100222897006">Các tính năng thử nghiệm này có thể thay đổi, hỏng hoặc biến mất bất kỳ lúc nào. Chúng tôi hoàn toàn không đảm bảo về những điều có thể xảy ra nếu bạn bật một trong các thử nghiệm này và trình duyệt của bạn thậm chí có thể tự động biến mất. Ngoài những điều đã nói, trình duyệt của bạn có thể xóa tất cả dữ liệu của bạn hoặc tính bảo mật và sự riêng tư của bạn có thể bị xâm phạm theo cách không mong đợi. Bất kỳ tính năng thử nghiệm nào mà bạn bật sẽ được bật cho tất cả người dùng của trình duyệt này. Hãy tiến hành một cách thận trọng.</translation>
 <translation id="3650584904733503804">Xác thực thành công</translation>
+<translation id="3658742229777143148">Bản sửa đổi</translation>
 <translation id="370665806235115550">Đang tải...</translation>
 <translation id="3712624925041724820">Giấy phép không đủ</translation>
 <translation id="3739623965217189342">Liên kết đã sao chép</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có lỗi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
+<translation id="4744603770635761495">Đường dẫn thực thi</translation>
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
 <translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
 <translation id="4813512666221746211">Lỗi mạng</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Tiểu bang</translation>
 <translation id="5094747076828555589">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chromium tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="5095208057601539847">Tỉnh/thành phố</translation>
+<translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
 <translation id="5172758083709347301">Máy</translation>
 <translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE" />? Báo cáo lỗi này</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Mã bưu chính</translation>
 <translation id="6337534724793800597">Lọc chính sách theo tên</translation>
+<translation id="6355080345576803305">Ghi đè phiên công khai</translation>
 <translation id="6387478394221739770">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh thử nghiệm beta của chúng tôi tại chrome.com/beta.</translation>
-<translation id="6426993025560594914">Tất cả các thử nghiệm đều khả dụng trên nền tảng của bạn!</translation>
 <translation id="6445051938772793705">Quốc gia</translation>
 <translation id="6458467102616083041">Bị bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
 <translation id="647261751007945333">Chính sách thiết bị</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Khu vực</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
 <translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
+<translation id="6897140037006041989">Tác nhân Người dùng</translation>
 <translation id="6915804003454593391">Người dùng:</translation>
 <translation id="6957887021205513506">Chứng chỉ của máy chủ dường như giả mạo.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Trang này đã được dịch từ<ph name="ORIGINAL_LANGUAGE" />sang<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Tìm kiếm <ph name="SITE_NAME" /> cho <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Tạo ID</translation>
 <translation id="725866823122871198">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên máy tính của bạn không đúng.</translation>
 <translation id="7275334191706090484">Dấu trang được quản lý</translation>
 <translation id="7298195798382681320">Được đề xuất</translation>
 <translation id="7334320624316649418">&amp;Làm lại sắp xếp lại</translation>
+<translation id="7353601530677266744">Dòng Lệnh</translation>
 <translation id="7378627244592794276">Không</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Đường dẫn cấu hình</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Chứng chỉ của máy chủ chưa hợp lệ.</translation>
+<translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7956713633345437162">Dấu trang di động</translation>
 <translation id="7961015016161918242">Chưa bao giờ</translation>
 <translation id="7977590112176369853">&lt;nhập truy vấn&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Ở lại Trang này</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="917450738466192189">Chứng chỉ của máy chủ không hợp lệ.</translation>
-<translation id="9187827965378254003">Rất tiếc, có vẻ như hiện không có thử nghiệm nào sẵn có.</translation>
 <translation id="9207861905230894330">Không thêm được bài viết.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">XÓA BIỂU MẪU</translation>
+<translation id="969892804517981540">Phiên bản Chính thức</translation>
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 </translationbundle>

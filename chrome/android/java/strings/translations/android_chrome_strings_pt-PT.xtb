@@ -160,7 +160,6 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="3410346880900521918">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3455798674391346847">Gaste menos dados ao utilizar o Google para otimizar as páginas que visita. As páginas acedidas com HTTPS ou no Modo de navegação anónima não são otimizadas nem vistas pelo Google.</translation>
-<translation id="346339498574870680">Copiar URL da imagem</translation>
 <translation id="3485544713029068372">Smart Lock para palavras-passe</translation>
 <translation id="3492207499832628349">Novo sep. navegação anónima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -207,6 +206,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4297410240212242334">Separar separadores e aplicações</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4333969446981951071">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
+<translation id="4334294535648607276">Transferência concluída.</translation>
 <translation id="4350413759959745971">Mover páginas guardadas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
 <translation id="4357362091209756047">Não vê o seu dispositivo? <ph name="BEGIN_LINK1" />Procure novamente<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />Obtenha ajuda<ph name="END_LINK2" />.</translation>
@@ -220,7 +220,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4543087392704641517">Título do marcador</translation>
 <translation id="4543661749405994812">Copiar endereço de email</translation>
-<translation id="4619298195800598081">Abrir imagem orig. novo sep.</translation>
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
@@ -388,7 +387,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="666268767214822976">Utilizar um serviço de previsão para mostrar consultas relacionadas e Websites populares à medida que escreve na barra de endereço</translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
-<translation id="6671495933530132209">Copiar imagem</translation>
 <translation id="6697251040310467641">Página guardada offline</translation>
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>
 <translation id="6699351163704950317">Todas as páginas guardadas</translation>
@@ -460,6 +458,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7648422057306047504">Encriptar palavras-passe com credenciais Google</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
+<translation id="7761240775244195612">Pretende eliminar <ph name="PAGES_NUMBER" /> cópias offline não utilizadas no último mês? Esta ação permite apagar <ph name="TOTAL_PAGE_SIZE" /> de espaço.</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7767746238359002192">Visitar página para guardar offline</translation>
@@ -488,7 +487,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="8050319187894766337">Pg guar offline. Amz quse cheio.</translation>
 <translation id="8068648041423924542">Não é possível selecionar o certificado.</translation>
 <translation id="8069239273282989646">Após compressão</translation>
-<translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="8084156870963450514">Iniciar sessão para aceder a todo o seu conteúdo da Web a partir de qualquer dispositivo</translation>
 <translation id="8106211421800660735">Número de cartão de crédito</translation>
 <translation id="813082847718468539">Ver informações do Web site</translation>
@@ -499,6 +497,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="8168435359814927499">Conteúdo</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8218346974737627104">Confirmar início de sessão</translation>
+<translation id="8218934717680664417">Agora pode pesquisar com um toque</translation>
 <translation id="8237438615979997762">Os dados armazenados neste dispositivo, bem como os dados armazenados na sua Conta Google, permanecem em ambos os locais. No entanto, os novos dados ou as alterações efetuadas aos dados não são sincronizados entre si.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8275818695183729150">Permitir (para pesquisas na barra de endereço)</translation>

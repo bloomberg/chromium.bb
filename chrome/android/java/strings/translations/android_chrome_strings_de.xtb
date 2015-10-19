@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Langsame Verbindung gefunden</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL in der Nähe}other{# URLs in der Nähe}}</translation>
 <translation id="2888126860611144412">Info zu Chrome</translation>
 <translation id="2891154217021530873">Laden der Seite anhalten</translation>
 <translation id="2902702728133930130">Während des Startvorgangs ist in Chrome ein unerwarteter Fehler aufgetreten.</translation>
@@ -159,7 +160,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="3410346880900521918">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="3455798674391346847">Sie können den Datenverbrauch reduzieren, indem Sie besuchte Seiten von Google komprimieren lassen. Über HTTPS oder den Inkognito-Modus aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
-<translation id="346339498574870680">Bild-URL kopieren</translation>
 <translation id="3485544713029068372">Smart Lock für Passwörter</translation>
 <translation id="3492207499832628349">Neuer Inkognito-Tab</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
@@ -206,6 +206,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4297410240212242334">Tabs und Apps separat anzeigen</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="4333969446981951071">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
+<translation id="4334294535648607276">Download abgeschlossen.</translation>
 <translation id="4350413759959745971">Gespeicherte Seiten verschieben</translation>
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
 <translation id="4357362091209756047">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK1" />Wiederholen Sie die Suche<ph name="END_LINK1" /> oder <ph name="BEGIN_LINK2" />rufen Sie die Hilfe auf<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4532845899244822526">Ordner auswählen</translation>
 <translation id="4543087392704641517">Lesezeichentitel</translation>
 <translation id="4543661749405994812">E-Mail-Adresse kopieren</translation>
-<translation id="4619298195800598081">Original in neuem Tab öffnen</translation>
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
@@ -315,6 +315,7 @@ Nutzungsstatistiken enthalten Informationen wie Einstellungen, Klicks auf Schalt
 Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
 <translation id="5733727110006255111">Wenn diese Funktion aktiviert ist, nutzt Chrome Google-Server, um besuchte Seiten vor dem Download zu komprimieren. Dies gilt nicht für SSL- und Inkognito-Seiten.</translation>
+<translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="5763382633136178763">Inkognito-Tabs</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5771382037724542929">Möchten Sie die vorhandene Datei "<ph name="FILE_NAME" />" in "<ph name="DIRECTORY_NAME" />" wirklich ersetzen?</translation>
@@ -323,6 +324,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5817918615728894473">Pairing durchführen</translation>
 <translation id="5832934273103296195">Maximiert – zum Minimieren klicken</translation>
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
+<translation id="585027516397408832">Datenkomprimierung aktiviert</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="588258955323874662">Vollbild</translation>
@@ -385,7 +387,6 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion verwandte Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
-<translation id="6671495933530132209">Bild kopieren</translation>
 <translation id="6697251040310467641">Seite offline gespeichert</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
 <translation id="6699351163704950317">Alle gespeicherten Seiten</translation>
@@ -425,6 +426,7 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="7096034533295549981">Video wird geladen</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7201341158316793215">Wird entfernt...</translation>
+<translation id="7208788139759694678">Datenkomprimierung deaktiviert</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
 <translation id="7299721129597238157">Lesezeichen löschen</translation>
@@ -456,6 +458,7 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="7648422057306047504">Passwörter mit Google-Anmeldedaten verschlüsseln</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
+<translation id="7761240775244195612">Sollen <ph name="PAGES_NUMBER" /> Offline-Kopien gelöscht werden, die im vergangenen Monat nicht genutzt wurden? Dadurch wird <ph name="TOTAL_PAGE_SIZE" /> Speicherplatz freigegeben.</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7767746238359002192">Seite aufrufen und offline speichern</translation>
@@ -484,7 +487,6 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="8050319187894766337">Seite offline gespeichert. Speicher fast voll</translation>
 <translation id="8068648041423924542">Zertifikat kann nicht ausgewählt werden.</translation>
 <translation id="8069239273282989646">Nach Komprimierung</translation>
-<translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="8084156870963450514">Melden Sie sich an, um von jedem beliebigen Gerät aus auf Ihre Webinhalte zuzugreifen.</translation>
 <translation id="8106211421800660735">Kreditkartennummer</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
@@ -495,6 +497,7 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8209050860603202033">Bild öffnen</translation>
 <translation id="8218346974737627104">Anmeldung bestätigen</translation>
+<translation id="8218934717680664417">Jetzt durch einfaches Tippen suchen</translation>
 <translation id="8237438615979997762">Sowohl die auf diesem Gerät gespeicherten Daten als auch die Daten in Ihrem Google-Konto verbleiben an ihren jeweiligen Speicherorten. Neue Daten und Änderungen werden jedoch nicht synchronisiert.</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8275818695183729150">Zulassen (für Suchanfragen in der Adressleiste)</translation>

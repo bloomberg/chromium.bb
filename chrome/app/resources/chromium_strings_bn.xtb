@@ -4,8 +4,6 @@
 <translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
 <translation id="108122890477367602">&amp;Windows 8 মোডে Chromium পুনরায় লঞ্চ করুন</translation>
 <translation id="1115445892567829615">Chromium আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
-<translation id="1144202035120576837">আপনার তথ্য সুরক্ষিত করাতে <ph name="SITE" /> সাধারণত এনক্রিপশান ব্যবহার করে৷ এই সময় Chromium যখন <ph name="SITE" /> সংযোগ করার চেষ্টা করেছিল, তখন ওয়েবসাইট অস্বাভাবিক
-এবং ভুল প্রমাণপত্রাদি ফেরত পাঠিয়েছে৷ হয় কোনো আক্রমনকারী <ph name="SITE" /> সাজার চেষ্টা করছে, বা কোনো Wi-Fi সাইন-ইন স্ক্রীন সংযোগ বিঘ্নিত করেছে৷ আপনার তথ্য এখনও সুরক্ষিত রয়েছে কারণ কোনো ডেটা আদান প্রদানের আগেই Chromium সংযোগটি বন্ধ করেছে৷</translation>
 <translation id="1174473354587728743">একটি কম্পিউটার ভাগ করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chromium কে সেট আপ করতে পারেন৷</translation>
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1221340462641866827">Chromium OS  <ph name="SCHEME" /> সংযোগগুলি নিয়ন্ত্রণে একটি বহিঃস্থ অ্যাপ্লিকেশন চালু করা সমর্থন করে না৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK" />৷</translation>
@@ -106,7 +104,6 @@
 <translation id="4230135487732243613">এই অ্যাকাউন্টে আপনার Chromium ডেটা লিঙ্ক করবেন?</translation>
 <translation id="4285930937574705105">অনির্দিষ্ট ত্রুটির কারণে ইনস্টলেশন ব্যর্থ৷ বর্তমানে Chromium চালু থাকলেও, দয়া করে এটি বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
 <translation id="4330585738697551178">এই মডিউল Chromium-এর সঙ্গে বিরোধের জন্য জ্ঞাত হয়৷</translation>
-<translation id="4365115785552740256">Chromium  <ph name="BEGIN_LINK_CHROMIUM" /> Chromium<ph name="END_LINK_CHROMIUM" /> ওপেন সোর্স প্রকল্প এবং অন্যান্য <ph name="BEGIN_LINK_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_OSS" /> দ্বারা করা সম্ভব হয়েছে৷</translation>
 <translation id="4423735387467980091">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="442817494342774222">আপনি আপনার কম্পিউটার চালু করলে স্বয়ংক্রিয়রূপে আরম্ভ করার Chromium কনফিগার চালু হবে৷ </translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে সাইন আউট এবং পুনরায় সাইন ইন করুন৷</translation>
@@ -169,6 +166,7 @@
 <translation id="6475912303565314141">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="6485906693002546646">আপনার Chromium জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chromium ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
+<translation id="6526111688217511984">ফাইল ডাউনলোড করতে Chromium এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="6637001341228460105">এটিকে এই সাইটে ভাগ করার জন্য Chromium এর মাইক্রোফোন অ্যাক্সেস করা প্রয়োজন।</translation>
 <translation id="6638567566961868659">Chromium মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>

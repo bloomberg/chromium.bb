@@ -6,8 +6,6 @@
 Неке функције су можда недоступне и промене подешавања неће бити сачуване.</translation>
 <translation id="108122890477367602">&amp;Поново покрени Chromium у Windows 8 режиму</translation>
 <translation id="1115445892567829615">Chromium не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> нормално шифровањем штити ваше информације. Када је Chromium овај пут покушао да се повеже на <ph name="SITE" />, веб-сајт је вратио неуобичајене
-и нетачне акредитиве. То значи или да се неки нападач претвара да је <ph name="SITE" /> или да је екран за пријављивање на Wi-Fi прекинуо везу. Ваше информације су и даље безбедне јер је Chromium прекинуо везу пре било какве размене података.</translation>
 <translation id="1174473354587728743">Делите рачунар? Сада можете да подесите Chromium баш онако како вама одговара.</translation>
 <translation id="1185134272377778587">О Chromium-у</translation>
 <translation id="1221340462641866827">Chromium ОС не подржава покретање спољне апликације за обраду <ph name="SCHEME" /> веза. Захтевана веза је <ph name="PROTOLINK" />.</translation>
@@ -108,7 +106,6 @@
 <translation id="4230135487732243613">Желите ли да повежете Chromium податке са овим налогом?</translation>
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
-<translation id="4365115785552740256">Chromium омогућавају <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> пројекат отвореног кода и други <ph name="BEGIN_LINK_OSS" />софтвер отвореног кода<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
 <translation id="442817494342774222">Chromium је конфигурисан тако да се аутоматски покреће када покренете рачунар.</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
@@ -171,6 +168,7 @@
 <translation id="6475912303565314141">Контролише и страницу која се приказује када покренете Chromium.</translation>
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>
+<translation id="6526111688217511984">Chromium-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
 <translation id="6637001341228460105">Chromium захтева приступ микрофону да би га делио са овим сајтом.</translation>
 <translation id="6638567566961868659">Пронађите обележиваче у Chromium менију или на траци са обележивачима.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>

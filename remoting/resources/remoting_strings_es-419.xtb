@@ -85,6 +85,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2919669478609886916">En este momento compartes esta computadora con otro usuario. ¿Deseas continuar compartiéndola?</translation>
 <translation id="2921543551052660690">Accediste previamente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para acceder a las computadoras en esa cuenta, <ph name="LINK_BEGIN" />accede a Chromium<ph name="LINK_END" /> con esa cuenta y vuelve a instalar Chromoting.</translation>
 <translation id="2926340305933667314">No se pudo inhabilitar el acceso remoto a esta computadora. Vuelve a intentarlo más tarde.</translation>
+<translation id="2930135165929238380">Faltan algunos de los componentes necesarios. Dirígete a chrome://plugins y asegúrate de que Native Client esté habilitado.</translation>
 <translation id="2939145106548231838">Autenticarse en host</translation>
 <translation id="2998137343848432918">• Se agregó la pantalla Créditos.
 • Se solucionó un problema con el acceso al modo de pantalla completa con el teclado visible.</translation>

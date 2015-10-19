@@ -1,4 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="3407245330823033366">Sélectionnez un compte à utiliser avec Blimp.</translation>
+<translation id="4641972508298030550">Impossible d'authentifier l'utilisateur.</translation>
+<translation id="8514856595257368555">Le jeton a bien été récupéré.</translation>
 </translationbundle>

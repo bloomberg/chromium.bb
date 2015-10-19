@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">‏המפתחות של Google API חסרים. פונקציונליות מסוימת של Google Chrome תהיה מושבתת.</translation>
 <translation id="2290095356545025170">‏האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
-<translation id="2334084861041072223">‏Copyright <ph name="YEAR" /> Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="2346876346033403680">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. אם זה לא החשבון שלך, צור משתמש חדש ל-Chrome כדי לשמור על ההפרדה של המידע שלך.
 
 אם תמשיך ותיכנס, המידע ב-Chrome, כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -136,11 +135,10 @@
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
-<translation id="5618769508111928343">‏בדרך כלל האתר <ph name="SITE" /> משתמש בהצפנה כדי להגן על המידע שלך. כאשר Chrome ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר החזיר
-פרטי כניסה חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מפני ש-Chrome הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
 <translation id="568643307450491754">‏מצא את הסימניות שלך בתפריט Chrome או בסרגל הסימניות.</translation>
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
+<translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
 <translation id="5785746630574083988">‏הפעלה מחדש במצב Windows 8 תסגור ותפעיל מחדש את יישומי Chrome.</translation>
 <translation id="5799551393681493217">‏מפעיל תהליכי כניסה אל Chrome המבוססים על iframe. הסימן הזה מבטל את --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Google Chrome.</translation>

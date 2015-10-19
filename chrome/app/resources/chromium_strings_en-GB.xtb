@@ -6,8 +6,6 @@
 Some features may be unavailable and changes to preferences won't be saved.</translation>
 <translation id="108122890477367602">&amp;Relaunch Chromium in Windows 8 mode</translation>
 <translation id="1115445892567829615">Chromium could not sync your data. Please update your Sync passphrase.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual
-and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
 <translation id="1174473354587728743">Share a computer? Now you can set up Chromium just the way you like it.</translation>
 <translation id="1185134272377778587">About Chromium</translation>
 <translation id="1221340462641866827">Chromium OS does not support launching an external application to handle <ph name="SCHEME" /> links. The link requested is <ph name="PROTOLINK" />.</translation>
@@ -108,7 +106,6 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
-<translation id="4365115785552740256">Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open source project and other <ph name="BEGIN_LINK_OSS" />open source software<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
 <translation id="442817494342774222">Chromium is configured to automatically launch when you start your computer.</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>

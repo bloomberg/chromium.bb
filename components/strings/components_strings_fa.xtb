@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
+<translation id="1375198122581997741">درباره نسخه</translation>
 <translation id="1426410128494586442">بله</translation>
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1455235771979731432">هنگام تأیید کارت‌تان مشکلی رخ داد. اتصال اینترنت را بررسی کرده و دوباره امتحان کنید.</translation>
 <translation id="1491151370853475546">تازه‌سازی این صفحه</translation>
+<translation id="1519264250979466059">تاریخ ساخت</translation>
 <translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
+<translation id="1559528461873125649">فاقد چنین فایل یا دایرکتوری است</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1644184664548287040">پیکربندی شبکه نامعتبر است و نتوانست وارد شود.</translation>
 <translation id="1655462015569774233">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن دیروز به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}}</translation>
 <translation id="168841957122794586">گواهی‌نامه سرور دارای یک کلید رمزنگاری ضعیف است.</translation>
 <translation id="1693754753824026215">صفحه <ph name="SITE" /> نشان می‌دهد:</translation>
 <translation id="1706954506755087368">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً فردا شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً # روز دیگر شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً # روز دیگر شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">اشکال پرونده</translation>
+<translation id="1753706481035618306">شماره صفحه</translation>
 <translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">مایلید دفعه بعد <ph name="PRODUCT_NAME" /> پیشنهاد دهد صفحه‌های <ph name="LANGUAGE_NAME" /> از این سایت ترجمه شوند؟</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
 <translation id="2597378329261239068">این سند توسط گذرواژه محافظت می‌شود.  لطفاً یک گذرواژه وارد کنید.</translation>
+<translation id="2609632851001447353">انواع مختلف</translation>
 <translation id="2625385379895617796">ساعت شما جلو است</translation>
 <translation id="2639739919103226564">وضعیت:</translation>
 <translation id="2653659639078652383">ارائه</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">نشان دادن مقدار</translation>
 <translation id="3648607100222897006">این ویژگی‌های آزمایشی ممکن است در هر زمانی تغییر کنند، نقض شوند یا ناپدید شوند. اگر یکی از این ویژگی‌های آزمایشی را فعال کنید ما هیچ تضمینی در مورد آنچه که ممکن است اتفاق بیفتد نداریم، و حتی ممکن است مرورگر شما خود به خود ناپدید شود. در واقع، ممکن است مرورگر شما تمام داده‌های شما را حذف کند یا امنیت و حریم خصوصی شما می‌تواند به صورت غیرمنتظره‌ای به خطر بیفتد. هر ویژگی آزمایشی که فعال می‌کنید برای تمام کاربران این مرورگر فعال خواهد شد. لطفاً با احتیاط ادامه دهید.</translation>
 <translation id="3650584904733503804">ارزیابی موفق بود</translation>
+<translation id="3658742229777143148">ویرایش</translation>
 <translation id="370665806235115550">در حال بارگیری...</translation>
 <translation id="3712624925041724820">مجوزها دیگر معتبر نیستند</translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
@@ -146,7 +153,7 @@
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4220128509585149162">خرابی ها</translation>
-<translation id="4250680216510889253">خیر</translation>
+<translation id="4250680216510889253">نه</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
 <translation id="4269787794583293679">(بدون نام کاربری)</translation>
 <translation id="4300246636397505754">پیشنهادات والدین</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
+<translation id="4744603770635761495">مسیر قابل اجرا</translation>
 <translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4800132727771399293">‏تاریخ انقضا و CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورد اعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="5095208057601539847">استان</translation>
+<translation id="5115563688576182185">(۶۴ بیت)</translation>
 <translation id="5145883236150621069">کد خطا در پاسخ خط‌مشی موجود است</translation>
 <translation id="5172758083709347301">دستگاه</translation>
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">کد پستی</translation>
 <translation id="6337534724793800597">فیلتر کردن خط‌مشی‌ها براساس نام</translation>
+<translation id="6355080345576803305">لغو جلسه عمومی</translation>
 <translation id="6387478394221739770">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال بتای ما را در chrome.com/beta امتحان کنید.</translation>
-<translation id="6426993025560594914">تمام آزمایش‌ها در پلتفورم شما موجود است!</translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6458467102616083041">نادیده گرفته شد زیرا جستجوی پیش‌فرض توسط قانون غیرفعال شده است.</translation>
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">منطقه حکومتی</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
+<translation id="6897140037006041989">نماینده کاربر</translation>
 <translation id="6915804003454593391">کاربر:</translation>
 <translation id="6957887021205513506">به نظر می‌رسد که گواهی سرور جعلی باشد.</translation>
 <translation id="6965382102122355670">تأیید</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">این صفحه از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است</translation>
 <translation id="719464814642662924">ویزا</translation>
 <translation id="7208899522964477531">جستجوی <ph name="SITE_NAME" /> برای <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">شناسه تولید</translation>
 <translation id="725866823122871198">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نمی‌شود زیرا تاریخ و زمان رایانه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
 <translation id="7275334191706090484">نشانک‌های مدیریت شده</translation>
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="7334320624316649418">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
+<translation id="7353601530677266744">خط فرمان</translation>
 <translation id="7378627244592794276">نه</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">مسیر نمایه</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">گواهی سرور هنوز معتبر نیست.</translation>
+<translation id="7951415247503192394">(۳۲ بیت)</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">ماندن در این صفحه</translation>
 <translation id="9170848237812810038">&amp;واگرد</translation>
 <translation id="917450738466192189">گواهی سرور نامعتبر است.</translation>
-<translation id="9187827965378254003">وای، به نظر می‌رسد در حال حاضر هیچ آزمایشی موجود نیست.</translation>
 <translation id="9207861905230894330">افزودن مقاله ناموفق بود.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">پاک کردن فرم</translation>
+<translation id="969892804517981540">ساخت رسمی</translation>
 <translation id="988159990683914416">ساخت برنامه‌نویس</translation>
 </translationbundle>

@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">A beállításait nem sikerült olvasni. Egyes funkciókat esetleg nem ér el, és a beállításaiban végrehajtott módosításokat nem menti a rendszer.</translation>
 <translation id="108122890477367602">Chromium új&amp;raindítása Windows 8 módban</translation>
 <translation id="1115445892567829615">A Chromium nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
-<translation id="1144202035120576837">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítő adatokat küldött vissza. Vagy egy támadó próbálja meg magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi bejelentkezési képernyő szakította meg a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="1174473354587728743">Közösen használ valakivel egy számítógépet? Mostantól úgy állíthatja be a Chromiumot, ahogy Ön szeretné.</translation>
 <translation id="1185134272377778587">A Chromium névjegye</translation>
 <translation id="1221340462641866827">A Chromium OS nem támogatja külső alkalmazás indítását a(z) <ph name="SCHEME" /> linkek kezeléséhez. A kért link: <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Társítja Chromium-adatait ezzel a fiókkal?</translation>
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
-<translation id="4365115785552740256">A Chromium a <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> nyílt forráskódú projektnek és további <ph name="BEGIN_LINK_OSS" />nyílt forráskódú szoftvereknek<ph name="END_LINK_OSS" /> köszönhetően jött létre.</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
 <translation id="442817494342774222">A Chromium úgy van beállítva, hogy automatikusan elinduljon a számítógép indításakor.</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor.</translation>
 <translation id="6485906693002546646">Chromiumos dolgainak szinkronizálásához a(z) <ph name="PROFILE_EMAIL" /> fiókot használja. Szinkronizálási beállításainak frissítéséhez, illetve a Chromium Google-fiók nélküli használatához keresse fel a <ph name="SETTINGS_LINK" /> linket.</translation>
 <translation id="6510925080656968729">Chromium eltávolítása</translation>
+<translation id="6526111688217511984">A Chromiumnak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="6637001341228460105">A Chromiumnak hozzáférésre van szüksége a mikrofonhoz, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="6638567566961868659">Könyvjelzőit megtalálhatja a Chromium menüben vagy a könyvjelzősávban.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>

@@ -85,6 +85,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="2919669478609886916">Šobrīd jūs koplietojat šo ierīci ar citu lietotāju. Vai vēlaties turpināt koplietošanu?</translation>
 <translation id="2921543551052660690">Iepriekš bijāt pierakstījies kā <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Lai piekļūtu datoriem šajā kontā, <ph name="LINK_BEGIN" />pierakstieties pārlūkā Chromium<ph name="LINK_END" />, izmantojot šo kontu, un atkārtoti instalējiet Chrome saiti.</translation>
 <translation id="2926340305933667314">Šim datoram neizdevās atspējot attālo piekļuvi. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
+<translation id="2930135165929238380">Trūkst dažu nepieciešamo komponentu. Lūdzu, atveriet lapu chrome://plugins un pārbaudiet, vai tehnoloģija Native Client ir iespējota.</translation>
 <translation id="2939145106548231838">Saimniekdatora autentificēšana</translation>
 <translation id="2998137343848432918">• Pievienots ekrāns “Titri”.
 • Novērsta problēma, kad pilnekrāna režīmā ir redzama tastatūra.</translation>

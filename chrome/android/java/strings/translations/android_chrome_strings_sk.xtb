@@ -160,7 +160,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="3410346880900521918">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="3455798674391346847">Využite službu Google na optimalizáciu navštívených stránok a miňte menej dát. Google neoptimalizuje ani neuvidí stránky, ku ktorým pristupujete prostredníctvom protokolu HTTPS alebo v režime inkognito.</translation>
-<translation id="346339498574870680">Kopírovať adresu URL obrázka</translation>
 <translation id="3485544713029068372">Smart Lock na heslá</translation>
 <translation id="3492207499832628349">Nová karta inkognito</translation>
 <translation id="3518985090088779359">Prijať a pokračovať</translation>
@@ -207,6 +206,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4297410240212242334">Oddelenie kariet a aplikácií</translation>
 <translation id="4307992518367153382">Základy</translation>
 <translation id="4333969446981951071">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane osobných údajov<ph name="END_LINK2" /> prehliadača Chrome.</translation>
+<translation id="4334294535648607276">Sťahovanie bolo dokončené.</translation>
 <translation id="4350413759959745971">Presunúť uložené stránky</translation>
 <translation id="4351244548802238354">Zavrieť dialógové okno</translation>
 <translation id="4357362091209756047">Nezobrazuje sa vaše zariadenie? <ph name="BEGIN_LINK1" />Spustite znova vyhľadávanie<ph name="END_LINK1" /> alebo <ph name="BEGIN_LINK2" />získajte pomoc<ph name="END_LINK2" />.</translation>
@@ -220,7 +220,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4532845899244822526">Výber priečinka</translation>
 <translation id="4543087392704641517">Názov záložky</translation>
 <translation id="4543661749405994812">Kopírovať e-mailovú adresu</translation>
-<translation id="4619298195800598081">Pôv. obrázok na novej karte</translation>
 <translation id="4645575059429386691">Spravované vaším rodičom</translation>
 <translation id="4663756553811254707">Počet odstránených záložiek: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Stránky <ph name="NAME" /> boli pridané na plochu</translation>
@@ -388,7 +387,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="666268767214822976">Použite službu predpovedí na zobrazovanie súvisiacich dopytov a populárnych webových stránok počas zadávania textu do panela s adresou</translation>
 <translation id="666981079809192359">Upozornenie o ochrane osobných údajov prehliadača Chrome</translation>
-<translation id="6671495933530132209">Kopírovať obrázok</translation>
 <translation id="6697251040310467641">Stránka bola uložená offline</translation>
 <translation id="6698801883190606802">Spravovať synchronizované údaje</translation>
 <translation id="6699351163704950317">Všetky uložené stránky</translation>
@@ -460,6 +458,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="7648422057306047504">Šifrovať heslá pomocou poverení Google</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
+<translation id="7761240775244195612">Odstránením <ph name="PAGES_NUMBER" /> offline kópií, ktoré sa minulý mesiac nepoužili, sa uvoľní <ph name="TOTAL_PAGE_SIZE" /> miesta. Chcete ich odstrániť?</translation>
 <translation id="7764225426217299476">Pridať adresu</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7767746238359002192">Navštívením stránky ju uložíte offline</translation>
@@ -488,7 +487,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="8050319187894766337">Uložené offline. Úložisko je takmer plné.</translation>
 <translation id="8068648041423924542">Nedá sa vybrať certifikát</translation>
 <translation id="8069239273282989646">Po kompresii</translation>
-<translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8084156870963450514">Prihláste sa a získajte prístup k všetkým svojim položkám na webe z ľubovoľného zariadenia</translation>
 <translation id="8106211421800660735">Číslo kreditnej karty</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
@@ -499,6 +497,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="8168435359814927499">Obsah</translation>
 <translation id="8209050860603202033">Otvoriť obrázok</translation>
 <translation id="8218346974737627104">Potvrdenie prihlásenia</translation>
+<translation id="8218934717680664417">Teraz môžete vyhľadávať jediným klepnutím</translation>
 <translation id="8237438615979997762">Údaje uložené na tomto zariadení aj údaje uložené v účte Google zostanú na oboch miestach. Nové údaje ani zmeny súčasných údajov sa už však medzi týmito miestami synchronizovať nebudú.</translation>
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8275818695183729150">Povoliť (pre vyhľadávania v paneli s adresou)</translation>

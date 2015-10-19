@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
 <translation id="108122890477367602">Gensta&amp;rt Chromium i Windows 8-tilstand</translation>
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Enten forsøger en hacker at give sig ud for at være <ph name="SITE" />, eller også har en Wi-Fi-loginskærm forstyrret forbindelsen. Dine oplysninger er fortsat sikre, da Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="1174473354587728743">Deler du en computer? Nu kan du konfigurere Chromium, præcist som du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1221340462641866827">Chromium OS understøtter ikke start af en ekstern applikation til at håndtere <ph name="SCHEME" />-links. Det link, der er anmodet om, er <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Vil du knytte dine Chromium-data til denne konto?</translation>
 <translation id="4285930937574705105">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Chromium kører, skal du lukke programmet og prøve igen.</translation>
 <translation id="4330585738697551178">Dette modul modstrider Chromium.</translation>
-<translation id="4365115785552740256">Chromium er realiseret ved hjælp af <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />-open source-projektet og anden <ph name="BEGIN_LINK_OSS" />open source-software<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Tilpas og kontrollér Chromium</translation>
 <translation id="442817494342774222">Chromium er konfigureret til at åbne automatisk, når du starter computeren.</translation>
 <translation id="4458285410772214805">Du skal logge ud og logge ind igen, for at denne ændring kan træde i kraft.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Den styrer også, hvilken side der vises, når du åbner Chromium.</translation>
 <translation id="6485906693002546646">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chromium-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference eller bruge Chromium uden en Google-konto.</translation>
 <translation id="6510925080656968729">Afinstaller Chromium</translation>
+<translation id="6526111688217511984">Chromium skal have lageradgang for at kunne downloade filer.</translation>
 <translation id="6637001341228460105">Chromium skal have adgang til din mikrofon, før den kan deles med dette website.</translation>
 <translation id="6638567566961868659">Find dine bogmærker i Chromium-menuen eller på bogmærkelinjen.</translation>
 <translation id="6676384891291319759">Få adgang til internettet</translation>

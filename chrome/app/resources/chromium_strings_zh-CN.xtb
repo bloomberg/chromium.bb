@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="108122890477367602">以 Windows 8 模式重新启动 Chromium(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> 通常使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="1174473354587728743">与其他人共用计算机？现在，您可以随心所欲地设置Chromium。</translation>
 <translation id="1185134272377778587">关于 Chromium</translation>
 <translation id="1221340462641866827">Chromium 操作系统不支持启动外部应用处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">是否将您的 Chromium 数据与此帐户相关联？</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
-<translation id="4365115785552740256">Chromium 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 开放源代码项目以及其他<ph name="BEGIN_LINK_OSS" />开放源代码软件<ph name="END_LINK_OSS" />。</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
 <translation id="442817494342774222">Chromium 已配置为在计算机启动时自动启动。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
@@ -152,6 +150,7 @@
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
+<translation id="6526111688217511984">Chromium 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="6637001341228460105">Chromium 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="6638567566961868659">在 Chromium 菜单或书签栏中查找您的书签。</translation>
 <translation id="6676384891291319759">访问互联网</translation>

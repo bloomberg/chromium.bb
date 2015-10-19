@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Mancano le chiavi dell'API di Google. Alcune funzionalità di Google Chrome verranno disattivate.</translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>
 <translation id="2316129865977710310">No, grazie</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2346876346033403680">Qualcuno ha già eseguito l'accesso a Chrome su questo computer come <ph name="ACCOUNT_EMAIL_LAST" />. Se non si tratta del tuo account, crea un nuovo utente Chrome per tenere separate le tue informazioni.
 
 Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronologia e altre impostazioni verranno unite a quelle di <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -136,10 +135,10 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="556024056938947818">Google Chrome sta cercando di visualizzare le password.</translation>
 <translation id="5563479599352954471">Ricerca con un tocco</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Quando Chrome ha provato a connettersi a <ph name="SITE" /> questa volta, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chrome ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="5620765574781326016">Leggi gli argomenti sui siti web senza uscire dalla pagina.</translation>
 <translation id="568643307450491754">Trova i tuoi Preferiti nel menu Chrome o sulla barra dei Preferiti.</translation>
 <translation id="573759479754913123">Informazioni su Chrome OS</translation>
+<translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
 <translation id="5785746630574083988">Il riavvio in modalità Windows 8 causerà la chiusura e il riavvio delle tue app Chrome.</translation>
 <translation id="5799551393681493217">Attiva i flussi di accesso a Chrome basati su iframe. Questo flag sostituisce --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Il software in esecuzione sul computer non è compatibile con Google Chrome.</translation>

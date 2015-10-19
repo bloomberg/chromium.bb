@@ -85,6 +85,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2919669478609886916">Vous partagez actuellement cette machine avec un autre utilisateur. Voulez-vous continuer ce partage ?</translation>
 <translation id="2921543551052660690">Vous vous êtes auparavant connecté avec le nom d'utilisateur "<ph name="USER_NAME" />" (<ph name="USER_EMAIL" />). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN" />connectez-vous à Chromium<ph name="LINK_END" /> avec ce compte, puis réinstallez Chromoting.</translation>
 <translation id="2926340305933667314">Échec de la désactivation de l'accès à distance pour cet ordinateur. Veuillez réessayer ultérieurement.</translation>
+<translation id="2930135165929238380">Il manque certains composants obligatoires. Veuillez accéder à chrome://plugins et pour vous assurer que Native Client est activé.</translation>
 <translation id="2939145106548231838">S'authentifier auprès de l'hôte</translation>
 <translation id="2998137343848432918">• Ajout d'un écran de remerciements
 • Résolution d'un problème lors du passage au plein écran avec le clavier visible</translation>

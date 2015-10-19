@@ -85,6 +85,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2919669478609886916">Jagate seda seadet praegu teise kasutajaga. Kas soovite jagamist jätkata?</translation>
 <translation id="2921543551052660690">Olete varem sisse loginud kasutajana <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN" />logige Chromiumi sisse<ph name="LINK_END" /> selle kontoga ja installige chromootimine uuesti.</translation>
 <translation id="2926340305933667314">Arvuti kaugühenduste keelamine ebaõnnestus. Proovige hiljem uuesti.</translation>
+<translation id="2930135165929238380">Mõned vajalikud komponendid on puudu. Minge lehele chrome://plugins ja veenduge, et Native Client oleks lubatud.</translation>
 <translation id="2939145106548231838">Hostiga autentimine</translation>
 <translation id="2998137343848432918">• Lisati osaliste ekraan.
 • Parandati probleem, mille puhul täisekraanirežiimis oli klaviatuur nähtaval.</translation>

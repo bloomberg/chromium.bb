@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
 <translation id="108122890477367602">&amp;Lancarkan semula Chromium dalam mod Windows 8</translation>
 <translation id="1115445892567829615">Chromium tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> kali ini, tapak web menghantar balik bukti kelayakan yang luar biasa dan tidak betul. Sama ada penyerang cuba menyamar menjadi <ph name="SITE" />, atau skrin log masuk Wi-Fi telah mengganggu sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum apa-apa data diubah.</translation>
 <translation id="1174473354587728743">Berkongsi komputer? Sekarang anda boleh menyediakan Chromium menurut cara yang anda suka.</translation>
 <translation id="1185134272377778587">Mengenai Chromium</translation>
 <translation id="1221340462641866827">Chromium OS tidak menyokong pelancaran aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME" />. Pautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Paut data Chromium anda ke akaun ini?</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
-<translation id="4365115785552740256">Chromium berjaya dilaksanakan melalui projek sumber terbuka <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> dan <ph name="BEGIN_LINK_OSS" />perisian sumber terbuka<ph name="END_LINK_OSS" /> yang lain.</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
 <translation id="442817494342774222">Chromium dikonfigurasi untuk dilancarkan secara automatik apabila anda memulakan komputer anda.</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyegerakkan bahan digital chromium anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chromium tanpa akaun Google, lawati <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
+<translation id="6526111688217511984">Chromium memerlukan akses storan untuk memuat turun fail.</translation>
 <translation id="6637001341228460105">Chromium memerlukan akses mikrofon untuk mengongsinya dengan tapak ini.</translation>
 <translation id="6638567566961868659">Cari penanda halaman anda dalam menu Chromium atau pada bar penanda halaman.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>

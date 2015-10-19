@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
 <translation id="1339601241726513588">דומיין הרשמה:</translation>
 <translation id="1344588688991793829">‏הגדרות מילוי אוטומטי של Chromium...</translation>
+<translation id="1375198122581997741">מידע על הגרסה</translation>
 <translation id="1426410128494586442">כן</translation>
 <translation id="1430915738399379752">הדפס</translation>
 <translation id="1455235771979731432">הייתה בעיה באימות הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
+<translation id="1519264250979466059">‏תאריך ה-Build</translation>
 <translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
+<translation id="1559528461873125649">אין קובץ או ספרייה בשם זה</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
 <translation id="1644184664548287040">תצורת הרשת אינה חוקית ולא ניתן לייבא אותה.</translation>
 <translation id="1655462015569774233">{1,plural, =1{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג אתמול. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}two{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני יומיים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}many{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}other{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; התוקף של אישור האבטחה שלו פג לפני # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. התאריך המוגדר כעת בשעון המחשב שלך הוא <ph name="CURRENT_DATE" />. האם זה נכון? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן את הדף הזה.}}</translation>
 <translation id="168841957122794586">אישור השרת מכיל מפתח הצפנה חלש.</translation>
 <translation id="1693754753824026215">הדף ב-<ph name="SITE" /> אומר:</translation>
 <translation id="1706954506755087368">{1,plural, =1{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק מחר. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}two{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד יומיים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}many{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}other{השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אמור להיכנס לתוקף רק בעוד # ימים. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך.}}</translation>
+<translation id="1710259589646384581">מערכת הפעלה</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">דווח על באג</translation>
+<translation id="1753706481035618306">מספר עמוד</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">האם תרצה ש-<ph name="PRODUCT_NAME" /> יציע לתרגם דפים ב<ph name="LANGUAGE_NAME" /> מהאתר הזה בפעם הבאה?</translation>
 <translation id="2587841377698384444">‏מזהה ממשק API של ספרייה:</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
+<translation id="2609632851001447353">וריאציות</translation>
 <translation id="2625385379895617796">השעון שלך מקדים</translation>
 <translation id="2639739919103226564">סטטוס:</translation>
 <translation id="2653659639078652383">שלח</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">הצג ערך</translation>
 <translation id="3648607100222897006">תכונות ניסיוניות אלה עשויות להשתנות, להפסיק לעבוד או להיעלם בכל עת. איננו מביעים כל אחריות לגבי ההשלכות של הפעלה של אחד מניסויים אלה, וייתכן אף שהדפדפן שלך יתלקח באופן ספונטני. צחוק בצד, הדפדפן עלול למחוק את כל הנתונים שלך, או שהאבטחה והפרטיות שלך ייפגעו בדרכים לא צפויות. כל ניסוי שתאפשר יהפוך לפעיל עבור כל המשתמשים בדפדפן זה. המשך בזהירות.</translation>
 <translation id="3650584904733503804">האימות בוצע בהצלחה</translation>
+<translation id="3658742229777143148">גרסה קודמת</translation>
 <translation id="370665806235115550">טוען...</translation>
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>
 <translation id="3739623965217189342">קישור שהעתקת</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
+<translation id="4744603770635761495">נתיב להפעלה</translation>
 <translation id="4771973620359291008">‏אירעה שגיאה לא מוכרת.
 
 
@@ -184,6 +192,7 @@ Del</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="5094747076828555589">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי Chromium. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="5095208057601539847">פרובינציה</translation>
+<translation id="5115563688576182185">(64 סיביות)</translation>
 <translation id="5145883236150621069">קיים קוד שגיאה בתגובת המדיניות</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דווח על שגיאה זו</translation>
@@ -226,8 +235,8 @@ Del</translation>
 <translation id="6263376278284652872">סימניות <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">מיקוד</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
+<translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
-<translation id="6426993025560594914">כל הניסויים זמינים בפלטפורמה שלך!</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6458467102616083041">המערכת התעלמה מערך מדיניות זה, משום שלפי המדיניות, חיפוש ברירת המחדל מושבת.</translation>
 <translation id="647261751007945333">מדיניות המכשיר</translation>
@@ -245,6 +254,7 @@ Del</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="6874604403660855544">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="6891596781022320156">רמת המדיניות אינה נתמכת.</translation>
+<translation id="6897140037006041989">User agent</translation>
 <translation id="6915804003454593391">משתמש:</translation>
 <translation id="6957887021205513506">נראה שהאישור של השרת מזויף.</translation>
 <translation id="6965382102122355670">אישור</translation>
@@ -263,12 +273,15 @@ Del</translation>
 <translation id="7186367841673660872">דף זה תורגם מ<ph name="ORIGINAL_LANGUAGE" />ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">חפש את <ph name="SEARCH_TERMS" /> ב-<ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">מזהה גרסה</translation>
 <translation id="725866823122871198">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במחשב שלך שגויים.</translation>
 <translation id="7275334191706090484">סימניות מנוהלות</translation>
 <translation id="7298195798382681320">מומלצים</translation>
 <translation id="7334320624316649418">&amp;ביצוע מחדש של שינוי סדר</translation>
+<translation id="7353601530677266744">שורת פקודה </translation>
 <translation id="7378627244592794276">לא</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
+<translation id="7419106976560586862">נתיב פרופיל</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -290,6 +303,7 @@ Del</translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">אישור השרת עדיין לא בתוקף.</translation>
+<translation id="7951415247503192394">(32 סיביות)</translation>
 <translation id="7956713633345437162">סימניות לנייד</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7977590112176369853">&lt;הזן שאילתה&gt;</translation>
@@ -345,9 +359,9 @@ Del</translation>
 <translation id="9154176715500758432">הישאר בדף זה</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="917450738466192189">אישור השרת לא חוקי.</translation>
-<translation id="9187827965378254003">אוי, נראה שאין ניסויים זמינים כרגע.</translation>
 <translation id="9207861905230894330">הוספת הפריט נכשלה.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">נקה את הטופס</translation>
+<translation id="969892804517981540">גירסה רשמית</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 </translationbundle>

@@ -85,6 +85,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2919669478609886916">Esteu compartint aquest ordinador amb un altre usuari. Voleu continuar compartint-lo?</translation>
 <translation id="2921543551052660690">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Chromium<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar Chromoting.</translation>
 <translation id="2926340305933667314">No s'ha pogut desactivar l'accés remot a aquest ordinador. Torneu-ho a provar més tard.</translation>
+<translation id="2930135165929238380">Falten alguns components necessaris. Aneu a chrome://plugins i assegureu-vos que Native Client estigui activat.</translation>
 <translation id="2939145106548231838">Autenticació a l'amfitrió</translation>
 <translation id="2998137343848432918">• S'ha afegit la pantalla Crèdits.
 • S'ha esmenat un problema en canviar a pantalla completa amb el teclat visible.</translation>

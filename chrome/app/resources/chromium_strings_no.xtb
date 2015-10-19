@@ -4,8 +4,6 @@
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="108122890477367602">&amp;Start Chromium på nytt i Windows 8-modus</translation>
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> bruker vanligvis kryptering til å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig
-og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />, eller så har en Wi-Fi-påloggingsskjerm avbrutt forbindelsen. Informasjonen din er fremdeles sikker fordi Chromium brøt forbindelsen før noen data ble utvekslet.</translation>
 <translation id="1174473354587728743">Deler du datamaskinen din med andre? Nå kan du konfigurere Chromium akkurat slik du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1221340462641866827">Chromium OS støtter ikke start av et eksternt program for å håndtere <ph name="SCHEME" />-linker. Den påkrevde linken er <ph name="PROTOLINK" />.</translation>
@@ -106,7 +104,6 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />,
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="4330585738697551178">Denne modulen er kjent for å komme i konflikt med Chromium.</translation>
-<translation id="4365115785552740256">Chromium er gjort mulig av åpen kilde-prosjektet <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> og annen <ph name="BEGIN_LINK_OSS" />åpen kilde-programvare<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
 <translation id="442817494342774222">Chromium er konfigurert til automatisk å starte når du starter datamaskinen din.</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
@@ -169,6 +166,7 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE" />,
 <translation id="6475912303565314141">Den styrer også hvilken side som vises når du starter Chromium.</translation>
 <translation id="6485906693002546646">Du bruker <ph name="PROFILE_EMAIL" /> for synkronisering av Chromium-tingene dine. For å oppdatere alternativene for synkronisering eller bruke Chromium uten Google-konto, kan du gå til <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
+<translation id="6526111688217511984">Chromium må ha lagringstilgang for å laste ned filer.</translation>
 <translation id="6637001341228460105">Chromium må ha tilgang til mikrofonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6638567566961868659">Finn bokmerkene dine i Chromium-menyen eller på bokmerkeraden.</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>

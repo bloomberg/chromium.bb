@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
+<translation id="1375198122581997741">關於版本</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">列印</translation>
 <translation id="1455235771979731432">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
 <translation id="1491151370853475546">重新載入這個網頁</translation>
+<translation id="1519264250979466059">建立日期</translation>
 <translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
+<translation id="1559528461873125649">找不到您所指定的檔案或目錄</translation>
 <translation id="1640180200866533862">使用者政策</translation>
 <translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
 <translation id="1655462015569774233">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在昨天過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在 # 天前過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
 <translation id="1693754753824026215"><ph name="SITE" /> 的網頁顯示：</translation>
 <translation id="1706954506755087368">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定明天才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定 # 天後才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}}</translation>
+<translation id="1710259589646384581">作業系統</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">回報錯誤</translation>
+<translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME" /> 翻譯這個網站的<ph name="LANGUAGE_NAME" />網頁嗎？</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
+<translation id="2609632851001447353">變化版本</translation>
 <translation id="2625385379895617796">您的時鐘時間過快</translation>
 <translation id="2639739919103226564">狀態：</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">顯示政策值</translation>
 <translation id="3648607100222897006">這些實驗性功能隨時都有可能變動、中斷或消失。我們完全無法保證啟用這些實驗性功能會導致何種後果，您的瀏覽器說不定會突然自己燒掉。當然這只是玩笑話，不過您的瀏覽器可能真的會刪除您的所有資料，或是意外洩漏您的安全性和隱私權設定。只要您啟用了任何實驗性功能，這個瀏覽器的所有使用者都會啟用該功能。使用時請務必小心謹慎。</translation>
 <translation id="3650584904733503804">驗證成功</translation>
+<translation id="3658742229777143148">修訂版本</translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="3712624925041724820">授權已用盡</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
 <translation id="4728558894243024398">平台</translation>
+<translation id="4744603770635761495">可執行檔的路徑</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chromium 的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="5095208057601539847">省</translation>
+<translation id="5115563688576182185">(64 位元)</translation>
 <translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
 <translation id="5172758083709347301">本機</translation>
 <translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE" />嗎？請回報此錯誤</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="6282194474023008486">郵遞區號</translation>
 <translation id="6337534724793800597">依名稱篩選政策</translation>
+<translation id="6355080345576803305">公開工作階段覆寫</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
-<translation id="6426993025560594914">您的平台可以使用所有實驗性功能！</translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="6458467102616083041">由於政策停用了預設搜尋，因此遭到略過。</translation>
 <translation id="647261751007945333">裝置政策</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">區</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
+<translation id="6897140037006041989">使用者代理程式</translation>
 <translation id="6915804003454593391">使用者：</translation>
 <translation id="6957887021205513506">伺服器憑證疑似偽造。</translation>
 <translation id="6965382102122355670">確定</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">在 <ph name="SITE_NAME" /> 上搜尋 <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">版本 ID</translation>
 <translation id="725866823122871198">您電腦的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="7275334191706090484">受管理書籤</translation>
 <translation id="7298195798382681320">建議採用</translation>
 <translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
+<translation id="7353601530677266744">命令列</translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7400418766976504921">網址</translation>
+<translation id="7419106976560586862">設定檔路徑</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">伺服器憑證尚未生效。</translation>
+<translation id="7951415247503192394">(32 位元)</translation>
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="7961015016161918242">永不</translation>
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">停留在此頁</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="917450738466192189">伺服器憑證無效。</translation>
-<translation id="9187827965378254003">哎呀，目前似乎沒有可用的實驗功能。</translation>
 <translation id="9207861905230894330">無法新增文章。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表單</translation>
+<translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">開發人員版本</translation>
 </translationbundle>

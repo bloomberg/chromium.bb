@@ -5,6 +5,10 @@
 <translation id="1019101089073227242">Establecer directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas)</translation>
 <translation id="102492767056134033">Establecer el estado predeterminado del teclado en pantalla en la pantalla de inicio de sesión</translation>
+<translation id="1044878202534415707">Informa sobre estadísticas de hardware, como el uso de CPU o de RAM.
+
+      Si se asigna el valor false a esta política, no se informará sobre las estadísticas.
+      Si se asigna el valor true o si la política no se configura, se informará sobre ellas.</translation>
 <translation id="1046484220783400299">Habilita funciones obsoletas de la plataforma web durante un período de tiempo limitado</translation>
 <translation id="1047128214168693844">No permitir que ningún sitio haga un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="1057535219415338480">Permite habilitar la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta configuración.
@@ -15,6 +19,23 @@
 
       Si no se establece esta política, se habilitará pero el usuario podrá modificarla.</translation>
 <translation id="1062011392452772310">Habilitar confirmación remota para el dispositivo</translation>
+<translation id="108735515923160176">Configura el tipo de página principal predeterminada de <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen las preferencias de la página principal. La página principal puede ser una URL que especifiques o la página Nueva pestaña.
+
+          Si habilitas esta opción, se utilizará siempre la página Nueva pestaña como página principal y se ignorará la ubicación de la URL de la página principal.
+
+          Si inhabilitas esta opción, la página Nueva pestaña no se utilizará nunca como página principal de los usuarios, a menos que se establezca chrome://newtab.
+
+          Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificar el tipo de página principal de <ph name="PRODUCT_NAME" />.
+
+          Si no se configura esta política, el usuario podrá elegir si quiere establecer la página Nueva pestaña como página principal.
+
+          Esta política no está disponible para instancias de Windows que no estén conectadas
+          a un dominio de Active Directory.</translation>
+<translation id="1090892140761957285">URL para validar el token de autenticación del cliente de acceso remoto.
+
+          Si se configura esta política, el host de acceso remoto utilizará esta URL para validar los tokens de autenticación de los clientes de acceso remoto y poder aceptar conexiones. Se debe aplicar junto con la política RemoteAccessHostTokenUrl.
+
+          Esta función está inhabilitada en el servidor en estos momentos.</translation>
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="1103860406762205913">Habilita el inicio de sesión basado en la Web antiguo</translation>
 <translation id="1138294736309071213">Esta política solo se encuentra activa en el modo de venta.
@@ -27,6 +48,10 @@
 
 Si esta política se establece en False, no se informará sobre el estado del conector de modo de desarrollador.</translation>
 <translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre navegación segura</translation>
+<translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
+
+      Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia
+      mínima permitida son 60 segundos.</translation>
 <translation id="1213523811751486361">Permite especificar la URL del motor de búsqueda que se usa para obtener sugerencias de búsqueda. La URL debe contener la cadena "<ph name="SEARCH_TERM_MARKER" />", que se sustituirá por el texto que el usuario haya introducido al hacer la consulta.
 
           Esta política es opcional. Si no se establece, no se usarán URL de sugerencia.
@@ -39,12 +64,9 @@ Si esta política se establece en False, no se informará sobre el estado del co
 
           Para que se respete esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
-<translation id="1283072268083088623">Permite especificar los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME" />.
-
-          Los valores posibles son "basic", "digest", "ntlm" y "negotiate". Si hay varios valores, se deben separar con comas.
-
-          Si no se establece esta política, se usarán los cuatro esquemas.</translation>
 <translation id="1297182715641689552">Utilizar una secuencia de comandos .pac de proxy</translation>
+<translation id="1300635491585192248">Predecir las acciones de la red en cualquier red que no sea
+          móvil</translation>
 <translation id="1304973015437969093">IDs de extensiones/aplicaciones y URLs de actualización que se instalan automáticamente</translation>
 <translation id="1310699457130669094">Permite especificar la URL de un archivo .pac de proxy.
 
@@ -67,6 +89,9 @@ Si esta política se establece en False, no se informará sobre el estado del co
 <translation id="1330985749576490863">Inhabilita Google Drive a través de conexiones móviles en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nombre de la política</translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
+<translation id="1359553908012294236">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> habilitará los inicios de sesión como invitado. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo incógnito.
+
+      Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá que se inicien los perfiles de invitado.</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
 <translation id="1398889361882383850">Permite establecer si los sitios web pueden ejecutar complementos automáticamente. La ejecución automática de complementos se puede permitir o denegar para todos los sitios web.
 
@@ -106,6 +131,7 @@ Si esta política se establece en False, no se informará sobre el estado del co
 El usuario puede inhabilitar el escritorio unificado para pantallas individuales desactivando la opción en los ajustes de la pantalla.
 
 Si esta política está establecida en "false" o no está establecida, se inhabilitará el escritorio unificado. En este caso, el usuario no puede habilitar la función.</translation>
+<translation id="1474273443907024088">Inhabilitar el inicio falso de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Permite especificar el período en milisegundos durante el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
 
@@ -117,9 +143,11 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="152657506688053119">Lista de URL alternativas para el proveedor de búsquedas predeterminado</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
+<translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
 <translation id="1617235075406854669">Habilitar eliminación de historial de navegación y de descargas</translation>
+<translation id="1617384279878333801">Habilitar la opción para añadir usuarios en el administrador de perfiles</translation>
 <translation id="1655229863189977773">Establecer tamaño de caché de disco en bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
@@ -129,6 +157,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="172374442286684480">Permitir que todos los sitios establezcan datos locales</translation>
 <translation id="1727394138581151779">Bloquear todos los complementos</translation>
 <translation id="1734716591049455502">Configurar opciones de acceso remoto</translation>
+<translation id="1736269219679256369">Permitir que se continúe desde la página de advertencia de SSL</translation>
 <translation id="1749815929501097806">Permite establecer las Condiciones de servicio que el usuario debe aceptar antes de empezar una sesión de cuenta de dispositivo local.
 
       Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará las Condiciones de servicio y las presentará al usuario siempre que se haya iniciado una sesión de cuenta de dispositivo local.
@@ -169,6 +198,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Ten en cuenta que las políticas EnabledPlugins y DisabledPluginsExceptions pueden anular esta política.
 
       Si no se establece esta política, el usuario podrá utilizar cualquier complemento que esté instalado en el sistema, salvo complementos codificados incompatibles, obsoletos o peligrosos.</translation>
+<translation id="1865417998205858223">Permisos clave</translation>
 <translation id="186719019195685253">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está conectado a la red eléctrica</translation>
 <translation id="187819629719252111">Permite que <ph name="PRODUCT_NAME" /> muestre cuadros de diálogo de selección de archivos para acceder a los archivos locales del ordenador.
 
@@ -192,7 +222,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
           Puedes consultar ejemplos detallados en la siguiente página:
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">Políticas de autenticación HTTP</translation>
 <translation id="1956493342242507974">Permite configurar la administración de energía en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
 
       Esta política te permite configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando no hay actividad del usuario durante cierto tiempo mientras se muestra la pantalla de inicio de sesión. La política controla varias opciones. Para obtener información sobre los intervalos de valores y la semántica de estas opciones, consulta las políticas correspondientes que controlan la administración de energía en una sesión. Las únicas desviaciones de estas políticas son:
@@ -203,10 +232,14 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Si no se define esta política, se utilizarán todos los valores predeterminados.</translation>
 <translation id="1964634611280150550">Modo de incógnito inhabilitado</translation>
+<translation id="1969212217917526199">Anula las políticas de compilaciones de depuración del host de acceso remoto.
+
+          El valor se analiza como un diccionario JSON del nombre de política para las asignaciones de valores de la política.</translation>
 <translation id="1988371335297483117">Las cargas útiles de actualizaciones automáticas en <ph name="PRODUCT_OS_NAME" /> se pueden descargar a través de HTTP en lugar de HTTPS, lo que permite el almacenamiento en caché HTTP transparente de descargas HTTP.
 
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
+<translation id="201557587962247231">Frecuencia de subida de informes de estado del dispositivo</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="2067011586099792101">Bloquear acceso a sitios no incluidos en paquetes de contenido</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
@@ -216,8 +249,20 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
+<translation id="2166715102875984646">Inhabilita la compatibilidad con las API de gráficos 3D.
+
+      Si se habilita esta opción, se impide el acceso de las páginas web a la unidad de procesamiento de gráficos (GPU). En concreto, las páginas web no pueden acceder a la API de WebGL y los complementos no pueden usar la API de Pepper 3D.
+
+      Si se inhabilita esta opción o no se configura, las páginas web pueden usar la API de WebGL y los complementos para usar la API de Pepper 3D. En función de la configuración predeterminada del navegador, puede ser necesario especificar una serie de argumentos en la línea de comandos para usar estas API.
+
+      Si se ha asignado el valor false a la política HardwareAccelerationModeEnabled, se ignorará Disable3DAPIs y se le asigna el valor true a Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Retraso de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
+<translation id="2175836933294053665">Configura una lista de marcadores administrados.
+
+      La política es una lista de marcadores, mientras que cada marcador es un diccionario que contiene las claves name y url, que definen el nombre y la URL de destino del marcador. Para configurar una subcarpeta, define un marcador sin la clave url y utiliza una clave secundaria adicional que contenga una lista de marcadores en sí misma como se definía anteriormente (algunos de los cuales pueden ser carpetas de nuevo). <ph name="PRODUCT_NAME" /> completará las URL incompletas como si se hubieran enviado a través del omnibox. Por ejemplo, "google.com" se convertirá en "https://google.com/".
+
+      Estos marcadores se incluyen en una carpeta de marcadores administrados que el usuario no puede modificar, pero que puede ocultar de la barra de marcadores. Los marcadores administrados no se sincronizan con la cuenta del usuario y las extensiones no pueden modificarlos.</translation>
 <translation id="2188979373208322108">Permite habilitar la barra de marcadores en <ph name="PRODUCT_NAME" />.
 
       Si habilitas esta opción, se mostrará una barra de marcadores en <ph name="PRODUCT_NAME" />.
@@ -261,7 +306,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2309390639296060546">Configuración de ubicación geográfica predeterminada</translation>
 <translation id="2312134445771258233">Permite configurar las páginas que se cargan al iniciar el navegador.
 
-      Se ignorará el contenido de la lista "URL que se deben abrir al inicio" a menos que se seleccione la opción "Abrir una lista de URL" en la política "Acción al iniciar".</translation>
+      Se ignorará el contenido de la lista "URL que se deben abrir al inicio" a menos que se seleccione la opción "Abrir una lista de URLs" en la política "Acción al iniciar".</translation>
 <translation id="2337466621458842053">Permite que definas una lista de patrones de URL para especificar los sitios que pueden mostrar imágenes.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultImagesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -293,7 +338,53 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si no se define esta opción, <ph name="PRODUCT_NAME" />
           permitirá el uso de hosts de mensajes nativos.</translation>
+<translation id="2393996789386329927">Bloquea el acceso a la lista de URLs.
+
+      Esta política evita que el usuario cargue páginas web de las URL incluidas en una lista negra. La lista negra ofrece una lista de los patrones de URL que especifican las URL que se mostrarán en una lista negra.
+
+      Cada patrón de URL puede ser tanto un patrón para archivos locales como un patrón de URL genérica. Los patrones de archivos locales tienen el formato "file://path", donde "path" debería ser una ruta absoluta para bloquear. Se deben bloquear todas las ubicaciones del sistema de archivos en las que esta ruta sea un prefijo.
+
+      Un patrón de URL genérica tiene el formato "scheme://host:port/path".
+      Si está presente, solo se bloqueará el esquema especificado. Si no se ha especificado el prefijo scheme://, se bloquearán todos los esquemas.
+      Se necesita el host y puede ser un nombre de host o una dirección IP. También se bloquearán los subdominios de un nombre de host. Para evitar que se bloqueen subdominios, debes incluir un símbolo "." delante del nombre de host. El símbolo "*" del nombre de host especial bloqueará todos los dominios.
+      El puerto opcional es un número de puerto válido comprendido entre 1 y 65.535. Si no se especifica ninguno, se bloquearán todos los puertos.
+      Si se especifica la ruta opcional, solo se bloquearán las rutas con ese prefijo.
+
+      Las excepciones se pueden definir en la política de listas blancas de URL. Estas políticas se limitan a 100 entradas, y se ignorarán las entradas que superen este número.
+
+      Si no se configura esta política, no se mostrará ninguna URL en la lista negra del navegador.</translation>
+<translation id="240213793013362302">Configura la imagen de fondo de pantalla.
+
+      Esta política permite configurar la imagen de fondo de pantalla que se muestra en el escritorio y en la pantalla de inicio de sesión del usuario. Esta política se establece especificando la URL desde la que <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen de fondo de pantalla y un hash criptográfico que se usa para verificar la integridad de la descarga. La imagen debe estar en formato JPEG y su tamaño de archivo no debe superar los 16 MB. Se debe poder acceder a la URL sin necesidad de autenticarse.
+
+      La imagen de fondo de pantalla se descarga y almacena en caché. Se volverá a descargar si cambian la URL o el hash.
+
+      La política se debe especificar como una cadena que expresa la URL y el hash en formato JSON siguiendo el siguiente esquema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "La URL desde la que se puede descargar la imagen de fondo de pantalla.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "El hash SHA-256 de la imagen de fondo de pantalla.",
+            "type": "string"
+          }
+        }
+      }
+
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará y usará la imagen de fondo de pantalla.
+
+      Si estableces esta política, los usuarios no podrán cambiarla o anularla.
+
+      Si no se establece la política, los usuarios podrán elegir una imagen para mostrarla en el escritorio y en el fondo de la pantalla de inicio de sesión.</translation>
 <translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
+<translation id="2418507228189425036">Permite inhabilitar el almacenamiento del historial de navegación de <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen esta opción.
+
+      Si se habilita esta opción, no se almacenará el historial de navegación y se inhabilitará la sincronización de pestañas.
+
+      Si se inhabilita o no se configura, se almacenará el historial de navegación.</translation>
 <translation id="2426782419955104525">Habilita la función Instant de <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
 
       Si habilitas esta opción, se habilitará <ph name="PRODUCT_NAME" /> Instant.
@@ -319,7 +410,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si se utiliza el valor False, no se podrá omitir el inicio de sesión automático sin tiempo de espera (si se ha configurado).</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
+<translation id="2466131534462628618">La autenticación del portal cautivo ignora el proxy</translation>
 <translation id="2482676533225429905">Mensajes nativos</translation>
+<translation id="2483146640187052324">Predecir las acciones de red en cualquier conexión de red</translation>
 <translation id="2488010520405124654">Habilita el mensaje de configuración de red si no hay conexión.
 
       Si se utiliza el valor True para esta política o no se establece la política, se ha configurado una cuenta local de dispositivo para el inicio de sesión automático sin tiempo de espera y el dispositivo no tiene conexión a Internet, <ph name="PRODUCT_OS_NAME" /> mostrará un mensaje de configuración de red.
@@ -365,6 +458,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se establece esta política, se usará la política AskGeolocation y el usuario podrá modificarla.</translation>
 <translation id="2650049181907741121">Acción que se realiza cuando el usuario cierra la tapa</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
+<translation id="2665596266623707739">Advertencia: La alternativa de usar TLS 1.0 se eliminará de <ph name="PRODUCT_NAME" /> después de la versión 47 (en enero de 2016 aproximadamente) y la opción tls1 dejará de funcionar.
+
+      Cuando no es posible establecer el protocolo de enlace TLS, <ph name="PRODUCT_NAME" /> vuelve a intentar establecer la conexión con una versión inferior de TLS para evitar errores en los servidores HTTPS. Esta opción configura la versión en la que se detendrá el proceso alternativo. Si un servidor lleva a cabo la negociación de la versión correctamente (es decir, sin interrumpir la conexión), esta opción no se aplicará. En cualquier caso, la conexión resultante debe cumplir la política SSLVersionMin.
+
+      Si no se configura esta política, <ph name="PRODUCT_NAME" /> utiliza la versión mínima predeterminada, que es TLS 1.0 en <ph name="PRODUCT_NAME" /> 44 y TLS 1.1 en versiones posteriores. Ten en cuenta que, solo si <ph name="PRODUCT_NAME" /> evita el uso de servidores con errores que no puedan negociar las versiones correctamente, no se inhabilitará la compatibilidad con TLS 1.0.
+
+      De lo contrario, se puede establecer uno de los siguientes valores: tls1, tls1.1 o tls1.2. Si se debe mantener la compatibilidad con un servidor con errores, se puede configurar tls1. Se trata de una solución provisional y el servidor debería arreglarse rápidamente.
+
+     Al establecer tls1.2, se inhabilitan todos los valores alternativos pero es posible que afecte a la compatibilidad de forma significativa.</translation>
 <translation id="267596348720209223">Permite especificar las codificaciones de caracteres admitidas por el proveedor de búsquedas. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 o ISO-8859-1. Los intentos de uso se hacen en el orden especificado.
 
           Esta política es opcional. Si no se establece se usará el valor predeterminado, es decir, UTF-8.
@@ -419,17 +521,25 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si quieren acceder al sitio marcado después de haber visto la advertencia.</translation>
 <translation id="2812021780168085286">Te permite especificar las URL que pueden instalar extensiones, aplicaciones y temas.
 
-          A partir de la versión 21 de <ph name="PRODUCT_NAME" />, resulta más difícil instalar extensiones, aplicaciones y secuencias de comandos de usuario que no proceden de Chrome Web Store. Anteriormente, los usuarios podían hacer clic en un enlace para acceder a un archivo *.crx y, después de algunas advertencias, <ph name="PRODUCT_NAME" /> ofrecía la posibilidad de instalar el archivo. A partir de la versión 21 de <ph name="PRODUCT_NAME" />, los usuarios deben descargar este tipo de archivos y arrastrarlos a la página de configuración de <ph name="PRODUCT_NAME" />. Esta opción permite que determinadas URL sigan utilizando el proceso de instalación anterior que era más sencillo.
+          A partir de la versión 21 de <ph name="PRODUCT_NAME" />, resulta más difícil instalar extensiones, aplicaciones y secuencias de comandos de usuario que no proceden de Chrome Web Store. Anteriormente, los usuarios podían hacer clic en un enlace para acceder a un archivo *.crx y, después de algunas advertencias, <ph name="PRODUCT_NAME" /> ofrecía la posibilidad de instalar el archivo. A partir de la versión 21 de <ph name="PRODUCT_NAME" />, los usuarios deben descargar este tipo de archivos y arrastrarlos a la página de configuración de <ph name="PRODUCT_NAME" />. Esta opción permite que determinadas URL sigan utilizando el proceso de instalación anterior, que era más sencillo.
 
           Todos los elementos de esta lista son patrones que coinciden con el estilo de las extensiones (consulta la página https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente elementos procedentes de cualquier URL que coincida con un elemento de la lista. Estos patrones deben permitir tanto la ubicación del archivo *.crx como la página en la que se inicia la descarga (es decir, la URL de referencia).
 
           ExtensionInstallBlacklist prevalece sobre esta política, lo que significa que las extensiones incluidas en la lista negra no se instalarán aunque procedan de un sitio incluido en esta lista.</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
+<translation id="2844404652289407061">Permite que Tocar para buscar esté disponible en la vista de contenido de <ph name="PRODUCT_NAME" />.
+
+      Si habilitas esta opción, Tocar para buscar estará disponible para los usuarios y podrán decidir cuándo activarla o desactivarla.
+
+      Si inhabilitas esta opción, se inhabilitará por completo Tocar para buscar.
+
+      Si no se establece ningún valor para esta política, se considerará que está habilitada (consulta la descripción anterior).</translation>
 <translation id="2850122204195089673">Habilita el escritorio unificado y lo activa de forma predeterminada.</translation>
 <translation id="285480231336205327">Habilitar modo de contraste alto</translation>
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2877225735001246144">Inhabilitar la consulta de nombre canónico en negociación de autenticación Kerberos</translation>
 <translation id="2884728160143956392">Permitir las cookies de sesión de estos sitios</translation>
+<translation id="2893546967669465276">Enviar los registros del sistema al servidor de administración</translation>
 <translation id="2906874737073861391">Lista de extensiones AppPack</translation>
 <translation id="2908277604670530363">Número máximo de conexiones simultáneas con el servidor proxy</translation>
 <translation id="2948087343485265211">Permite especificar si la actividad de audio afecta a la administración de energía.
@@ -451,6 +561,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
       Esta opción se utiliza para habilitar la extensión de certificados TLS limitados a dominios para pruebas. Esta opción experimental se eliminará en el futuro.</translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
+<translation id="2960691910306063964">Habilitar o inhabilitar la autenticación sin PIN para host de acceso remoto</translation>
 <translation id="2976002782221275500">Permite especificar el tiempo transcurrido hasta la atenuación de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
 
           Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
@@ -460,6 +571,13 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
+<translation id="2998881342848488968">Esta política permite a <ph name="PRODUCT_OS_NAME" /> omitir cualquier proxy para la autenticación de portal cautivo.
+
+      Esta política solo tendrá validez si se ha configurado un proxy (por ejemplo, a través de una política o de las extensiones, o si lo ha configurado el usuario en chrome://settings).
+
+      Si habilitas esta opción, las páginas de autenticación de portal cautivo (es decir, las páginas web que empiezan con una página de inicio de sesión de portal cautivo hasta que <ph name="PRODUCT_NAME" /> detecta que la conexión a Internet se ha realizado correctamente) se mostrarán en una ventana independiente ignorando la configuración de la política y las restricciones del usuario actual.
+
+      Si inhabilitas esta opción o no la configuras, las páginas de autenticación de portal cautivo se mostrarán en una nueva pestaña del navegador (como habitualmente) utilizando la configuración del proxy del usuario actual.</translation>
 <translation id="3021409116652377124">Inhabilitar el buscador de complementos</translation>
 <translation id="3030000825273123558">Habilitar los informes estadísticos</translation>
 <translation id="3034580675120919256">Permite establecer si los sitios web pueden utilizar o no JavaScript. La ejecución de JavaScript se permite o se deniega a todos los sitios web.
@@ -474,6 +592,11 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3067188277482006117">Si se utiliza el valor True para esta política, el usuario podrá utilizar el hardware en dispositivos Chrome para confirmar su identidad de forma remota ante la entidad emisora de certificados de privacidad a través de la API de claves de plataforma de empresa chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Si se utiliza el valor False o no se establece la política, las llamadas a la API fallarán y aparecerá un código de error.</translation>
+<translation id="3069958900488014740">Permite desactivar la optimización de WPAD (detección automática de proxy web) en <ph name="PRODUCT_NAME" />.
+
+      Si se asigna el valor false a esta política, la optimización de WPAD se inhabilitará, lo que causará que <ph name="PRODUCT_NAME" /> tenga que esperar más tiempo la respuesta de los servidores WPAD basados en DNS. Si no se configura esta política o se habilita, se habilitará la optimización de WPAD.
+
+      Independientemente de cómo se configure esta política o de si se configura o no, los usuarios no podrán cambiar la opción de configuración de WPAD.</translation>
 <translation id="3072045631333522102">Protector de pantalla a utilizar en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones de servicio para una cuenta de dispositivo local</translation>
 <translation id="3096595567015595053">Lista de complementos habilitados</translation>
@@ -485,6 +608,8 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
           Si no se establece esta política, el usuario podrá instalar cualquier extensión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Esta opción no está disponible desde la versión 29 de <ph name="PRODUCT_NAME" />. La forma recomendada de configurar colecciones de aplicaciones o extensiones alojadas por una organización es incluir el sitio que aloja los paquetes CRX en la política ExtensionInstallSources y colocar enlaces de descarga directa de los paquetes en una página web. También se puede crear un menú de aplicaciones para la página web con la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION" /></translation>
+<translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
+<translation id="3206731874112238027">Inhabilitar vista previa de impresión (obsoleto)</translation>
 <translation id="3213821784736959823">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
 
       Si esta política se establece en verdadera, se utilizará el cliente DNS integrado, si está disponible.
@@ -516,6 +641,24 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
       Si esta opción se habilita o no se configura, los usuarios podrán habilitar el proxy de Google Cloud Print si realizan el proceso de autenticación con sus cuentas de Google.
 
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y el ordenador no podrá compartir las impresoras conectadas con <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3357181471604560535">Tanto Chromium como Google Chrome admiten el mismo conjunto de
+      políticas. Ten en cuenta que en este documento se pueden incluir políticas
+      específicas de versiones de software no publicadas (es decir, que su entrada "compatible con"
+      hace referencia a una versión no publicada) y que dichas políticas pueden
+      modificarse o retirarse sin previo aviso.
+
+      Estas políticas están destinadas exclusivamente a la configuración de instancias de
+      <ph name="PRODUCT_NAME" /> internas de tu
+      organización. El uso de estas políticas fuera de tu organización (por
+      ejemplo, en un programa distribuido públicamente) se considera software malicioso y
+      es probable que Google y los proveedores de antivirus lo designen como tal.
+
+      No es necesario configurar estas opciones manualmente. Hay 
+      disponibles plantillas fáciles de utilizar para Windows, Mac y Linux en la página <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      La forma recomendada de configurar la política en Windows es a través de GPO, aunque
+      aún se admite la asignación de la política a través del registro para instancias de Windows
+      vinculadas a un dominio de Active Directory.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no necesitan contraseña.
 
@@ -555,8 +698,14 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
 <translation id="3646859102161347133">Establecer el tipo de aumento de pantalla</translation>
 <translation id="3653237928288822292">Icono del proveedor de búsquedas predeterminadas</translation>
+<translation id="3660562134618097814">Transferir las cookies del proveedor de identidad SAML durante el inicio de sesión</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
+<translation id="3715448429089775791">Activa el modo de seguridad de YouTube y evita que los usuarios modifiquen esta opción.
+
+      Si habilitas esta opción, el modo de seguridad de YouTube siempre estará activado.
+
+      Si la inhabilitas o no se le asigna ningún valor, no se aplicará el modo de seguridad de YouTube.</translation>
 <translation id="3756011779061588474">Bloquear el modo de desarrollador</translation>
 <translation id="3758249152301468420">Inhabilitar las Herramientas para desarrolladores</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario de que se cerrará la sesión porque se encuentra inactivo</translation>
@@ -611,9 +760,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se especifica, se añadirá un parámetro de consulta "restrict" a la URL utilizada para la obtención de la base de las variaciones. El valor del parámetro será el valor especificado en esta política.
 
       Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
+<translation id="3863409707075047163">Versión de SSL mínima habilitada</translation>
 <translation id="3864818549971490907">Configuración de complementos predeterminada</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3866530186104388232">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> mostrará usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos. Si el valor correspondiente a esta política se establece en "false", <ph name="PRODUCT_OS_NAME" /> solicitará el nombre de usuario y la contraseña para iniciar sesión.</translation>
+<translation id="3866824067696705379">Frecuencia con la que se envían latidos de supervisión (en milisegundos).
+
+      Si esta política no se configura, la frecuencia predeterminada es de tres minutos. La frecuencia mínima es de 30 segundos y la máxima de 24 horas (los valores que no se encuentren en este intervalo se redondearán a este).</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo comercial.
 
       Permite mostrar las extensiones que están instaladas de forma automática en una sesión de demostración para dispositivos que se encuentren en modo comercial. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión una vez que se ha completado el proceso de instalación.
@@ -632,12 +785,14 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si habilitas esta opción, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy que se especifiquen en la línea de comandos.
 
       Si no se establecen estas políticas, los usuarios podrán seleccionar los ajustes de proxy que prefieran.</translation>
-<translation id="391531815696899618">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" />, en cuyo caso, no se suben datos a Google Drive.
+<translation id="3907986150060929099">Establecer las configuraciones regionales recomendadas para una sesión pública</translation>
+<translation id="391531815696899618">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" />, en cuyo caso no se suben datos a Google Drive.
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL de un archivo .pac de proxy</translation>
 <translation id="3964909636571393861">Permite acceder a una lista de URL.</translation>
 <translation id="3965339130942650562">Tiempo de espera para cerrar sesión cuando el usuario se encuentre inactivo</translation>
+<translation id="3967075520570946456">Habilitar la opción para que aparezca la página de bienvenida al abrir el navegador por primera vez después de actualizar el sistema operativo.</translation>
 <translation id="3973371701361892765">No ocultar automáticamente los archivos</translation>
 <translation id="3984028218719007910">Permite determinar si <ph name="PRODUCT_OS_NAME" /> mantiene los datos de cuenta locales tras cerrar la sesión. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> no conservará ninguna cuenta de forma permanente y todos los datos de la sesión del usuario se descartarán al cerrar la sesión. Si esta política no se configura o el valor correspondiente se establece en "false", el dispositivo puede guardar datos de usuario locales (encriptados).</translation>
 <translation id="4001275826058808087">Los administradores de TI para dispositivos de empresa pueden utilizar esta opción para controlar si permiten que los usuarios canjeen ofertas a través del servicio de registro de Chrome OS.
@@ -658,7 +813,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4039085364173654945">Permite controlar si el contenido secundario de terceros de una página web se puede mostrar en un cuadro de diálogo emergente de autenticación básica HTTP.
 
           Esta opción suele estar inhabilitada para defender al usuario frente a los ataques de phishing. Si no se establece esta política, esta opción estará inhabilitada y el contenido secundario de terceros no podrá mostrarse como un cuadro de diálogo emergente de autenticación básica HTTP.</translation>
-<translation id="4043912146394966243"> Permite indicar los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión por su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexiones que se consideran más costosos, entre los que se incluyen WiMAX, Bluetooth y redes móviles.
+<translation id="4043912146394966243"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión por su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexiones que se consideran más costosos, entre los que se incluyen WiMAX, Bluetooth y redes móviles.
 
       Los identificadores de tipos de conexiones reconocidos son Ethernet, Wi-Fi, WiMAX, Bluetooth y redes móviles.</translation>
 <translation id="4052765007567912447">Permite controlar si las contraseñas se pueden mostrar sin cifrar a los usuarios en el administrador de contraseñas.
@@ -668,6 +823,11 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Si habilitas esta opción o si no estableces esta política, los usuarios podrán ver sus contraseñas sin cifrar en el administrador de contraseñas.</translation>
 <translation id="4056910949759281379">Inhabilitar protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo de incógnito forzado</translation>
+<translation id="4088983553732356374">Permite seleccionar si los sitios web tienen permiso para establecer datos locales. El establecimiento de datos locales se puede permitir o rechazar en todos los sitios web.
+
+          Si esta política está configurada para guardar las cookies mientras dure la sesión, se borrarán cuando esta se cierre. Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en segundo plano, es posible que la sesión no se cierre al cerrar la última ventana. Consulta la política BackgroundModeEnabled para obtener más información sobre la configuración de este comportamiento.
+
+          Si no se establece ningún valor para esta política, se utilizará AllowCookies, aunque el usuario podrá cambiarla.</translation>
 <translation id="410478022164847452">Permite especificar el tiempo transcurrido hasta que se entra en modo de inactividad (sin que el usuario realice ninguna acción) cuando el dispositivo está conectado a la red.
 
           Cuando se establece esta política, especifica el tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> entre en modo de inactividad, que se puede configurar por separado.
@@ -676,7 +836,13 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           El valor de la política se debe especificar en milisegundos.</translation>
 <translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
+<translation id="4147054660081653009">Certificado de cliente para establecer conexión con RemoteAccessHostTokenValidationUrl.
+
+          Si se configura esta política, el host utilizará un certificado de cliente con el CN de emisor especificado para autenticar a RemoteAccessHostTokenValidationUrl. Si se establece el valor *, se utilizará cualquier certificado de cliente disponible.
+
+          Esta función esta inhabilitada actualmente en el servidor.</translation>
 <translation id="4157003184375321727">Informar de la versión del firmware y del sistema operativo</translation>
+<translation id="4192388905594723944">URL para validar el token de autenticación de clientes de acceso remoto</translation>
 <translation id="4203389617541558220">Limita el tiempo de actividad del dispositivo mediante la programación de reinicios automáticos.
 
       Si se establece esta política, especifica el tiempo de actividad del dispositivo que debe transcurrir para que se programe un reinicio automático.
@@ -702,6 +868,8 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
+<translation id="4337944790873898250">Si se asigna el valor true a esta política, <ph name="PRODUCT_NAME" /> ampliará de forma incondicional la primera ventana que se muestre al ejecutarse por primera vez.
+      Si se asigna el valor false o si esta política no se configura, un método heurístico decidirá si se maximiza la primera ventana que se muestra, en función del tamaño de la pantalla.</translation>
 <translation id="436581050240847513">Permite informar de interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir que todos los sitios muestren todas las imágenes</translation>
@@ -752,6 +920,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4525521128313814366">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar imágenes.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultImagesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
+<translation id="4534500438517478692">Nombre de restricción de Android:</translation>
 <translation id="4541530620466526913">Cuentas locales del dispositivo</translation>
 <translation id="4555850956567117258">Habilitar confirmación remota para el usuario</translation>
 <translation id="4557134566541205630">URL de la página Nueva pestaña del proveedor de búsqueda predeterminado</translation>
@@ -773,9 +942,10 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si habilitas esta opción, los usuarios podrán añadir, eliminar o modificar marcadores. Esta es la opción predeterminada si no se establece la política.
 
       Si inhabilitas esta opción, los usuarios no podrán añadir, eliminar ni modificar marcadores. Los marcadores existentes seguirán estando disponibles.</translation>
+<translation id="4665897631924472251">Configuración de administración de extensiones</translation>
 <translation id="4668325077104657568">Configuración de imágenes predeterminada</translation>
 <translation id="467236746355332046">Funciones admitidas:</translation>
-<translation id="467449052039111439">Abrir una lista de URL</translation>
+<translation id="467449052039111439">Abrir una lista de URLs</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
 <translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
@@ -784,6 +954,8 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuarios, aunque se detecte una intranet como servidor.</translation>
+<translation id="4752880493649142945">Certificado del cliente para establecer conexión con RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4768493164188395498">Frecuencia de los latidos de supervisión</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si el valor de esta política se establece en True, siempre se habilitará el cursor grande.
@@ -836,6 +1008,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4962195944157514011">Permite especificar la URL del motor de búsqueda que se debe usar al hacer búsquedas predeterminadas. La URL debe incluir la cadena "<ph name="SEARCH_TERM_MARKER" />", que se sustituirá automáticamente por los términos de búsqueda del usuario.
 
           Esta opción se debe seleccionar si la política DefaultSearchProviderEnabled está habilitada y solo se respetará en este caso.</translation>
+<translation id="4971529314808359013">Te permite definir una lista de patrones de URL que especifican sitios web para los que <ph name="PRODUCT_NAME" /> selecciona automáticamente un certificado de cliente, en caso de que el sitio web solicite un certificado.
+
+          El valor debe ser un conjunto de diccionarios JSON de tipo Stringify. Cada diccionario debe tener la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, donde $URL_PATTERN es un patrón de configuración de contenido. $FILTER limita desde qué certificados de cliente podrá seleccionar el navegador automáticamente. Independientemente del filtro, solo se seleccionarán certificados que coincidan con la solicitud de certificado del servidor. Además, si $FILTER tiene la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, solo se seleccionarán certificados de cliente emitidos por un certificado con el valor $ISSUER_CN para CommonName. Si $FILTER es el diccionario vacío {}, no se limitará de forma adicional la selección de los certificados de cliente.
+
+          Si esta política no se configura, no se aplicará la selección automática en ningún sitio web.</translation>
 <translation id="4980301635509504364">Permite o rechaza la captura de vídeo.
 
       Si se habilita o no se configura (opción predeterminada), se solicitará al usuario acceso a la captura de vídeo, salvo para las URL configuradas en la lista VideoCaptureAllowedUrls, a las que se concederá acceso sin solicitarlo.
@@ -931,6 +1108,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si defines esta política, los usuarios no podrán cambiarla ni anularla.
 
       Si no se define la política, el usuario podrá elegir la imagen de su avatar para la pantalla de inicio de sesión.</translation>
+<translation id="5302612588919538756">Esta política está obsoleta, pero puedes utilizar SyncDisabled en su lugar.
+
+      Permite que los usuarios inicien sesión en <ph name="PRODUCT_NAME" />.
+
+      Si se establece esta política, podrás configurar si un usuario puede o no iniciar sesión en <ph name="PRODUCT_NAME" />. Además, si se establece el valor false, la política evitará que funcionen las aplicaciones y las extensiones que utilicen la API chrome.identity, de modo que es posible que prefieras utilizar SyncDisabled en su lugar.</translation>
 <translation id="5304269353650269372">Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción para que aparezca un cuadro de diálogo de advertencia cuando el dispositivo esté funcionando con batería.
 
           Cuando se establece esta política, especifica el tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia para indicarle que se va a llevar a cabo una acción por inactividad.
@@ -961,16 +1143,27 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se establece, es posible que se le pida al usuario que haga la importación o que los motores de búsqueda se importen automáticamente.</translation>
 <translation id="5447306928176905178">Habilitar notificación de información sobre memoria (tamaño de conjunto de archivos JavaScript) a la página (obsoleto)</translation>
+<translation id="5457065417344056871">Habilitar el modo invitados en el navegador</translation>
 <translation id="5457924070961220141">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
           Si no se establece esta política, se permitirá que el navegador del host muestre las páginas HTML de forma predeterminada, pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME" /> muestre las páginas HTML de forma predeterminada.</translation>
 <translation id="5461308170340925511">Configura políticas relacionadas con extensiones. El usuario no puede instalar extensiones incluidas en la lista negra a menos que se incluyan en la lista blanca. También puedes forzar <ph name="PRODUCT_NAME" /> para instalar automáticamente extensiones especificándolas en <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME" />. Las extensiones cuya instalación se ha forzado se instalan independientemente de si se incluyen en la lista negra.</translation>
 <translation id="5464816904705580310">Permite establecer opciones de configuración de usuarios administrados.</translation>
+<translation id="5465776916241336961">Habilita el flujo de inicio de sesión basado en la Web anterior.
+
+      Esta opción recibía el nombre de EnableWebBasedSignin con anterioridad a Chrome 42 y dejará de admitirse por completo en Chrome 43.
+
+      Esta opción es útil para clientes de empresas que utilicen soluciones de inicio de sesión único que no sean compatibles con el nuevo flujo de inicio de sesión insertado.
+      Si habilitas esta opción, se utilizará el flujo de inicio de sesión basado en la Web anterior.
+      Si inhabilitas esta opción o no se configura, se utilizará el nuevo flujo de inicio de sesión insertado de forma predeterminada. Los usuarios pueden seguir habilitando el anterior flujo de inicio de sesión basado en la Web a través del indicador de línea de comandos: enable-web-based-signin.
+
+      La opción experimental se eliminará en el futuro cuando el inicio de sesión insertado sea totalmente compatible con todos los flujos de inicio de sesión único.</translation>
 <translation id="546726650689747237">Retraso de atenuación de pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="5469484020713359236">Permite definir una lista de patrones de URL para especificar los sitios que pueden establecer cookies.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultCookiesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="5469825884154817306">Bloquear imágenes de estos sitios</translation>
 <translation id="5475361623548884387">Habilitar impresión</translation>
+<translation id="5496487987837463732">Si se asigna el valor false a esta política, los usuarios ya no seleccionarán si quieren enviar información sobre errores de seguridad a los servidores de Google. Si se asigna el valor true o si la política no se configura, los usuarios podrán enviar información cuando detecten un error SSL o una advertencia de navegación segura.</translation>
 <translation id="5499375345075963939">Esta política solo se encuentra activa en el modo comercial.
 
       Cuando el valor de esta política se establece en un número distinto de 0, la sesión del usuario que haya iniciado sesión en ese momento en modo de demostración se cerrará automáticamente una vez que haya transcurrido el período de inactividad especificado.
@@ -1029,6 +1222,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
+<translation id="5677038592630896441">Es necesario que el nombre del usuario local y del propietario del host de acceso remoto coincidan.
+
+          Si esta opción está habilitada, el host de acceso remoto compara el nombre del usuario local (con el que está asociado el host) con el nombre de la cuenta de Google registrado como el propietario del host (es decir, juanmartinez si el host pertenece a la cuenta de Google juanmartinez@example.com). El host de acceso remoto no se iniciará si el nombre del propietario del host es diferente del nombre del usuario local con el que el host está asociado. La política RemoteAccessHostMatchUsername debe utilizarse junto con la política RemoteAccessHostDomain para garantizar que la cuenta de Google del propietario del host esté asociada a un dominio específico (es decir, example.com).
+
+          Si esta opción está inhabilitada, el host de acceso remoto puede asociarse a cualquier usuario local.</translation>
 <translation id="5697306356229823047">Permite informar sobre usuarios de dispositivos</translation>
 <translation id="5703863730741917647">Permite especificar la acción a emprender si se alcanza el retraso de inactividad.
 
@@ -1042,6 +1240,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si <ph name="PRODUCT_NAME" /> no puede obtener información sobre el estado de la revocación, estos certificados se considerarán revocados.
 
       Si no se establece esta política o si se establece en false, <ph name="PRODUCT_NAME" /> utilizará la configuración para comprobar la revocación online actual.</translation>
+<translation id="5732972008943405952">Importar los datos autocompletados del navegador predeterminado en la primera ejecución</translation>
 <translation id="5761030451068906335">Permite establecer los valores de configuración de proxy de <ph name="PRODUCT_NAME" />.
 
       Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
@@ -1078,7 +1277,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se establece esta política, se inhabilitarán los comentarios por voz la primera vez que se muestre la pantalla de inicio de sesión. No obstante, los usuarios podrán habilitar o inhabilitar los comentarios por voz en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.</translation>
 <translation id="5868414965372171132">Configuración de red de usuarios</translation>
+<translation id="588135807064822874">Habilitar la función Tocar para buscar</translation>
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
+<translation id="5887291617378691520">Si la acción al iniciar seleccionada es Abrir una lista de URLs, esta política permitirá especificar una lista con las URL que se deben abrir. Si no se establece ningún valor, no se abrirá ninguna URL al iniciar.
+
+          Esta política solo funciona si se asigna el valor RestoreOnStartupIsURLs a la política RestoreOnStartup.
+
+          Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="5887414688706570295">Permite configurar el prefijo TalkGadget que utilizarán los hosts de acceso remoto y evita que los usuarios lo modifiquen.
 
          Si se especifica, este prefijo se antepone al nombre TalkGadget básico para crear un nombre de dominio completo para TalkGadget. El nombre de dominio TalkGadget básico es ".talkgadget.google.com".
@@ -1126,6 +1331,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
 <translation id="603410445099326293">Parámetros para URL sugerida que utiliza POST</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
+<translation id="6059543311891422586">Utiliza la aceleración por hardware cuando esté disponible.
+
+      Si se asigna el valor true a esta política o si esta no se configura, la aceleración por hardware se habilitará a no ser que se incluya una función de GPU determinada en la lista negra.
+
+      Si se asigna el valor false, la aceleración por hardware se inhabilitará.</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
 <translation id="6076008833763548615">Permite inhabilitar la activación del almacenamiento externo.
 
@@ -1152,6 +1362,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6155936611791017817">Establecer el estado predeterminado del cursor grande en la pantalla de inicio de sesión</translation>
 <translation id="6157537876488211233">Lista de reglas de omisión de proxy separadas por comas</translation>
 <translation id="6158324314836466367">Nombre de la tienda online de la empresa (política obsoleta)</translation>
+<translation id="6167074305866468481">Advertencia: La compatibilidad con SSLv3 desparecerá por completo de <ph name="PRODUCT_NAME" /> después de la versión 43 (sobre julio de 2015), al igual que esta política.
+
+      Si esta política no se configura, <ph name="PRODUCT_NAME" /> utilizará una versión mínima predeterminada (SSLv3 en <ph name="PRODUCT_NAME" /> 39 y TLS 1.0 en versiones posteriores).
+
+      Si se configura, se pueden asignar los valores sslv3, tls1, tls1.1 o tls1.2, en cuyo caso <ph name="PRODUCT_NAME" /> no utilizará versiones de SSL/TLS inferiores a la versión especificada. Si no se reconoce el valor establecido, se ignorará la política.
+
+      Ten en cuenta que sslv3 es una versión anterior a tls1, a pesar de la numeración.</translation>
 <translation id="6177482277304066047">Permite establecer una versión de destino para las actualizaciones automáticas.
 
       Asimismo, permite especificar el prefijo de una versión de destino a la que se debería actualizar <ph name="PRODUCT_OS_NAME" />. Si el dispositivo está ejecutando una versión anterior al prefijo especificado, se actualizará a la última versión con el prefijo especificado. Si el dispositivo ya dispone de una versión posterior, no ocurrirá nada (es decir, no se cambiará a una versión anterior) y el dispositivo mantendrá la versión actual. El formato del prefijo depende del componente, tal y como se observa en el ejemplo que se indica a continuación.
@@ -1161,9 +1378,23 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       "1412.2.": actualización a cualquier versión secundaria de 1412.2 (por ejemplo, 1412.2.34 o 1412.2.2) 
       "1412.24.34": actualización únicamente a esta versión específica</translation>
 <translation id="6190022522129724693">Configuración de pop-ups predeterminada</translation>
+<translation id="6197453924249895891">Concede acceso a claves corporativas de extensiones.
+
+      Las claves están designadas para un uso corporativo si se generan con la API chrome.enterprise.platformKeys en una cuenta administrada. Las claves importadas o generadas de otra forma no están designadas para este uso.
+
+      El acceso a las claves designadas para uso corporativo se controla únicamente a través de esta política. El usuario no puede conceder acceso a extensiones mediante claves corporativas ni retirarlo.
+
+      De forma predeterminada, una extensión no puede utilizar una clave designada para uso corporativo, lo que equivale a asignar el valor false a allowCorporateKeyUsage en esa extensión.
+
+      Solo si allowCorporateKeyUsage tiene el valor true en una extensión, esta podrá utilizar cualquier clave de plataforma marcada para uso corporativo para firmar datos arbitrarios. Este permiso solo se debe conceder si se tiene la certeza de que la extensión garantiza un acceso seguro a la clave y la protege de posibles ataques.</translation>
 <translation id="6211428344788340116">Permite informar sobre las horas de actividad del dispositivo.
 
 Si esta opción no está establecida o está establecida en True, los dispositivos registrados informarán sobre períodos de tiempo cuando un usuario esté activo en el dispositivo. Si está establecida en False, no se registrarán las horas de actividad del dispositivo ni se informará sobre ellas.</translation>
+<translation id="6219965209794245435">Si se habilita, esta política fuerza la importación de los datos autocompletados del navegador predeterminado actual y afecta al cuadro de diálogo de importación.
+
+      Si se inhabilita, no se importarán los datos autocompletados.
+
+      Si no se configura, es posible que se solicite al usuario que importe los datos o que la importación se realice automáticamente.</translation>
 <translation id="6233173491898450179">Establecer directorio de descargas</translation>
 <translation id="6244210204546589761">URL que se deben abrir al inicio</translation>
 <translation id="6258193603492867656">Permite especificar si el SPN de Kerberos generado debe incluir un puerto no estándar.
@@ -1171,9 +1402,21 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si habilitas esta opción e introduces un puerto no estándar (un puerto que no sea ni el 80 ni el 443), este se incluirá en el SPN de Kerberos generado.
 
           Si inhabilitas esta opción o si no estableces esta política, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
+<translation id="6279809962528392889">Permite especificar si las cookies de autenticación establecidas por un proveedor de identidad SAML durante el inicio de sesión deberían transferirse al perfil del usuario.
+
+      Cuando un usuario se autentica a través de un proveedor de identidad SAML durante el inicio de sesión, las cookies establecidas por dicho proveedor se escriben inicialmente en un perfil temporal. Estas cookies se pueden transferir al perfil del usuario para continuar con el estado de autenticación.
+
+      Cuando se asigna el valor true a esta política, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario cada vez que este se autentique a través del proveedor de identidad SAML durante el inicio de sesión.
+
+      Cuando se asigna el valor false a esta política o si esta no se configura, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario la primera vez que este inicie sesión en un dispositivo.
+
+      Esta política afecta a los usuarios cuyo dominio coincida con el dominio de registro del dispositivo. En el caso del resto de usuarios, las cookies establecidas por el proveedor de identidad se transfieren al perfil del usuario solo la primera vez que inicie sesión en un dispositivo.</translation>
 <translation id="6281043242780654992">Configura las políticas relativas a los mensajes nativos. Los hosts de mensajes nativos de la lista negra se inhabilitarán a menos que se incluyan en la lista blanca.</translation>
 <translation id="6282799760374509080">Permitir o denegar captura de audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6310223829319187614">Habilitar la opción de autocompletar nombre de dominio durante el inicio de sesión del usuario</translation>
+<translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios intentan acceder a sitios web con errores SSL. De forma predeterminada o cuando se establezca el valor true en esta política, los usuarios podrán hacer clic para ignorar estas páginas de advertencia.
+      Si se asigna el valor false, los usuarios no tendrán permiso para ignorar ninguna página de advertencia.</translation>
 <translation id="6353901068939575220">Especifica los parámetros utilizados al buscar una URL con POST. Se compone de pares de valor/nombre separados por comas. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se sustituirá por datos de términos de búsqueda reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda se enviará mediante el método GET.
@@ -1191,6 +1434,7 @@ Si esta política está habilitada o inhabilitada, los usuarios no pueden cambia
 <translation id="6373222873250380826">Permite inhabilitar las actualizacioes automáticas si se establece en "true".
 
       Los dispositivos <ph name="PRODUCT_OS_NAME" /> buscan actualizaciones de forma automática cuando no se configura esta opción o cuando el valor correspondiente se establece en "false".</translation>
+<translation id="6376659517206731212">Puede ser obligatoria</translation>
 <translation id="6378076389057087301">Especificar si la actividad de audio afecta a la administración de energía</translation>
 <translation id="637934607141010488">Permite informar sobre la lista de usuarios de dispositivos que han iniciado sesión recientemente.
 
@@ -1208,6 +1452,13 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6467433935902485842">Permite establecer una lista de patrones de URL para especificar sitios que no pueden ejecutar complementos.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPluginsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
+<translation id="6473334971332473690">Permite que Smart Lock se utilice en los dispositivos <ph name="PRODUCT_OS_NAME" />.
+
+      Si habilitas esta opción, los usuarios podrán utilizar Smart Lock siempre que se cumplan los requisitos establecidos.
+
+      Si inhabilitas esta opción, los usuarios no podrán utilizar Smart Lock.
+
+      Si no se selecciona ningún valor para esta política, Smart Lock no estará disponible de forma predeterminada para los usuarios administrados por empresas, aunque sí lo estará para aquellos no administrados.</translation>
 <translation id="6513756852541213407">Permite especificar el servidor proxy que usa <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen la configuración del proxy.
 
           Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
@@ -1236,6 +1487,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
           El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un período de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
+<translation id="6536600139108165863">Reinicio automático al cerrar el dispositivo</translation>
 <translation id="6544897973797372144">Si el valor correspondiente a esta política se establece en True y no se especifica la política ChromeOsReleaseChannel, los usuarios del dominio pertinente podrán cambiar el canal de versiones del dispositivo. Si el valor de esta política se establece en False, el dispositivo se bloqueará en el último canal configurado.
 
       La política ChromeOsReleaseChannel anulará el canal seleccionado por el usuario, pero, si el canal de la política es más estable que el instalado en el dispositivo, este se podrá cambiar únicamente después de que la versión del canal más estable supere a la instalada en el dispositivo.</translation>
@@ -1251,6 +1503,14 @@ Si estableces esta política, los usuarios podrán anularla temporalmente habili
 
 Si no se establece esta política, el teclado en pantalla se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento y su estado en la pantalla de inicio de sesión se mantendrá para todos los usuarios.</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
+<translation id="6633160536638196468">Especifica una lista de funciones obsoletas de la plataforma web para volver a habilitarlas temporalmente.
+
+      Esta política ofrece a los administradores la posibilidad de volver a habilitar funciones obsoletas de la plataforma web durante un periodo de tiempo limitado. Estas se identifican mediante una etiqueta de cadena. Las funciones correspondientes a las etiquetas incluidas en la lista especificada por esta política se volverán a habilitar.
+
+      Si esta política no se configura o si la lista está vacía o no coincide con ninguna de las etiquetas de cadena admitidas, todas las funciones obsoletas de la plataforma web permanecerán inhabilitadas.
+
+      Aunque la política en sí es compatible con las plataformas anteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform obsoletas se pueden volver a habilitar. Solo es posible hacerlo con las indicadas específicamente y durante un período de tiempo limitado diferente para cada función. El formato general de la etiqueta de cadena será:[NombreDeFunciónObsoleta]_EffectiveUntil[aaaammdd]. Como referencia, puedes consultar los intentos detrás de los cambios de la función Web Platform en la página https://bit.ly/blinkintents.
+      </translation>
 <translation id="6641981670621198190">Inhabilitar compatibilidad con API de gráficos 3D</translation>
 <translation id="6647965994887675196">Si se establece el valor "true", se permitirá la creación y el uso de usuarios supervisados.
 
@@ -1265,6 +1525,13 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 
       Si no se establece esta política o la lista está vacía, se podrá acceder a todos los esquemas en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuración de usuarios administrados de forma local</translation>
+<translation id="6654559957643809067">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta configuración.
+
+      Esta opción permite controlar tanto la obtención previa de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web.
+
+      Si asignas el valor "always", "never" o "WiFi only" a esta preferencia, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
+
+      Si esta política no se configura, la predicción de red se habilitará, pero el usuario no podrá modificarla.</translation>
 <translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
 <translation id="6672934768721876104">Esta política está obsoleta. Te recomendamos que utilices ProxyMode en su lugar.
 
@@ -1282,6 +1549,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
           Si habilitas esta opción, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy especificadas en la línea de comandos.
 
           Si no se establece esta política, los usuarios podrán elegir la configuración de proxy que quieran.</translation>
+<translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
 <translation id="6693751878507293182">Si habilitas esta opción, se inhabilitará la búsqueda y la instalación automática de los complementos que falten en <ph name="PRODUCT_NAME" />.
 
       Si inhabilitas esta opción o si no estableces esta política, el buscador de complementos estará activo.</translation>
@@ -1289,9 +1557,9 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 
       Durante el inicio de sesión, <ph name="PRODUCT_OS_NAME" /> puede realizar la autenticación a través de un servidor (con conexión) o de una contraseña almacenada en caché (sin conexión).
 
-      Cuando se establece -1 como valor de esta política, el usuario puede autenticarse sin conexión indefinidamente. Cualquier otro valor establecido para esta política indicará¡ el tiempo que debe transcurrir desde la última autenticación con conexión para que el usuario tenga que utilizar de nuevo la autenticación con conexión.
+      Cuando se establece -1 como valor de esta política, el usuario puede autenticarse sin conexión indefinidamente. Cualquier otro valor establecido para esta política indicará el tiempo que debe transcurrir desde la última autenticación con conexión para que el usuario tenga que utilizar de nuevo la autenticación con conexión.
 
-      Si no se define esta política, <ph name="PRODUCT_OS_NAME" /> utilizará¡ un límite de tiempo predeterminado de 14 días, tras los cuales el usuario tendrá que volver a utilizar la autenticación con conexión..
+      Si no se define esta política, <ph name="PRODUCT_OS_NAME" /> utilizará un límite de tiempo predeterminado de 14 días, tras los cuales el usuario tendrá que volver a utilizar la autenticación con conexión.
 
       Esta política solo afecta a los usuarios autenticados a través de SAML.
 
@@ -1309,10 +1577,14 @@ Si esta política se establece en False, las opciones de accesibilidad no se mos
 Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
 Si no se establece esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá provocar que las opciones de accesibilidad aparezcan a través de la página de configuración.</translation>
+<translation id="6770454900105963262">Informar sobre sesiones del kiosco activas</translation>
 <translation id="6774533686631353488">Permitir hosts de mensajes nativos en nivel de usuario (instalados sin permisos de administrador).</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
+<translation id="6828905844648501476">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción Añadir persona del administrador de usuarios.
+
+      Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá la creación de nuevos perfiles desde el administrador de perfiles.</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
 
       La información sobre memoria se notifica a la página, independientemente del valor de la opción, pero los tamaños notificados están restringidos y la frecuencia de actualizaciones está limitada por razones de seguridad. Para obtener información precisa en tiempo real, debes utilizar herramientas como la telemetría.</translation>
@@ -1378,6 +1650,28 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si se inhabilita esta política, nunca se pedirá permiso al usuario, y la captura de audio solo estará disponible para las URL configuradas en AudioCaptureAllowedUrls.
 
       Esta política afecta a todos los tipos de entradas de audio y no solo al micrófono integrado.</translation>
+<translation id="7115494316187648452">Determina si un proceso de <ph name="PRODUCT_NAME" /> comienza en el inicio de sesión del sistema operativo y sigue ejecutándose cuando se cierra la última ventana del navegador, lo que permite que las aplicaciones en segundo plano y la sesión de navegación actual continúen activas, incluidas las cookies de sesión. El proceso en segundo plano muestra un icono en la bandeja del sistema y se puede cerrar desde ahí en cualquier momento.
+
+      Si se asigna el valor true a esta política, se habilitará el modo de segundo plano y el usuario no podrá controlarlo desde la configuración del navegador.
+
+      Si se asigna el valor false, se inhabilitará el modo de segundo plano y el usuario no podrá controlarlo desde la configuración del navegador.
+
+      Si no se configura esta política, el modo de segundo plano estará inhabilitado de forma inicial y el usuario podrá controlarlo desde la configuración del navegador.</translation>
+<translation id="7123297102171034788">Permite especificar el comportamiento del navegador al iniciarlo.
+
+          Si seleccionas Abrir página Nueva pestaña, la página Nueva pestaña se abrirá cada vez que inicies <ph name="PRODUCT_NAME" />.
+
+          Si seleccionas Restaurar la última sesión, se volverán a abrir las URL que estaban abiertas la última vez que se cerró <ph name="PRODUCT_NAME" /> y se restaurará la sesión de navegación tal como se dejó.
+          Al seleccionar esta opción, también se inhabilitarán algunas opciones que se basan en sesiones o realizan acciones al salir (como borrar los datos de navegación o las cookies de una sola sesión).
+
+          Si seleccionas Abrir una lista de URLs, se abrirá la lista de URLs que se deben abrir al inicio cuando un usuario inicie <ph name="PRODUCT_NAME" />.
+
+          Si habilitas esta opción, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
+
+          Si inhabilitas esta opción, se considerará que no la has configurado y los usuarios podrán seguir cambiándola en <ph name="PRODUCT_NAME" />.
+
+          Esta política no está disponible en instancias de Windows que no estén unidas
+          a un dominio de Active Directory.</translation>
 <translation id="7128918109610518786">Presenta una relación de los identificadores de aplicaciones que muestra <ph name="PRODUCT_OS_NAME" /> como aplicaciones fijadas en la barra de aplicaciones.
 
       Si se configura esta política, se fija el conjunto de aplicaciones y el usuario no puede cambiarlo.
@@ -1397,6 +1691,15 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Cuando no se establece esta política, se llevará a cabo una acción predeterminada, es decir, la suspensión.
 
           Si la acción es la suspensión, <ph name="PRODUCT_OS_NAME" /> se puede configurar por separado para bloquear o no la pantalla antes de entrar en modo de suspensión.</translation>
+<translation id="7199300565886109054">Permite definir una lista de patrones de URL que especifican los sitios web que pueden establecer cookies de sesión.
+
+          Si no se configura esta política, se usará el valor general predeterminado de la política DefaultCookiesSetting (si está configurada) para todos los sitios web. De lo contrario, se usará la configuración personalizada que haya definido el usuario.
+
+          Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en segundo plano, es posible que la sesión no finalice al cerrar la última ventana del navegador y siga activa hasta que el navegador se cierre completamente. Consulta la política BackgroundModeEnable para obtener más información sobre cómo configurar este comportamiento.
+
+          Si la política RestoreOnStartup se configura para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios web.</translation>
+<translation id="7207095846245296855">Forzar Google SafeSearch</translation>
+<translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de navegación segura</translation>
 <translation id="7227967227357489766">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Si no se configura esta política, no se establecerán restricciones sobre los usuarios que pueden iniciar sesión. Ten en cuenta que, para crear nuevos usuarios, sigue siendo necesario configurar adecuadamente la política <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME" />.</translation>
@@ -1454,6 +1757,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si se inhabilita esta política, se podrá utilizar el protocolo SPDY.
 
       Si no se establece esta política, el protocolo SPDY estará disponible.</translation>
+<translation id="7384999953864505698">Permitir protocolo QUIC</translation>
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>
@@ -1464,6 +1768,9 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="749556411189861380">Permite informar sobre la versión del firmware y del sistema operativo de los dispositivos registrados.
 
 Si esta opción no está establecida o está establecida en True, los dispositivos registrados informarán sobre la versión del firmware y del sistema operativo de forma periódica. Si esta opción está establecida en False, no se informará sobre los datos de la versión.</translation>
+<translation id="7511361072385293666">Si se asigna el valor true a esta política o si esta no se configura, se permitirá el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
+      Si se asigna el valor false, no se permitirá el uso de este protocolo.</translation>
+<translation id="7523476810162382273">Enviar latidos de supervisión al servidor de administración</translation>
 <translation id="7529100000224450960">Permite establecer una lista de patrones de URL para especificar sitios que puedan abrir pop-ups.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1486,6 +1793,11 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usa la configuración regional preferida y especificada por el usuario (si está configurada), la configuración regional del sistema o la configuración regional de reserva "en-US".</translation>
 <translation id="7651739109954974365">Permite determinar la habilitación de la itinerancia de datos en el dispositivo. Si el valor se establece en "true", se permite la itinerancia de datos. Si no se configura o si el valor se establece en "false", la itinerancia de datos no estará disponible.</translation>
+<translation id="76810863974142048">URL donde los clientes de acceso remoto deben obtener su token de autenticación.
+
+          Si se configura esta política, el host de acceso remoto necesitará la autenticación de los clientes para obtener un token de autenticación de esta URL y poder conectarse. Se debe aplicar junto con la política RemoteAccessHostTokenValidationUrl.
+
+          Esta función está inhabilitada actualmente en el servidor.</translation>
 <translation id="7683777542468165012">Actualización dinámica de política</translation>
 <translation id="7694807474048279351">Programa un reinicio automático después de haberse aplicado una actualización de <ph name="PRODUCT_OS_NAME" />.
 
@@ -1496,6 +1808,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si estableces esta política, los usuarios no podrán modificarla ni anularla.
 
       Nota: En este momento, los reinicios automáticos solo se habilitan cuando se muestra la pantalla de inicio de sesión o está en curso una sesión de una aplicación de kiosco. Esta restricción se modificará en el futuro, y la política se aplicará en todo momento, independientemente de si un determinado tipo de sesión está o no en curso.</translation>
+<translation id="7701341006446125684">Establecer el tamaño de caché de aplicaciones y extensiones (en bytes)</translation>
 <translation id="7709537117200051035">Diccionario que asigna URLs a un indicador booleano que especifica si se debe permitir (true) o bloquear (false) el acceso del host.
 
           Esta política solo está destinada a uso interno de <ph name="PRODUCT_NAME" />.</translation>
@@ -1512,6 +1825,12 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7763311235717725977">Permite especificar si los sitios web pueden mostrar o no imágenes. Este permiso se concede o se deniega a todos los sitios web.
 
           Si no se establece esta política, se usará AllowImages y el usuario podrá hacer cambios.</translation>
+<translation id="7766336524667238790">Proporciona información sobre la sesión del kiosco activa, como
+      el ID de la aplicación y la versión.
+
+      Si se asigna el valor false a la política, no se proporcionará información
+      sobre la sesión. Si se asigna el valor true o si la política no se configura,
+      sí se proporcionará información sobre la sesión.</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan ejecutar complementos.
@@ -1523,6 +1842,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Al establecer esta política, se anula el valor predeterminado de 5.000 milisegundos. Los valores válidos para esta política oscilan entre 1.000 (1 segundo) y 300.000 (5 minutos). Todos los valores fuera de este intervalo estarán sujetos al límite correspondiente.
 
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
+<translation id="7841880500990419427">Versión mínima de TLS para recurrir a</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
 <translation id="7848840259379156480">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
       De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
@@ -1533,15 +1853,64 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="793134539373873765">Especifica si la conexión P2P se debe utilizar para cargas útiles de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas útiles de actualizaciones en la red LAN, reduciendo de forma potencial la congestión y el uso del ancho de banda. Si la carga útil de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilitar la creación de usuarios supervisados</translation>
+<translation id="7936098023732125869">Permite habilitar el uso de un proveedor de búsqueda predeterminado.
+
+          Si habilitas esta opción, se realizará una búsqueda de forma predeterminada cuando el usuario escriba texto en el omnibox que no sea una URL.
+
+          Para especificar el proveedor de búsqueda predeterminado, establece el resto de políticas de búsqueda predeterminadas. Si dejas alguna en blanco, el usuario podrá seleccionar el proveedor de búsqueda predeterminado.
+
+          Si inhabilitas esta opción, no se realizará ninguna búsqueda cuando los usuarios introduzcan texto en el omnibox que no sea una URL.
+
+          Tanto si habilitas como si inhabilitas esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME" />.
+
+          Si no se establece ningún valor para esta política, se habilitará el proveedor de búsqueda predeterminado y el usuario podrá establecer la lista de proveedores de búsqueda.
+
+          Esta política no está disponible en instancias de Windows que no estén unidas
+          a un dominio de Active Directory.</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
+<translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
+<translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.
           Permite habilitar la utilización del protocolo STUN y de servidores de retransmisión al conectar con un cliente remoto.
 
           Si se habilita esta opción, el ordenador podrá buscar ordenadores host remotos y establecer conexión con ellos aunque estén protegidos por un firewall.
 
           Si se inhabilita esta opción y el firewall filtra las conexiones UDP salientes, el ordenador solo podrá establecer conexión con hosts dentro de la red local.</translation>
+<translation id="8002229853067655250">Permite configurar las opciones de administración de extensiones para <ph name="PRODUCT_NAME" />.
+
+          Esta política controla diferentes opciones como, por ejemplo, las opciones controladas por cualquier política relacionada con las extensiones. Esta política anulará cualquier otra anterior si se han configurado las dos.
+
+          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará solo a la extensión especificada. Se puede establecer una configuración predeterminada para un ID "*" especial, que se aplicará a todas las extensiones que no tengan una configuración personalizada establecida en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la misma URL de actualización indicada en el archivo de manifiesto de esta extensión, según lo descrito en <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          La configuración de cada extensión (o de las extensiones con la misma URL de actualización) es otro diccionario que puede contener los campos que aparecen a continuación.
+
+          installation_mode: asigna una cadena que indica el modo de instalación de la extensión. Las cadenas válidas son:
+          * allowed: permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
+          * blocked: bloquea la instalación de la extensión.
+          * force_installed: la extensión se instala automáticamente y el usuario no la puede quitar.
+          * normal_installed: la extensión se instala automáticamente, pero el usuario la puede inhabilitar.
+
+          El modo installation_mode también se puede configurar para varias extensiones, como la extensión "*" (como configuración predeterminada) y las extensiones con la misma URL de actualización. Solo los valores allowed y blocked pueden utilizarse en este caso.
+
+          Si se configura el modo force_installed o normal_installed, también se debe configurar update_url. Ten en cuenta que la URL de actualización definida en esta política solo se utiliza para la instalación inicial. En las actualizaciones posteriores de la extensión se utilizará la URL de actualización indicada en el archivo de manifiesto de la extensión. La URL de actualización debe dirigir a un documento XML de manifiesto de actualización, tal y como se mencionó anteriormente.
+
+          blocked_permissions: se asigna a una lista de cadenas que indica los permisos de las API bloqueados para la extensión. Los nombres de los permisos son los mismos que las cadenas de permisos que aparecen en el archivo de manifiesto de la extensión, tal y como se describe en <ph name="LINK_TO_EXTENSION_DOC3" />. Esta opción también puede configurarse para la extensión "*". Si la extensión necesita un permiso de la lista de bloqueados, no podrá cargarse. Si contiene un permiso bloqueado como requisito opcional, se procesará normalmente. Sin embargo, la solicitud de permisos en conflicto se rechazará automáticamente en el tiempo de ejecución.
+
+          allowed_permissions: es similar a blocked_permissions, con la diferencia de que permite explícitamente algunos permisos que pueden estar bloqueados en la lista global de permisos bloqueados y, por tanto, no se pueden configurar para la extensión "*". Ten en cuenta que esta opción no ofrece permisos concedidos a las extensiones de forma automática.
+
+          minimum_version_required: se asigna a una cadena de versión. El formato de la cadena de versión es el mismo que el que se utiliza en el archivo de manifiesto de la extensión, tal y como se describe en <ph name="LINK_TO_EXTENSION_DOC4" />. Si la extensión es una versión anterior a la versión mínima especificada, se inhabilitará. También se aplica a extensiones de instalación forzada.
+
+          Las siguientes opciones solo se pueden aplicar a la configuración de "*" predeterminada:
+
+          install_sources: todos los elementos de esta lista son patrones que coinciden con el estilo de las extensiones (consulta https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente elementos procedentes de cualquier URL que coincidan con un elemento de la lista. Estos patrones deben permitir tanto la ubicación del archivo *.crx como la página en la que se inicia la descarga (es decir, la URL de referencia).
+
+          allowed_types: esta opción incluye en una lista blanca los tipos de extensiones o aplicaciones que se pueden instalar en <ph name="PRODUCT_NAME" />.  El valor es una lista de cadenas y cada una de ellas debe ser uno de los siguientes elementos: extension, theme, user_script, hosted_app, legacy_packaged_app o platform_app. Para obtener más información al respecto, consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" />.
+
+          Esta política aún no está lista para su uso, así que no debes utilizarla.
+          </translation>
 <translation id="8044493735196713914">Notificar modo de inicio de dispositivo</translation>
+<translation id="8059164285174960932">URL en la que los clientes de acceso remoto deben obtener su token de autenticación</translation>
 <translation id="8071636581296916773">Habilita el uso de servidores de retransmisión cuando clientes remotos intentan establecer una conexión con este ordenador.
 
       Si se habilita esta opción, los clientes remotos podrán utilizar servidores de retransmisión para establecer conexión con este ordenador cuando no haya disponible una conexión directa (por ejemplo, debido a restricciones del cortafuegos).
@@ -1549,6 +1918,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Ten en cuenta que si la política <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME" /> está inhabilitada, se ignorará.
 
       Si no se establece esta política, se habilitará la opción.</translation>
+<translation id="8073243368829195">Permitir el uso de Smart Lock</translation>
 <translation id="8099880303030573137">Retraso de inactividad cuando el dispositivo funciona con la batería</translation>
 <translation id="8102913158860568230">Opción predeterminada de MediaStream</translation>
 <translation id="8104962233214241919">Seleccionar automáticamente certificados de cliente de estos sitios</translation>
@@ -1594,11 +1964,11 @@ Si la política está establecida en False, no se informará sobre la lista de i
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME" />.
 
       Si no se establece esta opción, el usuario podrá decidir si quiere usar la función o no.</translation>
-<translation id="817455428376641507">Permite acceder a la lista de URL, como excepciones a la lista negra de URL.
+<translation id="817455428376641507">Permite acceder a la lista de URLs, como excepciones a la lista negra de URLs.
 
-      Consulta la descripción de la política de listas negras de URL para ver el formato de las entradas de esta lista.
+      Consulta la descripción de la política de listas negras de URLs para ver el formato de las entradas de esta lista.
 
-      Esta política se puede utilizar para hacer excepciones a listas negras restrictivas. Por ejemplo, "*" puede incluirse en una lista negra para bloquear todas las solicitudes, mientras que esta política puede utilizarse para permitir el acceso a una lista limitada de URL. Se puede utilizar para hacer excepciones a determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
+      Esta política se puede utilizar para hacer excepciones a listas negras restrictivas. Por ejemplo, "*" puede incluirse en una lista negra para bloquear todas las solicitudes, mientras que esta política puede utilizarse para permitir el acceso a una lista limitada de URL.s Se puede utilizar para hacer excepciones a determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
 
       El filtro más específico determinará si una URL se bloquea o se permite. La lista blanca tiene prioridad sobre la lista negra.
 
@@ -1609,6 +1979,18 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8197918588508433925">Esta política especifica cuáles son las extensiones que tienen permiso para utilizar la API de claves de plataforma de empresa chrome.enterprise.platformKeysPrivate.challengeUserKey() para la confirmación remota. Las extensiones se deben añadir a esta lista para poder utilizar la API.
 
           Si no se ha creado la lista o una extensión no incluida en la lista intenta utilizar la API, se mostrará un código de error al intentar hacer la llamada a la API.</translation>
+<translation id="8211174979203781791">Permite configurar la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> y evitar que los usuarios la cambien.
+
+          La página principal es la página que se abre cuando se pulsa el botón de inicio. Las políticas RestoreOnStartup controlan las páginas que se abren durante el arranque.
+
+          El tipo de página principal se puede establecer en una URL que especifiques aquí o en la página Nueva pestaña. Si seleccionas la página Nueva pestaña, esta política no tendrá efecto.
+
+          Si habilitas esta opción, los usuarios no podrán cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero podrán seguir seleccionando la página Nueva pestaña como página principal.
+
+          Si no se establece esta política, el usuario podrá seleccionar su propia página principal, siempre que no se haya asignado ningún valor a la política HomepageIsNewTabPage.
+
+          Esta política no está disponible en instancias de Windows que no estén vinculadas
+          a un dominio de Active Directory.</translation>
 <translation id="8244525275280476362">Retraso de recuperación máximo después de validar una política</translation>
 <translation id="8256688113167012935">Permite controlar el nombre de la cuenta que <ph name="PRODUCT_OS_NAME" /> muestra en la pantalla de inicio de sesión para la cuenta local del dispositivo correspondiente.
 
@@ -1625,18 +2007,20 @@ Si la política está establecida en False, no se informará sobre la lista de i
           Si inhabilitas esta opción, las páginas se escanearán para buscar metaetiquetas.
 
           Si no se establece esta política, las páginas se escanearán para buscar metaetiquetas.</translation>
-<translation id="8300455783946254851">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> cuando se utiliza una conexión móvil, en cuyo caso, los datos solo se sincronizan con Google Drive cuando se establece una conexión Wi-Fi o Ethernet.
+<translation id="8300455783946254851">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> cuando se utiliza una conexión móvil, en cuyo caso los datos solo se sincronizan con Google Drive cuando se establece una conexión Wi-Fi o Ethernet.
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive a través de conexiones móviles.</translation>
-<translation id="8303314579975657113">Permite especificar la biblioteca GSSAPI que se debe utilizar para la autenticación HTTP. Puedes definir simplemente el nombre de una biblioteca o una ruta completa.
-
-          Si no se proporciona ningún parámetro, <ph name="PRODUCT_NAME" /> volverá a utilizar un nombre de biblioteca predeterminado.</translation>
 <translation id="8329984337216493753">Esta política solo se encuentra activa en el modo de venta.
 
       Si se especifica DeviceIdleLogoutTimeout, esta política definirá la duración del cuadro de advertencia con un cuenta atrás que se mostrará al usuario antes de que se cierre la sesión.
 
       El valor correspondiente a esta política se debe especificar en milisegundos.</translation>
 <translation id="8344454543174932833">Importa los marcadores desde el navegador predeterminado en la primera ejecución.</translation>
+<translation id="8360452361555133173">Permite que se muestre la página de bienvenida la primera vez que se inicia el navegador después de actualizar el sistema operativo.
+
+      Si se asigna el valor true a esta política o si esta no se configura, el navegador volverá a mostrar la página de bienvenida la primera vez que inicies el navegador después de actualizar el sistema operativo.
+
+      Si se asigna el valor false a esta política, el navegador no volverá a mostrar la página de bienvenida al iniciarlo por primera vez después de actualizar el sistema operativo.</translation>
 <translation id="8369602308428138533">Retraso de desconexión de la pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
@@ -1662,6 +2046,9 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
 <translation id="8544375438507658205">Procesador de HTML predeterminado de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
 <translation id="8566842294717252664">Oculta tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
+<translation id="857925079934558818">Especifica si la optimización de inicio falso de TLS se debe inhabilitar. Por razones históricas, esta política se denomina DisableSSLRecordSplitting.
+
+      Si esta política no se establece o se le asigna el valor false, se habilitará el inicio falso de TLS. Si se asigna el valor true a esta política, se inhabilitará el inicio falso de TLS.</translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8614804915612153606">Inhabilitar las actualizaciones automáticas</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
@@ -1685,6 +2072,17 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
 
       Si no se establece esta política, el usuario podrá inhabilitar todos los complementos que se instalen en el sistema.</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
+<translation id="868068801094828689">Habilita el envío de informes anónimos a Google sobre datos de fallos y de uso relacionados con <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta opción.
+
+      Si se habilita esta opción, se enviarán los informes sobre datos de fallos y de uso
+      a Google de forma anónima.  Si se inhabilita, no se enviará esta
+      información a Google.  En ambos casos, los usuarios no podrán modificar ni anular la opción.
+      Si no se configura esta política, se aplicará la opción que el usuario seleccione
+      durante el proceso de instalación o al ejecutar el producto por primera vez.
+
+      Esta política no está disponible para instancias de Windows que no estén conectadas a
+      un dominio de Active Directory.  (Para Chrome OS, consulta la política
+      DeviceMetricsReportingEnabled).</translation>
 <translation id="868187325500643455">Permitir que todos los sitios ejecuten complementos automáticamentej</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
@@ -1713,6 +2111,7 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
       Si inhabilitas esta opción, no se utilizarán los complementos obsoletos y no se pedirá permiso a los usuarios para ejecutarlos.
 
       Si no se configura esta opción, se pedirá permiso a los usuarios para ejecutar complementos obsoletos.</translation>
+<translation id="87812015706645271">Requiere que el nombre del usuario local y el propietario del host de acceso remoto coincidan</translation>
 <translation id="8782750230688364867">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando el dispositivo se encuentra en modo de presentación.
 
           Si se establece esta política, se especificará el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando el dispositivo esté en modo de presentación. Cuando se ajusta el tiempo de espera de inactividad de la pantalla, se ajustan los retrasos de desconexión, bloqueo y desactivación de la pantalla para mantener las mismas distancias del tiempo de espera de inactividad de la pantalla que la configuración original.
@@ -1735,8 +2134,18 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="8828766846428537606">Permite configurar la página de inicio predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios la cambien.
 
       Para bloquear completamente la configuración de la página de inicio de los usuarios, es necesario establecerla como página Nueva pestaña o definirla como URL y establecerla como URL de página de inicio. Si no especificas la URL de página de inicio, los usuarios podrán establecer la página Nueva pestaña como página de inicio especificando "chrome://newtab".</translation>
+<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> almacena en la memoria caché las aplicaciones y las extensiones para que las instalen varios usuarios de un mismo dispositivo y evitar que se vuelvan a descargar.
+      Si esta política no se configura o si el valor es inferior a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilizará el tamaño de caché predeterminado.</translation>
+<translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="8870318296973696995">Página de inicio</translation>
+<translation id="8905426178924715309">Esta política está obsoleta, utiliza ForceGoogleSafeSearch y ForceYouTubeSafetyMode en su lugar. Esta política se ignorará si están establecidas ForceGoogleSafeSearch o ForceYouTubeSafetyMode.
+
+      Fuerza las consultas en la Búsqueda web de Google para que se realicen con SafeSearch activado e impide que los usuarios modifiquen esta configuración. Además, esta opción fuerza el modo de seguridad en YouTube.
+
+      Si habilitas esta opción, SafeSearch estará siempre activo en la Búsqueda de Google y en YouTube.
+
+      Si esta opción se inhabilita o no se establece un valor, SafeSearch no se aplicará en la Búsqueda de Google ni en YouTube.</translation>
 <translation id="8906768759089290519">Habilitar el modo de invitado</translation>
 <translation id="8908294717014659003">Te permite establecer si los sitios web pueden acceder a los dispositivos de captura multimedia. El acceso a los dispositivos de captura multimedia se puede establecer de forma predeterminada o se puede configurar para que el usuario reciba un mensaje cada vez que un sitio web quiera acceder a estos dispositivos.
 
@@ -1752,22 +2161,40 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
           El modo recomendado para bloquear la pantalla en modo de inactividad es habilitar el bloqueo de pantalla en modo de suspensión y hacer que <ph name="PRODUCT_OS_NAME" /> entre en modo de suspensión después del retraso de inactividad. Esta política solo debe utilizarse cuando el bloqueo se produce en un período de tiempo anterior a la suspensión o cuando no se quiere que se produzca la suspensión en modo de inactividad.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores al retraso de inactividad.</translation>
+<translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>
 <translation id="8947415621777543415">Informar de ubicación del dispositivo</translation>
 <translation id="89493502583189945">Especifica las opciones que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las opciones especificadas se aplican antes de que se inicie <ph name="PRODUCT_NAME" /> incluso para la pantalla de inicio de sesión.</translation>
 <translation id="8951350807133946005">Establecer directorio de caché de disco</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
+<translation id="8960850473856121830">Los patrones de esta lista se compararán con el origen de
+      seguridad de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a
+      dispositivos de captura de audio sin solicitarlo.
+
+      NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</translation>
+<translation id="8965758116018152083">Si se ha asignado una cadena en blanco a la política o si esta no se configura, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción para autocompletar los datos durante el flujo de inicio de sesión del usuario.
+      Si se ha asignado una cadena que representa un nombre de dominio a esta política, <ph name="PRODUCT_OS_NAME" /> mostrará dicha opción durante el inicio de sesión del usuario, por lo que este podrá introducir solo su nombre de usuario sin la extensión de nombre de dominio. El usuario podrá anular esta extensión de nombre de dominio.</translation>
 <translation id="8970205333161758602">Eliminar el mensaje de desactivación de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Temporizador de inicio automático de sesión publica</translation>
+<translation id="8976248126101463034">Permitir la autenticación gnubby para los hosts de acceso remoto</translation>
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>
+<translation id="9104138886225968319">Enviar latidos de supervisión al servidor de administración para permitir
+      al servidor detectar si el dispositivo está sin conexión.
+
+      Si se asigna el valor true a esta política, se enviarán latidos de supervisión.
+      Si se asigna el valor false o si esta política no se configura, no se enviarán latidos de supervisión.</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 
 Los controladores de protocolos registrados por la política se combinan con los registrados por el usuario, y ambos pueden utilizarse. El usuario puede anular los controladores de protocolos instalados por la política. Para ello, debe instalar un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="9147029539363974059">Envía registros del sistema al servidor de administración para permitir que
+      los administradores los supervisen.
+
+      Si se asigna el valor true a esta política, se enviarán los registros del sistema. Si se asigna el valor false o si la política no se configura, no se enviarán los registros.</translation>
 <translation id="9150416707757015439">Esta política está obsoleta. Te recomendamos que uses IncognitoModeAvailability en su lugar.
       Permite habilitar el modo de incógnito en <ph name="PRODUCT_NAME" />.
 
@@ -1776,6 +2203,8 @@ Los controladores de protocolos registrados por la política se combinan con los
       Si se inhabilita esta opción, los usuarios no podrán abrir páginas web en modo de incógnito.
 
       Si no se establece esta política, la opción estará habilitada y los usuarios podrán usar el modo de incógnito.</translation>
+<translation id="915194831143859291">Si se asigna el valor false a esta política o si esta no se configura, <ph name="PRODUCT_OS_NAME" /> permitirá al usuario apagar el dispositivo.
+      Si se asigna el valor true, <ph name="PRODUCT_OS_NAME" /> reiniciará el dispositivo cuando el usuario lo apague. Cada vez que aparece un botón de apagado en la interfaz de usuario, <ph name="PRODUCT_OS_NAME" /> lo sustituye por un botón de reinicio. Sin embargo, si el usuario apaga el dispositivo con el botón de encendido, este no se reiniciará automáticamente, incluso si se ha habilitado la política.</translation>
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>
 <translation id="9197740283131855199">Porcentaje que permite ajustar el tiempo de espera de inactividad de la pantalla si el usuario vuelve a ser activo después de la inactividad</translation>
 <translation id="9200828125069750521">Parámetros para URL de imagen que utiliza POST</translation>

@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">ตรวจพบการเชื่อมต่อที่ช้า</translation>
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{มี 1 URL อยู่ใกล้เคียง}other{มี # URL อยู่ใกล้เคียง}}</translation>
 <translation id="2888126860611144412">เกี่ยวกับ Chrome</translation>
 <translation id="2891154217021530873">หยุดการโหลดหน้า</translation>
 <translation id="2902702728133930130">Chrome ล้มเหลวในระหว่างเริ่มต้นเนื่องจากข้อผิดพลาดที่ไม่คาดคิด</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
 <translation id="3414952576877147120">ขนาด:</translation>
 <translation id="3455798674391346847">ประหยัดการใช้อินเทอร์เน็ตโดยให้ Google เพิ่มประสิทธิภาพหน้าที่คุณเข้าชม หน้าต่างๆ ที่เข้าถึงผ่าน HTTPS หรือโหมดไม่ระบุตัวตนจะไม่สามารถเพิ่มประสิทธิภาพได้ และ Google ไม่สามารถมองเห็นได้</translation>
-<translation id="346339498574870680">คัดลอก URL รูปภาพ</translation>
 <translation id="3485544713029068372">Smart Lock สำหรับรหัสผ่าน</translation>
 <translation id="3492207499832628349">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">แยกแท็บและแอป</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4333969446981951071">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายส่วนบุคคล<ph name="END_LINK2" />ของ Chrome</translation>
+<translation id="4334294535648607276">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="4350413759959745971">ย้ายหน้าที่บันทึกไว้</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
 <translation id="4357362091209756047">หากไม่เห็นอุปกรณ์ของคุณ โปรด<ph name="BEGIN_LINK1" />ค้นหาอีกครั้ง<ph name="END_LINK1" /> หรือ<ph name="BEGIN_LINK2" />ขอความช่วยเหลือ<ph name="END_LINK2" /></translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
 <translation id="4543087392704641517">ชื่อบุ๊กมาร์ก</translation>
 <translation id="4543661749405994812">คัดลอกที่อยู่อีเมล</translation>
-<translation id="4619298195800598081">เปิดภาพต้นฉบับในแท็บใหม่</translation>
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
@@ -315,6 +315,7 @@
 อย่างไรก็ตาม คนอื่นจะยังสามารถมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้าง ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="572328651809341494">แท็บล่าสุด</translation>
 <translation id="5733727110006255111">เมื่อคุณลักษณะนี้เปิดอยู่ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเว็บนั้น แต่จะไม่รวมถึงหน้า SSL และหน้าที่ไม่ระบุตัวตน</translation>
+<translation id="5749068826913805084">Chrome ต้องสามารถเข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
 <translation id="5763382633136178763">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5765780083710877561">คำอธิบาย:</translation>
 <translation id="5771382037724542929">คุณต้องการแทนที่ <ph name="FILE_NAME" /> ที่มีอยู่ใน <ph name="DIRECTORY_NAME" /> ไหม</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">จับคู่</translation>
 <translation id="5832934273103296195">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
+<translation id="585027516397408832">เปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="5860033963881614850">ปิด</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="588258955323874662">เต็มหน้าจอ</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="666268767214822976">ใช้บริการการคาดคะเนเพื่อแสดงคำค้นหาที่เกี่ยวข้องและเว็บไซต์ยอดนิยมขณะที่คุณพิมพ์ในแถบที่อยู่เว็บ</translation>
 <translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายส่วนบุคคลของ Chrome</translation>
-<translation id="6671495933530132209">คัดลอกรูปภาพ</translation>
 <translation id="6697251040310467641">บันทึกหน้าในโหมดออฟไลน์แล้ว</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
 <translation id="6699351163704950317">หน้าที่บันทึกไว้ทั้งหมด</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">กำลังโหลดวิดีโอ</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
 <translation id="7201341158316793215">กำลังนำออก…</translation>
+<translation id="7208788139759694678">ปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> ใช้ตำแหน่งเพื่อแสดงผลการค้นหาในท้องถิ่น</translation>
 <translation id="7299721129597238157">นำออกบุ๊กมาร์ก</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">เข้ารหัสรหัสผ่านด้วยข้อมูลรับรองของ Google</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
+<translation id="7761240775244195612">ลบสำเนาออฟไลน์ <ph name="PAGES_NUMBER" /> รายการที่ไม่ได้ใช้ในเดือนที่แล้วไหม การลบจะทำให้มีพื้นที่ว่างเพิ่มขึ้น <ph name="TOTAL_PAGE_SIZE" /></translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7767746238359002192">ไปที่หน้าเพื่อบันทึกแบบออฟไลน์</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">บันทึกหน้าแบบออฟไลน์แล้ว พื้นที่เกือบเต็มแล้ว</translation>
 <translation id="8068648041423924542">เลือกใบรับรองไม่ได้</translation>
 <translation id="8069239273282989646">หลังการบีบอัด</translation>
-<translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="8084156870963450514">ลงชื่อเข้าใช้เพื่อเข้าถึงข้อมูลทั้งหมดของคุณในเว็บจากอุปกรณ์ใดก็ได้</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">เนื้อหา</translation>
 <translation id="8209050860603202033">เปิดรูปภาพ</translation>
 <translation id="8218346974737627104">ยืนยันการลงชื่อเข้าใช้</translation>
+<translation id="8218934717680664417">คุณสามารถค้นหาด้วยการแตะเพียงครั้งเดียวได้แล้วในขณะนี้</translation>
 <translation id="8237438615979997762">ข้อมูลที่จัดเก็บไว้ในอุปกรณ์นี้และข้อมูลที่จัดเก็บในบัญชี Google ของคุณจะยังคงอยู่ทั้ง 2 ที่ แต่จะไม่มีการซิงค์ข้อมูลใหม่หรือการเปลี่ยนแปลงที่คุณทำระหว่างที่เก็บข้อมูลทั้ง 2 แห่งนี้</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8275818695183729150">อนุญาต (สำหรับการค้นหาในแถบที่อยู่เว็บ)</translation>

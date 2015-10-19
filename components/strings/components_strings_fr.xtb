@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1339601241726513588">Domaine d'enregistrement :</translation>
 <translation id="1344588688991793829">Paramètres de saisie automatique de Chromium…</translation>
+<translation id="1375198122581997741">À propos de la version</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1455235771979731432">Un problème est survenu lors de la validation de votre carte. Veuillez vérifier votre connexion Internet et réessayer.</translation>
 <translation id="1491151370853475546">Actualiser cette page</translation>
+<translation id="1519264250979466059">Date de création</translation>
 <translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
+<translation id="1559528461873125649">Fichier ou répertoire inexistant</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
 <translation id="1644184664548287040">Impossible d'importer la configuration du réseau : elle n'est pas valide.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité a expiré hier. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}one{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité a expiré il y a # jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}other{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité a expiré il y a # jours. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}}</translation>
 <translation id="168841957122794586">Le certificat du serveur contient une clé de chiffrement faible.</translation>
 <translation id="1693754753824026215">La page à l'adresse <ph name="SITE" /> indique :</translation>
 <translation id="1706954506755087368">{1,plural, =1{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car la date d'émission de son certificat de sécurité est fixée à demain. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.}one{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car la date d'émission de son certificat de sécurité est ultérieure de # jour à la date du jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.}other{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car la date d'émission de son certificat de sécurité est ultérieure de # jours à la date du jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.}}</translation>
+<translation id="1710259589646384581">Système d'exploitation</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1737968601308870607">Signaler un problème</translation>
+<translation id="1753706481035618306">Numéro de page</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Souhaitez-vous que <ph name="PRODUCT_NAME" /> vous propose de traduire les pages en <ph name="LANGUAGE_NAME" /> de ce site lors de votre prochaine visite ?</translation>
 <translation id="2587841377698384444">ID de l'API d'annuaire :</translation>
 <translation id="2597378329261239068">Ce document est protégé par mot de passe. Veuillez saisir ce dernier.</translation>
+<translation id="2609632851001447353">Variantes</translation>
 <translation id="2625385379895617796">Votre horloge est en avance.</translation>
 <translation id="2639739919103226564">État :</translation>
 <translation id="2653659639078652383">Valider</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Afficher la valeur</translation>
 <translation id="3648607100222897006">Ces fonctionnalités expérimentales sont susceptibles d'être modifiées, de cesser de fonctionner ou de disparaître à tout moment. Nous ne garantissons en aucun cas les conséquences de l'activation de l'une d'entre elles. Il est même possible que votre navigateur s'auto-détruise ! Plus sérieusement, votre navigateur risque de supprimer toutes vos données. Votre sécurité et la confidentialité de vos données peuvent également être compromises de manière inattendue. Toute fonctionnalité expérimentale que vous activez le sera pour tous les utilisateurs de ce navigateur. Faites donc attention.</translation>
 <translation id="3650584904733503804">Validation réussie.</translation>
+<translation id="3658742229777143148">Révision</translation>
 <translation id="370665806235115550">Chargement...</translation>
 <translation id="3712624925041724820">Licences épuisées.</translation>
 <translation id="3739623965217189342">Lien copié</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
 <translation id="4728558894243024398">Plate-forme</translation>
+<translation id="4744603770635761495">Chemin d'accès exécutable</translation>
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
 <translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">État</translation>
 <translation id="5094747076828555589">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chromium. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="5095208057601539847">Province</translation>
+<translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" /> ? Signaler l'erreur</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Favoris de <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Code postal</translation>
 <translation id="6337534724793800597">Filtrer les règles par nom</translation>
+<translation id="6355080345576803305">Contournement dû à la session publique</translation>
 <translation id="6387478394221739770">Vous souhaitez bénéficier de nouvelles fonctionnalités Chrome passionnantes ? Essayez notre version bêta à l'adresse chrome.com/beta.</translation>
-<translation id="6426993025560594914">Tous les tests sont disponibles sur votre plate-forme.</translation>
 <translation id="6445051938772793705">Pays</translation>
 <translation id="6458467102616083041">Ignoré parce que la recherche par défaut est désactivée par une règle.</translation>
 <translation id="647261751007945333">Règles relatives aux appareils</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Région</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
+<translation id="6897140037006041989">Agent utilisateur</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
 <translation id="6957887021205513506">Le certificat du serveur semble être contrefait.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE" />a été traduite en<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Rechercher <ph name="SEARCH_TERMS" /> sur <ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">ID de build</translation>
 <translation id="725866823122871198">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre ordinateur (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
 <translation id="7298195798382681320">Recommandé</translation>
 <translation id="7334320624316649418">&amp;Rétablir la réorganisation</translation>
+<translation id="7353601530677266744">Ligne de commande</translation>
 <translation id="7378627244592794276">Non</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Chemin d'accès au profil</translation>
 <translation id="7441627299479586546">Objet de la règle incorrect.</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Le certificat du serveur n'est pas encore valide.</translation>
+<translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7956713633345437162">Favoris sur mobile</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Rester sur cette page</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="917450738466192189">Le certificat du serveur n'est pas valide.</translation>
-<translation id="9187827965378254003">Vraiment désolé, aucun prototype n'est disponible pour le moment.</translation>
 <translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">EFFACER LE FORMULAIRE</translation>
+<translation id="969892804517981540">Build officiel</translation>
 <translation id="988159990683914416">Build de développement</translation>
 </translationbundle>

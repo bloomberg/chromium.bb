@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">As chaves da API do Google estão em falta. Algumas funcionalidades do Google Chrome serão desativadas.</translation>
 <translation id="2290095356545025170">Tem a certeza de que pretende desinstalar o Google Chrome?</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2346876346033403680">Anteriormente, alguém iniciou sessão no Chrome neste computador com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Se esta conta não for sua, crie um novo utilizador do Chrome para manter as informações em separado.
 
 Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, histórico e outras definições, fundir-se-ão com <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -136,7 +135,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343">O <ph name="SITE" /> normalmente utiliza a encriptação para proteger as suas informações. Quando o Chrome tentou ligar-se a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. É possível que um utilizador mal intencionado esteja a tentar simular ser <ph name="SITE" /> ou que um ecrã de início de sessão Wi-Fi tenha interrompido a ligação. As suas informações ainda estão seguras, porque o Chrome interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
 <translation id="568643307450491754">Encontre os seus marcadores no menu Chrome ou na barra de marcadores.</translation>
 <translation id="573759479754913123">Acerca do SO Chrome</translation>

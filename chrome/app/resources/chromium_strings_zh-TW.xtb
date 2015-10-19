@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">系統無法讀取您的偏好設定。部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="108122890477367602">以 Windows 8 模式重新啟動 Chromium(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium 無法同步處理您的資料，請更新您的同步通關密語。</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> 通常會使用加密方式保護您的資訊。目前當 Chromium 嘗試連線至 <ph name="SITE" /> 時，該網站會傳回異常且錯誤的憑證。這可能是因為有攻擊者試圖偽裝成 <ph name="SITE" />，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chromium 並未交換任何資料即已停止連線，所以您的資訊仍然安全無虞。</translation>
 <translation id="1174473354587728743">如果您與他人共用電腦，現在可以依自己的喜好和習慣設定 Chromium。</translation>
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1221340462641866827">Chromium 作業系統不支援啟用外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">要將您的 Chromium 資料連結至這個帳戶嗎？</translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="4330585738697551178">已知這個模組與 Chromium 衝突。</translation>
-<translation id="4365115785552740256">Chromium 的開發有賴 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 開放原始碼計劃和其他<ph name="BEGIN_LINK_OSS" />開發原始碼軟體<ph name="END_LINK_OSS" />。</translation>
 <translation id="4423735387467980091">自訂及控制 Chromium</translation>
 <translation id="442817494342774222">已將 Chromium 設定為開機時自動啟動。 </translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">這個擴充功能也會控管您啟動 Chromium 時所顯示的網頁。</translation>
 <translation id="6485906693002546646">您正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理您的 Chromium 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
+<translation id="6526111688217511984">Chromium 需要儲存空間的存取權才能下載檔案。</translation>
 <translation id="6637001341228460105">Chromium 需要麥克風存取權，才能與這個網站分享。</translation>
 <translation id="6638567566961868659">您的書籤會顯示在 Chromium 選單中或書籤列上。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>

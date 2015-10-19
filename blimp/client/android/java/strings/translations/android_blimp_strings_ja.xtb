@@ -1,4 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="3407245330823033366">Blimp で使用するアカウントを選択してください。</translation>
+<translation id="4641972508298030550">ユーザーを認証できません。</translation>
+<translation id="8514856595257368555">トークンを取得しました。</translation>
 </translationbundle>

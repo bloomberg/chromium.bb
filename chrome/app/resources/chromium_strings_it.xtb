@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Impossibile leggere le preferenze. Alcune funzioni potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
 <translation id="108122890477367602">&amp;Riavvia Chromium in modalità Windows 8</translation>
 <translation id="1115445892567829615">Impossibile sincronizzare i dati in Chromium. Aggiorna la passphrase di sincronizzazione.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Quando Chromium ha provato a connettersi a <ph name="SITE" /> questa volta, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="1174473354587728743">Condividi un computer con altre persone? Ora puoi configurare Chromium come preferisci.</translation>
 <translation id="1185134272377778587">Informazioni su Chromium</translation>
 <translation id="1221340462641866827">Chromium OS non supporta l'avvio di un'applicazione esterna per la gestione dei link <ph name="SCHEME" />. Il link richiesto è <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Collegare i tuoi dati Chromium a questo account?</translation>
 <translation id="4285930937574705105">Installazione non riuscita a causa di un errore imprecisato. Se Chromium è in esecuzione, chiudilo e riprova.</translation>
 <translation id="4330585738697551178">Questo modulo risulta in conflitto con Chromium.</translation>
-<translation id="4365115785552740256">La realizzazione di Chromium è stata possibile grazie al progetto open source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> e ad altri <ph name="BEGIN_LINK_OSS" />software open source<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Personalizza e controlla Chromium</translation>
 <translation id="442817494342774222">Chromium è stato configurato per avviarsi automaticamente all'accensione del computer.</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Controlla anche la pagina visualizzata all'avvio di Chromium.</translation>
 <translation id="6485906693002546646">Stai utilizzando <ph name="PROFILE_EMAIL" /> per sincronizzare i tuoi contenuti di Chromium. Per aggiornare la tua preferenza di sincronizzazione o per utilizzare Chromium senza un account Google, accedi alla pagina <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Disinstalla Chromium</translation>
+<translation id="6526111688217511984">Chromium deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
 <translation id="6637001341228460105">Chromium deve avere accesso al microfono per condividerlo con questo sito.</translation>
 <translation id="6638567566961868659">Trova i tuoi Preferiti nel menu Chromium o sulla barra dei Preferiti.</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>

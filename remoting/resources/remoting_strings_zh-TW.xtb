@@ -85,6 +85,7 @@
 <translation id="2919669478609886916">您目前正與另一位使用者共用這台電腦，您要繼續共用嗎？</translation>
 <translation id="2921543551052660690">您先前曾以<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 身分登入。如要透過該帳戶存取您的電腦，請使用該帳戶<ph name="LINK_BEGIN" />登入 Chromium<ph name="LINK_END" />，並重新安裝 Chromoting。</translation>
 <translation id="2926340305933667314">無法停用這台電腦的遠端存取功能，請稍後再試。</translation>
+<translation id="2930135165929238380">找不到部分必要元件。請前往 chrome://plugins 並確認已啟用 Native Client。</translation>
 <translation id="2939145106548231838">主機驗證</translation>
 <translation id="2998137343848432918">• 新增「製作人員名單」畫面。
 • 修正無法在鍵盤顯示時開啟全螢幕的問題。</translation>

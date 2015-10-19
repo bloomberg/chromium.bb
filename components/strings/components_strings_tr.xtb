@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="1339601241726513588">Kayıt alan adı:</translation>
 <translation id="1344588688991793829">Chromium Otomatik Doldurma ayarları...</translation>
+<translation id="1375198122581997741">Sürüm Hakkında</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1430915738399379752">Yazdır</translation>
 <translation id="1455235771979731432">Kartınız doğrulanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
+<translation id="1519264250979466059">Oluşturma Tarihi</translation>
 <translation id="1549470594296187301">Bu özelliğin kullanılabilmesi için JavaScript etkinleştirilmelidir.</translation>
+<translation id="1559528461873125649">Belirtilen dosya veya dizin yok</translation>
 <translation id="1640180200866533862">Kullanıcı politikaları</translation>
 <translation id="1644184664548287040">Ağ yapılandırması geçersiz, dolayısıyla içe aktarılamadı.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Bu sunucu, <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi dün sona erdi. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati geçerli olarak <ph name="CURRENT_DATE" /> tarihine ayarlı. Bu ayar doğru görünüyor mu? Değilse, sisteminizin saatini düzeltmeli ve sonra bu sayfayı yenilemelisiniz.}other{Bu sunucu, <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası # gün önce sona erdi. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati geçerli olarak <ph name="CURRENT_DATE" /> tarihine ayarlı. Bu ayar doğru görünüyor mu? Değilse, sisteminizin saatini düzeltmeli ve sonra bu sayfayı yenilemelisiniz.}}</translation>
 <translation id="168841957122794586">Sunucu sertifikasında zayıf bir şifreleme anahtarı var.</translation>
 <translation id="1693754753824026215"><ph name="SITE" /> web sitesindeki sayfanın mesajı:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Bu sunucu, <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının alınma tarihinin yarın olduğu iddia ediliyor. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir.}other{Bu sunucu, <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının alınma tarihinin # gün sonra olduğu iddia ediliyor. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Hata bildir</translation>
+<translation id="1753706481035618306">Sayfa numarası</translation>
 <translation id="1763864636252898013">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656"><ph name="PRODUCT_NAME" /> ürününün bir dahaki sefere <ph name="LANGUAGE_NAME" /> sayfaları çevirmeyi teklif etmesini ister misiniz?</translation>
 <translation id="2587841377698384444">Dizin API'sı Kimliği:</translation>
 <translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
+<translation id="2609632851001447353">Varyasyonlar</translation>
 <translation id="2625385379895617796">Saatiniz ileri</translation>
 <translation id="2639739919103226564">Durum:</translation>
 <translation id="2653659639078652383">Gönder</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Değeri göster</translation>
 <translation id="3648607100222897006">Bu deneysel özellikler zaman zaman değişebilir, bozulabilir veya kullanımdan kaldırılabilir. Bu deneylerden herhangi birini açtığınızda tarayıcınızın aniden yanmaya başlaması mümkün olduğundan, başınıza gelebilecekler konusunda kesinlikle hiçbir garanti vermeyiz. Şaka bir yana, tarayıcınız tüm verilerinizi silebilir ya da güvenliğiniz ve gizliliğiniz beklenmedik şekillerde riske girebilir. Etkinleştireceğiniz her deney bu tarayıcının tüm kullanıcıları için etkin hale gelecektir. Lütfen dikkatle ilerleyin.</translation>
 <translation id="3650584904733503804">Doğrulama başarılı</translation>
+<translation id="3658742229777143148">Düzeltme</translation>
 <translation id="370665806235115550">Yükleniyor...</translation>
 <translation id="3712624925041724820">Lisanslar bitti</translation>
 <translation id="3739623965217189342">Kopyaladığınız bağlantı</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasında hatalar var. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="4726672564094551039">Politikaları yeniden yükle</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4744603770635761495">Çalıştırılabilir Yol</translation>
 <translation id="4771973620359291008">Bilinmeyen bir hata oluştu.</translation>
 <translation id="4800132727771399293">Son kullanma tarihinizi ve CVC'nizi kontrol edip tekrar deneyin</translation>
 <translation id="4813512666221746211">Ağ hatası</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Eyalet</translation>
 <translation id="5094747076828555589">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı; Chromium, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="5095208057601539847">Bölge</translation>
+<translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5145883236150621069">Politika yanıtında hata kodu var</translation>
 <translation id="5172758083709347301">Makine</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> yer işaretleri</translation>
 <translation id="6282194474023008486">Posta kodu</translation>
 <translation id="6337534724793800597">Politikalara ada göre filtre uygula</translation>
+<translation id="6355080345576803305">Herkese açık oturumu geçersiz kılma</translation>
 <translation id="6387478394221739770">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/beta adresinden beta kanalımızı deneyin.</translation>
-<translation id="6426993025560594914">Tüm denemeler platformunuzda kullanılabilir!</translation>
 <translation id="6445051938772793705">Ülke</translation>
 <translation id="6458467102616083041">Varsayılan arama politika tarafından devre dışı bırakıldığı için yoksayıldı.</translation>
 <translation id="647261751007945333">Cihaz politikaları</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Bölge</translation>
 <translation id="6874604403660855544">Eklemeyi &amp;yeniden yap</translation>
 <translation id="6891596781022320156">Politika düzeyi desteklenmiyor.</translation>
+<translation id="6897140037006041989">Kullanıcı Aracısı</translation>
 <translation id="6915804003454593391">Kullanıcı:</translation>
 <translation id="6957887021205513506">Sunucunun sertifikası sahte görünüyor.</translation>
 <translation id="6965382102122355670">Tamam</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Bu sayfa,<ph name="ORIGINAL_LANGUAGE" />dilinden<ph name="LANGUAGE_LANGUAGE" />diline çevrilmiştir</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME" /> sitesinde <ph name="SEARCH_TERMS" /> terimlerini ara</translation>
+<translation id="7225807090967870017">Yapı Kimliği</translation>
 <translation id="725866823122871198">Bilgisayarınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
 <translation id="7275334191706090484">Yönetilen Yer İşaretleri</translation>
 <translation id="7298195798382681320">Önerilenler</translation>
 <translation id="7334320624316649418">Sıralama değişikliğini &amp;yeniden yap</translation>
+<translation id="7353601530677266744">Komut Satırı</translation>
 <translation id="7378627244592794276">Hayır</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Profil Yolu</translation>
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">CVC'nizi kontrol edin ve tekrar deneyin</translation>
 <translation id="7935318582918952113">DOM Ayrıştırıcı</translation>
 <translation id="7938958445268990899">Sunucunun sertifikası henüz geçerli değil.</translation>
+<translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7956713633345437162">Mobil yer işaretleri</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7977590112176369853">&lt;sorgu girin&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Bu Sayfada Kal</translation>
 <translation id="9170848237812810038">&amp;Geri al</translation>
 <translation id="917450738466192189">Sunucunun sertifikası geçersiz.</translation>
-<translation id="9187827965378254003">Maalesef, görünüşe göre şu anda kullanılabilir deney yok.</translation>
 <translation id="9207861905230894330">Makale eklenemedi.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FORMU TEMİZLE</translation>
+<translation id="969892804517981540">Resmi Derleme</translation>
 <translation id="988159990683914416">Geliştirici Derlemesi</translation>
 </translationbundle>

@@ -88,7 +88,7 @@
 <translation id="370649949373421643">‏فعال کردن Wi-Fi</translation>
 <translation id="3709443003275901162">+۹</translation>
 <translation id="372094107052732682">‏برای خروج Ctrl+Shift+Q را دو بار فشار دهید.</translation>
-<translation id="3742055079367172538">عکس از صفحه نمایش گرفته شد</translation>
+<translation id="3742055079367172538">عکس صفحه‌نمایش گرفته شد</translation>
 <translation id="3775358506042162758">در ورود چندگانه به سیستم حداکثر می‌توانید از سه حساب استفاده کنید.</translation>
 <translation id="3783640748446814672">دگرساز</translation>
 <translation id="3784455785234192852">قفل</translation>
@@ -101,7 +101,7 @@
 <translation id="4053612967614057854">غیرفعال کردن صفحه‌کلید روی نمایشگر</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT" /> (اصلی)</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ساعت <ph name="MINUTE" />دقیقه مانده تا باتری شارژ شود</translation>
-<translation id="4250680216510889253">خیر</translation>
+<translation id="4250680216510889253">نه</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
 <translation id="4321179778687042513">مهار</translation>
 <translation id="4379753398862151997">نمایشگر عزیز، ما برای هم ساخته نشده‌ایم. (این نمایشگر پشتیبانی نمی‌شود)</translation>
@@ -222,5 +222,5 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="923686485342484400">‏برای خروج از سیستم Control Shift Q را دو بار فشار دهید.</translation>
 <translation id="938582441709398163">هم پوشانی صفحه‌کلید</translation>
-<translation id="939252827960237676">عکس از صفحه نمایش ذخیره نشد</translation>
+<translation id="939252827960237676">عکس صفحه‌نمایش ذخیره نشد</translation>
 </translationbundle>

@@ -6,8 +6,6 @@
 Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago sa mga kagustuhan.</translation>
 <translation id="108122890477367602">&amp;Muling ilunsad ang Chromium sa Windows 8 mode</translation>
 <translation id="1115445892567829615">Hindi mai-sync ng Chromium ang iyong data. Paki-update ang iyong passphrase sa Pag-sync.</translation>
-<translation id="1144202035120576837">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukan ng Chromium na kumonekta sa <ph name="SITE" /> sa oras na ito, nagpadala ang website ng mga hindi pangkaraniwan
-at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <ph name="SITE" />, o pinigilan ng screen ng pag-sign in sa Wi-Fi ang koneksyon. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago makipagpalitan ng anumang data.</translation>
 <translation id="1174473354587728743">Magbabahagi ng computer? Ngayon, maaari mong i-set up ang Chromium sa paraang gusto mo.</translation>
 <translation id="1185134272377778587">Tungkol sa Chromium</translation>
 <translation id="1221340462641866827">Hindi sinusuportahan ng Chromium OS ang paglulunsad ng panlabas na application upang mangasiwa ng mga <ph name="SCHEME" /> na link. Ang hinihiling na link ay <ph name="PROTOLINK" />.</translation>
@@ -108,7 +106,6 @@ at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <p
 <translation id="4230135487732243613">I-link ang iyong data sa Chromium sa account na ito?</translation>
 <translation id="4285930937574705105">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Chromium, pakisara ito at subukang muli.</translation>
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
-<translation id="4365115785552740256">Nagiging posible ang Chromium sa pamamagitan ng proyekto sa open source ng <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> at iba pang <ph name="BEGIN_LINK_OSS" />open source na software<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">I-customize at kontrolin ang Chromium</translation>
 <translation id="442817494342774222">Naka-configure ang Chromium upang awtomatikong malunsad kapag binuksan mo ang iyong computer.</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
@@ -171,6 +168,7 @@ at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <p
 <translation id="6475912303565314141">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium.</translation>
 <translation id="6485906693002546646">Ginagamit mo ang <ph name="PROFILE_EMAIL" /> upang i-sync ang iyong bagay sa Chromium. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chromium nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
+<translation id="6526111688217511984">Kailangan ng Chromium ng access sa storage upang mag-download ng mga file.</translation>
 <translation id="6637001341228460105">Nangangailangan ang Chromium ng access sa mikropono upang maibahagi ito sa site na ito.</translation>
 <translation id="6638567566961868659">Hanapin ang iyong mga bookmark sa Chromium menu o sa bookmarks bar.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>

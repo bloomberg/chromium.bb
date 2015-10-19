@@ -47,7 +47,6 @@
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2346876346033403680">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST" />(으)로 Chrome에 로그인했습니다. 본인의 계정이 아닌 경우 새 Chrome 사용자를 만들어 개인 정보를 분리하세요.
 
 로그인하면 북마크, 방문 기록 및 기타 설정과 같은 Chrome 정보가 <ph name="ACCOUNT_EMAIL_NEW" />에 병합됩니다.</translation>
@@ -144,10 +143,10 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" />은(는) 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. Chrome이 이번에 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 공격자가 <ph name="SITE" />인 것처럼 가장하고 있거나 Wi-Fi 로그인 화면이 연결을 차단했기 때문일 수 있습니다. 데이터 교환이 이뤄지기 전에 Chrome에서 연결을 차단했기 때문에 사용자 정보는 안전합니다.</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
+<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소에 액세스해야 합니다.</translation>
 <translation id="5785746630574083988">Windows 8 모드로 다시 실행하면 Chrome 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="5799551393681493217">iframe 기반 Chrome 로그인 절차 사용(이 플래그는 웹 기반 로그인 사용보다 우선함)</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>

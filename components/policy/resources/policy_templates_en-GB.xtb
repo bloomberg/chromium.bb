@@ -64,11 +64,6 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
-<translation id="1283072268083088623">Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME" />.
-
-          Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
-
-          If this policy is left unset, all four schemes will be used.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1300635491585192248">Predict network actions on any network that is not cellular</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
@@ -225,7 +220,6 @@
 
           For more options and detailed examples, visit:
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">Policies for HTTP Authentication</translation>
 <translation id="1956493342242507974">Configure power management on the log-in screen in <ph name="PRODUCT_OS_NAME" />.
 
       This policy lets you configure how <ph name="PRODUCT_OS_NAME" /> behaves when there is no user activity for some amount of time while the log-in screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
@@ -603,6 +597,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3067188277482006117">If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           If it is set to false, or if it is not set, calls to the API will fail with an error code.</translation>
+<translation id="3069958900488014740">Allows you to turn off WPAD (Web Proxy Auto-Discovery) optimisation in <ph name="PRODUCT_NAME" />.
+
+      If this policy is set to false, WPAD optimisation is disabled causing <ph name="PRODUCT_NAME" /> to wait longer for DNS-based WPAD servers. If the policy is not set or is enabled, WPAD optimisation is enabled.
+
+      Independent of whether or how this policy is set, the WPAD optimisation setting cannot be changed by users.</translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
@@ -743,22 +742,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this setting is set to true or not configured then users can use all supported audio outputs on their device.</translation>
 <translation id="3808945828600697669">Specify a list of disabled plug-ins</translation>
 <translation id="3816312845600780067">Enable bailout keyboard shortcut for auto-login</translation>
-<translation id="381807926299956806">Sets one or more recommended locales for a public sessions, allowing users to easily choose one of these locales.
-
-      The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME" /> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
-
-      If this policy is not set, the current UI locale will be pre-selected.
-
-      If this policy is set, the recommended locales will be moved to the top of the list and will be visually separated from all other locales. The recommended locales will be listed in the order in which they appear in the policy. The first recommended locale will be pre-selected.
-
-      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a public session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a public session.
-
-      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started public session will use the first recommended locale and the most popular keyboard layout matching this locale.
-
-      The pre-selected keyboard layout will always be the most popular layout matching the pre-selected locale.
-
-      This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME" /> for their session.
-      </translation>
 <translation id="3820526221169548563">Enable the on-screen keyboard accessibility feature.
 
           If this policy is set to true, the on-screen keyboard will always be enabled.
@@ -1033,6 +1016,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4962195944157514011">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER" />', which will be replaced at query time by the terms the user is searching for.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
+<translation id="4971529314808359013">Allows you to specify a list of URL patterns that specify sites for which <ph name="PRODUCT_NAME" /> should automatically select a client certificate, if the site requests a certificate.
+
+          The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
+
+          If this policy is left not set, no auto-selection will be done for any site.</translation>
 <translation id="4980301635509504364">Allow or deny video capture.
 
       If enabled or not configured (default), the user will be prompted for
@@ -1815,7 +1803,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, the default size will be used and the user will be able to override it with the --disk-cache-size flag.</translation>
 <translation id="7612157962821894603">System wide flags to be applied on <ph name="PRODUCT_NAME" /> startup</translation>
 <translation id="7614663184588396421">List of disabled protocol schemes</translation>
-<translation id="7615123397791876280">Account Type for Negotiate Authentication</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="7635471475589566552">Configures the application locale in <ph name="PRODUCT_NAME" /> and prevents users from changing the locale.
@@ -2041,9 +2028,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8300455783946254851">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when using a mobile connection when set to True. In that case, data is only synced to Google Drive when connected via Wi-Fi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via mobile connections.</translation>
-<translation id="8303314579975657113">Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name or a full path.
-
-          If no setting is provided, <ph name="PRODUCT_NAME" /> will fall back to using a default library name.</translation>
 <translation id="8329984337216493753">This policy is active in retail mode only.
 
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
@@ -2058,9 +2042,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
-<translation id="8407759228138103300">Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the Authentication app. For more details see https://goo.gl/hajyfN.
-
-          If no setting is provided then Negotiate Authentication will be disabled on Android.</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>

@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Открита е бавна връзка.</translation>
 <translation id="2842985007712546952">Основна папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL адрес в близост}other{# URL адреса в близост}}</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>
 <translation id="2902702728133930130">Стартирането на Chrome не бе успешно поради неочаквана грешка.</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">Ако виждате това често, изпробвайте тези <ph name="BEGIN_LINK" />предложения<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3455798674391346847">Изразходвайте по-малко данни, като използвате Google за оптимизиране на посещаваните от вас страници. Страниците, отваряни с HTTPS или в режим „инкогнито“, няма да се оптимизират или виждат от Google.</translation>
-<translation id="346339498574870680">URL адр. на изображ.: Копиране</translation>
 <translation id="3485544713029068372">Smart Lock за пароли</translation>
 <translation id="3492207499832628349">Нов раздел „инкогнито“</translation>
 <translation id="3518985090088779359">Приемам! Напред</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">Разделяне на приложенията и разделите</translation>
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="4333969446981951071">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
+<translation id="4334294535648607276">Изтеглянето завърши.</translation>
 <translation id="4350413759959745971">Преместв. на запазените страници</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
 <translation id="4357362091209756047">Не виждате устройството си? <ph name="BEGIN_LINK1" />Потърсете отново<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />получете помощ<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">Избиране на папка</translation>
 <translation id="4543087392704641517">Заглавие на отметката</translation>
 <translation id="4543661749405994812">Копиране на имейл адреса</translation>
-<translation id="4619298195800598081">Оригинал: Отв. в нов раздел</translation>
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
@@ -315,6 +315,7 @@
 Сърфирането ви обаче не е невидимо. При преминаване в режим „инкогнито“ то не се скрива от работодателя ви и от доставчика ви на интернет услуги, нито от уебсайтовете, които посещавате.</translation>
 <translation id="572328651809341494">Скорошни раздели</translation>
 <translation id="5733727110006255111">Когато тази функция е активирана, Chrome ще използва сървърите на Google, за да компресира посещаваните от вас страници преди изтеглянето им. Страниците през SSL и тези в режим „инкогнито“ няма да бъдат включени.</translation>
+<translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
 <translation id="5763382633136178763">Раздели в режим „инкогнито“</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771382037724542929">Искате ли да замените съществуващия файл „<ph name="FILE_NAME" />“ в/ъв „<ph name="DIRECTORY_NAME" />“?</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">Сдвояване</translation>
 <translation id="5832934273103296195">Разгънато – Кликнете за свиване</translation>
 <translation id="583891442612896534">Chrome не може да установи връзка с компресиращите сървъри на Google. Икономията на данни може да е ограничена.</translation>
+<translation id="585027516397408832">Активирахте Икономия на данни</translation>
 <translation id="5860033963881614850">Изключено</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="588258955323874662">Цял екран</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="666268767214822976">Използване на услуга за предвиждания за показване на сродни заявки и популярни уебсайтове, докато пишете в адресната лента</translation>
 <translation id="666981079809192359">Съобщение за поверителност на Chrome</translation>
-<translation id="6671495933530132209">Копиране на изображението</translation>
 <translation id="6697251040310467641">Страницата е запазена офлайн</translation>
 <translation id="6698801883190606802">Управление на синхронизираните данни</translation>
 <translation id="6699351163704950317">Всички запазени страници</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">Клип: Зарежда се</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
 <translation id="7201341158316793215">Премахва се…</translation>
+<translation id="7208788139759694678">Деактивирахте Икономия на данни</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
 <translation id="7299721129597238157">Изтриване на отметката</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">Шифроване на паролите с идентификационните данни за Google</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7665369617277396874">Добавяне на профил</translation>
+<translation id="7761240775244195612">Да се изтрият ли <ph name="PAGES_NUMBER" /> офлайн копия, които не са използвани през последния месец? Така ще се освободи място в размер на <ph name="TOTAL_PAGE_SIZE" />.</translation>
 <translation id="7764225426217299476">Добавяне на адрес</translation>
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7767746238359002192">Посетете страницата, за да я запазите офлайн</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">Страницата е запазена. Мястото привършва.</translation>
 <translation id="8068648041423924542">Сертификатът не може да бъде избран.</translation>
 <translation id="8069239273282989646">След компресиране</translation>
-<translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="8084156870963450514">Влезте в профила си, за да имате достъп до всичките си неща в мрежата от всяко устройство</translation>
 <translation id="8106211421800660735">Номер на кредитната карта</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">Съдържание</translation>
 <translation id="8209050860603202033">Отваряне на изображението</translation>
 <translation id="8218346974737627104">Потвърждаване на влизането в профила</translation>
+<translation id="8218934717680664417">Вече можете да търсите с едно докосване</translation>
 <translation id="8237438615979997762">Съхраняваните на това устройство данни, както и тези, съхранявани в профила ви в Google, ще останат и на двете места. Новата информация или извършените в данните ви промени обаче няма да се синхронизират помежду им.</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8275818695183729150">Разрешено (за търсения от адресната лента)</translation>

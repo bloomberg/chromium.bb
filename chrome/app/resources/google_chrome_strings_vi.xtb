@@ -45,7 +45,6 @@
 <translation id="2290014774651636340">Khóa API của Google bị thiếu. Một số chức năng của Google Chrome sẽ bị tắt.</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
-<translation id="2334084861041072223">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2346876346033403680">Ai đó trước đây đã đăng nhập vào Chrome trên máy tính này là <ph name="ACCOUNT_EMAIL_LAST" />. Nếu đó không phải là tài khoản của bạn, hãy tạo người dùng Chrome mới để giữ riêng biệt thông tin của bạn.
 
 Đăng nhập bằng mọi cách sẽ kết hợp thông tin Chrome như dấu trang, lịch sử và các cài đặt khác vào <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -141,10 +140,10 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="556024056938947818">Google Chrome đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chrome cố gắng kết nối với <ph name="SITE" /> vào lần này, trang web đã gửi lại thông tin đăng nhập bất thường và không đúng. Một kẻ tấn công đang tìm cách giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn vì Chrome đã dừng kết nối trước khi bất kỳ dữ liệu nào bị trao đổi.</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
 <translation id="568643307450491754">Tìm dấu trang của bạn trong menu Chrome hoặc trên thanh dấu trang.</translation>
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
+<translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="5785746630574083988">Chế độ chạy lại trong Windows 8 sẽ đóng và chạy lại ứng dụng Chrome của bạn.</translation>
 <translation id="5799551393681493217">Bật luồng đăng nhập Chrome dựa trên iframe. Cờ này ghi đè --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Phần mềm đang chạy trên máy tính của bạn không tương thích với Google Chrome.</translation>

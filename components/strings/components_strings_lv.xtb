@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="1339601241726513588">Reģistrācijas domēns:</translation>
 <translation id="1344588688991793829">Chromium automātiskās aizpildes iestatījumi...</translation>
+<translation id="1375198122581997741">Par versiju</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1430915738399379752">Drukāt</translation>
 <translation id="1455235771979731432">Verificējot jūsu karti, radās problēma. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
+<translation id="1519264250979466059">Būvējuma datums</translation>
 <translation id="1549470594296187301">Lai izmantotu šo funkciju, ir jābūt iespējotai valodai JavaScript.</translation>
+<translation id="1559528461873125649">Nav tāda faila vai direktorija</translation>
 <translation id="1640180200866533862">Lietotāja politikas</translation>
 <translation id="1644184664548287040">Tīkla konfigurācija nav derīga, un to nevarēja importēt.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; tā drošības sertifikāta derīguma termiņš beidzās vakar. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}zero{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; tā drošības sertifikāta derīguma termiņš beidzās pirms # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}one{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; tā drošības sertifikāta derīguma termiņš beidzās pirms # dienas. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}other{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; tā drošības sertifikāta derīguma termiņš beidzās pirms # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_DATE" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.}}</translation>
 <translation id="168841957122794586">Servera sertifikāts ietver vāju kriptogrāfisko atslēgu.</translation>
 <translation id="1693754753824026215">Lapa vietnē <ph name="SITE" /> saka:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties rīt. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}zero{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties pēc # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}one{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties pēc # dienas. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}other{Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; šķiet, ka tā drošības sertifikāts sāks darboties pēc # dienām. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu.}}</translation>
+<translation id="1710259589646384581">Operētājsistēma</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Faila blusa</translation>
+<translation id="1753706481035618306">Lapas numurs</translation>
 <translation id="1763864636252898013">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu ierīces operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="1821930232296380041">Pieprasījums vai tā parametri nebija derīgi.</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Vai vēlaties, lai <ph name="PRODUCT_NAME" /> nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2587841377698384444">Direktorija API ID:</translation>
 <translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
+<translation id="2609632851001447353">Varianti</translation>
 <translation id="2625385379895617796">Norādītais laiks ir pārāk tālu nākotnē</translation>
 <translation id="2639739919103226564">Statuss:</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Rādīt vērtību</translation>
 <translation id="3648607100222897006">Šīs eksperimentālās funkcijas jebkurā laikā var mainīties, pārstāt darboties vai pazust. Mēs nesniedzam pilnīgi nekādas garantijas tam, kas var notikt, ja jūs ieslēdzat vienu no šiem eksperimentiem. Jūsu pārlūks var pat sabrukt. Nopietni runājot, pārlūks var izdzēst visus jūsu datus vai arī neparedzamā veidā var tikt pārkāpti drošības un konfidencialitātes noteikumi. Visi jūsu aktivizētie eksperimenti tiks aktivizēti visiem šī pārlūka lietotājiem. Lūdzu, esiet uzmanīgs!</translation>
 <translation id="3650584904733503804">Validācija bija veiksmīga.</translation>
+<translation id="3658742229777143148">Pārskatīšana</translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
 <translation id="3712624925041724820">Nav pietiekami daudz licenču.</translation>
 <translation id="3739623965217189342">Jūsu kopētā saite</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikātā ir kļūdas. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="4726672564094551039">Atkārtoti ielādēt politikas</translation>
 <translation id="4728558894243024398">Platforma</translation>
+<translation id="4744603770635761495">Izpildāms ceļš</translation>
 <translation id="4771973620359291008">Radās nezināma kļūda.</translation>
 <translation id="4800132727771399293">Pārbaudiet derīguma termiņu un CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="4813512666221746211">Tīkla kļūda</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Štats</translation>
 <translation id="5094747076828555589">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu Chromium sistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="5095208057601539847">Province</translation>
+<translation id="5115563688576182185">(64 bitu)</translation>
 <translation id="5145883236150621069">Politikas atbildē ir kļūdas kods.</translation>
 <translation id="5172758083709347301">Ierīce</translation>
 <translation id="5179510805599951267">Vai nav valodā: <ph name="ORIGINAL_LANGUAGE" />? Ziņot par šo kļūdu</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> grāmatzīmes</translation>
 <translation id="6282194474023008486">Pasta indekss</translation>
 <translation id="6337534724793800597">Filtrēt politikas pēc nosaukuma</translation>
+<translation id="6355080345576803305">Publiskas sesijas ignorēšana</translation>
 <translation id="6387478394221739770">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet mūsu Beta versiju, kas pieejama vietnē chrome.com/beta.</translation>
-<translation id="6426993025560594914">Jūsu platformā ir pieejami visi eksperimenti!</translation>
 <translation id="6445051938772793705">Valsts</translation>
 <translation id="6458467102616083041">Ignorēta, jo ar politiku ir atspējota noklusējuma meklēšana.</translation>
 <translation id="647261751007945333">Ierīces politikas</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Apgabals</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
 <translation id="6891596781022320156">Politikas līmenis netiek atbalstīts.</translation>
+<translation id="6897140037006041989">Lietotāja aģents</translation>
 <translation id="6915804003454593391">Lietotājs:</translation>
 <translation id="6957887021205513506">Šķiet, ka servera sertifikāts ir viltojums.</translation>
 <translation id="6965382102122355670">Labi</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Šī lapa ir tulkota no<ph name="ORIGINAL_LANGUAGE" />valodas<ph name="LANGUAGE_LANGUAGE" />valodā</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Meklēt<ph name="SITE_NAME" /> <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Būvējuma ID</translation>
 <translation id="725866823122871198">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu datora datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>
 <translation id="7275334191706090484">Pārvaldītās grāmatzīmes</translation>
 <translation id="7298195798382681320">Ieteicams</translation>
 <translation id="7334320624316649418">&amp;Atcelt pārkārtošanas atsaukšanu</translation>
+<translation id="7353601530677266744">Komandrinda</translation>
 <translation id="7378627244592794276">Nē</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Profila ceļš</translation>
 <translation id="7441627299479586546">Politikas subjekts nav pareizs.</translation>
 <translation id="7485870689360869515">Dati netika atrasti.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Servera sertifikāts vēl nav apstiprināts.</translation>
+<translation id="7951415247503192394">(32 bitu)</translation>
 <translation id="7956713633345437162">Mobilās grāmatzīmes</translation>
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7977590112176369853">&lt;ievadīt vaicājumu&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Palikt šajā lapā</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="917450738466192189">Servera sertifikāts ir nederīgs.</translation>
-<translation id="9187827965378254003">Izskatās, ka pašlaik nav pieejams neviens eksperiments.</translation>
 <translation id="9207861905230894330">Rakstu neizdevās pievienot.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">NOTĪRĪT VEIDLAPU</translation>
+<translation id="969892804517981540">Oficiālā Uzbūve</translation>
 <translation id="988159990683914416">Attīstītāja konstrukcija</translation>
 </translationbundle>

@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1344588688991793829">Setelan IsiOtomatis Chromium...</translation>
+<translation id="1375198122581997741">Tentang Versi</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1455235771979731432">Terjadi masalah saat memverifikasi kartu. Periksa sambungan internet Anda dan coba lagi.</translation>
 <translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
+<translation id="1519264250979466059">Tanggal Dibuat</translation>
 <translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
+<translation id="1559528461873125649">Tidak ada file atau direktori tersebut</translation>
 <translation id="1640180200866533862">Kebijakan pengguna</translation>
 <translation id="1644184664548287040">Konfigurasi cadangan tidak valid dan tidak dapat diimpor.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah berakhir kemarin. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda. Jam komputer Anda saat ini diatur ke <ph name="CURRENT_DATE" />. Apakah terlihat sesuai? Jika tidak, Anda harus membenarkan jam sistem dan menyegarkan laman ini.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah berakhir # hari yang lalu. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda. Jam komputer Anda saat ini diatur ke <ph name="CURRENT_DATE" />. Apakah terlihat sesuai? Jika tidak, Anda harus membenarkan jam sistem dan menyegarkan laman ini.}}</translation>
 <translation id="168841957122794586">Sertifikat server berisi kunci kriptografis yang lemah.</translation>
 <translation id="1693754753824026215">Laman di <ph name="SITE" /> menyatakan:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya sepertinya dari esok hari. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya sepertinya dari # hari mendatang. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang memintas sambungan internet Anda.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Bug file</translation>
+<translation id="1753706481035618306">Nomor laman</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
 <translation id="1871208020102129563">Proxy disetel untuk menggunakan server proxy tetap, bukan URL skrip .pac.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Apakah Anda ingin <ph name="PRODUCT_NAME" /> menawarkan terjemahan laman <ph name="LANGUAGE_NAME" /> dari situs ini saat mengunjunginya nanti?</translation>
 <translation id="2587841377698384444">ID API Direktori:</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
+<translation id="2609632851001447353">Variasi</translation>
 <translation id="2625385379895617796">Setelan jam terlalu cepat</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2653659639078652383">Kirim</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Tampilkan nilai</translation>
 <translation id="3648607100222897006">Fitur eksperimental ini bisa berubah, rusak, atau hilang kapan saja. Kami sama sekali tidak menjamin apa yang akan terjadi saat eksperimen ini dinyalakan, siapa tahu browser Anda tiba-tiba hangus terbakar! Becanda! Tapi bisa jadi browser akan menghapus semua data, atau keamanan dan privasi Anda akan disusupi secara tak terduga. Eksperimen yang Anda aktifkan akan diaktifkan untuk semua pengguna browser ini. Lanjutkan dengan hati-hati.</translation>
 <translation id="3650584904733503804">Validasi berhasil</translation>
+<translation id="3658742229777143148">Revisi</translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="3712624925041724820">Lisensi habis</translation>
 <translation id="3739623965217189342">Tautan yang Anda salin</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berisi kesalahan. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4744603770635761495">Jalur Yang Dapat Dijalankan</translation>
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Negara bagian</translation>
 <translation id="5094747076828555589">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chromium. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="5095208057601539847">Provinsi</translation>
+<translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5145883236150621069">Ada kode kesalahan dalam tanggapan kebijakan</translation>
 <translation id="5172758083709347301">Mesin</translation>
 <translation id="5179510805599951267">Bukan <ph name="ORIGINAL_LANGUAGE" />? Laporkan kesalahan deteksi ini</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Kode pos</translation>
 <translation id="6337534724793800597">Filter kebijakan menurut nama</translation>
+<translation id="6355080345576803305">Diganti oleh sesi publik</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
-<translation id="6426993025560594914">Semua eksperimen tersedia di platform Anda!</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6458467102616083041">Diabaikan karena penelusuran default dinonaktifkan oleh kebijakan.</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
+<translation id="6897140037006041989">Agen Pengguna</translation>
 <translation id="6915804003454593391">Pengguna:</translation>
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6965382102122355670">Oke</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Laman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE" />ke<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Telusuri <ph name="SEARCH_TERMS" /> dengan <ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">Buat ID</translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
 <translation id="7275334191706090484">Bookmark yang Terkelola</translation>
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="7334320624316649418">&amp;Ulangi pengaturan ulang</translation>
+<translation id="7353601530677266744">Baris Perintah</translation>
 <translation id="7378627244592794276">Nggak</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Jalur Profil</translation>
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Periksa CVC dan coba lagi</translation>
 <translation id="7935318582918952113">Penyaring DOM</translation>
 <translation id="7938958445268990899">Sertifikat server belum valid.</translation>
+<translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7956713633345437162">Bookmark seluler</translation>
 <translation id="7961015016161918242">Tidak pernah</translation>
 <translation id="7977590112176369853">&lt;masukkan permintaan&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Tetap di Laman ini</translation>
 <translation id="9170848237812810038">&amp;Urung</translation>
 <translation id="917450738466192189">Sertifikat server tidak valid.</translation>
-<translation id="9187827965378254003">Yaah, sekarang tampaknya tidak ada eksperimen yang tersedia.</translation>
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">HAPUS FORMULIR</translation>
+<translation id="969892804517981540">Pembuatan Resmi</translation>
 <translation id="988159990683914416">Buatan Pengembang</translation>
 </translationbundle>

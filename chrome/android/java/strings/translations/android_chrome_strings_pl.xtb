@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Wykryto wolne połączenie.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2870560284913253234">Witryna</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 adres URL w pobliżu}few{# adresy URL w pobliżu}many{# adresów URL w pobliżu}other{# adresu URL w pobliżu}}</translation>
 <translation id="2888126860611144412">Chrome – informacje</translation>
 <translation id="2891154217021530873">Zatrzymaj wczytywanie strony</translation>
 <translation id="2902702728133930130">Podczas uruchamiania Chrome wystąpił nieoczekiwany błąd.</translation>
@@ -159,7 +160,6 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="3410346880900521918">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="3455798674391346847">Pozwól Google optymalizować strony, by ograniczyć transmisję danych. Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz w trybie incognito.</translation>
-<translation id="346339498574870680">Kopiuj adres obrazka</translation>
 <translation id="3485544713029068372">Smart Lock na hasła</translation>
 <translation id="3492207499832628349">Nowa karta incognito</translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
@@ -206,6 +206,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4297410240212242334">Rozdziel karty i aplikacje</translation>
 <translation id="4307992518367153382">Podstawy</translation>
 <translation id="4333969446981951071">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
+<translation id="4334294535648607276">Pobieranie ukończone.</translation>
 <translation id="4350413759959745971">Przenieś zapisane strony</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4357362091209756047">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK1" />Wyszukaj ponownie<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />skorzystaj z pomocy<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4532845899244822526">Wybierz folder</translation>
 <translation id="4543087392704641517">Tytuł zakładki</translation>
 <translation id="4543661749405994812">Kopiuj adres e-mail</translation>
-<translation id="4619298195800598081">Otwórz oryginał w nowej karcie</translation>
 <translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
@@ -315,6 +315,7 @@ Statystyki użytkowania obejmują np. dane o ustawieniach, kliknięciach przycis
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
 <translation id="5733727110006255111">Kiedy ta funkcja jest włączona, Chrome korzysta z serwerów Google, by kompresować strony przed ich pobraniem. Nie dotyczy to stron SSL ani trybu incognito.</translation>
+<translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5763382633136178763">Karty incognito</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5771382037724542929">Chcesz zastąpić istniejący plik <ph name="FILE_NAME" /> w folderze <ph name="DIRECTORY_NAME" />?</translation>
@@ -323,6 +324,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5817918615728894473">Sparuj</translation>
 <translation id="5832934273103296195">Rozwinięty – kliknij, by zwinąć</translation>
 <translation id="583891442612896534">Chrome nie może połączyć się z serwerami Google kompresującymi dane. Oszczędność użycia danych może być ograniczona.</translation>
+<translation id="585027516397408832">Oszczędzanie danych włączone</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="588258955323874662">Pełny ekran</translation>
@@ -385,7 +387,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="666268767214822976">Gdy piszesz na pasku adresu, korzystaj z usługi przewidywania, by wyświetlać podobne zapytania i adresy popularnych stron</translation>
 <translation id="666981079809192359">Informacje na temat ochrony prywatności w Chrome</translation>
-<translation id="6671495933530132209">Kopiuj grafikę</translation>
 <translation id="6697251040310467641">Strona zapisana offline</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
 <translation id="6699351163704950317">Wszystkie zapisane strony</translation>
@@ -425,6 +426,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7096034533295549981">Wczytuję film</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="7201341158316793215">Usuwam…</translation>
+<translation id="7208788139759694678">Oszczędzanie danych wyłączone</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> korzysta z danych o Twojej lokalizacji, by pokazywać wyniki wyszukiwania lokalnego</translation>
 <translation id="7299721129597238157">Usuń zakładkę</translation>
@@ -456,6 +458,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7648422057306047504">Zaszyfruj hasła za pomocą danych logowania Google</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7665369617277396874">Dodaj konto</translation>
+<translation id="7761240775244195612">Usunąć kopie offline (<ph name="PAGES_NUMBER" />) nieużywane w ostatnim miesiącu? Dzięki temu zwolni się <ph name="TOTAL_PAGE_SIZE" /> miejsca.</translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7767746238359002192">Wejdź na stronę, by zapisać ją w trybie offline</translation>
@@ -484,7 +487,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8050319187894766337">Zapisano offline. Masz mało miejsca.</translation>
 <translation id="8068648041423924542">Nie można wybrać certyfikatu.</translation>
 <translation id="8069239273282989646">Po skompresowaniu</translation>
-<translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8084156870963450514">Zaloguj się, by móc korzystać ze wszystkich swoich rzeczy związanych z internetem na dowolnym urządzeniu</translation>
 <translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
@@ -495,6 +497,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8168435359814927499">Treści</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="8218346974737627104">Potwierdź, że chcesz się zalogować</translation>
+<translation id="8218934717680664417">Teraz możesz wyszukiwać jednym kliknięciem</translation>
 <translation id="8237438615979997762">Dane przechowywane na tym urządzeniu oraz na Twoim koncie Google pozostaną w obu tych miejscach. Jednak nowe dane i przyszłe zmiany nie będą już synchronizowane z kontem.</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8275818695183729150">Zezwól (w przypadku wyszukiwań na pasku adresu)</translation>

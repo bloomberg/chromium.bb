@@ -56,7 +56,6 @@
 <translation id="1221359380862872747">Carregar URLs especificados no início de sessão de demonstração</translation>
 <translation id="1240643596769627465">Especifica o URL do motor de pesquisa utilizado para apresentar resultados instantâneos. O URL deverá incluir a cadeia de caracteres "<ph name="SEARCH_TERM_MARKER" />", que, no momento da consulta, será substituída pelo texto que o utilizador tenha introduzido. Esta política é opcional. Se não for definida, não serão apresentados resultados instantâneos. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
-<translation id="1283072268083088623">Especifica quais os esquemas de Autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta. Os valores possíveis são "basic", "digest", "ntlm" e "negotiate". Separe os vários valores por vírgulas. Se deixar esta política por definir, serão utilizados os quatro esquemas.</translation>
 <translation id="1297182715641689552">Utilizar um script de proxy .pac</translation>
 <translation id="1300635491585192248">Prever ações na rede em qualquer rede que não seja
           móvel</translation>
@@ -199,7 +198,6 @@
 
       Se estiver desativado ou não especificado, não é mostrado nenhum botão vermelho grande para terminar sessão no tabuleiro do sistema.</translation>
 <translation id="1942957375738056236">Pode especificar o URL do servidor proxy aqui. Esta política só é aplicada se tiver selecionado definições de proxy manuais em "Escolher como indicar as definições do servidor proxy". Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy. Para mais opções e exemplos detalhados, visite: <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">Políticas para a Autenticação HTTP</translation>
 <translation id="1956493342242507974">Configure a gestão de energia no ecrã de início de sessão no <ph name="PRODUCT_OS_NAME" />.
 
       Esta política permite configurar o comportamento do <ph name="PRODUCT_OS_NAME" /> quando não existe qualquer atividade do utilizador durante um determinado período enquanto o ecrã de início de sessão está a ser apresentado. A política controla várias definições. Para consultar a sua semântica e intervalos de valores individuais, veja as políticas correspondentes que controlam a gestão de energia dentro de uma sessão. As únicas exceções a estas políticas são:
@@ -539,6 +537,11 @@
 <translation id="3067188277482006117">Se definida como verdadeira, o utilizador pode utilizar o hardware nos dispositivos Chrome para comprovar remotamente a sua identidade perante a AC de privacidade através da API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Se estiver definida como falsa ou se não estiver definida, as chamadas para a API irão falhar e resultar num código de erro.</translation>
+<translation id="3069958900488014740">Permite desligar a otimização WPAD (Deteção automática de proxy da Web) em <ph name="PRODUCT_NAME" />.
+
+      Se esta política for definida como falsa, a otimização WPAD estará desativada, o que faz com que o <ph name="PRODUCT_NAME" /> aguarde mais tempo pelos servidores WPAD baseados em DNS. Se a política não for definida ou estiver ativada, a otimização de WPAD estará ativada.
+
+      Independentemente de a política estar definida ou de como está definida, a definição da otimização WPAD não pode ser alterada pelos utilizadores.</translation>
 <translation id="3072045631333522102">Proteção de ecrã a utilizar no ecrã de início de sessão no modo de retalho</translation>
 <translation id="3072847235228302527">Definir os Termos de Utilização para uma conta local do dispositivo</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
@@ -666,22 +669,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta definição for definida como verdadeira ou não configurada, os utilizadores podem utilizar todas as saídas de áudio suportadas no seu dispositivo.</translation>
 <translation id="3808945828600697669">Especificar uma lista de plug-ins desativados</translation>
 <translation id="3816312845600780067">Ativar o atalho de teclado de resgate para o início de sessão automático</translation>
-<translation id="381807926299956806">Define um ou mais locais recomendados para uma sessão pública e permite aos utilizadores escolher facilmente um desses locais.
-
-      O utilizador pode escolher um local e um esquema de teclado antes de iniciar uma sessão pública. Por predefinição, todos os locais suportados pelo <ph name="PRODUCT_OS_NAME" /> estão listados por ordem alfabética. Pode utilizar esta política para mover um conjunto de locais recomendados para a parte superior da lista.
-
-      Se esta política não estiver definida, é pré-selecionado o local da IU atual.
-
-      Se esta política estiver definida, os locais recomendados são movidos para a parte superior da lista e são separados visualmente de todos os outros locais. Os locais recomendados são apresentados pela ordem em que aparecem na política. O primeiro local recomendado está pré-selecionado.
-
-      Se existir mais do que um local recomendado, pressupõe-se que os utilizadores pretendem escolher entre esses locais. A seleção do local e do esquema de teclado é oferecida com destaque ao iniciar uma sessão pública. Caso contrário, pressupõe-se que a maioria dos utilizadores pretende utilizar o local pré-selecionado. A seleção do local e do esquema de teclado é oferecida com menos destaque ao iniciar uma sessão pública.
-
-      Quando esta política está definida e o início de sessão automático está ativado (consulte as políticas |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), a sessão pública iniciada automaticamente utiliza o primeiro local recomendado e o esquema de teclado mais comum correspondente a esse local.
-
-      O esquema de teclado pré-selecionado é sempre o esquema mais comum correspondente ao local pré-selecionado.
-
-      Esta política apenas pode ser definida como recomendada. Pode utilizá-la para mover um conjunto de locais recomendados para a parte superior, mas os utilizadores podem sempre escolher qualquer local suportado pelo <ph name="PRODUCT_OS_NAME" /> para a respetiva sessão.
-      </translation>
 <translation id="3820526221169548563">Ativar a funcionalidade de acessibilidade de teclado no ecrã.
 
           Se esta política for definida como verdadeira, o teclado no ecrã será sempre ativado.
@@ -910,6 +897,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política estiver definido como verdadeira ou não estiver configurada, será permitida a criação de novas contas de utilizador desde que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> não impeça o utilizador de iniciar sessão.</translation>
 <translation id="4962195944157514011">Especifica o URL do motor de pesquisa utilizado para efetuar uma pesquisa predefinida. O URL deverá incluir a cadeia de caracteres "<ph name="SEARCH_TERM_MARKER" />", que, no momento da consulta, será substituída pelos termos que o utilizador estiver a pesquisar. Esta opção tem de estar definida quando a política "DefaultSearchProviderEnabled" estiver ativada e apenas será aplicada nestas condições.</translation>
+<translation id="4971529314808359013">Permite-lhe especificar uma lista de padrões de URL que especifica sites para os quais o <ph name="PRODUCT_NAME" /> deve selecionar automaticamente um certificado de cliente, caso o site solicite um certificado.
+
+          O valor tem de ser uma matriz de dicionários JSON em forma de string. Cada dicionário tem de ter o formato { "padrão": "$URL_PATTERN", "filtro" : $FILTER }, no qual $URL_PATTERN é um padrão de definição de conteúdo. $FILTER restringe a partir de que certificados de cliente o navegador seleciona automaticamente. Independentemente do filtro, apenas são selecionados os certificados que correspondam ao pedido de certificado do servidor. Se $FILTER tiver o formato { "EMISSOR": { "CN": "$ISSUER_CN" } }, apenas são selecionados os certificados de cliente que são emitidos por um certificado com o CommonName $ISSUER_CN. Se $FILTER for o dicionário vazio {}, a seleção de certificados de cliente não é adicionalmente restrita.
+
+          Se esta política não for definida, não é efetuada qualquer seleção automática para qualquer site.</translation>
 <translation id="4980301635509504364">Permitir ou negar captura de vídeo.
 
       Caso esteja ativada ou não configurada (predefinido), será pedido ao utilizador
@@ -1584,7 +1576,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida, será utilizado o tamanho predefinido e o utilizador poderá substituí-lo com a sinalização "--disk-cache-size".</translation>
 <translation id="7612157962821894603">Sinalizadores ao nível do sistema a aplicar ao arranque do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista dos esquemas de protocolos desativados</translation>
-<translation id="7615123397791876280">Tipo de conta para negociar autenticação</translation>
 <translation id="7625444193696794922">Especifica o canal de lançamento ao qual este aparelho deve estar bloqueado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura o local da aplicação no <ph name="PRODUCT_NAME" /> e impede que os utilizadores o alterem. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> utilizará o local indicado. Se o local configurado não for suportado, será utilizado "en-US". Se esta definição estiver desativada ou não for definida, o <ph name="PRODUCT_NAME" /> utilizará o local preferencial indicado pelo utilizador (se estiver configurado), o local do sistema ou o local alternativo "en-US".</translation>
@@ -1787,7 +1778,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8300455783946254851">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> ao utilizar uma rede móvel e a definição Verdadeiro. Nesse caso, os dados só são sincronizados com o Google Drive quando estiver ligado por Wi-Fi ou Ethernet.
 
           Se não estiver definido ou estiver definido como Falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
-<translation id="8303314579975657113">Especifica qual a biblioteca GSSAPI a utilizar para Autenticação HTTP. Pode definir apenas o nome de uma biblioteca ou um caminho inteiro. Se não for fornecida qualquer definição, o <ph name="PRODUCT_NAME" /> utilizará um nome de biblioteca predefinido.</translation>
 <translation id="8329984337216493753">Esta política está ativa apenas no modo de retalho.
 
       Quando a política DeviceIdleLogoutTimeout é especificada, define a duração da caixa de aviso com uma contagem decrescente que é mostrada ao utilizador antes do encerramento da sessão.
@@ -1802,9 +1792,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8369602308428138533">Atraso para desligar o ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="8382184662529825177">Ativar a utilização da comprovação remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativar roaming de dados</translation>
-<translation id="8407759228138103300">Especifica o tipo de conta das contas fornecidas pela aplicação de autenticação Android que suporta o protocolo Negociar autenticação HTTP (por exemplo, autenticação Kerberos). Esta informação deve ser disponibilizada pelo fornecedor da aplicação de autenticação. Para mais informações, consulte https://goo.gl/hajyfN.
-
-          Se não for fornecida nenhuma definição, a opção Negociar autenticação é desativada no Android.</translation>
 <translation id="8412312801707973447">Se são ou não efetuadas verificações OCSP/CRL on-line</translation>
 <translation id="8451988835943702790">Utilizar a página Novo separador como página inicial</translation>
 <translation id="8465065632133292531">Parâmetros do URL instantâneo que utilize POST</translation>
@@ -1829,7 +1816,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8566842294717252664">Ocultar a Web Store da Página novo separador e do iniciador de aplicações</translation>
 <translation id="857925079934558818">Especifica se a otimização TLS False Start deve ser desativada. Por razões históricas, o nome desta política é DisableSSLRecordSplitting.
 
-      Se a política não for definida ou for definida como falsa, o TLS False Start está ativado. Se for definida como verdadeira, o TLS False Start está desativado.</translation>
+      Se a política não for definida ou for definida como falsa, o TLS False Start estará ativado. Se for definida como verdadeira, o TLS False Start estará desativado.</translation>
 <translation id="8587229956764455752">Permitir a criação de novas contas de utilizador</translation>
 <translation id="8614804915612153606">Desativar a Atualização Automática</translation>
 <translation id="8631434304112909927">até à versão <ph name="UNTIL_VERSION" /></translation>

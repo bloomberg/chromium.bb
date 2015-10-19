@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
 <translation id="108122890477367602">Chromium im Windows 8-Modus neu sta&amp;rten</translation>
 <translation id="1115445892567829615">Chromium konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Daten weiterhin sicher.</translation>
 <translation id="1174473354587728743">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chromium nach Ihren Wünschen einrichten.</translation>
 <translation id="1185134272377778587">Über Chromium</translation>
 <translation id="1221340462641866827">Chromium unterstützt keine externe App zur Verarbeitung von <ph name="SCHEME" />-Links. Der angeforderte Link ist <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Ihre Chromium-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="4285930937574705105">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Falls Chromium derzeit ausgeführt wird, schließen Sie es bitte und versuchen Sie es erneut.</translation>
 <translation id="4330585738697551178">Es ist bekannt, dass dieses Modul einen Konflikt mit Chromium verursacht.</translation>
-<translation id="4365115785552740256">Chromium wird durch das Open-Source-Projekt <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> und andere <ph name="BEGIN_LINK_OSS" />Open-Source-Software<ph name="END_LINK_OSS" /> ermöglicht.</translation>
 <translation id="4423735387467980091">Chromium anpassen und einstellen</translation>
 <translation id="442817494342774222">Chromium ist so konfiguriert, dass es beim Hochfahren Ihres Computers automatisch gestartet wird.</translation>
 <translation id="4458285410772214805">Melden Sie sich ab und wieder an, damit diese Änderung wirksam wird.</translation>
@@ -152,6 +150,7 @@
 <translation id="6475912303565314141">Die Erweiterung legt auch die Seite fest, die beim Start von Chromium angezeigt wird.</translation>
 <translation id="6485906693002546646">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chromium-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chromium ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
+<translation id="6526111688217511984">Chromium benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="6637001341228460105">Chromium benötigt Zugriff auf das Mikrofon, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="6638567566961868659">Ihre Lesezeichen finden Sie im Chromium-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>

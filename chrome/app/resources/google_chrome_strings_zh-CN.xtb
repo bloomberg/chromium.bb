@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">缺少 Google API 密钥，因此 Google Chrome 的部分功能将无法使用。</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
-<translation id="2334084861041072223">版权所有<ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2346876346033403680">之前有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 帐户登录 Chrome。如果这不是您的帐户，请新建一个 Chrome 用户来单独保存您的信息。
 
 如果您仍然登录，Chrome 信息（例如书签、历史记录和其他设置）将合并到 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
@@ -137,10 +136,10 @@
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> 通常使用加密技术来保护您的信息。Chrome 此次尝试连接到 <ph name="SITE" /> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chrome 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
 <translation id="568643307450491754">在 Chrome 菜单或书签栏中查找您的书签。</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
+<translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5785746630574083988">若以Windows 8模式重新启动，将会关闭并重新启动您的Chrome应用。</translation>
 <translation id="5799551393681493217">启用基于 iframe 的 Chrome 登录流程。此项会覆盖 --enable-web-based-signin。</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>

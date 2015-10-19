@@ -85,6 +85,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2919669478609886916">Du deler denne datamaskinen med en annen bruker. Vil du fortsette å dele?</translation>
 <translation id="2921543551052660690">Du har tidligere logget på som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Hvis du vil ha tilgang til datamaskiner på den kontoen, må du bruke den til å <ph name="LINK_BEGIN" />logge på Chromium<ph name="LINK_END" /> og deretter installere Chromoting på nytt.</translation>
 <translation id="2926340305933667314">Kunne ikke deaktivere fjerntilgang til denne datamaskinen. Prøv på nytt senere.</translation>
+<translation id="2930135165929238380">Det mangler noen nødvendige komponenter. Gå til chrome://plugins og sjekk at Native Client er slått på.</translation>
 <translation id="2939145106548231838">Autentiser for å være vert</translation>
 <translation id="2998137343848432918">• La til et anerkjennelsesskjermbilde.
 • Korrigerte et problem ved åpning av fullskjermmodus med tastaturet synlig.</translation>

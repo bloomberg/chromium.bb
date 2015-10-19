@@ -160,7 +160,6 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="3410346880900521918">If you're seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3455798674391346847">Spend less data by using Google to optimise the pages that you visit. Pages accessed with HTTPS or Incognito will not be optimised or seen by Google.</translation>
-<translation id="346339498574870680">Copy image URL</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
@@ -207,6 +206,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4297410240212242334">Separate tabs and apps</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="4333969446981951071">By using this application, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
+<translation id="4334294535648607276">Download complete.</translation>
 <translation id="4350413759959745971">Move saved pages</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4357362091209756047">Not seeing your device? <ph name="BEGIN_LINK1" />Search again<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />Get help<ph name="END_LINK2" />.</translation>
@@ -220,7 +220,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4543087392704641517">Bookmark title</translation>
 <translation id="4543661749405994812">Copy email address</translation>
-<translation id="4619298195800598081">Open original image in new tab</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
@@ -388,7 +387,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6643016212128521049">Clear</translation>
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
-<translation id="6671495933530132209">Copy image</translation>
 <translation id="6697251040310467641">Page saved offline</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
 <translation id="6699351163704950317">All saved pages</translation>
@@ -460,6 +458,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7648422057306047504">Encrypt passwords with Google credentials</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
+<translation id="7761240775244195612">Delete <ph name="PAGES_NUMBER" /> offline copies not used in the past month? This will clear <ph name="TOTAL_PAGE_SIZE" /> of space.</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7767746238359002192">Visit page to save offline</translation>
@@ -488,7 +487,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8050319187894766337">Page saved offline. Storage almost full.</translation>
 <translation id="8068648041423924542">Unable to select certificate.</translation>
 <translation id="8069239273282989646">After compression</translation>
-<translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084156870963450514">Sign in to access all your web stuff from any device</translation>
 <translation id="8106211421800660735">Credit card number</translation>
 <translation id="813082847718468539">View site information</translation>
@@ -499,6 +497,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8168435359814927499">Content</translation>
 <translation id="8209050860603202033">Open image</translation>
 <translation id="8218346974737627104">Confirm sign-in</translation>
+<translation id="8218934717680664417">Now you can search with one touch</translation>
 <translation id="8237438615979997762">The data stored on this device as well as the data stored in your Google Account will remain in both places. However, new data or changes that you make to your data will not be synchronised between them.</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8275818695183729150">Allow (for address bar searches)</translation>

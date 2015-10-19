@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Низкая скорость сетевого подключения.</translation>
 <translation id="2842985007712546952">Родительская папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL поблизости}one{# URL поблизости}few{# URL поблизости}many{# URL поблизости}other{# URL поблизости}}</translation>
 <translation id="2888126860611144412">О браузере Chrome</translation>
 <translation id="2891154217021530873">Остановить загрузку страницы</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
@@ -160,7 +161,6 @@
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3455798674391346847">Экономьте трафик – разрешите Google оптимизировать посещаемые страницы. Сайты, открытые через HTTPS или в режиме инкогнито, не оптимизируются. Более того, Google никогда не узнает, что вы на них заходили.
 </translation>
-<translation id="346339498574870680">Скопировать URL изображения</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
 <translation id="3518985090088779359">Продолжить</translation>
@@ -207,6 +207,7 @@
 <translation id="4297410240212242334">Вкладки внутри Chrome</translation>
 <translation id="4307992518367153382">Основные</translation>
 <translation id="4333969446981951071">Нажимая "Продолжить", вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности Chrome<ph name="END_LINK2" />.</translation>
+<translation id="4334294535648607276">Скачивание завершено.</translation>
 <translation id="4350413759959745971">Переместить страницы</translation>
 <translation id="4351244548802238354">Закрыть</translation>
 <translation id="4357362091209756047">Устройство не обнаружено? <ph name="BEGIN_LINK1" />Повторите попытку<ph name="END_LINK1" /> или перейдите в <ph name="BEGIN_LINK2" />справочный центр<ph name="END_LINK2" />.</translation>
@@ -220,7 +221,6 @@
 <translation id="4532845899244822526">Выбор папки</translation>
 <translation id="4543087392704641517">Заголовок закладки</translation>
 <translation id="4543661749405994812">Скопировать адрес эл. почты</translation>
-<translation id="4619298195800598081">Оригинал в новой вкладке</translation>
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
 <translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
@@ -316,6 +316,7 @@
 В режиме инкогнито ваши действия видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="572328651809341494">Недавние вкладки</translation>
 <translation id="5733727110006255111">Если вы включите эту функцию, серверы Google начнут сжимать данные перед показом веб-страниц в Chrome. Это не касается данных, полученных по протоколу SSL и в режиме инкогнито.</translation>
+<translation id="5749068826913805084">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
 <translation id="5763382633136178763">Вкладки в режиме инкогнито</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771382037724542929">Вы хотите заменить существующий файл "<ph name="FILE_NAME" />" в папке "<ph name="DIRECTORY_NAME" />"?</translation>
@@ -324,6 +325,7 @@
 <translation id="5817918615728894473">Подключить</translation>
 <translation id="5832934273103296195">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="583891442612896534">Не удалось подключиться к серверам Google для сжатия данных. Объем трафика может увеличиться.</translation>
+<translation id="585027516397408832">Расширение "Экономия трафика" включено</translation>
 <translation id="5860033963881614850">Выкл.</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="588258955323874662">Полноэкранный режим</translation>
@@ -386,7 +388,6 @@
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
-<translation id="6671495933530132209">Копировать изображение</translation>
 <translation id="6697251040310467641">Сохранено в офлайн-доступе</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6699351163704950317">Все сохраненные страницы</translation>
@@ -426,6 +427,7 @@
 <translation id="7096034533295549981">Загрузка видео…</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7201341158316793215">Удаление…</translation>
+<translation id="7208788139759694678">Расширение "Экономия трафика" отключено</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7299721129597238157">Удалить закладку</translation>
@@ -457,6 +459,7 @@
 <translation id="7648422057306047504">Шифровать пароли с помощью учетных данных аккаунта Google</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
+<translation id="7761240775244195612">У вас есть сохраненные страницы (<ph name="PAGES_NUMBER" />), которые вы ни разу не открывали в прошлом месяце. Они занимают <ph name="TOTAL_PAGE_SIZE" />. Удалить их?</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7767746238359002192">Чтобы сохранить страницу, откройте ее</translation>
@@ -485,7 +488,6 @@
 <translation id="8050319187894766337">Сохранено. Свободное место заканчивается.</translation>
 <translation id="8068648041423924542">Невозможно выбрать сертификат.</translation>
 <translation id="8069239273282989646">После сжатия</translation>
-<translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="8084156870963450514">Войдите в аккаунт и получите доступ к своим данным, например вкладкам и истории просмотров, на любом устройстве</translation>
 <translation id="8106211421800660735">Номер карты</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
@@ -496,6 +498,7 @@
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8209050860603202033">Открыть изображение</translation>
 <translation id="8218346974737627104">Подтвердите вход</translation>
+<translation id="8218934717680664417">Теперь поиск работает в одно касание!</translation>
 <translation id="8237438615979997762">Данные, находящиеся на этом устройстве и в аккаунте Google, сохранятся, однако новые данные и вносимые изменения синхронизироваться не будут.</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8275818695183729150">Разрешать (для поиска в адресной строке)</translation>

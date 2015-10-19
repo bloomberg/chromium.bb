@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1339601241726513588">Domena rejestracji:</translation>
 <translation id="1344588688991793829">Ustawienia autouzupełniania Chromium...</translation>
+<translation id="1375198122581997741">Informacje o wersji</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1455235771979731432">Podczas weryfikacji karty wystąpił problem. Sprawdź połączenie internetowe i spróbuj ponownie.</translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
+<translation id="1519264250979466059">Data kompilacji</translation>
 <translation id="1549470594296187301">Aby można było korzystać z tej funkcji, musi być włączony JavaScript.</translation>
+<translation id="1559528461873125649">Brak takiego pliku lub katalogu</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
 <translation id="1644184664548287040">Konfiguracja sieci jest nieprawidłowa i nie można jej zaimportować.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł wczoraj. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}few{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}many{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dni temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}other{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa wygasł # dnia temu. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_DATE" />. Czy to prawidłowa data? Jeśli nie, musisz skorygować zegar systemu, a następnie odświeżyć tę stronę.}}</translation>
 <translation id="168841957122794586">Certyfikat serwera ma słaby klucz kryptograficzny.</translation>
 <translation id="1693754753824026215">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać od jutra. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}few{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać za # dni. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}many{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać za # dni. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}other{Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa przypuszczalnie zacznie obowiązywać za # dnia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia.}}</translation>
+<translation id="1710259589646384581">System operacyjny</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Zgłoś błąd</translation>
+<translation id="1753706481035618306">Numer strony</translation>
 <translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Czy następnym razem <ph name="PRODUCT_NAME" /> ma zaproponować Ci tłumaczenie stron tej witryny, których język to <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2587841377698384444">Identyfikator interfejsu API katalogu:</translation>
 <translation id="2597378329261239068">Ten dokument jest chroniony hasłem. Wprowadź hasło.</translation>
+<translation id="2609632851001447353">Odmiany</translation>
 <translation id="2625385379895617796">Twój zegar się śpieszy</translation>
 <translation id="2639739919103226564">Stan:</translation>
 <translation id="2653659639078652383">Prześlij</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Pokaż wartość</translation>
 <translation id="3648607100222897006">Funkcje eksperymentalne mogą w dowolnej chwili ulec zmianie, awarii lub też zostać wycofane. Nie dajemy absolutnie żadnych gwarancji dotyczących tego, co się może stać po włączeniu jednego z tych eksperymentów – równie dobrze może dojść do samozapłonu przeglądarki. Żarty żartami, ale teoretycznie jest możliwe na przykład usunięcie wszystkich Twoich danych przez przeglądarkę lub nieprzewidziane naruszenie Twojego bezpieczeństwa i prywatności. Każdy włączony eksperyment zostanie włączony dla wszystkich użytkowników tej przeglądarki. Prosimy o zachowanie ostrożności.</translation>
 <translation id="3650584904733503804">Weryfikacja powiodła się</translation>
+<translation id="3658742229777143148">Wersja</translation>
 <translation id="370665806235115550">Ładowanie...</translation>
 <translation id="3712624925041724820">Brak wolnych licencji</translation>
 <translation id="3739623965217189342">Skopiowany link</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa ma błędy. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
 <translation id="4728558894243024398">Platforma</translation>
+<translation id="4744603770635761495">Ścieżka pliku wykonywalnego</translation>
 <translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Stan</translation>
 <translation id="5094747076828555589">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chromium. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="5095208057601539847">Prowincja</translation>
+<translation id="5115563688576182185">(64-bitowa)</translation>
 <translation id="5145883236150621069">W odebranej polityce znajduje się kod błędu</translation>
 <translation id="5172758083709347301">Komputer</translation>
 <translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE" />, zgłoś błąd</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Zakładki <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Kod pocztowy</translation>
 <translation id="6337534724793800597">Filtruj zasady według nazwy</translation>
+<translation id="6355080345576803305">Zastąpienie sesji publicznej</translation>
 <translation id="6387478394221739770">Interesują Cię nowe, przydatne funkcje Chrome? Wypróbuj wersję beta ze strony chrome.com/beta.</translation>
-<translation id="6426993025560594914">Wszystkie eksperymenty są dostępne na Twojej platformie.</translation>
 <translation id="6445051938772793705">Kraj</translation>
 <translation id="6458467102616083041">Ignorowana, ponieważ wyszukiwarka domyślna jest wyłączona przez zasadę.</translation>
 <translation id="647261751007945333">Zasady dotyczące urządzeń</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Dzielnica</translation>
 <translation id="6874604403660855544">&amp;Ponów dodanie</translation>
 <translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
+<translation id="6897140037006041989">Klient</translation>
 <translation id="6915804003454593391">Użytkownik:</translation>
 <translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Ta strona została przetłumaczona z języka<ph name="ORIGINAL_LANGUAGE" />na język<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Wyszukaj hasło <ph name="SEARCH_TERMS" /> w witrynie <ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">Identyfikator kompilacji</translation>
 <translation id="725866823122871198">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na komputerze są nieprawidłowe.</translation>
 <translation id="7275334191706090484">Zakładki zarządzane</translation>
 <translation id="7298195798382681320">Zalecane</translation>
 <translation id="7334320624316649418">&amp;Ponów zmianę kolejności</translation>
+<translation id="7353601530677266744">Wiersz poleceń</translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7400418766976504921">Adres URL</translation>
+<translation id="7419106976560586862">Ścieżka profilu</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Sprawdź kod CVC i spróbuj ponownie</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Certyfikat serwera nie jest jeszcze ważny.</translation>
+<translation id="7951415247503192394">(32-bitowa)</translation>
 <translation id="7956713633345437162">Zakładki na komórce</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7977590112176369853">&lt;wprowadź zapytanie&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Pozostań na tej stronie</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="917450738466192189">Certyfikat serwera jest nieprawidłowy.</translation>
-<translation id="9187827965378254003">Ups, wygląda na to, że nie ma obecnie dostępnych żadnych eksperymentów.</translation>
 <translation id="9207861905230894330">Nie udało się dodać artykułu.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">WYCZYŚĆ FORMULARZ</translation>
+<translation id="969892804517981540">Oficjalna wersja</translation>
 <translation id="988159990683914416">Build</translation>
 </translationbundle>

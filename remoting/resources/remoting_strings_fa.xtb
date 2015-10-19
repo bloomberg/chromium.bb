@@ -85,6 +85,7 @@
 <translation id="2919669478609886916">‏شما در حال اشتراک‌گذاری این سیستم با کاربر دیگری هستید. آیا می‎خواهید اشتراک‎گذاری ادامه یابد؟</translation>
 <translation id="2921543551052660690">‏قبلاً با <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) وارد سیستم شده بودید. برای دسترسی به رایانه‌های آن حساب، با آن حساب <ph name="LINK_BEGIN" />وارد Chromium شوید<ph name="LINK_END" /> و «کار با Chrome» را دوباره نصب کنید.</translation>
 <translation id="2926340305933667314">دسترسی راه دور به این رایانه غیرفعال نشد. لطفاً بعداً دوباره امتحان کنید.</translation>
+<translation id="2930135165929238380">‏بعضی از اجزای لازم وجود ندارند. لطفاً به chrome://plugins بروید و مطمئن شوید Native Client فعال است.</translation>
 <translation id="2939145106548231838">احراز هویت به میزبان</translation>
 <translation id="2998137343848432918">• افزوده شدن صفحه اعتبارات.
 • برطرف شدن مشکل رفتن به حالت تمام‌صفحه با صفحه‌کلید نمایان.</translation>
@@ -227,7 +228,7 @@
 <translation id="6944854424004126054">بازگرداندن پنجره</translation>
 <translation id="6962773374262604195">‏برای Windows‏ (XP و بالاتر)</translation>
 <translation id="6965382102122355670">تأیید</translation>
-<translation id="6985691951107243942">آیا مطمئن هستید که می‌خواهید اتصالات راه دور به <ph name="HOSTNAME" /> را غیرفعال کنید؟ درصورتی‌که تصمیم خود را عوض کنید، باید از آن رایانه برای فعال کردن مجدد اتصال دیدن کنید.</translation>
+<translation id="6985691951107243942">آیا مطمئنید که می‌خواهید اتصالات راه دور به <ph name="HOSTNAME" /> را غیرفعال کنید؟ اگر نظرتان عوض شود، باید از همان رایانه اتصالات را مجدداً فعال کنید.</translation>
 <translation id="6998989275928107238">به</translation>
 <translation id="7017806586333792422">شروع ضبط</translation>
 <translation id="7019153418965365059">خطای نامشخص میزبان: <ph name="HOST_OFFLINE_REASON" />.</translation>

@@ -85,6 +85,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2919669478609886916">Trenutno imate to napravo v skupni rabi z drugim uporabnikom. Ali želite nadaljevati skupno rabo?</translation>
 <translation id="2921543551052660690">V preteklosti ste se prijavljali kot <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Če želite dostopati do računalnikov v tistem računu, <ph name="LINK_BEGIN" />se prijavite v Chromium<ph name="LINK_END" /> s tistim računom in znova namestite Oddaljeno povezovanje s Chromom.</translation>
 <translation id="2926340305933667314">Oddaljenega dostopa za računalnik ni bilo mogoče onemogočiti. Poskusite znova pozneje.</translation>
+<translation id="2930135165929238380">Ni nekaterih zahtevanih delov. Na chrome://plugins preverite, ali je omogočena tehnologija Native Client.</translation>
 <translation id="2939145106548231838">Preverjanje pristnosti pri gostitelju</translation>
 <translation id="2998137343848432918">• Dodan zaslon z ustvarjalci.
 • Odpravljena težava pri preklopu v celozaslonski način z vidno tipkovnico.</translation>

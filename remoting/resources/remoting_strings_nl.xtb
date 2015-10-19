@@ -85,6 +85,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2919669478609886916">Je deelt deze computer momenteel met een andere gebruiker. Wil je doorgaan met delen?</translation>
 <translation id="2921543551052660690">Je bent eerder ingelogd als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN" />log je in bij Chromium<ph name="LINK_END" /> met dat account en installeer je Chromoting opnieuw.</translation>
 <translation id="2926340305933667314">Kan externe toegang tot deze computer niet uitschakelen. Probeer het later opnieuw.</translation>
+<translation id="2930135165929238380">Er ontbreken enkele vereiste componenten. Ga naar chrome://plugins en zorg ervoor dat Native Client is ingeschakeld.</translation>
 <translation id="2939145106548231838">Verifiëren naar host</translation>
 <translation id="2998137343848432918">• Scherm 'Credits' toegevoegd.
 • Een probleem verholpen waarbij bij overschakelen naar volledig scherm het toetsenbord zichtbaar was.</translation>

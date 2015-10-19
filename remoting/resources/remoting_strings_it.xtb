@@ -85,6 +85,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2919669478609886916">Stai condividendo questo computer con un altro utente. Continuare la condivisione?</translation>
 <translation id="2921543551052660690">Hai già eseguito l'accesso come <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedere ai tuoi computer nell'account in questione, <ph name="LINK_BEGIN" />accedi a Chromium<ph name="LINK_END" /> con tale account e installa di nuovo Chromoting.</translation>
 <translation id="2926340305933667314">Impossibile disattivare l'accesso remoto a questo computer. Riprova più tardi.</translation>
+<translation id="2930135165929238380">Mancano alcuni componenti obbligatori. Visita la pagina chrome://plugins e assicurati che il plug-in Native Client sia attivo.</translation>
 <translation id="2939145106548231838">Esegui autenticazione host</translation>
 <translation id="2998137343848432918">• Aggiunta la schermata Riconoscimenti.
 • Risolto un problema relativo alla modalità a schermo intero con la tastiera visibile.</translation>

@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Asetuksiasi ei voi lukea. Kaikkia toimintoja ei voi välttämättä käyttää eikä asetuksiin tehtäviä muutoksia tallenneta.</translation>
 <translation id="108122890477367602">Käynnistä Ch&amp;romium uudelleen Windows 8 -tilassa</translation>
 <translation id="1115445892567829615">Chromium ei voinut synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti yhdistää sivustoon <ph name="SITE" /> tällä kertaa, sivusto palautti epätavalliset ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph name="SITE" /> tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="1174473354587728743">Jaatko tietokoneen jonkun kanssa? Nyt voit määrittää Chromiumin juuri sellaiseksi kuin haluat.</translation>
 <translation id="1185134272377778587">Tietoja Chromiumista</translation>
 <translation id="1221340462641866827">Chromium-käyttöjärjestelmä ei tue ulkopuolisten sovellusten käynnistämistä <ph name="SCHEME" />-linkkien käsittelyä varten. Pyyntöön liittyvä linkki on <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Linkitetäänkö Chromium-tiedot tähän tiliin?</translation>
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
 <translation id="4330585738697551178">Tämän moduulin tiedetään aiheuttavan ristiriitoja Chromiumin kanssa.</translation>
-<translation id="4365115785552740256">Chromiumin ovat tehneet mahdolliseksi <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />-projekti ja muut <ph name="BEGIN_LINK_OSS" />avoimen lähdekoodin ohjelmistot<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
 <translation id="442817494342774222">Chromium on asetettu käynnistymään automaattisesti tietokoneen käynnistyksen yhteydessä.</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Määrittää myös Chromiumin aloitussivun.</translation>
 <translation id="6485906693002546646">Synkronoit Chromiumin tietosi osoitteella <ph name="PROFILE_EMAIL" />. Voit vaihtaa synkronoinnin asetuksia tai siirtyä käyttämään Chromiumia ilman Google-tiliä käymällä <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Poista Chromium</translation>
+<translation id="6526111688217511984">Chromium tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="6637001341228460105">Chromium tarvitsee mikrofonin käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="6638567566961868659">Etsi kirjanmerkit Chromium-valikosta tai kirjanmerkkipalkista.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>

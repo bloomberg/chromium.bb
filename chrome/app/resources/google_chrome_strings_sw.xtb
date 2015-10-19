@@ -47,7 +47,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2290014774651636340">Funguo za API za Google zinakosekana. Baadhi ya utendaji wa Google Chrome utazimwa.</translation>
 <translation id="2290095356545025170">Je, una hakika kuwa ungependa kusanidua Google Chrome?</translation>
 <translation id="2316129865977710310">La, asante</translation>
-<translation id="2334084861041072223">Hakimiliki <ph name="YEAR" /> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="2346876346033403680">Awali mtu aliingia katika Chrome kwenye kompyuta hii kama <ph name="ACCOUNT_EMAIL_LAST" />. Iwapo hiyo sio akaunti yako, weka mtumiaji mwengine wa Chrome ili utenganishe maelezo yako.
 
 Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia, na mipangilio mingine kwenye <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -144,10 +143,10 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="556024056938947818">Google Chrome inajaribu kuonyesha manenosiri.</translation>
 <translation id="5563479599352954471">Tafuta kwa mguso mmoja tu</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chrome ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na batili. Huenda mvamizi anajaribu kujifanya kuwa <ph name="SITE" />, au skrini ya kuingia kwenye Wi-Fi imeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chrome ilisimamisha muunganisho kabla data yoyote haijabadilishwa.</translation>
 <translation id="5620765574781326016">Pata maelezo kuhusu mada zilizo kwenye tovuti bila kuondoka kwenye ukurasa.</translation>
 <translation id="568643307450491754">Pata alamisho zako katika menyu ya Chrome au kwenye upau wa alamisho.</translation>
 <translation id="573759479754913123">Kuhusu Chrome OS</translation>
+<translation id="5749068826913805084">Chrome inahitaji idhini ya kufikia hifadhi ili ipakue faili.</translation>
 <translation id="5785746630574083988">Kuzindua upya kwenye hali ya Windows 8 kutafunga na kuzindua upya programu zako za Chrome.</translation>
 <translation id="5799551393681493217">Huwasha mitiririko ya kuingia katika Chrome kulingana na iframe. Ripoti hii inabatilisha --washa kuingia katika akaunti kulingana na wavuti.</translation>
 <translation id="5855036575689098185">Programu unayotumia kwenye kompyuta yako haioani na Google Chrome.</translation>

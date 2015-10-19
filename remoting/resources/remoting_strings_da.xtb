@@ -85,6 +85,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2919669478609886916">Du deler i øjeblikket denne maskine med en anden bruger. Vil du fortsætte med at dele?</translation>
 <translation id="2921543551052660690">Du har tidligere logget ind som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). For at få adgang til dine computere på den pågældende konto skal du <ph name="LINK_BEGIN" />logge ind på Chromium<ph name="LINK_END" /> med denne konto og geninstallere Chromoting.</translation>
 <translation id="2926340305933667314">Fjernadgangen til denne computer kunne ikke deaktiveres. Prøv igen senere.</translation>
+<translation id="2930135165929238380">Nogle obligatoriske komponenter mangler. Gå til chrome://plugins, og sørg for, at Native Client er aktiveret.</translation>
 <translation id="2939145106548231838">Godkend over for host</translation>
 <translation id="2998137343848432918">• Tilføjelse af skærm med medvirkende.
 • Løsning af problemet med visning i fuld skærm med synligt tastatur.</translation>

@@ -48,10 +48,10 @@
 
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
 <translation id="1160939557934457296">Huwag paganahin ang pagpapatuloy mula sa pahina ng babala sa Ligtas na Pag-browse</translation>
-<translation id="1198465924256827162">Kung gaano kadalas ipinadadala ang mga pag-upload ng status ng device, sa mga millisecond.
+<translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
-      Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum na
-      pinapayagang dalas ay 60 segundo.</translation>
+      Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
+      na pinapayagang dalas ay 60 segundo.</translation>
 <translation id="1213523811751486361">Tinutukoy ang URL ng search engine na ginamit upang magbigay ng mga suhestiyon sa paghahanap. Dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />' ang URL, na papalitan sa panahon ng query ng tektsong inilagay ng user sa ngayon.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang suhestiyong URL ang gagamitin.
@@ -64,11 +64,6 @@
 
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
-<translation id="1283072268083088623">Tinutukoy kung aling mga scheme ng Pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
-
-          Ang mga posibleng halaga ay 'basic,' 'digest,' 'ntlm' at 'negotiate.' Ihiwalay ang maramihang halaga gamit ang mga kuwit.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang lahat ng apat na scheme.</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
 <translation id="1300635491585192248">Hulaan ang mga pagkilos sa network sa anumang network na hindi
           cellular</translation>
@@ -96,7 +91,7 @@
 <translation id="1353966721814789986">Mga page sa startup</translation>
 <translation id="1359553908012294236">Kung itatakda ang patakarang ito sa true o kung hindi ito iko-configure, ie-enable ng <ph name="PRODUCT_NAME" /> ang mga pag-log in ng bisita. Ang mga pag-log in ng bisita ay mga profile sa <ph name="PRODUCT_NAME" /> kung saan nasa incognito mode ang lahat ng window.
 
-      Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ng mga profile ng bisita.</translation>
+      Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
 <translation id="1398889361882383850">Pinapayagan kang itakda kung papayagan ang mga website na awtomatikong magpatakbo ng mga plugin. Maaaring payagan ang awtomatikong pagpapatakbo ng mga plugin para sa lahat ng website o tatanggihan para sa lahat ng website.
 
@@ -139,6 +134,7 @@
 
       Kung nakatakda ang patakarang ito sa false o hindi nakatakda, idi-disable ang
       Unified Desktop. Sa sitwasyong ito, hindi mae-enable ng user ang feature.</translation>
+<translation id="1474273443907024088">I-disable ang TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng device.
 
@@ -225,7 +221,6 @@
 
           Para sa higit pang mga pagpipilian at detalyadong halimbawa, bisitahin ang:
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">Mga Patakaran para sa Pagpapatotoo ng HTTP</translation>
 <translation id="1956493342242507974">Kino-configure ang pamamahala sa power sa screen sa pag-login sa <ph name="PRODUCT_OS_NAME" />.
 
       Nagbibigay-daan sa iyo ang patakarang ito na i-configure kung paano kikilos ang <ph name="PRODUCT_OS_NAME" /> kapag walang gawain ang user sa loob ng ilang sandali habang ipinapakita ang screen sa pag-login. Kumokontrol ang patakaran ng maraming setting. Para sa mga indibidwal na semantics at saklaw ng value ng mga ito, tingnan ang mga naaangkop na patakararan na kumokontrol sa pamamahala sa power sa loob ng isang session. Ang mga natatanging paglihis sa mga patakarang ito ay:
@@ -262,6 +257,18 @@
       Kung nakatakda sa false ang HardwareAccelerationModeEnabled, babalewalain ag Disable3DAPIs at magiging katumbas nito ang pagkakatakda ng Disable3DAPIs sa true.</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="2170233653554726857">I-enable ang pag-optimize ng WPAD</translation>
+<translation id="2175836933294053665">Kino-configure ang isang listahan ng mga pinamamahalaang bookmark.
+
+      Ang patakaran ay binubuo ng isang listahan ng mga bookmark kung saan ang bawat bookmark ay isang
+      diksyunaryong naglalaman ng mga key na "pangalan" at "url" na nagtataglay ng pangalan ng bookmark
+      at ng target nito. Maaaring ma-configure ang isang subfolder sa pamamagitan ng pagtukoy sa isang bookmark
+      nang walang key na "url" ngunit mayroong karagdagang key na "children" na naglalaman mismo
+      ng listahan ng mga bookmark gaya ng tinukoy sa itaas (ang ilan sa mga ito ay maaaring
+      mga folder muli). Inaayos ng
+      <ph name="PRODUCT_NAME" /> ang mga hindi kumpletong URL na para bang isinumite ang mga ito sa pamamagitan ng Omnibox,
+      halimbawa, nagiging "https://google.com/" ang "google.com."
+
+      Inilalagay ang mga bookmark na ito sa isang folder ng Mga pinamamahalaang bookmark na hindi mababago ng user, ngunit magagawang piliin ng user na itago ito mula sa bookmark bar. Hindi naka-sync ang mga pinamamahalaang bookmark sa user account at hindi maaaring mabago ng mga extension ang mga ito.</translation>
 <translation id="2188979373208322108">Pinapagana ang bar ng bookmark sa <ph name="PRODUCT_NAME" />.
 
       Kung pinagana mo ang setting na ito, magpapakita ng isang bar ng bookmark ang <ph name="PRODUCT_NAME" />.
@@ -525,7 +532,7 @@
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
 
-      Kung ie-enable mo ang setting na ito, magagamit ng user ang Pindutin upang Hanapin at mapipili niyang i-on o i-off ang feature.
+      Kung ie-enable mo ang setting na ito, magagamit ng user ang Pindutin upang Hanapin at magagawa niyang i-on o i-off ang feature.
 
       Kung idi-disable mo ang setting na ito, ganap na madi-disable ang Pindutin upang Hanapin.
 
@@ -588,6 +595,11 @@
 <translation id="3067188277482006117">Kung true, magagamit ng user ang hardware sa mga Chrome device upang malayuang patunayan ang pagkakakilanlan nito sa CA ng privacy sa pamamagitan ng Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Kung nakatakda ito sa false, o kung hindi ito nakatakda, mabibigo ang mga pagtawag sa API nang may code ng error.</translation>
+<translation id="3069958900488014740">Pinapayagang i-off ang pag-optimize ng WPAD (Web Proxy Auto-Discovery) sa <ph name="PRODUCT_NAME" />.
+
+      Kung nakatakda sa false ang patakarang ito, madi-disable ang pag-optimize ng WPAD na magsasanhi sa <ph name="PRODUCT_NAME" /> na maghintay nang mas matagal para sa mga DNS-based na WPAD server.  Kung hindi nakatakda o naka-enable ang patakarang ito, ie-enable ang pag-optimize ng WPAD.
+
+      Nakatakda man o paano man itinakda ang patakarang ito, hindi mababago ng mga user ang setting ng pag-optimize ng WPAD.</translation>
 <translation id="3072045631333522102">Screen saver na gagamitin sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="3072847235228302527">Itakda ang Mga Tuntunin ng Serbisyo para sa isang account na lokal sa device</translation>
 <translation id="3096595567015595053">Listahan ng mga pinaganang plugin</translation>
@@ -727,22 +739,6 @@
       Kung itinakda sa true ang setting na ito o hindi naka-configure, magagamit ng mga user ang lahat ng sinusuportahang output ng audio sa kanilang device.</translation>
 <translation id="3808945828600697669">Tumukoy ng listahan ng mga hindi pinagang plugin</translation>
 <translation id="3816312845600780067">I-enable ang bailout keyboard shortcut para sa awtomatikong pag-log in</translation>
-<translation id="381807926299956806">Itinatakda ang isa o higit pang inirerekumendang lokal para sa mga pampublikong session, na nagbibigay-daan sa mga user na madaling pumili ng isa sa mga lokal na ito.
-
-      Maaaring pumili ang user ng lokal at layout ng keyboard bago magsimula ng pampublikong session. Bilang default, nakalista nang nakaayos ayon sa alpabeto ang lahat ng lokal na sinusuportahan ng <ph name="PRODUCT_OS_NAME" />. Maaari mong gamitin ang patakarang ito upang maglipat ng isang hanay ng mga inirerekumendang lokal sa itaas ng listahan.
-
-      Kung hindi nakatakda ang patakarang ito, paunang pipiliin ang kasalukuyang lokal ng UI.
-
-      Kung nakatakda ang patakarang ito, ililipat ang mga inirerekumendang lokal sa itaas ng listahan at makikitang hiwalay mula sa iba pang mga lokal. Ililista ang mga inirerekumendang lokal sa pagkakasunud-sunod kung paano lumalabas ang mga ito sa patakaran. Paunang pipiliin ang unang inirerekumendang lokal.
-
-      Kung mayroong mahigit sa isang inirerekumendang lokal, ipinagpalagay na gugustuhin ng mga user na pumili sa mga lokal na ito. Prominenteng iaalok ang pagpili ng lokal at layout ng keyboard kapag magsisimula ng pampublikong session. Kung hindi, ipinagpalagay na gugustuhin ng karamihan ng mga user na gamitin ang paunang piniling lokal. Hindi gaanong prominenteng iaalok ang lokal at layout ng keyboard kapag nag-aalok ng pampublikong session.
-
-      Kapag nakatakda ang patakarang ito at naka-enable ang awtomatikong pag-login (tingnan ang mga patakarang |DeviceLocalAccountAutoLoginId| at |DeviceLocalAccountAutoLoginDelay|), gagamitin ng awtomatikong sinimulang pampublikong session ang unang inirerekumendang lokal at ang pinakasikat na layout ng keyboard na tumutugma sa lokal na ito.
-
-      Ang paunang piniling layout ng keyboard ang palaging magiging pinakasikat na layout na tumutugma sa paunang piniling lokal.
-
-      Maaari lang itakda ang patakaran na ito bilang inirerekumenda. Maaari mong gamitin ang patakarang ito upang maglipat ng hanay ng mga inirerekumendang locale sa itaas ngunit pinapayagan ang mga user na pumili kailanman ng anumang lokal na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> para sa kanilang session.
-      </translation>
 <translation id="3820526221169548563">I-enable ang feature na pagiging naa-access ng on-screen na keyboard.
 
           Kung itinakda sa true ang patakarang ito, i-e-enable palagi ang on-screen na keyboard.
@@ -831,9 +827,9 @@
           Kung pinagana o hindi mo itinakda ang patakarang ito, makikita ng mga user ang kanilang mga password sa malinaw na teksto sa tagapamahala ng password.</translation>
 <translation id="4056910949759281379">Huwag paganahin ang SPDY protocol</translation>
 <translation id="4088589230932595924">Pinuwersa ang mode na incognito</translation>
-<translation id="4088983553732356374">Nagbibigay-daan sa iyo na itakda kung maaari bang magtakda ang mga website ng lokal na data. Ang pagtatakda ng lokal na data ay maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website.
+<translation id="4088983553732356374">Nagbibigay-daan sa iyong itakda kung maaari bang magtakda ng lokal na data ang mga website. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagtatakda ng lokal na data.
 
-          Kung itatakda ang patakarang ito sa 'Panatilihin ang cookies sa kabuuan ng session,' iki-clear ang cookies kapag nagsara ang session. Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> sa 'background mode,' maaaring hindi magsara ang session kapag isinara ang huling window. Pakitingnan ang patakarang 'BackgroundModeEnabled' para sa higit pang impormasyon tungkol sa pagko-configure sa gawing ito.
+          Kung nakatakda ang patakarang ito sa 'Panatilihin ang cookies sa kabuuan ng session,' iki-clear ang cookies kapag nagsara ang session. Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> sa 'background mode,' maaaring hindi magsara ang session kapag isinara ang huling window. Pakitingnan ang patakarang 'BackgroundModeEnabled' para sa higit pang impormasyon tungkol sa pagko-configure sa gawing ito.
 
           Kung hindi itatakda ang patakarang ito, gagamitin ang 'AllowCookies' at mababago ito ng user.</translation>
 <translation id="410478022164847452">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay gagawa ng pagkilos kapag idle kapag tumatakbo habang nakasaksak sa kuryente.
@@ -846,7 +842,7 @@
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
 <translation id="4147054660081653009">Certificate ng client para sa pagkonekta sa RemoteAccessHostTokenValidationUrl.
 
-          Kung itatakda ang patakarang ito, gagamit ang host ng certificate ng client na may partikular na issuer na CN upang magpatotoo sa RemoteAccessHostTokenValidationUrl. Itakda ito sa "*" upang gumamit ng anumang available na certificate ng client.
+          Kung hindi itatakda ang patakarang ito, gagamit ang host ng certificate ng client na may partikular na issuer na CN upang magpatotoo sa RemoteAccessHostTokenValidationUrl. Itakda ito sa "*" upang gumamit ng anumang available na certificate ng client.
 
           Kasalukuyang naka-disable ang feature na ito sa server-side.</translation>
 <translation id="4157003184375321727">I-ulat ang bersyon ng OS at firmware.</translation>
@@ -1016,6 +1012,11 @@
 <translation id="4962195944157514011">Tinutukoy ang URL ng search engine na ginamit kapag nagsasagawa ng isang default na paghahanap. Dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />' ang URL, na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
 
           Dapat na itakda ang pagpipiliang ito kapag pinagana ang patakarang 'DefaultSearchProviderEnabled' at kikilalanin lamang kung ito ang sitwasyon.</translation>
+<translation id="4971529314808359013">Pinapayagan kang tukuyin ang isang listahan ng mga pattern ng url na tumutukoy sa mga site kung saan awtomatiko dapat na pumili ang <ph name="PRODUCT_NAME" /> ng client certificate, kung kailangan ng site ng isang certificate.
+
+          Ang value ay dapat na isang array ng stringified na mga diksyunaryong JSON. Ang bawat diksyunaryo ay dapat na mayroong anyong { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kung saan ang $URL_PATTERN ay isang pattern ng setting ng content. Nililimitahan ng $FILTER kung aling mga client certificate ang awtomatikong pipiliin ng browser. Anuman ang filter, ang mga certificate na tumutugma sa kahilingan sa certificate ng server ang pipiliin. Kung ang $FILTER ay may anyong { "ISSUER": { "CN": "$ISSUER_CN" } }, mga client certificate na ibinigay ng isang certificate na may CommonName $ISSUER_CN lang ang pipiliin. Kung ang $FILTER ay ang walang lamang diksyunaryo na {}, hindi na nililimitahan ang pagpili ng mga client certificate.
+
+          Kung hindi nakatakda ang patakarang ito, walang gagawing awtomatikong pagpili para sa anumang site.</translation>
 <translation id="4980301635509504364">Pahintulutan o tanggihan ang pagkuha ng video.
 
       Kung naka-enable o hindi naka-configure (default), tatanungin ang user para sa
@@ -1113,7 +1114,7 @@
 
       Pinapayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME" />.
 
-      Kung itatakda mo ang patakarang ito, maaari mong i-configure kung maaari bang mag-sign in sa <ph name="PRODUCT_NAME" /> ang isang user. Kapag itinakda ang patakarang ito sa 'False,' hindi gagana ang mga app at extension na gumagamit sa chrome.identity API, kaya mainam kung gagamitin mo na lang ang SyncDisabled.</translation>
+      Kung itatakda mo ang patakarang ito, magagawa mong i-configure kung maaari bang mag-sign in ang isang user sa <ph name="PRODUCT_NAME" />. Kapag itinakda ang patakarang ito sa 'False,' hindi gagana ang mga app at extension na gumagamit ng chrome.identity API, kaya mainam kung SyncDisabled na lang ang gagamitin mo.</translation>
 <translation id="5304269353650269372">Tinutukoy ang haba ng panahon nang walang input ng user pagkatapos ipakita ang dialog ng babala kapag gumagamit ng baterya.
 
           Kapag naitakda ang patakarang ito, tinutukoy nito ang haba ng panahon na dapat manatiling idle ang user bago magpakita ang <ph name="PRODUCT_OS_NAME" /> ng dialog ng babala na nagsasabi sa user na gagawin na ang pagkilos kapag idle.
@@ -1279,9 +1280,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5868414965372171132">Configuration ng network sa antas ng user</translation>
 <translation id="588135807064822874">I-enable ang Pindutin upang Hanapin</translation>
 <translation id="5883015257301027298">Default na setting ng cookies</translation>
-<translation id="5887291617378691520">Kung pipiliin ang 'Magbukas ng listahan ng mga URL' bilang pagkilos sa startup, magbibigay-daan sa iyo ito na tukuyin ang listahan ng mga URL na bubuksan. Kung hindi ito itatakda, walang bubuksang URL sa startup.
+<translation id="5887291617378691520">Kung pipiliin ang 'Magbukas ng listahan ng mga URL' bilang pagkilos sa startup, magbibigay-daan ito sa iyo na tukuyin ang listahan ng mga URL na bubuksan. Kung hindi ito itatakda, walang bubuksang URL sa start up.
 
-          Gagana lang ang patakarang ito kung itatakda ang patakarang 'RestoreOnStartup' sa 'RestoreOnStartupIsURLs.'
+          Gagana lang ang patakarang ito kung itatakda ang patakarang 'RestoreOnStartup' sa 'RestoreOnStartupIsURLs'.
 
           Hindi available ang patakarang ito sa mga instance ng Windows na hindi nakakonekta
           sa isang domain ng Aktibong Direktoryo.</translation>
@@ -1363,13 +1364,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6155936611791017817">Itakda ang default na katayuan ng malaking cursor sa screen ng pag-login</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="6158324314836466367">Pangalan ng web store na enterprise (hindi na ginagamit)</translation>
-<translation id="6167074305866468481">Babala: Ganap na aalisin sa <ph name="PRODUCT_NAME" /> ang suporta sa SSLv3 pagkatapos ng bersyon 43 (bandang Hulyo 2015) at kasabay na aalisin ang patakarang ito.
+<translation id="6167074305866468481">Babala: ganap na aalisin sa <ph name="PRODUCT_NAME" /> ang suporta sa SSLv3 pagkatapos ng bersyon 43 (bandang Hulyo 2015) at kasabay na aalisin ang patakarang ito.
 
       Kung hindi iko-configure ang patakarang ito, gagamit ang <ph name="PRODUCT_NAME" /> ng default na minimum na bersyon na SSLv3 sa <ph name="PRODUCT_NAME" /> 39 at TLS 1.0 sa mga mas bagong bersyon.
 
       Kung hindi naman, maaari itong itakda sa isa sa mga sumusunod na value: "sslv3," "tls1," "tls1.1" o "tls1.2." Kapag itinakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas mababa sa tinukoy na bersyon. Babalewalain ang hindi matutukoy na value.
 
-      Tandaang kahit na ganito ang mga numero, mas naunang bersyon ang "sslv3" kaysa sa "tls1."</translation>
+      Tandaang kahit na ganito ang mga numero, mas naunang bersyon ang "sslv3" kumpara sa "tls1."</translation>
 <translation id="6177482277304066047">Nagtatakda ng target na bersyon para sa mga Awtomatkong Pag-update.
 
       Tinutukoy ang prefix ng target na bersyon na dapat i-update ng <ph name="PRODUCT_OS_NAME" />. Kung ang device ay napapatakbo ng isang bersyong mas nauna kaysa sa tinukoy na prefix, mag-a-update ito sa pinakabagong bersyon gamit ang ibinigay na prefix. Kung ang device ay nasa mas bago nang bersyon, walang magiging epekto (hal. walang isasagawang pag-downgrade) at mananatili ang device sa pinakabagong bersyon. Gumagana ang format ng prefix ayon sa bahagi tulad ng ipinapakita sa mga susunod na halimbawa:
@@ -1405,7 +1406,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
          Kung hindi mo pinagana ang setting na ito, ang nabuong Kerberos SPN ay hindi magsasama ng port sa anumang kaso.</translation>
 <translation id="6279809962528392889">Tinutukoy kung dapat bang ilipat sa profile ng user ang cookies sa pagpapatotoo na itinatakda ng SAML IdP sa pag-log in.
 
-      Kapag nagpatotoo ang isang user sa pamamagitan ng SAML IdP sa pag-log in, inilalagay muna ang cookies na itinatakda ng IdP sa isang pansamantalang profile. Maaaring ilipat ang cookies na ito sa profile ng user upang ipagpatuloy ang katayuan ng pagpapatotoo.
+      Kapag nagpatotoo ang isang user sa pamamagitan ng SAML IdP sa pag-log in, inilalagay muna ang cookies na itinakda ng dP sa isang pansamantalang profile. Maaaring ilipat ang cookies na ito sa profile ng user upang ipagpatuloy ang katayuan ng pagpapatotoo.
 
       Kapag itinakda ang patakarang ito sa true, ililipat ang cookies na itinatakda ng IdP sa profile ng user sa tuwing magpapatotoo siya sa SAML IdP sa pag-log in.
 
@@ -1588,7 +1589,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6786747875388722282">Mga Extension</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
-<translation id="6828905844648501476">Kung itatakda ang patakarang ito sa true o kung hindi ito iko-configure, papayagan ng <ph name="PRODUCT_NAME" /> ang Magdagdag ng Tao mula sa user manager.
+<translation id="6828905844648501476">Kung hindi itatakda ang patakarang ito sa true o hindi ito iko-configure, papayagan ng <ph name="PRODUCT_NAME" /> ang Magdagdag ng Tao mula sa user manager.
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> ang paggawa ng mga bagong profile mula sa profile manager.</translation>
 <translation id="687046793986382807">Itinigil na ang patakarang ito simula noong bersyon 35 ng <ph name="PRODUCT_NAME" />.
@@ -1668,18 +1669,18 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung nakatakda sa to False ang patakarang ito, idi-disable ang background mode at hindi makokontrol ng user sa mga setting ng browser.
 
       Kung hindi itinakda ang patakarang ito, paunang idi-disable ang background mode at maaaring makontrol ng user sa mga setting ng browser.</translation>
-<translation id="7123297102171034788">Nagbibigay-daan sa iyo na tukuyin ang gawi sa startup.
+<translation id="7123297102171034788">Nagbibigay-daan sa iyong tukuyin ang gawi sa startup.
 
           Kung pipiliin mo ang 'Magbukas ng Page ng Bagong Tab,' palaging magbubukas ng Page ng Bagong Tab kapag sinimulan mo ang <ph name="PRODUCT_NAME" />.
 
           Kung pipiliin mo ang 'I-restore ang huling session,' muling bubuksan ang mga URL na nakabukas noong huling isinara ang <ph name="PRODUCT_NAME" /> at ire-restore ang session ng pagba-browse kung paano ito iniwan.
-          Kapag pinili ang opsyong ito, madi-disable ang ilang setting na nakadepende sa mga session o nagsasagawa ng mga pagkilos sa paglabas (gaya ng I-clear ang data mula sa pagba-browse sa paglabas o ang pang-session lang na cookies).
+          Kapag pinili ang opsyong ito, madi-disable ang ilang setting na nakadepende sa mga session o na nagsasagawa ng mga pagkilos sa paglabas (tulad ng I-clear ang data mula sa pagba-browse sa paglabas o ang pang-session lang na cookies).
 
-          Kung pipiliin mo ang 'Magbukas ng listahan ng mga URL,' bubuksan ang listahan ng 'Mga URL na bubuksan sa startup' kapag sinimulan ng isang user ang <ph name="PRODUCT_NAME" />.
+          Kung pipiliin mo ang 'Magbukas ng listahan ng mga URL,' bubukas ang listahan ng mga 'URL na bubuksan sa startup' kapag sinimulan ng isang user ang <ph name="PRODUCT_NAME" />.
 
           Kung ie-enable mo ang setting na ito, hindi ito mababago o ma-o-override ng mga user sa <ph name="PRODUCT_NAME" />.
 
-          Kapag na-disable ang setting na ito, parang hinahayaan lang ito nang hindi naka-configure. Mababago pa rin ito ng user sa <ph name="PRODUCT_NAME" />.
+          Kapag na-disable ang setting na ito, parang hinahayaan lang rin itong hindi naka-configure. Mababago pa rin ito ng user sa <ph name="PRODUCT_NAME" />.
 
           Hindi available ang patakarang ito sa mga instance ng Windows na hindi nakakonekta
           sa isang domain ng Aktibong Direktoryo.</translation>
@@ -1790,7 +1791,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi nakatakda ang patakarang ito, gagamitin ang default na laki at ma-o-override ito ng user gamit ang --disk-cache-size flag.</translation>
 <translation id="7612157962821894603">Mga flag sa buong system na ilalapat sa pag-start up ng <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Listahan ng hindi pinaganang mga scheme ng protocol</translation>
-<translation id="7615123397791876280">Uri ng Account para sa Pagpapatotoo sa Paghahanap ng Kompromiso</translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
 <translation id="7632724434767231364">Pangalan ng GSSAPI library</translation>
 <translation id="7635471475589566552">Kino-configure ang lokal ng application sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang lokal.
@@ -1833,11 +1833,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowImages' at magagawa ng user na baguhin ito.</translation>
 <translation id="7766336524667238790">Nag-uulat ng impormasyon tungkol sa aktibong session sa kiosk, gaya ng
-      application ID at bersyon ng application.
+      application ID at bersyon.
 
       Kung itatakda ang patakaran sa false, hindi iuulat ang impormasyon ng
-      session. Kung itatakda sa true o kung sadyang hindi itatakda, iuulat ang impormasyon ng
-      session.</translation>
+      session. Kung itatakda sa true o kung sadyang hindi itatakda, iuulat ang impormasyon
+      ng session.</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="7788511847830146438">Bawat Profile</translation>
 <translation id="7796141075993499320">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng mga plugin.
@@ -1984,15 +1984,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8197918588508433925">Tinutukoy ng patakarang ito ang mga pinapayagang extension upang magamit ang Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() para sa malayuang pagpapatunay. Dapat magdagdag ng mga extension sa listahang ito upang magamit ang API.
 
           Kung wala sa listahan ang isang extension, o hindi nakatakda ang listahan, mabibigo ang pagtawag sa API nang may code ng error.</translation>
-<translation id="8211174979203781791">Kino-configure ang default na URL ng homepage sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ito.
+<translation id="8211174979203781791">Kino-configure ang default na URL ng home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ito.
 
-          Ang homepage ay ang page na binubuksan ng button na Home. Ang mga page na bumubukas sa startup ay kinokontrol ng mga patakaran ng RestoreOnStartup.
+          Ang home page ay ang page na binubuksan ng button na Home. Kinokontrol ng mga patakaran ng RestoreOnStartup ang mga page na bumubukas sa startup.
 
-          Maaaring itakda ang uri ng homepage sa isang URL na tutukuyin mo rito o kaya ay sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi ipapatupad ang patakarang ito.
+          Maaaring itakda ang uri ng home page sa isang URL na tutukuyin mo rito o sa Page ng Bagong Tab. Kung pipiliin mo ang Page ng Bagong Tab, hindi ipapatupad ang patakarang ito.
 
-          Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang homepage sa <ph name="PRODUCT_NAME" />, ngunit mapipili pa rin nila ang Page ng Bagong Tab bilang kanilang homepage.
+          Kung ie-enable mo ang setting na ito, hindi mababago ng mga user ang URL ng kanilang home page sa <ph name="PRODUCT_NAME" />, ngunit mapipili pa rin nila ang Page ng Bagong Tab bilang kanilang home page.
 
-          Kapag hindi itinakda ang patakarang ito, makakapili mismo ang user ng sarili niyang homepage kung hindi rin nakatakda ang HomepageIsNewTabPage.
+          Kapag hindi itinakda ang patakarang ito, makakapili ang mismong user ng sarili niyang home page kung hindi rin nakatakda ang HomepageIsNewTabPage.
 
           Hindi available ang patakarang ito sa mga instance ng Windows na hindi nakakonekta
           sa isang domain ng Aktibong Direktoryo.</translation>
@@ -2015,9 +2015,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8300455783946254851">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag gumagamit ng mobile na koneksyon kapag nakatakda sa True. Sa sitwasyong iyon, naka-sync lang ang data sa Google Drive kapag nakakonekta sa pamamagitan ng WiFi o Ethernet.
 
           Kung hindi nakatakda o nakatakda sa False, makakapaglipat ang mga user ng mga file sa Google Drive sa pamamagitan ng mga mobile na koneksyon.</translation>
-<translation id="8303314579975657113">Tinutukoy kung aling library ng GSSAPI ang gagamitin para sa Pagpapatotoo ng HTTP. Makakapagtakda ka ng isang pangalan ng library, o isang buong daanan.
-
-          Kung walang ibinigay na setting, babalik ang <ph name="PRODUCT_NAME" /> sa paggamit ng default na pangalan ng library.</translation>
 <translation id="8329984337216493753">Sa mode ng retail lamang aktibo ang patakarang ito.
 
       Kapag nakatukoy ang DeviceIdleLogoutTimeout, tinutukoy ng patakarang ito ang tagal ng kahon ng babala gamit ang count down timer na ipinapakita sa user bago isagawa ang pag-logout.
@@ -2032,9 +2029,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8369602308428138533">Delay ng pag-off ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
-<translation id="8407759228138103300">Tinutukoy ang uri ng account ng mga account na ibinigay ng app sa pagpapatotoo ng Android na sumusuporta sa pagpapatotoo ng Paghahanap ng Kompromiso sa HTTP (hal. pagpapatotoo sa Kerberos). Dapat na available ang impormasyong ito mula sa supplier ng app sa Pagpapatotoo. Para sa higit pang mga detalye, tingnan ang https://goo.gl/hajyfN.
-
-          Kung walang ibinigay na setting, madi-disable sa Android ang Pagpapatotoo sa Paghahanap ng Kompromiso.</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="8451988835943702790">Gamitin ang Pahina ng Bagong Tab bilang homepage</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
@@ -2057,6 +2051,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
+<translation id="857925079934558818">Tinutukoy kung dapat i-disable ang pag-optimize ng TLS False Start. Para sa mga makasaysayang dahilan, pinangalanang DisableSSLRecordSplitting ang patakarang ito.
+
+      Kung hindi itatakda ang patakaran, o kung itatakda ito sa false, mae-enable ang TLS False Start. Kung itatakda ito sa true, madi-disable ang TLS False Start.</translation>
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
 <translation id="8631434304112909927">hanggang bersyon <ph name="UNTIL_VERSION" /></translation>
@@ -2167,8 +2164,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8951350807133946005">Itakda ang direktoryo ng cache ng disk</translation>
 <translation id="8955719471735800169">Bumalik sa tuktok</translation>
 <translation id="8960850473856121830">Itutugma ang mga pattern sa listahang ito sa security
-      origin ng humihiling na URL. Kung makakita ng katugma, magbibigay ng access
-      sa mga device sa pag-capture ng audio nang walang prompt.
+      origin ng humihiling na URL. Kung makakita ng katugma, magbibigay ng access sa mga device na nagka-capture ng audio
+      nang walang prompt.
 
       TANDAAN: Hanggang sa bersyon 45, sinusuportahan lang ang patakarang ito sa Kiosk mode.</translation>
 <translation id="8965758116018152083">Kung nakatakda sa blangkong string o hindi naka-configure ang patakaran na ito, hindi magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng isang opsyon sa pag-autocomplete sa flow ng pag-sign in ng user.

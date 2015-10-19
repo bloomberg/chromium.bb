@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="1339601241726513588">Inschrijvingsdomein:</translation>
 <translation id="1344588688991793829">Instellingen voor automatisch aanvullen in Chromium...</translation>
+<translation id="1375198122581997741">Over deze versie</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1455235771979731432">Er is een probleem opgetreden bij het verifiëren van je kaart. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
+<translation id="1519264250979466059">Datum van build</translation>
 <translation id="1549470594296187301">JavaScript moet zijn ingeschakeld om deze functie te kunnen gebruiken.</translation>
+<translation id="1559528461873125649">Dit bestand of deze directory bestaat niet</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
 <translation id="1644184664548287040">De netwerkconfiguratie is ongeldig en kan niet worden geïmporteerd.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is gisteren verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}}</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
 <translation id="1693754753824026215">De pagina op <ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van morgen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van # dagen in de toekomst. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}}</translation>
+<translation id="1710259589646384581">Besturingssysteem</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Bug indienen</translation>
+<translation id="1753706481035618306">Paginanummer</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Wil je dat <ph name="PRODUCT_NAME" /> de pagina's op deze site die in het <ph name="LANGUAGE_NAME" /> zijn geschreven, voortaan vertaalt?</translation>
 <translation id="2587841377698384444">Directory API-ID:</translation>
 <translation id="2597378329261239068">Dit document is beveiligd met een wachtwoord. Geef een wachtwoord op.</translation>
+<translation id="2609632851001447353">Varianten</translation>
 <translation id="2625385379895617796">Je klok loopt voor</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2653659639078652383">Verzenden</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Waarde weergeven</translation>
 <translation id="3648607100222897006">Deze experimentele functies kunnen op elk moment worden aangepast, vastlopen of verdwijnen. We bieden geen enkele garantie aangaande wat er gebeurt als je een van deze experimenten inschakelt: je browser kan zelfs spontaan in brand vliegen. Alle gekheid op een stokje, het is mogelijk dat alle gegevens in je browser worden gewist, of dat je veiligheid en privacy op onverwachte manieren risico lopen. Experimenten die je inschakelt, worden ingeschakeld voor alle gebruikers van deze browser. Let dus goed op wat je doet.</translation>
 <translation id="3650584904733503804">Validatie geslaagd</translation>
+<translation id="3658742229777143148">Revisie</translation>
 <translation id="370665806235115550">Laden...</translation>
 <translation id="3712624925041724820">Licenties zijn verbruikt</translation>
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4744603770635761495">Uitvoerbaar pad</translation>
 <translation id="4771973620359291008">Er is een onbekende fout opgetreden.</translation>
 <translation id="4800132727771399293">Controleer je vervaldatum en CVC-code en probeer het opnieuw</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Staat</translation>
 <translation id="5094747076828555589">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chromium. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="5095208057601539847">Provincie</translation>
+<translation id="5115563688576182185">(64-bits)</translation>
 <translation id="5145883236150621069">Foutcode aanwezig in de beleidsreactie</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="6337534724793800597">Beleid filteren op naam</translation>
+<translation id="6355080345576803305">Overschrijving voor openbare sessie</translation>
 <translation id="6387478394221739770">Ben je geïnteresseerd in nieuwe, coole Chrome-functies? Probeer ons bèta-kanaal op chrome.com/beta.</translation>
-<translation id="6426993025560594914">Alle experimenten zijn beschikbaar op je platform.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6458467102616083041">Genegeerd omdat de standaardzoekoptie door het beleid is uitgeschakeld.</translation>
 <translation id="647261751007945333">Apparaatbeleid</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Gebied</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
 <translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
+<translation id="6897140037006041989">User-agent</translation>
 <translation id="6915804003454593391">Gebruiker:</translation>
 <translation id="6957887021205513506">Het certificaat van de server lijkt vals te zijn.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Deze pagina is vertaald van het<ph name="ORIGINAL_LANGUAGE" />in het<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME" /> doorzoeken op <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Build-ID</translation>
 <translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
 <translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="7334320624316649418">&amp;Opnieuw volgorde wijzigen</translation>
+<translation id="7353601530677266744">Opdrachtregel</translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Profielpad</translation>
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Controleer je CVC-code en probeer het opnieuw</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Het servercertificaat is nog niet geldig.</translation>
+<translation id="7951415247503192394">(32-bits)</translation>
 <translation id="7956713633345437162">Mobiele bladwijzers</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7977590112176369853">&lt;geef hier uw zoekopdracht op&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Op deze pagina blijven</translation>
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="917450738466192189">Het servercertificaat is ongeldig.</translation>
-<translation id="9187827965378254003">Het lijkt erop dat er momenteel geen experimenten beschikbaar zijn.</translation>
 <translation id="9207861905230894330">Kan artikel niet toevoegen.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FORMULIER LEEGMAKEN</translation>
+<translation id="969892804517981540">Officiële build</translation>
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 </translationbundle>

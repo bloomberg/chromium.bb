@@ -85,6 +85,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
 <translation id="2921543551052660690">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Chromium にログイン<ph name="LINK_END" />し、Chromoting を再インストールしてください。</translation>
 <translation id="2926340305933667314">このパソコンへのリモート アクセスを無効にできませんでした。しばらくしてからもう一度お試しください。</translation>
+<translation id="2930135165929238380">必要なコンポーネントが見つかりません。chrome://plugins にアクセスして、ネイティブ クライアントが有効になっていることを確認してください。</translation>
 <translation id="2939145106548231838">ホストへの認証</translation>
 <translation id="2998137343848432918">• クレジット画面を追加しました。
 • キーボードを表示したまま全画面表示にするときに発生していた問題を修正しました。</translation>

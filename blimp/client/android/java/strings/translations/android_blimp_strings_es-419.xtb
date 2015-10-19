@@ -1,4 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="3407245330823033366">Elige una cuenta para usar con Blimp.</translation>
+<translation id="4641972508298030550">No se puede autenticar el usuario.</translation>
+<translation id="8514856595257368555">Se recuperó el token.</translation>
 </translationbundle>

@@ -85,6 +85,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2919669478609886916">Du delar nu den här datorn med en annan användare. Vill du fortsätta att dela?</translation>
 <translation id="2921543551052660690">Du har tidigare loggat in som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Om du vill kunna ansluta till de datorer som sparats i det kontot <ph name="LINK_BEGIN" />loggar du in i Chromium<ph name="LINK_END" /> med det kontot och installerar om Chromoting.</translation>
 <translation id="2926340305933667314">Det gick inte att inaktivera fjärråtkomst till den här datorn. Försök igen senare.</translation>
+<translation id="2930135165929238380">Vissa obligatoriska komponenter saknas. Öppna chrome://plugins och kontrollera att Native Client har aktiverats.</translation>
 <translation id="2939145106548231838">Autentisera till värd</translation>
 <translation id="2998137343848432918">• Saldoskärm tillagd.
 • Korrigering av problem när fullskärmsläget aktiveras med tangentbordet synligt.</translation>

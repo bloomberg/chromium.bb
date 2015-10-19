@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Brakuje kluczy interfejsu Google API. Niektóre funkcje Google Chrome będą wyłączone.</translation>
 <translation id="2290095356545025170">Czy na pewno chcesz odinstalować przeglądarkę Google Chrome?</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2346876346033403680">Ktoś zalogował się wcześniej w Chrome na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Jeśli to nie jest Twoje konto, utwórz nowego użytkownika Chrome, by Twoje informacje były przechowywane oddzielnie.
 
 Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, historia i inne ustawienia, zostaną połączone z kontem <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -137,11 +136,10 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="5563479599352954471">Szukaj jednym kliknięciem</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> normalnie używa szyfrowania do ochrony Twoich informacji. Tym razem gdy Chrome próbował połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe
-i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podszyć się pod stronę <ph name="SITE" /> albo ekran logowania Wi-Fi przerwał połączenie. Twoje informacje są nadal bezpieczne, bo Chrome zatrzymał połączenie przed wymianą jakichkolwiek danych.</translation>
 <translation id="5620765574781326016">Poznaj tematy omawiane w witrynach, nie opuszczając strony.</translation>
 <translation id="568643307450491754">Zakładki są dostępne w menu Chrome i na pasku zakładek.</translation>
 <translation id="573759479754913123">System operacyjny &amp;Chrome – informacje</translation>
+<translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5785746630574083988">Ponowne uruchomienie w trybie Windows 8 spowoduje zamknięcie i ponowne otwarcie aplikacji Chrome.</translation>
 <translation id="5799551393681493217">Włącza procesy logowania w Chrome oparte na iframe. Ta flaga zastępuje internetowy proces logowania.</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>

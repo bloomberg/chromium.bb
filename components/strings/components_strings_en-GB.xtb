@@ -20,17 +20,21 @@
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
+<translation id="1375198122581997741">About Version</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="1455235771979731432">There was a problem verifying your card. Check your Internet connection and try again.</translation>
 <translation id="1491151370853475546">Reload this Page</translation>
+<translation id="1519264250979466059">Build Date</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
+<translation id="1559528461873125649">No such file or directory</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="1644184664548287040">The network configuration is invalid and couldn't be imported.</translation>
 <translation id="1655462015569774233">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired yesterday. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired # days ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}}</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
 <translation id="1693754753824026215">The page at <ph name="SITE" /> says:</translation>
 <translation id="1706954506755087368">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from tomorrow. This may be caused by a misconfiguration or an attacker intercepting your connection.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate is supposedly from # days in the future. This may be caused by a misconfiguration or an attacker intercepting your connection.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">File bug</translation>
 <translation id="1753706481035618306">Page number</translation>
@@ -78,6 +82,7 @@
 <translation id="2581221116934462656">Would you like <ph name="PRODUCT_NAME" /> to offer to translate <ph name="LANGUAGE_NAME" /> pages from this site next time?</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="2597378329261239068">This document is password-protected.  Please enter a password.</translation>
+<translation id="2609632851001447353">Variations</translation>
 <translation id="2625385379895617796">Your clock is ahead</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2653659639078652383">Submit</translation>
@@ -124,6 +129,7 @@
 <translation id="3623476034248543066">Show value</translation>
 <translation id="3648607100222897006">These experimental features may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data or your security and privacy could be compromised in unexpected ways. Any experiments that you enable will be enabled for all users of this browser. Please proceed with caution.</translation>
 <translation id="3650584904733503804">Validation successful</translation>
+<translation id="3658742229777143148">Revision</translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
 <translation id="3739623965217189342">Link that you copied</translation>
@@ -165,6 +171,7 @@
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="4726672564094551039">Reload policies</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4744603770635761495">Executable Path</translation>
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
 <translation id="4813512666221746211">Network error</translation>
@@ -181,6 +188,7 @@
 <translation id="5089810972385038852">County</translation>
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="5095208057601539847">Province</translation>
+<translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5145883236150621069">Error code present in the policy response</translation>
 <translation id="5172758083709347301">Machine</translation>
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE" />? Report this error</translation>
@@ -223,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> bookmarks</translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
+<translation id="6355080345576803305">Public session override</translation>
 <translation id="6387478394221739770">Interested in cool new Chrome features? Try our beta channel at chrome.com/beta.</translation>
-<translation id="6426993025560594914">All experiments are available on your platform!</translation>
 <translation id="6445051938772793705">Country</translation>
 <translation id="6458467102616083041">Ignored because default search is disabled by policy.</translation>
 <translation id="647261751007945333">Device policies</translation>
@@ -242,6 +250,7 @@
 <translation id="6839929833149231406">Area</translation>
 <translation id="6874604403660855544">&amp;Redo add</translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
+<translation id="6897140037006041989">User Agent</translation>
 <translation id="6915804003454593391">User:</translation>
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -260,12 +269,15 @@
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE" />to<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Search <ph name="SITE_NAME" /> for <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Build ID</translation>
 <translation id="725866823122871198">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your computer's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="7275334191706090484">Managed Bookmarks</translation>
 <translation id="7298195798382681320">Recommended</translation>
 <translation id="7334320624316649418">&amp;Redo reorder</translation>
+<translation id="7353601530677266744">Command Line</translation>
 <translation id="7378627244592794276">Nope</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Profile Path</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>
 <translation id="7485870689360869515">No data found.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -287,6 +299,7 @@
 <translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Server's certificate is not yet valid.</translation>
+<translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Mobile bookmarks</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7977590112176369853">&lt;enter query&gt;</translation>
@@ -342,9 +355,9 @@
 <translation id="9154176715500758432">Stay on this Page</translation>
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="917450738466192189">Server's certificate is invalid.</translation>
-<translation id="9187827965378254003">Oh dear, it looks like there are currently no experiments available.</translation>
 <translation id="9207861905230894330">Failed to add article.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">CLEAR FORM</translation>
+<translation id="969892804517981540">Official Build</translation>
 <translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

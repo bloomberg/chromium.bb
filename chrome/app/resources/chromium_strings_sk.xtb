@@ -6,7 +6,6 @@
 Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách sa neuložia.</translation>
 <translation id="108122890477367602">&amp;Spustiť Chromium v režime Windows 8</translation>
 <translation id="1115445892567829615">Prehliadaču Chromium sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
-<translation id="1144202035120576837">Webové stránky <ph name="SITE" /> zvyčajne používajú na ochranu vašich informácií šifrovanie. Keď sa prehliadač Chromium teraz pokúsil pripojiť k stránkam <ph name="SITE" />, vrátili nezvyčajné a nesprávne poverenia. Buď sa za stránky <ph name="SITE" /> snaží vydávať útočník, alebo prihlasovacia obrazovka siete Wi-Fi prerušila spojenie. Vaše informácie sú stále zabezpečené, pretože Chromium zastavil pripojenie ešte predtým, než došlo k výmene údajov.</translation>
 <translation id="1174473354587728743">Zdieľať počítač? Teraz si môžete prehliadač Chromium nastaviť podľa vlastných predstáv.</translation>
 <translation id="1185134272377778587">Informácie o prehliadači Chromium</translation>
 <translation id="1221340462641866827">Systém Chromium OS nepodporuje spustenie externej aplikácie na spracovanie odkazov typu <ph name="SCHEME" />. Typ požadovaného odkazu: <ph name="PROTOLINK" />.</translation>
@@ -107,7 +106,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4230135487732243613">Chcete prepojiť údaje prehliadača Chromium s týmto účtom?</translation>
 <translation id="4285930937574705105">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Chromium momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="4330585738697551178">Tento modul zvykne spôsobovať konflikt s prehliadačom Chromium.</translation>
-<translation id="4365115785552740256">Prehliadač Chromium mohol vzniknúť vďaka projektu s otvoreným zdrojom <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> a ďalšiemu <ph name="BEGIN_LINK_OSS" />softvéru s otvoreným zdrojom<ph name="END_LINK_OSS" /> .</translation>
 <translation id="4423735387467980091">Prispôsobiť a spravovať Chromium</translation>
 <translation id="442817494342774222">Prehliadač Chromium je nakonfigurovaný tak, aby sa automaticky spustil pri zapnutí počítača.</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>

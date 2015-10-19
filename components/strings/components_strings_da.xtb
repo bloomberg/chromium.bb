@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
 <translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
+<translation id="1375198122581997741">Om version</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="1455235771979731432">Dit kort kunne ikke godkendes. Kontrollér at du har forbindelse til internettet, og prøv igen.</translation>
 <translation id="1491151370853475546">Genindlæs denne side</translation>
+<translation id="1519264250979466059">Versionsdato</translation>
 <translation id="1549470594296187301">JavaScript skal være aktiveret, før du kan bruge denne funktion.</translation>
+<translation id="1559528461873125649">Filen eller mappen findes ikke</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
 <translation id="1644184664548287040">Netværkskonfigurationen er ugyldig og kunne ikke importeres.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat udløb i går. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Computerens ur er angivet til <ph name="CURRENT_DATE" />. Er det korrekt? Hvis ikke, skal du rette systemets ur og derefter opdatere denne side.}one{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat udløb for # dag siden. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Computerens ur er angivet til <ph name="CURRENT_DATE" />. Er det korrekt? Hvis ikke, skal du rette systemets ur og derefter opdatere denne side.}other{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat udløb for # dage siden. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Computerens ur er angivet til <ph name="CURRENT_DATE" />. Er det korrekt? Hvis ikke, skal du rette systemets ur og derefter opdatere denne side.}}</translation>
 <translation id="168841957122794586">Servercertifikatet indeholder en svag kryptografisk nøgle.</translation>
 <translation id="1693754753824026215">Siden på <ph name="SITE" /> siger:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra i morgen. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}one{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra om # dag. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}other{Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat tilsyneladende først gælder fra om # dage. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Indgiv fejl</translation>
+<translation id="1753706481035618306">Sidetal</translation>
 <translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Skal <ph name="PRODUCT_NAME" /> tilbyde at oversætte sider på <ph name="LANGUAGE_NAME" /> fra dette website næste gang?</translation>
 <translation id="2587841377698384444">Id for Directory API:</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
+<translation id="2609632851001447353">Varianter</translation>
 <translation id="2625385379895617796">Dit ur er foran</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2653659639078652383">Indsend</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Vis værdi</translation>
 <translation id="3648607100222897006">Disse eksperimentelle funktioner kan ændre sig, gå i stykker eller forsvinde når som helst. Vi giver absolut ingen garantier for, hvad der kan ske, hvis du aktiverer en af ​​disse eksperimentelle funktioner, og din browser kan måske endda finde på spontant at selvantænde. Spøg til side. Din browser kan muligvis slette alle dine data, eller din sikkerhed eller dine personlige oplysninger kan komme i fare på uventet vis. Enhver eksperimentel funktion, du aktiverer, aktiveres for alle brugere af denne browser. Vær forsigtig, hvis du fortsætter.</translation>
 <translation id="3650584904733503804">Valideringen er fuldført</translation>
+<translation id="3658742229777143148">Revision</translation>
 <translation id="370665806235115550">Indlæser...</translation>
 <translation id="3712624925041724820">Licenserne er opbrugt</translation>
 <translation id="3739623965217189342">Link, du har kopieret</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="4726672564094551039">Opdater politikker</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4744603770635761495">Eksekverbar sti</translation>
 <translation id="4771973620359291008">Der er opstået en ukendt fejl.</translation>
 <translation id="4800132727771399293">Kontrollér, om din kontrolkode og udløbsdato er korrekte, og prøv igen.</translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Delstat</translation>
 <translation id="5094747076828555589">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chromium ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5095208057601539847">Provins</translation>
+<translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5145883236150621069">Fejlkode til stede i politiksvar</translation>
 <translation id="5172758083709347301">Maskine</translation>
 <translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE" />? Rapporter denne fejl</translation>
@@ -199,7 +208,7 @@
 <translation id="5509780412636533143">Administrerede bogmærker</translation>
 <translation id="5523118979700054094">Navn på politik</translation>
 <translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
-<translation id="5540224163453853">Den anmodede artikel kunne ikke findes.</translation>
+<translation id="5540224163453853">Den anmodede artikel blev ikke fundet.</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="560412284261940334">Administration er ikke understøttet</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bogmærker</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6337534724793800597">Filtrer politikker efter navn</translation>
+<translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
-<translation id="6426993025560594914">Alle eksperimenter er tilgængelige på din platform.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="647261751007945333">Enhedspolitikker</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Område</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="6891596781022320156">Politikniveauet understøttes ikke.</translation>
+<translation id="6897140037006041989">Brugeragent</translation>
 <translation id="6915804003454593391">Bruger:</translation>
 <translation id="6957887021205513506">Serverens certifikat ser ud til at være en forfalskning.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Denne side er oversat fra<ph name="ORIGINAL_LANGUAGE" />til<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Søg på <ph name="SITE_NAME" /> efter <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Build-id</translation>
 <translation id="725866823122871198">Der kunne ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da dato og tid (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
 <translation id="7275334191706090484">Administrerede bogmærker</translation>
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="7334320624316649418">&amp;Annuller fortryd omarrangering</translation>
+<translation id="7353601530677266744">Kommandolinje</translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7400418766976504921">Webadresse</translation>
+<translation id="7419106976560586862">Profilsti</translation>
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Kontrollér, om din kontrolkode er korrekt, og prøv igen.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Serverens certifikatet er endnu ikke gyldigt.</translation>
+<translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Bogmærker på mobil</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7977590112176369853">&lt;indtast forespørgsel&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Bliv på denne side</translation>
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="917450738466192189">Serverens certifikat er ugyldigt.</translation>
-<translation id="9187827965378254003">Der er desværre ingen tilgængelige eksperimenter.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">RYD FORMULAREN</translation>
+<translation id="969892804517981540">Officiel version</translation>
 <translation id="988159990683914416">Udviklerversion</translation>
 </translationbundle>

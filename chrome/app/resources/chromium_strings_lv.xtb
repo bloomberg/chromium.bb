@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
 <translation id="108122890477367602">&amp;Restartēt Chromium Windows 8 režīmā</translation>
 <translation id="1115445892567829615">Chromium nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
-<translation id="1144202035120576837">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūks Chromium mēģināja izveidot savienojumu ar vietni <ph name="SITE" />, tika uzrādīti neparasti un nepareizi akreditācijas dati. Vai nu uzbrucējs mēģina uzdoties par vietni <ph name="SITE" />, vai arī tika pārtraukts savienojums ar Wi-Fi pierakstīšanās ekrānu. Jūsu informācija joprojām ir drošībā, jo pārlūkā Chromium tika pārtraukts savienojums, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="1174473354587728743">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chromium atbilstoši savām vajadzībām.</translation>
 <translation id="1185134272377778587">Par Chromium</translation>
 <translation id="1221340462641866827">Chromium OS neatbalsta ārējas lietojumprogrammas palaišanu, lai rīkotos ar <ph name="SCHEME" /> saitēm. Pieprasītā saite ir <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Vai saistīt Chromium datus ar šo kontu?</translation>
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="4330585738697551178">Ir zināms, ka šis modulis konfliktē ar Chromium.</translation>
-<translation id="4365115785552740256">Chromium ir kļuvis iespējams, pateicoties <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> atklātā pirmkoda projektam un citai <ph name="BEGIN_LINK_OSS" />atklātā pirmkoda programmatūrai<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Pielāgot un kontrolēt Chromium</translation>
 <translation id="442817494342774222">Pārlūks Chromium ir konfigurēts automātiskai palaišanai, kad jūs startējat savu datoru.</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium.</translation>
 <translation id="6485906693002546646">Chromium satura sinhronizēšanai jūs izmantojat kontu <ph name="PROFILE_EMAIL" />. Lai atjauninātu savas sinhronizācijas preferences vai izmantotu Chromium bez Google konta, dodieties uz: <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Atinstalēt Chromium</translation>
+<translation id="6526111688217511984">Chromium ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="6637001341228460105">Chromium sistēmām ir nepieciešama piekļuve mikrofonam, lai kopīgotu to ar šo vietni.</translation>
 <translation id="6638567566961868659">Skatiet savas grāmatzīmes Chromium izvēlnē vai grāmatzīmju joslā.</translation>
 <translation id="6676384891291319759">Piekļūt internetam</translation>

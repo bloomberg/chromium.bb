@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">As chaves da API do Google não foram encontradas. Algumas funcionalidades do Google Chrome serão desativadas.</translation>
 <translation id="2290095356545025170">Tem certeza de que deseja desinstalar o Google Chrome?</translation>
 <translation id="2316129865977710310">Não.</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2346876346033403680">Anteriormente, alguém fez login no Google Chrome neste computador como <ph name="ACCOUNT_EMAIL_LAST" />. Se esta não for sua conta, crie um novo usuário do Google Chrome para manter suas informações separadas.
 
 Se você decidir fazer login assim mesmo, as informações do Google Chrome, como favoritos, histórico e outras configurações serão mescladas com as informações de <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -137,11 +136,10 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="556024056938947818">O Google Chrome está tentando mostrar senhas.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> geralmente usa criptografia para proteger suas informações. Quando o Google Chrome tentou se conectar a <ph name="SITE" /> desta vez, o website retornou credenciais
-incomuns e incorretas. Isso significa que um invasor está fingindo ser <ph name="SITE" />, ou que uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chrome interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="5620765574781326016">Saiba mais sobre tópicos em websites sem sair da página.</translation>
 <translation id="568643307450491754">Encontre seus favoritos no menu do Google Chrome ou na barra de favoritos.</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
+<translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
 <translation id="5785746630574083988">A reinicialização no modo Windows 8 fecha e reinicia todos os aplicativos do Google Chrome.</translation>
 <translation id="5799551393681493217">Ativa fluxos de login do Google Chrome baseados em iframe. Esta sinalização modifica login com ativação baseada na Web.</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>

@@ -85,6 +85,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2919669478609886916">Kasalukuyan mong ibinabahagi ang machine na ito sa isa pang user. Nais mo bang ituloy ang pagbabahagi?</translation>
 <translation id="2921543551052660690">Nag-sign in ka dati bilang <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Upang ma-access ang iyong mga computer sa account na iyon, <ph name="LINK_BEGIN" />mag-sign in sa Chromium<ph name="LINK_END" /> gamit ang account na iyon at muling i-install ang Chromoting.</translation>
 <translation id="2926340305933667314">Nabigo ang hindi pagpapagana sa malayuang access sa computer na ito. Pakisubukang muli sa ibang pagkakataon.</translation>
+<translation id="2930135165929238380">Nawawala ang ilang kinakailangang bahagi. Mangyaring pumunta sa chrome://plugins at tiyaking naka-enable ang Native Client.</translation>
 <translation id="2939145106548231838">Patunayan upang ma-host</translation>
 <translation id="2998137343848432918">• Nagdagdag ng screen ng Mga Credit.
 • Nag-ayos ng problema kapag nagfu-full-screen habang nakikita ang keyboard.</translation>

@@ -85,6 +85,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2919669478609886916">Esta máquina está sendo compartilhada com outro usuário. Deseja continuar compartilhando?</translation>
 <translation id="2921543551052660690">Você fez login anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN" />faça login no Chromium<ph name="LINK_END" /> usando essa conta e reinstale o Chromoting.</translation>
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
+<translation id="2930135165929238380">Alguns componentes obrigatórios não foram encontrados. Acesse chrome://plugins e certifique-se de que "Cliente nativo' esteja ativado.</translation>
 <translation id="2939145106548231838">Autenticar para host</translation>
 <translation id="2998137343848432918">• Adição da tela "Créditos".
 • Correção de um problema que ocorria ao entrar no modo tela cheia com o teclado visível.</translation>

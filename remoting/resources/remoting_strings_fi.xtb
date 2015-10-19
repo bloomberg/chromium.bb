@@ -85,6 +85,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2919669478609886916">Jaat tällä hetkellä tämän tietokoneen toisen käyttäjän kanssa. Haluatko jatkaa jakamista?</translation>
 <translation id="2921543551052660690">Olet aiemmin kirjautunut sisään käyttäjänä <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Jos haluat käyttää tietokoneitasi tämän tilin kautta, <ph name="LINK_BEGIN" />kirjaudu Chromiumiin<ph name="LINK_END" /> kyseisellä tilillä ja asenna Chromoting uudelleen.</translation>
 <translation id="2926340305933667314">Etäyhteyksien poistaminen käytöstä epäonnistui. Yritä myöhemmin uudelleen.</translation>
+<translation id="2930135165929238380">Joitakin pakollisia komponentteja puuttuu. Avaa osoite chrome://plugins ja varmista, että Native Client on käytössä.</translation>
 <translation id="2939145106548231838">Todenna isännälle</translation>
 <translation id="2998137343848432918">• Tekijät-näyttö lisätty.
 • Korjattu ongelma, joka ilmeni siirryttäessä koko näytön tilaan näppäimistön ollessa näkyvillä.</translation>

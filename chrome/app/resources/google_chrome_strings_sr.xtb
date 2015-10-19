@@ -47,7 +47,6 @@
 <translation id="2290014774651636340">Недостају шифре за Google API. Неке функције Google Chrome-а ће бити онемогућене.</translation>
 <translation id="2290095356545025170">Да ли стварно желите да деинсталирате Google Chrome?</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
-<translation id="2334084861041072223">Ауторска права <ph name="YEAR" />. Google Inc. Сва права задржана.</translation>
 <translation id="2346876346033403680">Неко се претходно пријавио у Chrome на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Ако то није ваш налог, направите новог Chrome корисника да би информације биле раздвојене.
 
 Ако се ипак пријавите, Chrome информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -144,11 +143,10 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> нормално шифровањем штити ваше информације. Када је Chrome овај пут покушао да се повеже на <ph name="SITE" />, веб-сајт је вратио неуобичајене
-  и нетачне акредитиве. То значи или да се неки нападач претвара да је <ph name="SITE" /> или да је екран за пријављивање на Wi-Fi прекинуо везу. Ваше информације су и даље безбедне јер је Chrome прекинуо везу пре било какве размене података.</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="568643307450491754">Пронађите обележиваче у Chrome менију или на траци са обележивачима.</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
+<translation id="5749068826913805084">Chrome-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
 <translation id="5785746630574083988">Поновним покретањем у Windows 8 режиму затварате и поново покрећете Chrome апликације.</translation>
 <translation id="5799551393681493217">Омогућава токове пријављивања у Chrome засноване на iframe-у. Ово обележје замењује обележје --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">Софтвер покренут на рачунару није компатибилан са Google Chrome-ом.</translation>

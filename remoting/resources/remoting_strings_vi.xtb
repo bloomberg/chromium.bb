@@ -85,6 +85,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2919669478609886916">Bạn hiện đang chia sẻ máy này với một người dùng khác. Bạn có muốn tiếp tục chia sẻ không?</translation>
 <translation id="2921543551052660690">Trước đó, bạn đã đăng nhập bằng <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Để truy cập máy tính của bạn bằng tài khoản đó, hãy <ph name="LINK_BEGIN" />đăng nhập vào Chromium<ph name="LINK_END" /> bằng tài khoản đó và cài đặt lại Kết nối từ xa trên Chrome.</translation>
 <translation id="2926340305933667314">Không thể tắt kết nối từ xa với máy tính này. Vui lòng thử lại sau.</translation>
+<translation id="2930135165929238380">Thiếu một số thành phần bắt buộc. Vui lòng chuyển tới chrome://plugins và đảm bảo Native Client được bật.</translation>
 <translation id="2939145106548231838">Xác thực với máy chủ lưu trữ</translation>
 <translation id="2998137343848432918">• Đã thêm màn hình Ghi nhận tác giả.
 • Đã khắc phục sự cố khi chuyển sang chế độ toàn màn hình với bàn phím hiển thị.</translation>

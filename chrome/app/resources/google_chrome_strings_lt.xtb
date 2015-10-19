@@ -47,7 +47,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2290014774651636340">Trūksta „Google“ API raktų. Bus išjungtos kai kurios „Google Chrome“ funkcijos.</translation>
 <translation id="2290095356545025170">Ar tikrai norite pašalinti „Google Chrome“?</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
-<translation id="2334084861041072223">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="2346876346033403680">Kažkas anksčiau prisijungė prie „Chrome“ šiame kompiuteryje kaip <ph name="ACCOUNT_EMAIL_LAST" />. Jei tai ne jūsų paskyra, sukurkite naują „Chrome“ naudotoją, kad apsaugotumėte savo informaciją.
 
 Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija ir kiti nustatymai, bus sujungta su <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -145,11 +144,10 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="556024056938947818">„Google Chrome“ bando rodyti slaptažodžius.</translation>
 <translation id="5563479599352954471">Paieška vienu palietimu</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
-<translation id="5618769508111928343">Svetainė <ph name="SITE" /> paprastai naudoja šifruotę informacijai apsaugoti. Kai „Chrome“ šį kartą bandė prisijungti prie svetainės <ph name="SITE" />, ji pateikė mums neįprastus
-ir netinkamus prisijungimo duomenis. Užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekranas nutraukė ryšį. Informacija vis tiek yra apsaugota, nes „Chrome“ sustabdė ryšį, kol nebuvo pakeisti jokie duomenys.</translation>
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="573759479754913123">Apie „Chrome“ OS</translation>
+<translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
 <translation id="5785746630574083988">Iš naujo paleidus „Windows 8“ „Chrome“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="5799551393681493217">Įgalinami „Chrome“ prisijungimo „iframe“ pagrindu srautai. Ši žyma nepaiso funkcijos „įgalinti prisijungimą žiniatinklyje“.</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>

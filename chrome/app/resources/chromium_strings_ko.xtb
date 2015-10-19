@@ -6,8 +6,6 @@
 일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
 <translation id="108122890477367602">Windows 8 모드에서 Chromium 다시 실행(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
-<translation id="1144202035120576837"><ph name="SITE" />은(는) 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. Chromium이 이번에 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고
-잘못된 사용자 인증 정보를 반환했습니다. 공격자가 <ph name="SITE" />인 것처럼 가장하고 있거나 Wi-Fi 로그인 화면이 연결을 차단했기 때문일 수 있습니다. 데이터 교환이 이뤄지기 전에 Chromium에서 연결을 차단했기 때문에 사용자 정보는 안전합니다.</translation>
 <translation id="1174473354587728743">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="1185134272377778587">Chromium 정보</translation>
 <translation id="1221340462641866827">Chromium OS는 외부 애플리케이션 실행을 통한 <ph name="SCHEME" /> 링크 처리를 지원하지 않습니다. 요청된 링크는 <ph name="PROTOLINK" />입니다.</translation>
@@ -108,7 +106,6 @@
 <translation id="4230135487732243613">Chromium 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="4330585738697551178">이 모듈은 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
-<translation id="4365115785552740256">Chromium은 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 오픈소스 프로젝트를 비롯한 여러 <ph name="BEGIN_LINK_OSS" />오픈소스 소프트웨어<ph name="END_LINK_OSS" />에 기초해 만들어진 브라우저입니다.</translation>
 <translation id="4423735387467980091">Chromium 맞춤설정 및 제어</translation>
 <translation id="442817494342774222">컴퓨터를 시작하면 Chromium을 자동으로 실행하도록 설정됩니다.</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
@@ -169,6 +166,7 @@
 <translation id="6475912303565314141">또한 Chromium을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="6485906693002546646">Chromium 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL" />을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chromium을 사용하려면 <ph name="SETTINGS_LINK" />(으)로 이동하세요.</translation>
 <translation id="6510925080656968729">Chromium 설치 제거</translation>
+<translation id="6526111688217511984">Chromium에서 파일을 다운로드하려면 저장소에 액세스해야 합니다.</translation>
 <translation id="6637001341228460105">Chromium이 이 사이트와 마이크를 공유하려면 마이크 액세스가 필요합니다.</translation>
 <translation id="6638567566961868659">Chromium 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>

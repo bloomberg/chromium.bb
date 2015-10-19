@@ -85,6 +85,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="2919669478609886916">Šiuo metu šį kompiuterį bendrinate su kitu naudotoju. Ar norite toliau bendrinti?</translation>
 <translation id="2921543551052660690">Anksčiau prisijungėte kaip <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Kad pasiektumėte kompiuterius toje paskyroje, <ph name="LINK_BEGIN" />prisijunkite prie „Chromium“<ph name="LINK_END" /> naudodami tą paskyrą ir iš naujo įdiekite „Chrome“ nuotolinį ryšį.</translation>
 <translation id="2926340305933667314">Neleidžiant nuotolinės prieigos prie šio kompiuterio įvyko klaida. Bandykite dar kartą vėliau.</translation>
+<translation id="2930135165929238380">Trūksta kai kurių būtinų komponentų. Apsilankykite adresu chrome://plugins ir įsitikinkite, kad įgalinta „Native Client“.</translation>
 <translation id="2939145106548231838">Autentifikuoti pagal prieglobą</translation>
 <translation id="2998137343848432918">• Pridėtas titrų ekranas.
 • Ištaisyta problema, kylanti įjungus viso ekrano režimą, kai matoma klaviatūra.</translation>

@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Nedostaju ključevi Google API-ja. Neke funkcije Google Chromea bit će onemogućene.</translation>
 <translation id="2290095356545025170">Jeste li sigurni da želite deinstalirati Google Chrome?</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
-<translation id="2334084861041072223">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2346876346033403680">Netko se prethodno prijavio na Chrome na ovom računalu kao <ph name="ACCOUNT_EMAIL_LAST" />. Ako to nije vaš račun, izradite novog korisnika sustava Chrome kako bi vaši podaci bili odvojeni.
 
 Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i ostale postavke spojit će se s korisnikom <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -136,10 +135,10 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5563479599352954471">Pretraživanje jednim dodirom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja s web-lokacijom <ph name="SITE" />, web-lokacija je Chromeu vratila neuobičajene i netočne vjerodajnice. To može značiti dvije stvari: napadač se pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chrome zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
 <translation id="573759479754913123">O OS-u Chrome</translation>
+<translation id="5749068826913805084">Chrome treba pristup pohrani da bi preuzimao datoteke.</translation>
 <translation id="5785746630574083988">Ponovno pokretanje u načinu Windows 8 zatvorit će i ponovo pokrenuti vaše aplikacije Chrome.</translation>
 <translation id="5799551393681493217">Omogućuje postupke prijave na Chrome na temelju iframea. Ta oznaka premošćuje omogućivanje prijave na temelju weba.</translation>
 <translation id="5855036575689098185">Softver koji se izvodi na vašem računalu nije kompatibilan s Google Chromeom.</translation>

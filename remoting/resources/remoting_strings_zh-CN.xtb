@@ -85,6 +85,7 @@
 <translation id="2919669478609886916">您目前正在与其他用户共享此计算机。您希望继续共享吗？</translation>
 <translation id="2921543551052660690">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN" />登录 Chromium<ph name="LINK_END" />，然后重新安装 Chrome 远程访问。</translation>
 <translation id="2926340305933667314">无法停用对此计算机的远程访问。请稍后重试。</translation>
+<translation id="2930135165929238380">缺少某些必需的组件。请前往 chrome://plugins，确保 Native Client 处于启用状态。</translation>
 <translation id="2939145106548231838">向主机验证身份</translation>
 <translation id="2998137343848432918">• 添加了“鸣谢”屏幕。
 • 解决了一个在显示键盘的情况下进入全屏模式时会出现的问题。</translation>

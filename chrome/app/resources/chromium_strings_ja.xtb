@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="108122890477367602">Chromium を Windows 8 モードで再起動(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> では通常、ユーザーの情報を保護するために暗号化が行われています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が止まっている可能性があります。データのやり取りが行われる前に Chromium によって接続が中断されたため、情報は引き続き保護されています。</translation>
 <translation id="1174473354587728743">共有パソコンにするなど、Chromium をお好みの方法で設定できるようになりました。</translation>
 <translation id="1185134272377778587">Chromium について</translation>
 <translation id="1221340462641866827">Chromium OS では、<ph name="SCHEME" /> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Chromium データをこのアカウントにリンクしますか？</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
-<translation id="4365115785552740256">Chromium は <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> オープンソース プロジェクトやその他の<ph name="BEGIN_LINK_OSS" />オープンソース ソフトウェア<ph name="END_LINK_OSS" />によって実現しました。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="442817494342774222">Chromium は、パソコン起動時に自動的に起動されるよう設定されています。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">この拡張機能では、Chromium の起動時に表示されるページも制御されます。</translation>
 <translation id="6485906693002546646">Chromium データの同期に <ph name="PROFILE_EMAIL" /> を使用しています。同期設定を更新する、または Google アカウントなしで Chromium を使用するには、<ph name="SETTINGS_LINK" /> にアクセスしてください。</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
+<translation id="6526111688217511984">Chromium でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="6637001341228460105">このサイトとマイクを共有するには、Chromium にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="6638567566961868659">ブックマークは Chromium メニューやブックマーク バーに表示されます。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>

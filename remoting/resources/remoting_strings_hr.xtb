@@ -85,6 +85,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2919669478609886916">Ovaj uređaj trenutačno dijelite s drugim korisnikom. Želite li nastaviti dijeljenje?</translation>
 <translation id="2921543551052660690">Prethodno ste se prijavili kao <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Da biste pristupali svojim računalima putem tog računa, <ph name="LINK_BEGIN" />prijavite se na Chromium<ph name="LINK_END" /> tim računom i ponovo instalirajte Chromoting.</translation>
 <translation id="2926340305933667314">Onemogućavanje daljinskog pristupa ovom računalu nije uspjelo. Pokušajte ponovo kasnije.</translation>
+<translation id="2930135165929238380">Nedostaju neke obavezne komponente. Otvorite chrome://plugins i provjerite je li omogućen Lokalni klijent.</translation>
 <translation id="2939145106548231838">Autentifikacija na hostu</translation>
 <translation id="2998137343848432918">• Dodan je zaslon sa zaslugama.
 • Riješen je problem prelaska na cijeli zaslon s vidljivom tipkovnicom.</translation>

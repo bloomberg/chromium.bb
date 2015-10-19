@@ -47,7 +47,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="2316129865977710310">No, thank you</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2346876346033403680">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. If that isn't your account, create a new Chrome user to keep your information separate.
 
 Signing in anyway will merge Chrome information like bookmarks, history and other settings to <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -144,7 +143,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> normally uses encryption to protect your information. When Chrome tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="568643307450491754">Find your bookmarks in the Chrome menu or on the bookmarks bar.</translation>
 <translation id="573759479754913123">About Chrome OS</translation>

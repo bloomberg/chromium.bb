@@ -230,6 +230,7 @@
 <translation id="1336254985736398701">የገጽ &amp;መረጃ አሳይ</translation>
 <translation id="1337036551624197047">የቼክ ቁልፍሰሌዳ</translation>
 <translation id="1338950911836659113">በመሰረዝ ላይ...</translation>
+<translation id="1339266338863469628">ነባሪ (እርስዎን ብቻ ይመርጣል)</translation>
 <translation id="1340527397989195812">የፋይሎች መተግበሪያውን በመጠቀም በመሣሪያው ውስጥ ያለ የማህደረመረጃ ምትኬ ያስቀምጡ።</translation>
 <translation id="1343517687228689568">ይህን ገጽ  ከመነሻ ገጹ ላይ ይንቀሉት...</translation>
 <translation id="1344519653668879001">የገጽ አገናኝ መቆጣጠርን አሰናክል</translation>
@@ -259,7 +260,6 @@
 <translation id="1371806038977523515">እነዚህን ቅንብሮች የሚቆጣጠረው፦</translation>
 <translation id="1374468813861204354">የቀረቡ የጥቆማ አስተያየቶች</translation>
 <translation id="1374844444528092021">በ«<ph name="NETWORK_NAME" />» አውታረ መረብ የተፈለገው የእውቅና ማረጋገጫ ወይም አልተጫነም ወይም ከአሁን በኋላ እሴት ያለው አይደለም። እባክዎ አዲስ የእውቅና ማረጋገጫ ያግኙና እንደገና ለመገናኘት ይሞክሩ።</translation>
-<translation id="1375198122581997741">ስለ ስሪት</translation>
 <translation id="1376740484579795545">ከነቃ የ chrome://downloads/ ዩአርኤል የቁሳዊ ንድፍ ውርዶች ገጽን ይጭናል።</translation>
 <translation id="1377600615067678409">ለአሁን ዝለለው</translation>
 <translation id="1378727793141957596">ወደ Google Drive እንኳን በደህና መጡ!</translation>
@@ -308,7 +308,6 @@
 <translation id="144518587530125858">«<ph name="IMAGE_PATH" />»ን ለገጽታ መጫን አልተቻለም።</translation>
 <translation id="1451375123200651445">ድረ-ገጽ፣ ነጠላ ፋይል</translation>
 <translation id="1451917004835509682">ቁጥጥር የሚደረግበት ግለሰብን ያክሉ</translation>
-<translation id="1454188386658974462">የይለፍ ቃልዎን ዳግም ማስገባት ከመስመር ውጭ በሚሆኑበት ጊዜ በመለያ እንዲገቡ ያስችልዎታል።</translation>
 <translation id="1454223536435069390">ቅጽበታዊ ገጽ እይታ አ&amp;ንሳ</translation>
 <translation id="1455457703254877123">ይህ መሣሪያ ከአሁን በኋላ በርቀት በባለቤቱ (እርስዎ) ሊቀናበር አይችልም።</translation>
 <translation id="1455548678241328678">የኖርዌይኛ ቁልፍ ሰሌዳ</translation>
@@ -321,6 +320,7 @@
 <translation id="1464258312790801189">የእርስዎ መለያዎች</translation>
 <translation id="1464724975715666883">1 ስህተት።</translation>
 <translation id="1465078513372056452">ለመላክ የመክፈያ አድራሻውን ተጠቀም</translation>
+<translation id="1465176863081977902">የኦዲዮ አድራሻ &amp;ቅዳ</translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="1467999917853307373"><ph name="URL" /> ውሂብ እስከ መጨረሻው በእርስዎ መሣሪያ ላይ ሊያከማች ይፈልጋል።</translation>
 <translation id="1468038450257740950">WebGL አይደገፍም።</translation>
@@ -369,7 +369,6 @@
 <translation id="151501797353681931">ከSafari የመጣ</translation>
 <translation id="1515163294334130951">አስጀምር</translation>
 <translation id="151922265591345427">1024</translation>
-<translation id="1519264250979466059">የግንብ ቀን</translation>
 <translation id="1519759545815312682">የድምጽ እና የኦዲዮ እንቅስቃሴ ለ<ph name="USER_EMAIL" /> ነቅቷል።</translation>
 <translation id="1520505881707245707">ይህ ጥቆማ በአንጻፊው ላይ ያሉ ከድር ሱቁ የመጡ የቅጥያዎች ፋይሎች ውስጥ ያሉት ይዘቶች እንዲሆኑ ከሚጠበቁት ነገር ጋር የሚዛመዱ የመሆናቸው ማረጋገጫን ለማብራት ስራ ላይ መዋል ይችላል። ይሄ የማይበራ የሚሆን ባህሪን ለማብራት ሊያገለግል ይችላል፣ ነገር ግን እሱን ለማጥፋት ስራ ላይ መዋል አይችልም (ምክንያቱም ይህ ቅንብር በተንኮል-አዘል ዌር አላግባብ ሊነካካ ስለሚችል)።</translation>
 <translation id="1520635877184409083">አስተካክል...</translation>
@@ -407,8 +406,9 @@
 <translation id="155865706765934889">ተችፓድ</translation>
 <translation id="1558988940633416251">የመሣሪያ ስርዓት ተሻጋሪውን የHarfBuzz አቀማመጥ ፕሮግራም ለበይነገጽ ያንቁ። በድር ይዘት ላይ ተጽዕኖ የለውም።</translation>
 <translation id="1559235587769913376">የዩኒኮድ ቁምፊዎችን ያስገባል</translation>
-<translation id="1559528461873125649">እንደዚህ ያለ ፋይል ወይም አቃፊ የለም</translation>
 <translation id="1560991001553749272">ዕልባት ታክሏል!</translation>
+<translation id="1566958206723629112">ፍላሽ እና ፒዲኤፍ</translation>
+<translation id="1567723158593978621">በሚነቃበት ጊዜ ወደ አሳሹ መግባት አዲስ የgaia በይለፍ ቃል የተለያየ መግባት ፍሰትን ይጠቀማል።</translation>
 <translation id="1567993339577891801">ጃቫስክሪፕት ኮንሶል</translation>
 <translation id="1568822834048182062">የእርስዎ እልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች ከGoogle መለያዎ ጋር ይመሳሰላሉ።</translation>
 <translation id="1570677382738576200">አዲሱን የተግባር መሪን አሰናክል።</translation>
@@ -512,17 +512,17 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1697068104427956555">የምስሉ ካሬ ክልል ይምረጡ።</translation>
 <translation id="1697532407822776718">በቃ ጨርሰዋል!</translation>
+<translation id="1699274548822076330">ይህ ከtrace-upload-url ሰንደቅ ጋር አብሮ ስራ ላይ የሚውል ነው።
+        ማስጠንቀቂያ፦ በሚነቃበት ጊዜ Chrome ለእያንዳንዱ ዳሰሳ ያለውን የአፈጻጸም ውሂብ ይመዘግብና በtrace-upload-url ሰንደቅ ወደተጠቀሰው ዩአርኤል ይሰቅለዋል። ዱካው እንደ እርስዎ የጎበኙዋቸው ርዕሶችን እና የጎበኟቸው ድር ጣቢያዎች ዩአርኤሎችን ያሉ በግል ማንነትን ለይቶ ለማወቅ የሚያስችል መረጃን (PII) ሊያካትት ይችላል።</translation>
 <translation id="1699395855685456105">የሃርድዌር ክለሳ፦</translation>
 <translation id="1701062906490865540">ይህን ሰው አስወግድ</translation>
 <translation id="1702534956030472451">ምዕራባውያን</translation>
 <translation id="1707463636381878959">ይህን አውታረ መረብ ለሌሎች ተጠቃሚዎች ያጋሩ</translation>
 <translation id="1708338024780164500">(የቦዘነ)</translation>
-<translation id="1710259589646384581">ስርዓተ ክወና</translation>
 <translation id="1711973684025117106">መጭመቅ አልተሳካም፣ ያልተጠበቀ ስህተት፦ $1</translation>
 <translation id="1715941336038158809">የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል።</translation>
 <translation id="1717810180141539171">በበይነገጽ ክፍሎች ላይ ተጨማሪ የንክኪ ግብረመልስ አንቃ።</translation>
 <translation id="1718396316646584626">ይጠይቅ በእርስዎ</translation>
-<translation id="1718559768876751602">የGoogle መለያ አሁን ፍጠር</translation>
 <translation id="1720318856472900922">TLS WWW የአገልጋይ ማረጋገጫ</translation>
 <translation id="1720372306711178108">የተቀጠለ ዴስክቶፕ</translation>
 <translation id="1721937473331968728">ከእርስዎ ኮምፒውተር ጋር የተገናኙ የሚታወቁ አይነት አታሚዎችን ወደ <ph name="CLOUD_PRINT_NAME" /> ማከል ይችላሉ።</translation>
@@ -667,6 +667,7 @@
 <translation id="1950295184970569138">* የGoogle መገለጫ ፎቶ (በመጫን ላይ)</translation>
 <translation id="1951615167417147110">አንድ ገጽ ወደላይ ይሸበልላል</translation>
 <translation id="1956050014111002555">ፋይሉ እንዲገቡ ያልተደረጉ በርካታ የእውቅና ማረጋገጫዎችን ይዞ ነበር፦</translation>
+<translation id="1957988341423158185">ለአሰሳ ዱካ ክትትል የዱካ ክትትል መሰየሚያ</translation>
 <translation id="1958820272620550857">ንጥሎችን አግድ</translation>
 <translation id="1962233722219655970">ይህ ገጽ በኮምፒውተርዎ ላይ የማይሰራ የቤተኛ ደንበኛ መተግበሪያ ይጠቀማል።</translation>
 <translation id="1965328510789761112">የግል ማህደረ ትውስታ</translation>
@@ -691,7 +692,6 @@
 <translation id="1984642098429648350">መስኮት ቀኝ ላይ ይትከሉ</translation>
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME" /> ከአውታረ መረቡ ጋር ለመገናኘት የኮምፒውተርዎ ስርዓት ተኪ ቅንብሮችን እየተጠቀመ ነው።</translation>
 <translation id="1986281090560408715">ማያ ገጹ ላይ ስላሉ የንኪኪ ነጥቦች መረጃ የሚዘረዝር ብቅ-ባይ ማሳያ በላይኛው ግራ ጥግ ላይ ያነቃል።</translation>
-<translation id="1986824139605408742">የይለፍ ቃልዎን ማስታወስ ካልቻሉ መቀጠል ይችላሉ፣ ነገር ግን አካባቢያዊ ውሂብ ይጠፋል። የተመሳሰሉ ቅንብሮች እና ውሂብ ብቻ ናቸው የሚመጡት።</translation>
 <translation id="1987139229093034863">ወደተለየ ተጠቃሚ ይቀይሩ።</translation>
 <translation id="1991402313603869273"><ph name="PLUGIN_NAME" /> አልተፈቀደለትም።</translation>
 <translation id="1992126135411334429">ደህንነታቸው ያልተረጋገጡ ምንጮችን ደህንነታቸው ያልተረጋገጡ የሚል ምልክት አድርግበት።</translation>
@@ -885,6 +885,7 @@
 <translation id="2263497240924215535">(የተሰናከለ)</translation>
 <translation id="2266168284394154563">የማያ ገጽ ማጉላትን ዳግም ያስጀምሩ</translation>
 <translation id="2268190795565177333">ወሰኖች፦</translation>
+<translation id="2269459857310637791">የቁልፍ ክስተቱን (WM_KEY*) ከቁምፊ ክስተት (WM_CHAR) ጋር ማዋሃድን ያንቁ ወይም ያሰናክሉ።</translation>
 <translation id="2269471294353474737"><ph name="MARKUP_1" />ከመስመር ውጪ ሆነውም እንኳ ፋይሎችን ከየትኛውም ቦታ ሆነው ይድረሱባቸው።<ph name="MARKUP_2" />
         በGoogle Drive ውስጥ ያሉ ፋይሎች የተዘመኑ እና ከማንኛውም መሣሪያ ሊገኙ የሚችሉ ናቸው።<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />የፋይሎችዎን ደህንነት ይጠብቁ።<ph name="MARKUP_5" />
@@ -958,6 +959,7 @@
 <translation id="2368075211218459617">አግባቡን ያጣቀሰ ፍለጋን አንቃ።</translation>
 <translation id="2370882663124746154">ድርብ-በቻይና ፊደል መጻፊያ ሁነታን ያንቁ</translation>
 <translation id="2371076942591664043">&amp;ሲጠናቀቅ ክፈት</translation>
+<translation id="2372036074421194686">Chrome የማይፈለግ ፕሮግራም (<ph name="UWS_NAME" />) በእርስዎ ኮምፒውተር ላይ ተጭኖ አግኝቷል። የChrome ማጽጃ መሣሪያን በማስሄድ ሊያስወግዱት ይችሉ ይሆናል።</translation>
 <translation id="2375701438512326360">የሚዳሰስ ሰሌዳ ድጋፍ ሁልጊዜ እንዲነቃ ወይም እንዲሰናከል፣ ወይም በሚነሳበት ጊዜ የሚዳሰስ ሰሌዳ  ሲገኝ እንዲነቃ ያስገድዱ (ራስ-ሰር፣ ነባሪ)።</translation>
 <translation id="2377619091472055321">የተቀየሩ የ<ph name="IDS_SHORT_PRODUCT_NAME" /> ቅንብሮችን ዳግም ያስጀምሩ</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ፋይሎች ተመርጠዋል</translation>
@@ -985,7 +987,6 @@
 <translation id="2399147786307302860">የላቁ የማመሳሰል ቅንብሮች...</translation>
 <translation id="2400837204278978822">ያልታወቀ የፋይል አይነት።</translation>
 <translation id="2401053206567162910">ይህ መተግበሪያ በአሁኑ ጊዜ በዚህ መሣሪያ ላይ አይደገፍም ግን የChrome ተዓምረኛዎች እሱን ቶሎ ብለው ለመስራት ጠንክረው እየሰሩ ነው።</translation>
-<translation id="2401813394437822086">መለያዎትን መድረስ አልቻሉም?</translation>
 <translation id="2403091441537561402">ጌትዌይ፦</translation>
 <translation id="241082044617551207">ያልታወቀ ተሰኪ</translation>
 <translation id="2412835451908901523">እባክዎ በ<ph name="CARRIER_ID" /> የተሰጠውን የ8 አኃዝ መፍቻ ቁልፍ ፒን ያስገቡ።</translation>
@@ -1019,7 +1020,6 @@
 <translation id="2453860139492968684">ጨርስ</translation>
 <translation id="2454247629720664989">ቁልፍ ቃል</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> ከ<ph name="VOLUME_NAME" /> ፋይሎችን ለመቅዳት ይፈልጋል።</translation>
-<translation id="2462168109652162565">ይቅርታ፣ ክትትል የሚደረግበት ተጠቃሚ መፍጠር ከመቻልዎ በፊት ቢያንስ አንድ የGoogle መለያ ሊኖርዎት ይገባል። የህጻናት Google መለያዎችን ተጠቅመው ክትትል የሚደረግባቸው ተጠቃሚን መፍጠር አይቻልም።</translation>
 <translation id="2462724976360937186">የእውቅና ማረጋገጫ ባለስልጣን ቁልፍ መታወቂያ</translation>
 <translation id="2470332835941011566"><ph name="URL" /> በደህንነት ቁልፍዎ እርስዎን እንዲያውቅ ይፍቅዱለት?</translation>
 <translation id="2470702053775288986">የማይደገፉ ቅጥያዎች ተሰናክለዋል</translation>
@@ -1129,7 +1129,6 @@
 <translation id="2607991137469694339">የታሚል ግቤት ስልት (ፎነቲክ)</translation>
 <translation id="2608770217409477136">ነባሪ ቅንብሮችን ይጠቀሙ</translation>
 <translation id="2609371827041010694">ሁልጊዜ በዚህ መሣሪያ ላይ አሂድ</translation>
-<translation id="2609632851001447353">ልዩነቶች</translation>
 <translation id="2609896558069604090">አቋራጮችን ይፍጠሩ...</translation>
 <translation id="2610260699262139870">&amp;ትክክለኛ መጠን</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
@@ -1172,7 +1171,6 @@
 <translation id="2665717534925640469">ይህ ገጽ አሁን ሙሉ ማያ ገጽ ነው፣ እናም የመዳፊትዎ ጠቋሚን አሰናክሎታል።</translation>
 <translation id="2665919335226618153">ኧረ ቴች! ቅርጸት በሚሰራለት ጊዜ የሆነ ስህተት ነበር።</translation>
 <translation id="2668079306436607263">የአልፎ-ማሸብለል ታሪክ አሰሳ</translation>
-<translation id="2669198762040460457">ያስገቡት የተጠቃሚ ስም ወይም የይለፍ ቃል የተሳሳተ ነው።</translation>
 <translation id="2670965183549957348">የChewing ግቤት ስልት</translation>
 <translation id="2672142220933875349">መጥፎ የcrx ፋይል፣ ጥቅል መክፈት አልተሳካም።</translation>
 <translation id="2672394958563893062">አንድ ስህተት ተከስቷል። ከመጀመሪያው ጀምሮ ዳግም ለማስጀመር ጠቅ ያድርጉ።</translation>
@@ -1183,6 +1181,7 @@
 <translation id="2676342370492585497">ገቢር የተደባለቀ ይዘት</translation>
 <translation id="2676946222714718093">እየተጫወተ ያለው በ፦</translation>
 <translation id="2678063897982469759">እንደገና አንቃ</translation>
+<translation id="2678246812096664977">ሁሉም ተሰኪዎች</translation>
 <translation id="2679385451463308372">የስርዓት መልዕክቱን ተጠቅመው ያትሙ…</translation>
 <translation id="2680208403056680091">የበይነመረብ ግንኙነትዎ ቁጥጥር እየተደረገበት ነው</translation>
 <translation id="268053382412112343">&amp;ታሪክ</translation>
@@ -1203,6 +1202,7 @@
 <translation id="2716448593772338513">ክልል-ተሻጋሪ የጭነት ሁነታ</translation>
 <translation id="2717703586989280043">ተመዝግቧል</translation>
 <translation id="2718998670920917754">የጸረ-ቫይረስ ሶፍትዌር አንድ ቫይረስ አግኝቷል።</translation>
+<translation id="2721037002783622288"><ph name="SEARCH_ENGINE" />ን ለምስል ይ&amp;ፈልጉ</translation>
 <translation id="2724841811573117416">የWebRTC ምዝግብ ማስታወሻዎች</translation>
 <translation id="2725200716980197196">የአውታረ መረብ ግንኙነት ወደነበረበት ተመልሷል</translation>
 <translation id="2726306725839966998">በሚደራረብበት ጊዜ የዝጋ አዝራሮችን በንቁ ያልሆኑ ትሮች ላይ መደበቅን አሰናክል</translation>
@@ -1312,6 +1312,7 @@
 <translation id="2837049386027881519">ግንኙነቱ የቆየ የቲ ኤል ኤስ ወይም ኤስ ኤስ ኤል ፕሮቶኮል ስሪትን በመጠቀም እንደገና መሞከር ነበረበት። ይሄ በተለምዶ አገልጋዩ በጣም የቆየ ሶፍትዌር እየተጠቀመ መሆኑንና ሌሎች የደህንነት ችግሮች ሊኖሩበት ይችላል ማለት ነው።</translation>
 <translation id="2838379631617906747">በመጫን ላይ</translation>
 <translation id="2841837950101800123">አቅራቢ</translation>
+<translation id="2843055980807544929">ከተሰናከለ Chrome WM_KEY*ን እና WM_CHARን ለየብቻቸው ያስተናግዳቸዋል።</translation>
 <translation id="2843806747483486897">ነባሪ ቀይር...</translation>
 <translation id="2845382757467349449">ሁልጊዜ የዕልባቶች አሞሌን አሳይ</translation>
 <translation id="2846816712032308263">ፈጣን የትር/መስኮት መዝጋትን አንቃ - የትሩን onunload js መቆጣጠሪያ ከGUI በተናጠል ያስኬዳል።</translation>
@@ -1435,6 +1436,7 @@
 <translation id="3010279545267083280">የይለፍ ቃል ተሰርዟል</translation>
 <translation id="3011284594919057757">ስለ Flash</translation>
 <translation id="3011362742078013760">&amp;ሁሉንም እልባቶች ማንነትን በማያሳውቅ መስኮት ውስጥ ክፈት</translation>
+<translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012890944909934180">Chromeን በዴስክቶፑ ላይ ዳግም ያስጀምሩት</translation>
 <translation id="3012917896646559015">ኮምፒውተርዎን ወደ ጥገና ክፍል ለመላክ እባክዎ የሃርድዌርዎ አምራቹን ወዲያውኑ ያግኙ።</translation>
 <translation id="3015992588037997514">ይህ ኮድ በእርስዎ የChromebox ማያ ገጽ ላይ ይታያል?</translation>
@@ -1526,7 +1528,6 @@
 <translation id="3129173833825111527">የግራ ኅዳግ</translation>
 <translation id="3130528281680948470">የእርስዎ መሣሪያ ዳግመኛ ይዘጋጃል እና ሁሉም የተጠቃሚ መለያዎች እና የአካባቢ ውሂቦች ይወገዳሉ። ይህ አንዴ ከተደረገ በኋላ ሊቀለበስ አይችልም።</translation>
 <translation id="313205617302240621">የይለፍ ቃል ረሱ?</translation>
-<translation id="313407085116013672"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ሁሉንም አካባቢያዊ ውሂብዎ ደህንነቱ በተጠበቀ ሁኔታ ስለሚያመሰጥረው ያንን ውሂብ ለመክፈት የድሮው ይለፍ ቃል ማስገባት አለብዎት።</translation>
 <translation id="3135204511829026971">ማያ ገጹን አዙር</translation>
 <translation id="3140353188828248647">የአድራሻ አሞሌ ላይ አተኩር</translation>
 <translation id="3144126448740580210">ተከናውኗል</translation>
@@ -1614,6 +1615,7 @@
 <translation id="3258924582848461629">የጃፓንኛ የእጅ ጽሑፍ ግቤት ስልት</translation>
 <translation id="3264544094376351444">Sans-Serif ቅርጸ ቁምፊ፦</translation>
 <translation id="3265459715026181080">መስኮት ዝጋ</translation>
+<translation id="3267271790328635957">ፒዲኤፍ ብቻ</translation>
 <translation id="3267726687589094446">በርካታ ፋይሎችን በራስ ሰር ማውረድን መፍቀድ ቀጥል</translation>
 <translation id="3269093882174072735">ምስል ጫን</translation>
 <translation id="3269101346657272573">እባክዎ ፒን ያስገቡ።</translation>
@@ -1639,6 +1641,7 @@
 <translation id="3298461240075561421">ከዚህ በፊት ከዚህ ድር ጣቢያ ፋይሎችን አውርደው ቢሆኑም እንኳ ድር ጣቢያው ተጠልፎ ሊሆን ይችላል። ይህን ፋይል መልሰው ከማግኘት ይልቅ በኋላ ላይ እንደገና ለማውረድ መሞከር ይችላሉ።</translation>
 <translation id="3298789223962368867">ልክ ያልሆነ ዩአርኤል ገብቷል።</translation>
 <translation id="3300394989536077382">የተፈረመው</translation>
+<translation id="3301256054007749965">አዲስ የgaia በይለፍ ቃል የተለያየ የመግባት ፍሰትን ያንቁ</translation>
 <translation id="33022249435934718">የGDI መያዣዎች</translation>
 <translation id="3302340765592941254">የውርድ መጠናቀቅ ማሳወቂያ</translation>
 <translation id="3302709122321372472">ለይዘት ስክሪፕት ሲ ኤስ ኤስ «<ph name="RELATIVE_PATH" />» መጫን አልተቻለም።</translation>
@@ -1686,11 +1689,11 @@
 <translation id="3345135638360864351">ይህን ጣቢያ ለመድረስ ያቀረቡት ጥያቄ ወደ <ph name="NAME" /> ሊላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="3345634697982520715">የተከተተ የቅጥያ አማራጮች አንቃ</translation>
 <translation id="3345886924813989455">ምንም የሚደገፍ አሳሽ አልተገኘም።</translation>
+<translation id="3347086966102161372">የምስል አድራሻ &amp;ቅዳ</translation>
 <translation id="3348038390189153836">ተነቃይ መሣሪያ ተገኝቷል</translation>
 <translation id="3348459612390503954">እንኳን ደስ አለዎት</translation>
 <translation id="3348643303702027858">የስርዓተ ክወና ዳግም ማግኛ ማህደረ መረጃ ፈጠራ ተሰርዟል።</translation>
 <translation id="3349155901412833452">የእጩ ዝርዝር ላይ ገጽ ለመፍጠር የ , እና . ቁልፎችን ይጠቀሙ</translation>
-<translation id="3353896758124728858">የጃቫስክሪፕት መሸጎጫ ሁነታ።</translation>
 <translation id="3353984535370177728">የሚሰቅሉትን አቃፊ ይምረጡ</translation>
 <translation id="335581015389089642">ንግግር</translation>
 <translation id="3355823806454867987">የተኪ ቅንብሮችን በመቀየር ላይ...</translation>
@@ -1848,6 +1851,7 @@
 <translation id="3574305903863751447"><ph name="CITY" />፣ <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3574777678278664892">ከነቃ የይለፍ ቃል አቀናባሪው የይለፍ ቃል አቀናባሪው ለማመሳሰል ጥቅም ላይ የዋለውን ምስክርነት አያቀርብም።</translation>
 <translation id="357479282490346887">ሊቱአኒያን</translation>
+<translation id="3578331450833904042">ነባሪ (ሁሉንም ነገር አንሳ)</translation>
 <translation id="3578594933904494462">የዚህ ትር ይዘት በመጋራት ላይ ነው።</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; የ&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; አታሚ እርስዎ ባለቤት ለሆኑበት ቡድን ማጋራት ይፈልጋሉ፦ &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;። ከተቀበሉ ሁሉም የቡድን አባላት ወደ አታሚው ማተም ይችላሉ።</translation>
 <translation id="3581912141526548234">ተግብር (መሰላሎችን ለማግኘት ሞክር፣ እንዲሁም ከተሳካ ተግብራቸው)</translation>
@@ -1920,7 +1924,7 @@
 <translation id="3655670868607891010">ይህንን በተደጋጋሚነት የሚያዩ ከሆኑ <ph name="HELP_LINK" />ን ይሞክሩ።</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{ወደ አንድ ፋይል ቋሚ መዳረሻ አለው።}one{ወደ # ፋይሎች ቋሚ መዳረሻ አለው።}other{ወደ # ፋይሎች ቋሚ መዳረሻ አለው።}}</translation>
 <translation id="3656059567098593256"><ph name="APP_NAME" /> የማያ ገጽዎን ይዘት ለ<ph name="TARGET_NAME" /> ማጋራት ይፈልጋል። ምን ማጋራት እንደሚፈልጉ ይምረጡ።</translation>
-<translation id="3658742229777143148">ክለሳ</translation>
+<translation id="3657468915905674858">PPAPI Win32k መቆለፊያን አንቃ።</translation>
 <translation id="3660127367837350905">Google ክፍያዎች ካርድዎን እየጠበቀ ነው</translation>
 <translation id="3660234220361471169">የማይታመን</translation>
 <translation id="3665371460012342183">በድንገት ከአንድ በላይ አገናኝ በአንድ ጊዜ በሚነካበት ጊዜ በማያ ገጾች ላይ ብቅ የሚለውን የጎላ ዓረፋ አንቃ።</translation>
@@ -2036,7 +2040,6 @@
 <translation id="3796648294839530037">ተወዳጅ አውታረ መረቦች፦</translation>
 <translation id="3797900183766075808">«<ph name="SEARCH_TERMS" />»ን በ<ph name="SEARCH_ENGINE" /> ውስጥ &amp;ፈልግ</translation>
 <translation id="3798449238516105146">ስሪት</translation>
-<translation id="3800503346337426623">መግባትን ይዝለሉ እና እንደ እንግዳ ያስሱ</translation>
 <translation id="3800764353337460026">የምልክት ቅጥ</translation>
 <translation id="3801082500826908679">ፋሮኛ</translation>
 <translation id="3803991353670408298">ይህን ከማስወገድዎ በፊት እባክዎ ሌላ የግቤት ስልት ያክሉ።</translation>
@@ -2045,6 +2048,7 @@
 <translation id="3809280248639369696">Moonbeam</translation>
 <translation id="3810973564298564668">አቀናብር</translation>
 <translation id="3811328435734979057">አዲሱን የዕልባት መተግበሪያ ስርዓት ያንቁ።</translation>
+<translation id="3812034401428455285"><ph name="UWS_NAME" /> እና <ph name="UWS_NAME" /></translation>
 <translation id="3812525830114410218">መጥፎ የእውቅና ማረጋገጫ</translation>
 <translation id="3813984289128269159">እሺ Google</translation>
 <translation id="3815016854028376614">የዡዪን ግቤት ስልት</translation>
@@ -2095,6 +2099,8 @@
 <translation id="3869917919960562512">የተሳሳተ መረጃ ጠቋሚ።</translation>
 <translation id="3872687746103784075">ቤተኛ ደንበኛ GDB-ተኮር ማረም</translation>
 <translation id="3878840326289104869">ቁጥጥር ላይ ያለ ተጠቃሚ በመፍጠር ላይ</translation>
+<translation id="3887557525921873910">ይህ ከtrace-upload-url ሰንደቅ ጋር አብሮ ጥቅም ላይ የሚውል ነው።
+        እባክዎ የተመዘገቡትን የዱካ ክትትሎች ይበልጥ የሚገልጽ መሰያሚያ ይምረጡ። ይሄ የዱካ ክትትሎቹ የሚሰቀሉበትን መዳረሻ ይመርጣል። እርግጠኛ ካልሆኑ ሌላ ይምረጡ። ባዶ ከተተወ ምንም የዱካ ክትትሎች አይሰቀሉም።</translation>
 <translation id="3888118750782905860">የሸማች አስተዳደር</translation>
 <translation id="3893536212201235195">የተደራሽነት ቅንብሮችዎን ያነብባል እና ይቀይራል</translation>
 <translation id="3893630138897523026">ChromeVox (የሚነገር ግብረመልስ)</translation>
@@ -2120,7 +2126,6 @@
 <translation id="3920504717067627103">የሰርቲፊኬት መምሪያዎች</translation>
 <translation id="392089482157167418">ChromeVoxን (የሚነገር ግብረመልስ) አንቃ</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925083541997316308">መተግበሪያዎች እና ቅጥያዎች ክትትል በሚደረግባቸው ተጠቃሚዎች ሊቀየሩ አይችሉም።</translation>
 <translation id="3925247638945319984">ምንም በቅርብ ጊዜ የተቀረጹ WebRTC ምዝግቦች የለዎትም።</translation>
 <translation id="3925573269917483990">ካሜራ፦</translation>
 <translation id="3925842537050977900">ከመደርደሪያ ንቀል</translation>
@@ -2145,6 +2150,7 @@
 <translation id="3943857333388298514">ለጥፍ</translation>
 <translation id="3944266449990965865">መላው የማያ ገጽ</translation>
 <translation id="3947376313153737208">ምርጫ የለም</translation>
+<translation id="3948116654032448504">ለምስል <ph name="SEARCH_ENGINE" />ን ይ&amp;ፈልጉ</translation>
 <translation id="394984172568887996">ከIE የመጣ</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
 <translation id="3950924596163729246">አውታረ መረቡን መድረስ አልተቻለም።</translation>
@@ -2177,10 +2183,8 @@
 <translation id="3995964755286119116">የAdobe Flash Player ካሜራ ቅንብሮች የተለዩ ናቸው።</translation>
 <translation id="39964277676607559">ለይዘት ስክሪፕት ጃቫስክሪፕት «<ph name="RELATIVE_PATH" />»ን መጫን አልተቻለም።</translation>
 <translation id="3996912167543967198">ዳግም በማስጀመር ላይ...</translation>
-<translation id="4002375579798873279">ባለቤቱ የGoogle መሣሪያ አስተዳዳሪውን ምዝገባ ለማጠናቀቅ በመለያ መግባት አለበት።</translation>
 <translation id="40027638859996362">የቃል መውሰድ</translation>
 <translation id="4011708746171704399">በመጀመሪያ ሂደት አጋዥ ስልጠና ላይ የታነሙ ሽግግሮችን አንቃ።</translation>
-<translation id="4011889724431804324">የመሸጎጫ ጃቫስክሪፕት ተንታኝ ውሂብ።</translation>
 <translation id="4012185032967847512">ውይ፣ ይህን ገጽ ለመድረስ የ<ph name="NAME" /> ፍቃድ የሚያስፈልገዎት ይመስላል።</translation>
 <translation id="4012550234655138030">በ<ph name="CLOUD_PRINT_NAME" /> ውስጥ አታሚዎችን ያዋቅሩ ወይም ያቀናብሩ።</translation>
 <translation id="4014432863917027322">«<ph name="EXTENSION_NAME" />» ይጠገን?</translation>
@@ -2211,7 +2215,6 @@
 <translation id="4059285154003114015">&amp;ፍሬም አትም…</translation>
 <translation id="4060383410180771901">ድር ጣቢያው ለ<ph name="URL" /> የተጠየቀውን ጥያቄ ማስተናገድ አልቻለም።</translation>
 <translation id="406070391919917862">የጀርባ መተግበሪያዎች</translation>
-<translation id="40620511550370010">ይለፍ ቃልዎን ያስገቡ።</translation>
 <translation id="4062251648694601778">በ<ph name="SHORT_PRODUCT_NAME" /> መሣሪያዎ ይደሰቱ። ጥያቄዎች አሉዎት? በሁኔታ ትሪው ላይ ያለውን «?» ጠቅ በማድረግ በማንኛውም ጊዜ እገዛ ማግኘት ይችላሉ።</translation>
 <translation id="4065876735068446555">እየተጠቀሙ ያሉት (<ph name="NETWORK_ID" />) አውታረ መረብ በመለያ መግቢያ ገጹን እንዲጎበኙ ይጠይቅዎ ይሆናል።</translation>
 <translation id="4068506536726151626">ይህ ገጽ አካባቢዎን እየተከታተሉ ካሉት የሚከተሉት ጣቢያዎች አባላትን ይዟል፦</translation>
@@ -2499,6 +2502,7 @@
 <translation id="452039078290142656">ከ<ph name="VENDOR_NAME" /> የመጡ ያልታወቁ መሣሪያዎች</translation>
 <translation id="4522570452068850558">ዝርዝሮች</translation>
 <translation id="452785312504541111">ባለሙሉ ስፋት እንግሊዝኛ</translation>
+<translation id="4532499992208253975">emloading</translation>
 <translation id="4533259260976001693">አሳንስ/ዘርጋ</translation>
 <translation id="4534166495582787863">የመዳሰሻ ሰሌዳ ሶስት ጣት ጠቅታ እንደ መካከለኛ አዘራር ያነቃል።</translation>
 <translation id="4534799089889278411">በgoogle.com እና በመተግበሪያ አስጀማሪ ላይ በአዲስ ትር ላይ «Ok Google» ይበሉ</translation>
@@ -2537,7 +2541,6 @@
 <translation id="4575703660920788003">የቁልፍ ሰሌዳ አቀማመጥን ለመቀየር Shift-Alt ይምቱ።</translation>
 <translation id="4580526846085481512">እርግጠኛ ነዎት $1 ንጥሎችን መሰረዝ ይፈልጋሉ?</translation>
 <translation id="458150753955139441">ለመመለስ ይጫኑ፣ ታሪክን ለማየት የአውድ ምናሌን ይጠቀሙ</translation>
-<translation id="4581823559337371475">ከዚህ በታች ያለው በመለያ-መግቢያ አገልግሎት የሚስተናገደው በ<ph name="SAML_DOMAIN" /> ነው። ለመቀጠል በመለያ ይግቡ።</translation>
 <translation id="4582563038311694664">ሁሉንም ቅንብሮች ዳግም አስጀምር</translation>
 <translation id="4583537898417244378">ልክ ያልሆነ ወይም የተበላሸ ፋይል።</translation>
 <translation id="4589268276914962177">አዲስ ተርሚናል</translation>
@@ -2654,7 +2657,6 @@
 <translation id="474421578985060416">በእርስዎ የታገዱ</translation>
 <translation id="4744335556946062993">የህትመት ቅድመ እይታ ምዝገባ ማስተዋወቂያዎችን ያንቁ</translation>
 <translation id="4744574733485822359">ውርድዎ ተጠናቅቋል</translation>
-<translation id="4744603770635761495">የሚፈጸም ዱካ</translation>
 <translation id="4746971725921104503">ያንን ስም የያዘ ተጠቃሚ አስቀድመው እያስተዳደሩ ያሉ ይመስላሉ። <ph name="LINK_START" /><ph name="USER_DISPLAY_NAME" />ን ወደዚህ መሣሪያ ማስመጣት<ph name="LINK_END" /> ይፈልጋሉ?</translation>
 <translation id="4747271164117300400">መቄዶኒያኛ</translation>
 <translation id="4747597332667805440">የክፍለ ጊዜ ዳግም ማስጀመሪያ አረፋ የተጠቃሚ በይነገጽ አንቃ</translation>
@@ -2807,6 +2809,7 @@
 <translation id="4964673849688379040">በመፈተሽ ላይ...</translation>
 <translation id="4966802378343010715">አዲስ ተጠቃሚ ፍጠር</translation>
 <translation id="496888482094675990">የፋይሎች መተግበሪያው በGoogle Drive፣ ውጫዊ ማከማቻ ወይም በእርስዎ የChrome OS መሣሪያ ላይ ያስቀመጧቸውን ፋይሎች ፈጣን መዳረሻ ይሰጠዎታል።</translation>
+<translation id="4971412780836297815">ሲጠናቀቅ ክፈት</translation>
 <translation id="497244430928947428">የማላያላም ቁልፍ ሰሌዳ (ፎነቲክ)</translation>
 <translation id="4973307593867026061">አታሚዎችን ያክሉ</translation>
 <translation id="4973698491777102067">የሚከተሉትን ንጥሎች ከዚህ ያስወግዱ፦</translation>
@@ -2892,7 +2895,6 @@
 <translation id="5111692334209731439">&amp;ዕልባት አቀናባሪ</translation>
 <translation id="5112577000029535889">&amp;የገንቢ መሳሪያዎች</translation>
 <translation id="5113739826273394829">ይህን አዶ ጠቅ ካደረጉት ይህን <ph name="DEVICE_TYPE" /> እራስዎ ይቆልፉታል። በሚቀጥለው ጊዜ ለመግባት የይለፍ ቃልዎን መተየብ ይኖርብዎታል።</translation>
-<translation id="5115563688576182185">(64-ቢት)</translation>
 <translation id="5116300307302421503">ፋይልን መተንተን አልተቻለም።</translation>
 <translation id="5116628073786783676">ተሰሚ/ኦዲዮ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="5117930984404104619">የተጎበኙ ዩ አር ኤሎችንም ጨምሮ የሌሎች ቅጥያዎች ባህሪ ይከታተሉ</translation>
@@ -2940,6 +2942,7 @@
 <translation id="5160857336552977725">ወደ የእርስዎ <ph name="DEVICE_TYPE" /> ይግቡ</translation>
 <translation id="5163869187418756376">ማጋራት አልተሳካም። ግንኙነትዎን ይፈትሹ እና ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="516592729076796170">የአሜሪካ Dvorak ፕሮግራመር</translation>
+<translation id="516595669341608434">የቁሳዊ ንድፍ መመሪያ ገጽን ያንቁ</translation>
 <translation id="5166159831426598151">በገጽ የሚቀሰቀስ ሙሉ ማያ ገጽ ወይም የመዳፊት ጠቋሚ ሁኔታዎችን ሲቆለፍ ያለ አንድ የሙከራ የሆነ አዲስ የተጠቃሚ ተሞክሮ።</translation>
 <translation id="5167131699331641907">የኔዘርላንድስ ቁልፍ ሰሌዳ</translation>
 <translation id="5170477580121653719">የቀረው የGoogle Drive ማከማቻ ቦታ፦ <ph name="SPACE_AVAILABLE" />።</translation>
@@ -2975,7 +2978,6 @@
 <translation id="5218183485292899140">የስዊዝ ፈረንሳይኛ</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="5225324770654022472">የመተግበሪያዎች አቋራጮችን አሳይ</translation>
-<translation id="5226856995114464387">የእርስዎን ምርጫዎች በማመሳሰል ላይ</translation>
 <translation id="5227536357203429560">የግል አውታረ መረብ ያክሉ...</translation>
 <translation id="5227808808023563348">ቀዳሚውን ጽሑፍ ይፈልጋል</translation>
 <translation id="5228076606934445476">መሣሪያው ላይ የሆነ ችግር ተፈጥሯል።  ከዚህ ስህተት ለማገገም መሣሪያውን እንደገና ማስጀመርና እንደገና መሞከር ይኖርብዎታል።</translation>
@@ -2993,6 +2995,7 @@
 <translation id="5234764350956374838">አሰናብት</translation>
 <translation id="5238278114306905396">መተግበሪያ «<ph name="EXTENSION_NAME" />» በራስ-ሰር ተወግዷል።</translation>
 <translation id="5238369540257804368">ወሰኖች</translation>
+<translation id="5239691211406966873">Chrome <ph name="NUMBER_OF_UWS_GREATER_THAN_ONE" /> የማይፈልጉ ፕሮግራሞችን (<ph name="IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES" />) በእርስዎ ኮምፒውተር ላይ ተጭነው አግኝቷል። የChrome ማጽጃ መሣሪያን በማስሄድ እነዚህን ፕሮግራሞች ሊያስወግዱ ይችሉ ይሆናል።</translation>
 <translation id="5241128660650683457">በሚጎበኙዋቸው የድር ጣቢያዎች ላይ ያሉ ሁሉንም የእርስዎን ውሂቦች ያንብቡ</translation>
 <translation id="5241298539944515331">የቪዬትናምኛ ቁልፍ ሰሌዳ (ቪአይኪዩአር)</translation>
 <translation id="5241364149922736632">የእርስዎን ትዕዛዝ መላክ ላይ ችግሮች ያጋጠሙ እንደሆኑ ነጋዴዎች አብዛኛውን ጊዜ ይሄ ያስፈልጋቸዋል።</translation>
@@ -3099,6 +3102,7 @@
 <translation id="5379140238605961210">የማይክሮፎን መዳረሻ ማገዱን ቀጥል</translation>
 <translation id="5379268888377976432">ስረዛውን ቀልብስ</translation>
 <translation id="5380103295189760361">የእነዚህ መቀየሪያዎች የቁልፍ ሰሌዳ አቋራጮችን ለማየት Control፣ Alt፣ Shift፣ ወይም Searchን ይያዙ።</translation>
+<translation id="5382392428640372740">የአሰሳ ዱካ ክትትልን አንቃ</translation>
 <translation id="5388588172257446328">የተጠቃሚው ስም፦</translation>
 <translation id="5390284375844109566">በመረጃ ጠቋሚ የተሰናዳ የውሂብ ጎታ</translation>
 <translation id="5392544185395226057">የቤተኛ ደንበኛ ድጋፍን ያነቃል።</translation>
@@ -3301,7 +3305,6 @@ nil</translation>
 <translation id="5661272705528507004">ይህ ሲም ካርድ የተሰናከለ እና የማያገለግል ነው። እባክዎ እንዲተካልዎት የአገልግሎት አቅራቢዎትን ያግኙ።</translation>
 <translation id="5662457369790254286">የAndroid ስልክ ገጽ የመጫን ሂደት አሞሌ እነማን ያዋቅራል።</translation>
 <translation id="5663459693447872156">በራስ-ሰር ወደ ግማሽ-ስፋት ቀይር</translation>
-<translation id="5667292716764603079">የሙከራ የአጭር ጊዜ መተግበሪያዎችን ከድር መደብሩ አንቃ።</translation>
 <translation id="5669267381087807207">በማግበር ላይ</translation>
 <translation id="5671961047338275645">ጣቢያዎችን ያቀናብሩ</translation>
 <translation id="5673305876422468017">Link Disambiguation Popupን አንቃ።</translation>
@@ -3336,7 +3339,9 @@ nil</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
 <translation id="5710406368443808765">ውይ!  ስርዓቱ የመሣሪያ ማስመሰያ እና መታወቂያ ማከማቸት አልተሳካለትም።</translation>
 <translation id="5710435578057952990">የዚህ ድረ-ገጽ ማንነት አልተረጋገጠም።</translation>
+<translation id="571161420693302741"><ph name="HOST_NAME" /> ምላሽ እየሰጠ አይደለም። Cast ማድረግ አልተቻለም።</translation>
 <translation id="5711983031544731014">ማስከፈት አልተቻለም። የይለፍ ቃልዎን ያስገቡ።</translation>
+<translation id="5712966208980506909">ከነቃ የchrome://md-policy ዩአርኤሉ የቁሳዊ ንድፍ መመሪያ ገጹን ይጭነዋል።</translation>
 <translation id="5715711091495208045">የተሰኪ አስማሚ፦ <ph name="PLUGIN_NAME" /></translation>
 <translation id="572328651809341494">የቅርብ ጊዜ ትሮች</translation>
 <translation id="5723508132121499792">ምንም የጀርባ መተግበሪያዎች እያሄዱ አይደሉም</translation>
@@ -3347,6 +3352,7 @@ nil</translation>
 <translation id="5729996640881880439">ይቅርታ፣ ለዚህ ስህተት ኮድ ማሳየት አንችልም።</translation>
 <translation id="5731247495086897348">ለ&amp;ጥፍና እና ሂድ</translation>
 <translation id="5731751937436428514">የቪዬትናምኛ ግቤት ስልት (VIQR)</translation>
+<translation id="5734362860645681824">ተግባቦት</translation>
 <translation id="573719557377416048">Copresence ሁነታን አጽዳ</translation>
 <translation id="5741245087700236983"><ph name="PROFILE_NAME" />፦ አርትዕ ለማድረግ ይምረጡ</translation>
 <translation id="574392208103952083">መካከለኛ</translation>
@@ -3485,6 +3491,7 @@ nil</translation>
   ይፋዊ አርቢ (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> ቢት)፦
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">ነቅቷል</translation>
+<translation id="592068147111860043">በWin32k መቆለፊያ ማጠሪያ መመሪያ ውስጥ የሚያሄዱት የPPAPI ተሰኪዎችን ይጥቀሱ።</translation>
 <translation id="5925147183566400388">የዕውቅና ማረጋገጫ ስራ መግለጫ ጠቋሚ</translation>
 <translation id="5930693802084567591">ከ<ph name="TIME" /> ጀምሮ ውሂብዎ ከGoogle ይለፍ ቃልዎ ጋር ተመስጥሯል። እባክዎ ከታች ያስገቡት።</translation>
 <translation id="5931146425219109062">በጎበኟቸው ድር ጣቢያዎች ላይ ያለው ሁሉም ውሂብዎን ያነብባል እና ይቀይራል</translation>
@@ -3501,7 +3508,6 @@ nil</translation>
 <translation id="5949910269212525572">የአገልጋዩን ዲ ኤን ኤስ አድራሻ ማወቅ አልተቻለም።</translation>
 <translation id="5951823343679007761">ምንም ባትሪ የለም</translation>
 <translation id="5952256601775839173">የመዳሰሻ ሰሌዳ ሶስት ጣት ጠቅታን አንቃ</translation>
-<translation id="5953576419932384180">የድሮውን የይለፍ ቃል አያስታወሱትም?</translation>
 <translation id="5953603475187800576">የGoogle ክፍያዎች አድራሻዎችን እና ክሬዲት ካርዶችን አሳይ</translation>
 <translation id="5956585768868398362">የጠበቁት የፍለጋ ገጽ ይሄ ነው?</translation>
 <translation id="5957613098218939406">ተጨማሪ አማራጮች</translation>
@@ -3602,7 +3608,6 @@ nil</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093795393556121384">የእርስዎ ካርድ ተረጋግጧል</translation>
 <translation id="6093888419484831006">ዝማኔን በመሰረዝ ላይ...</translation>
-<translation id="6095666334801788310">እባክዎ የይለፍ ቃልዎን ዳግም ያስገቡ</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">ሰፍቶ ክፈት</translation>
 <translation id="6096326118418049043">X.500 ስም</translation>
@@ -3644,7 +3649,6 @@ nil</translation>
 <translation id="6150853954427645995">ይህን ፋይል ከመስመር ውጪ ለመጠቀም መስመር ላይ ተመልሰው ይሂዱ፣ ፋይሉን በቀኝ ጠቅ ያድርጉትና የ<ph name="OFFLINE_CHECKBOX_NAME" /> አማራጩን ይምረጡ።</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" />ን ለመፈለግ <ph name="SEARCH_KEY" /> ይጫኑ</translation>
 <translation id="6151559892024914821">በንክኪ የተጀመረ መጎተት እና መጣል አንቃ</translation>
-<translation id="615216289547575801">የአጭር ጊዜ መተግበሪያዎችን ያነቃል፣ እነዚህም በChrome ውስጥ ሳይጫኑ ከChrome የድር መደብሩ የሚጀመሩ ናቸው። ለመንቃት የሙከራ መተግበሪያ ማስጀመሪያው ያስፈልገዋል።</translation>
 <translation id="6154697846084421647">በአሁኑ ጊዜ ገብተዋል</translation>
 <translation id="6155817405098385604">ጂፒዩ መጠቀም የማይቻል ሲሆን ወደ 3-ል ሶፍትዌር ራስተር መፍጠሪያ አትመለስ።</translation>
 <translation id="6156863943908443225">የስክሪፕት መሸጎጫ</translation>
@@ -3721,6 +3725,7 @@ nil</translation>
 <translation id="6276301056778294989">መሣሪያው ተመሳሳዩን ኮድ እያሳየ እንደሆነ ያረጋግጡ።</translation>
 <translation id="6277105963844135994">የአውታረ መረብ ጊዜ ማብቂያ</translation>
 <translation id="6277518330158259200">ቅጽበታዊ ገጽ እይታ ፎቶ አን&amp;ሳ</translation>
+<translation id="6281743458679673853">ሁሉም ኤፒአይዎች የአቀማመጥ መመልከቻውን እንዲያንጸባርቁ ሙከራ ያድርጉ። ይህ የwindow.scroll ባሕሪያት ከአቀማመጥ መመልከቻው ጋር ተዛማጅና ተመጣጣኝ እንዲሆኑ ያደርጋል።</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{በእርስዎ አውታረ መረብ ላይ ያለ አዲስ አታሚ}one{በእርስዎ አውታረ መረብ ላይ ያሉ አዲስ አታሚዎች}other{በእርስዎ አውታረ መረብ ላይ ያሉ አዲስ አታሚዎች}}</translation>
 <translation id="6285395082104474418">የሁኔታ ትሪው የአሁኑን የእርስዎ አውታረ መረብ፣ ባትሪ እና ሌሎች ነገሮች ሁኔታ ያሳየዎታል።</translation>
 <translation id="6285905808004014074">ከመስመር ውጭ ራስ- ሰር ዳግም መጫን ሁኔታ አንቃ</translation>
@@ -3758,6 +3763,7 @@ nil</translation>
 <translation id="6344783595350022745">ጽሑፍ አጽዳ</translation>
 <translation id="6347003977836730270">አዲሱን የትርጉም ዓረፋ የተጠቃሚ ተሞክሮ ማንቃት በመረጃ አሞሌው ፋንታ የቀረበ ነው።</translation>
 <translation id="6348657800373377022">ጥምር ሳጥን</translation>
+<translation id="6349839454356033837">Android ሚዲያን ማጫወት ላይ እየተቸገረ ነው።</translation>
 <translation id="6353618411602605519">የክሮሺያኛ ቁልፍ ሰሌዳ</translation>
 <translation id="6356936121715252359">የAdobe Flash Player ማከማቺያ ቅንብሮች …</translation>
 <translation id="6357619544108132570">እንኳን ወደ የ<ph name="SHORT_PRODUCT_NAME" /> ቤተሰብ በደህና መጡ። ይሄ የተለመደው ኮምፒውተር አይደለም።</translation>
@@ -3876,9 +3882,6 @@ nil</translation>
 <translation id="6514565641373682518">ይህ ገጽ የመዳፊት ጠቋሚዎን አሰናክሏል።</translation>
 <translation id="6516193643535292276">ከበይነመረቡ ጋር መገናኘት አልተቻለም</translation>
 <translation id="6518014396551869914">ምስል ቅ&amp;ዳ</translation>
-<translation id="6518066513180887959">አንድ <ph name="NEW_PROFILE_NAME" /> የሚባል ክትትል የሚደረግበት ተጠቃሚ ተፈጥሯል። ይህ ክትትል የሚደረግበት ተጠቃሚ የትኛዎቹን ድር ጣቢያዎች መመልከት እንደሚችል ለማዘጋጀት <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />ን በመጎብኘት ገደቦችን እና ቅንብሮችን ማዋቀር ይችላሉ። ነባሪ ቅንብሮቹን ካልለወጧቸው <ph name="NEW_PROFILE_NAME" /> በድሩ ላይ ያሉትን ሁሉም ጣቢያዎች ማሰስ ይችላል።
-
-  እነዚህን እና ተጨማሪ መመሪያዎችን ለማግኘት እባክዎ <ph name="ACCOUNT_EMAIL" /> ላይ ኢሜይልዎን ይመልከቱ።</translation>
 <translation id="6518133107902771759">አረጋግጥ</translation>
 <translation id="651942933739530207"><ph name="APP_NAME" /> ማያ ገጽዎን እና የድምፅ ውፅዓትዎን እንዲጋራ ይፈልጋሉ?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
@@ -3912,6 +3915,7 @@ nil</translation>
 <translation id="6555432686520421228">ሁሉንም የተጠቃሚ መለያዎች ያስወግዱና ልክ እንደ አዲስ እንዲሆን የ<ph name="IDS_SHORT_PRODUCT_NAME" /> መሣሪያዎን ዳግም ያስጀምሩት።</translation>
 <translation id="6556866813142980365">ድገም</translation>
 <translation id="6557565812667414268">ለባለከፍተኛ ዲ ፒ አይ ማሳያዎች ብቻ የነቃ</translation>
+<translation id="655845594391856372">ትር ምላሽ እየሰጠ አይደለም። Cast ማድረግ አልተቻለም።</translation>
 <translation id="6559580823502247193">(በዚህ መሣሪያ ላይ አስቀድሞ አለ)</translation>
 <translation id="6561726789132298588">ያስገቡ</translation>
 <translation id="6562437808764959486">የዳግም ማግኛ ምስልን በማውጣት ላይ...</translation>
@@ -3977,6 +3981,7 @@ nil</translation>
 <translation id="6657585470893396449">የይለፍ ቃል፦</translation>
 <translation id="6659213950629089752">ይህ ገጽ በ«<ph name="NAME" />» ቅጥያው ነው የጎላው</translation>
 <translation id="6659594942844771486">ትር</translation>
+<translation id="6660753359158386737">ድር ጣቢያዎች የኦምኒቦክሱን ቀለም በዲበ ውሂብ መለያው <ph name="META_TAG_NAME" /> በኩል በትር ሁነታ ውስጥ እንዲያዘጋጁ ያስችላቸዋል («መተግበሪያዎችን አዋህድ እና ትሮች» ጠፍቶ)።</translation>
 <translation id="6662016084451426657">የማመሳሰል ስህተት፦ ማመሳሰልን ለማንቃት እባክዎ አስተዳዳሪውን ያግኙ።</translation>
 <translation id="6663792236418322902">የመረጡት የይለፍ ቃል ይህን ፋይል በኋላ ላይ ለማስመለስ ያስፈልጋል።  እባክዎ ደህንነቱ በተጠበቀ ቦታ ላይ ይመዝግቡት።</translation>
 <translation id="6664237456442406323">የአጋጣሚ ነገር ሆኖ ኮምፒውተርዎ በተበላሸ የሃርድዌር መታወቂያ ነው የተዋቀረው። ይሄ Chrome ስርዓተ ክወና በቅርብ ጊዜዎቹ የደህንነት ጥገናዎች እንዳይዘመን ያግደዋል፣ እና የእርስዎ ኮምፒውተር <ph name="BEGIN_BOLD" />ለተንኮል-አዘል ጥቃቶች የተጋለጠ ሊሆን ይችላል<ph name="END_BOLD" />።</translation>
@@ -4018,6 +4023,7 @@ nil</translation>
 <translation id="672609503628871915">ምን አዲስ ነገር እንዳለ ይመልከቱ</translation>
 <translation id="6727005317916125192">ቀዳሚ ንጥል</translation>
 <translation id="6731320427842222405">ይሄ ጥቂት ደቂቃዎችን ሊወስደ ይችላል</translation>
+<translation id="6731638353631257659">V8 መሸጎጫ ሁነታ።</translation>
 <translation id="6732586201820838268">ከስልክዎ ጋር ግንኙነት መመስረት አልተቻለም። የበራ እና በቅርብ ርቀት ያለ ተኳሃኝ የሆነ የAndroid ስልክ እየተጠቀሙ መሆንዎን ያረጋግጡ። &lt;a&gt;ተጨማሪ ለመረዳት&lt;/a&gt;</translation>
 <translation id="6733366118632732411">የጥቆማዎች አገልግሎትን አንቃ</translation>
 <translation id="6735304988756581115">ኩኪዎችንና የሌላ ጣቢያ ውሂብ አሳይ…</translation>
@@ -4105,7 +4111,6 @@ nil</translation>
 <translation id="6867678160199975333">ወደ <ph name="NEW_PROFILE_NAME" /> ቀይር</translation>
 <translation id="6868698883023260206">ለቪዲዮ አባለ ነገሮች አዲሱን የቪዲዮ አምጪ ዱካ ያሰናክላል።</translation>
 <translation id="6869402422344886127">ምልክት የተደረገበት አመልካች ሳጥን</translation>
-<translation id="6869801617903136890">የመሸጎጫ ጃቫስክሪፕት አጠናቃሪ ውሂብ።</translation>
 <translation id="6870130893560916279">የዩክሬይንኛ ቁልፍ ሰሌዳ</translation>
 <translation id="6871644448911473373">OCSP ምላሽ ሰጪ፦ <ph name="LOCATION" /></translation>
 <translation id="6871690136546646783">የንክኪ ማስተካከል ድጋፍን ያሰናክላል። የንክኪ ማስተካከል ማለት ንክኪዎች ከአይጤ ጋር ሲወዳደሩ ላላቸው ደካማ ጥራት ለማካካስ የሚደረግ የንክኪ ምልክት ማጣራት ሂደት ነው።</translation>
@@ -4119,7 +4124,6 @@ nil</translation>
 <translation id="6883209331334683549">የ<ph name="PRODUCT_NAME" /> እገዛ</translation>
 <translation id="6886871292305414135">አገናኙን በአዲስ &amp;ትር ክፈት</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
-<translation id="6897140037006041989">የተጠቀሚ ተወካይ</translation>
 <translation id="6898440773573063262">አሁን የኪዮስክ መተግበሪያዎች በዚህ መሣሪያ ላይ ወደ ራስ-ጀምር መዋቀር ይችላሉ።</translation>
 <translation id="6898699227549475383">ድርጅት (O)</translation>
 <translation id="6900284862687837908">የጀርባ መተግበሪያ፦ <ph name="BACKGROUND_APP_URL" /></translation>
@@ -4254,7 +4258,6 @@ nil</translation>
 <translation id="7065223852455347715">ይህ መሣሪያ የድርጅት ምዝገባን በሚከላከል ሁነታ ተቆልፏል። መሣሪያውን ማስመዘገብ ከፈለጉ በመጀመሪያ ወደ የጠፋ መሣሪያ ማግኛ መሄድ ያስፈልግዎታል።</translation>
 <translation id="7065534935986314333">ስለስርዓቱ</translation>
 <translation id="7066944511817949584">ከ«<ph name="DEVICE_NAME" />» ጋር መገናኘት አልተቻለም።</translation>
-<translation id="7069168971636881066">ክትትል የሚደረግበት ተጠቃሚ ከመፈጠሩ በፊት ቢያንስ አንድ መለያ በዚህ መሣሪያ ላይ መኖር አለበት።</translation>
 <translation id="7070804685954057874">ቀጥተኛ ግቤት</translation>
 <translation id="7072010813301522126">አቋራጭ ስም</translation>
 <translation id="7072025625456903686">ሁሉንም ፍቀድ ወይም አብጅ</translation>
@@ -4265,6 +4268,7 @@ nil</translation>
 <translation id="7077829361966535409">የመግቢያ ገጹ የአሁኑ የተኪ ቅንብሮች ተጠቅሞ መጫን አልቻለም። እባክዎ <ph name="GAIA_RELOAD_LINK_START" />እንደገና ለመግባት ይሞክሩ<ph name="GAIA_RELOAD_LINK_END" /> ወይም ደግሞ የተለየ <ph name="PROXY_SETTINGS_LINK_START" />የተኪ ቅንብሮች<ph name="PROXY_SETTINGS_LINK_END" />ን ይጠቀሙ።</translation>
 <translation id="7077872827894353012">ችላ የተባሉ የፕሮቶኮል ተቆጣጣሪዎች</translation>
 <translation id="7079038783243627996">«<ph name="EXTENSION" />» ምልክት በተደረገባቸው አቃፊዎች ውስጥ ያሉ ምስሎችን፣ ቪዲዮዎችን እና የድምጽ ፋይሎችን ማንበብ እና መሰረዝ ይችላል።</translation>
+<translation id="708060913198414444">የኦዲዮ አድራሻ &amp;ቅዳ</translation>
 <translation id="7082055294850503883">የCapsLock ሁኔታን ችላ በልና ንዑስ ሆሄያትን በነባሪነት አስገባ</translation>
 <translation id="7088418943933034707">የእውቅና ማረጋገጫዎችን ያቀናብሩ...</translation>
 <translation id="7088434364990739311">የዝማኔ ፍተሻ መጀመር አልተሳካም (የስህተት ኮድ <ph name="ERROR" />)።</translation>
@@ -4341,6 +4345,7 @@ nil</translation>
 <translation id="7210998213739223319">የተጠቃሚ ስም።</translation>
 <translation id="721197778055552897">ስለዚህ ችግር <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /> ።</translation>
 <translation id="7211994749225247711">ሰርዝ...</translation>
+<translation id="721331389620694978">የአሰሳ ልማዶችን ሊያንፀባርቁ የሚችሉ አንዳንድ ቅንብሮች አይጸዱም።</translation>
 <translation id="7214227951029819508">ብሩህነት፦</translation>
 <translation id="7219179957768738017">ግንኙነቱ <ph name="SSL_VERSION" />ን ይጠቀማል።</translation>
 <translation id="7219357088166514551"><ph name="ENGINE" />ን ይፈልጉ ወይም ዩአርኤል ይተይቡ</translation>
@@ -4355,11 +4360,9 @@ nil</translation>
 <translation id="7223775956298141902">አቦ ባክዎ... ምንም ቅጥያዎች የለዎትም :-(</translation>
 <translation id="7224023051066864079">ሰብኔት ማስክ፦</translation>
 <translation id="7225179976675429563">የአውታረ መረብ አይነት ይጎድላል</translation>
-<translation id="7225807090967870017">የግንብ መታወቂያ</translation>
 <translation id="7227146810596798920">የጣቢያ ተሳትፎ አገልግሎትን አንቃ</translation>
 <translation id="7231224339346098802">ስንት ቅጂዎች መታተም እንዳለባቸው ለማመላከት ቁጥር ይጠቀሙ (1 ወይም ተጨማሪ)።</translation>
 <translation id="7234907163682057631">አስፈላጊ የተሰኪ ይዘት አግኝ እና አሂድ</translation>
-<translation id="7238461040709361198">የGoogle መለያ ይለፍ ቃልዎ በዚህ ኮምፒውተር ከገቡበት የመጨረሻ ጊዜ በኋላ ተቀይሯል።</translation>
 <translation id="7238585580608191973">SHA-256 የጣት አሻራ</translation>
 <translation id="7240120331469437312">የሰርቲፊኬት ርዕስ ተለዋጭ ስም</translation>
 <translation id="7241389281993241388">የደንበኛ እውቅና ማረጋገጫውን ለማስመጣት እባክዎ ወደ <ph name="TOKEN_NAME" /> ይግቡ።</translation>
@@ -4368,7 +4371,6 @@ nil</translation>
 <translation id="725109152065019550">ይቅርታ፣ አስተዳዳሪዎ በመለያዎ ላይ ውጫዊ ማከማቻን አሰናክሏል።</translation>
 <translation id="7252661675567922360">አትጫን</translation>
 <translation id="7253521419891527137">&amp;ተጨማሪ ይወቁ</translation>
-<translation id="725387188884494207">እርግጠኛ ነዎት ይህንን ተጠቃሚ እና ሁሉንም ከእሱ ጋር የተያያዘ ውሂብ ከዚህ ኮምፒውተር መሰረዝ ይፈልጋሉ? ይሄ ሊቀለበስ አይችልም!</translation>
 <translation id="7254951428499890870">እርግጠኛ ነዎት «<ph name="APP_NAME" />»ን በምርመራ ሁነታ ማስጀመር ይፈልጋሉ?</translation>
 <translation id="7255220508626648026">Casting፦ <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">ተግብር</translation>
@@ -4435,13 +4437,13 @@ nil</translation>
 <translation id="7347751611463936647">ይህንን ቅጥያ ለመጠቀም «<ph name="EXTENSION_KEYWORD" />» ብለው፣ ከዚያ TAB፣ ከዚያ ትዕዛዝዎን ወይም ፍለጋዎን ይተይቡ።</translation>
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
 <translation id="7352651011704765696">የሆነ ችግር ተፈጥሯል</translation>
-<translation id="7353601530677266744">የትእዛዝ መስመር</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> አዲስ ፍቃዶችን ይፈልጋል</translation>
 <translation id="7357661729054396567">የድርጅት ምዝገባ ማረጋገጫ እስኪጠናቀቅ ድረስ በይነመረቡን ማሰስ ተሰናክሏል።
         አሁንም በእርስዎ ግንኙነት ላይ ላሉ ችግሮች መላ ለመፈለግ እዚህ የቀረበውን የመመርመሪያ መሣሪያውን መጠቀም ይችላሉ።</translation>
 <translation id="7361039089383199231">$1 ባይት</translation>
 <translation id="736108944194701898">የመዳፊት ፍጥነት፦</translation>
 <translation id="7361824946268431273">ይበልጥ ፈጣኑ፣ ቀላሉ እና ደህንነቱ የተጠበቀ ኮምፒውተር</translation>
+<translation id="7364745943115323529">Cast...</translation>
 <translation id="7364796246159120393">ፋይል ምረጥ</translation>
 <translation id="7364926055040539546">ከማንኛውም መነሻ WebUSBን ፍቀድ።</translation>
 <translation id="736515969993332243">አውታረ መረቦችን በመቃኘት ላይ።</translation>
@@ -4493,7 +4495,6 @@ nil</translation>
 <translation id="7417705661718309329">Google ካርታ</translation>
 <translation id="7418949474175272990">ይህ አማራጭ በWebRTC ውስጥ የመሣሪያ ስርዓት ሃርድዌር በመጠቀም የቪዲዮ ዥረቶትች ኮድ ማስቀመጥ ድጋፍን ያሰናክላል።</translation>
 <translation id="741906494724992817">ይህ መተግበሪያ ምንም ልዩ ፈቃዶች አይፈልግም።</translation>
-<translation id="7419106976560586862">የመገለጫ ዱካ</translation>
 <translation id="7419631653042041064">የካታላን ቁልፍ ሰሌዳ</translation>
 <translation id="7421446779945496135">የህጻን መለያ ማወቅን አንቃ።</translation>
 <translation id="7421925624202799674">&amp;የገጹን መነሻ አሳይ</translation>
@@ -4552,7 +4553,6 @@ nil</translation>
 <translation id="7491962110804786152">TAB</translation>
 <translation id="7495778526395737099">የይለፍ ቃልዎን ረስተውታል?</translation>
 <translation id="7498566414244653415">የMediaSource ነገሩን ያሰናክሉ። ይህ ነገር ጃቫስክሪፕት የማህደረመረጃ ውሂብ በቀጥታ ወደ አንድ የቪዲዮ አባል እንዲልክ ያስችለዋል።</translation>
-<translation id="7501143156951160001">የGoogle መለያ ከሌለዎት አሁን <ph name="LINK_START" />የGoogle መለያ መፍጠር<ph name="LINK_END" /> ይችላሉ።</translation>
 <translation id="7503191893372251637">የNetscape ሰርቲፊኬት አይነት</translation>
 <translation id="7503821294401948377">አዶ «<ph name="ICON" />»ን ለአሳሽ እርምጃ መጫን አልተቻለም።</translation>
 <translation id="750413812607578381"><ph name="PRODUCT_NAME" />ን አሁን ዳግም ማስጀመር አለብዎት።</translation>
@@ -4673,6 +4673,7 @@ nil</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7659584679870740384">ይህን መሣሪያ ለመጠቀም ስልጣን አልተሰጠዎትም። የመግባት ፍቃድ ለማግኘት አስተዳዳሪውን ያነጋግሩ።</translation>
 <translation id="7664620655576155379">የማይደገፍ የብሉቱዝ መሣሪያ፦ «<ph name="DEVICE_NAME" />»።</translation>
+<translation id="766494940855677502"><ph name="META_TAG_NAME" />ን በትር ሁነታ ውስጥ ያንቁ።</translation>
 <translation id="7665369617277396874">መለያ ያክሉ</translation>
 <translation id="766747607778166022">ክሬዲት ካርዶችን ያቀናብሩ...</translation>
 <translation id="7668654391829183341">ያልታወቀ መሣሪያ</translation>
@@ -4709,6 +4710,7 @@ nil</translation>
 <translation id="7717014941119698257">በማውረድ ላይ፦ <ph name="STATUS" /></translation>
 <translation id="7717536746040464035">የseccomp-bpf ምስል መስሪያ ማጠሪያን አንቃ</translation>
 <translation id="7719421816612904796">ማሰልጠን ጊዜ አልፎበታል</translation>
+<translation id="771953673318695590">QA</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7730449930968088409">የእርስዎ ማያ ገጽ ይዘት ይቀርጻል</translation>
 <translation id="7730494089396812859">የክላውድ ምትኬ ዝርዝሮችን አሳይ</translation>
@@ -4721,6 +4723,7 @@ nil</translation>
 <translation id="774465434535803574">የጥቅል ቅጥያ ስህተት</translation>
 <translation id="7748144333872478614">በTouchView ውስጥ የመስኮት backdropዎችን አሰናክል</translation>
 <translation id="7748528009589593815">ቀዳሚ ትር</translation>
+<translation id="7751260505918304024">ሁሉንም አሳይ</translation>
 <translation id="7754704193130578113">እያንዳንዱ ፋይል ከመውረዱ በፊት የት እንደሚቀመጥ ጠይቅ</translation>
 <translation id="7756363132985736290">የእውቅና ማረጋገጫ አስቀድሞ አለ።</translation>
 <translation id="7760004034676677601">የጠበቁት የጅማሬ ገጽ ይሄ ነው?</translation>
@@ -4770,6 +4773,7 @@ nil</translation>
 <translation id="7818135753970109980">አዲስ ገጽታ ታክሏል (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="78196818692136852">Google ክፍያዎች ይህን ግብይት መስራት አይችልም።</translation>
 <translation id="7819857487979277519">PSK (WPA ወይም RSN)</translation>
+<translation id="782057141565633384">የቪዲዮ አድራሻ &amp;ቅዳ</translation>
 <translation id="7821009361098626711">የ<ph name="DOMAIN" /> አገልጋይ የተጠቃሚ ስም እና የይለፍ ቃል ይፈልጋል። አገልጋዩ እንዲህ ይላል፦ <ph name="REALM" />።</translation>
 <translation id="7825423931463735974">የታሚል የቁልፍ ሰሌዳ (Tamil99)</translation>
 <translation id="7825543042214876779">በመምሪያ የታገደ</translation>
@@ -4831,6 +4835,7 @@ nil</translation>
 <translation id="7900476766547206086">አንድ ወይም ከዚያ በላይ ተጠቃሚዎች ይህን ቅንብር ስላበሩት የይለፍ ቃላት በመለያ ለገቡ ተጠቃሚዎች ያስፈልጋሉ።</translation>
 <translation id="7903070801626843743">ቅጥያ ያላቸው የተመሰጠሩ የማህደረ መረጃ ቅጥያዎችን ያንቁ።</translation>
 <translation id="7903128267494448252">ይህን ሰው ሰርዝ</translation>
+<translation id="7903345046358933331">ገጹ ምላሽ የማይሰጥ ሆኗል። ምላሽ እስከሚሰጥ ሊጠብቁት ወይም ሊዘጉት ይችላሉ።</translation>
 <translation id="7903925330883316394">ፍጆታ፦ <ph name="UTILITY_TYPE" /></translation>
 <translation id="7903984238293908205">ካታካና</translation>
 <translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>
@@ -4858,8 +4863,8 @@ nil</translation>
 <translation id="7945967575565699145">የሙከራ የ QUIC ፕሮቶኮል።</translation>
 <translation id="7946068607136443002">የመተግበሪያ ዝርዝሩ በንክኪ እይታ ሁነታ ላይ ሲሆን እንደ በሙሉ ማያ ገጽ ሁነታ ይታያል። ይህ ዕልባት ከሁነታው ውጪ ምንም ነገር አያደርግም።</translation>
 <translation id="794676567536738329">ፍቃዶችን ያረጋግጡ</translation>
+<translation id="7947962633355574091">የቪዲዮ አድራሻ &amp;ቅዳ</translation>
 <translation id="795025003224538582">ዳግም አታስጀምር</translation>
-<translation id="7951415247503192394">(32-ቢት)</translation>
 <translation id="7953739707111622108">የዚህ መሣሪያ ስርዓተ ፋይል ስላልታወቀ ሊከፈት አይችልም።</translation>
 <translation id="7953955868932471628">አቋራጮችን ያቀናብሩ</translation>
 <translation id="7955383984025963790">ትር 5</translation>
@@ -4869,6 +4874,7 @@ nil</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
 <translation id="7963675372086154214">HarfBuzzን ለበይነገጽ ጽሑፍ አንቃ።</translation>
 <translation id="7965010376480416255">የጋራ ማህደረ ትውስታ</translation>
+<translation id="7966241909927244760">የምስል አድራሻ &amp;ቅዳ</translation>
 <translation id="7967437925638594022">ቅጥያዎች እና መተግበሪያዎች</translation>
 <translation id="7968728703861615399">በGoogle ክፍያዎች መለያዎ ላይ የሆነ ችግር አለ።</translation>
 <translation id="7968796119156413760">Android Midi ኤፒአይን ለWebMIDI ይጠቀሙ (በAndroid M+ መሳሪያዎች ብቻ ብቁ የሆነ)።</translation>
@@ -4921,6 +4927,7 @@ nil</translation>
 <translation id="8009669262342650481">ድር ጣቢያዎች በእርስዎ ዙሪያ ካሉ የብሉቱዝ መሣሪያዎች ጋር እንዲገናኙና እነሱን እንዲቆጣጠር ሊያስችል የሚችለውን የድር ብሉቱዝን ያነቃል። የቁልፍ ሰሌዳዎች፣ ካሜራዎች፣ ማይክሮፎኖች፣ ወዘተ. ያካታትል።</translation>
 <translation id="8012382203418782830">ይህ ገጽ ተተርጉሟል።</translation>
 <translation id="8012647001091218357">በዚህ ጊዜ ላይ ወላጆችህን መድረስ አልቻልንም። እባክህ እንደገና ሞክር።</translation>
+<translation id="8014154204619229810">አዘማኙ አሁን በማሄድ ላይ ነው። እንደገና ለመፈተሽ በአንድ ደቂቃ ውስጥ ያድሱ።</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> ወደ ቀዳሚው የተጫነ ስሪት ማድህር አልቻለም። እባክዎ የእርስዎን መሣሪያ እንደገና Powerwash ለማድረግ ይሞክሩ።</translation>
 <translation id="8016174103774548813">SSL አገልጋይ ምናልባት ጊዜ ያለፈበት ነው።</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
@@ -5046,6 +5053,7 @@ nil</translation>
 <translation id="8185331656081929126">አዲስ አታሚዎች በአውታረ መረቡ ላይ ሲገኙ ማሳወቂያዎችን አሳይ።</translation>
 <translation id="8186609076106987817">አገልጋዩ ፋይሉን ሊያገኝ አልቻለም።</translation>
 <translation id="8186706823560132848">ሶፍትዌር</translation>
+<translation id="8190192229604245067"><ph name="UWS_NAME" />፣ <ph name="UWS_NAME" />፣ እና <ph name="NUMBER_OF_UWS_GREATER_THAN_ONE" /> ሌሎች</translation>
 <translation id="8190193592390505034">ከ<ph name="PROVIDER_NAME" /> ጋር በመገናኘት ላይ</translation>
 <translation id="8191230140820435481">መተግበሪያዎችዎን፣ ቅጥያዎችዎን እና ገጽታዎችዎን ያቀናብራል</translation>
 <translation id="8191453843330043793">V8 Proxy Resolver</translation>
@@ -5137,6 +5145,7 @@ nil</translation>
           ይሂዱ።</translation>
 <translation id="8303655282093186569">የፒንዪን ግቤት ቅንብሮች</translation>
 <translation id="830598693585544337">ይህን አማራጭ ማንቃት ድር ጣቢያዎች የWebAudio ኤ ፒ አዩን እንዳይደርሱበት ያግዳቸዋል።</translation>
+<translation id="8306534594034939679">የኤችቲቲፒ ባህሪዎች ሙከራ ለሆነው የተለዋጭ አገልግሎቶች ያንቁ።</translation>
 <translation id="8307376264102990850">ባትሪ በመሙላት ላይ
 ሙሉ እስኪሆን ድረስ ያለውን ጊዜ በማስላት ላይ</translation>
 <translation id="8308179586020895837"><ph name="HOST" /> የእርስዎ ካሜራ መድረስ የሚፈልግ ከሆነ ይጠይቅ</translation>
@@ -5258,7 +5267,6 @@ nil</translation>
 <translation id="8496717697661868878">ይህን ተሰኪ አሂድ</translation>
 <translation id="8497392509610708671">ይህን በማንኛውም ጊዜ በ<ph name="BEGIN_LINK" />Chrome ቅንብሮች<ph name="END_LINK" /> ውስጥ መቀየር ይችላሉ</translation>
 <translation id="8498716162437226120">የብሉቱዝ መሣሪያ አክል</translation>
-<translation id="8502803898357295528">የይለፍ ቃልዎ ተቀይሯል</translation>
 <translation id="8506101089619487946">Smart Lock ለChromebook ይጥፋ?</translation>
 <translation id="8508677083825928015">ገጾችን በበለጠ ፍጥነት ለመጫን ንብረቶችን ቅድሚያ አምጣ</translation>
 <translation id="8509646642152301857">የፊደል ማረሚያ መዝገበ-ቃላት ማውረድ አልተሳካም።</translation>
@@ -5304,6 +5312,7 @@ nil</translation>
 <translation id="8570618730045879048">ይህ ጣቢያ በእራስ በገባ የክልክላ ዝርዝር ግቤት ምክንያት ታግዷል።</translation>
 <translation id="8571032220281885258">«Ok Google» ሲሉ Chrome ቀጥሎ የሚሉትን ነገር ይፈልጋል።</translation>
 <translation id="8571108619753148184">አገልጋይ 4</translation>
+<translation id="8572832761467613633">ፍላሽ ብቻ</translation>
 <translation id="8572981282494768930">ጣቢያዎች ካሜራዎን እና ማይክሮፎንዎን እንዲደርሱባቸው አይፍቀዱ</translation>
 <translation id="8574794171590710404">ይህ ጣቢያ የማይደገፍ (<ph name="PLUGIN_NAME" />) ተሰኪ ይጠቀማል።</translation>
 <translation id="857779305329188634">የሙከራ የQUIC ፕሮቶኮል ድጋፍ ያንቁ።</translation>
@@ -5318,7 +5327,6 @@ nil</translation>
 <translation id="8592071947729879125">የiframe ፍቃዶችን ገድብ።</translation>
 <translation id="859285277496340001">የእውቅና ማረጋገጫው ተሽሮ እንደሆነ የሚታይበት ምንም ስልት አይገልጽም።</translation>
 <translation id="8594787581355215556">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ገብተዋል። የተመሳሰለውን ውሂብዎ በ<ph name="BEGIN_LINK" />Google Dashboard <ph name="END_LINK" /> ላይ ያቀናብሩት።</translation>
-<translation id="8595751131238115030">የኢሜል አድራሻዎን ያስገቡ።</translation>
 <translation id="8596540852772265699">ብጁ ፋይሎች</translation>
 <translation id="8596785155158796745">ማይክሮፎን በአሁኑ ጊዜ አይገኝም። <ph name="BEGIN_LINK" />ማይክሮፎን ያቀናብሩ<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">የባህሪ ቅርጸት፦</translation>
@@ -5380,6 +5388,7 @@ nil</translation>
 <translation id="8677039480012021122">ውሂብ አጽዳና ግንኙነት አቋርጥ</translation>
 <translation id="8677212948402625567">ሁሉንም ሰብስብ...</translation>
 <translation id="8678648549315280022">የአውርድ ቅንብሮችን ያስተዳድሩ...</translation>
+<translation id="8680536109547170164"><ph name="QUERY" />፣ መልስ፣ <ph name="ANSWER" /></translation>
 <translation id="8680787084697685621">የመለያ መግቢያ ዝርዝሮች ጊዜ ያለፈባቸው ናቸው።</translation>
 <translation id="8684255857039823328">የይለፍ ቃል ተቀምጧል። <ph name="MANAGEMENT_LINK" /> ላይ የይለፍ ቃላትዎን ከማንኛውም መሣሪያ ላይ ሆነው ይድረሱባቸው።</translation>
 <translation id="8686213429977032554">ይህ የDrive ፋይል ገና አልተጋራም</translation>
@@ -5482,6 +5491,7 @@ nil</translation>
 <translation id="881799181680267069">ሌሎቹን ደብቅ</translation>
 <translation id="8818152613617627612">የክፍያ ዝርዝሮች</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
+<translation id="8820961991571528294">በመሞከር ላይ</translation>
 <translation id="8822012246577321911">ሶስተኛ ወገን</translation>
 <translation id="8824701697284169214">&amp;ገጽ አክል...</translation>
 <translation id="8828933418460119530">የDNS ስም</translation>
@@ -5489,8 +5499,8 @@ nil</translation>
 <translation id="8830796635868321089">የአሁኑ ተኪ ቅንብሮችን ተጠቅሞ የዝማኔ ፍተሻ አልተሳካም። እባክዎ <ph name="PROXY_SETTINGS_LINK_START" />የተኪ ቅንብሮችዎ<ph name="PROXY_SETTINGS_LINK_END" />ን ያስተካክሉ።</translation>
 <translation id="8831623914872394308">የጠቋሚ ቅንብሮች</translation>
 <translation id="8837103518490433332"><ph name="PASSWORD_MANAGER_BRAND" /> የእርስዎን የይለፍ ቃል ለ<ph name="ORIGIN" /> እንዲያስቀምጥ ይፈልጋሉ?</translation>
+<translation id="8841142799574815336">Inert ምስላዊ መመልከቻ።</translation>
 <translation id="884264119367021077">የመላኪያ አድራሻ</translation>
-<translation id="8843709518995654957">ለዚህ መሣሪያ <ph name="LINK_START" />ክትትል የሚደረግበት ተጠቃሚ ይፍጠሩ<ph name="LINK_END" />።</translation>
 <translation id="8846141544112579928">የቁልፍ ሰሌዳን በመፈለግ ላይ...</translation>
 <translation id="8847988622838149491">ዩ ኤስ ቢ</translation>
 <translation id="8848709220963126773">የShift ቁልፍ ሁነታ ቅያሬ</translation>
@@ -5567,7 +5577,6 @@ nil</translation>
 <translation id="895586998699996576">$1 ምስል</translation>
 <translation id="8957210676456822347">የተያዥ መግቢያ ፈቀዳ</translation>
 <translation id="8957423540740801332">ቀኝ</translation>
-<translation id="8957709627709183338">በክትትል ስር ያሉ ተጠቃሚዎችን መፍጠር በዚህ መሳሪያ ባለቤት የተገደበ ነው።</translation>
 <translation id="8958084571232797708">የራስ-ውቅር ዩአርኤል ይጠቀሙ</translation>
 <translation id="895944840846194039">የJavaScript ማህደረ ትውስታ</translation>
 <translation id="8959810181433034287">ክትትል የሚደረግበት ተጠቃሚ በመለያ ለመግባት ይህን የይለፍ ቃል መጠቀም ይኖርበታል፣ ስለዚህ የይለፍ ቃል በጥንቃቄ ይምረጡና ክትትል ከሚደረግበት ተጠቃሚ ጋር መነጋገርዎን ያስታውሱ።</translation>
@@ -5614,6 +5623,7 @@ nil</translation>
 <translation id="9009299913548444929">ይህ ባህሪ ለጊዜው አይገኝም። <ph name="BEGIN_LINK" />እገዛ<ph name="END_LINK" /></translation>
 <translation id="9009369504041480176">በማስገባት ላይ (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011178328451474963">የመጨረሻ ትር</translation>
+<translation id="9013284500811652791"><ph name="UWS_NAME" />፣ <ph name="UWS_NAME" />፣ እና አንድ ተጨማሪ</translation>
 <translation id="9013587737291179248">ውይ! ክትትል የሚደረግበት ተጠቃሚ ማስመጣት አልተቻለም። እባክዎ የደረቅ አንጻፊዎ ቦታ እና ፍቃዶችን ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="9013589315497579992">ጥሩ ያልሆነ SSL የተገልጋይ ማረጋገጫ ሰርቲፊኬት።</translation>
 <translation id="9014987600015527693">ሌላ ስልክ አሳይ</translation>
@@ -5789,11 +5799,9 @@ nil</translation>
 <translation id="953345106084818179">ፍቃድ ጠይቅ</translation>
 <translation id="959890390740139744">የፊደል አጻጻፍ በራስ-ሰር አርም</translation>
 <translation id="960987915827980018">1 ሰዓት አካባቢ ቀርቷል</translation>
-<translation id="962416441122492777">በመለያ መግባት ያጠናቅቁ</translation>
 <translation id="962520199903263026">የፊደል አደራደር ግብረ መልስ መስክ ሙከራ።</translation>
 <translation id="96421021576709873">የWi-Fi አውታረ መረብ</translation>
 <translation id="968174221497644223">የመተግበሪያ መሸጎጫ</translation>
-<translation id="969892804517981540">ይፋ ግንባታ</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 ትር}one{# ትሮች}other{# ትሮች}}</translation>
 <translation id="970794034573172516">የድምጽ እና የኦዲዮ እንቅስቃሴን አንቃ</translation>
 <translation id="971058943242239041">በጥቅል መተግበሪያዎች ውስጥ «የመስኮት-መቆጣጠሪያዎች» ኤች ቲ ኤም ኤል አባላትን መጠቀምን ያነቃል።</translation>
@@ -5815,4 +5823,5 @@ nil</translation>
 <translation id="994289308992179865">&amp;ደጋግም</translation>
 <translation id="996250603853062861">ደህንነቱ የተጠበቀ ግንኙነት በመመስረት ላይ...</translation>
 <translation id="996987097147224996">ቀዳሚውን የግቤት ስልት ለመምረጥ Ctrl+Space ይጫኑ።</translation>
+<translation id="998747458861718449">&amp;መርምር</translation>
 </translationbundle>

@@ -55,7 +55,6 @@
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="1240643596769627465">Pozwala określić URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wprowadzonym przez użytkownika. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane. Ta zasada jest egzekwowana tylko wówczas, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
-<translation id="1283072268083088623">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />. Możliwe wartości to „podstawowe”, „podsumowanie”, „NTLM” i „negocjacja”. Poszczególne wartości rozdziel przecinkami. Jeśli ta zasada nie zostanie skonfigurowana, będą używane wszystkie cztery schematy.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
 <translation id="1300635491585192248">Przewiduj działania w dowolnej sieci innej niż komórkowa</translation>
 <translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
@@ -73,9 +72,9 @@
 <translation id="1330985749576490863">Wyłącz Dysk Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" /> przy połączeniu komórkowym</translation>
 <translation id="13356285923490863">Nazwa zasady</translation>
 <translation id="1353966721814789986">Strony otwierane po uruchomieniu</translation>
-<translation id="1359553908012294236">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie umożliwiać logowanie się w trybie gościa. Profile gościa to profile <ph name="PRODUCT_NAME" />, gdzie wszystkie okna otwierają się w trybie incognito.
+<translation id="1359553908012294236">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie umożliwiać logowanie się w trybie gościa. Dane logowania gościa to profile <ph name="PRODUCT_NAME" />, dla których wszystkie okna otwierają się w trybie incognito.
 
-      Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
+      Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
 <translation id="1398889361882383850">Pozwala określić, czy strony będą mogły automatycznie uruchamiać wtyczki. Automatyczne uruchamianie wtyczek może być dozwolone dla wszystkich witryn lub zabronione dla wszystkich witryn.
 
@@ -116,6 +115,7 @@
 
       Jeśli ta zasada ma wartość „false” lub nie jest ustawiona,
       ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
+<translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Pozwala określić w milisekundach okres wysyłania do usługi zarządzania urządzeniem zapytań o zasady dotyczące urządzeń.
 
@@ -183,7 +183,6 @@
 
       Jeśli ta opcja jest wyłączona, na pasku zadań nie jest wyświetlany duży czerwony przycisk wylogowania.</translation>
 <translation id="1942957375738056236">W tym miejscu możesz podać URL serwera proxy. Ta zasada obowiązuje tylko wówczas, gdy zdecydujesz się ręcznie wprowadzić ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Nie ustawiaj tej zasady w przypadku wybrania innego trybu ustawiania zasad proxy. Więcej opcji i szczegółowych przykładów znajdziesz na <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">Zasady uwierzytelniania HTTP</translation>
 <translation id="1956493342242507974">Konfiguruje zarządzanie energią na ekranie logowania w <ph name="PRODUCT_OS_NAME" />.
 
       Zasada pozwala skonfigurować, jak <ph name="PRODUCT_OS_NAME" /> ma się zachować, gdy po wyświetleniu ekranu logowania użytkownik przez pewien czas nie wykona żadnej czynności. Kontroluje ona wiele ustawień. Ich objaśnienia i zakresy wartości znajdziesz w opisach odpowiednich zasad, które sterują zarządzaniem energią podczas sesji. Jedyne różnice w stosunku do tych zasad to:
@@ -220,6 +219,18 @@
       Jeśli zasada HardwareAccelerationModeEnabled jest wyłączona, zasada Disable3DAPIs jest ignorowana, a włączona jest zasada równoważna wobec Disable3DAPI.</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
+<translation id="2175836933294053665">Konfiguruje listę zarządzanych zakładek.
+
+      Ta zasada składa się z listy zakładek, z których każda jest słownikiem
+      zawierającym klucze „name” i „url” z nazwą i adresem docelowym
+      zakładki. Można utworzyć podfolder, definiując zakładkę
+      bez klucza „url”, ale z dodatkowym kluczem „children”, który zawiera
+      listę zakładek taką jak opisano powyżej (niektóre z nich same mogą być
+      folderami). <ph name="PRODUCT_NAME" />
+      uzupełnia niekompletne adresy URL tak samo jak po wpisaniu w omniboksie
+      – na przykład „google.com” zamienia na „https://google.com/”.
+
+      Te zakładki są umieszczane w folderze Zakładki zarządzane, którego użytkownik nie może modyfikować, ale może go ukryć na pasku zakładek. Zakładki zarządzane nie synchronizują się z kontem użytkownika, a rozszerzenia nie mogą ich modyfikować.</translation>
 <translation id="2188979373208322108">Włącza pasek zakładek w przeglądarce <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie pokazywany pasek zakładek. W przypadku wyłączenia ustawienia pasek nie będzie wyświetlany. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tego ustawienia użytkownik może zdecydować, czy chce używać tej funkcji.</translation>
 <translation id="2201555246697292490">Skonfiguruj białą listę wiadomości natywnych</translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
@@ -459,11 +470,11 @@
 
           ExtensionInstallBlacklist ma pierwszeństwo przed tą zasadą. Oznacza to, że rozszerzenie z czarnej listy nie zostanie zainstalowane, nawet jeśli pochodzi ze strony wymienionej w tej zasadzie.</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
-<translation id="2844404652289407061">Pozwala korzystać z funkcji „Dotknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
+<translation id="2844404652289407061">Pozwala korzystać z funkcji Dotknij, by wyszukać w widoku treści w <ph name="PRODUCT_NAME" />.
 
-      Jeśli włączysz to ustawienie, funkcja „Dotknij, by wyszukać” będzie dostępna dla użytkownika i będzie on mógł ją włączyć lub wyłączyć.
+      Jeśli włączysz to ustawienie, funkcja Dotknij, by wyszukać będzie dostępna dla użytkownika i będzie on mógł ją włączyć lub wyłączyć.
 
-      Jeśli wyłączysz to ustawienie, funkcja „Dotknij, by wyszukać” zostanie całkowicie wyłączona.
+      Jeśli wyłączysz to ustawienie, funkcja Dotknij, by wyszukać zostanie całkowicie wyłączona.
 
       Pozostawienie tej zasady nieustawionej jest równoznaczne z jej włączeniem – patrz opis powyżej.</translation>
 <translation id="2850122204195089673">Udostępnij ujednolicony pulpit i włącz go domyślnie</translation>
@@ -515,6 +526,11 @@
 <translation id="3067188277482006117">Jeśli ustawiono wartość Prawda, użytkownik może używać modułu sprzętowego w urządzeniach z Chrome do zdalnego poświadczania tożsamości przez wywołanie funkcji chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys.
 
           Jeśli wartość ustawiono na Fałsz lub nie jest ona określona, wywołania kierowane do interfejsu API zakończą się błędem.</translation>
+<translation id="3069958900488014740">Umożliwia wyłączenie optymalizacji WPAD (Web Proxy Auto-Discovery) w <ph name="PRODUCT_NAME" />.
+
+      Jeśli ta zasada jest wyłączona, optymalizacja WPAD jest wyłączona. <ph name="PRODUCT_NAME" /> musi wtedy dłużej oczekiwać na serwery WPAD oparte na DNS. Jeśli zasada jest włączona lub nie jest skonfigurowana, optymalizacja WPAD jest włączona.
+
+      Bez względu na to, czy i jak ta zasada jest skonfigurowana, użytkownicy nie mogą jej zmienić.</translation>
 <translation id="3072045631333522102">Wygaszacz ekranu używany na ekranie logowania w trybie sklepu</translation>
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
 <translation id="3096595567015595053">Lista włączonych wtyczek</translation>
@@ -644,22 +660,6 @@
       Jeśli nie skonfigurujesz tego ustawienia lub ustawisz dla niego wartość prawda, użytkownicy będą mogli używać wszystkich obsługiwanych wyjść audio urządzenia.</translation>
 <translation id="3808945828600697669">Określ listę wyłączonych wtyczek</translation>
 <translation id="3816312845600780067">Włącz automatyczne logowanie skrótem klawiszowym</translation>
-<translation id="381807926299956806">Ustawia co najmniej jeden zalecany język na potrzeby sesji publicznych, ułatwiając użytkownikom wybieranie spośród ustawionych języków.
-
-      Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji publicznej. Domyślnie wszystkie języki obsługiwane w <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
-
-      Jeśli nie ustawisz tej zasady, wstępnie wybrany będzie bieżący język interfejsu.
-
-      Jeśli ustawisz tę zasadę, zalecane języki przeniosą się na początek listy i będą się wyróżniać na tle pozostałych. Kolejność zalecanych języków będzie taka jak w zapisie zasady. Wstępnie wybrany będzie pierwszy zalecany język z listy.
-
-      Jeśli ustawionych jest więcej zalecanych języków, zakłada się, że użytkownicy będą wybierać spomiędzy nich. W takim wypadku przy rozpoczynaniu sesji publicznej wyraźnie dostępna będzie możliwość wyboru języka i układu klawiatury. W przeciwnym razie zakłada się, że większość użytkowników chce korzystać ze wstępnie wybranego języka. Możliwość wyboru języka i klawiatury będzie mniej wyeksponowana przy rozpoczynaniu sesji publicznej.
-
-      Gdy ustawisz tę zasadę i włączysz automatyczne logowanie (zapoznaj się z zasadami |DeviceLocalAccountAutoLoginId| oraz |DeviceLocalAccountAutoLoginDelay|), w automatycznie rozpoczynanych sesjach publicznych będzie używany pierwszy zalecany język i najpopularniejszy układ klawiatury, który do niego pasuje.
-
-      Wstępnie wybrany układ klawiatury zawsze odpowiada najpopularniejszemu układowi dla wstępnie wybranego języka.
-
-      Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji publicznej dowolny język obsługiwany w <ph name="PRODUCT_OS_NAME" />.
-      </translation>
 <translation id="3820526221169548563">Włącza funkcję dostępności klawiatury ekranowej.
 
           Jeśli ustawisz tu wartość prawda, klawiatura ekranowa będzie zawsze włączona.
@@ -727,7 +727,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
 <translation id="4088983553732356374">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Może to być dozwolone lub zabronione dla wszystkich witryn.
 
-          Jeśli ta zasada zostanie ustawiona na „Zachowaj pliki cookie na czas trwania sesji”, pliki cookie będą usuwane przy zamknięciu sesji. Pamiętaj, że jeśli <ph name="PRODUCT_NAME" /> działa w tle, nawet po zamknięciu ostatniego okna sesja może pozostać aktywna. Przeczytaj o zasadzie „BackgroundModeEnabled”, by uzyskać więcej informacji o konfigurowaniu tego działania.
+          Jeśli ta zasada zostanie ustawiona na „Zachowaj pliki cookie na czas trwania sesji”, pliki cookie będą usuwane przy zamknięciu sesji. Pamiętaj, że jeśli <ph name="PRODUCT_NAME" /> działa w tle, nawet po zamknięciu ostatniego okna sesja może pozostać aktywna. Przeczytaj o zasadzie „BackgroundModeEnabled”, by dowiedzieć się więcej o konfigurowaniu tego działania.
 
           Jeśli ta zasada pozostanie nieskonfigurowana, będzie używane ustawienie „AllowCookies”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="410478022164847452">Określa, po jakim czasie nieaktywności użytkownika podejmowane jest działanie po bezczynności przy zasilaniu z sieci.
@@ -890,6 +890,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> nie będzie zakazywać użytkownikom logowania się.</translation>
 <translation id="4962195944157514011">Określa URL wyszukiwarki używanej podczas wyszukiwania domyślnego. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który podczas zapytania zostanie zastąpiony hasłami wyszukiwanymi przez użytkownika. Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie uwzględniana.</translation>
+<translation id="4971529314808359013">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których <ph name="PRODUCT_NAME" /> automatycznie wybiera certyfikaty klienta, jeśli dana witryna żąda certyfikatu.
+
+          Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtru wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
+
+          Jeśli ta zasada nie jest ustawiona, automatyczna selekcja nie będzie przeprowadzana w żadnej witrynie.</translation>
 <translation id="4980301635509504364">Zezwala na przechwytywanie wideo lub tego zabrania.
 
       Jeśli ta zasada jest włączona lub nie jest skonfigurowana (ustawienie domyślne),
@@ -1203,9 +1208,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> użyje najniższej domyślnej wersji protokołu, czyli SSLv3 w <ph name="PRODUCT_NAME" /> 39 lub TLS 1.0 w nowszych wersjach.
 
-      W przeciwnym wypadku można ustawić jedną z tych wartości: „sslv3”, „tls1”, „tls1.1” lub „tls1.2”. Po ich ustawieniu <ph name="PRODUCT_NAME" /> nie będzie używać protokołu SSL/TLS w wersji niższej niż określona. Wszystkie nierozpoznane wartości będą ignorowane.
+      W przeciwnym razie można ustawić jedną z tych wartości: „sslv3”, „tls1”, „tls1.1” lub „tls1.2”. Po ich ustawieniu <ph name="PRODUCT_NAME" /> nie będzie używać protokołu SSL/TLS w wersji niższej niż określona. Wszystkie nierozpoznane wartości będą ignorowane.
 
-      Należy pamiętać, że wbrew temu, co sugeruje numer, wersja „sslv3” jest starsza od „tls1” .</translation>
+      Należy pamiętać, że wbrew temu, co sugeruje numer, wersja „sslv3” jest starsza od „tls1”.</translation>
 <translation id="6177482277304066047">Ustawia wersję docelową dla autoaktualizacji.
 
       Określa przedrostek wersji docelowej aktualizacji systemu <ph name="PRODUCT_OS_NAME" />. Jeśli na urządzeniu działa wersja starsza niż określona przez podany przedrostek, zostanie wykonana aktualizacja do najnowszej wersji z danym przedrostkiem. Jeśli na urządzeniu działa już późniejsza wersja, nie są wprowadzane żadne zmiany (czyli nie jest przywracana starsza wersja), a na urządzeniu jest pozostawiana aktualnie używana wersja. Jak pokazano w poniższym przykładzie, format przedrostka rozróżnia komponenty:
@@ -1237,7 +1242,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
 <translation id="6279809962528392889">Określa, czy pliki cookie uwierzytelniania ustawione przez dostawcę tożsamości SAML podczas logowania powinny zostać przesłane do profilu użytkownika.
 
-      Gdy uwierzytelnianie użytkownika odbywa się przez dostawcę tożsamości SAML podczas logowania, pliki cookie ustawione przez dostawcę tożsamości są najpierw zapisywane w profilu tymczasowym. Pliki te mogą zostać następnie przesłane do profilu użytkownika, by przenieść stan uwierzytelniania.
+      Gdy uwierzytelnianie użytkownika odbywa się przez dostawcę tożsamości SAML podczas logowania, pliki cookie ustawione przez dostawcę tożsamości są najpierw zapisywane w profilu tymczasowym. Mogą one zostać następnie przesłane do profilu użytkownika, by przenieść stan uwierzytelniania.
 
       Jeśli ta zasada jest włączona, pliki cookie ustawione przez dostawcę tożsamości są przesyłane do profilu użytkownika za każdym razem, gdy jest on uwierzytelniany przez dostawcę tożsamości SAML podczas logowania.
 
@@ -1288,7 +1293,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli wyłączysz to ustawienie, użytkownicy nie będą mogli korzystać z funkcji Smart Lock.
 
-      Jeśli zasada pozostanie nieustawiona, funkcja Smart Lock będzie domyślnie niedostępna dla użytkowników zarządzanych przez przedsiębiorstwo i dostępna dla użytkowników niezarządzanych.</translation>
+      Jeśli zasada pozostanie nieustawiona, funkcja Smart Lock będzie domyślnie niedostępna dla użytkowników zarządzanych przez firmę i dostępna dla użytkowników niezarządzanych.</translation>
 <translation id="6513756852541213407">Pozwala określić serwer proxy używany w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę jego ustawień. Jeśli zdecydujesz się nie korzystać z serwera proxy i zawsze bezpośrednio nawiązywać połączenia, wszystkie pozostałe opcje będą ignorowane. Są one ignorowane również w przypadku użycia systemowych ustawień serwera proxy lub automatycznego wykrywania serwera proxy. Jeśli wybierzesz tryb stałego serwera proxy, możesz określić dodatkowe opcje w polach „Adres URL serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. W przypadku użycia skryptu PAC serwera proxy musisz w polu „Adres URL pliku PAC serwera proxy” określić adres URL skryptu. Szczegółowe przykłady można znaleźć na stronie <ph name="PROXY_HELP_URL" />. Jeśli ustawienie jest włączone, <ph name="PRODUCT_NAME" /> ignoruje wszystkie opcje dotyczące serwera proxy określone w wierszu polecenia. W przypadku nieskonfigurowania tej zasady użytkownicy będą mogli samodzielnie wybrać ustawienia proxy.</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="653608967792832033">Określa, po jakim czasie nieaktywności użytkownika blokowany jest ekran przy zasilaniu z baterii.
@@ -1438,16 +1443,16 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli nie skonfigurujesz tej zasady, tryb działania w tle będzie początkowo niedostępny, ale użytkownik będzie mógł zmienić tę opcję w ustawieniach przeglądarki.</translation>
 <translation id="7123297102171034788">Pozwala określić działanie po uruchomieniu.
 
-          Jeśli wybierzesz „Otwórz stronę nowej karty”, po uruchomieniu <ph name="PRODUCT_NAME" /> będzie zawsze otwierana strona nowej karty.
+          Jeśli wybierzesz „Otwórz stronę nowej karty”, po uruchomieniu <ph name="PRODUCT_NAME" /> będzie się zawsze otwierać strona nowej karty.
 
-          Jeśli wybierzesz „Przywróć ostatnią sesję”, będą otwierane strony, które były otwarte w momencie ostatniego zamknięcia <ph name="PRODUCT_NAME" /> i będzie przywracana sesja przeglądania w postaci, w jakiej została zamknięta.
-          Wybranie tej opcji spowoduje wyłączenie niektórych ustawień zależnych od sesji lub powodujących wykonywanie określonych czynności przy zamykaniu (na przykład wyczyszczenie danych przeglądania po zamknięciu lub usunięcie sesyjnych plików cookie).
+          Jeśli wybierzesz „Przywróć ostatnią sesję”, będą otwierać się strony, które były otwarte w momencie ostatniego zamknięcia <ph name="PRODUCT_NAME" /> i będzie przywracana sesja przeglądania w postaci, w jakiej została zamknięta.
+          Wybranie tej opcji spowoduje wyłączenie niektórych ustawień zależnych od sesji lub powodujących wykonywanie określonych czynności przy zamykaniu (na przykład wyczyszczenie danych przeglądania po zamknięciu lub usunięcie plików cookie sesji).
 
           Jeśli wybierzesz „Otwórz adresy URL z listy”, po włączeniu <ph name="PRODUCT_NAME" /> wyświetlą się strony z listy „Adresy URL otwierane po uruchomieniu”.
 
           Jeśli włączysz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
 
-          Wyłączenie tego ustawienia jest równoznaczne z pozostawieniem go jako nieskonfigurowane. Użytkownik nadal będzie mógł je zmienić w <ph name="PRODUCT_NAME" />.
+          Wyłączenie tego ustawienia jest równoznaczne z pozostawieniem go nieskonfigurowanego. Użytkownik nadal będzie mógł je zmienić w <ph name="PRODUCT_NAME" />.
 
           Ta zasada jest niedostępna w systemach Windows,
           które nie są dołączone do domeny Active Directory.</translation>
@@ -1554,7 +1559,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli zasada nie jest ustawiona, zostanie użyty domyślny rozmiar pamięci, a użytkownik będzie mógł go zastąpić flagą --disk-cache-size.</translation>
 <translation id="7612157962821894603">Flagi systemowe stosowane przy uruchamianiu <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista wyłączonych schematów protokołów</translation>
-<translation id="7615123397791876280">Rodzaj konta na potrzeby uwierzytelniania negocjacji</translation>
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
@@ -1728,13 +1732,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
 <translation id="8211174979203781791">Pozwala skonfigurować domyślny adres URL strony startowej w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę.
 
-          Strona startowa to strona, która wyświetla się po kliknięciu przycisku strony startowej. Strony, które otwierają się po uruchomieniu przeglądarki, są określane przez zasady RestoreOnStartup.
+          Strona startowa wyświetla się po kliknięciu przycisku strony startowej. Strony, które otwierają się po uruchomieniu przeglądarki, są określane przez zasady RestoreOnStartup.
 
           Jako typ strony startowej możesz wybrać podany w tym ustawieniu adres URL albo stronę Nowa karta. Po wybraniu strony Nowa karta ta zasada jest ignorowana.
 
           Jeśli ta zasada jest włączona, użytkownicy nie mogą zmienić adresu URL strony startowej w <ph name="PRODUCT_NAME" />, ale nadal mogą wybrać stronę Nowa karta jako stronę startową.
 
-          Jeśli zasada pozostanie nieustawiona, użytkownicy będą mogli sami wybrać stronę startową, o ile zasada HomepageIsNewTabPage również nie jest skonfigurowana.
+          Jeśli zasada pozostanie nieustawiona, użytkownicy będą mogli sami wybrać stronę startową, o ile nie jest też skonfigurowana zasada HomepageIsNewTabPage.
 
           Ta zasada jest niedostępna w systemach Windows,
           które nie są dołączone do domeny Active Directory.</translation>
@@ -1757,7 +1761,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8300455783946254851">Po ustawieniu wartości prawda wyłącza synchronizację Dysku Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" />, gdy użytkownik korzysta z połączenia komórkowego. Dane są synchronizowane z Dyskiem Google tylko przez Wi-Fi lub Ethernet.
 
           Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, użytkownicy mogą przesyłać dane na Dysk Google przez sieć komórkową.</translation>
-<translation id="8303314579975657113">Pozwala określić bibliotekę GSSAPI, która ma być używana do uwierzytelniania HTTP. Możesz określić samą nazwę biblioteki lub pełną ścieżkę. Jeśli ustawienie jest nieskonfigurowane, w przeglądarce <ph name="PRODUCT_NAME" /> w zastępstwie używana jest domyślna nazwa biblioteki.</translation>
 <translation id="8329984337216493753">Ta zasada jest aktywna tylko w trybie sklepu.
 
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.
@@ -1772,9 +1775,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
-<translation id="8407759228138103300">Określa typ konta w przypadku kont z aplikacji uwierzytelniających na Androida, które obsługuje negocjowane uwierzytelnianie HTTP (np. uwierzytelnianie Kerberos). Tę informację powinien udostępnić dostawca aplikacji uwierzytelniającej. Więcej informacji znajdziesz na https://goo.gl/hajyfN
-
-          W przypadku braku ustawień uwierzytelnianie negocjowane w Androidzie będzie wyłączone.</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
 <translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
@@ -1797,6 +1797,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
+<translation id="857925079934558818">Określa, czy ma być wyłączona optymalizacja TLS False Start. Z powodów historycznych ta zasada ma nazwę DisableSSLRecordSplitting.
+
+      Jeśli ta zasada jest nieskonfigurowana lub jest wyłączona, to TLS False Start będzie włączone. Jeśli jest włączona, TLS False Start będzie wyłączone.</translation>
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>
 <translation id="8631434304112909927">do wersji <ph name="UNTIL_VERSION" /></translation>
@@ -1885,9 +1888,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="89493502583189945">Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi zaczynają obowiązywać w <ph name="PRODUCT_NAME" /> jeszcze przed wyświetleniem ekranu logowania.</translation>
 <translation id="8951350807133946005">Ustaw katalog podręcznej pamięci dyskowej</translation>
 <translation id="8955719471735800169">Powrót do góry</translation>
-<translation id="8960850473856121830">Wzorce na tej liście są dopasowane do źródła zabezpieczeń
-      adresu URL, z którego pochodzi żądanie. Po znalezieniu odpowiednika
-      dostęp do urządzeń do przechwytywania dźwięku jest udzielany bez pytania.
+<translation id="8960850473856121830">Wzorce na tej liście są porównywane ze źródłem zabezpieczeń
+      adresu URL, z którego pochodzi żądanie. Gdy znaleziono odpowiednik,
+      bez pytania udzielany jest dostęp do urządzeń rejestrujących dźwięk.
 
       UWAGA: do momentu wprowadzenia wersji 45 ta zasada działała tylko w trybie kiosku.</translation>
 <translation id="8965758116018152083">Jeśli ta zasada jest pusta lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać opcji autouzupełniania podczas logowania użytkownika.

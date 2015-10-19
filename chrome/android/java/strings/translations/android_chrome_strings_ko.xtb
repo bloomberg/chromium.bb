@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">느린 연결이 감지되었습니다.</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
 <translation id="2870560284913253234">사이트</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{주변에 1개의 URL이 있음}other{주변에 #개의 URL이 있음}}</translation>
 <translation id="2888126860611144412">크롬 정보</translation>
 <translation id="2891154217021530873">페이지 로딩 중지</translation>
 <translation id="2902702728133930130">예기치 않은 오류로 인해 Chrome을 시작하지 못했습니다.</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">이 메시지가 자주 표시된다면 <ph name="BEGIN_LINK" />권장 조치<ph name="END_LINK" />를 시도해 보세요.</translation>
 <translation id="3414952576877147120">크기:</translation>
 <translation id="3455798674391346847">Google을 사용하여 데이터 사용을 줄이면 방문하는 페이지를 최적화할 수 있습니다. HTTP 또는 시크릿 모드를 사용하여 액세스한 페이지는 Google에서 최적화하거나 인식할 수 없습니다.</translation>
-<translation id="346339498574870680">이미지 URL 복사</translation>
 <translation id="3485544713029068372">비밀번호 대용 Smart Lock</translation>
 <translation id="3492207499832628349">새 시크릿 탭</translation>
 <translation id="3518985090088779359">동의하고 계속</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">탭과 앱 따로 표시</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4333969446981951071">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
+<translation id="4334294535648607276">다운로드가 완료되었습니다.</translation>
 <translation id="4350413759959745971">저장된 페이지 이동</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
 <translation id="4357362091209756047">기기가 표시되지 않나요? <ph name="BEGIN_LINK1" />다시 검색<ph name="END_LINK1" />하거나 <ph name="BEGIN_LINK2" />도움말을 확인<ph name="END_LINK2" />해 보세요.</translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">폴더 선택</translation>
 <translation id="4543087392704641517">북마크 제목</translation>
 <translation id="4543661749405994812">이메일 주소 복사</translation>
-<translation id="4619298195800598081">새 탭에서 원본 이미지 열기</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 메인 스크린에 추가됨</translation>
@@ -315,6 +315,7 @@
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(IPS), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5733727110006255111">이 기능을 사용 설정하면 Chrome은 Google 서버를 이용해 방문한 페이지를 압축한 다음 다운로드합니다. 단, SSL 및 시크릿 페이지에서는 작동하지 않습니다.</translation>
+<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소에 액세스해야 합니다.</translation>
 <translation id="5763382633136178763">시크릿 탭</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" />에 있는 기존 <ph name="FILE_NAME" /> 파일을 바꾸시겠습니까?</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">페어링</translation>
 <translation id="5832934273103296195">펼쳐짐 - 접으려면 클릭</translation>
 <translation id="583891442612896534">Chrome이 Google 서버에 접속할 수 없어 데이터를 압축하지 못했습니다. 데이터 절약이 제한적일 수 있습니다.</translation>
+<translation id="585027516397408832">데이터 세이버 사용</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
 <translation id="588258955323874662">전체화면</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">삭제</translation>
 <translation id="666268767214822976">예상 검색어 서비스를 사용하여 검색주소창에 입력할 때 관련 검색어 및 인기 웹사이트를 표시합니다.</translation>
 <translation id="666981079809192359">Chrome 개인정보 보호정책</translation>
-<translation id="6671495933530132209">이미지 복사</translation>
 <translation id="6697251040310467641">오프라인으로 저장된 페이지</translation>
 <translation id="6698801883190606802">동기화된 데이터 관리</translation>
 <translation id="6699351163704950317">모든 저장된 페이지</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">동영상 로드 중</translation>
 <translation id="7191430249889272776">탭이 백그라운드에 열림</translation>
 <translation id="7201341158316793215">삭제 중…</translation>
+<translation id="7208788139759694678">데이터 세이버 사용 안함</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
 <translation id="7299721129597238157">북마크 삭제</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">비밀번호를 Google 사용자 인증 정보로 암호화</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7665369617277396874">계정 추가</translation>
+<translation id="7761240775244195612">지난달에 사용되지 않은 <ph name="PAGES_NUMBER" />의 오프라인 사본을 삭제하시겠습니까? <ph name="TOTAL_PAGE_SIZE" /> 저장공간이 확보됩니다.</translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7767746238359002192">오프라인으로 저장할 페이지 방문</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">페이지 오프라인 저장, 저장용량 거의 참</translation>
 <translation id="8068648041423924542">인증서를 선택할 수 없습니다.</translation>
 <translation id="8069239273282989646">압축 후</translation>
-<translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8084156870963450514">모든 기기에서 모든 웹 항목에 액세스하려면 로그인하세요.</translation>
 <translation id="8106211421800660735">신용카드 번호</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">콘텐츠</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
 <translation id="8218346974737627104">로그인 확인</translation>
+<translation id="8218934717680664417">이제 터치 한 번으로 검색할 수 있습니다.</translation>
 <translation id="8237438615979997762">이 기기에 저장된 데이터뿐만 아니라 Google 계정에 저장된 데이터도 그대로 유지됩니다. 그러나 데이터에 새로 추가하거나 변경한 사항은 서로 동기화되지 않습니다.</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8275818695183729150">허용(검색주소창 검색)</translation>

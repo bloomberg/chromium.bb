@@ -6,7 +6,6 @@
 Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
 <translation id="108122890477367602">Ch&amp;romium opnieuw openen in Windows 8-modus</translation>
 <translation id="1115445892567829615">Chromium kan je gegevens niet synchroniseren. Update je synchronisatiewachtwoord.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> gebruikt gewoonlijk codering om je gegevens te beschermen. Toen Chromium deze keer probeerde een verbinding met <ph name="SITE" /> tot stand te brengen, retourneerde de website ongewone en onjuiste inloggegevens. Een aanvaller probeert zich voor te doen als <ph name="SITE" /> of een wifi-inlogscherm heeft de verbinding verbroken. Je gegevens zijn nog steeds veilig omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="1174473354587728743">Deel je een computer? Je kunt Chromium nu precies instellen zoals jij dat wilt.</translation>
 <translation id="1185134272377778587">Over Chromium</translation>
 <translation id="1221340462641866827">Chromium OS ondersteunt het starten van een externe applicatie voor het verwerken van <ph name="SCHEME" />-links niet. De opgevraagde link is <ph name="PROTOLINK" />.</translation>
@@ -107,7 +106,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4230135487732243613">Wil je je Chromium-gegevens aan dit account koppelen?</translation>
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet je Chromium sluiten en het opnieuw proberen.</translation>
 <translation id="4330585738697551178">Van deze module is bekend dat deze conflicteert met  Chromium.</translation>
-<translation id="4365115785552740256">Chromium wordt mogelijk gemaakt door het <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open-sourceproject en andere <ph name="BEGIN_LINK_OSS" />open-sourcesoftware<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Chromium aanpassen en beheren</translation>
 <translation id="442817494342774222">Chromium is geconfigureerd om automatisch te worden gestart als je je computer opstart.</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
@@ -170,6 +168,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="6485906693002546646">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chromium-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chromium zonder een Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
+<translation id="6526111688217511984">Chromium heeft toegang tot de opslag nodig om deze bestanden te downloaden.</translation>
 <translation id="6637001341228460105">Chromium heeft microfoontoegang nodig om het item te delen met deze site.</translation>
 <translation id="6638567566961868659">Je vindt je bladwijzers in het menu 'Chromium' of in de bladwijzerbalk.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>

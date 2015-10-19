@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Bylo zjištěno pomalé připojení.</translation>
 <translation id="2842985007712546952">Nadřazená složka</translation>
 <translation id="2870560284913253234">Stránky</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 adresa URL v okolí}few{# adresy URL v okolí}many{# adresy URL v okolí}other{# adres URL v okolí}}</translation>
 <translation id="2888126860611144412">O aplikaci Chrome</translation>
 <translation id="2891154217021530873">Zastavit načítání stránky</translation>
 <translation id="2902702728133930130">Spuštění Chromu se nezdařilo kvůli neočekávané chybě.</translation>
@@ -159,7 +160,6 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="3410346880900521918">Pokud se vám tato stránka zobrazuje často, zkuste využít tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Velikost:</translation>
 <translation id="3455798674391346847">Využijte Google k optimalizaci navštěvovaných stránek a utrácejte za data méně. Stránky zobrazené prostřednictvím protokolu HTTPS nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
-<translation id="346339498574870680">Kopírovat adresu URL obrázku</translation>
 <translation id="3485544713029068372">Smart Lock na hesla</translation>
 <translation id="3492207499832628349">Nová anonymní karta</translation>
 <translation id="3518985090088779359">PŘIJMOUT A POKRAČOVAT</translation>
@@ -206,6 +206,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4297410240212242334">Oddělit karty a aplikace</translation>
 <translation id="4307992518367153382">Základy</translation>
 <translation id="4333969446981951071">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />zásadami ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome.</translation>
+<translation id="4334294535648607276">Stahování bylo dokončeno.</translation>
 <translation id="4350413759959745971">Přesunout uložené stránky</translation>
 <translation id="4351244548802238354">Zavřít dialogové okno</translation>
 <translation id="4357362091209756047">Nevidíte své zařízení? <ph name="BEGIN_LINK1" />Hledejte znovu<ph name="END_LINK1" /> nebo si <ph name="BEGIN_LINK2" />přečtěte nápovědu<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4532845899244822526">Výběr složky</translation>
 <translation id="4543087392704641517">Název záložky</translation>
 <translation id="4543661749405994812">Kopírovat e-mailovou adresu</translation>
-<translation id="4619298195800598081">Otevřít originál na nové kartě</translation>
 <translation id="4645575059429386691">Spravováno vaším rodičem</translation>
 <translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Na plochu byl přidán web <ph name="NAME" /></translation>
@@ -315,6 +315,7 @@ Statistiky využití obsahují informace, jako jsou předvolby, kliknutí na tla
 Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="572328651809341494">Nedávno použité karty</translation>
 <translation id="5733727110006255111">Je-li tato funkce zapnutá, Chrome navštívené stránky před stažením zkomprimuje pomocí serverů Google. Stránky SSL a stránky navštívené v anonymním režimu nebudou zahrnuty.</translation>
+<translation id="5749068826913805084">Aby bylo možné stahovat soubory, Chrome potřebuje přístup k úložišti.</translation>
 <translation id="5763382633136178763">Anonymní karty</translation>
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5771382037724542929">Chcete nahradit existující soubor <ph name="FILE_NAME" /> v adresáři <ph name="DIRECTORY_NAME" />?</translation>
@@ -323,6 +324,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5817918615728894473">Spárovat</translation>
 <translation id="5832934273103296195">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="583891442612896534">Chrome se nemůže připojit k serverům společnosti Google pro kompresi dat. Úspora dat může být omezena.</translation>
+<translation id="585027516397408832">Spořič dat je aktivní</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
@@ -385,7 +387,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="666268767214822976">Používat službu předpovídání k zobrazení souvisejících dotazů a oblíbených webových stránek.</translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
-<translation id="6671495933530132209">Zkopírovat obrázek</translation>
 <translation id="6697251040310467641">Stránka byla uložena offline</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
 <translation id="6699351163704950317">Všechny uložené stránky</translation>
@@ -425,6 +426,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7096034533295549981">Načítání videa</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
 <translation id="7201341158316793215">Odstraňování…</translation>
+<translation id="7208788139759694678">Spořič dat není aktivní</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
 <translation id="7244362611678346589">Stránky <ph name="SEARCH_ENGINE_URL" /> zobrazují lokální výsledky vyhledávání na základě vaší polohy</translation>
 <translation id="7299721129597238157">Smazat záložku</translation>
@@ -456,6 +458,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7648422057306047504">Šifrovat hesla pomocí identifikačních údajů Google</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7665369617277396874">Přidat účet</translation>
+<translation id="7761240775244195612">Smazáním <ph name="PAGES_NUMBER" /> offline kopií, které za poslední měsíc nebyly použity, se uvolní <ph name="TOTAL_PAGE_SIZE" /> místa. Chcete je smazat?</translation>
 <translation id="7764225426217299476">Přidat adresu</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7767746238359002192">Navštivte stránku, kterou chcete uložit offline</translation>
@@ -484,7 +487,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8050319187894766337">Stránka byla uložena offline. Úložiště je téměř plné.</translation>
 <translation id="8068648041423924542">Certifikát nelze vybrat.</translation>
 <translation id="8069239273282989646">Po kompresi</translation>
-<translation id="8073388330009372546">Otevřít na nové kartě</translation>
 <translation id="8084156870963450514">Chcete-li mít přístup k webovému obsahu ve všech zařízeních, přihlaste se.</translation>
 <translation id="8106211421800660735">Číslo platební karty</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
@@ -495,6 +497,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8168435359814927499">Obsah</translation>
 <translation id="8209050860603202033">Otevřít obrázek</translation>
 <translation id="8218346974737627104">Potvrzení přihlášení</translation>
+<translation id="8218934717680664417">Nyní můžete vyhledávat jedním klepnutím</translation>
 <translation id="8237438615979997762">Data uložená v tomto zařízení i data uložená ve vašem účtu Google zůstanou na obou místech. Pokud však přidáte nová data nebo v datech provedete změny, nedojde k synchronizaci.</translation>
 <translation id="8261506727792406068">Vymazat</translation>
 <translation id="8275818695183729150">Povolit (pro vyhledávání z adresního řádku)</translation>

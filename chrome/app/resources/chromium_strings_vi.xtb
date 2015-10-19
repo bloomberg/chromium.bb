@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
 <translation id="108122890477367602">&amp;Khởi chạy lại Chromium ở chế độ Windows 8</translation>
 <translation id="1115445892567829615">Chromium không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> vào lần này, trang web đã gửi lại thông tin đăng nhập bất thường và không đúng. Một kẻ tấn công đang tìm cách giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn vì Chromium đã dừng kết nối trước khi bất kỳ dữ liệu nào bị trao đổi.</translation>
 <translation id="1174473354587728743">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chromium theo cách mình muốn.</translation>
 <translation id="1185134272377778587">Giới thiệu về Chromium</translation>
 <translation id="1221340462641866827">Chromium OS không hỗ trợ chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
@@ -105,7 +104,6 @@
 <translation id="4230135487732243613">Bạn muốn liên kết dữ liệu Chromium của bạn với tài khoản này?</translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="4330585738697551178">Mô-đun này được xác định xung đột với Chromium.</translation>
-<translation id="4365115785552740256">Chromium trở nên khả thi là nhờ dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> và các <ph name="BEGIN_LINK_OSS" />phần mềm nguồn mở<ph name="END_LINK_OSS" /> khác.</translation>
 <translation id="4423735387467980091">Tùy chỉnh và điều khiển Chromium</translation>
 <translation id="442817494342774222">Chromium được định cấu hình để tự động chạy khi bạn khởi động máy tính của bạn.</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
@@ -168,6 +166,7 @@
 <translation id="6475912303565314141">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="6485906693002546646">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chromium của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chromium mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
+<translation id="6526111688217511984">Chromium cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="6637001341228460105">Chromium cần quyền truy cập vào micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="6638567566961868659">Tìm dấu trang của bạn trong menu Chromium hoặc trên thanh dấu trang.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>

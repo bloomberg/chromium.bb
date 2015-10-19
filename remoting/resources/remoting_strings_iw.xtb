@@ -85,6 +85,7 @@
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
 <translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Chromium<ph name="LINK_END" /> עם החשבון והתקן מחדש את Chromoting.</translation>
 <translation id="2926340305933667314">הניסיון להשבית גישה מרחוק למחשב זה נכשל. נסה שוב מאוחר יותר.</translation>
+<translation id="2930135165929238380">‏חלק מהרכיבים הדרושים חסרים. עבור אל chrome://plugins וודא ש-Native Client מופעל.</translation>
 <translation id="2939145106548231838">אמת מול המארח</translation>
 <translation id="2998137343848432918">• נוסף מסך המציג את פרטי הכניסה.
 • תוקנה בעיה בעת המעבר למסך מלא כשהמקלדת מוצגת.</translation>

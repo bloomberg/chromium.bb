@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
 <translation id="1339601241726513588">Kikoa cha kujiandikisha:</translation>
 <translation id="1344588688991793829">Mipangilio ya Kujaza otomatiki ya Chromium...</translation>
+<translation id="1375198122581997741">Kuhusu Toleo</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1455235771979731432">Kulikuwa na tatizo wakati wa kuthibitisha kadi yako. Angalia muunganisho wako wa intaneti na ujaribu tena.</translation>
 <translation id="1491151370853475546">Pakia Ukurasa huu Upya</translation>
+<translation id="1519264250979466059">Unda Tarehe</translation>
 <translation id="1549470594296187301">Lazima JavaScript iwashwe ili utumie kipengele hiki.</translation>
+<translation id="1559528461873125649">Hakuna faili au saraka kama hiyo</translation>
 <translation id="1640180200866533862">Sera za mtumiaji</translation>
 <translation id="1644184664548287040">Usanidi wa mtandao ni batili na usingeweza kuingizwa.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kilikwisha muda jana. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako. Saa ya kompyuta kwa sasa imewekwa kuwa <ph name="CURRENT_DATE" />. Je, hiyo ni sahihi? Ikiwa si sahihi, rekebisha saa ya mfumo wako kisha uonyeshe upya ukurasa huu.}other{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kilikwisha muda siku # zilizopita. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako. Saa ya kompyuta kwa sasa imewekwa kuwa <ph name="CURRENT_DATE" />. Je, hiyo ni sahihi? Ikiwa si sahihi, rekebisha saa ya mfumo wako kisha uonyeshe upya ukurasa huu.}}</translation>
 <translation id="168841957122794586">Cheti cha seva kina kitufe dhaifu cha kifichua msimbo.</translation>
 <translation id="1693754753824026215">Ukurasa wa <ph name="SITE" /> unasema:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kitakwisha muda kuanzia kesho. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.}other{Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kitakwisha muda kuanzia siku # zijazo. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Ripoti hitilafu</translation>
+<translation id="1753706481035618306">Nambari ya ukurasa</translation>
 <translation id="1763864636252898013">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kifaa chako. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="1821930232296380041">Ombi au vigezo vya ombi batili</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Ungependa <ph name="PRODUCT_NAME" /> itafsiri kurasa za <ph name="LANGUAGE_NAME" /> kutoka tovuti hii wakati ujao?</translation>
 <translation id="2587841377698384444">Kitambulisho cha API ya Saraka:</translation>
 <translation id="2597378329261239068">Hati hii imelindwa kwa nenosiri. Tafadhali weka nenosiri linalotumika.</translation>
+<translation id="2609632851001447353">Vipera</translation>
 <translation id="2625385379895617796">Saa yako iko mbele</translation>
 <translation id="2639739919103226564">Hali:</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Onyesha thamani</translation>
 <translation id="3648607100222897006">Hivi vipengele vya jaribio vinaweza kubadilika, kuvunjika, au kutoweka wakati wowote. Hatuhakikishi kabisa kuhusu kile kinachoweza kutokea ikiwa utawasha mojawapo ya majaribio haya, na hata kivinjari chako kinaweza kuchoma kighafla. Bila utani, kivinjari kinaweza kufuta data yako yote, au usalama na faragha yako inaweza kuathirika katika njia isiyotarajiwa. Majaribio yote unayoyawezesha yatawezeshwa kwa watumiaji wote wa kivinjari hiki. Tafadhali endelea kwa tahadhari.</translation>
 <translation id="3650584904733503804">Uhalalishaji umefanikiwa</translation>
+<translation id="3658742229777143148">Marekebisho</translation>
 <translation id="370665806235115550">Inapakia...</translation>
 <translation id="3712624925041724820">Leseni zimekwisha</translation>
 <translation id="3739623965217189342">Kiungo ulichonakili</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kina hitilafu. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="4726672564094551039">Pakia sera upya</translation>
 <translation id="4728558894243024398">Mfumo wa uendeshaji</translation>
+<translation id="4744603770635761495">Njia Tekelezi</translation>
 <translation id="4771973620359291008">Hitilafu isiyojulikana imetokea.</translation>
 <translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
 <translation id="4813512666221746211">Hitilafu ya mtandao</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Jimbo</translation>
 <translation id="5094747076828555589">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na Chromium. Hii inaweza kusababishwa na kusanidi kusikofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="5095208057601539847">Mkoa</translation>
+<translation id="5115563688576182185">(biti 64)</translation>
 <translation id="5145883236150621069">Msimbo wa hitilafu uko katika jibu la sera</translation>
 <translation id="5172758083709347301">Mashine</translation>
 <translation id="5179510805599951267">Haiko katika <ph name="ORIGINAL_LANGUAGE" />? Ripoti hitilafu hii</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Alamisho za <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Msimbo wa posta</translation>
 <translation id="6337534724793800597">Chuja sera kwa jina</translation>
+<translation id="6355080345576803305">Kipindi cha umma kimebatilishwa</translation>
 <translation id="6387478394221739770">Unavutiwa na vipengee vipya vizuri vya Chrome? Jaribu kituo chetu cha beta katika chrome.com/beta.</translation>
-<translation id="6426993025560594914">Majaribio yote yanapatikana kwenye mfumo wako wa uendeshaji!</translation>
 <translation id="6445051938772793705">Nchi</translation>
 <translation id="6458467102616083041">Imepuuzwa kwa sababu utafutaji chaguo-msingi unalemazwa kwa sera.</translation>
 <translation id="647261751007945333">Sera za kifaa</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Eneo</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
 <translation id="6891596781022320156">Kiwango cha sera hakitumiki.</translation>
+<translation id="6897140037006041989">Programu ya Mtumiaji</translation>
 <translation id="6915804003454593391">Mtumiaji:</translation>
 <translation id="6957887021205513506">Cheti cha seva kinaonekana kuwa ghushi.</translation>
 <translation id="6965382102122355670">Sawa</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Ukurasa huu umetafsiriwa kutoka<ph name="ORIGINAL_LANGUAGE" />hadi<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Tafuta <ph name="SITE_NAME" /> kupata <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Jenga Kitambulisho</translation>
 <translation id="725866823122871198">Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kutambuliwa kwa sababu tarehe na wakati wa kompyuta yako (<ph name="DATE_AND_TIME" />) si sahihi.</translation>
 <translation id="7275334191706090484">Alamisho Zinazosimamiwa</translation>
 <translation id="7298195798382681320">Zinazopendekezwa</translation>
 <translation id="7334320624316649418">Rudia Kupanga Upya</translation>
+<translation id="7353601530677266744">Mbinu ya Amri</translation>
 <translation id="7378627244592794276">La</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Kijia cha Maelezo mafupi</translation>
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Angalia CVC yako na ujaribu tena</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Cheti cha seva bado sio halali.</translation>
+<translation id="7951415247503192394">(biti 32)</translation>
 <translation id="7956713633345437162">Alamisho kwenye simu</translation>
 <translation id="7961015016161918242">Katu</translation>
 <translation id="7977590112176369853">&lt;weka hoja&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Kaa kwenye Ukurasa huu</translation>
 <translation id="9170848237812810038">&amp;Tendua</translation>
 <translation id="917450738466192189">Cheti cha seva ni batili.</translation>
-<translation id="9187827965378254003">Lo, inaonekana kuwa hakuna majaribio yanayopatikana.</translation>
 <translation id="9207861905230894330">Haikufaulu kuongeza makala.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FUTA FOMU</translation>
+<translation id="969892804517981540">Muundo Rasmi</translation>
 <translation id="988159990683914416">Muundo wa Wasanidi Programu</translation>
 </translationbundle>

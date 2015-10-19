@@ -64,11 +64,6 @@
 
           See reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>
-<translation id="1283072268083088623">Määrab, milliseid HTTP-autentimisskeeme rakendus <ph name="PRODUCT_NAME" /> toetab.
-
-          Võimalikud väärtused on „basic”, „digest”, „ntlm” ja „negotiate”. Eraldage väärtused komadega.
-
-          Kui jätate selle reegli määramata, siis kasutatakse kõiki nelja skeemi.</translation>
 <translation id="1297182715641689552">Kasuta puhverserveri pac-skripti</translation>
 <translation id="1300635491585192248">Võrgutoimingute ennustamine kõikides võrkudes peale
           mobiilsidevõrkude</translation>
@@ -139,6 +134,7 @@
 
       Kui reegel on määramata või seatud väärtusele Väär, on ühendatud töölaud
       keelatud. Sel juhul ei saa kasutaja funktsiooni lubada.</translation>
+<translation id="1474273443907024088">TLS-i valekäivitamise keelamine</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Määrab millisekundites ajavahemiku, mille jooksul saadetakse seadmehaldusteenusesse päring seadme reeglite teabe kohta.
 
@@ -225,7 +221,6 @@
 
           Vaadake lisavalikuid ja üksikasjalikke näiteid aadressilt:
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">HTTP autentimise reeglid</translation>
 <translation id="1956493342242507974">Toitehalduse seadistamine sisselogimisekraanil operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" />.
 
       Selle reegliga saate seadistada, kuidas <ph name="PRODUCT_OS_NAME" /> käitub, kui kuvatakse sisselogimisekraan ja kasutaja ei tee teatud aja jooksul ühtegi toimingut. See reegel juhib mitut seadet. Individuaalset semantikat ja väärtusevahemikke vaadake vastavatest seansi toitehaldust juhtivatest reeglitest. Ainsad kõrvalekalded nendest reeglitest on järgmised.
@@ -262,6 +257,18 @@
       Kui HardwareAccelerationModeEnabled on seatud väärtusele Väär, eiratakse atribuuti Disable3DAPIs, mis on võrdväärne atribuudi Disable3DAPIs seadmisega väärtusele Tõene.</translation>
 <translation id="2168397434410358693">Jõudeoleku viiteaeg võrgutoite kasutamisel</translation>
 <translation id="2170233653554726857">WPAD-optimeerimise lubamine</translation>
+<translation id="2175836933294053665">Seadistab hallatud järjehoidjate loendi.
+
+      Reegel koosneb järjehoidjate loendist, kusjuures iga järjehoidja on
+      sõnastik, mis sisaldab võtmeid „Nimi” ja „URL”, kus hoiustatakse järjehoidja
+      nime ja selle siht-URL-i. Alamkausta saab seadistada, määrates järjehoidja
+      ilma võtmeta „URL”, kuid täiendava võtmega „Lapsed”, mis sisaldab ise
+      järjehoidjate loendit, nagu on ülal määratud (millest mõned võivad olla
+      kaustad). <ph name="PRODUCT_NAME" />
+      täiendab poolikuid URL-e, nagu need oleksid edastatud omnikastikese kaudu,
+      nt „google.com-ist” saab „https://google.com/”.
+
+      Need järjehoidjad asuvad kaustas Hallatud järjehoidjad, mida kasutaja muuta ei saa, kuid kasutaja saab selle kausta soovi korral järjehoidjaribalt peita. Hallatud järjehoidjad ei ole kasutajakontoga sünkroonitud ja laiendid ei saa neid muuta.</translation>
 <translation id="2188979373208322108">Lubab järjehoidjariba rakenduses <ph name="PRODUCT_NAME" />.
 
       Seade lubamisel kuvab <ph name="PRODUCT_NAME" /> järjehoidjariba.
@@ -713,22 +720,6 @@
       Kui seade seatakse väärtusele Tõene või jäetakse seadistamata, saavad kasutajad kasutada kõiki oma seadmes toetatud heliväljundeid.</translation>
 <translation id="3808945828600697669">Keelatud pistikprogrammide loendi määramine</translation>
 <translation id="3816312845600780067">Pääsu klaviatuuri otsetee lubamine automaatseks sisselogimiseks</translation>
-<translation id="381807926299956806">Määrab avaliku seansi jaoks ühe või mitu soovitatud lokaati, et kasutajad saaksid hõlpsasti valida ühe lokaatidest.
-
-      Kasutaja saab enne avaliku seansi algust valida lokaadi ja klaviatuuripaigutuse. Vaikimisi on kõik operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> toetatud lokaadid loetletud tähestikulises järjekorras. Selle reegliga saate teisaldada soovitatud lokaadid loendi ülaossa.
-
-      Kui reegel jäetakse määramata, on praegune kasutajaliidese lokaat eelvalitud.
-
-      Kui reegel on määratud, teisaldatakse soovitatud lokaadid loendi ülaossa ja eraldatakse visuaalselt muudest lokaatidest. Soovitatud lokaadid on loendis samas järjekorras nagu reeglis. Esimene soovitatud lokaat on eelvalitud.
-
-      Kui soovitatud lokaate on mitu, eeldatakse, et kasutaja soovib nende lokaatide vahel valida. Lokaadi ja klaviatuuripaigutuse valik tõstetakse avaliku seansi alguses selgelt esile. Muidu eeldatakse, et enamik kasutajaid soovib kasutada eelvalitud lokaati. Lokaadi ja klaviatuuripaigutuse valik tõstetakse avaliku seansi alguses vähem märgatavalt esile.
-
-      Kui reegel on määratud ja automaatne sisselogimine on lubatud (vt reegleid |DeviceLocalAccountAutoLoginId| ja |DeviceLocalAccountAutoLoginDelay| policies), kasutab automaatselt käivitatud avalik seanss esimest soovitatud lokaati ja selle kõige populaarsemat klaviatuuripaigutust.
-
-      Eelvalitud klaviatuuripaigutus on alati kõige populaarsem paigutus, mis vastab eelvalitud lokaadile.
-
-      Reegli saab määrata ainult soovitusena. Reegliga saab teisaldada soovitatud lokaadid loendi ülaossa, kuid kasutajad võivad alati seansi jaoks valida mis tahes muu lokaadi, mida <ph name="PRODUCT_OS_NAME" /> toetab.
-      </translation>
 <translation id="3820526221169548563">Ekraanil kuvatava klaviatuuri lubamine.
 
           Kui reegel seatakse väärtusele Tõene, on ekraanil kuvatav klaviatuur alati lubatud.
@@ -1775,7 +1766,6 @@
       Kui reeglit pole määratud, siis kasutatakse vaikemahtu ja kasutaja saab selle alistada märgendiga --ketta-vahemälu-maht.</translation>
 <translation id="7612157962821894603">Süsteemiülesed märgistused, mis rakendatakse toote <ph name="PRODUCT_NAME" /> käivitamisel</translation>
 <translation id="7614663184588396421">Keelatud protokolliskeemide loend</translation>
-<translation id="7615123397791876280">Autentimise läbirääkimisel kasutatava konto tüüp</translation>
 <translation id="7625444193696794922">Määrab väljalaskekanali, millele seade tuleks lukustada.</translation>
 <translation id="7632724434767231364">GSSAPI-teegi nimi</translation>
 <translation id="7635471475589566552">Seadistab rakenduse lokaadi rakenduses <ph name="PRODUCT_NAME" /> ja takistab kasutajatel lokaadi muutmist.
@@ -1999,9 +1989,6 @@
 <translation id="8300455783946254851">Keelab Google Drive’i sünkroonimise operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid, kui kasutatakse mobiilset andmesidet ja reegli olekuks on määratud Tõene. Sellisel juhul sünkroonitakse andmeid Google Drive’iga ainult siis, kui seade on ühendatud WiFi või Etherneti kaudu.
 
           Kui reegel on määramata või seatud väärtusele Väär, saavad kasutajad teisaldada faile Google Drive’i, kasutades mobiilset andmesidet.</translation>
-<translation id="8303314579975657113">Määrab GSSAPI teegi, mida kasutatakse HTTP autentimiseks. Võite määrata vaid teegi nime või kogu tee.
-
-          Kui jätate seade määramata, siis kasutab rakendus <ph name="PRODUCT_NAME" /> teegi vaikenime.</translation>
 <translation id="8329984337216493753">See reegel on aktiivne vaid jaemüügirežiimis.
 
       Kui DeviceIdleLogoutTimeout on määratud, siis määratleb reegel, kui kaua kuvatakse loenduriga hoiatusboks enne väljalogimist.
@@ -2016,9 +2003,6 @@
 <translation id="8369602308428138533">Ekraani väljalülitamise viiteaeg võrgutoite kasutamisel</translation>
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
-<translation id="8407759228138103300">Määrab HTTP läbirääkimise autentimist (nt Kerberose autentimine) toetava Androidi autentimisrakenduse kontode tüübi. See teave on saadaval autentimisrakenduse pakkuja kaudu. Vaadake lisateavet aadressilt https://goo.gl/hajyfN.
-
-          Kui seadet ei määrata, keelatakse Androidis autentimise läbirääkimine.</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="8465065632133292531">Parameetrid Instant-URL-i jaoks, mis kasutab POST-meetodit</translation>
@@ -2041,6 +2025,9 @@
 <translation id="8544375438507658205">Rakenduse <ph name="PRODUCT_FRAME_NAME" /> HTML-i vaikerenderdaja</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
 <translation id="8566842294717252664">Veebipoe peitmine uuel vahelehel ja rakenduste käivitajas</translation>
+<translation id="857925079934558818">Määrab, kas TLS-i valekäivitamise optimeerimine peaks olema keelatud. Ajaloolistel põhjustel on selle reegli nimi DisableSSLRecordSplitting.
+
+      Kui reegel on määramata või selle väärtuseks on määratud Väär, siis TLS-i valekäivitamine lubatakse. Kui väärtuseks on määratud Tõene, siis TLS-i valekäivitamine keelatakse.</translation>
 <translation id="8587229956764455752">Luba uute kasutajakontode loomine</translation>
 <translation id="8614804915612153606">Keelab automaatvärskenduse</translation>
 <translation id="8631434304112909927">versioonini <ph name="UNTIL_VERSION" /></translation>

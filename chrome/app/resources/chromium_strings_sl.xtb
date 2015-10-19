@@ -6,7 +6,6 @@
 Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
 <translation id="108122890477367602">&amp;Vnovični zagon Chromiuma v načinu sistema Windows 8</translation>
 <translation id="1115445892567829615">Chromium ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
-<translation id="1144202035120576837">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to poslalo nazaj nenavadne in nepravilne poverilnice. Ali se torej napadalec izdaja za spletno mesto <ph name="SITE" /> ali pa je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chromium ustavil povezavo, preden bi prišlo do izmenjave podatkov.</translation>
 <translation id="1174473354587728743">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chromium po svojih željah.</translation>
 <translation id="1185134272377778587">O Chromiumu</translation>
 <translation id="1221340462641866827">Chromium OS ne podpira zagona zunanjega programa za obdelavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
@@ -107,7 +106,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4230135487732243613">Želite svoje podatke v Chromiumu povezati s tem računom?</translation>
 <translation id="4285930937574705105">Namestitev ni bila izvedena zaradi nedoločene napake. Če se Chromium trenutno izvaja, ga zaprite in poskusite znova.</translation>
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
-<translation id="4365115785552740256">Chromium omogočata odprtokodni projekt <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> in druga <ph name="BEGIN_LINK_OSS" />odprtokodna programska oprema<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
 <translation id="442817494342774222">Chromium se samodejno zažene ob zagonu računalnika.</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
@@ -170,6 +168,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="6475912303565314141">Določa tudi, katera stran je prikazana, ko zaženete Chromium.</translation>
 <translation id="6485906693002546646">Za sinhronizacijo stvari v Chromiumu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chromium brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
+<translation id="6526111688217511984">Chromium potrebuje za prenos datotek dostop do shrambe.</translation>
 <translation id="6637001341228460105">Chromium potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="6638567566961868659">Poiščite svoje zaznamke v meniju Chromiuma ali v vrstici z zaznamki.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>

@@ -4,8 +4,6 @@
 <translation id="1065672644894730302">ค่ากำหนดของคุณไม่สามารถอ่านได้ คุณลักษณะบางอย่างอาจใช้ไม่ได้และการเปลี่ยนแปลงค่ากำหนดจะไม่ได้รับการบันทึก</translation>
 <translation id="108122890477367602">เปิดใ&amp;ช้ Chromium ในโหมด Windows 8 อีกครั้ง</translation>
 <translation id="1115445892567829615">Chromium ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านการซิงค์</translation>
-<translation id="1144202035120576837">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติ
-และไม่ถูกต้องกลับมา ผู้บุกรุกอาจพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi ขัดขวางการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="1174473354587728743">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chromium ในแบบที่คุณชอบได้แล้ว</translation>
 <translation id="1185134272377778587">เกี่ยวกับ Chromium</translation>
 <translation id="1221340462641866827">Chromium OS ไม่สนับสนุนการเปิดแอปพลิเคชันภายนอกเพื่อจัดการกับลิงก์ <ph name="SCHEME" /> ลิงก์ที่ร้องขอคือ <ph name="PROTOLINK" /></translation>
@@ -106,7 +104,6 @@
 <translation id="4230135487732243613">เชื่อมโยงข้อมูล Chromium กับบัญชีนี้ไหม</translation>
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4330585738697551178">เป็นที่ทราบกันว่าโมดูลนี้ขัดแย้งกับ Chromium</translation>
-<translation id="4365115785552740256">Chromium เกิดขึ้นได้ด้วยการสนับสนุนจากโครงการโอเพนซอร์ส <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> และ<ph name="BEGIN_LINK_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_OSS" />อื่นๆ</translation>
 <translation id="4423735387467980091">กำหนดค่าและควบคุม Chromium</translation>
 <translation id="442817494342774222">Chromium ได้รับการกำหนดค่าให้เปิดอัตโนมัติเมื่อคุณเริ่มคอมพิวเตอร์ของคุณ</translation>
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
@@ -169,6 +166,7 @@
 <translation id="6475912303565314141">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chromium ด้วย</translation>
 <translation id="6485906693002546646">คุณกำลังใช้ <ph name="PROFILE_EMAIL" /> ในการซิงค์ข้อมูลใน Chromium หากต้องการอัปเดตค่ากำหนดการซิงค์หรือใช้ Chromium โดยไม่มีบัญชี Google โปรดไปที่ <ph name="SETTINGS_LINK" /></translation>
 <translation id="6510925080656968729">ถอนการติดตั้ง Chromium</translation>
+<translation id="6526111688217511984">Chromium ต้องสามารถเข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
 <translation id="6637001341228460105">Chromium ต้องการเข้าถึงไมโครโฟนเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="6638567566961868659">ค้นหาบุ๊กมาร์กของคุณในเมนู Chromium หรือในแถบบุ๊กมาร์ก</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>

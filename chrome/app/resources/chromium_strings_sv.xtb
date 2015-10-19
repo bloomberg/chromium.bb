@@ -6,7 +6,6 @@
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
 <translation id="108122890477367602">&amp;Starta om Chromium i Windows 8-läge</translation>
 <translation id="1115445892567829615">Chromium kunde inte synkronisera data. Uppdatera lösenfrasen för synkroniseringen.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> använder normalt kryptering för att skydda dina uppgifter. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga användaruppgifter. Antingen utger sig en hackare för att vara <ph name="SITE" /> eller så har anslutningen avbrutits av en Wi-Fi-inloggningsskärm. Dina uppgifter är fortfarande skyddade eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="1174473354587728743">Delar du dator? Nu kan du konfigurera Chromium precis som du vill.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1221340462641866827">Chromium OS stöder inte att ett externt program startas för att hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
@@ -107,7 +106,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4230135487732243613">Vill du koppla dina uppgifter i Chromium till det här kontot?</translation>
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
 <translation id="4330585738697551178">Den här modulen har tidigare varit i konflikt med Chromium.</translation>
-<translation id="4365115785552740256">Chromium finns tack vare projektet <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> med öppen källkod och <ph name="BEGIN_LINK_OSS" />andra program med öppen källkod<ph name="END_LINK_OSS" />.</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
 <translation id="442817494342774222">Chromium är konfigurerad för att starta automatiskt när du startar datorn.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
@@ -170,6 +168,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6475912303565314141">Det styr också vilken sida som visas när du startar Chromium.</translation>
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL" />. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Avinstallera Chromium</translation>
+<translation id="6526111688217511984">Chromium måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="6637001341228460105">Chromium behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
 <translation id="6638567566961868659">Hitta dina bokmärken i Chromium-menyn eller i bokmärkesfältet:</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>

@@ -63,11 +63,6 @@
 
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
-<translation id="1283072268083088623">Určuje, ktoré schémy overenia totožnosti pomocou protokolu HTTP bude prehliadač <ph name="PRODUCT_NAME" /> podporovať.
-
-          Zadať môžete hodnoty „basic“, „ntlm“ a „negotiate“. Ak chcete zadať viacero hodnôt, oddeľte ich čiarkami.
-
-          Ak toto pravidlo ponecháte nenastavené, použijú sa všetky štyri schémy.</translation>
 <translation id="1297182715641689552">Použiť skript servera proxy vo formáte PAC</translation>
 <translation id="1300635491585192248">Predvídať akcie všetkých sietí, ktoré nie sú
           mobilné</translation>
@@ -225,7 +220,6 @@
 
           Viac možností a podrobné príklady nájdete na adrese:
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">Pravidlá pre overenie pomocou protokolu HTTP</translation>
 <translation id="1956493342242507974">Konfigurácia správy napájania na prihlasovacej obrazovke systému <ph name="PRODUCT_OS_NAME" />.
 
       Toto pravidlo umožňuje nakonfigurovať správanie systému <ph name="PRODUCT_OS_NAME" /> v prípadoch, keď je zobrazená prihlasovacia obrazovka a používateľ určitý čas nevykonáva žiadnu činnosť. Toto pravidlo riadi niekoľko nastavení. Ak chcete zobraziť ich individuálnu sémantiku a rozsahy hodnôt, prejdite na zodpovedajúce pravidlá, ktoré riadia správu napájania v rámci relácie. Jedinými výnimkami z týchto pravidiel sú:
@@ -603,6 +597,11 @@
 <translation id="3067188277482006117">Ak je pravidlo nastavené na hodnotu True, používateľ môže používať hardvér zariadení Chrome na diaľkové overenie svojej identity pre autoritu CA ochrany údajov prostredníctvom metódy chrome.enterprise.platformKeysPrivate.challengeUserKey() rozhrania Enterprise Platform Keys API.
 
           Ak je hodnota pravidla nastavená na možnosť False alebo pravidlo nie je nastavené vôbec, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
+<translation id="3069958900488014740">Umožňuje vypnúť optimalizáciu WPAD (Web Proxy Auto-Discovery) v prehliadači <ph name="PRODUCT_NAME" />.
+
+      Ak je toto pravidlo nastavené na možnosť False, optimalizácia WPAD je zakázaná a prehliadač <ph name="PRODUCT_NAME" /> tak musí čakať dlhšie na servery WPAD založené na systéme DNS. Ak je toto pravidlo povolené alebo nie je nastavené, optimalizácia WPAD je aktívna.
+
+      Bez ohľadu na to, či je toto pravidlo nastavené, alebo na spôsob, akým bolo nastavené, nemôžu používatelia nastavenie optimalizácie WPAD zmeniť.</translation>
 <translation id="3072045631333522102">Šetrič obrazovky, ktorý sa má použiť na prihlasovacej obrazovke v režime určenom pre predaj</translation>
 <translation id="3072847235228302527">Nastaviť Zmluvné podmienky pre miestny účet v zariadení</translation>
 <translation id="3096595567015595053">Zoznam povolených doplnkov</translation>
@@ -726,22 +725,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
       Ak je toto pravidlo nastavené na hodnotu true alebo nie je nakonfigurované, používatelia môžu vo svojom zariadení používať všetky podporované výstupy zvuku.</translation>
 <translation id="3808945828600697669">Určiť zoznam zakázaných doplnkov</translation>
 <translation id="3816312845600780067">Povoliť záchrannú klávesovú skratku pre automatické prihlásenie</translation>
-<translation id="381807926299956806">Nastaví jedno alebo viac odporúčaných miestnych nastavení pre verejné relácie a umožní používateľom poľahky z nich niektoré vybrať.
-
-      Používateľ si môže vybrať miestne nastavenie a rozloženie klávesnice ešte pred spustením verejnej relácie. Predvolene sú všetky miestne nastavenia, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje, uvedené v abecednom poradí. Pomocou tohto pravidla môžete presunúť skupinu odporúčaných miestnych nastavení na začiatok zoznamu.
-
-      Ak toto pravidlo nenastavíte, vopred sa vyberie aktuálne miestne nastavenie používateľského rozhrania.
-
-      Ak toto pravidlo nastavíte, odporúčané miestne nastavenia budú presunuté na začiatok daného zoznamu a budú vizuálne oddelené od ostatných miestnych nastavení. Odporúčané miestne nastavenia budú uvedené v poradí, v akom sa nachádzajú v danom pravidle. Prvé odporúčané miestne nastavenie bude vopred vybrané.
-
-      Ak existuje viac ako jedno odporúčané miestne nastavenie, potom sa predpokladá, že používatelia si budú chcieť vybrať z týchto miestnych nastavení. Pri spúšťaní verejnej relácie sa zobrazí neprehliadnuteľná výzva na výber miestneho nastavenia a rozloženia klávesnice. V opačnom prípade sa predpokladá, že väčšina používateľov bude chcieť použiť vopred vybrané miestne nastavenie. Pri spúšťaní verejnej relácie sa zobrazí menej výrazná výzva na výber miestneho nastavenia a rozloženia klávesnice.
-
-      Keď toto pravidlo nastavíte a povolíte automatické prihlasovanie (pozrite si pravidlá |DeviceLocalAccountAutoLoginId| a |DeviceLocalAccountAutoLoginDelay|), automaticky spustená verejná relácia použije prvé odporúčané miestne nastavenie a jemu zodpovedajúce najobľúbenejšie rozloženie klávesnice.
-
-      Vopred vybrané bude vždy to najobľúbenejšie rozloženie klávesnice zodpovedajúce vopred vybranému miestnemu nastaveniu.
-
-      Toto pravidlo môžete nastaviť iba ako odporúčané. Pomocou tohto pravidla môžete presúvať skupinu odporúčaných miestnych nastavení na začiatok, ale používatelia si budú môcť pre svoju reláciu vždy vybrať ľubovoľné miestne nastavenie, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje.
-      </translation>
 <translation id="3820526221169548563">Aktivuje funkciu zjednodušenia prístupu pomocou klávesnice na obrazovke.
 
           Ak je toto pravidlo nastavené na hodnotu true, klávesnica na obrazovke bude vždy aktívna.
@@ -1017,6 +1000,11 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4962195944157514011">Určuje webovú adresu vyhľadávača používaného pri predvolenom vyhľadávaní. Webová adresa by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER" />, ktorý bude počas posielania dopytu nahradený používateľom hľadanými výrazmi.
 
           Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo „DefaultSearchProviderEnabled“ a bude dodržané len v takom prípade.</translation>
+<translation id="4971529314808359013">Umožňuje vám uviesť zoznam vzorov webových adries, ktorý uvádza webové stránky, pre ktoré by mal prehliadač <ph name="PRODUCT_NAME" /> automaticky vybrať certifikát klienta (ak stránky vyžadujú certifikát).
+
+          Hodnota musí byť pole slovníkov JSON prevedených na reťazce. Každý slovník musí mať tvar { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kde $URL_PATTERN je vzor nastavenia obsahu. $FILTER obmedzuje certifikáty klienta, z ktorých bude prehliadač automaticky vyberať. Nezávisle od filtra budú vybraté iba tie certifikáty, ktoré zodpovedajú žiadosti servera o certifikát. Ak má $FILTER tvar { "ISSUER": { "CN": "$ISSUER_CN" } }, budú navyše vybraté iba tie certifikáty klienta, ktoré boli vydané certifikátom s bežným názvom $ISSUER_CN. Ak je $FILTER prázdny slovník {}, výber certifikátov klienta nie je nijako ďalej obmedzený.
+{/}{}
+          Ak toto pravidlo nenastavíte, automatický výber sa nevykoná pre žiadne webové stránky.</translation>
 <translation id="4980301635509504364">Povolí alebo zamietne zaznamenávanie videa.
 
       Ak je toto pravidlo povolené alebo nenakonfigurované (predvolené), používateľovi sa zobrazí výzva
@@ -1788,7 +1776,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak toto pravidlo nebude nastavené, použije sa predvolená veľkosť a používateľ ju bude môcť prepísať pomocou príznaku --disk-cache-size.</translation>
 <translation id="7612157962821894603">Príznaky v celom systéme, ktoré sa používajú pri spúšťaní prehliadača <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Zoznam zakázaných schém protokolu</translation>
-<translation id="7615123397791876280">Typ účtu pre vyjednávanie overenia totožnosti</translation>
 <translation id="7625444193696794922">Určuje, aký kanál verzie by mal byť v zariadení uzamknutý.</translation>
 <translation id="7632724434767231364">Názov knižnice GSSAPI</translation>
 <translation id="7635471475589566552">Slúži na konfiguráciu miestneho nastavenia aplikácie v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom miestne nastavenie zmeniť.
@@ -2013,9 +2000,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8300455783946254851">Ak je pravidlo nastavené na hodnotu True, zakáže v aplikácií Súbory systému <ph name="PRODUCT_OS_NAME" /> synchronizáciu služby Disk Google pri používaní mobilného pripojenia. V tomto prípade sa budú údaje v službe Disk Google synchronizovať iba pri pripojení k sieti Wi-Fi alebo Ethernet.
 
           Ak je hodnota funkcie nastavená na možnosť False, používatelia budú môcť prenášať súbory do služby Disk Google prostredníctvom mobilných pripojení.</translation>
-<translation id="8303314579975657113">Určuje, ktorá knižnica GSSAPI sa má použiť na overenie totožnosti protokolu HTTP. Môžete nastaviť buď len názov knižnice, alebo úplnú cestu.
-
-          Ak nenastavíte žiadnu možnosť, prehliadač <ph name="PRODUCT_NAME" /> použije predvolený názov knižnice.</translation>
 <translation id="8329984337216493753">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Ak je zadané pravidlo DeviceIdleLogoutTimeout, určuje toto pravidlo dobu zobrazenia poľa s upozornením a odpočítavaním, ktoré sa používateľovi zobrazí predtým, než dôjde k odhláseniu.
@@ -2030,9 +2014,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8369602308428138533">Oneskorenie vypnutia obrazovky pri používaní napájacieho zdroja</translation>
 <translation id="8382184662529825177">Povoliť použitie vzdialeného overenia na ochranu obsahu pre zariadenie</translation>
 <translation id="838870586332499308">Povoliť roaming pre dátové prenosy</translation>
-<translation id="8407759228138103300">Určí typ účtov poskytnutých aplikáciou pre Android na overenie totožnosti, ktorá podporuje vyjednávanie overenia totožnosti prostredníctvom protokolu HTTP (napr. overenie totožnosti Kerberos). Tieto informácie by ste mali mať k dispozícii od poskytovateľa danej aplikácie na overenie totožnosti. Ďalšie podrobnosti získate na adrese https://goo.gl/hajyfN.
-
-          Ak neposkytnete žiadne nastavenie, vyjednávanie overenia totožnosti bude v systéme Android zakázané.</translation>
 <translation id="8412312801707973447">Či sa majú vykonávať kontroly OCSP/CRL online</translation>
 <translation id="8451988835943702790">Použiť stránku Nová karta ako domovskú stránku</translation>
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>

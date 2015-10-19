@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Google Chrome.</translation>
 <translation id="2290095356545025170">¿Estás seguro de que deseas desinstalar Google Chrome?</translation>
 <translation id="2316129865977710310">No, gracias</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Todos los derechos reservados.</translation>
 <translation id="2346876346033403680">Alguien accedió anteriormente a Google Chrome en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Si esta no es tu cuenta, crea un nuevo usuario de Google Chrome para mantener tu información por separado.
 
 Si accedes de todos modos, se fusionará la información de Google Chrome, como los marcadores, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -136,10 +135,10 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> normalmente usa la encriptación para proteger tu información. Cuando Chrome intentó conectarse a <ph name="SITE" /> esta vez, el sitio web devolvió credenciales inusuales e incorrectas. Puede tratarse de un atacante que finge ser <ph name="SITE" /> o una pantalla de acceso de Wi-Fi que interrumpió la conexión. La información sigue siendo segura porque Chrome detuvo la conexión antes del intercambio de datos.</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="573759479754913123">Acerca de Chrome OS</translation>
+<translation id="5749068826913805084">Chrome necesita acceder al almacenamiento para descargar archivos.</translation>
 <translation id="5785746630574083988">Si vuelves a iniciar en el modo Windows 8, las aplicaciones de Chrome se cerrarán y se volverán a abrir.</translation>
 <translation id="5799551393681493217">Habilita los flujos de acceso a Chrome basados en marcos flotantes. Esta marca anula la habilitación de acceso basado en Web.</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu computadora no es compatible con Google Chrome.</translation>

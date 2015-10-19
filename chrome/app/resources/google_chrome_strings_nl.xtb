@@ -47,7 +47,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2290014774651636340">Google API-sleutels ontbreken. Sommige functies van Google Chrome worden uitgeschakeld.</translation>
 <translation id="2290095356545025170">Weet je zeker dat je Google Chrome wilt verwijderen?</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="2346876346033403680">Iemand is eerder ingelogd bij Chrome als <ph name="ACCOUNT_EMAIL_LAST" />. Als dit niet je account is, maak je een nieuwe Chrome-gebruiker om je gegevens gescheiden te houden.
 
 Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere instellingen samengevoegd met <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -142,10 +141,10 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="5563479599352954471">Zoeken met een aanraking</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> gebruikt gewoonlijk codering om je gegevens te beschermen. Toen Chrome deze keer probeerde een verbinding met <ph name="SITE" /> tot stand te brengen, retourneerde de website ongewone en onjuiste inloggegevens. Een aanvaller probeert zich voor te doen als <ph name="SITE" /> of een wifi-inlogscherm heeft de verbinding verbroken. Je gegevens zijn nog steeds veilig omdat Chrome de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="5620765574781326016">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten.</translation>
 <translation id="568643307450491754">Je vindt je bladwijzers in het menu 'Chrome' of in de bladwijzerbalk.</translation>
 <translation id="573759479754913123">Over Chrome OS</translation>
+<translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
 <translation id="5785746630574083988">Als je opnieuw start in Windows 8-modus, worden je Chrome-apps gesloten en opnieuw gestart.</translation>
 <translation id="5799551393681493217">Hiermee worden Chrome-inlogprocedures op basis van iframes ingeschakeld. Deze markering overschrijft --enable-web-based-signin.</translation>
 <translation id="5855036575689098185">De software op je computer is niet compatibel met Google Chrome.</translation>

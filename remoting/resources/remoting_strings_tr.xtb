@@ -85,6 +85,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2919669478609886916">Bu makineyi şu anda başka bir kullanıcıyla paylaşıyorsunuz. Paylaşmaya devam etmek istiyor musunuz?</translation>
 <translation id="2921543551052660690">Daha önce <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) olarak oturum açmıştınız. Bu hesaptaki bilgisayarlarınıza erişmek için bu hesapla <ph name="LINK_BEGIN" />Chromium'da oturum açın<ph name="LINK_END" /> ve Chromoting'i yeniden yükleyin.</translation>
 <translation id="2926340305933667314">Bu bilgisayara uzaktan erişim devre dışı bırakılamadı. Lütfen daha sonra tekrar deneyin.</translation>
+<translation id="2930135165929238380">Bazı gerekli bileşenler eksik. Lütfen chrome://plugins adresine gidin ve Native Client'in etkinleştirildiğinden emin olun.</translation>
 <translation id="2939145106548231838">Ana makineyle kimlik doğrulaması yap</translation>
 <translation id="2998137343848432918">• Jenerik ekranı eklendi.
 • Klavye görünürken tam ekrana geçmeyle ilgili bir sorun düzeltildi.</translation>

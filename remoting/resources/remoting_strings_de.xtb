@@ -85,6 +85,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2919669478609886916">Dieser Computer ist zurzeit für einen anderen Nutzer freigegeben. Möchten Sie die Freigabe fortsetzen?</translation>
 <translation id="2921543551052660690">Sie haben sich zuvor als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) angemeldet. Damit Sie auf Ihre Computer in diesem Konto zugreifen können, <ph name="LINK_BEGIN" />melden Sie sich mit diesem Konto in Chromium an<ph name="LINK_END" /> und installieren Sie Chromoting erneut.</translation>
 <translation id="2926340305933667314">Fehler beim Deaktivieren des Remote-Zugriffs auf diesen Computer. Bitte versuchen Sie es später erneut.</translation>
+<translation id="2930135165929238380">Einige erforderliche Komponenten fehlen. Rufen Sie chrome://plugins auf und vergewissern Sie sich, dass der Native Client aktiviert ist.</translation>
 <translation id="2939145106548231838">Authentifizierung gegenüber dem Host</translation>
 <translation id="2998137343848432918">• "Credits"-Bildschirm hinzugefügt
 • Problem beim Aktivieren des Vollbildmodus mit sichtbarer Tastatur behoben</translation>

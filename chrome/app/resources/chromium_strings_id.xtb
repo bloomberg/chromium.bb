@@ -4,8 +4,6 @@
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
 <translation id="108122890477367602">&amp;Luncurkan ulang Chromium dalam mode Windows 8</translation>
 <translation id="1115445892567829615">Chromium tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> saat ini, situs web mengembalikan kredensial yang salah
-dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum data apa pun dipertukarkan.</translation>
 <translation id="1174473354587728743">Berbagi komputer? Kini Anda dapat menyiapkan Chromium seperti yang Anda inginkan.</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
 <translation id="1221340462641866827">OS Chromium tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME" />. Tautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
@@ -106,7 +104,6 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, at
 <translation id="4230135487732243613">Tautkan data Chromium Anda ke akun ini?</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
-<translation id="4365115785552740256">Chromium tercipta berkat proyek sumber terbuka <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> dan berbagai <ph name="BEGIN_LINK_OSS" />perangkat lunak sumber terbuka<ph name="END_LINK_OSS" /> lainnya.</translation>
 <translation id="4423735387467980091">Menyesuaikan dan mengontrol Chromium</translation>
 <translation id="442817494342774222">Chromium dikonfigurasi untuk otomatis terbuka ketika Anda memulai komputer.</translation>
 <translation id="4458285410772214805">Keluar dan masuk lagi agar perubahan ini diterapkan.</translation>
@@ -169,6 +166,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE" />, at
 <translation id="6475912303565314141">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chromium.</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chromium. Untuk memperbarui preferensi sinkronisasi atau menggunakan Chromium tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Copot Pemasangan Chromium</translation>
+<translation id="6526111688217511984">Chromium memerlukan akses penyimpanan untuk mengunduh file.</translation>
 <translation id="6637001341228460105">Chromium memerlukan akses mikrofon untuk membagikannya dengan situs ini.</translation>
 <translation id="6638567566961868659">Cari bookmark Anda dalam menu Chromium atau di bilah bookmark.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>

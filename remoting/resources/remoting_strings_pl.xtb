@@ -85,6 +85,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="2919669478609886916">Obecnie udostępniasz ten komputer innemu użytkownikowi. Czy chcesz kontynuować udostępnianie?</translation>
 <translation id="2921543551052660690">Poprzednio logowałeś się jako <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Aby uzyskać dostęp do swoich komputerów na tym koncie, <ph name="LINK_BEGIN" />zaloguj się na to konto w Chromium<ph name="LINK_END" /> i ponownie zainstaluj Chromoting.</translation>
 <translation id="2926340305933667314">Nie udało się wyłączyć dostępu zdalnego do tego komputera. Spróbuj ponownie później.</translation>
+<translation id="2930135165929238380">Brak niektórych wymaganych komponentów. Otwórz stronę chrome://plugins i upewnij się, że jest włączony Klient natywny.</translation>
 <translation id="2939145106548231838">Host wymaga uwierzytelnienia</translation>
 <translation id="2998137343848432918">• Dodano ekran z listą twórców.
 • Rozwiązano problem z włączaniem trybu pełnoekranowego przy widocznej klawiaturze.</translation>

@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Google API-Schlüssel fehlen. Einige Funktionen von Google Chrome sind deaktiviert.</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2346876346033403680">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chrome angemeldet. Falls dies nicht Ihr Konto ist, erstellen Sie einen neuen Chrome-Nutzer, um Ihre Daten getrennt zu verwenden.
 
 Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW" /> zusammengeführt.</translation>
@@ -136,10 +135,10 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chrome dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chrome die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Daten weiterhin sicher.</translation>
 <translation id="5620765574781326016">Erfahren Sie mehr über Website-Themen, ohne die Seite zu verlassen.</translation>
 <translation id="568643307450491754">Ihre Lesezeichen finden Sie im Chrome-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
+<translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="5785746630574083988">Bei einem Neustart im Windows 8-Modus werden Ihre Chrome-Apps geschlossen und neu gestartet.</translation>
 <translation id="5799551393681493217">Aktiviert Iframe-basierte Anmeldevorgänge für Chrome. Dieses Flag überschreibt das Flag "enable-web-based-signin".</translation>
 <translation id="5855036575689098185">Auf Ihrem Computer befindet sich Software, die nicht mit Google Chrome kompatibel ist.</translation>

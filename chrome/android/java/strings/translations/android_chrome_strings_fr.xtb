@@ -88,7 +88,7 @@
 <translation id="2354750644801399986">Interdire le suivi</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2381756643783702095">Demander l'autorisation avant d'envoyer (recommandé)</translation>
-<translation id="2387895666653383613">Mise à l'échelle texte</translation>
+<translation id="2387895666653383613">Mise à l'échelle du texte</translation>
 <translation id="238909021488141516">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="2414886740292270097">Foncé</translation>
 <translation id="2433507940547922241">Apparence</translation>
@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Connexion lente détectée</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL à proximité}one{# URL à proximité}other{# URL à proximité}}</translation>
 <translation id="2888126860611144412">À propos de Chrome</translation>
 <translation id="2891154217021530873">Arrêter le chargement de la page</translation>
 <translation id="2902702728133930130">Échec du démarrage de Chrome, en raison d'une erreur inattendue.</translation>
@@ -159,7 +160,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="3410346880900521918">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="3414952576877147120">Taille :</translation>
 <translation id="3455798674391346847">Consommez moins de données grâce à l'optimisation des pages par Google. Les pages HTTPS et celles visitées en mode navigation privée ne seront ni optimisées ni vues par Google.</translation>
-<translation id="346339498574870680">Copier l'URL de l'image</translation>
 <translation id="3485544713029068372">Smart Lock pour les mots de passe</translation>
 <translation id="3492207499832628349">Nouvel onglet nav. privée</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
@@ -206,6 +206,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4297410240212242334">Séparer les onglets et les applications</translation>
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="4333969446981951071">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
+<translation id="4334294535648607276">Le téléchargement a bien été effectué.</translation>
 <translation id="4350413759959745971">Déplacer les pages enregistrées</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
 <translation id="4357362091209756047">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK1" />Relancez la recherche<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />obtenez de l'aide<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
 <translation id="4543087392704641517">Titre du favori</translation>
 <translation id="4543661749405994812">Copier l'adresse e-mail</translation>
-<translation id="4619298195800598081">Ouvrir original autre onglet</translation>
 <translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris ont été supprimés.</translation>
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
@@ -316,6 +316,7 @@ Les statistiques d'utilisation englobent des informations telles que les préfé
 Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
 <translation id="572328651809341494">Onglets récents</translation>
 <translation id="5733727110006255111">Lorsque cette fonctionnalité est activée, les pages consultées dans Chrome sont d'abord compressées via les serveurs Google avant d'être téléchargées, à l'exception des pages SSL et des pages de navigation privée.</translation>
+<translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5771382037724542929">Voulez-vous vraiment remplacer le fichier <ph name="FILE_NAME" /> dans le répertoire "<ph name="DIRECTORY_NAME" />" ?</translation>
@@ -324,6 +325,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5817918615728894473">Associer</translation>
 <translation id="5832934273103296195">Développé – Cliquer pour réduire</translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
+<translation id="585027516397408832">Économiseur de données activé</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="588258955323874662">Plein écran</translation>
@@ -386,7 +388,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="666268767214822976">Utiliser un service de prédiction pour suggérer des requêtes associées et des sites populaires lorsque vous saisissez des termes dans la barre d'adresse</translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>
-<translation id="6671495933530132209">Copier l'image</translation>
 <translation id="6697251040310467641">Page enreg. pour accès hors conn.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699351163704950317">Toutes les pages enregistrées</translation>
@@ -426,6 +427,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7096034533295549981">Chargement vidéo…</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7201341158316793215">Suppression en cours…</translation>
+<translation id="7208788139759694678">Économiseur de données désactivé</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7299721129597238157">Supprimer le favori</translation>
@@ -457,6 +459,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7648422057306047504">Chiffrer les mots de passe avec vos identifiants Google</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7665369617277396874">Ajouter un compte</translation>
+<translation id="7761240775244195612">Supprimer <ph name="PAGES_NUMBER" /> copies hors connexion non utilisées au cours des 30 derniers jours ? Ceci permettra de libérer <ph name="TOTAL_PAGE_SIZE" />.</translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>
 <translation id="7765158879357617694">Déplacer</translation>
 <translation id="7767746238359002192">Consultez la page pour l'enregistrer afin d'y accéder hors connexion.</translation>
@@ -485,7 +488,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8050319187894766337">Page enreg. accès hors conn. Mém. presque pleine.</translation>
 <translation id="8068648041423924542">Impossible de sélectionner le certificat</translation>
 <translation id="8069239273282989646">Après compression</translation>
-<translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8084156870963450514">Connectez-vous pour accéder à tous vos contenus Web sur n'importe quel appareil.</translation>
 <translation id="8106211421800660735">N° de carte</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
@@ -496,6 +498,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8168435359814927499">Contenu</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
+<translation id="8218934717680664417">Vous pouvez maintenant effectuer des recherches à l'aide d'un seul geste.</translation>
 <translation id="8237438615979997762">Les données stockées sur cet appareil et dans votre compte Google seront conservées. Toutefois, les nouvelles données ou les modifications apportées aux données ne seront pas synchronisées entre ces deux emplacements.</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8275818695183729150">Autoriser (pour les recherches dans la barre d'adresse)</translation>

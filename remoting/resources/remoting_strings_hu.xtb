@@ -85,6 +85,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2919669478609886916">Ezt a gépet jelenleg megosztja egy másik felhasználóval. Szeretné folytatni a megosztást?</translation>
 <translation id="2921543551052660690">Korábban <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) felhasználóként jelentkezett be. A fiók számítógépeinek eléréséhez <ph name="LINK_BEGIN" />jelentkezzen be a Chromiumba<ph name="LINK_END" /> az adott fiókkal, majd telepítse újra a Chromotingot.</translation>
 <translation id="2926340305933667314">Nem sikerült letiltani a távoli hozzáférést a számítógéphez. Kérjük, próbálja újra később.</translation>
+<translation id="2930135165929238380">Hiányzik néhány szükséges összetevő. Nyissa meg a chrome://plugins oldalt, és győződjön meg róla, hogy engedélyezve van a Natív kliens beépülő modul.</translation>
 <translation id="2939145106548231838">Hitelesítés a gazdagépen</translation>
 <translation id="2998137343848432918">• „Készítők” képernyő hozzáadva.
 • Javítva egy teljes képernyőre váltáskor jelentkező probléma, ha a billentyűzet látható.</translation>

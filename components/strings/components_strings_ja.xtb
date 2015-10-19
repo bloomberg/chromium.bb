@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
 <translation id="1344588688991793829">Chromium の自動入力設定...</translation>
+<translation id="1375198122581997741">バージョン情報</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1455235771979731432">カードの確認中に問題が発生しました。インターネット接続を確認してから、もう一度お試しください。</translation>
 <translation id="1491151370853475546">このページを再読み込み</translation>
+<translation id="1519264250979466059">ビルド日</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
+<translation id="1559528461873125649">該当するファイルまたはディレクトリがありません</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
 <translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
 <translation id="1655462015569774233">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が昨日付けで切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}}</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
 <translation id="1693754753824026215">ページ <ph name="SITE" /> の記述:</translation>
 <translation id="1706954506755087368">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書はおそらく明日以降に利用できるようになります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書はおそらく # 日後から利用できるようになります。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">AMEX</translation>
 <translation id="1737968601308870607">バグを報告</translation>
+<translation id="1753706481035618306">ページ番号</translation>
 <translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME" /> でこのサイトの<ph name="LANGUAGE_NAME" />ページを翻訳しますか？</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="2597378329261239068">このドキュメントはパスワードで保護されています。パスワードを入力してください。</translation>
+<translation id="2609632851001447353">バリエーション</translation>
 <translation id="2625385379895617796">時計が進んでいます</translation>
 <translation id="2639739919103226564">ステータス:</translation>
 <translation id="2653659639078652383">送信</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">値を表示</translation>
 <translation id="3648607100222897006">この試験運用機能は、随時変更、中断、提供中止されることがあります。これらの機能のいずれかを有効にした場合に生じる結果について、Google は一切保証しません。ブラウザによってすべてのデータが削除されたり、予期せぬ方法でセキュリティやプライバシーが侵害されたりする可能性があります。有効にした試験運用機能は同じブラウザを使用する全ユーザーに対して有効になります。続行する場合は十分ご注意ください。</translation>
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
+<translation id="3658742229777143148">変更履歴</translation>
 <translation id="370665806235115550">読み込み中...</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
 <translation id="3739623965217189342">コピーしたリンク</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書にはエラーがあります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
+<translation id="4744603770635761495">実行ファイルのパス</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
 <translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">都道府県 / 州</translation>
 <translation id="5094747076828555589">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chromium によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="5095208057601539847">地方</translation>
+<translation id="5115563688576182185">（64 ビット）</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
 <translation id="5172758083709347301">マシン</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="6282194474023008486">郵便番号</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
+<translation id="6355080345576803305">公開セッションのオーバーライド</translation>
 <translation id="6387478394221739770">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/beta から Beta チャンネルをお試しください。</translation>
-<translation id="6426993025560594914">すべての試験運用中機能がお使いのプラットフォームで使用可能です。</translation>
 <translation id="6445051938772793705">国</translation>
 <translation id="6458467102616083041">ポリシーによってデフォルトの検索が無効にされているため無視されます。</translation>
 <translation id="647261751007945333">デバイス ポリシー</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">地域</translation>
 <translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
+<translation id="6897140037006041989">ユーザー エージェント</translation>
 <translation id="6915804003454593391">ユーザー:</translation>
 <translation id="6957887021205513506">サーバーの証明書が偽造されたもののようです。</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE" />から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME" /> で <ph name="SEARCH_TERMS" /> を検索</translation>
+<translation id="7225807090967870017">ビルド ID</translation>
 <translation id="725866823122871198">パソコンの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="7275334191706090484">管理対象のブックマーク</translation>
 <translation id="7298195798382681320">推奨</translation>
 <translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
+<translation id="7353601530677266744">コマンドライン</translation>
 <translation id="7378627244592794276">いいえ</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">プロフィール パス</translation>
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">サーバーの証明書が有効になっていません。</translation>
+<translation id="7951415247503192394">（32 ビット）</translation>
 <translation id="7956713633345437162">モバイルのブックマーク</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">このページにとどまる</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="917450738466192189">サーバーの証明書が無効です。</translation>
-<translation id="9187827965378254003">現在のところ使用できる試験運用機能はありません。</translation>
 <translation id="9207861905230894330">記事を追加できませんでした。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">フォームをクリア</translation>
+<translation id="969892804517981540">Official Build</translation>
 <translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

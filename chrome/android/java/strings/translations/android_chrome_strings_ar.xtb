@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">تم اكتشاف اتصال بطيء بالإنترنت.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{‏عنوان URL واحد في الجوار}zero{‏# عنوان URL في الجوار}two{‏عنوانان (#) URL في الجوار}few{‏# عناوين URL في الجوار}many{‏# عنوان URL في الجوار}other{‏# عنوان URL في الجوار}}</translation>
 <translation id="2888126860611144412">‏حول Chrome</translation>
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
 <translation id="2902702728133930130">‏أخفق Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
@@ -157,7 +158,6 @@
 <translation id="3410346880900521918">إذا كنت تشاهد هذا بكثرة، فجرّب هذه <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="3455798674391346847">‏يمكنك استخدام بيانات أقل باستخدام Google لتحسين الصفحات التي تزورها. ولن يتم تحسين الصفحات التي يتم الدخول إليها باستخدام HTTPS أو التصفح المتخفي، ولن يكتشفها متصفح Google.</translation>
-<translation id="346339498574870680">‏نسخ عنوان URL للصورة</translation>
 <translation id="3485544713029068372">‏Smart Lock لكلمات المرور</translation>
 <translation id="3492207499832628349">تابة جديدة للتصفح المتخفي</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
@@ -204,6 +204,7 @@
 <translation id="4297410240212242334">فصل علامات التبويب والتطبيقات</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="4333969446981951071">‏باستخدامك هذا التطبيق، توافق على <ph name="BEGIN_LINK1" />بنود خدمة<ph name="END_LINK1" /> Chrome و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
+<translation id="4334294535648607276">اكتمل التنزيل.</translation>
 <translation id="4350413759959745971">نقل الصفحات المحفوظة</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4357362091209756047">ألا ترى جهازك؟ <ph name="BEGIN_LINK1" />ابحث مرة أخرى<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />احصل على مساعدة<ph name="END_LINK2" /> .</translation>
@@ -217,7 +218,6 @@
 <translation id="4532845899244822526">اختيار مجلد</translation>
 <translation id="4543087392704641517">عنوان الإشارة المرجعية</translation>
 <translation id="4543661749405994812">نسخ عنوان البريد الإلكتروني</translation>
-<translation id="4619298195800598081">فتح الصورة الأصلية بتبويب جديد</translation>
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
@@ -313,6 +313,7 @@
           لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
 <translation id="572328651809341494">علامات التبويب الأخيرة</translation>
 <translation id="5733727110006255111">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتضمن هذا صفحات وضعي SSL والتصفح المتخفي.</translation>
+<translation id="5749068826913805084">‏يحتاج Chrome الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
 <translation id="5763382633136178763">علامات تبويب التصفح المتخفي</translation>
 <translation id="5765780083710877561">الوصف:</translation>
 <translation id="5771382037724542929">هل تريد استبدال <ph name="FILE_NAME" /> الموجود في <ph name="DIRECTORY_NAME" />؟</translation>
@@ -321,6 +322,7 @@
 <translation id="5817918615728894473">إقران</translation>
 <translation id="5832934273103296195">تم التوسيع - انقر للتصغير</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
+<translation id="585027516397408832">تمكين توفير البيانات</translation>
 <translation id="5860033963881614850">إيقاف</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="588258955323874662">ملء الشاشة</translation>
@@ -383,7 +385,6 @@
 <translation id="6643016212128521049">محو</translation>
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين</translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
-<translation id="6671495933530132209">نسخ الصورة</translation>
 <translation id="6697251040310467641">تم حفظ صفحة بلا اتصال</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6699351163704950317">جميع الصفحات التي تم حفظها</translation>
@@ -423,6 +424,7 @@
 <translation id="7096034533295549981">تحميل الفيديو</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7201341158316793215">جارٍ الإزالة…</translation>
+<translation id="7208788139759694678">تعطيل توفير البيانات</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7299721129597238157">حذف الإشارة المرجعية</translation>
@@ -454,6 +456,7 @@
 <translation id="7648422057306047504">‏تشفير كلمات المرور باستخدام بيانات اعتماد Google</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
+<translation id="7761240775244195612">هل تريد حذف <ph name="PAGES_NUMBER" /> نسخ في وضع عدم الاتصال والتي لم تستخدم في الشهر الماضي؟ سيعمل ذلك على تفريغ <ph name="TOTAL_PAGE_SIZE" /> من المساحة.</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7767746238359002192">زيارة الصفحة لحفظها بلا اتصال</translation>
@@ -482,7 +485,6 @@
 <translation id="8050319187894766337">حفظت صفحة بلا اتصال. سعة ممتلئة.</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8069239273282989646">بعد الضغط</translation>
-<translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8084156870963450514">سجّل الدخول للوصول إلى برامج الويب من أي جهاز.</translation>
 <translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
 <translation id="813082847718468539">عرض معلومات الموقع</translation>
@@ -493,6 +495,7 @@
 <translation id="8168435359814927499">المحتوى</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
+<translation id="8218934717680664417">يمكنك الآن البحث بلمسة واحدة</translation>
 <translation id="8237438615979997762">‏ستظل البيانات المخزنة على هذا الجهاز بالإضافة إلى البيانات المخزنة في حساب Google في كلا الموضعين. إلا أنه لن تتم مزامنة البيانات الجديدة أو التغييرات التي تجريها على بياناتك بينهما.</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8275818695183729150">السماح (لعمليات بحث شريط العناوين)</translation>

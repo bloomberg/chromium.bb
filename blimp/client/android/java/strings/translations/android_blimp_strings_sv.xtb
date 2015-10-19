@@ -1,4 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="3407245330823033366">Välj ett konto som du vill använda med Blimp.</translation>
+<translation id="4641972508298030550">Användaren kunde inte autentiseras.</translation>
+<translation id="8514856595257368555">Token har hämtats.</translation>
 </translationbundle>

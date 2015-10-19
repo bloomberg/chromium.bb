@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
 <translation id="1339601241726513588">โดเมนการลงทะเบียน:</translation>
 <translation id="1344588688991793829">การตั้งค่าป้อนข้อความอัตโนมัติของ Chromium...</translation>
+<translation id="1375198122581997741">เกี่ยวกับรุ่น</translation>
 <translation id="1426410128494586442">ใช่</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1455235771979731432">เกิดปัญหาในการยืนยันบัตรของคุณ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง</translation>
 <translation id="1491151370853475546">โหลดหน้าเว็บนี้ซ้ำ</translation>
+<translation id="1519264250979466059">วันที่สร้าง</translation>
 <translation id="1549470594296187301">ต้องเปิดใช้ JavaScript เพื่อใช้คุณลักษณะนี้</translation>
+<translation id="1559528461873125649">ไม่มีไฟล์หรือไดเรกทอรีดังกล่าว</translation>
 <translation id="1640180200866533862">นโยบายผู้ใช้</translation>
 <translation id="1644184664548287040">การกำหนดค่าเครือข่ายไม่ถูกต้องและไม่สามารถนำเข้า</translation>
 <translation id="1655462015569774233">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยหมดอายุไปเมื่อวานนี้ โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาของคุณตั้งค่าไว้ที่วันที่ <ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยหมดอายุไปเมื่อ # วันที่ผ่านมา โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาของคุณตั้งค่าไว้ที่วันที่ <ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}}</translation>
 <translation id="168841957122794586">ใบรับรองของเซิร์ฟเวอร์มีคีย์การเข้ารหัสที่ไม่รัดกุม</translation>
 <translation id="1693754753824026215">หน้าเว็บที่ <ph name="SITE" /> แจ้งว่า:</translation>
 <translation id="1706954506755087368">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยควรจะเริ่มใช้งานได้ตั้งแต่วันพรุ่งนี้ โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยควรจะเริ่มใช้งานได้ในอีก # วันข้างหน้า โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ}}</translation>
+<translation id="1710259589646384581">ระบบปฏิบัติการ</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">ข้อบกพร่องของไฟล์</translation>
+<translation id="1753706481035618306">เลขหน้า</translation>
 <translation id="1763864636252898013">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของอุปกรณ์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">คุณต้องการให้ <ph name="PRODUCT_NAME" /> เสนอที่จะแปลหน้าในภาษา<ph name="LANGUAGE_NAME" />จากไซต์นี้ในครั้งถัดไปไหม</translation>
 <translation id="2587841377698384444">รหัส API ไดเรกทอรี:</translation>
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
+<translation id="2609632851001447353">รูปแบบต่างๆ</translation>
 <translation id="2625385379895617796">นาฬิกาเร็วเกินไป</translation>
 <translation id="2639739919103226564">สถานะ:</translation>
 <translation id="2653659639078652383">ส่ง</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">แสดงค่า</translation>
 <translation id="3648607100222897006">คุณลักษณะทดลองเหล่านี้อาจมีการเปลี่ยนแปลง เสียหาย หรือยกเลิกไปได้ตลอดเวลา เราไม่รับประกันใดๆ เกี่ยวกับสิ่งที่อาจเกิดขึ้นทั้งสิ้นหากคุณเปิดใช้การทดลองรายการใดรายการหนึ่งนี้ เบราว์เซอร์ของคุณอาจพังโดยไม่มีสัญญาณเตือน ยิ่งไปกว่านั้น เบราว์เซอร์อาจลบข้อมูลทั้งหมดของคุณได้ หรือการรักษาความปลอดภัยและความเป็นส่วนตัวของคุณอาจโดนคุกคามโดยไม่คาดคิด การทดลองใดๆ ที่คุณเปิดใช้งานจะเปิดใช้สำหรับผู้ใช้ทุกคนที่ใช้เบราว์เซอร์นี้ด้วย โปรดดำเนินการด้วยความระมัดระวัง</translation>
 <translation id="3650584904733503804">การตรวจสอบสำเร็จ</translation>
+<translation id="3658742229777143148">การแก้ไข</translation>
 <translation id="370665806235115550">กำลังโหลด...</translation>
 <translation id="3712624925041724820">ใบอนุญาตหมด</translation>
 <translation id="3739623965217189342">ลิงก์ที่คุณคัดลอกมา</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยมีข้อผิดพลาด โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="4726672564094551039">โหลดนโยบายซ้ำ</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
+<translation id="4744603770635761495">เส้นทางปฏิบัติการ</translation>
 <translation id="4771973620359291008">มีข้อผิดพลาดที่ไม่ทราบเกิดขึ้น</translation>
 <translation id="4800132727771399293">ตรวจสอบวันหมดอายุและ CVC แล้วลองอีกครั้ง</translation>
 <translation id="4813512666221746211">ข้อผิดพลาดของเครือข่าย</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">รัฐ</translation>
 <translation id="5094747076828555589">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะ Chromium ไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="5095208057601539847">จังหวัด</translation>
+<translation id="5115563688576182185">(64 บิต)</translation>
 <translation id="5145883236150621069">มีรหัสข้อผิดพลาดในการตอบกลับนโยบาย</translation>
 <translation id="5172758083709347301">ผู้ใช้คอมพิวเตอร์นี้</translation>
 <translation id="5179510805599951267">หากไม่มีในภาษา <ph name="ORIGINAL_LANGUAGE" /> ให้รายงานข้อผิดพลาดนี้</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">บุ๊กมาร์ก <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">รหัสไปรษณีย์</translation>
 <translation id="6337534724793800597">กรองนโยบายตามชื่อ</translation>
+<translation id="6355080345576803305">การลบล้างเซสชันสาธารณะ</translation>
 <translation id="6387478394221739770">หากสนใจในคุณลักษณะสุดเจ๋งของ Chrome ใหม่ ลองใช้เวอร์ชันเบต้าของเราที่ chrome.com/beta</translation>
-<translation id="6426993025560594914">การทดลองทั้งหมดพร้อมใช้งานบนแพลตฟอร์มของคุณ!</translation>
 <translation id="6445051938772793705">ประเทศ</translation>
 <translation id="6458467102616083041">ไม่ใช้งานเนื่องจากการค้นหาเริ่มต้นถูกปิดใช้งานตามนโยบาย</translation>
 <translation id="647261751007945333">นโยบายอุปกรณ์</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">พื้นที่</translation>
 <translation id="6874604403660855544">&amp;ทำซ้ำการเพิ่ม</translation>
 <translation id="6891596781022320156">ระดับนโยบายไม่ได้รับการสนับสนุน</translation>
+<translation id="6897140037006041989">User agent</translation>
 <translation id="6915804003454593391">ผู้ใช้:</translation>
 <translation id="6957887021205513506">ใบรับรองของเซิร์ฟเวอร์น่าจะเป็นของปลอม</translation>
 <translation id="6965382102122355670">ตกลง</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">แปลหน้าเว็บนี้จาก<ph name="ORIGINAL_LANGUAGE" />เป็น<ph name="LANGUAGE_LANGUAGE" />แล้ว</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">ค้นหาข้อความ <ph name="SEARCH_TERMS" /> จาก <ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">ID รุ่น</translation>
 <translation id="725866823122871198">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของคอมพิวเตอร์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>
 <translation id="7275334191706090484">บุ๊กมาร์กที่มีการจัดการ</translation>
 <translation id="7298195798382681320">แนะนำ</translation>
 <translation id="7334320624316649418">&amp;ทำซ้ำการจัดลำดับใหม่</translation>
+<translation id="7353601530677266744">บรรทัดคำสั่ง </translation>
 <translation id="7378627244592794276">ไม่</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">เส้นทางโปรไฟล์</translation>
 <translation id="7441627299479586546">หัวเรื่องนโยบายไม่ถูกต้อง</translation>
 <translation id="7485870689360869515">ไม่พบข้อมูล</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">ใบรับรองของเซิร์ฟเวอร์ยังไม่ถูกต้อง</translation>
+<translation id="7951415247503192394">(32 บิต)</translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนมือถือ</translation>
 <translation id="7961015016161918242">ไม่เคย</translation>
 <translation id="7977590112176369853">&lt;ป้อนคำค้นหา&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">อยู่ในหน้านี้</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="917450738466192189">ใบรับรองของเซิร์ฟเวอร์ไม่ถูกต้อง</translation>
-<translation id="9187827965378254003">น่าเสียดาย ดูเหมือนว่าขณะนี้ยังไม่มีการทดลองแต่อย่างใด</translation>
 <translation id="9207861905230894330">การเพิ่มบทความล้มเหลว</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ล้างฟอร์ม</translation>
+<translation id="969892804517981540">รุ่นที่เป็นทางการ</translation>
 <translation id="988159990683914416">รุ่นนักพัฒนา</translation>
 </translationbundle>

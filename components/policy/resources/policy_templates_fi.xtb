@@ -56,7 +56,6 @@
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
 <translation id="1240643596769627465">Määrittää Instant-tuloksia tarjoavan hakukoneen URL-osoitteen. Osoitteen tulee sisältää merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä. Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, Instant-hakutuloksia ei näytetä. Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
-<translation id="1283072268083088623">Määrittää, mitä HTTP-todennustapoja tuote <ph name="PRODUCT_NAME" /> tukee. Mahdollisia arvoja ovat basic, digest, ntlm ja negotiate. Erota arvot toisistaan pilkuilla. Jos tätä käytäntöä ei ole määritetty, kaikkia neljää todennustapaa tuetaan.</translation>
 <translation id="1297182715641689552">Käytä .pac-välityspalvelinkoodia</translation>
 <translation id="1300635491585192248">Ennakoi verkon toimia muilla verkkoyhteyksillä paitsi
           mobiiliyhteydellä</translation>
@@ -118,6 +117,7 @@
 
       Jos tämä käytäntö ei ole voimassa tai sitä ei ole määritetty, yhtenäisen työpöydän tila
       poistetaan käytöstä. Tässä tapauksessa käyttäjä ei voi ottaa ominaisuutta käyttöön.</translation>
+<translation id="1474273443907024088">Poista TLS False Start käytöstä</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Määrittää millisekunteina aikavälin, jolla laitteen hallintapalvelulta pyydetään laitekäytäntötietoja.
 
@@ -191,7 +191,6 @@ Jos tämä asetus on käytössä, järjestelmäpalkissa näytetään suuri punai
 
 Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta punaista uloskirjautumispainiketta.</translation>
 <translation id="1942957375738056236">Voit määrittää välityspalvelimen URL-osoitteen täällä. Käytäntö tulee voimaan vain, jos olet valinnut manuaaliset välityspalvelimen asetukset kohdassa Valitse, miten välityspalvelimen asetukset määritetään. Jätä tämä käytäntö määrittämättä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan. Lisää asetuksia ja esimerkkejä näet osoitteesta <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1948757837129151165">HTTP-todennuksen käytännöt</translation>
 <translation id="1956493342242507974">Määritä virranhallinta-asetukset tuotteen <ph name="PRODUCT_OS_NAME" /> kirjautumisruudulla.
 
       Käytäntö määrittää tuotteen <ph name="PRODUCT_OS_NAME" /> toiminnan, kun käyttäjä ei tee mitään tietyn ajan kuluessa kirjautumisruudun ollessa avoinna. Käytäntö ohjaa useita asetuksia. Voit tarkastella yksittäisten asetusten tietoja ja arvoalueita tutustumalla käytäntöihin, jotka ohjaavat virranhallintaa käyttökerran aikana. Käytäntöjen ainoat poikkeukset ovat:
@@ -228,6 +227,18 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos käytännön HardwareAccelerationModeEnabled arvoksi asetetaan Epätosi, Disable3DAPIs ohitetaan, jolloin lopputulos vastaa Disable3DAPIs-käytännön arvoa Tosi.</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
+<translation id="2175836933294053665">Määrittää hallinnoitujen kirjanmerkkien listan.
+
+      Käytäntö koostuu kirjanmerkkilistasta. Jokainen kirjanmerkki lisätään
+      listaan sanastomerkintänä, joka sisältää avaimet name
+      (kirjanmerkin nimi) ja url (kohdeosoite). Kirjanmerkkinä voidaan käyttää alikansiota jättämällä
+      avain url pois mutta lisäämällä avain children,
+      johon kirjanmerkkilista määritellään yllä kuvatulla tavalla. Myös alikansion kirjanmerkit voivat olla
+      alikansioita. <ph name="PRODUCT_NAME" />
+      täydentää listan URL-osoitteet omniboxiin kirjoitettujen osoitteiden tavoin.
+      Esimerkiksi osoite google.com täydennetään muotoon https://google.com/.
+
+      Nämä kirjanmerkit lisätään Hallinnoidut kirjanmerkit -kansioon. Käyttäjä ei voi muokata niitä, mutta hän voi piilottaa kansion kirjanmerkkipalkista. Hallinnoituja kirjanmerkkejä ei synkronoida käyttäjän tiliin, eivätkä laajennukset voi muokata niitä.</translation>
 <translation id="2188979373208322108">Ottaa käyttöön kirjanmerkkipalkin tuotteessa <ph name="PRODUCT_NAME" />. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> näyttää kirjanmerkkipalkin. Jos poistat asetuksen käytöstä, kirjanmerkkipalkkia ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos asetusta ei ole määritetty, käyttäjä voi käyttää toimintoa halutessaan.</translation>
 <translation id="2201555246697292490">Määritä sallittujen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="2204753382813641270">Hallinnoi hyllyn automaattista piilottamista</translation>
@@ -458,7 +469,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos tämä asetus ei ole käytössä tai sitä ei ole määritetty, käyttäjä voi halutessaan jatkaa varoitussivulta mahdollisesti haitalliseen sivustoon.</translation>
 <translation id="2812021780168085286">Voit määrittää URL-osoitteet, jotka saavat asentaa laajennuksia, sovelluksia ja teemoja.
 
-          <ph name="PRODUCT_NAME" /> 21:stä alkaen laajennusten, sovellusten ja käyttäjien komentosarjojen asentaminen muualta kuin Chrome Web Storesta vaikeutuu. Kun käyttäjät ennen klikkasivat linkkiä *.crx-tiedostoon, <ph name="PRODUCT_NAME" /> näytti muutaman varoituksen ja asensi sen jälkeen tiedoston. Tuotteen <ph name="PRODUCT_NAME" /> versio21 jälkeen tiedostot täytyy ladata tietokoneelle ja vetää tuotteen <ph name="PRODUCT_NAME" /> asetussivulle. Tämä asetus sallii vanhan, helpomman asennusmenetelmän käyttämisen tietyille URL-osoitteille.
+          <ph name="PRODUCT_NAME" /> 21:stä alkaen laajennusten, sovellusten ja käyttäjien komentosarjojen asentaminen muualta kuin Chrome Web Storesta vaikeutuu. Kun käyttäjät ennen klikkasivat linkkiä *.crx-tiedostoon, <ph name="PRODUCT_NAME" /> näytti muutaman varoituksen ja asensi sen jälkeen tiedoston. Tuotteen <ph name="PRODUCT_NAME" /> version 21 jälkeen tiedostot täytyy ladata tietokoneelle ja vetää tuotteen <ph name="PRODUCT_NAME" /> asetussivulle. Tämä asetus sallii vanhan, helpomman asennusmenetelmän käyttämisen tietyille URL-osoitteille.
 
           Luettelon jokainen kohde on laajennuksen kaltainen kohdistusmalli (lisätietoa osoitteessa http://code.google.com/chrome/extensions/match_patterns.html). Luettelon kohteita vastaavista URL-osoitteista voidaan asentaa kohteita helposti. Malleissa täytyy sallia sekä *.crx-tiedoston sijainti että latauksen käynnistyssivu (eli viittaaja).
 
@@ -520,6 +531,11 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3067188277482006117">Jos arvo on tosi, käyttäjä voi käyttää Chrome-laitteistoa todentaakseen henkilöllisyytensä yksityisyysvarmenteen myöntäjälle Enterprise Platform Keys -sovellusliittymällä chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jos arvo on epätosi tai jos sitä ei ole asetettu, sovellusliittymän kutsu epäonnistuu ja palauttaa virhekoodin.</translation>
+<translation id="3069958900488014740">Määrittää, käyttääkö <ph name="PRODUCT_NAME" /> WPAD-optimointia (Web Proxy Auto-Discovery).
+
+      Jos tämän käytännön arvo on Epätosi, WPAD-optimointi poistetaan käytöstä, jolloin <ph name="PRODUCT_NAME" /> odottaa nimipalveluun perustuvia WPAD-palvelimia kauemmin. Jos käytäntöä ei aseteta tai sen arvo on Tosi, WPAD-optimointia käytetään.
+
+      Käyttäjät eivät voi muuttaa WPAD-optimoinnin asetuksia tästä käytännöstä riippumatta.</translation>
 <translation id="3072045631333522102">Näytönsäästäjä, jota käytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
 <translation id="3072847235228302527">Aseta laitteen paikallisen tilin käyttöehdot</translation>
 <translation id="3096595567015595053">Luettelo käytössä olevista laajennuksista</translation>
@@ -646,22 +662,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos tämän käytännön arvoksi on asetettu tosi tai käytäntöä ei ole määritetty, käyttäjät voivat käyttää laitteella kaikkia tuettuja äänentoistotapoja.</translation>
 <translation id="3808945828600697669">Määritä laajennukset, joita ei saa käyttää</translation>
 <translation id="3816312845600780067">Salli automaattisen kirjautumisen peruutusnäppäin</translation>
-<translation id="381807926299956806">Asettaa julkisia käyttökertoja varten yhden tai useamman suositellun kielen, joista käyttäjät voivat valita haluamansa.
-
-      Käyttäjä voi valita kielen ja näppäimistöasettelun ennen julkisen käyttökerran aloittamista. Oletuksena kaikki kielet, joita <ph name="PRODUCT_OS_NAME" /> tukee, näytetään aakkosjärjestyksessä. Tämän käytännön avulla suositellut kielet voidaan näyttää listan alussa.
-
-      Jos tätä käytäntöä ei aseteta, käyttöliittymän kieli on esivalittuna.
-
-      Jos tämä käytäntö asetetaan, suositellut kielet näytetään listan alussa muista kielistä erotettuina. Suositellut kielet näytetään käytännössä määritellyssä järjestyksessä. Suositelluista kielistä ensimmäinen on esivalittuna.
-
-      Jos suositeltuja kieliä on useita, oletuksena on, että käyttäjät haluavat valita jonkin suosituksista. Kielen ja näppäimistöasettelun valintaa tarjotaan näkyvästi julkisen käyttökerran alussa. Muussa tapauksessa oletetaan, että useimmat käyttäjät haluavat valita esivalitun kielen. Tällöin kielen ja näppäimistöasettelun valintaa ei tarjota yhtä näkyvästi julkisen käyttökerran alussa.
-
-      Kun tämä käytäntö on asetettu ja automaattinen kirjautuminen on käytössä (katso käytännöt |DeviceLocalAccountAutoLoginId| ja |DeviceLocalAccountAutoLoginDelay|), automaattisesti aloitettavassa julkisessa käyttökerrassa käytetään ensimmäistä kielisuositusta sekä sitä vastaavaa suosituinta näppäimistöasettelua.
-
-      Esivalittuna näppäimistöasetteluna käytetään aina kielivalintaa vastaavaa suosituinta asettelua.
-
-      Tämä käytäntö voidaan asettaa vain suositukseksi. Käytännön avulla suositellut kielet voidaan näyttää listan alussa, mutta käyttäjä voi aina valita käyttökertaa varten minkä tahansa kielen, jota <ph name="PRODUCT_OS_NAME" /> tukee.
-      </translation>
 <translation id="3820526221169548563">Ota käyttöön ruutunäppäimistö-esteettömyysominaisuus.
 
           Jos tämän käytännön arvoksi on asetettu tosi, ruutunäppäimistö on aina käytössä.
@@ -729,7 +729,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos tämän käytännön asetus on Säilytä evästeet käyttökerran ajan, evästeet poistetaan käyttökerran päätyttyä. Huom. Jos <ph name="PRODUCT_NAME" /> on käynnissä taustatilassa, käyttökerta ei välttämättä pääty viimeisen ikkunan sulkeutuessa. Katso käytäntö BackgroundModeEnabled, niin saat lisätietoja tämän toiminnallisuuden määrittämisestä.
 
-          Jos tätä käytäntöä ei aseteta, sen sijaan käytetään AllowCookies-käytäntöä, ja käyttäjä voi muuttaa asetusta.</translation>
+          Jos tätä käytäntöä ei aseteta, sen sijaan käytetään AllowCookies-käytäntöä ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="410478022164847452">Määrittää käyttämättömyysajan, jonka kuluttua suoritetaan käyttämättömyystoimenpide, kun laitetta käytetään verkkovirralla.
 
           Kun tämä käytäntö on asetettu, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME" /> suorittaa käyttämättömyystoimenpiteen, joka voidaan määrittää erikseen.
@@ -890,6 +890,11 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, on mahdollista luoda uusia käyttäjätilejä, joiden kirjautumista ei ole estetty käytännöllä <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" />.</translation>
 <translation id="4962195944157514011">Määrittää oletushaun yhteydessä käytettävän hakukoneen URL-osoitteen. Osoitteen tulee sisältää merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän antamilla hakutermeillä. Tämä asetus on voimassa vain, kun DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
+<translation id="4971529314808359013">Antaa käyttäjän määrittää listan URL-osoitemalleista, joita vastaaville sivustoille <ph name="PRODUCT_NAME" /> valitsee automaattisesti asiakasvarmenteen sivuston pyytäessä varmennetta.
+
+          Arvon täytyy olla joukko merkkijonoina annettuja JSON-sanakirjamerkintöjä. Jokaisen merkinnän muoto on { "pattern": "$URL_PATTERN", "filter" : $FILTER }. Tässä $URL_PATTERN on sisältöasetuksen malli. Suodatusarvo $FILTER määrittää, mitkä asiakasvarmenteet ovat selaimen valittavissa automaattisesti. Suodatusarvosta huolimatta selain voi valita vain varmenteita, jotka vastaavat palvelimen varmennepyyntöä. Lisäksi jos $FILTER annetaan muodossa { "ISSUER": { "CN": "$ISSUER_CN" } }, selain valitsee vain asiakasvarmenteita, joihin liittyvään varmenteeseen merkitty nimi on $ISSUER_CN. Jos $FILTER on tyhjä sanastomerkintä {}, asiakasvarmenteiden valintaan ei sovelleta lisärajoituksia.
+
+          Jos tätä käytäntöä ei aseteta, varmenteiden automaattista valintaa ei käytetä millään sivustolla.</translation>
 <translation id="4980301635509504364">Salli tai estä videokaappaukset.
 
       Jos tämä on otettu käyttöön tai tätä ei ole määritetty (oletus), käyttäjältä pyydetään
@@ -1039,7 +1044,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos viiveitä ei aseteta, oletusarvoa käytetään niiden sijasta.
 
-          Huomaathan, että |ScreenDim|-arvojen on oltava pienempiä tai yhtä suuria kuin |ScreenOff|-arvo, |ScreenOff|- ja |IdleWarning|-arvojen on oltava pienempiä tai yhtä suuria kuin |Idle|-arvo.
+          Huomaathan, että |ScreenDim|-arvojen on oltava pienempiä tai yhtä suuria kuin |ScreenOff|-arvo ja |ScreenOff|- ja |IdleWarning|-arvojen on oltava pienempiä tai yhtä suuria kuin |Idle|-arvo.
 
           |IdleAction| voi olla jokin seuraavista:
           * |Suspend|
@@ -1201,7 +1206,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
 <translation id="6167074305866468481">Varoitus: <ph name="PRODUCT_NAME" /> ei tue SSLv3:a versiosta 43 (noin heinäkuusta 2015) lähtien, ja samassa yhteydessä myös tämä käytäntö poistetaan.
 
-      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vähintään SSLv3:a versiossa <ph name="PRODUCT_NAME" /> 39 ja TLS 1.0:aa uudemmissa versiossa.
+      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vähintään SSLv3:a versiossa <ph name="PRODUCT_NAME" /> 39 ja TLS 1.0:aa uudemmissa versioissa.
 
       Käytännölle voidaan asettaa seuraavat arvot: sslv3, tls1, tls1.1 tai tls1.2. Kun arvo on asetettu, <ph name="PRODUCT_NAME" /> ei käytä asetettua arvoa pienempiä SSL/TLS-versioita. Tunnistamattomat arvot ohitetaan.
 
@@ -1562,7 +1567,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos tätä käytäntöä ei ole asetettu, oletuskokoa käytetään ja käyttäjä voi ohittaa sen levyn välimuistin kokomerkinnällä (--disk-cache-size).</translation>
 <translation id="7612157962821894603">Tuotteen <ph name="PRODUCT_NAME" /> käynnistyksen yhteydessä sovellettavat järjestelmäkäytännöt</translation>
 <translation id="7614663184588396421">Käytöstä poistettujen protokollajärjestelmien luettelo</translation>
-<translation id="7615123397791876280">Negotiate-todennuksen tilityyppi</translation>
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>
@@ -1765,7 +1769,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8300455783946254851">Jos tämän asetuksen arvo on True, Google Drivea ei synkronoida tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksessa matkapuhelinverkkoyhteyden ollessa käytössä. Tiedot synkronoidaan Google Driveen vain Wi-Fi- ja Ethernet-yhteyksillä.
 
           Jos asetusta ei ole määritetty tai sen arvo on False, käyttäjät voivat siirtää tiedostoja Google Driveen matkapuhelinverkkoyhteydellä.</translation>
-<translation id="8303314579975657113">Määrittää, mitä GSSAPI-kirjastoa HTTP-todennuksessa tulee käyttää. Voit määrittää joko kirjaston nimen tai koko polun. Jos asetusta ei tehdä, <ph name="PRODUCT_NAME" /> käyttää oletuskirjaston nimeä.</translation>
 <translation id="8329984337216493753">Tämä käytäntö on aktiivisena vain jälleenmyyntitilassa.
 
       Kun DeviceIdleLogoutTimeout-käytäntö on asetettu, tämä käytäntö määrittää, kuinka kauan ennen uloskirjausta käyttäjälle näytetään varoitusruutua ja uloskirjausajan laskuria.
@@ -1780,9 +1783,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8369602308428138533">Ruudun sammutuksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
-<translation id="8407759228138103300">Määrittää tilityypin, jota käytetään HTTP Negotiate -todennusta (esim. Kerberos) tukevassa Android-todennussovelluksessa. Tämän tiedon pitäisi olla saatavilla todennussovelluksen tarjoajalta. Lisätietoja on osoitteessa https://goo.gl/hajyfN.
-
-          Jos asetusta ei määritetä, Negotiate-todennus poistetaan käytöstä Android-laitteilla.</translation>
 <translation id="8412312801707973447">OCSP-/CRL-tarkistusten suorittaminen</translation>
 <translation id="8451988835943702790">Käytä Uusi välilehti -sivua etusivuna</translation>
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
@@ -1805,6 +1805,9 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
+<translation id="857925079934558818">Määrittää, poistetaanko TLS False Start -optimointi käytöstä. Historiallisista seikoista johtuen tämän käytännön nimi on DisableSSLRecordSplitting.
+
+      Jos tätä käytäntöä ei aseteta tai jos sen arvo on Epätosi, TLS False Start otetaan käyttöön. Jos käytännön arvo on Tosi, TLS False Start poistetaan käytöstä.</translation>
 <translation id="8587229956764455752">Salli uusien käyttäjätilien luominen</translation>
 <translation id="8614804915612153606">Poistaa automaattisen päivityksen käytöstä</translation>
 <translation id="8631434304112909927">versioon <ph name="UNTIL_VERSION" /> saakka</translation>

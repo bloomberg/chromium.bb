@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">检测到网速很慢。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{附近有 1 个网址}other{附近有 # 个网址}}</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
 <translation id="2891154217021530873">停止加载网页</translation>
 <translation id="2902702728133930130">由于出现意外错误，Chrome 启动失败。</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3455798674391346847">使用 Google 对您访问的网页进行优化，借此节省数据流量。Google 将不会优化（也看不到）您以 HTTPS 或隐身模式访问的网页。</translation>
-<translation id="346339498574870680">复制图片网址</translation>
 <translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="3492207499832628349">新的隐身标签页</translation>
 <translation id="3518985090088779359">接受并继续</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">分开显示标签页和应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4333969446981951071">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
+<translation id="4334294535648607276">下载完毕。</translation>
 <translation id="4350413759959745971">移动保存的网页</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4357362091209756047">没看到您的设备？<ph name="BEGIN_LINK1" />重新搜索<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />寻求帮助<ph name="END_LINK2" />。</translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">选择文件夹</translation>
 <translation id="4543087392704641517">书签标题</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
-<translation id="4619298195800598081">在新标签页中打开原始图片</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -315,6 +315,7 @@
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
 <translation id="5733727110006255111">此功能处于开启状态时，Chrome 会在加载您要访问的网页之前使用 Google 服务器对其进行压缩。采用 SSL 加密的网页和以隐身模式浏览的网页不在此列。</translation>
+<translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5763382633136178763">隐身标签页</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5771382037724542929">要替换“<ph name="DIRECTORY_NAME" />”目录中现有的 <ph name="FILE_NAME" /> 吗？</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">配对</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
+<translation id="585027516397408832">流量节省程序已启用</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="588258955323874662">全屏</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
-<translation id="6671495933530132209">复制图片</translation>
 <translation id="6697251040310467641">已离线保存网页</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6699351163704950317">所有保存的网页</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">加载视频</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7201341158316793215">正在移除…</translation>
+<translation id="7208788139759694678">流量节省程序已停用</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
 <translation id="7299721129597238157">删除书签</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">使用 Google 凭据加密密码</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐户</translation>
+<translation id="7761240775244195612">要删除上个月未使用的 <ph name="PAGES_NUMBER" /> 份离线副本吗？这会释放 <ph name="TOTAL_PAGE_SIZE" /> 的空间。</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7767746238359002192">访问该网页以离线保存</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">该网页已离线保存。存储空间即将用尽。</translation>
 <translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8069239273282989646">压缩后</translation>
-<translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8084156870963450514">登录后即可通过任意设备查看您的所有在线内容</translation>
 <translation id="8106211421800660735">信用卡号</translation>
 <translation id="813082847718468539">查看网站信息</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">内容</translation>
 <translation id="8209050860603202033">打开图片</translation>
 <translation id="8218346974737627104">确认登录</translation>
+<translation id="8218934717680664417">现在，您只需触摸一下即可启动搜索</translation>
 <translation id="8237438615979997762">此设备中以及您的 Google 帐户中存储的数据都会保留在原位置。但是，新的数据或您对数据进行的更改将不会在此设备和您的 Google 帐户之间同步。</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8275818695183729150">允许（针对地址栏搜索）</translation>

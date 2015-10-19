@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1339601241726513588">Domínio de inscrição:</translation>
 <translation id="1344588688991793829">Configurações de preenchimento automático do Chromium...</translation>
+<translation id="1375198122581997741">Sobre a versão</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455235771979731432">Houve um problema na verificação do seu cartão. Verifique a conexão com a Internet e tente novamente.</translation>
 <translation id="1491151370853475546">Atualizar esta página</translation>
+<translation id="1519264250979466059">Data da versão</translation>
 <translation id="1549470594296187301">O JavaScript deve ser ativado para usar este recurso.</translation>
+<translation id="1559528461873125649">Arquivo ou diretório não encontrado</translation>
 <translation id="1640180200866533862">Políticas de usuário</translation>
 <translation id="1644184664548287040">A configuração de rede é inválida e não pôde ser importada.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o certificado de segurança dele expirou ontem. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor. O relógio do seu computador está definido para <ph name="CURRENT_DATE" />. Essa data está correta? Se não estiver, corrija o relógio do sistema e depois atualize esta página.}one{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele expirou há # dias. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor. O relógio do seu computador está definido para <ph name="CURRENT_DATE" />. Essa data está correta? Se não estiver, corrija o relógio do sistema e depois atualize esta página.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele expirou há # dias. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor. O relógio do seu computador está definido para <ph name="CURRENT_DATE" />. Essa data está correta? Se não estiver, corrija o relógio do sistema e depois atualize esta página.}}</translation>
 <translation id="168841957122794586">O certificado do servidor contém uma chave de criptografia fraca.</translation>
 <translation id="1693754753824026215">A página em <ph name="SITE" /> diz:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele está com a data de amanhã. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.}one{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele está com uma data de # dias depois de hoje. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.}other{Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele está com uma data de # dias depois de hoje. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.}}</translation>
+<translation id="1710259589646384581">SO</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Cadastre um bug</translation>
+<translation id="1753706481035618306">Numero da página</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1821930232296380041">Solicitação ou parâmetros de solicitação inválidos</translation>
 <translation id="1871208020102129563">O proxy foi configurado para utilizar servidores de proxy fixo e não um URL de script .pac.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Deseja que <ph name="PRODUCT_NAME" /> ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site na próxima vez?</translation>
 <translation id="2587841377698384444">Código da API do diretório:</translation>
 <translation id="2597378329261239068">Este documento está protegido por senha.  Digite a senha.</translation>
+<translation id="2609632851001447353">Variações</translation>
 <translation id="2625385379895617796">Seu relógio está adiantado</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2653659639078652383">Enviar</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3648607100222897006">Estes recursos experimentais podem ser alterados, cancelados ou desaparecer a qualquer momento. Não oferecemos qualquer garantia sobre o que possa acontecer ao ativar algum desses experimentos: seu navegador pode inclusive entrar em combustão espontânea. Brincadeiras à parte, o navegador pode excluir todos seus dados ou comprometer sua segurança e privacidade de maneira inesperada. Experimentos ativados serão habilitados para todos os usuários do navegador, portanto tenha cautela ao prosseguir.</translation>
 <translation id="3650584904733503804">Validação bem-sucedida</translation>
+<translation id="3658742229777143148">Revisão</translation>
 <translation id="370665806235115550">Carregando...</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>
 <translation id="3739623965217189342">Link que você copiou</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança contém erros. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4726672564094551039">Atualizar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
+<translation id="4744603770635761495">Caminho do executável</translation>
 <translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
 <translation id="4800132727771399293">Verifique sua data de validade e seu CVC e tente novamente</translation>
 <translation id="4813512666221746211">Erro na rede</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chromium. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="5095208057601539847">Província</translation>
+<translation id="5115563688576182185">64 bits</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
 <translation id="5172758083709347301">Máquina</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Informe este erro</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6337534724793800597">Filtrar políticas por nome</translation>
+<translation id="6355080345576803305">Modificação de sessão pública</translation>
 <translation id="6387478394221739770">Interessado em novos recursos interessantes do Google Chrome? Veja nosso Canal Beta em chrome.com/beta.</translation>
-<translation id="6426993025560594914">Todas as experiências estão disponíveis em sua plataforma.</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6458467102616083041">Ignorado porque a pesquisa padrão foi desativada por uma política.</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Área</translation>
 <translation id="6874604403660855544">&amp;Refazer adicionar</translation>
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
+<translation id="6897140037006041989">Agente do usuário</translation>
 <translation id="6915804003454593391">Usuário:</translation>
 <translation id="6957887021205513506">O certificado do servidor parece ser falsificado.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Esta página foi traduzida de<ph name="ORIGINAL_LANGUAGE" />para<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Pesquisar <ph name="SEARCH_TERMS" /> em <ph name="SITE_NAME" /></translation>
+<translation id="7225807090967870017">ID da versão</translation>
 <translation id="725866823122871198">Não é possível estabelecer uma conexão privada com <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu computador (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="7275334191706090484">Favoritos gerenciados</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7334320624316649418">&amp;Refazer reordenar</translation>
+<translation id="7353601530677266744">Linha de comando</translation>
 <translation id="7378627244592794276">Não</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">Caminho de perfil</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Verifique seu CVC e tente novamente</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">O certificado do servidor ainda não é válido.</translation>
+<translation id="7951415247503192394">32 bits</translation>
 <translation id="7956713633345437162">Favoritos do Google Mobile</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7977590112176369853">&lt;inserir consulta&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Permanecer nesta página</translation>
 <translation id="9170848237812810038">&amp;Desfazer</translation>
 <translation id="917450738466192189">O certificado do servidor é inválido.</translation>
-<translation id="9187827965378254003">Que pena, parece que não há experimentos disponíveis no momento.</translation>
 <translation id="9207861905230894330">Falha ao adicionar artigo.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">LIMPAR FORMULÁRIO</translation>
+<translation id="969892804517981540">Versão oficial</translation>
 <translation id="988159990683914416">Versão do desenvolvedor</translation>
 </translationbundle>

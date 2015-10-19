@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">偵測到連線速度緩慢。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2870560284913253234">網站</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{附近有 1 個網址}other{附近有 # 個網址}}</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
 <translation id="2891154217021530873">停止載入網頁</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="3455798674391346847">讓 Google 對您造訪的網頁進行最佳化處理，以減少數據用量。透過 HTTPS 或無痕模式存取網頁時，Google 不會進行最佳化處理，也不會偵測到這些網頁。</translation>
-<translation id="346339498574870680">複製圖片網址</translation>
 <translation id="3485544713029068372">密碼專用 Smart Lock</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">區隔分頁與應用程式</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4333969446981951071">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
+<translation id="4334294535648607276">下載完成。</translation>
 <translation id="4350413759959745971">移動儲存的網頁</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
 <translation id="4357362091209756047">找不到您的裝置嗎？請<ph name="BEGIN_LINK1" />重新搜尋<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />尋求協助<ph name="END_LINK2" />。</translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">選擇資料夾</translation>
 <translation id="4543087392704641517">書籤標題</translation>
 <translation id="4543661749405994812">複製電子郵件地址</translation>
-<translation id="4619298195800598081">在新分頁中開啟原始圖片</translation>
 <translation id="4645575059429386691">您的家長已停用這項功能</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
@@ -315,6 +315,7 @@
 然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5733727110006255111">啟用這項擴充功能後，Chrome 會先使用 Google 伺服器壓縮您要瀏覽的網頁，然後再下載這些網頁 (SSL 和無痕式網頁內容除外)。</translation>
+<translation id="5749068826913805084">Chrome 需要儲存空間的存取權才能下載檔案。</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5771382037724542929">您要取代「<ph name="DIRECTORY_NAME" />」目錄中現有的 <ph name="FILE_NAME" /> 嗎？</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">配對</translation>
 <translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
+<translation id="585027516397408832">已啟用 Data Saver</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
 <translation id="588258955323874662">全螢幕</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="666268767214822976">啟用預測查詢字串服務，讓您在網址列中輸入查詢內容時，能夠即時看到相關查詢和熱門網站</translation>
 <translation id="666981079809192359">Chrome 隱私權聲明</translation>
-<translation id="6671495933530132209">複製圖片</translation>
 <translation id="6697251040310467641">離線網頁已儲存</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6699351163704950317">所有儲存的網頁</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">正在載入影片</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
 <translation id="7201341158316793215">移除中…</translation>
+<translation id="7208788139759694678">已停用 Data Saver</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
 <translation id="7299721129597238157">刪除書籤</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">使用 Google 憑證為密碼加密</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
+<translation id="7761240775244195612">您要刪除過去一個月內未使用的 <ph name="PAGES_NUMBER" /> 個離線複本嗎？這樣可以釋出 <ph name="TOTAL_PAGE_SIZE" /> 的空間。</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7767746238359002192">前往您要離線儲存的網頁</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">已離線儲存網頁。儲存空間即將用盡。</translation>
 <translation id="8068648041423924542">無法選取憑證。</translation>
 <translation id="8069239273282989646">壓縮後大小</translation>
-<translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8084156870963450514">登入帳戶即可透過任何裝置存取您在網路上的所有資料</translation>
 <translation id="8106211421800660735">信用卡號碼</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">內容</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="8218346974737627104">確認登入</translation>
+<translation id="8218934717680664417">從現在起，只要輕觸即可搜尋</translation>
 <translation id="8237438615979997762">儲存在這個裝置上和 Google 帳戶中的資料將各自保持原狀，但當您新增資料或變更資料時，兩者之間的資料將不會保持同步。</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8275818695183729150">允許 (從網址列搜尋)</translation>

@@ -9,6 +9,7 @@
 <translation id="2747003861858887689">上一個欄位</translation>
 <translation id="2780046210906776326">無電子郵件帳戶</translation>
 <translation id="3244271242291266297">月</translation>
+<translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定您的電子郵件帳戶。</translation>

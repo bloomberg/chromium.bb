@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Виявлено повільне з’єднання.</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL-адреса поруч}one{# URL-адреса поруч}few{# URL-адреси поруч}many{# URL-адрес поруч}other{# URL-адреси поруч}}</translation>
 <translation id="2888126860611144412">Про Chrome</translation>
 <translation id="2891154217021530873">Припинити завантаження сторінки</translation>
 <translation id="2902702728133930130">Не вдалося запустити Chrome через неочікувану помилку.</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">Якщо ви бачите це часто, спробуйте ці <ph name="BEGIN_LINK" />пропозиції<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Розмір:</translation>
 <translation id="3455798674391346847">Щоб заощадити трафік, оптимізуйте відвідувані сторінки за допомогою Google. Google не зможе оптимізувати чи бачити сторінки, які відкриваються через HTTPS або в режимі анонімного перегляду.</translation>
-<translation id="346339498574870680">Копіювати URL зображення</translation>
 <translation id="3485544713029068372">Smart Lock для паролів</translation>
 <translation id="3492207499832628349">Нова анонімна вкладка</translation>
 <translation id="3518985090088779359">Прийняти та продовж.</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">Розділити вкладки та додатки</translation>
 <translation id="4307992518367153382">Основи</translation>
 <translation id="4333969446981951071">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
+<translation id="4334294535648607276">Завантажено.</translation>
 <translation id="4350413759959745971">Перемістити збережені сторінки</translation>
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
 <translation id="4357362091209756047">Не бачите свого пристрою? <ph name="BEGIN_LINK1" />Пошукайте ще раз<ph name="END_LINK1" /> або <ph name="BEGIN_LINK2" />перегляньте довідку<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">Вибрати папку</translation>
 <translation id="4543087392704641517">Назва закладки</translation>
 <translation id="4543661749405994812">Копіювати електронну адресу</translation>
-<translation id="4619298195800598081">Відкр. оригінал у нов. вкладці</translation>
 <translation id="4645575059429386691">Керується одним із батьків</translation>
 <translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Веб-сайт <ph name="NAME" /> додано на головний екран</translation>
@@ -315,6 +315,7 @@
 Проте ви не можете сховати все. Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи адміністратори веб-сайтів, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="572328651809341494">Останні вкладки</translation>
 <translation id="5733727110006255111">Якщо цю функцію ввімкнено, Chrome використовує сервери Google, щоб перед завантаженням стискати сторінки, які ви відвідуєте (це не стосується сторінок із підтримкою протоколу SSL і сторінок у режимі анонімного перегляду).</translation>
+<translation id="5749068826913805084">Щоб завантажувати файли, Chrome потребує доступу до пам’яті.</translation>
 <translation id="5763382633136178763">Анонімні вкладки</translation>
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="5771382037724542929">Замінити наявний файл "<ph name="FILE_NAME" />" у каталозі "<ph name="DIRECTORY_NAME" />"?</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">Підключити</translation>
 <translation id="5832934273103296195">Розгорнуто – натисніть, щоб згорнути</translation>
 <translation id="583891442612896534">Chrome не може зв’язатись із серверами Google для стиснення даних. Можливо, у вас обмежене заощадження даних.</translation>
+<translation id="585027516397408832">Заощадження трафіку ввімкнено</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
 <translation id="588258955323874662">Повноекранний режим</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="666268767214822976">Показувати підказки зі схожими запитами та популярними веб-сайтами під час введення запиту в адресному рядку</translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
-<translation id="6671495933530132209">Копіювати зображення</translation>
 <translation id="6697251040310467641">Офлайн-версію збережено</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
 <translation id="6699351163704950317">Усі збережені сторінки</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">Завантаж. відео</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="7201341158316793215">Вилучення…</translation>
+<translation id="7208788139759694678">Заощадження трафіку вимкнено</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
 <translation id="7299721129597238157">Видалити закладку</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">Шифрувати паролі за допомогою облікових даних Google</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7665369617277396874">Додати обліковий запис</translation>
+<translation id="7761240775244195612">Видалити локальні копії сторінок (<ph name="PAGES_NUMBER" />), які ви не відкривали протягом місяця? Буде звільнено <ph name="TOTAL_PAGE_SIZE" /> пам’яті.</translation>
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7767746238359002192">Відкрийте сторінку, щоб зберегти її для перегляду в режимі офлайн</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">Збережено офлайн. Пам’ять майже повна.</translation>
 <translation id="8068648041423924542">Не вдалося вибрати сертифікат.</translation>
 <translation id="8069239273282989646">Після стиснення</translation>
-<translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="8084156870963450514">Увійдіть в обліковий запис, щоб користуватися збереженим веб-вмістом на будь-якому пристрої</translation>
 <translation id="8106211421800660735">Номер кредитної картки</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">Вміст</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
 <translation id="8218346974737627104">Підтвердити вхід</translation>
+<translation id="8218934717680664417">Тепер можна шукати вміст одним дотиком</translation>
 <translation id="8237438615979997762">Дані, які зберігаються на цьому пристрої й у вашому обліковому записі Google, залишаться в обох місцях. Однак нові або змінені дані не синхронізуватимуться.</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8275818695183729150">Дозволити (для пошуку в адресному рядку)</translation>

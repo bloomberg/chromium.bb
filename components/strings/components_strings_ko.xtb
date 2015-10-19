@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="1339601241726513588">등록 도메인:</translation>
 <translation id="1344588688991793829">Chromium 자동완성 설정...</translation>
+<translation id="1375198122581997741">버전 정보</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1455235771979731432">카드를 인증하는 중에 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="1491151370853475546">페이지 새로고침</translation>
+<translation id="1519264250979466059">생성 날짜</translation>
 <translation id="1549470594296187301">이 기능을 이용하려면 자바스크립트를 사용하도록 설정해야 합니다.</translation>
+<translation id="1559528461873125649">해당 파일이나 디렉토리가 없습니다.</translation>
 <translation id="1640180200866533862">사용자 정책</translation>
 <translation id="1644184664548287040">네트워크 구성이 잘못되어 가져올 수 없습니다.</translation>
 <translation id="1655462015569774233">{1,plural, =1{서버의 보안 인증서가 어제 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}other{서버의 보안 인증서가 #일 전에 만료되어 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시계가 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.}}</translation>
 <translation id="168841957122794586">서버 인증서에 안전성이 낮은 암호화 키가 포함되어 있습니다.</translation>
 <translation id="1693754753824026215"><ph name="SITE" />의 페이지 내용:</translation>
 <translation id="1706954506755087368">{1,plural, =1{서버의 보안 인증서가 내일 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}other{서버의 보안 인증서가 #일 후 발효될 예정이며 이에 따라 <ph name="DOMAIN" />임을 입증할 수 없습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.}}</translation>
+<translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">버그 신고</translation>
+<translation id="1753706481035618306">페이지 번호</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">다음에 <ph name="PRODUCT_NAME" />에서 이 사이트의 <ph name="LANGUAGE_NAME" /> 페이지를 번역하시겠습니까?</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
+<translation id="2609632851001447353">유사 버전</translation>
 <translation id="2625385379895617796">시간이 너무 먼 미래로 설정되어 있습니다.</translation>
 <translation id="2639739919103226564">상태:</translation>
 <translation id="2653659639078652383">제출</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">값 표시</translation>
 <translation id="3648607100222897006">해당 실험용 기능은 언제든지 변경, 중지 및 취소될 수 있습니다. 해당 실험용 기능을 사용할 때 발생하는 일에 대해 Google은 보장하지 않습니다. 데이터가 삭제되거나 개인 정보가 예기치 않은 방법으로 유출될 수 있습니다. 본인이 사용 설정한 모든 실험 기능은 해당 브라우저의 다른 사용자도 사용하게 됩니다. 주의해서 진행하시기 바랍니다.</translation>
 <translation id="3650584904733503804">유효성 검사 성공</translation>
+<translation id="3658742229777143148">개정</translation>
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="3712624925041724820">라이선스 만료됨</translation>
 <translation id="3739623965217189342">복사한 링크</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
 <translation id="4728558894243024398">플랫폼</translation>
+<translation id="4744603770635761495">실행 가능 경로</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">주</translation>
 <translation id="5094747076828555589">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chromium에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5095208057601539847">주/도</translation>
+<translation id="5115563688576182185">(64비트)</translation>
 <translation id="5145883236150621069">정책 응답에 오류 코드가 포함되어 있음</translation>
 <translation id="5172758083709347301">컴퓨터</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />가 아닙니까? 오류 신고</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6282194474023008486">우편번호</translation>
 <translation id="6337534724793800597">이름별로 정책 필터링</translation>
+<translation id="6355080345576803305">공개 세션 재정의</translation>
 <translation id="6387478394221739770">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/beta 페이지에서 베타 채널을 방문해 보세요.</translation>
-<translation id="6426993025560594914">사용자 플랫폼에서 모든 실험 기능을 사용할 수 있습니다.</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="6458467102616083041">정책에 의해 기본 검색의 사용이 중지되었기 때문에 무시됨</translation>
 <translation id="647261751007945333">기기 정책</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">지역</translation>
 <translation id="6874604403660855544">추가 다시 실행(&amp;R)</translation>
 <translation id="6891596781022320156">정책 수준이 지원되지 않습니다.</translation>
+<translation id="6897140037006041989">사용자 에이전트</translation>
 <translation id="6915804003454593391">사용자:</translation>
 <translation id="6957887021205513506">서버의 인증서가 위조된 것 같습니다.</translation>
 <translation id="6965382102122355670">확인</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">이 페이지는<ph name="ORIGINAL_LANGUAGE" />에서<ph name="LANGUAGE_LANGUAGE" />로 번역되었습니다.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME" />에서 <ph name="SEARCH_TERMS" /> 검색</translation>
+<translation id="7225807090967870017">빌드 ID</translation>
 <translation id="725866823122871198">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="7275334191706090484">관리 북마크</translation>
 <translation id="7298195798382681320">권장</translation>
 <translation id="7334320624316649418">재정렬 다시 실행(&amp;R)</translation>
+<translation id="7353601530677266744">명령줄</translation>
 <translation id="7378627244592794276">안함</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7419106976560586862">프로필 경로</translation>
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">서버 인증서가 유효하지 않습니다.</translation>
+<translation id="7951415247503192394">(32비트)</translation>
 <translation id="7956713633345437162">모바일 북마크</translation>
 <translation id="7961015016161918242">완료되지 않음</translation>
 <translation id="7977590112176369853">&lt;검색어 입력&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">이 페이지에 머무르기</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="917450738466192189">서버의 인증서가 유효하지 않습니다.</translation>
-<translation id="9187827965378254003">현재 사용 가능한 실험실 기능이 없습니다.</translation>
 <translation id="9207861905230894330">글을 추가하지 못했습니다.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">양식 지우기</translation>
+<translation id="969892804517981540">공식 빌드</translation>
 <translation id="988159990683914416">개발자 빌드</translation>
 </translationbundle>

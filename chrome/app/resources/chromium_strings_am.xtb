@@ -6,8 +6,6 @@
 አንዳንድ ባህሪያት ላይገኙ ይችላሉ፣ እና በአማራጮች ላይ የተደረጉ ለውጦች አይቀመጡም።</translation>
 <translation id="108122890477367602">&amp;Chromiumን በWindows 8 ሁነታ ውስጥ ዳግም አስጀምር</translation>
 <translation id="1115445892567829615">Chromium የእርስዎን ውሂብ ማመሳሰል አልቻለም። የእርስዎን የማመሳሰያ የይለፍ ሐረግ እባክዎ ያዘምኑ።</translation>
-<translation id="1144202035120576837"><ph name="SITE" /> የእርስዎን መረጃ ለመጠበቅ ምስጠራን በተለምዶ ይጠቀማል። Chromium ወደ <ph name="SITE" /> በዚህ ጊዜ ለመገናኘት ሲሞክር፣ የድር ጣቢያው ያልተለመደ እና ልክ ያልሆኑ
-ምስክርነቶችን መልሶ ልኳል። አንድ አጥቂ ሰው <ph name="SITE" /> እንደሆነ አድርጎ አስመስሎ ለመቅረብ እየሞከረ ነው ወይም Wi-Fi በመለያ-መግቢያ ማያ ገጽ ግንኙነቱን አቋርጦታል። የእርስዎ መረጃ Chromium ግንኙነቱን ማናቸውም ውሂብ ልውውጥ ከመደረጉ በፊት ስላስቆመው አሁንም ድረስ ደህንነቱ እንደተጠበቀ ነው።</translation>
 <translation id="1174473354587728743">ኮምፒውተር ይጋራሉ? አሁን Chromiumን ልክ እንደሚፈልጉት አድርገው ማዋቀር ይችላሉ።</translation>
 <translation id="1185134272377778587">ስለChromium</translation>
 <translation id="1221340462641866827">Chromium ስርዓተ ክወና የ<ph name="SCHEME" /> አገናኞችን ለማስተናገድ የውጫዊ መተግበሪያዎችን ማስጀመር አይደግፍም። የተጠየቀው አገናኝ <ph name="PROTOLINK" /> ነው።</translation>
@@ -108,7 +106,6 @@
 <translation id="4230135487732243613">የChromium ውሂዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
 <translation id="4285930937574705105">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Chromium አሁን እያሄደ ከሆነ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
 <translation id="4330585738697551178">ይህ ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
-<translation id="4365115785552740256">Chromium በ<ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />  ክፍት ምንጭ ፕሮጀክት እና በሌላ <ph name="BEGIN_LINK_OSS" />ክፍት ምንጭ ሶፍትዌር<ph name="END_LINK_OSS" /> እውን ሊሆን ችሏል።</translation>
 <translation id="4423735387467980091">Chromiumን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="442817494342774222">ኮምፒውተርዎ ሲጀምር Chromium በራስ-ሰር እንዲጀምር ተዋቅሯል።</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
@@ -171,6 +168,7 @@
 <translation id="6475912303565314141">እንዲሁም Chromiumን ሲጀምሩት የሚታየውን ገጽ ይቆጣጠራል።</translation>
 <translation id="6485906693002546646">የChromium ነገሮችዎን ለማመሳሰል <ph name="PROFILE_EMAIL" />ን እየተጠቀሙ ነው። የማመሳሰል ምርጫዎን ለማዘመን ወይም Chromium ያለGoogle መለያ መጠቀም የሚፈልጉ ከሆኑ <ph name="SETTINGS_LINK" />ን ይጎብኙ።</translation>
 <translation id="6510925080656968729">Chromiumን ያራግፉ</translation>
+<translation id="6526111688217511984">Chromium ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="6637001341228460105">Chromium ይህን ለዚህ ጣቢያ ለማጋራት የማይክሮፎን መዳረሻ ያስፈልገዋል።</translation>
 <translation id="6638567566961868659">ዕልባቶችዎን በChromium ምናሌ ውስጥ ወይም በዕልባቶች አሞሌው ላይ ይፈልጉ።</translation>
 <translation id="6676384891291319759">በይነመረብን ተዳረስ</translation>

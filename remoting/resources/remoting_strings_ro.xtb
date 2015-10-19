@@ -85,6 +85,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2919669478609886916">În prezent, permiteți accesul unui alt utilizator la acest computer. Doriți să permiteți în continuare accesul?</translation>
 <translation id="2921543551052660690">Anterior te-ai conectat ca <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Pentru a-ți accesa computerele folosind contul respectiv, <ph name="LINK_BEGIN" />conectează-te la Chromium<ph name="LINK_END" /> cu acel cont și reinstalează Chromoting.</translation>
 <translation id="2926340305933667314">Dezactivarea accesului la distanță la acest computer nu a reușit. Încercați din nou mai târziu.</translation>
+<translation id="2930135165929238380">Unele componente necesare lipsesc. Accesează chrome://plugins și asigură-te că ai activat Clientul nativ.</translation>
 <translation id="2939145106548231838">Autentificare la gazdă</translation>
 <translation id="2998137343848432918">• S-a adăugat un ecran Mulțumiri.
 • S-a remediat problema privind trecerea la modul ecran complet cu afișarea tastaturii.</translation>

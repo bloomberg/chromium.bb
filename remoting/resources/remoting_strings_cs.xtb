@@ -85,6 +85,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2919669478609886916">Momentálně sdílíte tento počítač s jiným uživatelem. Chcete ve sdílení pokračovat?</translation>
 <translation id="2921543551052660690">Dříve jste byli přihlášeni pomocí účtu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Chcete-li získat přístup k počítačům v tomto účtu, <ph name="LINK_BEGIN" />přihlaste se do prohlížeče Chromium<ph name="LINK_END" /> pomocí příslušného účtu a znovu nainstalujte aplikaci Chromoting.</translation>
 <translation id="2926340305933667314">Vzdálený přístup k tomuto počítači se nepodařilo zakázat. Zkuste to prosím později.</translation>
+<translation id="2930135165929238380">Chybí některé povinné komponenty. Přejděte na stránku chrome://plugins a zkontrolujte, zda je aplikace Native Client aktivní.</translation>
 <translation id="2939145106548231838">Ověření v hostitelském počítači</translation>
 <translation id="2998137343848432918">• Přidání obrazovky Poděkování
 • Oprava problému při přepnutí do režimu celé obrazovky s viditelnou klávesnicí</translation>

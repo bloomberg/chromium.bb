@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Langzame verbinding gedetecteerd.</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL in de buurt}other{# URL's in de buurt}}</translation>
 <translation id="2888126860611144412">Over Chrome</translation>
 <translation id="2891154217021530873">Stoppen met het laden van de pagina</translation>
 <translation id="2902702728133930130">Kan Chrome niet starten door een onverwachte fout.</translation>
@@ -159,7 +160,6 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="3410346880900521918">Als je deze melding vaker ziet, probeer je deze <ph name="BEGIN_LINK" />suggesties<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="3455798674391346847">Bespaar data door Google pagina's te laten optimaliseren die je bezoekt. Pagina's die via HTTPS of incognito worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google.</translation>
-<translation id="346339498574870680">Afbeeldings-URL kopiëren</translation>
 <translation id="3485544713029068372">Smart Lock voor wachtwoorden</translation>
 <translation id="3492207499832628349">Nieuw incognitotabblad</translation>
 <translation id="3518985090088779359">Accept. en doorgaan</translation>
@@ -206,6 +206,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4297410240212242334">Tabbladen en apps van elkaar scheiden</translation>
 <translation id="4307992518367153382">Basisinstellingen</translation>
 <translation id="4333969446981951071">Als je deze app gebruikt, ga je daarmee akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome.</translation>
+<translation id="4334294535648607276">Downloaden voltooid.</translation>
 <translation id="4350413759959745971">Meer opgeslagen pagina's</translation>
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
 <translation id="4357362091209756047">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK1" />Zoek nogmaals<ph name="END_LINK1" /> of <ph name="BEGIN_LINK2" />raadpleeg de Help<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4532845899244822526">Map kiezen</translation>
 <translation id="4543087392704641517">Bladwijzertitel</translation>
 <translation id="4543661749405994812">E-mailadres kopiëren</translation>
-<translation id="4619298195800598081">Origineel op nieuw tabblad</translation>
 <translation id="4645575059429386691">Beheerd door je ouder</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
@@ -315,6 +315,7 @@ Gebruiksstatistieken omvatten informatie zoals voorkeuren, klikken op knoppen en
 Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="572328651809341494">Recent gebruikte tabbladen</translation>
 <translation id="5733727110006255111">Als deze functie is ingeschakeld, gebruikt Chrome Google-servers om pagina's die je bezoekt te comprimeren voordat ze worden gedownload. Dit geldt niet voor SSL- en incognitopagina's.</translation>
+<translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
 <translation id="5763382633136178763">Incognitotabbladen</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5771382037724542929">Wil je de bestaande versie van <ph name="FILE_NAME" /> in <ph name="DIRECTORY_NAME" /> vervangen?</translation>
@@ -323,6 +324,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5817918615728894473">Koppelen</translation>
 <translation id="5832934273103296195">Uitgevouwen; klik om samen te vouwen</translation>
 <translation id="583891442612896534">Chrome kan de Google-servers niet bereiken voor gegevenscompressie. De besparing op je gegevensgebruik is mogelijk beperkt.</translation>
+<translation id="585027516397408832">Databesparing ingeschakeld</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
 <translation id="588258955323874662">Volledig scherm</translation>
@@ -385,7 +387,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="666268767214822976">Een voorspellingsservice gebruiken om gerelateerde zoekopdrachten en populaire websites te tonen terwijl je in de adresbalk typt</translation>
 <translation id="666981079809192359">Privacybeleid van Chrome</translation>
-<translation id="6671495933530132209">Afbeelding kopiëren</translation>
 <translation id="6697251040310467641">Pagina offline opgeslagen</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
 <translation id="6699351163704950317">Alle opgeslagen pagina's</translation>
@@ -425,6 +426,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7096034533295549981">Video laden</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
 <translation id="7201341158316793215">Verwijderen…</translation>
+<translation id="7208788139759694678">Databesparing uitgeschakeld</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> gebruikt je locatie om lokale zoekresultaten weer te geven</translation>
 <translation id="7299721129597238157">Bladwijzer verwijderen</translation>
@@ -456,6 +458,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7648422057306047504">Wachtwoorden versleutelen met Google-inloggegevens</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7665369617277396874">Account toevoegen</translation>
+<translation id="7761240775244195612"><ph name="PAGES_NUMBER" /> offline exemplaren verwijderen die niet zijn gebruikt in de afgelopen maand? Hiermee wordt <ph name="TOTAL_PAGE_SIZE" /> opslagruimte vrijgemaakt.</translation>
 <translation id="7764225426217299476">Adres toevoegen</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7767746238359002192">Pagina bezoeken om offline op te slaan</translation>
@@ -484,7 +487,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8050319187894766337">Pagina offline opgeslagen. Opslag bijna vol.</translation>
 <translation id="8068648041423924542">Kan certificaat niet selecteren.</translation>
 <translation id="8069239273282989646">Na compressie</translation>
-<translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="8084156870963450514">Log in zodat al je online items toegankelijk zijn vanaf elk apparaat</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
@@ -495,6 +497,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8168435359814927499">Inhoud</translation>
 <translation id="8209050860603202033">Afbeelding openen</translation>
 <translation id="8218346974737627104">Inloggen bevestigen</translation>
+<translation id="8218934717680664417">Je kunt nu zoeken met één tik</translation>
 <translation id="8237438615979997762">De gegevens die op dit apparaat zijn opgeslagen en de gegevens die in je Google-account zijn opgeslagen, blijven op die plaatsen staan. Nieuwe gegevens of wijzigingen die je aanbrengt, worden echter niet gesynchroniseerd.</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8275818695183729150">Toestaan (voor zoekopdrachten via adresbalk)</translation>

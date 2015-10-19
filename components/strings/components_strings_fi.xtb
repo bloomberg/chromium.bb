@@ -20,19 +20,24 @@
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="1339601241726513588">Käyttöönoton verkkotunnus:</translation>
 <translation id="1344588688991793829">Chromiumin automaattisen täytön asetukset…</translation>
+<translation id="1375198122581997741">Tietoja versiosta</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="1455235771979731432">Korttia todennettaessa tapahtui virhe. Tarkista internetyhteys ja yritä uudelleen.</translation>
 <translation id="1491151370853475546">Päivitä tämä sivu</translation>
+<translation id="1519264250979466059">Koontipäivä</translation>
 <translation id="1549470594296187301">Tämän ominaisuuden käyttö edellyttää JavaScriptiä.</translation>
+<translation id="1559528461873125649">Tiedostoa tai hakemistoa ei ole olemassa</translation>
 <translation id="1640180200866533862">Käyttäjäkäytännöt</translation>
 <translation id="1644184664548287040">Verkkoasetukset ovat virheelliset eikä niitä voi tuoda.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanhentui eilen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellonaika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän kellonaika ja päivitä sivu.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanhentui # päivää sitten. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä. Tietokoneesi kellonaika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän kellonaika ja päivitä sivu.}}</translation>
 <translation id="168841957122794586">Palvelinvarmenne sisältää heikon salausavaimen.</translation>
 <translation id="1693754753824026215">Sivu osoitteessa <ph name="SITE" /> ilmoittaa:</translation>
 <translation id="1706954506755087368">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on päivätty huomiselle. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on päivätty # päivää tulevaisuuteen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.}}</translation>
+<translation id="1710259589646384581">Käyttöjärjestelmä</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Tiedostovirhe</translation>
+<translation id="1753706481035618306">Sivunumero</translation>
 <translation id="1763864636252898013">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; laitteesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
@@ -77,6 +82,7 @@
 <translation id="2581221116934462656">Haluatko, että <ph name="PRODUCT_NAME" /> ehdottaa sivuston kielellä <ph name="LANGUAGE_NAME" /> kirjoitettujen sivujen kääntämistä seuraavalla kerralla?</translation>
 <translation id="2587841377698384444">Hakemistosovellusliittymän tunnus:</translation>
 <translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
+<translation id="2609632851001447353">Muunnelmat</translation>
 <translation id="2625385379895617796">Kellosi edistää</translation>
 <translation id="2639739919103226564">Tila:</translation>
 <translation id="2653659639078652383">Lähetä</translation>
@@ -123,6 +129,7 @@
 <translation id="3623476034248543066">Näytä arvo</translation>
 <translation id="3648607100222897006">Nämä kokeelliset ominaisuudet voivat muuttua, rikkoutua tai kadota milloin tahansa. Emme takaa mitä tapahtuu, jos otat kokeiluja käyttöön – selaimesi saattaa jopa syttyä palamaan. Vitsit sikseen: selaimesi voi oikeasti poistaa kaikki tietosi, tai tietosuojasi voi vaarantua arvaamattomilla tavoilla. Kaikki tämän selaimen käyttäjät voivat käyttää käyttöön ottamiasi kokeiluita. Jatka omalla vastuullasi.</translation>
 <translation id="3650584904733503804">Todennus onnistui</translation>
+<translation id="3658742229777143148">Päivitetty versio</translation>
 <translation id="370665806235115550">Ladataan...</translation>
 <translation id="3712624925041724820">Käyttöluvat ovat lopussa</translation>
 <translation id="3739623965217189342">Kopioimasi linkki</translation>
@@ -164,6 +171,7 @@
 <translation id="467662567472608290">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne sisältää virheitä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
+<translation id="4744603770635761495">Suoritettavan tiedoston polku</translation>
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
 <translation id="4800132727771399293">Tarkista vanhenemispäivä ja CVC ja yritä uudelleen.</translation>
 <translation id="4813512666221746211">Verkkovirhe</translation>
@@ -180,6 +188,7 @@
 <translation id="5089810972385038852">Osavaltio/alue</translation>
 <translation id="5094747076828555589">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; Chromium ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="5095208057601539847">Provinssi</translation>
+<translation id="5115563688576182185">(64-bittinen)</translation>
 <translation id="5145883236150621069">Käytäntövastaus sisältää virhekoodin</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
@@ -222,8 +231,8 @@
 <translation id="6263376278284652872">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="6282194474023008486">Postinumero</translation>
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
+<translation id="6355080345576803305">Julkisen istunnon ohitus</translation>
 <translation id="6387478394221739770">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile beta-kanavaa osoitteessa chrome.com/beta.</translation>
-<translation id="6426993025560594914">Kaikki kokeilut ovat käytettävissä käyttöympäristössäsi!</translation>
 <translation id="6445051938772793705">Maa</translation>
 <translation id="6458467102616083041">Ohitettu, koska oletushaku on poistettu käytöstä käytännön mukaan.</translation>
 <translation id="647261751007945333">Laitekäytännöt</translation>
@@ -241,6 +250,7 @@
 <translation id="6839929833149231406">Alue</translation>
 <translation id="6874604403660855544">&amp;Toista lisäys</translation>
 <translation id="6891596781022320156">Käytännön tasoa ei tueta.</translation>
+<translation id="6897140037006041989">User agent</translation>
 <translation id="6915804003454593391">Käyttäjä:</translation>
 <translation id="6957887021205513506">Palvelimen varmenne näyttää olevan väärennös.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -259,12 +269,15 @@
 <translation id="7186367841673660872">Tämä sivu on käännetty kielestä<ph name="ORIGINAL_LANGUAGE" />kielelle<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Haku sivustosta: <ph name="SITE_NAME" /> termillä: <ph name="SEARCH_TERMS" /></translation>
+<translation id="7225807090967870017">Ohjelmistoversion tunnus</translation>
 <translation id="725866823122871198">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska tietokoneesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
 <translation id="7275334191706090484">Hallinnoidut kirjanmerkit</translation>
 <translation id="7298195798382681320">Suositus</translation>
 <translation id="7334320624316649418">&amp;Toista uudelleenjärjestely</translation>
+<translation id="7353601530677266744">Komentorivi</translation>
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
+<translation id="7419106976560586862">Profiilin polku</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -286,6 +299,7 @@
 <translation id="7887683347370398519">Tarkista CVC ja yritä uudelleen.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Palvelimen varmenne ei ole vielä voimassa.</translation>
+<translation id="7951415247503192394">(32-bittinen)</translation>
 <translation id="7956713633345437162">Mobiilikirjanmerkit</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 <translation id="7977590112176369853">&lt;anna hakulauseke&gt;</translation>
@@ -341,9 +355,9 @@
 <translation id="9154176715500758432">Pysy tällä sivulla</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="917450738466192189">Palvelimen varmenne ei kelpaa.</translation>
-<translation id="9187827965378254003">Tällä hetkellä ei valitettavasti ole käytettävissä yhtään kokeilua.</translation>
 <translation id="9207861905230894330">Artikkelin lisääminen epäonnistui.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">TYHJENNÄ LOMAKE</translation>
+<translation id="969892804517981540">Virallinen koontiversio</translation>
 <translation id="988159990683914416">Kehittäjän koontiversio</translation>
 </translationbundle>

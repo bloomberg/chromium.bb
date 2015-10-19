@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">Yavaş bağlantı algılandı.</translation>
 <translation id="2842985007712546952">Ana klasör</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{Yakınlarda 1 URL}other{Yakınlarda # URL}}</translation>
 <translation id="2888126860611144412">Chrome hakkında</translation>
 <translation id="2891154217021530873">Sayfa yüklemeyi durdur</translation>
 <translation id="2902702728133930130">Chrome başlatılırken beklenmeyen bir hata yüzünden başarısız oldu.</translation>
@@ -159,7 +160,6 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="3410346880900521918">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
 <translation id="3414952576877147120">Boyut:</translation>
 <translation id="3455798674391346847">Ziyaret ettiğiniz sayfaları optimize etmek için Google'ı kullanarak daha az veri harcayın. HTTPS veya gizli modla erişilen sayfalar Google tarafından optimize edilmez veya görülmez.</translation>
-<translation id="346339498574870680">Resmin URL'sini kopyala</translation>
 <translation id="3485544713029068372">Şifreler için Smart Lock</translation>
 <translation id="3492207499832628349">Yeni gizli sekme</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
@@ -206,6 +206,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4297410240212242334">Sekmeleri ve uygulamaları ayır</translation>
 <translation id="4307992518367153382">Temel Bilgiler</translation>
 <translation id="4333969446981951071">Bu uygulamayı kullanarak Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
+<translation id="4334294535648607276">İndirme işlemi tamamlandı.</translation>
 <translation id="4350413759959745971">Kaydedilen sayfaları taşı</translation>
 <translation id="4351244548802238354">İletişim kutusunu kapat</translation>
 <translation id="4357362091209756047">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK1" />Tekrar arayın<ph name="END_LINK1" /> veya <ph name="BEGIN_LINK2" />Yardım alın<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4532845899244822526">Klasör seçin</translation>
 <translation id="4543087392704641517">Yer işareti başlığı</translation>
 <translation id="4543661749405994812">E-posta adresini kopyala</translation>
-<translation id="4619298195800598081">Orijinal resmi yeni sekmede aç</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
@@ -315,6 +315,7 @@ Kullanım istatistikleri; tercihler, tıklanan düğmeler ve bellek kullanımı 
 Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden saklamaz.</translation>
 <translation id="572328651809341494">Son sekmeler</translation>
 <translation id="5733727110006255111">Bu özellik açık olduğunda, Chrome, ziyaret ettiğiniz sayfaları indirmeden önce sıkıştırmak için Google sunucularını kullanır. SSL kullanan veya Gizli modda erişilen sayfalar dahil edilmez.</translation>
+<translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="5763382633136178763">Gizli mod sekmeleri</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" /> dizinindeki varolan <ph name="FILE_NAME" /> adını değiştirmek istiyor musunuz?</translation>
@@ -323,6 +324,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5817918615728894473">Eşle</translation>
 <translation id="5832934273103296195">Genişletildi - Daraltmak için tıklayın</translation>
 <translation id="583891442612896534">Chrome, veri sıkıştırma için Google sunucularına erişemiyor. Veri tasarrufunuz sınırlı olabilir.</translation>
+<translation id="585027516397408832">Veri Tasarrufu etkinleştirildi</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
 <translation id="588258955323874662">Tam ekran</translation>
@@ -385,7 +387,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="666268767214822976">Adres çubuğuna yazarken ilgili sorguları ve popüler siteleri göstermek için bir tahmin hizmeti kullan</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
-<translation id="6671495933530132209">Resmi kopyala</translation>
 <translation id="6697251040310467641">Sayfa çevrimdışına kaydedildi</translation>
 <translation id="6698801883190606802">Senkronize edilen verileri yönetme</translation>
 <translation id="6699351163704950317">Kaydedilen tüm sayfalar</translation>
@@ -425,6 +426,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7096034533295549981">Video yükleniyor</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
 <translation id="7201341158316793215">Kaldırılıyor…</translation>
+<translation id="7208788139759694678">Veri Tasarrufu devre dışı bırakıldı</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
 <translation id="7299721129597238157">Yer işaretini sil</translation>
@@ -456,6 +458,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7648422057306047504">Şifreleri Google kimlik bilgileriyle şifrele</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
+<translation id="7761240775244195612">Son bir ay içinde kullanılmayan <ph name="PAGES_NUMBER" /> çevrimdışı kopya silinsin mi? Bu işlem <ph name="TOTAL_PAGE_SIZE" /> alan kazandırır.</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="7767746238359002192">Çevrimdışına kaydetmek için sayfayı ziyaret edin</translation>
@@ -484,7 +487,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8050319187894766337">Sayfa çevrimdışına kaydedildi. Depolama alanı neredeyse doldu.</translation>
 <translation id="8068648041423924542">Sertifika seçilemiyor.</translation>
 <translation id="8069239273282989646">Sıkıştırmadan sonra</translation>
-<translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
 <translation id="8084156870963450514">Herhangi bir cihazdan tüm web öğelerinize erişmek için oturum açın</translation>
 <translation id="8106211421800660735">Kredi kartı numarası</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
@@ -495,6 +497,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8168435359814927499">İçerik</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
 <translation id="8218346974737627104">Oturum açmayı onaylayın</translation>
+<translation id="8218934717680664417">Artık tek bir dokunuşla arama yapabilirsiniz</translation>
 <translation id="8237438615979997762">Bu cihazda ve Google Hesabınızda depolanan veriler her iki yerde de kalır. Ancak, yeni veriler veya verilerinizde yapacağınız değişiklikler bu ikisi arasında senkronize edilmez.</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8275818695183729150">İzin ver (adres çubuğu aramaları için)</translation>

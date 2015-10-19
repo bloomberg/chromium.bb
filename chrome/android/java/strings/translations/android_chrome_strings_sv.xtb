@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">En långsam anslutning upptäcktes.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2870560284913253234">Webbplats</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{1 webbadress i närheten}other{# webbadresser i närheten}}</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Avbryt inläsningen av sidan</translation>
 <translation id="2902702728133930130">Ett oväntat fel uppstod när Chrome skulle startas.</translation>
@@ -159,7 +160,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="3410346880900521918">Om du ser detta ofta provar du <ph name="BEGIN_LINK" />de här förslagen<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Storlek:</translation>
 <translation id="3455798674391346847">Använd mindre data genom att låta Google optimera sidorna du besöker. Sidor som öppnas med HTTPS eller i inkognitoläge kan varken optimeras eller visas av Google.</translation>
-<translation id="346339498574870680">Kopiera bildwebbadress</translation>
 <translation id="3485544713029068372">Smart Lock för lösenord</translation>
 <translation id="3492207499832628349">Ny inkognitoflik</translation>
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
@@ -206,6 +206,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4297410240212242334">Separera flikar och appar</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4333969446981951071">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
+<translation id="4334294535648607276">Nedladdningen har slutförts.</translation>
 <translation id="4350413759959745971">Flytta sparade sidor</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4357362091209756047">Visas inte din enhet? <ph name="BEGIN_LINK1" />Gör om sökningen<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />få hjälp<ph name="END_LINK2" />.</translation>
@@ -219,7 +220,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4532845899244822526">Välj mapp</translation>
 <translation id="4543087392704641517">Bokmärkets namn</translation>
 <translation id="4543661749405994812">Kopiera e-postadress</translation>
-<translation id="4619298195800598081">Öppna original i ny flik</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
@@ -315,6 +315,7 @@ Användningsstatistiken innehåller information som inställningar, knappklick o
 Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
 <translation id="572328651809341494">Senaste flikarna</translation>
 <translation id="5733727110006255111">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. SSL- och inkognitosidor inkluderas inte.</translation>
+<translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="5763382633136178763">Inkognitoflikar</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5771382037724542929">Vill du ersätta den befintliga filen <ph name="FILE_NAME" /> i <ph name="DIRECTORY_NAME" />?</translation>
@@ -323,6 +324,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5817918615728894473">Koppla</translation>
 <translation id="5832934273103296195">Gruppvyn har expanderats. Komprimera vyn genom att klicka.</translation>
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
+<translation id="585027516397408832">Databesparing har aktiverats</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
 <translation id="588258955323874662">Helskärm</translation>
@@ -385,7 +387,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="666268767214822976">Använd en tjänst som ger förslag på relaterade sökfrågor och populära webbplatser när du skriver i adressfältet</translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
-<translation id="6671495933530132209">Kopiera bild</translation>
 <translation id="6697251040310467641">Sidan har sparats offline</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6699351163704950317">Alla sparade sidor</translation>
@@ -425,6 +426,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7096034533295549981">Videon läses in</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="7201341158316793215">Bokmärket tas bort …</translation>
+<translation id="7208788139759694678">Databesparing har inaktiverats</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
 <translation id="7299721129597238157">Ta bort bokmärke</translation>
@@ -456,6 +458,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7648422057306047504">Kryptera lösenord med användaruppgifter för Google</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Lägg till konto</translation>
+<translation id="7761240775244195612">Vill du radera <ph name="PAGES_NUMBER" /> offlinekopior som du inte har använt under den senaste månaden? Ett utrymme på <ph name="TOTAL_PAGE_SIZE" /> rensas.</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7767746238359002192">Besök sidan om du vill spara offline</translation>
@@ -484,7 +487,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8050319187894766337">Sparad offline. Nästan fullt.</translation>
 <translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
-<translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8084156870963450514">Logga in för att komma åt alla dina grejer på webben från vilken enhet som helst</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
@@ -495,6 +497,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8168435359814927499">Innehåll</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="8218346974737627104">Bekräfta inloggning</translation>
+<translation id="8218934717680664417">Nu kan du söka med en tryckning</translation>
 <translation id="8237438615979997762">Data som sparats på enheten och data som sparats i Google-kontot finns kvar på båda ställena. Ny data och ändringar som du gör kommer dock inte att synkroniseras dem emellan.</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8275818695183729150">Tillåt (för sökningar i adressfältet)</translation>

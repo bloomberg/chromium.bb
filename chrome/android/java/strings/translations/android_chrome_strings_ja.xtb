@@ -118,6 +118,7 @@
 <translation id="2816165854387457183">低速な接続が見つかりました。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
+<translation id="2873598956318269337">{NUM_URLS,plural, =1{近くに 1 件の URL}other{近くに # 件の URL}}</translation>
 <translation id="2888126860611144412">Chrome について</translation>
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
@@ -159,7 +160,6 @@
 <translation id="3410346880900521918">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="3455798674391346847">アクセス先のページを Google で最適化することにより処理データを減らします。HTTPS やシークレット モードでアクセスしたページについては、Google による最適化や確認は行われません。</translation>
-<translation id="346339498574870680">画像URLをコピー</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3518985090088779359">同意して続行</translation>
@@ -206,6 +206,7 @@
 <translation id="4297410240212242334">タブとアプリの分離</translation>
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4333969446981951071">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
+<translation id="4334294535648607276">ダウンロードが完了しました。</translation>
 <translation id="4350413759959745971">保存したページを移動</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
 <translation id="4357362091209756047">デバイスが見つからない場合は、<ph name="BEGIN_LINK1" />もう一度検索<ph name="END_LINK1" />するか、<ph name="BEGIN_LINK2" />ヘルプ<ph name="END_LINK2" />をご覧ください。</translation>
@@ -219,7 +220,6 @@
 <translation id="4532845899244822526">フォルダの選択</translation>
 <translation id="4543087392704641517">ブックマークのタイトル</translation>
 <translation id="4543661749405994812">メールアドレスをコピー</translation>
-<translation id="4619298195800598081">元の画像を新しいタブで開く</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> 件のブックマークを削除しました</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」がホーム画面に追加されました</translation>
@@ -315,6 +315,7 @@
 あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="572328651809341494">最近使ったタブ</translation>
 <translation id="5733727110006255111">この機能が有効になっている場合、訪問先のページはダウンロード前に Google サーバーで圧縮されます。SSL 対応のページとシークレット モードのページは対象外です。</translation>
+<translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="5763382633136178763">シークレット タブ</translation>
 <translation id="5765780083710877561">説明:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" /> 内に既にある <ph name="FILE_NAME" /> を置き換えてもよろしいですか？</translation>
@@ -323,6 +324,7 @@
 <translation id="5817918615728894473">ペア設定</translation>
 <translation id="5832934273103296195">展開状態 - クリックして折りたたみ</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
+<translation id="585027516397408832">データセーバーが有効です</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="588258955323874662">全画面表示</translation>
@@ -385,7 +387,6 @@
 <translation id="6643016212128521049">クリア</translation>
 <translation id="666268767214822976">予測サービスを使用し、アドレスバーへの入力時に関連性の高い検索キーワードや人気のウェブサイトを表示します</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
-<translation id="6671495933530132209">画像をコピー</translation>
 <translation id="6697251040310467641">ページをオフライン保存しました</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
 <translation id="6699351163704950317">保存したすべてのページ</translation>
@@ -425,6 +426,7 @@
 <translation id="7096034533295549981">動画を読み込み中</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
 <translation id="7201341158316793215">削除しています...</translation>
+<translation id="7208788139759694678">データセーバーは無効です</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7299721129597238157">ブックマークを削除</translation>
@@ -456,6 +458,7 @@
 <translation id="7648422057306047504">Google の認証情報でパスワードを暗号化する</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
+<translation id="7761240775244195612">過去 1 か月使用されていない <ph name="PAGES_NUMBER" /> 件のオフラインコピーを削除しますか？削除すると容量が <ph name="TOTAL_PAGE_SIZE" /> 空きます。</translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7767746238359002192">オフライン保存するにはページにアクセスしてください</translation>
@@ -484,7 +487,6 @@
 <translation id="8050319187894766337">オフライン保存完了（空き容量少）。</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
-<translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8084156870963450514">ログインすると、どのデバイスからもウェブ上の自分のデータにアクセスできます</translation>
 <translation id="8106211421800660735">クレジットカード番号</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
@@ -495,6 +497,7 @@
 <translation id="8168435359814927499">コンテンツ</translation>
 <translation id="8209050860603202033">画像を開く</translation>
 <translation id="8218346974737627104">ログインの確認</translation>
+<translation id="8218934717680664417">ワンタップで検索が可能に</translation>
 <translation id="8237438615979997762">このデバイスに保存されているデータと Google アカウントに保存されているデータはそのまま残ります。ただし、データを追加したり変更したりしてもデバイス間での同期は行われません。</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8275818695183729150">許可（アドレスバーでの検索）</translation>

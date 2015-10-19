@@ -43,7 +43,6 @@
 <translation id="2290014774651636340">Hiányoznak Google API-kulcsok. A Google Chrome egyes funkciói kikapcsolnak.</translation>
 <translation id="2290095356545025170">Biztos benne, hogy eltávolítja a Google Chrome-ot?</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2346876346033403680">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chrome-ba erről a számítógépről. Ha ez nem az Ön fiókja, hozzon létre egy új Chrome-felhasználót, hogy elkülönítse adatait.
 
 Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" /> fiókkal az olyan Chrome-adatokat, mint a könyvjelzők, az előzmények és más beállítások.</translation>
@@ -136,10 +135,10 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="556024056938947818">A Google Chrome megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="5563479599352954471">Keresés egyetlen érintéssel</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5618769508111928343">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chrome most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítő adatokat küldött vissza. Vagy egy támadó próbálja meg magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi bejelentkezési képernyő szakította meg a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chrome még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="5620765574781326016">Tudjon meg többet a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt.</translation>
 <translation id="568643307450491754">Könyvjelzőit megtalálhatja a Chrome menüben vagy a könyvjelzősávon.</translation>
 <translation id="573759479754913123">A Chrome OS névjegye</translation>
+<translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5785746630574083988">A Windows 8 módban való újraindítással bezárja és újraindítja Chrome-alkalmazásait.</translation>
 <translation id="5799551393681493217">Engedélyezi az iframe-alapú Chrome bejelentkezési folyamatokat. Ez a jelölő felülírja az --enable-web-based-signin beállítást.</translation>
 <translation id="5855036575689098185">A számítógépén futó szoftver nem kompatibilis a Google Chrome-mal.</translation>
