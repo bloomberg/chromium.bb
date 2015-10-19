@@ -47,11 +47,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // Since there's a limit on how many fds can be sent in one sendmsg call, if
     // a message has more than that the fds are sent in this message type first.
     RAW_CHANNEL_POSIX_EXTRA_PLATFORM_HANDLES = 1,
-    // When a RawChannel wants to quit, it can't close its pipe immediately even
-    // if it flushed all its data because doing so will give a read error to the
-    // other endpoint. Instead it sends this message which tells the other end
-    // to close its pipe.
-    RAW_CHANNEL_QUIT = 2,
     // When a RawChannel is serialized, there could be pending messages to be
     // written to the pipe. They are serialized to shared memory. When they're
     // deserialized on the receiving end, we want to write them to the pipe

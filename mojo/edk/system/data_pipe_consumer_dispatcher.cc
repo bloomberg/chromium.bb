@@ -463,9 +463,7 @@ void DataPipeConsumerDispatcher::OnError(Error error) {
     // thread to self destruct.
     if (channel_) {
       awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
+      channel_->Shutdown();
       channel_ = nullptr;
     }
     started_transport_.Release();
@@ -480,10 +478,13 @@ void DataPipeConsumerDispatcher::SerializeInternal() {
   // so that other messages aren't read after this.
   if (channel_) {
     std::vector<char> serialized_write_buffer;
+    bool write_error = false;
     serialized_platform_handle_ =
         channel_->ReleaseHandle(&serialized_read_buffer_,
-                                &serialized_write_buffer);
+                                &serialized_write_buffer,
+                                &write_error);
     CHECK(serialized_write_buffer.empty());
+    CHECK(!write_error) << "DataPipeConsumerDispatcher doesn't write.";
 
     channel_ = nullptr;
   }

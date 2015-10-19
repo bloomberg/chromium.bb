@@ -314,11 +314,14 @@ void DataPipeProducerDispatcher::OnReadMessage(
 
 void DataPipeProducerDispatcher::OnError(Error error) {
   switch (error) {
-    case ERROR_READ_SHUTDOWN:
     case ERROR_READ_BROKEN:
     case ERROR_READ_BAD_MESSAGE:
     case ERROR_READ_UNKNOWN:
-      LOG(ERROR) << "DataPipeProducerDispatcher shouldn't read messages";
+      LOG(ERROR) << "DataPipeProducerDispatcher shouldn't get read error.";
+      break;
+    case ERROR_READ_SHUTDOWN:
+      // The other side was cleanly closed, so this isn't actually an error.
+      DVLOG(1) << "DataPipeProducerDispatcher read error (shutdown)";
       break;
     case ERROR_WRITE:
       // Write errors are slightly notable: they probably shouldn't happen under
@@ -336,9 +339,7 @@ void DataPipeProducerDispatcher::OnError(Error error) {
     // thread to self destruct.
     if (channel_) {
       awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
+      channel_->Shutdown();
       channel_ = nullptr;
     }
     started_transport_.Release();
@@ -384,9 +385,12 @@ void DataPipeProducerDispatcher::SerializeInternal() {
   // so that other messages aren't read after this.
   if (channel_) {
     std::vector<char> serialized_read_buffer;
+    bool write_error = false;
     serialized_platform_handle_ = channel_->ReleaseHandle(
-        &serialized_read_buffer, &serialized_write_buffer_);
+        &serialized_read_buffer, &serialized_write_buffer_, &write_error);
     CHECK(serialized_read_buffer.empty());
+    if (write_error)
+      serialized_platform_handle_.reset();
     channel_ = nullptr;
   }
   serialized_ = true;

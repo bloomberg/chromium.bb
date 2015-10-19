@@ -64,6 +64,7 @@ void ChannelStarted() {
 
 void ChannelShutdown() {
   DCHECK(g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  DCHECK_GT(g_channel_count, 0);
   g_channel_count--;
   if (!g_channel_count && g_wait_for_no_more_channels) {
     // Reset g_wait_for_no_more_channels for unit tests which initialize and

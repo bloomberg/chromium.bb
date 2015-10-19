@@ -532,22 +532,6 @@ TEST_F(RawChannelTest, ReadUnaffectedByWriteError) {
       FROM_HERE, base::Bind(&RawChannel::Shutdown, base::Unretained(rc)));
 }
 
-// RawChannelTest.WriteMessageAfterShutdown ------------------------------------
-
-// Makes sure that calling |WriteMessage()| after |Shutdown()| behaves
-// correctly.
-TEST_F(RawChannelTest, WriteMessageAfterShutdown) {
-  WriteOnlyRawChannelDelegate delegate;
-  RawChannel* rc = RawChannel::Create(handles[0].Pass());
-  test_io_thread()->PostTaskAndWait(
-      FROM_HERE,
-      base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
-  test_io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&RawChannel::Shutdown, base::Unretained(rc)));
-
-  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
-}
-
 // RawChannelTest.ReadWritePlatformHandles -------------------------------------
 
 class ReadPlatformHandlesCheckerRawChannelDelegate

@@ -76,7 +76,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Static factory method. |handle| should be a handle to a
   // (platform-appropriate) bidirectional communication channel (e.g., a socket
-  // on POSIX, a named pipe on Windows).
+  // on POSIX, a named pipe on Windows). The returned object must be destructed
+  // by calling Shutdown on the IO thread.
   static RawChannel* Create(ScopedPlatformHandle handle);
 
   // Returns the amount of space needed in the |MessageInTransit|'s
@@ -97,7 +98,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // This can be called on any thread. It's safe to call multiple times.
   void EnsureLazyInitialized();
 
-  // This must be called (on the I/O thread) before this object is destroyed.
+  // This must be called (on the I/O thread) to destroy the object. After
+  // calling this method, no more methods on the class can be called and it will
+  // start self destruction.
+  // It's safe to call this method from delegate callbacks.
   void Shutdown();
 
   // Returns the platform handle for the pipe synchronously.
@@ -106,11 +110,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // that haven't been written yet.
   // Both these arrays need to be passed to SetSerializedData below when
   // recreating the channel.
+  // If there was a read or write in progress, they will be completed. If the
+  // in-progress read results in an error, an invalid handle is returned. If the
+  // in-progress write results in an error, |write_error| is true.
   // NOTE: After calling this, consider the channel shutdown and don't call into
-  // it anymore
+  // it anymore.
   ScopedPlatformHandle ReleaseHandle(
       std::vector<char>* serialized_read_buffer,
-      std::vector<char>* serialized_write_buffer);
+      std::vector<char>* serialized_write_buffer,
+      bool* write_error);
 
   // Writes the given message (or schedules it to be written). |message| must
   // have no |Dispatcher|s still attached (i.e.,
@@ -261,7 +269,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     return write_buffer_.get();
   }
 
-  bool pending_error() { return pending_error_; }
+  bool pending_write_error() { return pending_write_error_; }
 
   // Adds |message| to the write message queue. Implementation subclasses may
   // override this to add any additional "control" messages needed. This is
@@ -281,10 +289,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual bool IsHandleValid() = 0;
 
   // Implementation must write any pending messages synchronously.
-  // TODO(jam): change to return shared memory with pending serialized msgs.
   virtual ScopedPlatformHandle ReleaseHandleNoLock(
       std::vector<char>* serialized_read_buffer,
-      std::vector<char>* serialized_write_buffer) = 0;
+      std::vector<char>* serialized_write_buffer,
+      bool* write_error) = 0;
 
   // Reads into |read_buffer()|.
   // This class guarantees that:
@@ -401,14 +409,16 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
 
 
-  // Only used on the I/O thread:
-
+  // Only used on the I/O thread (with exception noted below).
   base::Lock read_lock_;  // Protects read_buffer_.
   // This is usually only accessed on IO thread, except when ReleaseHandle is
   // called.
   scoped_ptr<ReadBuffer> read_buffer_;
   // ditto: usually used on io thread except ReleaseHandle
   Delegate* delegate_;
+  // This is only used on the IO thread, so we don't bother with locking.
+  bool error_occurred_;
+  bool calling_delegate_;
 
   // If grabbing both locks, grab read first.
 
@@ -416,12 +426,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   bool write_ready_;
   bool write_stopped_;
   scoped_ptr<WriteBuffer> write_buffer_;
-
-  bool error_occurred_;
-
-  // True iff a PostTask has been called to set an error. Can be written under
+  // True iff a PostTask has been called for a write error. Can be written under
   // either read or write lock. It's read with both acquired.
-  bool pending_error_;
+  bool pending_write_error_;
 
   // True iff we connected to the underying pipe.
   bool initialized_;

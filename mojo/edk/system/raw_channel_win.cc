@@ -227,7 +227,8 @@ class RawChannelWin final : public RawChannel {
 
     ScopedPlatformHandle ReleaseHandle(
         std::vector<char>* serialized_read_buffer,
-        std::vector<char>* serialized_write_buffer) {
+        std::vector<char>* serialized_write_buffer,
+        bool* write_error) {
       // Cancel pending IO calls.
       if (g_vista_or_higher_functions.Get().is_vista_or_higher()) {
         g_vista_or_higher_functions.Get().CancelIoEx(handle(), nullptr);
@@ -236,6 +237,7 @@ class RawChannelWin final : public RawChannel {
       }
 
       size_t additional_bytes_read = 0;
+      bool got_read_error = false;
       if (pending_read_) {
         bool wait = false;
         UnregisterWaitEx(read_wait_object_, INVALID_HANDLE_VALUE);
@@ -252,8 +254,13 @@ class RawChannelWin final : public RawChannel {
         BOOL rv = GetOverlappedResult(
             handle(), &read_context_.overlapped, &bytes_read_dword,
             wait ? TRUE : FALSE);
-        if (rv && read_context_.overlapped.Internal != STATUS_CANCELLED)
+        if (rv && read_context_.overlapped.Internal != STATUS_CANCELLED) {
           additional_bytes_read = bytes_read_dword;
+        } else if (!rv && (GetLastError() != ERROR_OPERATION_ABORTED)) {
+          LOG(ERROR) << "ReleaseHandle got error " << GetLastError() << " when "
+                     << "checking last read so not returning pipe.";
+          got_read_error = true;
+        }
         pending_read_ = false;
       }
 
@@ -261,6 +268,7 @@ class RawChannelWin final : public RawChannel {
 
       size_t additional_bytes_written = 0;
       size_t additional_platform_handles_written = 0;
+      *write_error = owner_->pending_write_error();
       if (pending_write_) {
         bool wait = false;
         UnregisterWaitEx(write_wait_object_, INVALID_HANDLE_VALUE);
@@ -274,31 +282,30 @@ class RawChannelWin final : public RawChannel {
         BOOL rv = GetOverlappedResult(
             handle(), &write_context_.overlapped, &bytes_written_dword,
             wait ? TRUE : FALSE);
-
         if (rv && write_context_.overlapped.Internal != STATUS_CANCELLED) {
           CHECK(!write_buffer->IsEmpty());
 
           additional_bytes_written = static_cast<size_t>(bytes_written_dword);
           additional_platform_handles_written = platform_handles_written_;
           platform_handles_written_ = 0;
+        } else if (!rv && (GetLastError() != ERROR_OPERATION_ABORTED)) {
+          LOG(ERROR) << "ReleaseHandle got error " << GetLastError() << " when "
+                     << "checking last write.";
+          *write_error = true;
         }
         pending_write_ = false;
       }
 
+      if (got_read_error) {
+        return ScopedPlatformHandle();
+      }
+
       owner_->SerializeReadBuffer(
           additional_bytes_read, serialized_read_buffer);
-      owner_->SerializeWriteBuffer(
-          additional_bytes_written, additional_platform_handles_written,
-          serialized_write_buffer);
-
-      // There's a PostTask inside RawChannel because an error over the channel
-      // occurred. We need to propagate this, otherwise the object using this
-      // channel will never get a peer-closed signal.
-      if (owner_->pending_error()) {
-        handle_.reset();
-        serialized_read_buffer->clear();
-        serialized_write_buffer->clear();
-        return ScopedPlatformHandle();
+      if (!*write_error) {
+        owner_->SerializeWriteBuffer(
+            additional_bytes_written, additional_platform_handles_written,
+            serialized_write_buffer);
       }
 
       return ScopedPlatformHandle(handle_.release());
@@ -500,10 +507,11 @@ class RawChannelWin final : public RawChannel {
 
   ScopedPlatformHandle ReleaseHandleNoLock(
       std::vector<char>* serialized_read_buffer,
-      std::vector<char>* serialized_write_buffer) override {
+      std::vector<char>* serialized_write_buffer,
+      bool* write_error) override {
     if (handle_.is_valid()) {
       // SetInitialBuffer could have been called on main thread before OnInit
-      // is called on Io thread. and in meantime releasehandle called.
+      // is called on Io thread. and in meantime ReleaseHandle called.
       SerializeReadBuffer(0u, serialized_read_buffer);
 
       // We could have been given messages to write before OnInit.
@@ -513,7 +521,8 @@ class RawChannelWin final : public RawChannel {
     }
 
     return io_handler_->ReleaseHandle(serialized_read_buffer,
-                                      serialized_write_buffer);
+                                      serialized_write_buffer,
+                                      write_error);
   }
 
   bool IsHandleValid() override {

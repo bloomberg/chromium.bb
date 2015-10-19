@@ -50,7 +50,8 @@ class RawChannelPosix final : public RawChannel,
 
   ScopedPlatformHandle ReleaseHandleNoLock(
       std::vector<char>* serialized_read_buffer,
-      std::vector<char>* serialized_write_buffer) override;
+      std::vector<char>* serialized_write_buffer,
+      bool* write_error) override;
   bool IsHandleValid() override;
   IOResult Read(size_t* bytes_read) override;
   IOResult ScheduleRead() override;
@@ -169,8 +170,9 @@ bool RawChannelPosix::OnReadMessageForRawChannel(
 
 
 ScopedPlatformHandle RawChannelPosix::ReleaseHandleNoLock(
-      std::vector<char>* serialized_read_buffer,
-      std::vector<char>* serialized_write_buffer) {
+    std::vector<char>* serialized_read_buffer,
+    std::vector<char>* serialized_write_buffer,
+    bool* write_error) {
   NOTREACHED() << "TODO(jam) IMPLEMENT";
   return fd_.Pass();
 }

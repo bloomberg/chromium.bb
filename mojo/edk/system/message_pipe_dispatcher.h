@@ -134,7 +134,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   base::Lock started_transport_;
 
   bool calling_init_;
-  bool error_;
+  bool write_error_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

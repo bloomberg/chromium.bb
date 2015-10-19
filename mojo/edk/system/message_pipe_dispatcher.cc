@@ -30,6 +30,7 @@ struct MOJO_ALIGNAS(8) SerializedMessagePipeHandleDispatcher {
   // Could be |kInvalidMessagePipeHandleIndex| if the other endpoint of the MP
   // was closed.
   size_t platform_handle_index;
+  bool write_error;
 
   size_t shared_memory_handle_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
   uint32_t shared_memory_size;
@@ -118,8 +119,6 @@ void MessagePipeDispatcher::Init(
       InitOnIO();
     }
     // TODO(jam): optimize for when running on IO thread?
-  } else {
-    error_ = true;
   }
 }
 
@@ -257,6 +256,7 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
            serialized_read_buffer_size,
            serialized_write_buffer,
            serialized_write_buffer_size);
+  rv->write_error_ = serialization->write_error;
 
   while (message_queue_size) {
     size_t message_size;
@@ -313,7 +313,7 @@ MessagePipeDispatcher::MessagePipeDispatcher()
     : channel_(nullptr),
       serialized_(false),
       calling_init_(false),
-      error_(false) {
+      write_error_(false) {
 }
 
 MessagePipeDispatcher::~MessagePipeDispatcher() {
@@ -341,9 +341,12 @@ void MessagePipeDispatcher::SerializeInternal() {
   // so that other messages aren't read after this.
   {
     if (channel_) {
+      bool write_error = false;
       serialized_platform_handle_ = channel_->ReleaseHandle(
-          &serialized_read_buffer_, &serialized_write_buffer_);
+          &serialized_read_buffer_, &serialized_write_buffer_, &write_error);
       channel_ = nullptr;
+      if (write_error)
+        write_error = true;
     } else {
       // It's valid that the other side wrote some data and closed its end.
     }
@@ -433,6 +436,7 @@ MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   serialized_read_buffer_.swap(rv->serialized_read_buffer_);
   serialized_write_buffer_.swap(rv->serialized_write_buffer_);
   rv->serialized_ = true;
+  rv->write_error_ = write_error_;
   return scoped_refptr<Dispatcher>(rv.get());
 }
 
@@ -448,10 +452,8 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
 
   lock().AssertAcquired();
 
-  if (!channel_) {
-    DCHECK(error_);
+  if (!channel_ || write_error_)
     return MOJO_RESULT_FAILED_PRECONDITION;
-  }
 
   if (num_bytes > GetConfiguration().max_message_num_bytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -483,10 +485,8 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
   const uint32_t max_bytes = !num_bytes ? 0 : *num_bytes;
   const uint32_t max_num_dispatchers = num_dispatchers ? *num_dispatchers : 0;
 
-  if (message_queue_.IsEmpty()) {
-    return error_ ? MOJO_RESULT_FAILED_PRECONDITION
-                  : MOJO_RESULT_SHOULD_WAIT;
-  }
+  if (message_queue_.IsEmpty())
+    return channel_ ? MOJO_RESULT_SHOULD_WAIT : MOJO_RESULT_FAILED_PRECONDITION;
 
   // TODO(vtl): If |flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD|, we could pop
   // and release the lock immediately.
@@ -541,17 +541,16 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateImplNoLock()
   lock().AssertAcquired();
 
   HandleSignalsState rv;
-  if (!message_queue_.IsEmpty()) {
+  if (!message_queue_.IsEmpty())
     rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_READABLE;
+  if (channel_ || !message_queue_.IsEmpty())
     rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
-  }
-  if (!error_) {
+  if (channel_ && !write_error_) {
     rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
-    rv.satisfiable_signals |=
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
-  } else {
-    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+    rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
   }
+  if (!channel_ || write_error_)
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   return rv;
 }
@@ -620,6 +619,7 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
     serialization->platform_handle_index = kInvalidMessagePipeHandleIndex;
   }
 
+  serialization->write_error = write_error_;
   serialization->serialized_read_buffer_size = serialized_read_buffer_.size();
   serialization->serialized_write_buffer_size = serialized_write_buffer_.size();
   serialization->serialized_messagage_queue_size =
@@ -694,15 +694,21 @@ void MessagePipeDispatcher::OnReadMessage(
 
     started_transport_.Release();
   } else {
-
-    // if RawChannel is calling OnRead, that means it has its read_lock_
-    // acquired. that means StartSerialize can't be accessing message queue as
-    // it waits on releasehandle first which acquires readlock_!
+    // If RawChannel is calling OnRead, that means it has its read_lock_
+    // acquired. That means StartSerialize can't be accessing message queue as
+    // it waits on ReleaseHandle first which acquires readlock_.
     message_queue_.AddMessage(message.Pass());
   }
 }
 
 void MessagePipeDispatcher::OnError(Error error) {
+  // If there's a read error, then the other side of the pipe is closed. By
+  // definition, we can't write since there's no one to read it. And we can't
+  // read anymore, since we just got a read erorr. So we close the pipe.
+  // If there's a write error, then we stop writing. But we keep the pipe open
+  // until we finish reading everything in it. This is because it's valid for
+  // one endpoint to write some data and close their pipe immediately. Even
+  // though the other end can't write anymore, it should still get all the data.
   switch (error) {
     case ERROR_READ_SHUTDOWN:
       // The other side was cleanly closed, so this isn't actually an error.
@@ -723,23 +729,22 @@ void MessagePipeDispatcher::OnError(Error error) {
       // Write errors are slightly notable: they probably shouldn't happen under
       // normal operation (but maybe the other side crashed).
       LOG(WARNING) << "MessagePipeDispatcher write error";
+      DCHECK_EQ(write_error_, false) << "Should only get one write error.";
+      write_error_ = true;
       break;
   }
 
-  error_ = true;
   if (started_transport_.Try()) {
     base::AutoLock locker(lock());
     // We can get two OnError callbacks before the post task below completes.
     // Although RawChannel still has a pointer to this object until Shutdown is
     // called, that is safe since this class always does a PostTask to the IO
     // thread to self destruct.
-    if (channel_) {
-      awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&RawChannel::Shutdown, base::Unretained(channel_)));
+    if (channel_ && error != ERROR_WRITE) {
+      channel_->Shutdown();
       channel_ = nullptr;
     }
+    awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
     started_transport_.Release();
   } else {
     // We must be waiting to call ReleaseHandle. It will call Shutdown.
