@@ -21,6 +21,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/test/base/always_on_top_window_killer_win.h"
 #endif
 
 class InteractiveUITestSuite : public ChromeTestSuite {
@@ -74,8 +75,15 @@ class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
 };
 
 int main(int argc, char** argv) {
+#if defined(OS_WIN)
+  KillAlwaysOnTopWindows(RunType::BEFORE_TEST);
+#endif
   // Run interactive_ui_tests serially, they do not support running in parallel.
   int default_jobs = 1;
   InteractiveUITestSuiteRunner runner;
-  return LaunchChromeTests(default_jobs, &runner, argc, argv);
+  const int result = LaunchChromeTests(default_jobs, &runner, argc, argv);
+#if defined(OS_WIN)
+  KillAlwaysOnTopWindows(RunType::AFTER_TEST);
+#endif
+  return result;
 }
