@@ -345,8 +345,9 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private void startCastingVideo(RouteInfo route) {
         mMediaStateListener.pauseLocal();
         mMediaStateListener.onCastStarting(route.getName());
-        setDataSource(Uri.parse(mMediaStateListener.getSourceUrl()),
-                mMediaStateListener.getCookies(), mMediaStateListener.getUserAgent());
+        String url = mMediaStateListener.getSourceUrl();
+        Uri uri = url == null ? null : Uri.parse(url);
+        setDataSource(uri, mMediaStateListener.getCookies(), mMediaStateListener.getUserAgent());
         prepareAsync(
                 mMediaStateListener.getFrameUrl(), mMediaStateListener.getStartPositionMillis());
     }
