@@ -236,7 +236,7 @@ public:
 
     CSSValueID getValueID() const { return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid; }
 
-    template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
+    template<typename T> inline T convertTo() const; // Defined in CSSPrimitiveValueMappings.h
 
     static const char* unitTypeToString(UnitType);
     String customCSSText() const;

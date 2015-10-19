@@ -76,7 +76,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolv
 
     const CSSReflectValue& reflectValue = toCSSReflectValue(value);
     RefPtr<StyleReflection> reflection = StyleReflection::create();
-    reflection->setDirection(*reflectValue.direction());
+    reflection->setDirection(reflectValue.direction()->convertTo<CSSReflectionDirection>());
     if (reflectValue.offset())
         reflection->setOffset(reflectValue.offset()->convertToLength(state.cssToLengthConversionData()));
     if (reflectValue.mask()) {
@@ -269,7 +269,7 @@ FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, c
     case CSSValueLighter:
         return FontDescription::lighterWeight(state.parentStyle()->fontDescription().weight());
     default:
-        return primitiveValue;
+        return primitiveValue.convertTo<FontWeight>();
     }
 }
 
@@ -343,13 +343,13 @@ StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(
         const CSSValuePair& pair = toCSSValuePair(value);
         if (toCSSPrimitiveValue(pair.first()).getValueID() == CSSValueLegacy) {
             alignmentData.setPositionType(LegacyPosition);
-            alignmentData.setPosition(toCSSPrimitiveValue(pair.second()));
+            alignmentData.setPosition(toCSSPrimitiveValue(pair.second()).convertTo<ItemPosition>());
         } else {
-            alignmentData.setPosition(toCSSPrimitiveValue(pair.first()));
-            alignmentData.setOverflow(toCSSPrimitiveValue(pair.second()));
+            alignmentData.setPosition(toCSSPrimitiveValue(pair.first()).convertTo<ItemPosition>());
+            alignmentData.setOverflow(toCSSPrimitiveValue(pair.second()).convertTo<OverflowAlignment>());
         }
     } else {
-        alignmentData.setPosition(toCSSPrimitiveValue(value));
+        alignmentData.setPosition(toCSSPrimitiveValue(value).convertTo<ItemPosition>());
     }
     return alignmentData;
 }
@@ -363,12 +363,12 @@ StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(Sty
         case CSSValueStretch:
         case CSSValueSpaceBetween:
         case CSSValueSpaceAround:
-            alignmentData.setDistribution(primitiveValue);
+            alignmentData.setDistribution(primitiveValue.convertTo<ContentDistributionType>());
             break;
         case CSSValueFlexStart:
         case CSSValueFlexEnd:
         case CSSValueCenter:
-            alignmentData.setPosition(primitiveValue);
+            alignmentData.setPosition(primitiveValue.convertTo<ContentPosition>());
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -377,11 +377,11 @@ StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(Sty
     }
     const CSSContentDistributionValue& contentValue = toCSSContentDistributionValue(value);
     if (contentValue.distribution()->getValueID() != CSSValueInvalid)
-        alignmentData.setDistribution(*contentValue.distribution());
+        alignmentData.setDistribution(contentValue.distribution()->convertTo<ContentDistributionType>());
     if (contentValue.position()->getValueID() != CSSValueInvalid)
-        alignmentData.setPosition(*contentValue.position());
+        alignmentData.setPosition(contentValue.position()->convertTo<ContentPosition>());
     if (contentValue.overflow()->getValueID() != CSSValueInvalid)
-        alignmentData.setOverflow(*contentValue.overflow());
+        alignmentData.setOverflow(contentValue.overflow()->convertTo<OverflowAlignment>());
     return alignmentData;
 }
 
@@ -815,7 +815,7 @@ PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(Styl
         if (value.isBasicShapeValue()) {
             shape = basicShapeForValue(state, value);
         } else {
-            cssBox = CSSBoxType(toCSSPrimitiveValue(value));
+            cssBox = toCSSPrimitiveValue(value).convertTo<CSSBoxType>();
         }
     }
 

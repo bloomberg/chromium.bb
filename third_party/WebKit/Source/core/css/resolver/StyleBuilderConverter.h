@@ -121,7 +121,7 @@ T StyleBuilderConverter::convertFlags(StyleResolverState& state, const CSSValue&
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return flags;
     for (auto& flagValue : toCSSValueList(value))
-        flags |= toCSSPrimitiveValue(*flagValue);
+        flags |= toCSSPrimitiveValue(*flagValue).convertTo<T>();
     return flags;
 }
 

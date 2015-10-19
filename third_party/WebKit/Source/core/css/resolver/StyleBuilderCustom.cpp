@@ -194,17 +194,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
                     state.style()->setUnique();
                 state.style()->addCursor(state.styleImage(CSSPropertyCursor, *image), image->hotSpotSpecified(), image->hotSpot());
             } else {
-                state.style()->setCursor(*toCSSPrimitiveValue(item));
+                state.style()->setCursor(toCSSPrimitiveValue(item)->convertTo<ECursor>());
             }
         }
     } else {
-        state.style()->setCursor(*toCSSPrimitiveValue(value));
+        state.style()->setCursor(toCSSPrimitiveValue(value)->convertTo<ECursor>());
     }
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolverState& state, CSSValue* value)
 {
-    state.style()->setDirection(*toCSSPrimitiveValue(value));
+    state.style()->setDirection(toCSSPrimitiveValue(value)->convertTo<TextDirection>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
@@ -274,8 +274,8 @@ void StyleBuilderFunctions::applyInheritCSSPropertyOutlineStyle(StyleResolverSta
 void StyleBuilderFunctions::applyValueCSSPropertyOutlineStyle(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    state.style()->setOutlineStyleIsAuto(*primitiveValue);
-    state.style()->setOutlineStyle(*primitiveValue);
+    state.style()->setOutlineStyleIsAuto(primitiveValue->convertTo<OutlineIsAuto>());
+    state.style()->setOutlineStyle(primitiveValue->convertTo<EBorderStyle>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolverState& state, CSSValue* value)
@@ -287,7 +287,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolverState& stat
         if (Settings* settings = state.document().settings())
             r = settings->textAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
     } else {
-        r = *primitiveValue;
+        r = primitiveValue->convertTo<EResize>();
     }
     state.style()->setResize(r);
 }
@@ -379,7 +379,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolverState& s
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->isValueID() && primitiveValue->getValueID() != CSSValueWebkitMatchParent)
-        state.style()->setTextAlign(*primitiveValue);
+        state.style()->setTextAlign(primitiveValue->convertTo<ETextAlign>());
     else if (state.parentStyle()->textAlign() == TASTART)
         state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection() ? LEFT : RIGHT);
     else if (state.parentStyle()->textAlign() == TAEND)
@@ -509,7 +509,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverStat
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->getValueID())
-        state.style()->setVerticalAlign(*primitiveValue);
+        state.style()->setVerticalAlign(primitiveValue->convertTo<EVerticalAlign>());
     else
         state.style()->setVerticalAlignLength(primitiveValue->convertToLength(state.cssToLengthConversionData()));
 }
@@ -619,9 +619,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
         for (unsigned i = 0; i < 2; ++i) {
             CSSPrimitiveValue* value = toCSSPrimitiveValue(list->item(i));
             if (value->getValueID() == CSSValueFilled || value->getValueID() == CSSValueOpen)
-                state.style()->setTextEmphasisFill(*value);
+                state.style()->setTextEmphasisFill(value->convertTo<TextEmphasisFill>());
             else
-                state.style()->setTextEmphasisMark(*value);
+                state.style()->setTextEmphasisMark(value->convertTo<TextEmphasisMark>());
         }
         state.style()->setTextEmphasisCustomMark(nullAtom);
         return;
@@ -639,11 +639,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
     state.style()->setTextEmphasisCustomMark(nullAtom);
 
     if (primitiveValue->getValueID() == CSSValueFilled || primitiveValue->getValueID() == CSSValueOpen) {
-        state.style()->setTextEmphasisFill(*primitiveValue);
+        state.style()->setTextEmphasisFill(primitiveValue->convertTo<TextEmphasisFill>());
         state.style()->setTextEmphasisMark(TextEmphasisMarkAuto);
     } else {
         state.style()->setTextEmphasisFill(TextEmphasisFillFilled);
-        state.style()->setTextEmphasisMark(*primitiveValue);
+        state.style()->setTextEmphasisMark(primitiveValue->convertTo<TextEmphasisMark>());
     }
 }
 
@@ -804,22 +804,22 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(StyleResolverSt
 
 void StyleBuilderFunctions::applyValueCSSPropertyWritingMode(StyleResolverState& state, CSSValue* value)
 {
-    state.setWritingMode(*toCSSPrimitiveValue(value));
+    state.setWritingMode(toCSSPrimitiveValue(value)->convertTo<WritingMode>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
 {
-    state.setWritingMode(*toCSSPrimitiveValue(value));
+    state.setWritingMode(toCSSPrimitiveValue(value)->convertTo<WritingMode>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextOrientation(StyleResolverState& state, CSSValue* value)
 {
-    state.setTextOrientation(*toCSSPrimitiveValue(value));
+    state.setTextOrientation(toCSSPrimitiveValue(value)->convertTo<TextOrientation>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleResolverState& state, CSSValue* value)
 {
-    state.setTextOrientation(*toCSSPrimitiveValue(value));
+    state.setTextOrientation(toCSSPrimitiveValue(value)->convertTo<TextOrientation>());
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverState& state)

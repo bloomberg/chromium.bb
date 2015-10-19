@@ -40,7 +40,7 @@ state.style()->{{property.setter}}
 {% if property.converter %}
 {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, *value));
 {%- else %}
-{{set_value(property)}}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
+{{set_value(property)}}(toCSSPrimitiveValue(value)->convertTo<{{property.type_name}}>());
 {%- endif %}
 {% endmacro %}
 

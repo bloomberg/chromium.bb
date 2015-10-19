@@ -113,7 +113,7 @@ static EColorInterpolation colorInterpolationForElement(SVGElement& element, ECo
         RefPtrWillBeRawPtr<CSSValue> cssValue = propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
         if (cssValue && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
-            return static_cast<EColorInterpolation>(primitiveValue);
+            return primitiveValue.convertTo<EColorInterpolation>();
         }
     }
     // 'auto' is the default (per Filter Effects), but since the property is

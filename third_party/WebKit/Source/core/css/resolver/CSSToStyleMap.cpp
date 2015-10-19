@@ -81,7 +81,7 @@ void CSSToStyleMap::mapFillClip(StyleResolverState&, FillLayer* layer, const CSS
         return;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    layer->setClip(primitiveValue);
+    layer->setClip(primitiveValue.convertTo<EFillBox>());
 }
 
 void CSSToStyleMap::mapFillComposite(StyleResolverState&, FillLayer* layer, const CSSValue& value)
@@ -95,7 +95,7 @@ void CSSToStyleMap::mapFillComposite(StyleResolverState&, FillLayer* layer, cons
         return;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    layer->setComposite(primitiveValue);
+    layer->setComposite(primitiveValue.convertTo<CompositeOperator>());
 }
 
 void CSSToStyleMap::mapFillBlendMode(StyleResolverState&, FillLayer* layer, const CSSValue& value)
@@ -109,7 +109,7 @@ void CSSToStyleMap::mapFillBlendMode(StyleResolverState&, FillLayer* layer, cons
         return;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    layer->setBlendMode(primitiveValue);
+    layer->setBlendMode(primitiveValue.convertTo<WebBlendMode>());
 }
 
 void CSSToStyleMap::mapFillOrigin(StyleResolverState&, FillLayer* layer, const CSSValue& value)
@@ -123,7 +123,7 @@ void CSSToStyleMap::mapFillOrigin(StyleResolverState&, FillLayer* layer, const C
         return;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    layer->setOrigin(primitiveValue);
+    layer->setOrigin(primitiveValue.convertTo<EFillBox>());
 }
 
 
@@ -149,7 +149,7 @@ void CSSToStyleMap::mapFillRepeatX(StyleResolverState&, FillLayer* layer, const 
         return;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    layer->setRepeatX(primitiveValue);
+    layer->setRepeatX(primitiveValue.convertTo<EFillRepeat>());
 }
 
 void CSSToStyleMap::mapFillRepeatY(StyleResolverState&, FillLayer* layer, const CSSValue& value)
@@ -163,7 +163,7 @@ void CSSToStyleMap::mapFillRepeatY(StyleResolverState&, FillLayer* layer, const 
         return;
 
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    layer->setRepeatY(primitiveValue);
+    layer->setRepeatY(primitiveValue.convertTo<EFillRepeat>());
 }
 
 void CSSToStyleMap::mapFillSize(StyleResolverState& state, FillLayer* layer, const CSSValue& value)
@@ -227,7 +227,7 @@ void CSSToStyleMap::mapFillXPosition(StyleResolverState& state, FillLayer* layer
 
     layer->setXPosition(length);
     if (value.isValuePair())
-        layer->setBackgroundXOrigin(toCSSPrimitiveValue(toCSSValuePair(value).first()));
+        layer->setBackgroundXOrigin(toCSSPrimitiveValue(toCSSValuePair(value).first()).convertTo<BackgroundEdgeOrigin>());
 }
 
 void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer, const CSSValue& value)
@@ -248,7 +248,7 @@ void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer
 
     layer->setYPosition(length);
     if (value.isValuePair())
-        layer->setBackgroundYOrigin(toCSSPrimitiveValue(toCSSValuePair(value).first()));
+        layer->setBackgroundYOrigin(toCSSPrimitiveValue(toCSSValuePair(value).first()).convertTo<BackgroundEdgeOrigin>());
 }
 
 void CSSToStyleMap::mapFillMaskSourceType(StyleResolverState&, FillLayer* layer, const CSSValue& value)
