@@ -3168,6 +3168,26 @@
           'includes': [ '../build/java.gypi' ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"',
+          {
+            'targets': [{
+               'target_name': 'telemetry_perf_unittests_android_run',
+               'type': 'none',
+               'dependencies': [
+                  '../content/content_shell_and_tests.gyp:telemetry_base',
+                  'android/chrome_apk.gyp:chrome_public_apk',
+               ],
+               'includes': [
+                 '../build/isolate.gypi',
+                ],
+                'sources': [
+                  'telemetry_perf_unittests_android.isolate',
+                ],
+            }],
+          }
+        ],
+      ],
     }],
     ['test_isolation_mode != "noop"', {
       'targets': [
