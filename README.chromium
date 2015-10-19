@@ -12,6 +12,6 @@ SDK and used in several examples.
 
 Local modifications:
 The overrides are used to eliminate static initializers in json_value.cpp and
-json_reader.cpp adds includes for <string> and <istream> to build on libc++,
-and to change some one-bit bit fields to unsigned so that they can hold the
-'1' values that are stored in them.
+json_reader.cpp adds includes for <string> and <istream> to build on libc++
+(https://llvm.org/PR25232), and to change some one-bit bit fields to unsigned
+so that they can hold the '1' values that are stored in them.
