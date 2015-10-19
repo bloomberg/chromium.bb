@@ -208,7 +208,9 @@ class PhishingClassifierTest : public InProcessBrowserTest {
 
 // This test flakes on Mac with force compositing mode.
 // http://crbug.com/316709
-#if defined(OS_MACOSX)
+// Flaky on Chrome OS, running into a memory allocation error.
+// http://crbug.com/544085
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_TestClassification DISABLED_TestClassification
 #else
 #define MAYBE_TestClassification TestClassification
