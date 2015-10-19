@@ -155,6 +155,9 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
     widget_ = widget;
   }
+  void OnAcceleratedWidgetDestroyed() override {
+    NOTREACHED();
+  }
   void OnActivationChanged(bool active) override {}
 
  private:

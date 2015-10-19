@@ -89,8 +89,8 @@ void PlatformWindowAndroid::SurfaceCreated(JNIEnv* env,
 
 void PlatformWindowAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
   DCHECK(window_);
+  delegate_->OnAcceleratedWidgetDestroyed();
   ReleaseWindow();
-  delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 0.f);
 }
 
 void PlatformWindowAndroid::SurfaceSetSize(JNIEnv* env,

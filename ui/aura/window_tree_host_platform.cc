@@ -168,6 +168,12 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(
   WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
 
+void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
+  gfx::AcceleratedWidget widget = compositor()->ReleaseAcceleratedWidget();
+  DCHECK_EQ(widget, widget_);
+  widget_ = gfx::kNullAcceleratedWidget;
+}
+
 void WindowTreeHostPlatform::OnActivationChanged(bool active) {
   if (active)
     OnHostActivated();

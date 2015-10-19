@@ -129,6 +129,10 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
     accelerated_widget_ = widget;
   }
 
+  void OnAcceleratedWidgetDestroyed() override {
+    NOTREACHED();
+  }
+
   void OnActivationChanged(bool active) override {};
 
   gfx::AcceleratedWidget accelerated_widget() const {

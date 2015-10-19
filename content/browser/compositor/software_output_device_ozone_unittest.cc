@@ -41,6 +41,9 @@ class TestPlatformWindowDelegate : public ui::PlatformWindowDelegate {
                                     float device_pixel_ratio) override {
     widget_ = widget;
   }
+  void OnAcceleratedWidgetDestroyed() override {
+    NOTREACHED();
+  }
   void OnActivationChanged(bool active) override {}
 
  private:

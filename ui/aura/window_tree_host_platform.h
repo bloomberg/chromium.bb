@@ -52,6 +52,7 @@ class AURA_EXPORT WindowTreeHostPlatform
   void OnLostCapture() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
                                     float device_pixel_ratio) override;
+  void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
   gfx::AcceleratedWidget widget_;

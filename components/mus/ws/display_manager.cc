@@ -351,6 +351,10 @@ void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
 
+void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
+  NOTREACHED();
+}
+
 void DefaultDisplayManager::OnActivationChanged(bool active) {}
 
 }  // namespace mus
