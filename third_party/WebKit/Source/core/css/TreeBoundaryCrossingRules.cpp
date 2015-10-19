@@ -35,6 +35,30 @@
 
 namespace blink {
 
+static bool shouldCheckScope(const Element& element, const Node& scopingNode, bool isInnerTreeScope)
+{
+    if (isInnerTreeScope && element.treeScope() != scopingNode.treeScope()) {
+        // Check if |element| may be affected by a ::content rule in |scopingNode|'s style.
+        // If |element| is a descendant of a shadow host which is ancestral to |scopingNode|,
+        // the |element| should be included for rule collection.
+        // Skip otherwise.
+        const TreeScope* scope = &scopingNode.treeScope();
+        while (scope && scope->parentTreeScope() != &element.treeScope())
+            scope = scope->parentTreeScope();
+        Element* shadowHost = scope ? scope->rootNode().shadowHost() : nullptr;
+        return shadowHost && element.isDescendantOf(shadowHost);
+    }
+
+    // When |element| can be distributed to |scopingNode| via <shadow>, ::content rule can match,
+    // thus the case should be included.
+    if (!isInnerTreeScope && scopingNode.parentOrShadowHostNode() == element.treeScope().rootNode().parentOrShadowHostNode())
+        return true;
+
+    // Obviously cases when ancestor scope has /deep/ or ::shadow rule should be included.
+    // Skip otherwise.
+    return scopingNode.treeScope().scopedStyleResolver()->hasDeepOrShadowSelector();
+}
+
 void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     if (m_scopingNodes.isEmpty())
@@ -48,12 +72,15 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
 
-    for (const auto& scope : m_scopingNodes) {
+    for (const auto& scopingNode : m_scopingNodes) {
+        // Skip rule collection for element when tree boundary crossing rules of scopingNode's
+        // scope can never apply to it.
+        bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
+        if (!shouldCheckScope(*element, *scopingNode, isInnerTreeScope))
+            continue;
 
-        bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scope->treeScope());
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
-
-        scope->treeScope().scopedStyleResolver()->collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules, cascadeOrder);
+        scopingNode->treeScope().scopedStyleResolver()->collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules, cascadeOrder);
 
         ++innerCascadeOrder;
         --outerCascadeOrder;

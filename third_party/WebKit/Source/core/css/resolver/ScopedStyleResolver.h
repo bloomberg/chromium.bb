@@ -64,6 +64,7 @@ public:
     void collectFeaturesTo(RuleFeatureSet&, WillBeHeapHashSet<RawPtrWillBeMember<const StyleSheetContents>>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();
     void collectViewportRulesTo(ViewportStyleResolver*) const;
+    bool hasDeepOrShadowSelector() const { return m_hasDeepOrShadowSelector; }
 
     DECLARE_TRACE();
 
@@ -109,6 +110,7 @@ private:
     using CSSStyleSheetRuleSubSet = WillBeHeapVector<OwnPtrWillBeMember<RuleSubSet>>;
 
     OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> m_treeBoundaryCrossingRuleSet;
+    bool m_hasDeepOrShadowSelector = false;
 };
 
 } // namespace blink

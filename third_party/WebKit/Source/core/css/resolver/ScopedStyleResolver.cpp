@@ -114,6 +114,7 @@ void ScopedStyleResolver::resetAuthorStyle()
     m_authorStyleSheets.clear();
     m_keyframesRuleMap.clear();
     m_treeBoundaryCrossingRuleSet = nullptr;
+    m_hasDeepOrShadowSelector = false;
 }
 
 StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const StringImpl* animationName)
@@ -214,6 +215,9 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     bool isDocumentScope = treeScope().rootNode().isDocumentNode();
     if (authorRules.treeBoundaryCrossingRules().isEmpty() && (isDocumentScope || authorRules.shadowDistributedRules().isEmpty()))
         return;
+
+    if (!authorRules.treeBoundaryCrossingRules().isEmpty())
+        m_hasDeepOrShadowSelector = true;
 
     OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
     addRules(ruleSetForScope.get(), authorRules.treeBoundaryCrossingRules());
