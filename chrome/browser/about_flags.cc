@@ -832,7 +832,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-web-bluetooth",
      IDS_FLAGS_WEB_BLUETOOTH_NAME,
      IDS_FLAGS_WEB_BLUETOOTH_DESCRIPTION,
-     kOsAll,
+     kOsCrOS | kOsMac | kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableWebBluetooth)},
 #if defined(ENABLE_EXTENSIONS)
     {"enable-ble-advertising-in-apps",
