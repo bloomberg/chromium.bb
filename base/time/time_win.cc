@@ -56,7 +56,7 @@ namespace {
 // 100-nanosecond intervals since January 1, 1601 (UTC)."
 int64 FileTimeToMicroseconds(const FILETIME& ft) {
   // Need to bit_cast to fix alignment, then divide by 10 to convert
-  // 100-nanoseconds to milliseconds. This only works on little-endian
+  // 100-nanoseconds to microseconds. This only works on little-endian
   // machines.
   return bit_cast<int64, FILETIME>(ft) / 10;
 }
@@ -65,7 +65,7 @@ void MicrosecondsToFileTime(int64 us, FILETIME* ft) {
   DCHECK_GE(us, 0LL) << "Time is less than 0, negative values are not "
       "representable in FILETIME";
 
-  // Multiply by 10 to convert milliseconds to 100-nanoseconds. Bit_cast will
+  // Multiply by 10 to convert microseconds to 100-nanoseconds. Bit_cast will
   // handle alignment problems. This only works on little-endian machines.
   *ft = bit_cast<FILETIME, int64>(us * 10);
 }
