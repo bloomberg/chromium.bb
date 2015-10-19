@@ -109,6 +109,7 @@ source_set("test_support") {
     "test/layer_animator_test_controller.cc",
     "test/layer_animator_test_controller.h",
     "test/test_compositor_host.h",
+    "test/test_compositor_host_android.cc",
     "test/test_compositor_host_mac.mm",
     "test/test_compositor_host_win.cc",
     "test/test_layer_animation_delegate.cc",
@@ -156,53 +157,50 @@ source_set("test_support") {
   }
 }
 
-if (!is_android) {
-  # TODO(GYP): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("compositor_unittests_run") {
-    testonly = true
-    deps = [
-      ":compositor_unittests",
-    ]
-  }
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("compositor_unittests_run") {
+  testonly = true
+  deps = [
+    ":compositor_unittests",
+  ]
+}
 
-  test("compositor_unittests") {
-    sources = [
-      "callback_layer_animation_observer_unittest.cc",
-      "compositor_unittest.cc",
-      "layer_animation_element_unittest.cc",
-      "layer_animation_sequence_unittest.cc",
-      "layer_animator_unittest.cc",
-      "layer_owner_unittest.cc",
-      "layer_unittest.cc",
-      "run_all_unittests.cc",
-      "transform_animation_curve_adapter_unittest.cc",
-    ]
+test("compositor_unittests") {
+  sources = [
+    "callback_layer_animation_observer_unittest.cc",
+    "compositor_unittest.cc",
+    "layer_animation_element_unittest.cc",
+    "layer_animation_sequence_unittest.cc",
+    "layer_animator_unittest.cc",
+    "layer_owner_unittest.cc",
+    "layer_unittest.cc",
+    "run_all_unittests.cc",
+    "transform_animation_curve_adapter_unittest.cc",
+  ]
 
-    data = [
-      "//ui/gfx/test/data/compositor/",
-    ]
+  data = [
+    "//ui/gfx/test/data/compositor/",
+  ]
 
-    deps = [
-      ":compositor",
-      ":test_support",
-      "//base",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//cc",
-      "//cc:test_support",
-      "//skia",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/base",
-      "//ui/gfx",
-      "//ui/gfx/geometry",
-      "//ui/gl",
-      "//ui/resources",
-    ]
-
-    if (is_linux) {
-      deps += [ "//third_party/mesa:osmesa" ]
-    }
+  deps = [
+    ":compositor",
+    ":test_support",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//cc",
+    "//cc:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/resources",
+  ]
+  if (is_linux) {
+    deps += [ "//third_party/mesa:osmesa" ]
   }
 }

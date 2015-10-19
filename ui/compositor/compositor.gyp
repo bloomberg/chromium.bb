@@ -127,6 +127,7 @@
         'test/layer_animator_test_controller.cc',
         'test/layer_animator_test_controller.h',
         'test/test_compositor_host.h',
+        'test/test_compositor_host_android.cc',
         'test/test_compositor_host_mac.mm',
         'test/test_compositor_host_ozone.cc',
         'test/test_compositor_host_win.cc',
@@ -153,7 +154,7 @@
     },
     {
       'target_name': 'compositor_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
@@ -197,6 +198,11 @@
             }],
           ],
         }],
+        ['OS == "android"', {
+          'dependencies': [
+            '../../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
     },
   ],
@@ -221,5 +227,21 @@
         },
       ],
     }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'compositor_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'compositor_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'compositor_unittests',
+          },
+          'includes': [
+            '../../build/apk_test.gypi',
+          ],
+        },
+    ]}]
   ],
 }
