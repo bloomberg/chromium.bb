@@ -1193,6 +1193,8 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     if (!positionedDescendants)
         return;
 
+    bool isPaginated = view()->layoutState()->isPaginated();
+
     for (auto* positionedObject : *positionedDescendants) {
         positionedObject->setMayNeedPaintInvalidation();
 
@@ -1213,6 +1215,20 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         if (relayoutChildren && positionedObject->needsPreferredWidthsRecalculation())
             positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
 
+        LayoutUnit logicalTopEstimate;
+        bool needsBlockDirectionLocationSetBeforeLayout = isPaginated && !positionedObject->isUnsplittableForPagination();
+        if (needsBlockDirectionLocationSetBeforeLayout) {
+            // Out-of-flow objects are normally positioned after layout (while in-flow objects are
+            // positioned before layout). If the child object is paginated in the same context as
+            // we are, estimate its logical top now. We need to know this up-front, to correctly
+            // evaluate if we need to mark for relayout, and, if our estimate is correct, we'll
+            // even be able to insert correct pagination struts on the first attempt.
+            LogicalExtentComputedValues computedValues;
+            positionedObject->computeLogicalHeight(positionedObject->logicalHeight(), positionedObject->logicalTop(), computedValues);
+            logicalTopEstimate = computedValues.m_position;
+            positionedObject->setLogicalTop(logicalTopEstimate);
+        }
+
         if (!positionedObject->needsLayout())
             positionedObject->markForPaginationRelayoutIfNeeded(layoutScope);
 
@@ -1222,6 +1238,10 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
             positionedObject->setNeedsLayout(LayoutInvalidationReason::AncestorMoved, MarkOnlyThis);
 
         positionedObject->layoutIfNeeded();
+
+        // Lay out again if our estimate was wrong.
+        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopEstimate != logicalTopForChild(*positionedObject))
+            positionedObject->forceChildLayout();
     }
 }
 
