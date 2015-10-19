@@ -7,7 +7,7 @@
 #
 # You can auto-update this file with ./pnacl/deps_update.py
 
-binutils=c030c3cc99f3843affcf339afb01fc94a87a5487
+binutils=d5a23a319f685b7b853346eafe800d8ba8a69bac
 #
 # Three lines avoid merge conflicts.
 #
@@ -15,7 +15,7 @@ clang=605ea9bc25022747e435e57ee7b578e1fc220a63
 #
 # Three lines avoid merge conflicts.
 #
-llvm=3c7d0f73fab271f77fbb9e838d8128ce5cd4399e
+llvm=e37ffc2f0b48c8f900660f46c45c8a01f99d1d9b
 #
 # Three lines avoid merge conflicts.
 #
@@ -31,7 +31,7 @@ libcxxabi=de05b63efeb5df83abe927c08f330c35995c82a7
 #
 # Three lines avoid merge conflicts.
 #
-nacl_newlib=373135ec5241d09138aa56603742b94b3b64ea1d
+nacl_newlib=3b7c4ddb17a22f463043363e18adabe0b325c5b6
 #
 # Three lines avoid merge conflicts.
 #
