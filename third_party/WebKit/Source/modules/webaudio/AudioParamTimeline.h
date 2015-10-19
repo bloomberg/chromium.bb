@@ -63,7 +63,8 @@ public:
     // render quantum.
     float valuesForFrameRange(size_t startFrame, size_t endFrame, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
 
-    bool hasValues() { return m_events.size(); }
+    // Returns true if this AudioParam has any events on it.
+    bool hasValues() const;
 
 private:
     class ParamEvent {
@@ -110,7 +111,7 @@ private:
     String eventToString(const ParamEvent&);
     Vector<ParamEvent> m_events;
 
-    Mutex m_eventsLock;
+    mutable Mutex m_eventsLock;
 };
 
 } // namespace blink

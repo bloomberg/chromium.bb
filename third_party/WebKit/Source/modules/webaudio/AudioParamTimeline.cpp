@@ -173,6 +173,8 @@ void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time
 
 void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
+
     // Sanity check the event. Be super careful we're not getting infected with NaN or Inf. These
     // should have been handled by the caller.
     bool isValid = event.type() < ParamEvent::LastType
@@ -227,6 +229,27 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
     }
 
     m_events.insert(i, event);
+}
+
+bool AudioParamTimeline::hasValues() const
+{
+    MutexTryLocker tryLocker(m_eventsLock);
+
+    if (tryLocker.locked())
+        return m_events.size();
+
+    // Can't get the lock so that means the main thread is trying to insert an event.  Just
+    // return true then.  If the main thread releases the lock before valueForContextTime or
+    // valuesForFrameRange runs, then the there will be an event on the timeline, so everything
+    // is fine.  If the lock is held so that neither valueForContextTime nor valuesForFrameRange
+    // can run, this is ok too, because they have tryLocks to produce a default value.  The
+    // event will then get processed in the next rendering quantum.
+    //
+    // Don't want to return false here because that would confuse the processing of the timeline
+    // if previously we returned true and now suddenly return false, only to return true on the
+    // next rendering quantum.  Currently, once a timeline has been introduced it is always true
+    // forever because m_events never shrinks.
+    return true;
 }
 
 void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
