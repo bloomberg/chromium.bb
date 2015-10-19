@@ -15,6 +15,7 @@
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
+#include "components/web_view/public/interfaces/frame.mojom.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -329,13 +330,19 @@ class EmbedderData {
 class PDFView : public mojo::ApplicationDelegate,
                 public mus::WindowTreeDelegate,
                 public mus::WindowObserver,
-                public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
+                public web_view::mojom::FrameClient,
+                public mojo::InterfaceFactory<mus::mojom::WindowTreeClient>,
+                public mojo::InterfaceFactory<web_view::mojom::FrameClient> {
  public:
   PDFView(mojo::InterfaceRequest<mojo::Application> request,
           mojo::URLResponsePtr response)
-      : app_(this, request.Pass(), base::Bind(&PDFView::OnTerminate,
-                                              base::Unretained(this))),
-        current_page_(0), page_count_(0), doc_(nullptr) {
+      : app_(this,
+             request.Pass(),
+             base::Bind(&PDFView::OnTerminate, base::Unretained(this))),
+        current_page_(0),
+        page_count_(0),
+        doc_(nullptr),
+        frame_client_binding_(this) {
     FetchPDF(response.Pass());
   }
 
@@ -353,6 +360,7 @@ class PDFView : public mojo::ApplicationDelegate,
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<mus::mojom::WindowTreeClient>(this);
+    connection->AddService<web_view::mojom::FrameClient>(this);
     return true;
   }
 
@@ -413,6 +421,51 @@ class PDFView : public mojo::ApplicationDelegate,
       app_.Quit();
   }
 
+  // web_view::mojom::FrameClient:
+  void OnConnect(web_view::mojom::FramePtr frame,
+                 uint32_t change_id,
+                 uint32_t view_id,
+                 web_view::mojom::WindowConnectType view_connect_type,
+                 mojo::Array<web_view::mojom::FrameDataPtr> frame_data,
+                 int64_t navigation_start_time_ticks,
+                 const OnConnectCallback& callback) override {
+    callback.Run();
+
+    frame_ = frame.Pass();
+    frame_->DidCommitProvisionalLoad();
+  }
+  void OnFrameAdded(uint32_t change_id,
+                    web_view::mojom::FrameDataPtr frame_data) override {}
+  void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override {}
+  void OnFrameClientPropertyChanged(uint32_t frame_id,
+                                    const mojo::String& name,
+                                    mojo::Array<uint8_t> new_value) override {}
+  void OnPostMessageEvent(uint32_t source_frame_id,
+                          uint32_t target_frame_id,
+                          web_view::mojom::HTMLMessageEventPtr event) override {
+  }
+  void OnWillNavigate(const mojo::String& origin,
+                      const OnWillNavigateCallback& callback) override {}
+  void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override {}
+  void OnDispatchFrameLoadEvent(uint32_t frame_id) override {}
+  void Find(int32_t request_id,
+            const mojo::String& search_text,
+            web_view::mojom::FindOptionsPtr options,
+            bool wrap_within_frame,
+            const FindCallback& callback) override {
+    NOTIMPLEMENTED();
+    bool found_results = false;
+    callback.Run(found_results);
+  }
+  void StopFinding(bool clear_selection) override {}
+  void HighlightFindResults(int32_t request_id,
+                            const mojo::String& search_test,
+                            web_view::mojom::FindOptionsPtr options,
+                            bool reset) override {
+    NOTIMPLEMENTED();
+  }
+  void StopHighlightingFindResults() override {}
+
   // Overridden from mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
   void Create(
       mojo::ApplicationConnection* connection,
@@ -420,6 +473,13 @@ class PDFView : public mojo::ApplicationDelegate,
     mus::WindowTreeConnection::Create(
         this, request.Pass(),
         mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+  }
+
+  // mojo::InterfaceFactory<web_view::mojom::FrameClient>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<web_view::mojom::FrameClient> request) override {
+    frame_client_binding_.Bind(request.Pass());
   }
 
   void DrawBitmap(EmbedderData* embedder_data) {
@@ -469,6 +529,9 @@ class PDFView : public mojo::ApplicationDelegate,
   int page_count_;
   FPDF_DOCUMENT doc_;
   std::map<mus::Window*, EmbedderData*> embedder_for_roots_;
+
+  web_view::mojom::FramePtr frame_;
+  mojo::Binding<web_view::mojom::FrameClient> frame_client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFView);
 };

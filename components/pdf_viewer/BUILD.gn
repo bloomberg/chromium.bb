@@ -17,6 +17,7 @@ mojo_native_application("pdf_viewer") {
     "//components/mus/public/cpp",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
+    "//components/web_view/public/interfaces",
     "//gpu",
     "//mojo/application/public/cpp",
     "//mojo/common",
