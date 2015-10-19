@@ -319,8 +319,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     : host_(widget_host),
       outstanding_vsync_requests_(0),
       is_showing_(!widget_host->is_hidden()),
-      is_window_visible_(true),
-      is_window_activity_started_(true),
       content_view_core_(nullptr),
       content_view_core_window_android_(nullptr),
       ime_adapter_android_(this),
@@ -533,7 +531,10 @@ void RenderWidgetHostViewAndroid::Hide() {
     return;
 
   is_showing_ = false;
-  HideInternal();
+
+  bool hide_frontbuffer = true;
+  bool stop_observing_root_window = true;
+  HideInternal(hide_frontbuffer, stop_observing_root_window);
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
@@ -1359,10 +1360,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {
-  bool show = is_showing_ && is_window_activity_started_ && is_window_visible_;
-  if (!show)
-    return;
-
+  DCHECK(is_showing_);
   if (!host_ || !host_->is_hidden())
     return;
 
@@ -1382,20 +1380,9 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
   }
 }
 
-void RenderWidgetHostViewAndroid::HideInternal() {
-  DCHECK(!is_showing_ || !is_window_activity_started_ || !is_window_visible_)
-      << "Hide called when the widget should be shown.";
-
-  // Only preserve the frontbuffer if the activity was stopped while the
-  // window is still visible. This avoids visual artificts when transitioning
-  // between activities.
-  bool hide_frontbuffer = is_window_activity_started_ || !is_window_visible_;
-
-  // Only stop observing the root window if the widget has been explicitly
-  // hidden and the frontbuffer is being cleared. This allows window visibility
-  // notifications to eventually clear the frontbuffer.
-  bool stop_observing_root_window = !is_showing_ && hide_frontbuffer;
-
+void RenderWidgetHostViewAndroid::HideInternal(
+    bool hide_frontbuffer,
+    bool stop_observing_root_window) {
   if (hide_frontbuffer) {
     if (layer_.get() && locks_on_frame_count_ == 0)
       layer_->SetHideLayerAndSubtree(true);
@@ -1403,10 +1390,8 @@ void RenderWidgetHostViewAndroid::HideInternal() {
     frame_evictor_->SetVisible(false);
   }
 
-  if (stop_observing_root_window) {
-    DCHECK(!is_showing_);
+  if (stop_observing_root_window)
     StopObservingRootWindow();
-  }
 
   if (!host_ || host_->is_hidden())
     return;
@@ -1481,9 +1466,6 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   if (!observing_root_window_)
     return;
 
-  // Reset window state variables to their defaults.
-  is_window_activity_started_ = true;
-  is_window_visible_ = true;
   observing_root_window_ = false;
   content_view_core_window_android_->RemoveObserver(this);
 }
@@ -1840,19 +1822,14 @@ void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
 }
 
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
-  TRACE_EVENT1("browser",
-               "RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged",
-               "visible", visible);
-  DCHECK(observing_root_window_);
-  if (is_window_visible_ == visible)
-    return;
-
-  is_window_visible_ = visible;
-
-  if (visible)
+  DCHECK(is_showing_);
+  if (visible) {
     ShowInternal();
-  else
-    HideInternal();
+  } else {
+    bool hide_frontbuffer = true;
+    bool stop_observing_root_window = false;
+    HideInternal(hide_frontbuffer, stop_observing_root_window);
+  }
 }
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
@@ -1899,15 +1876,15 @@ void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {
 
 void RenderWidgetHostViewAndroid::OnActivityStopped() {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityStopped");
-  DCHECK(observing_root_window_);
-  is_window_activity_started_ = false;
-  HideInternal();
+  DCHECK(is_showing_);
+  bool hide_frontbuffer = false;
+  bool stop_observing_root_window = false;
+  HideInternal(hide_frontbuffer, stop_observing_root_window);
 }
 
 void RenderWidgetHostViewAndroid::OnActivityStarted() {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityStarted");
-  DCHECK(observing_root_window_);
-  is_window_activity_started_ = true;
+  DCHECK(is_showing_);
   ShowInternal();
 }
 

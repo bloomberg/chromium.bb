@@ -607,8 +607,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onStopWithNative() {
-        Tab tab = getActivityTab();
-        if (tab != null) tab.onActivityStop();
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         if (mGSAServiceClient != null) {
             mGSAServiceClient.disconnect();

@@ -1082,13 +1082,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         onActivityStartInternal(true);
     }
 
-    /**
-     * Called on the foreground tab when the Activity showing the Tab gets stopped.
-     */
-    public void onActivityStop() {
-        hide();
-    }
-
     protected void onActivityStartInternal(boolean showNow) {
         if (isHidden()) {
             if (showNow) show(TabSelectionType.FROM_USER);
@@ -1160,34 +1153,29 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Triggers the hiding logic for the view backing the tab.
      */
     public final void hide() {
-        try {
-            TraceEvent.begin("Tab.hide");
-            if (isHidden()) return;
-            mIsHidden = true;
+        if (isHidden()) return;
+        mIsHidden = true;
 
-            if (mContentViewCore != null) mContentViewCore.onHide();
+        if (mContentViewCore != null) mContentViewCore.onHide();
 
-            // Clean up any fullscreen state that might impact other tabs.
-            if (mFullscreenManager != null) {
-                mFullscreenManager.setPersistentFullscreenMode(false);
-                mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
-                mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
-                mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
-            }
-
-            if (mTabUma != null) mTabUma.onHide();
-
-            mTabRedirectHandler.clear();
-
-            cancelEnableFullscreenLoadDelay();
-
-            // Allow this tab's NativePage to be frozen if it stays hidden for a while.
-            NativePageAssassin.getInstance().tabHidden(this);
-
-            for (TabObserver observer : mObservers) observer.onHidden(this);
-        } finally {
-            TraceEvent.end("Tab.hide");
+        // Clean up any fullscreen state that might impact other tabs.
+        if (mFullscreenManager != null) {
+            mFullscreenManager.setPersistentFullscreenMode(false);
+            mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
+            mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+            mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
         }
+
+        if (mTabUma != null) mTabUma.onHide();
+
+        mTabRedirectHandler.clear();
+
+        cancelEnableFullscreenLoadDelay();
+
+        // Allow this tab's NativePage to be frozen if it stays hidden for a while.
+        NativePageAssassin.getInstance().tabHidden(this);
+
+        for (TabObserver observer : mObservers) observer.onHidden(this);
     }
 
     /**
