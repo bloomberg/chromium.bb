@@ -736,8 +736,8 @@ class ChunkDemuxerTest : public ::testing::Test {
   // bear-320x240.webm : [0-501)       [801-2736)
   // bear-640x360.webm :       [527-793)
   //
-  // bear-320x240.webm AudioDecoderConfig returns 3863 for its extra_data size.
-  // bear-640x360.webm AudioDecoderConfig returns 3935 for its extra_data size.
+  // bear-320x240.webm AudioDecoderConfig returns 3863 for its extra_data_size()
+  // bear-640x360.webm AudioDecoderConfig returns 3935 for its extra_data_size()
   // The resulting audio stream returns data from each file for the following
   // time ranges.
   // bear-320x240.webm : [0-524)       [779-2736)
@@ -1247,7 +1247,8 @@ TEST_F(ChunkDemuxerTest, Init) {
       EXPECT_EQ(32, config.bits_per_channel());
       EXPECT_EQ(CHANNEL_LAYOUT_STEREO, config.channel_layout());
       EXPECT_EQ(44100, config.samples_per_second());
-      EXPECT_GT(config.extra_data().size(), 0u);
+      EXPECT_TRUE(config.extra_data());
+      EXPECT_GT(config.extra_data_size(), 0u);
       EXPECT_EQ(kSampleFormatPlanarF32, config.sample_format());
       EXPECT_EQ(is_audio_encrypted,
                 audio_stream->audio_decoder_config().is_encrypted());
@@ -1316,7 +1317,8 @@ TEST_F(ChunkDemuxerTest, InitText) {
       EXPECT_EQ(32, config.bits_per_channel());
       EXPECT_EQ(CHANNEL_LAYOUT_STEREO, config.channel_layout());
       EXPECT_EQ(44100, config.samples_per_second());
-      EXPECT_GT(config.extra_data().size(), 0u);
+      EXPECT_TRUE(config.extra_data());
+      EXPECT_GT(config.extra_data_size(), 0u);
       EXPECT_EQ(kSampleFormatPlanarF32, config.sample_format());
       EXPECT_EQ(is_audio_encrypted,
                 audio_stream->audio_decoder_config().is_encrypted());
@@ -2885,7 +2887,7 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Audio) {
   const AudioDecoderConfig& audio_config_1 = audio->audio_decoder_config();
   ASSERT_TRUE(audio_config_1.IsValidConfig());
   EXPECT_EQ(audio_config_1.samples_per_second(), 44100);
-  EXPECT_EQ(audio_config_1.extra_data().size(), 3863u);
+  EXPECT_EQ(audio_config_1.extra_data_size(), 3863u);
 
   ExpectRead(DemuxerStream::AUDIO, 0);
 
@@ -2899,7 +2901,7 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Audio) {
   const AudioDecoderConfig& audio_config_2 = audio->audio_decoder_config();
   ASSERT_TRUE(audio_config_2.IsValidConfig());
   EXPECT_EQ(audio_config_2.samples_per_second(), 44100);
-  EXPECT_EQ(audio_config_2.extra_data().size(), 3935u);
+  EXPECT_EQ(audio_config_2.extra_data_size(), 3935u);
 
   // The next config change is from a splice frame representing an overlap of
   // buffers from config 2 by buffers from config 1.

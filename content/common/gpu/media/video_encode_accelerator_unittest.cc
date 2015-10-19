@@ -28,7 +28,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
@@ -660,11 +659,11 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   if (IsVP8(profile_))
     config.Initialize(media::kCodecVP8, media::VP8PROFILE_ANY, kInputFormat,
                       media::COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, media::EmptyExtraData(), false);
+                      natural_size, NULL, 0, false);
   else if (IsH264(profile_))
     config.Initialize(media::kCodecH264, media::H264PROFILE_MAIN, kInputFormat,
                       media::COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, media::EmptyExtraData(), false);
+                      natural_size, NULL, 0, false);
   else
     LOG_ASSERT(0) << "Invalid profile " << profile_;
 

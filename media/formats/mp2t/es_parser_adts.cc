@@ -4,8 +4,6 @@
 
 #include "media/formats/mp2t/es_parser_adts.h"
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -221,9 +219,10 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
       (frequency_index << 7) +
       // channel_configuration is [0..7], per early out above.
       (channel_configuration << 3));
-  std::vector<uint8_t> extra_data;
-  extra_data.push_back(static_cast<uint8>(extra_data_int >> 8));
-  extra_data.push_back(static_cast<uint8>(extra_data_int & 0xff));
+  uint8 extra_data[2] = {
+      static_cast<uint8>(extra_data_int >> 8),
+      static_cast<uint8>(extra_data_int & 0xff)
+  };
 
   AudioDecoderConfig audio_decoder_config(
       kCodecAAC,
@@ -231,6 +230,7 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
       kADTSChannelLayoutTable[channel_configuration],
       extended_samples_per_second,
       extra_data,
+      arraysize(extra_data),
       false);
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {

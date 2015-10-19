@@ -11,7 +11,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/decrypting_demuxer_stream.h"
@@ -135,9 +134,9 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-    AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                    CHANNEL_LAYOUT_STEREO, 44100,
-                                    EmptyExtraData(), true);
+    AudioDecoderConfig input_config(
+        kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+        NULL, 0, true);
     InitializeAudioAndExpectStatus(input_config, PIPELINE_OK);
 
     const AudioDecoderConfig& output_config =
@@ -310,14 +309,18 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   EXPECT_EQ(input_config.coded_size(), output_config.coded_size());
   EXPECT_EQ(input_config.visible_rect(), output_config.visible_rect());
   EXPECT_EQ(input_config.natural_size(), output_config.natural_size());
-  ASSERT_EQ(input_config.extra_data(), output_config.extra_data());
+  ASSERT_EQ(input_config.extra_data_size(), output_config.extra_data_size());
+  if (input_config.extra_data_size() > 0) {
+    EXPECT_FALSE(output_config.extra_data());
+    EXPECT_EQ(0, memcmp(output_config.extra_data(), input_config.extra_data(),
+                        input_config.extra_data_size()));
+  }
 }
 
 TEST_F(DecryptingDemuxerStreamTest, Initialize_NullDecryptor) {
   ExpectDecryptorNotification(NULL, false);
   AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                  CHANNEL_LAYOUT_STEREO, 44100,
-                                  EmptyExtraData(), true);
+                                  CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
   InitializeAudioAndExpectStatus(input_config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
@@ -391,9 +394,9 @@ TEST_F(DecryptingDemuxerStreamTest, Reset_DuringDecryptorRequested) {
   // One for decryptor request, one for canceling request during Reset().
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .Times(2);
-  AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                  CHANNEL_LAYOUT_STEREO, 44100,
-                                  EmptyExtraData(), true);
+  AudioDecoderConfig input_config(
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+      NULL, 0, true);
   InitializeAudioAndExpectStatus(input_config, PIPELINE_ERROR_ABORT);
   Reset();
 }
@@ -479,9 +482,9 @@ TEST_F(DecryptingDemuxerStreamTest, Reset_DuringAbortedDemuxerRead) {
 TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_ConfigChanged) {
   Initialize();
 
-  AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                CHANNEL_LAYOUT_STEREO, 88200, EmptyExtraData(),
-                                true);
+  AudioDecoderConfig new_config(
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 88200, NULL,
+      0, true);
   input_audio_stream_->set_audio_decoder_config(new_config);
 
   EXPECT_CALL(*input_audio_stream_, Read(_))
@@ -512,9 +515,9 @@ TEST_F(DecryptingDemuxerStreamTest, Destroy_DuringDecryptorRequested) {
   // One for decryptor request, one for canceling request during Reset().
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .Times(2);
-  AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                  CHANNEL_LAYOUT_STEREO, 44100,
-                                  EmptyExtraData(), true);
+  AudioDecoderConfig input_config(
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+      NULL, 0, true);
   InitializeAudioAndExpectStatus(input_config, PIPELINE_ERROR_ABORT);
 }
 

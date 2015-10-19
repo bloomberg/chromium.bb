@@ -13,7 +13,6 @@
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -81,15 +80,14 @@ void MockFrameProvider::DoRead(const ReadCB& read_cb) {
     video_config = ::media::VideoDecoderConfig(
         ::media::kCodecH264, ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
         ::media::PIXEL_FORMAT_YV12, ::media::COLOR_SPACE_UNSPECIFIED,
-        coded_size, visible_rect, natural_size, ::media::EmptyExtraData(),
-        false);
+        coded_size, visible_rect, natural_size, NULL, 0, false);
 
     audio_config = ::media::AudioDecoderConfig(
       ::media::kCodecAAC,
       ::media::kSampleFormatS16,
       ::media::CHANNEL_LAYOUT_STEREO,
       44100,
-      ::media::EmptyExtraData(),
+      NULL, 0,
       false);
   }
 

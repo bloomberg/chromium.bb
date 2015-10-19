@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_log.h"
-#include "media/base/media_util.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/base/text_track_config.h"
@@ -103,7 +101,8 @@ class SourceBufferStreamTest : public testing::Test {
                              kSampleFormatPlanarF32,
                              CHANNEL_LAYOUT_STEREO,
                              1000,
-                             EmptyExtraData(),
+                             NULL,
+                             0,
                              false,
                              base::TimeDelta(),
                              0);
@@ -3604,7 +3603,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 // Test all the valid same timestamp cases for audio.
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
-                            44100, EmptyExtraData(), false);
+                            44100, NULL, 0, false);
   stream_.reset(new SourceBufferStream(config, media_log_, true));
   Seek(0);
   NewSegmentAppend("0K 0K 30K 30 60 60");
@@ -3615,7 +3614,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_Invalid_1) {
   EXPECT_MEDIA_LOG(ContainsSameTimestampAt30MillisecondsLog());
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
-                            44100, EmptyExtraData(), false);
+                            44100, NULL, 0, false);
   stream_.reset(new SourceBufferStream(config, media_log_, true));
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30 30K 60");
@@ -4174,8 +4173,12 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_ConfigChange) {
 
   SetAudioStream();
 
-  AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                CHANNEL_LAYOUT_MONO, 1000, EmptyExtraData(),
+  AudioDecoderConfig new_config(kCodecVorbis,
+                                kSampleFormatPlanarF32,
+                                CHANNEL_LAYOUT_MONO,
+                                1000,
+                                NULL,
+                                0,
                                 false);
   ASSERT_NE(new_config.channel_layout(), audio_config_.channel_layout());
 
@@ -4217,7 +4220,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
 
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                           CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(), false,
+                           CHANNEL_LAYOUT_STEREO, 4000, NULL, 0, false,
                            base::TimeDelta(), 0);
   stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
   // Equivalent to 0.5ms per frame.

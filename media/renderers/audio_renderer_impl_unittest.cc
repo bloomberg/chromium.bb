@@ -13,7 +13,6 @@
 #include "media/base/audio_splicer.h"
 #include "media/base/fake_audio_renderer_sink.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/renderers/audio_renderer_impl.h"
@@ -70,7 +69,8 @@ class AudioRendererImplTest : public ::testing::Test {
                                     kSampleFormat,
                                     kChannelLayout,
                                     kInputSamplesPerSecond,
-                                    EmptyExtraData(),
+                                    NULL,
+                                    0,
                                     false);
     demuxer_stream_.set_audio_decoder_config(audio_config);
 

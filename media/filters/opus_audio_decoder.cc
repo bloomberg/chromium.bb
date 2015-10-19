@@ -358,9 +358,7 @@ bool OpusAudioDecoder::ConfigureDecoder() {
 
   // Parse the Opus Extra Data.
   OpusExtraData opus_extra_data;
-  if (!ParseOpusExtraData(config_.extra_data().empty() ? nullptr :
-                              &config_.extra_data()[0],
-                          config_.extra_data().size(),
+  if (!ParseOpusExtraData(config_.extra_data(), config_.extra_data_size(),
                           config_,
                           &opus_extra_data))
     return false;

@@ -4,8 +4,6 @@
 
 #include "media/base/video_decoder_config.h"
 
-#include <vector>
-
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 
@@ -36,11 +34,13 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
   return kUnknownVideoCodec;
 }
 
+
 VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       format_(PIXEL_FORMAT_UNKNOWN),
-      is_encrypted_(false) {}
+      is_encrypted_(false) {
+}
 
 VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
                                        VideoCodecProfile profile,
@@ -49,10 +49,11 @@ VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
                                        const gfx::Size& coded_size,
                                        const gfx::Rect& visible_rect,
                                        const gfx::Size& natural_size,
-                                       const std::vector<uint8_t>& extra_data,
+                                       const uint8* extra_data,
+                                       size_t extra_data_size,
                                        bool is_encrypted) {
   Initialize(codec, profile, format, color_space, coded_size, visible_rect,
-             natural_size, extra_data, is_encrypted);
+             natural_size, extra_data, extra_data_size, is_encrypted);
 }
 
 VideoDecoderConfig::~VideoDecoderConfig() {}
@@ -64,8 +65,11 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     const gfx::Size& coded_size,
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size,
-                                    const std::vector<uint8_t>& extra_data,
+                                    const uint8* extra_data,
+                                    size_t extra_data_size,
                                     bool is_encrypted) {
+  CHECK((extra_data_size != 0) == (extra_data != NULL));
+
   codec_ = codec;
   profile_ = profile;
   format_ = format;
@@ -73,7 +77,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
-  extra_data_ = extra_data;
+  extra_data_.assign(extra_data, extra_data + extra_data_size);
   is_encrypted_ = is_encrypted;
 }
 
@@ -92,7 +96,9 @@ bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
           (coded_size() == config.coded_size()) &&
           (visible_rect() == config.visible_rect()) &&
           (natural_size() == config.natural_size()) &&
-          (extra_data() == config.extra_data()) &&
+          (extra_data_size() == config.extra_data_size()) &&
+          (!extra_data() || !memcmp(extra_data(), config.extra_data(),
+                                    extra_data_size())) &&
           (is_encrypted() == config.is_encrypted()));
 }
 
@@ -109,7 +115,7 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
     << "," << visible_rect().height() << "]"
     << " natural size: [" << natural_size().width()
     << "," << natural_size().height() << "]"
-    << " has extra data? " << (extra_data().empty() ? "false" : "true")
+    << " has extra data? " << (extra_data() ? "true" : "false")
     << " encrypted? " << (is_encrypted() ? "true" : "false");
   return s.str();
 }
@@ -138,6 +144,12 @@ std::string VideoDecoderConfig::GetHumanReadableCodecName() const {
   }
   NOTREACHED();
   return "";
+}
+
+const uint8* VideoDecoderConfig::extra_data() const {
+  if (extra_data_.empty())
+    return NULL;
+  return &extra_data_[0];
 }
 
 }  // namespace media

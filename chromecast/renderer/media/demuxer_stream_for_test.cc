@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/media/demuxer_stream_for_test.h"
-
 #include "base/threading/thread.h"
-#include "media/base/media_util.h"
+#include "chromecast/renderer/media/demuxer_stream_for_test.h"
 
 namespace chromecast {
 namespace media {
@@ -62,7 +60,8 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
                                      coded_size,
                                      visible_rect,
                                      natural_size,
-                                     ::media::EmptyExtraData(),
+                                     NULL,
+                                     0,
                                      false);
 }
 

@@ -4,7 +4,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -13,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "media/base/media_log.h"
-#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -284,9 +282,13 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       case DemuxerStream::AUDIO: {
         ASSERT_FALSE(audio_);
         audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO, true));
-        AudioDecoderConfig decoder_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                          CHANNEL_LAYOUT_STEREO, 1000,
-                                          EmptyExtraData(), false);
+        AudioDecoderConfig decoder_config(kCodecVorbis,
+                                          kSampleFormatPlanarF32,
+                                          CHANNEL_LAYOUT_STEREO,
+                                          1000,
+                                          NULL,
+                                          0,
+                                          false);
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
         ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config, new MediaLog()));
         break;

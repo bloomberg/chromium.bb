@@ -153,7 +153,7 @@ FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol)
 }
 
 bool FFmpegGlue::OpenContext() {
-  DCHECK(!open_called_) << "OpenContext() shouldn't be called twice.";
+  DCHECK(!open_called_) << "OpenContext() should't be called twice.";
 
   // If avformat_open_input() is called we have to take a slightly different
   // destruction path to avoid double frees.

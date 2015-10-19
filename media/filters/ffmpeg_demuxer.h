@@ -27,7 +27,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"
@@ -56,14 +55,9 @@ typedef scoped_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
 class FFmpegDemuxerStream : public DemuxerStream {
  public:
-  // Attempts to create FFmpegDemuxerStream form the given AVStream. Will return
-  // null if the AVStream cannot be translated into a valid decoder config.
-  //
-  // FFmpegDemuxerStream keeps a copy of |demuxer| and initializes itself using
-  // information inside |stream|. Both parameters must outlive |this|.
-  static scoped_ptr<FFmpegDemuxerStream> Create(FFmpegDemuxer* demuxer,
-                                                AVStream* stream);
-
+  // Keeps a copy of |demuxer| and initializes itself using information inside
+  // |stream|.  Both parameters must outlive |this|.
+  FFmpegDemuxerStream(FFmpegDemuxer* demuxer, AVStream* stream);
   ~FFmpegDemuxerStream() override;
 
   // Enqueues the given AVPacket. It is invalid to queue a |packet| after
@@ -129,15 +123,6 @@ class FFmpegDemuxerStream : public DemuxerStream {
  private:
   friend class FFmpegDemuxerTest;
 
-  // Use FFmpegDemuxerStream::Create to construct.
-  // Audio/Video streams must include their respective DecoderConfig. At most
-  // one DecoderConfig should be provided (leaving the other nullptr). Both
-  // configs should be null for text streams.
-  FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
-                      AVStream* stream,
-                      scoped_ptr<AudioDecoderConfig> audio_config,
-                      scoped_ptr<VideoDecoderConfig> video_config);
-
   // Runs |read_cb_| if present with the front of |buffer_queue_|, calling
   // NotifyCapacityAvailable() if capacity is still available.
   void SatisfyPendingRead();
@@ -155,8 +140,8 @@ class FFmpegDemuxerStream : public DemuxerStream {
   FFmpegDemuxer* demuxer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   AVStream* stream_;
-  scoped_ptr<AudioDecoderConfig> audio_config_;
-  scoped_ptr<VideoDecoderConfig> video_config_;
+  AudioDecoderConfig audio_config_;
+  VideoDecoderConfig video_config_;
   Type type_;
   Liveness liveness_;
   base::TimeDelta duration_;

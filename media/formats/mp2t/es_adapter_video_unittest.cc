@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
@@ -28,7 +27,7 @@ VideoDecoderConfig CreateFakeVideoConfig() {
   gfx::Size natural_size(320, 240);
   return VideoDecoderConfig(kCodecH264, H264PROFILE_MAIN, PIXEL_FORMAT_I420,
                             COLOR_SPACE_UNSPECIFIED, coded_size, visible_rect,
-                            natural_size, EmptyExtraData(), false);
+                            natural_size, NULL, 0, false);
 }
 
 StreamParserBuffer::BufferQueue

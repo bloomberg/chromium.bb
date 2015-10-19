@@ -328,8 +328,6 @@
         'base/media_resources.h',
         'base/media_switches.cc',
         'base/media_switches.h',
-        'base/media_util.cc',
-        'base/media_util.h',
         'base/mime_util.cc',
         'base/mime_util.h',
         'base/moving_average.cc',

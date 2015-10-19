@@ -14,7 +14,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
-#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
@@ -225,17 +224,17 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedPixelFormat) {
   // Ensure decoder handles unsupported pixel formats without crashing.
   VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
                             PIXEL_FORMAT_UNKNOWN, COLOR_SPACE_UNSPECIFIED,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            EmptyExtraData(), false);
+                            kCodedSize, kVisibleRect, kNaturalSize, NULL, 0,
+                            false);
   InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open2() fails.
   VideoDecoderConfig config(kCodecTheora, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat, COLOR_SPACE_UNSPECIFIED, kCodedSize,
-                            kVisibleRect, kNaturalSize, EmptyExtraData(),
-                            false);
+                            kVideoFormat, COLOR_SPACE_UNSPECIFIED,
+                            kCodedSize, kVisibleRect, kNaturalSize,
+                            NULL, 0, false);
   InitializeWithConfigWithResult(config, false);
 }
 
@@ -248,7 +247,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorZero) {
                             kCodedSize,
                             kVisibleRect,
                             natural_size,
-                            EmptyExtraData(),
+                            NULL,
+                            0,
                             false);
   InitializeWithConfigWithResult(config, false);
 }
@@ -262,7 +262,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorZero) {
                             kCodedSize,
                             kVisibleRect,
                             natural_size,
-                            EmptyExtraData(),
+                            NULL,
+                            0,
                             false);
   InitializeWithConfigWithResult(config, false);
 }
@@ -276,7 +277,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorNegative) {
                             kCodedSize,
                             kVisibleRect,
                             natural_size,
-                            EmptyExtraData(),
+                            NULL,
+                            0,
                             false);
   InitializeWithConfigWithResult(config, false);
 }
@@ -290,7 +292,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorNegative) {
                             kCodedSize,
                             kVisibleRect,
                             natural_size,
-                            EmptyExtraData(),
+                            NULL,
+                            0,
                             false);
   InitializeWithConfigWithResult(config, false);
 }
@@ -306,7 +309,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorTooLarge) {
                             kCodedSize,
                             kVisibleRect,
                             natural_size,
-                            EmptyExtraData(),
+                            NULL,
+                            0,
                             false);
   InitializeWithConfigWithResult(config, false);
 }
@@ -323,7 +327,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorTooLarge) {
                             kCodedSize,
                             kVisibleRect,
                             natural_size,
-                            EmptyExtraData(),
+                            NULL,
+                            0,
                             false);
   InitializeWithConfigWithResult(config, false);
 }

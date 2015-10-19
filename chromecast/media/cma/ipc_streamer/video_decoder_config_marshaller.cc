@@ -4,8 +4,6 @@
 
 #include "chromecast/media/cma/ipc_streamer/video_decoder_config_marshaller.h"
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_message.h"
@@ -66,10 +64,9 @@ void VideoDecoderConfigMarshaller::Write(
   RectMarshaller::Write(config.visible_rect(), msg);
   SizeMarshaller::Write(config.natural_size(), msg);
   CHECK(msg->WritePod(config.is_encrypted()));
-  CHECK(msg->WritePod(config.extra_data().size()));
-  if (!config.extra_data().empty())
-    CHECK(msg->WriteBuffer(&config.extra_data()[0],
-                           config.extra_data().size()));
+  CHECK(msg->WritePod(config.extra_data_size()));
+  if (config.extra_data_size() > 0)
+    CHECK(msg->WriteBuffer(config.extra_data(), config.extra_data_size()));
 }
 
 // static
@@ -84,7 +81,7 @@ void VideoDecoderConfigMarshaller::Write(
   gfx::Size natural_size;
   bool is_encrypted;
   size_t extra_data_size;
-  std::vector<uint8_t> extra_data;
+  scoped_ptr<uint8[]> extra_data;
 
   CHECK(msg->ReadPod(&codec));
   CHECK(msg->ReadPod(&profile));
@@ -106,14 +103,15 @@ void VideoDecoderConfigMarshaller::Write(
   CHECK_LE(color_space, ::media::COLOR_SPACE_MAX);
   CHECK_LT(extra_data_size, kMaxExtraDataSize);
   if (extra_data_size > 0) {
-    extra_data.resize(extra_data_size);
-    CHECK(msg->ReadBuffer(&extra_data[0], extra_data.size()));
+    extra_data.reset(new uint8[extra_data_size]);
+    CHECK(msg->ReadBuffer(extra_data.get(), extra_data_size));
   }
 
   return ::media::VideoDecoderConfig(
       codec, profile, format, color_space,
       coded_size, visible_rect, natural_size,
-      extra_data, is_encrypted);
+      extra_data.get(), extra_data_size,
+      is_encrypted);
 }
 
 }  // namespace media

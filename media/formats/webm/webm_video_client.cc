@@ -88,10 +88,16 @@ bool WebMVideoClient::InitializeConfig(
     return false;
   }
   gfx::Size natural_size = gfx::Size(display_width_, display_height_);
+  const uint8* extra_data = NULL;
+  size_t extra_data_size = 0;
+  if (codec_private.size() > 0) {
+    extra_data = &codec_private[0];
+    extra_data_size = codec_private.size();
+  }
 
   config->Initialize(video_codec, profile, format, COLOR_SPACE_HD_REC709,
-                     coded_size, visible_rect, natural_size, codec_private,
-                     is_encrypted);
+                     coded_size, visible_rect, natural_size, extra_data,
+                     extra_data_size, is_encrypted);
   return config->IsValidConfig();
 }
 

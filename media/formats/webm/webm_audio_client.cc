@@ -66,6 +66,13 @@ bool WebMAudioClient::InitializeConfig(
     sample_format = kSampleFormatF32;
   }
 
+  const uint8* extra_data = NULL;
+  size_t extra_data_size = 0;
+  if (codec_private.size() > 0) {
+    extra_data = &codec_private[0];
+    extra_data_size = codec_private.size();
+  }
+
   // Convert |codec_delay| from nanoseconds into frames.
   int codec_delay_in_frames = 0;
   if (codec_delay != -1) {
@@ -80,7 +87,8 @@ bool WebMAudioClient::InitializeConfig(
       sample_format,
       channel_layout,
       samples_per_second,
-      codec_private,
+      extra_data,
+      extra_data_size,
       is_encrypted,
       base::TimeDelta::FromMicroseconds(
           (seek_preroll != -1 ? seek_preroll : 0) / 1000),

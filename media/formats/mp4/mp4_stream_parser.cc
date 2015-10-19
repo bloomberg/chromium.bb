@@ -4,8 +4,6 @@
 
 #include "media/formats/mp4/mp4_stream_parser.h"
 
-#include <vector>
-
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -268,9 +266,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       is_audio_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_audio_track_encrypted_: " << is_audio_track_encrypted_;
-      audio_config.Initialize(codec, sample_format, channel_layout,
-                              sample_per_second, extra_data,
-                              is_audio_track_encrypted_, base::TimeDelta(), 0);
+      audio_config.Initialize(
+          codec, sample_format, channel_layout, sample_per_second,
+          extra_data.size() ? &extra_data[0] : NULL, extra_data.size(),
+          is_audio_track_encrypted_, base::TimeDelta(), 0);
       has_audio_ = true;
       audio_track_id_ = track->header.track_id;
     }
@@ -306,12 +305,12 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       is_video_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_video_track_encrypted_: " << is_video_track_encrypted_;
-      video_config.Initialize(
-          entry.video_codec, entry.video_codec_profile, PIXEL_FORMAT_YV12,
-          COLOR_SPACE_HD_REC709, coded_size, visible_rect, natural_size,
-          // No decoder-specific buffer needed for AVC;
-          // SPS/PPS are embedded in the video stream
-          std::vector<uint8_t>(), is_video_track_encrypted_);
+      video_config.Initialize(entry.video_codec, entry.video_codec_profile,
+                              PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709,
+                              coded_size, visible_rect, natural_size,
+                              // No decoder-specific buffer needed for AVC;
+                              // SPS/PPS are embedded in the video stream
+                              NULL, 0, is_video_track_encrypted_);
       has_video_ = true;
       video_track_id_ = track->header.track_id;
     }
