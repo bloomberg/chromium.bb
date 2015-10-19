@@ -22,14 +22,14 @@ layer at (0,0) size 800x601 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   LayoutInline {FONT} at (0,0) size 228x19 [color=#E91C05]
                     LayoutText {#text} at (23,6) size 228x19
                       text run at (23,6) width 228: "elcome to Pacific Shore Properties"
-                    LayoutBR {BR} at (251,21) size 0x0
+                    LayoutBR {BR} at (250,21) size 1x0
                 LayoutInline {FONT} at (0,0) size 359x16
                   LayoutText {#text} at (0,28) size 359x16
                     text run at (0,28) width 359: "Pacific Shore Properties is situated on beautiful Mayne Island."
               LayoutBlockFlow {P} at (5,65) size 760x48
-                LayoutInline {FONT} at (0,0) size 731x48
-                  LayoutText {#text} at (0,0) size 731x32
-                    text run at (0,0) width 731: "Mayne Island is one of the southern Gulf Islands, off the coast of British Columbia, Canada, between Vancouver and Vancouver"
+                LayoutInline {FONT} at (0,0) size 729x48
+                  LayoutText {#text} at (0,0) size 729x32
+                    text run at (0,0) width 729: "Mayne Island is one of the southern Gulf Islands, off the coast of British Columbia, Canada, between Vancouver and Vancouver"
                     text run at (0,16) width 38: "Island."
                   LayoutBR {BR} at (38,29) size 0x0
                   LayoutText {#text} at (0,32) size 85x16

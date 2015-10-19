@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 800x36
-        LayoutText {#text} at (20,0) size 745x36
+        LayoutText {#text} at (20,0) size 744x36
           text run at (20,0) width 489: "Here's the same two row table, but the second instance reverses the order of "
-          text run at (508,0) width 257: "the rows: note that it is the first row that"
-          text run at (20,18) width 207: "defines the width (which would "
-          text run at (226,18) width 267: "be right if this were table-layout: fixed ;-)"
+          text run at (508,0) width 256: "the rows: note that it is the first row that"
+          text run at (20,18) width 206: "defines the width (which would "
+          text run at (225,18) width 266: "be right if this were table-layout: fixed ;-)"
       LayoutTable {TABLE} at (0,52) size 800x39 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 798x37
           LayoutTableRow {TR} at (0,0) size 798x17

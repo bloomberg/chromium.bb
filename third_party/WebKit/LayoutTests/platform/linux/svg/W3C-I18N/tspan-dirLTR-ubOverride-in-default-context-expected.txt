@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (33,222) size 651x143
       LayoutSVGText {text} at (80,133) size 300x22 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 161x21
-          chunk 1 (middle anchor) text run 1 at (80.30,150.00) startOffset 0 endOffset 19 width 160.20: "dirLTR ubOverride \""
-        LayoutSVGTSpan {tspan} at (0,0) size 128x21
-          LayoutSVGInlineText {#text} at (160,0) size 128x21
-            chunk 1 (middle anchor) text run 1 at (240.50,150.00) startOffset 0 endOffset 17 width 127.20 LTR override: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} W3C"
-        LayoutSVGInlineText {#text} at (287,0) size 12x21
-          chunk 1 (middle anchor) text run 1 at (367.70,150.00) startOffset 0 endOffset 2 width 12.00: "\"!"
+        LayoutSVGInlineText {#text} at (0,0) size 159x21
+          chunk 1 (middle anchor) text run 1 at (80.97,150.00) startOffset 0 endOffset 19 width 158.86: "dirLTR ubOverride \""
+        LayoutSVGTSpan {tspan} at (0,0) size 129x21
+          LayoutSVGInlineText {#text} at (158,0) size 128x21
+            chunk 1 (middle anchor) text run 1 at (239.83,150.00) startOffset 0 endOffset 17 width 127.20 LTR override: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} W3C"
+        LayoutSVGInlineText {#text} at (286,0) size 12x21
+          chunk 1 (middle anchor) text run 1 at (367.03,150.00) startOffset 0 endOffset 2 width 12.00: "\"!"
       LayoutSVGText {text} at (20,171) size 85x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 85x12
           chunk 1 text run 1 at (20.00,180.00) startOffset 0 endOffset 18 width 84.60: "Reference graphic:"

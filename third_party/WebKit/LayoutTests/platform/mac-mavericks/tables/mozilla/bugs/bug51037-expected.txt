@@ -11,9 +11,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 36: "Left: "
         LayoutTextControl {INPUT} at (35.09,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,69) size 784x19
-        LayoutText {#text} at (0,0) size 35x18
-          text run at (0,0) width 35: "Top: "
-        LayoutTextControl {INPUT} at (34.22,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (0,0) size 34x18
+          text run at (0,0) width 34: "Top: "
+        LayoutTextControl {INPUT} at (33.09,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,104) size 784x18
         LayoutButton {INPUT} at (0,0) size 44.06x18 [bgcolor=#C0C0C0]
           LayoutBlockFlow (anonymous) at (8,2) size 28.06x13
@@ -23,7 +23,7 @@ layer at (46,45) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 35x13
       text run at (0,0) width 35: "120px"
-layer at (45,80) size 117x13
+layer at (44,80) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 35x13
       text run at (0,0) width 35: "120px"

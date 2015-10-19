@@ -54,8 +54,8 @@ layer at (0,0) size 800x600
               LayoutInline {B} at (0,0) size 24x19
                 LayoutText {#text} at (170,2) size 24x19
                   text run at (170,2) width 24: "row"
-              LayoutText {#text} at (194,2) size 76x19
-                text run at (194,2) width 76: " height 50%."
+              LayoutText {#text} at (193,2) size 77x19
+                text run at (193,2) width 77: " height 50%."
           LayoutTableRow {TR} at (0,149) size 276x47
             LayoutTableCell {TD} at (2,160) size 272x24 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 119x19
@@ -73,8 +73,8 @@ layer at (0,0) size 800x600
               LayoutInline {B} at (0,0) size 24x19
                 LayoutText {#text} at (170,2) size 24x19
                   text run at (170,2) width 24: "row"
-              LayoutText {#text} at (194,2) size 76x19
-                text run at (194,2) width 76: " height 50%."
+              LayoutText {#text} at (193,2) size 77x19
+                text run at (193,2) width 77: " height 50%."
           LayoutTableRow {TR} at (0,54) size 276x24
             LayoutTableCell {TD} at (2,54) size 272x24 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 119x19

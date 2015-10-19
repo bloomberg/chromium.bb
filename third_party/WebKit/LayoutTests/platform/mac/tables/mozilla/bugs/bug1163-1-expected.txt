@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 4: " "
       LayoutTable {TABLE} at (0,18) size 214x92 [border: (3px solid #0000BB)]
         LayoutBlockFlow {CAPTION} at (0,0) size 214x36
-          LayoutText {#text} at (9,0) size 196x36
-            text run at (9,0) width 196: "Testing BORDERCOLOR tag"
+          LayoutText {#text} at (10,0) size 194x36
+            text run at (10,0) width 194: "Testing BORDERCOLOR tag"
             text run at (25,18) width 164: "the border shood be blue."
         LayoutTableSection {TBODY} at (3,39) size 208x50
           LayoutTableRow {TR} at (0,2) size 208x22

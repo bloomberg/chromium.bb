@@ -4,9 +4,9 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (14,26) size 413x221
-      LayoutSVGText {text} at (26,26) size 398x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 398x17
-          chunk 1 (middle anchor) text run 1 at (26.23,40.00) startOffset 0 endOffset 57 width 397.55: "Test animation options for specifying the target element."
+      LayoutSVGText {text} at (27,26) size 396x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 396x17
+          chunk 1 (middle anchor) text run 1 at (27.11,40.00) startOffset 0 endOffset 57 width 395.77: "Test animation options for specifying the target element."
       LayoutSVGContainer {g} at (14,78) size 413x169
         LayoutSVGText {text} at (14,231) size 66x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 66x16

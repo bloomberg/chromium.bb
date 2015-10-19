@@ -7,12 +7,12 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 257x27
           chunk 1 text run 1 at (100.00,40.00) startOffset 0 endOffset 26 width 257.00: "Mouse event handlers test."
       LayoutSVGContainer {g} at (20,62) size 394x109 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,140.00)}]
-        LayoutSVGText {text} at (-40,-78) size 82x36 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 82x36
-            chunk 1 text run 1 at (-40.00,-50.00) startOffset 0 endOffset 6 width 82.00: "Target"
+        LayoutSVGText {text} at (-40,-78) size 80x36 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 80x36
+            chunk 1 text run 1 at (-40.00,-50.00) startOffset 0 endOffset 6 width 79.19: "Target"
         LayoutSVGText {text} at (60,-14) size 294x27 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 294x27
-            chunk 1 text run 1 at (60.00,7.00) startOffset 0 endOffset 32 width 294.00: "Use the target to trigger events"
+            chunk 1 text run 1 at (60.00,7.00) startOffset 0 endOffset 32 width 293.57: "Use the target to trigger events"
         LayoutSVGContainer {g} at (29,109) size 62x62
           LayoutSVGEllipse {circle} at (29,109) size 62x62 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=0.00] [cy=0.00] [r=30.00]
           LayoutSVGPath {line} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [x1=-30.00] [y1=0.00] [x2=30.00] [y2=0.00]

@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (1,1) size 96x17
                 text run at (1,1) width 96: "something else"
             LayoutTableCell {TD} at (113,199) size 669x20 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutTable {TABLE} at (1,1) size 218x18
-                LayoutTableSection {TBODY} at (0,0) size 218x18
-                  LayoutTableRow {TR} at (0,0) size 218x18
-                    LayoutTableCell {TD} at (0,0) size 218x18 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (0,0) size 218x17
-                        text run at (0,0) width 218: "Sunday April 11, 1999, 07:34 PM"
+              LayoutTable {TABLE} at (1,1) size 217x18
+                LayoutTableSection {TBODY} at (0,0) size 217x18
+                  LayoutTableRow {TR} at (0,0) size 217x18
+                    LayoutTableCell {TD} at (0,0) size 217x18 [r=0 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (0,0) size 217x17
+                        text run at (0,0) width 217: "Sunday April 11, 1999, 07:34 PM"

@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (100,86) size 102x17
+  LayoutSVGRoot {svg} at (100,86) size 101x17
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feFlood flood-color="#008000" flood-opacity="1.00"]
-    LayoutSVGText {text} at (100,86) size 102x17 contains 1 chunk(s)
+    LayoutSVGText {text} at (100,86) size 101x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 70x17
         chunk 1 text run 1 at (100.00,100.00) startOffset 0 endOffset 12 width 69.77: "Die ist ein "
-      LayoutSVGTSpan {tspan} at (0,0) size 29x17
-        LayoutSVGInlineText {#text} at (69,0) size 28x17
-          [filter="filter"] LayoutSVGResourceFilter {filter} at (167,84.30) size 33.06x20.40
-          chunk 1 text run 1 at (169.77,100.00) startOffset 0 endOffset 4 width 27.55: "Test"
-      LayoutSVGInlineText {#text} at (97,0) size 4x17
-        chunk 1 text run 1 at (197.31,100.00) startOffset 0 endOffset 1 width 4.00: "."
+      LayoutSVGTSpan {tspan} at (0,0) size 28x17
+        LayoutSVGInlineText {#text} at (69,0) size 27x17
+          [filter="filter"] LayoutSVGResourceFilter {filter} at (167.12,84.30) size 31.71x20.40
+          chunk 1 text run 1 at (169.77,100.00) startOffset 0 endOffset 4 width 26.43: "Test"
+      LayoutSVGInlineText {#text} at (96,0) size 4x17
+        chunk 1 text run 1 at (196.20,100.00) startOffset 0 endOffset 1 width 4.00: "."

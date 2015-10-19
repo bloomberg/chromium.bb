@@ -30,9 +30,9 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 28: "auto"
       LayoutBlockFlow (anonymous) at (0,110) size 784x36
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutText {#text} at (0,18) size 86x17
-          text run at (0,18) width 86: "COLSPANS "
-        LayoutBR {BR} at (85,32) size 1x0
+        LayoutText {#text} at (0,18) size 85x17
+          text run at (0,18) width 85: "COLSPANS "
+        LayoutBR {BR} at (84,32) size 1x0
       LayoutTable {TABLE} at (0,146) size 638x134 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 636x132
           LayoutTableRow {TR} at (0,2) size 636x104

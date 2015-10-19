@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H4} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 155x19
-          text run at (0,0) width 155: "Testcase distilled from "
-        LayoutInline {A} at (0,0) size 157x19 [color=#0000EE]
-          LayoutText {#text} at (155,0) size 157x19
-            text run at (155,0) width 157: "http://www.weather.com"
+        LayoutText {#text} at (0,0) size 154x19
+          text run at (0,0) width 154: "Testcase distilled from "
+        LayoutInline {A} at (0,0) size 155x19 [color=#0000EE]
+          LayoutText {#text} at (153,0) size 155x19
+            text run at (153,0) width 155: "http://www.weather.com"
       LayoutTable {TABLE} at (0,41.27) size 450x214
         LayoutTableSection {TBODY} at (0,0) size 450x214
           LayoutTableRow {TR} at (0,0) size 450x29

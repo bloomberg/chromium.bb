@@ -2,11 +2,11 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (10,7) size 392x293
+    LayoutSVGContainer {g} at (10,7) size 391x293
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (10,7) size 138x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 138x16
-          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 138.00: "Test for mask support"
+      LayoutSVGText {text} at (10,7) size 137x16 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 137x16
+          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 136.45: "Test for mask support"
       LayoutSVGRect {rect} at (10,30) size 100x260 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -43,9 +43,9 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 221x122
           [masker="mask3"] LayoutSVGResourceMasker {mask} at (60,200) size 200x100
           chunk 1 text run 1 at (60.00,280.00) startOffset 0 endOffset 3 width 220.05: "SVG"
-      LayoutSVGText {text} at (200,213) size 202x15 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 202x15
-          chunk 1 text run 1 at (200.00,225.00) startOffset 0 endOffset 36 width 202.00: "Text with mask containing rectangles"
+      LayoutSVGText {text} at (200,213) size 201x15 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 201x15
+          chunk 1 text run 1 at (200.00,225.00) startOffset 0 endOffset 36 width 200.67: "Text with mask containing rectangles"
       LayoutSVGText {text} at (200,228) size 106x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 106x15
           chunk 1 text run 1 at (200.00,240.00) startOffset 0 endOffset 20 width 106.00: "of various opacities"

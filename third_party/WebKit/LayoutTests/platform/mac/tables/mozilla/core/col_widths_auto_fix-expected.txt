@@ -28,8 +28,8 @@ layer at (0,0) size 800x722 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 text run at (2,2) width 98: "foo foo foo foo"
       LayoutBlockFlow (anonymous) at (0,74) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 374x18
-          text run at (0,18) width 374: "fixed table - fixed cells are increased based on fixed width"
+        LayoutText {#text} at (0,18) size 371x18
+          text run at (0,18) width 371: "fixed table - fixed cells are increased based on fixed width"
       LayoutTable {TABLE} at (0,110) size 400x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x44
           LayoutTableRow {TR} at (0,2) size 398x40
@@ -43,8 +43,8 @@ layer at (0,0) size 800x722 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,156) size 784x54
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
-        LayoutText {#text} at (0,36) size 383x18
-          text run at (0,36) width 383: "excess above min allocated based on fixed widths (not min)"
+        LayoutText {#text} at (0,36) size 382x18
+          text run at (0,36) width 382: "excess above min allocated based on fixed widths (not min)"
       LayoutTable {TABLE} at (0,210) size 100x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 98x44
           LayoutTableRow {TR} at (0,2) size 98x40
@@ -57,8 +57,8 @@ layer at (0,0) size 800x722 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,256) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 383x18
-          text run at (0,18) width 383: "excess above min allocated based on fixed widths (not min)"
+        LayoutText {#text} at (0,18) size 382x18
+          text run at (0,18) width 382: "excess above min allocated based on fixed widths (not min)"
       LayoutTable {TABLE} at (0,292) size 100x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 98x44
           LayoutTableRow {TR} at (0,2) size 98x40
@@ -90,8 +90,8 @@ layer at (0,0) size 800x722 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,430) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 344x18
-          text run at (0,18) width 344: "auto table - fixed width cell does not exceed viewport"
+        LayoutText {#text} at (0,18) size 343x18
+          text run at (0,18) width 343: "auto table - fixed width cell does not exceed viewport"
       LayoutTable {TABLE} at (0,466) size 784x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x26
           LayoutTableRow {TR} at (0,2) size 782x22
@@ -100,8 +100,8 @@ layer at (0,0) size 800x722 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,494) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 299x18
-          text run at (0,18) width 299: "auto table - fixed cells cannot exceed viewport"
+        LayoutText {#text} at (0,18) size 298x18
+          text run at (0,18) width 298: "auto table - fixed cells cannot exceed viewport"
       LayoutTable {TABLE} at (0,530) size 784x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x26
           LayoutTableRow {TR} at (0,2) size 782x22

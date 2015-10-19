@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 303x19
-          text run at (0,0) width 303: "If the text is too low, then it is probably Bug 6920."
+        LayoutText {#text} at (0,0) size 302x19
+          text run at (0,0) width 302: "If the text is too low, then it is probably Bug 6920."
         LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,20) size 262x66 [bgcolor=#FFCC00] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 260x64

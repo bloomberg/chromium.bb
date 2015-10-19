@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 16460x120
           LayoutTableRow {TR} at (0,0) size 16460x20
             LayoutTableCell {TD} at (0,0) size 588x20 [r=0 c=0 rs=1 cs=8]
-              LayoutText {#text} at (0,0) size 338x19
-                text run at (0,0) width 338: "PRODUCT SPECIFICATIONS DAY CONTRACTS"
+              LayoutText {#text} at (0,0) size 335x19
+                text run at (0,0) width 335: "PRODUCT SPECIFICATIONS DAY CONTRACTS"
             LayoutTableCell {TD} at (588,10) size 64x0 [r=0 c=8 rs=1 cs=1]
             LayoutTableCell {TD} at (652,10) size 64x0 [r=0 c=9 rs=1 cs=1]
             LayoutTableCell {TD} at (716,10) size 64x0 [r=0 c=10 rs=1 cs=1]
@@ -98,8 +98,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 16x19
                 text run at (0,0) width 16: "24"
             LayoutTableCell {TD} at (108,80) size 70x40 [r=3 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 63x39
-                text run at (0,0) width 63: "Week 52-"
+              LayoutText {#text} at (0,0) size 62x39
+                text run at (0,0) width 62: "Week 52-"
                 text run at (0,20) width 16: "99"
             LayoutTableCell {TD} at (178,90) size 68x20 [r=3 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 56x19

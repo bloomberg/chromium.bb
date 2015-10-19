@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (90,18) size 318x232
+    LayoutSVGContainer {g} at (90,18) size 317x232
       LayoutSVGText {text} at (145,18) size 137x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 137x15
           chunk 1 text run 1 at (145.00,30.00) startOffset 0 endOffset 26 width 137.00: "Filters: feDiffuseLighting"
@@ -34,30 +34,30 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="lightingColorC"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feDiffuseLighting surfaceScale="10.00" diffuseConstant="1.00"]
             [SourceGraphic]
-      LayoutSVGContainer {g} at (90,60) size 280x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
-        LayoutSVGText {text} at (90,10) size 280x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 280x19
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 46 width 280.00: "Various values for surfaceScale: 1, 10 and -10"
+      LayoutSVGContainer {g} at (90,60) size 279x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
+        LayoutSVGText {text} at (90,10) size 279x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 279x19
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 46 width 278.23: "Various values for surfaceScale: 1, 10 and -10"
         LayoutSVGImage {image} at (90,80) size 50x30
           [filter="surfaceScaleA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
         LayoutSVGImage {image} at (160,80) size 50x30
           [filter="surfaceScaleB"] LayoutSVGResourceFilter {filter} at (160,30) size 50x30
         LayoutSVGImage {image} at (230,80) size 50x30
           [filter="surfaceScaleC"] LayoutSVGResourceFilter {filter} at (230,30) size 50x30
-      LayoutSVGContainer {g} at (90,130) size 281x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
-        LayoutSVGText {text} at (90,10) size 281x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 281x19
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 47 width 281.00: "Various values for diffuseConstants: 0, 1 and 2"
+      LayoutSVGContainer {g} at (90,130) size 279x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
+        LayoutSVGText {text} at (90,10) size 279x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 279x19
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 47 width 278.94: "Various values for diffuseConstants: 0, 1 and 2"
         LayoutSVGImage {image} at (90,150) size 50x30
           [filter="diffuseConstantA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
         LayoutSVGImage {image} at (160,150) size 50x30
           [filter="diffuseConstantB"] LayoutSVGResourceFilter {filter} at (160,30) size 50x30
         LayoutSVGImage {image} at (230,150) size 50x30
           [filter="diffuseConstantC"] LayoutSVGResourceFilter {filter} at (230,30) size 50x30
-      LayoutSVGContainer {g} at (90,200) size 318x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,190.00)}]
-        LayoutSVGText {text} at (90,10) size 318x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 318x19
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 318.00: "Various values for lighting color: red, yellow and blue"
+      LayoutSVGContainer {g} at (90,200) size 317x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,190.00)}]
+        LayoutSVGText {text} at (90,10) size 317x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 317x19
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 316.23: "Various values for lighting color: red, yellow and blue"
         LayoutSVGImage {image} at (90,220) size 50x30
           [filter="lightingColorA"] LayoutSVGResourceFilter {filter} at (90,30) size 50x30
         LayoutSVGImage {image} at (160,220) size 50x30

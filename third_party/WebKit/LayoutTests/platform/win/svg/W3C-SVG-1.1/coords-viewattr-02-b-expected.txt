@@ -11,12 +11,12 @@ layer at (0,0) size 480x360
           LayoutSVGImage {image} at (20,70) size 40x40
         LayoutSVGText {text} at (10,100) size 43x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x12
-            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 10 width 43.00: "Viewport 1"
+            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 10 width 42.46: "Viewport 1"
         LayoutSVGContainer {g} at (10,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
           LayoutSVGRect {rect} at (10,150) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
         LayoutSVGText {text} at (10,170) size 43x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x12
-            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 10 width 43.00: "Viewport 2"
+            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 10 width 42.46: "Viewport 2"
         LayoutSVGContainer {g} at (20,220) size 30x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,190.00)}]
           LayoutSVGRect {rect} at (20,220) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
         LayoutSVGContainer {g} at (120,50) size 120x110 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,50.00)}]

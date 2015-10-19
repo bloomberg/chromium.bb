@@ -4,13 +4,13 @@ layer at (0,0) size 785x1325 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1324.88
     LayoutBlockFlow {BODY} at (8,8) size 769x1308.88 [bgcolor=#555555]
       LayoutBlockFlow {H1} at (16,37.44) size 737x101 [bgcolor=#CCCCCC]
-        LayoutText {#text} at (88,32) size 163x36
-          text run at (88,32) width 163: "Simplified "
+        LayoutText {#text} at (90,32) size 163x36
+          text run at (90,32) width 163: "Simplified "
         LayoutInline {A} at (0,0) size 161x36 [color=#0000EE]
-          LayoutText {#text} at (250,32) size 161x36
-            text run at (250,32) width 161: "Linux.com"
-        LayoutText {#text} at (410,32) size 239x36
-          text run at (410,32) width 239: " Table Testcase"
+          LayoutText {#text} at (252,32) size 161x36
+            text run at (252,32) width 161: "Linux.com"
+        LayoutText {#text} at (412,32) size 235x36
+          text run at (412,32) width 235: " Table Testcase"
       LayoutTable {TABLE} at (16,159.88) size 737x1133
         LayoutTableSection {TBODY} at (0,0) size 737x1133
           LayoutTableRow {TR} at (0,2) size 737x792
@@ -132,8 +132,8 @@ layer at (0,0) size 785x1325 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,195) width 448: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
                   text run at (0,210) width 110: "blah blah blah blah"
               LayoutBlockFlow {H2} at (5,795.33) size 449x18
-                LayoutText {#text} at (0,0) size 58x17
-                  text run at (0,0) width 58: "Tuneup"
+                LayoutText {#text} at (0,0) size 57x17
+                  text run at (0,0) width 57: "Tuneup"
               LayoutBlockFlow {P} at (5,826.59) size 449x225
                 LayoutText {#text} at (0,0) size 448x225
                   text run at (0,0) width 448: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"

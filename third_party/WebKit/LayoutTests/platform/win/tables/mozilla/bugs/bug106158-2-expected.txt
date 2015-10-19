@@ -21,5 +21,5 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 439x24
                   LayoutTableRow {TR} at (0,2) size 439x20
                     LayoutTableCell {TD} at (2,2) size 435x20 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 129x17
-                        text run at (1,1) width 129: "Shop Till You Drop"
+                      LayoutText {#text} at (1,1) size 127x17
+                        text run at (1,1) width 127: "Shop Till You Drop"

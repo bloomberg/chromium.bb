@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H4} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 542x17
-          text run at (0,0) width 542: "TBODY is not correctly positioned when TFOOT is present but THEAD is not:"
+        LayoutText {#text} at (0,0) size 541x17
+          text run at (0,0) width 541: "TBODY is not correctly positioned when TFOOT is present but THEAD is not:"
       LayoutTable {TABLE} at (0,39.27) size 66x52 [border: (1px outset #808080)]
         LayoutTableSection {TFOOT} at (1,27) size 64x24
           LayoutTableRow {TR} at (0,0) size 64x22

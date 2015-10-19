@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,46) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 409x18
-          text run at (0,18) width 409: "fixed table - too small a percentage width cell is honored to min"
+        LayoutText {#text} at (0,18) size 408x18
+          text run at (0,18) width 408: "fixed table - too small a percentage width cell is honored to min"
       LayoutTable {TABLE} at (0,82) size 300x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x26
           LayoutTableRow {TR} at (0,2) size 298x22
@@ -54,8 +54,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 60: "cell=auto"
       LayoutBlockFlow (anonymous) at (0,258) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 253x18
-          text run at (0,18) width 253: "fixed table - % cells don't get expanded"
+        LayoutText {#text} at (0,18) size 252x18
+          text run at (0,18) width 252: "fixed table - % cells don't get expanded"
       LayoutTable {TABLE} at (0,294) size 200x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 198x26
           LayoutTableRow {TR} at (0,2) size 198x22

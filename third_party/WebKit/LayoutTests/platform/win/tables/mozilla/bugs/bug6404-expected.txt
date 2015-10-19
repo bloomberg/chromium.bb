@@ -32,8 +32,8 @@ layer at (0,0) size 800x600
                 text run at (1,73) width 50: "instead "
                 text run at (50,73) width 124: "but this is simpler)."
             LayoutTableCell {TD} at (302,24) size 480x146 [bgcolor=#9999FF] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 472x35
-                text run at (1,1) width 472: "Try shrinking this table to ~250px wide. The left hand (gold) column will"
+              LayoutText {#text} at (1,1) size 471x35
+                text run at (1,1) width 471: "Try shrinking this table to ~250px wide. The left hand (gold) column will"
                 text run at (1,19) width 169: "suddenly expand in width."
               LayoutBR {BR} at (169,33) size 1x0
               LayoutBR {BR} at (1,37) size 0x17

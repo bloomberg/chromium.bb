@@ -7,8 +7,8 @@ layer at (0,0) size 800x319
         LayoutText {#text} at (0,0) size 315x28
           text run at (0,0) width 315: "scalable CSS background"
       LayoutBlockFlow {h4} at (10,69.72) size 752x16
-        LayoutText {#text} at (0,0) size 125x16
-          text run at (0,0) width 125: "WICD Core 1.0 #11"
+        LayoutText {#text} at (0,0) size 124x16
+          text run at (0,0) width 124: "WICD Core 1.0 #11"
       LayoutBlockFlow {p} at (10,104.86) size 711.83x37
         LayoutText {#text} at (10,10) size 500x17
           text run at (10,10) width 500: "This text paragraph, as well as all following, must have a SVG background image."

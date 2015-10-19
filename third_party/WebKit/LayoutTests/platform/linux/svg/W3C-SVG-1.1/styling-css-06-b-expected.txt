@@ -4,10 +4,10 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (50,73) size 358x174
       LayoutSVGContainer {g} at (50,73) size 358x174
-        LayoutSVGText {text} at (50,73) size 83x34 contains 1 chunk(s)
-          LayoutSVGInline {a} at (0,0) size 83x34
-            LayoutSVGInlineText {#text} at (0,0) size 83x34
-              chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 7 width 83.00: "Visited"
+        LayoutSVGText {text} at (50,73) size 82x34 contains 1 chunk(s)
+          LayoutSVGInline {a} at (0,0) size 82x34
+            LayoutSVGInlineText {#text} at (0,0) size 82x34
+              chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 7 width 81.20: "Visited"
         LayoutSVGText {text} at (250,73) size 112x34 contains 1 chunk(s)
           LayoutSVGInline {a} at (0,0) size 112x34
             LayoutSVGInlineText {#text} at (0,0) size 112x34

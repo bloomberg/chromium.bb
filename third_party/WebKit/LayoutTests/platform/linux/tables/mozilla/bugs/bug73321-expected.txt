@@ -4,13 +4,13 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1394.88
     LayoutBlockFlow {BODY} at (8,8) size 769x1378.88 [bgcolor=#555555]
       LayoutBlockFlow {H1} at (16,37.44) size 737x102 [bgcolor=#CCCCCC]
-        LayoutText {#text} at (85,32) size 165x37
-          text run at (85,32) width 165: "Simplified "
-        LayoutInline {A} at (0,0) size 160x37 [color=#0000EE]
-          LayoutText {#text} at (250,32) size 160x37
-            text run at (250,32) width 160: "Linux.com"
-        LayoutText {#text} at (410,32) size 242x37
-          text run at (410,32) width 242: " Table Testcase"
+        LayoutText {#text} at (87,32) size 166x37
+          text run at (87,32) width 166: "Simplified "
+        LayoutInline {A} at (0,0) size 161x37 [color=#0000EE]
+          LayoutText {#text} at (252,32) size 161x37
+            text run at (252,32) width 161: "Linux.com"
+        LayoutText {#text} at (412,32) size 238x37
+          text run at (412,32) width 238: " Table Testcase"
       LayoutTable {TABLE} at (16,160.88) size 737x1202
         LayoutTableSection {TBODY} at (0,0) size 737x1202
           LayoutTableRow {TR} at (0,2) size 737x841
@@ -132,8 +132,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,208) width 444: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
                   text run at (0,224) width 108: "blah blah blah blah"
               LayoutBlockFlow {H2} at (5,844.33) size 449x20
-                LayoutText {#text} at (0,0) size 59x19
-                  text run at (0,0) width 59: "Tuneup"
+                LayoutText {#text} at (0,0) size 58x19
+                  text run at (0,0) width 58: "Tuneup"
               LayoutBlockFlow {P} at (5,877.59) size 449x240
                 LayoutText {#text} at (0,0) size 444x240
                   text run at (0,0) width 444: "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"

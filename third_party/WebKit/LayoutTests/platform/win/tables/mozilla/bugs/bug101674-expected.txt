@@ -50,25 +50,25 @@ layer at (0,0) size 785x1582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutTable {TABLE} at (0,745) size 769x79 [border: (1px solid #000000)]
         LayoutTableSection {TBODY} at (1,1) size 767x77
           LayoutTableRow {TR} at (0,2) size 767x73
-            LayoutTableCell {TD} at (2,2) size 596x73 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 595x73 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,53) size 27x17
                 text run at (2,53) width 27: "One"
               LayoutImage {IMG} at (28.66,2) size 88x65
-              LayoutText {#text} at (116,53) size 30x17
-                text run at (116,53) width 30: "Two"
-              LayoutImage {IMG} at (145.98,2) size 88x65
-              LayoutText {#text} at (233,53) size 39x17
-                text run at (233,53) width 39: "Three"
-              LayoutImage {IMG} at (271.28,2) size 88x65
-              LayoutText {#text} at (359,53) size 31x17
-                text run at (359,53) width 31: "Four"
-              LayoutImage {IMG} at (389.50,2) size 88x65
-              LayoutText {#text} at (477,53) size 29x17
-                text run at (477,53) width 29: "Five"
-              LayoutImage {IMG} at (505.94,2) size 88x65
-            LayoutTableCell {TD} at (600,27) size 165x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 136x17
-                text run at (2,2) width 136: "Text between images"
+              LayoutText {#text} at (116,53) size 29x17
+                text run at (116,53) width 29: "Two"
+              LayoutImage {IMG} at (144.86,2) size 88x65
+              LayoutText {#text} at (232,53) size 39x17
+                text run at (232,53) width 39: "Three"
+              LayoutImage {IMG} at (270.16,2) size 88x65
+              LayoutText {#text} at (358,53) size 31x17
+                text run at (358,53) width 31: "Four"
+              LayoutImage {IMG} at (388.38,2) size 88x65
+              LayoutText {#text} at (476,53) size 29x17
+                text run at (476,53) width 29: "Five"
+              LayoutImage {IMG} at (504.81,2) size 88x65
+            LayoutTableCell {TD} at (599,27) size 166x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 135x17
+                text run at (2,2) width 135: "Text between images"
       LayoutTable {TABLE} at (0,824) size 769x369 [border: (1px solid #000000)]
         LayoutTableSection {TBODY} at (1,1) size 767x367
           LayoutTableRow {TR} at (0,2) size 767x363
@@ -76,8 +76,8 @@ layer at (0,0) size 785x1582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 27x17
                 text run at (2,2) width 27: "One"
               LayoutImage {IMG} at (2,20) size 88x65
-              LayoutText {#text} at (90,71) size 30x17
-                text run at (90,71) width 30: "Two"
+              LayoutText {#text} at (90,71) size 29x17
+                text run at (90,71) width 29: "Two"
               LayoutImage {IMG} at (2,89) size 88x65
               LayoutText {#text} at (90,140) size 38x17
                 text run at (90,140) width 38: "Three"
@@ -89,8 +89,8 @@ layer at (0,0) size 785x1582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (90,278) width 29: "Five"
               LayoutImage {IMG} at (2,296) size 88x65
             LayoutTableCell {TD} at (134,172) size 631x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 215x17
-                text run at (2,2) width 215: "Text with spaces between images"
+              LayoutText {#text} at (2,2) size 214x17
+                text run at (2,2) width 214: "Text with spaces between images"
       LayoutTable {TABLE} at (0,1193) size 769x373 [border: (1px solid #000000)]
         LayoutTableSection {TBODY} at (1,1) size 767x371
           LayoutTableRow {TR} at (0,2) size 767x367
@@ -99,8 +99,8 @@ layer at (0,0) size 785x1582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 27: "One"
                 text run at (2,71) width 12: "A"
               LayoutImage {IMG} at (13.55,20) size 88x65
-              LayoutText {#text} at (101,71) size 129x86
-                text run at (101,71) width 30: "Two"
+              LayoutText {#text} at (101,71) size 128x86
+                text run at (101,71) width 29: "Two"
                 text run at (2,140) width 8: "b"
               LayoutImage {IMG} at (10,89) size 88x65
               LayoutText {#text} at (98,140) size 134x86
@@ -116,5 +116,5 @@ layer at (0,0) size 785x1582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,347) width 8: "e"
               LayoutImage {IMG} at (9.09,296) size 88x65
             LayoutTableCell {TD} at (142,174) size 623x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 307x17
-                text run at (2,2) width 307: "Text with spaces and more text between images"
+              LayoutText {#text} at (2,2) size 305x17
+                text run at (2,2) width 305: "Text with spaces and more text between images"

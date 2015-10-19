@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 446x18
-          text run at (0,0) width 446: "fixed table - fixed cells get expanded in Quirks mode, not in Standard"
+        LayoutText {#text} at (0,0) size 444x18
+          text run at (0,0) width 444: "fixed table - fixed cells get expanded in Quirks mode, not in Standard"
       LayoutTable {TABLE} at (0,18) size 200x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 198x44
           LayoutTableRow {TR} at (0,2) size 198x40
@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {HR} at (0,90) size 102x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,100) size 784x18
-        LayoutText {#text} at (0,0) size 321x18
-          text run at (0,0) width 321: "table fixed at 600, 1st 2 cells fixed at 100, 2nd not"
+        LayoutText {#text} at (0,0) size 319x18
+          text run at (0,0) width 319: "table fixed at 600, 1st 2 cells fixed at 100, 2nd not"
       LayoutTable {TABLE} at (0,118) size 600x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 598x26
           LayoutTableRow {TR} at (0,2) size 598x22
@@ -36,8 +36,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,146) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 321x18
-          text run at (0,18) width 321: "table fixed at 600, 1st 2 cells fixed at 100, 2nd not"
+        LayoutText {#text} at (0,18) size 319x18
+          text run at (0,18) width 319: "table fixed at 600, 1st 2 cells fixed at 100, 2nd not"
       LayoutTable {TABLE} at (0,182) size 600x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 598x26
           LayoutTableRow {TR} at (0,2) size 598x22
@@ -52,8 +52,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,210) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 313x18
-          text run at (0,18) width 313: "table fixed at 600, 1st 2 cells fixed at 50, 2nd not"
+        LayoutText {#text} at (0,18) size 311x18
+          text run at (0,18) width 311: "table fixed at 600, 1st 2 cells fixed at 50, 2nd not"
       LayoutTable {TABLE} at (0,246) size 600x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 598x26
           LayoutTableRow {TR} at (0,2) size 598x22
@@ -68,8 +68,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,274) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 329x18
-          text run at (0,18) width 329: "table fixed at 600, 1st 2 cells fixed at 1000, 2nd not"
+        LayoutText {#text} at (0,18) size 327x18
+          text run at (0,18) width 327: "table fixed at 600, 1st 2 cells fixed at 1000, 2nd not"
       LayoutTable {TABLE} at (0,310) size 600x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 598x26
           LayoutTableRow {TR} at (0,2) size 598x22
@@ -84,8 +84,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,338) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 305x18
-          text run at (0,18) width 305: "table fixed at 600, 1st 2 cells fixed at 5, 2nd not"
+        LayoutText {#text} at (0,18) size 303x18
+          text run at (0,18) width 303: "table fixed at 600, 1st 2 cells fixed at 5, 2nd not"
       LayoutTable {TABLE} at (0,374) size 600x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 598x26
           LayoutTableRow {TR} at (0,2) size 598x22

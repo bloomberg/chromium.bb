@@ -3,15 +3,15 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (33,223) size 651x142
-      LayoutSVGText {text} at (91,133) size 278x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (192,0) size 85x20
-          chunk 1 (middle anchor) text run 1 at (284.15,150.00) startOffset 0 endOffset 14 width 84.15 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-        LayoutSVGTSpan {tspan} at (0,0) size 182x20
-          LayoutSVGInlineText {#text} at (11,0) size 182x20
-            chunk 1 (middle anchor) text run 1 at (103.10,150.00) startOffset 0 endOffset 16 width 146.07: "dirLTR ubEmbed, "
-            chunk 1 (middle anchor) text run 1 at (249.16,150.00) startOffset 0 endOffset 6 width 34.98 RTL: "\x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
+      LayoutSVGText {text} at (92,133) size 276x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (191,0) size 85x20
+          chunk 1 (middle anchor) text run 1 at (283.48,150.00) startOffset 0 endOffset 14 width 84.15 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
+        LayoutSVGTSpan {tspan} at (0,0) size 181x20
+          LayoutSVGInlineText {#text} at (11,0) size 180x20
+            chunk 1 (middle anchor) text run 1 at (103.77,150.00) startOffset 0 endOffset 16 width 144.73: "dirLTR ubEmbed, "
+            chunk 1 (middle anchor) text run 1 at (248.50,150.00) startOffset 0 endOffset 6 width 34.98 RTL: "\x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
         LayoutSVGInlineText {#text} at (0,0) size 12x20
-          chunk 1 (middle anchor) text run 1 at (91.71,150.00) startOffset 0 endOffset 2 width 11.39 RTL: "\"!"
+          chunk 1 (middle anchor) text run 1 at (92.38,150.00) startOffset 0 endOffset 2 width 11.39 RTL: "\"!"
       LayoutSVGText {text} at (20,171) size 85x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 85x12
           chunk 1 text run 1 at (20.00,180.00) startOffset 0 endOffset 18 width 84.46: "Reference graphic:"

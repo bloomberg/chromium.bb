@@ -8,15 +8,15 @@ layer at (0,0) size 800x600
           text run at (0,0) width 270: "The select should not contain blank items "
         LayoutBR {BR} at (269,14) size 1x0
       LayoutBlockFlow {FORM} at (0,18) size 784x19
-        LayoutInline {B} at (0,0) size 48x18
-          LayoutText {#text} at (0,0) size 48x18
-            text run at (0,0) width 48: "Search"
-        LayoutText {#text} at (47,0) size 5x18
-          text run at (47,0) width 5: " "
-        LayoutTextControl {INPUT} at (51.09,0) size 113x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (164,0) size 5x18
-          text run at (164,0) width 5: " "
-        LayoutMenuList {SELECT} at (168.09,1) size 77x18 [bgcolor=#F8F8F8]
+        LayoutInline {B} at (0,0) size 47x18
+          LayoutText {#text} at (0,0) size 47x18
+            text run at (0,0) width 47: "Search"
+        LayoutText {#text} at (46,0) size 5x18
+          text run at (46,0) width 5: " "
+        LayoutTextControl {INPUT} at (50.81,0) size 113x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (163,0) size 5x18
+          text run at (163,0) width 5: " "
+        LayoutMenuList {SELECT} at (167.81,1) size 77x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 77x18
             LayoutText (anonymous) at (8,2) size 32x13
               text run at (8,2) width 32: "Excite"

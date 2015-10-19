@@ -20,10 +20,10 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 468x72
           LayoutTableRow {TR} at (0,0) size 468x42
             LayoutTableCell {TD} at (0,0) size 326x21 [r=0 c=0 rs=1 cs=1]
-              LayoutInline {FONT} at (0,0) size 262x20
-                LayoutInline {B} at (0,0) size 262x20
-                  LayoutText {#text} at (0,0) size 262x20
-                    text run at (0,0) width 262: " 25 offres d'emploi des entreprises"
+              LayoutInline {FONT} at (0,0) size 261x20
+                LayoutInline {B} at (0,0) size 261x20
+                  LayoutText {#text} at (0,0) size 261x20
+                    text run at (0,0) width 261: " 25 offres d'emploi des entreprises"
             LayoutTableCell {TD} at (326,0) size 100x42 [bgcolor=#EE9E02] [r=0 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (18.30,15) size 20x1
               LayoutText {#text} at (38,2) size 35x17

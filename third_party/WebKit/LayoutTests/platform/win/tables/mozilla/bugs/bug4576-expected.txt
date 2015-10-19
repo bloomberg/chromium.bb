@@ -19,9 +19,9 @@ layer at (0,0) size 800x600
                           LayoutTableRow {TR} at (0,2) size 250x87
                             LayoutTableCell {TD} at (2,2) size 246x87 [r=0 c=0 rs=1 cs=1]
                               LayoutImage (floating) {IMG} at (1,1) size 93x85
-                              LayoutText {#text} at (97,1) size 126x53
-                                text run at (97,1) width 122: "Text text, text: text"
-                                text run at (97,19) width 126: "text text; text. Text,"
+                              LayoutText {#text} at (97,1) size 125x53
+                                text run at (97,1) width 121: "Text text, text: text"
+                                text run at (97,19) width 125: "text text; text. Text,"
                                 text run at (97,37) width 68: "text text...."
                     LayoutTableCell {TD} at (256,2) size 202x226 [r=0 c=1 rs=1 cs=1]
                       LayoutTable {TABLE} at (1,1) size 200x224 [border: (10px outset #808080)]

@@ -6,8 +6,8 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [10, 63, 318, 377],
-        [10, 63, 318, 377]
+        [10, 63, 307, 377],
+        [10, 63, 307, 377]
       ],
       "paintInvalidationClients": [
         "RootInlineBox",

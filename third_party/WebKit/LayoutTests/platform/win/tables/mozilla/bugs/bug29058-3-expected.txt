@@ -5,8 +5,8 @@ layer at (0,0) size 800x218
     LayoutBlockFlow {BODY} at (8,8) size 784x202
       LayoutTable {TABLE} at (0,0) size 400x202 [border: (1px outset #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 400x18
-          LayoutText {#text} at (44,0) size 312x17
-            text run at (44,0) width 312: "Table is 400 px width, set with table width=400."
+          LayoutText {#text} at (45,0) size 310x17
+            text run at (45,0) width 310: "Table is 400 px width, set with table width=400."
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

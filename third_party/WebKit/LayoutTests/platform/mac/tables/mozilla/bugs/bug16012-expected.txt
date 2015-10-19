@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 268x18
-          text run at (0,0) width 268: "Tables: both lines should be 1 pixel thick."
-        LayoutBR {BR} at (267,14) size 1x0
+        LayoutText {#text} at (0,0) size 267x18
+          text run at (0,0) width 267: "Tables: both lines should be 1 pixel thick."
+        LayoutBR {BR} at (266,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x18
       LayoutTable {TABLE} at (0,36) size 36x5
         LayoutTableSection {TBODY} at (0,0) size 36x5
@@ -25,10 +25,10 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
         LayoutBR {BR} at (0,36) size 0x18
-        LayoutText {#text} at (0,54) size 403x18
-          text run at (0,54) width 224: "2 texts, FACE=\"Arial, Helvetica\", "
-          text run at (223,54) width 180: "1st at size=0, 2nd at size=-4"
-        LayoutBR {BR} at (402,68) size 1x0
+        LayoutText {#text} at (0,54) size 402x18
+          text run at (0,54) width 223: "2 texts, FACE=\"Arial, Helvetica\", "
+          text run at (222,54) width 180: "1st at size=0, 2nd at size=-4"
+        LayoutBR {BR} at (401,68) size 1x0
         LayoutBR {BR} at (0,72) size 0x18
         LayoutInline {FONT} at (0,0) size 101x22
           LayoutText {#text} at (0,90) size 101x11

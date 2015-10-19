@@ -35,7 +35,7 @@ layer at (0,0) size 480x360
             chunk 1 (end anchor) text run 1 at (-81.00,120.00) startOffset 0 endOffset 17 width 81.00: "stroke-miterlimit"
         LayoutSVGText {text} at (-84,128) size 84x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 84x15
-            chunk 1 (end anchor) text run 1 at (-84.00,140.00) startOffset 0 endOffset 17 width 84.00: "stroke-dashoffset"
+            chunk 1 (end anchor) text run 1 at (-83.78,140.00) startOffset 0 endOffset 17 width 83.78: "stroke-dashoffset"
         LayoutSVGText {text} at (-36,148) size 36x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 36x15
             chunk 1 (end anchor) text run 1 at (-36.00,160.00) startOffset 0 endOffset 7 width 36.00: "display"

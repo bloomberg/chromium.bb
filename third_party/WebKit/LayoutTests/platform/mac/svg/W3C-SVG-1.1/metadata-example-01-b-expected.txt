@@ -72,7 +72,7 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (453.00,159.00) startOffset 0 endOffset 71 width 310.69: "http://prismstandard.org/vocabularies/1.0/resourcetype.xml#illustration"
           LayoutSVGText {text} at (0,0) size 0x0 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-              chunk 1 text run 1 at (604.00,213.00) startOffset 0 endOffset 13 width 66.97: "image/svg+xml"
+              chunk 1 text run 1 at (604.00,213.00) startOffset 0 endOffset 13 width 66.96: "image/svg+xml"
           LayoutSVGText {text} at (0,0) size 0x0 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 0x0
               chunk 1 text run 1 at (530.00,267.00) startOffset 0 endOffset 44 width 187.88: "Line drawing of woman in antique attire, ..."
@@ -81,7 +81,7 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (177.00,213.00) startOffset 0 endOffset 7 width 29.47: "online:"
           LayoutSVGText {text} at (0,0) size 0x0 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-              chunk 1 text run 1 at (601.00,321.00) startOffset 0 endOffset 16 width 72.80: "Sibyll Trelawney"
+              chunk 1 text run 1 at (601.00,321.00) startOffset 0 endOffset 16 width 72.43: "Sibyll Trelawney"
         LayoutSVGContainer {g} at (183,69) size 1x1
           LayoutSVGText {text} at (0,0) size 0x0 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -97,7 +97,7 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (256.00,105.00) startOffset 0 endOffset 36 width 153.97: "http://purl.org/dc/elements/1.1/type"
           LayoutSVGText {text} at (0,0) size 0x0 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-              chunk 1 text run 1 at (240.00,225.00) startOffset 0 endOffset 43 width 183.43: "http://purl.org/dc/elements/1.1/description"
+              chunk 1 text run 1 at (240.00,225.00) startOffset 0 endOffset 43 width 183.42: "http://purl.org/dc/elements/1.1/description"
     LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"

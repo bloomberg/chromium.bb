@@ -19,54 +19,54 @@ layer at (0,0) size 800x600
                       text run at (36,4) width 134: "Search the Web with"
                 LayoutText {#text} at (169,3) size 5x17
                   text run at (169,3) width 5: " "
-                LayoutMenuList {SELECT} at (173.50,2) size 80x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+                LayoutMenuList {SELECT} at (173.38,2) size 80x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
                   LayoutBlockFlow (anonymous) at (1,1) size 78x18
                     LayoutText (anonymous) at (4,1) size 55x16
                       text run at (4,1) width 55: "Netscape"
-                LayoutTextControl {INPUT} at (253.50,1) size 243x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                LayoutTextControl {INPUT} at (253.38,1) size 243x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                 LayoutText {#text} at (496,3) size 5x17
                   text run at (496,3) width 5: " "
-                LayoutButton {INPUT} at (500.50,1) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutButton {INPUT} at (500.38,1) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   LayoutBlockFlow (anonymous) at (8,3) size 41x16
                     LayoutText {#text} at (0,0) size 41x16
                       text run at (0,0) width 41: "Search"
                 LayoutBR {BR} at (557,17) size 1x0
-                LayoutInline {SMALL} at (0,0) size 558x15
-                  LayoutInline {A} at (0,0) size 98x15 [color=#0000EE]
-                    LayoutText {#text} at (18,23) size 98x15
-                      text run at (18,23) width 98: "Classifieds< /A>   "
-                  LayoutInline {A} at (0,0) size 58x15 [color=#0000EE]
-                    LayoutText {#text} at (116,23) size 58x15
-                      text run at (116,23) width 22: "Net "
-                      text run at (138,23) width 36: "Search"
-                  LayoutText {#text} at (174,23) size 9x15
-                    text run at (174,23) width 9: "   "
+                LayoutInline {SMALL} at (0,0) size 556x15
+                  LayoutInline {A} at (0,0) size 99x15 [color=#0000EE]
+                    LayoutText {#text} at (19,23) size 99x15
+                      text run at (19,23) width 99: "Classifieds< /A>   "
+                  LayoutInline {A} at (0,0) size 59x15 [color=#0000EE]
+                    LayoutText {#text} at (117,23) size 59x15
+                      text run at (117,23) width 23: "Net "
+                      text run at (139,23) width 37: "Search"
+                  LayoutText {#text} at (175,23) size 10x15
+                    text run at (175,23) width 10: "   "
                   LayoutInline {A} at (0,0) size 82x15 [color=#0000EE]
-                    LayoutText {#text} at (183,23) size 82x15
-                      text run at (183,23) width 56: "Find Web "
-                      text run at (239,23) width 26: "Sites"
-                  LayoutText {#text} at (265,23) size 9x15
-                    text run at (265,23) width 3: " "
-                    text run at (268,23) width 6: "  "
+                    LayoutText {#text} at (184,23) size 82x15
+                      text run at (184,23) width 56: "Find Web "
+                      text run at (239,23) width 27: "Sites"
+                  LayoutText {#text} at (265,23) size 10x15
+                    text run at (265,23) width 4: " "
+                    text run at (268,23) width 7: "  "
+                  LayoutInline {A} at (0,0) size 67x15 [color=#0000EE]
+                    LayoutText {#text} at (274,23) size 67x15
+                      text run at (274,23) width 42: "What's "
+                      text run at (315,23) width 26: "Cool"
+                  LayoutText {#text} at (340,23) size 10x15
+                    text run at (340,23) width 10: "   "
                   LayoutInline {A} at (0,0) size 66x15 [color=#0000EE]
-                    LayoutText {#text} at (274,23) size 66x15
-                      text run at (274,23) width 41: "What's "
-                      text run at (315,23) width 25: "Cool"
-                  LayoutText {#text} at (340,23) size 9x15
-                    text run at (340,23) width 9: "   "
-                  LayoutInline {A} at (0,0) size 65x15 [color=#0000EE]
-                    LayoutText {#text} at (349,23) size 65x15
-                      text run at (349,23) width 65: "What's New"
-                  LayoutText {#text} at (414,23) size 9x15
-                    text run at (414,23) width 9: "   "
-                  LayoutInline {A} at (0,0) size 73x15 [color=#0000EE]
-                    LayoutText {#text} at (423,23) size 73x15
-                      text run at (423,23) width 73: "People Finder"
-                  LayoutText {#text} at (496,23) size 9x15
-                    text run at (496,23) width 9: "   "
-                  LayoutInline {A} at (0,0) size 71x15 [color=#0000EE]
-                    LayoutText {#text} at (505,23) size 71x15
-                      text run at (505,23) width 71: "Yellow Pages"
+                    LayoutText {#text} at (349,23) size 66x15
+                      text run at (349,23) width 66: "What's New"
+                  LayoutText {#text} at (414,23) size 10x15
+                    text run at (414,23) width 10: "   "
+                  LayoutInline {A} at (0,0) size 74x15 [color=#0000EE]
+                    LayoutText {#text} at (423,23) size 74x15
+                      text run at (423,23) width 74: "People Finder"
+                  LayoutText {#text} at (496,23) size 10x15
+                    text run at (496,23) width 10: "   "
+                  LayoutInline {A} at (0,0) size 70x15 [color=#0000EE]
+                    LayoutText {#text} at (505,23) size 70x15
+                      text run at (505,23) width 70: "Yellow Pages"
                   LayoutText {#text} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,105) size 600x49
@@ -97,37 +97,37 @@ layer at (0,0) size 800x600
                     LayoutInline {B} at (0,0) size 49x16
                       LayoutText {#text} at (15,2) size 49x16
                         text run at (15,2) width 49: "Contact"
-                LayoutText {#text} at (63,1) size 13x17
-                  text run at (63,1) width 13: " : "
-                LayoutInline {SMALL} at (0,0) size 504x15
+                LayoutText {#text} at (63,1) size 14x17
+                  text run at (63,1) width 14: " : "
+                LayoutInline {SMALL} at (0,0) size 503x15
                   LayoutInline {A} at (0,0) size 78x15 [color=#0000EE]
-                    LayoutText {#text} at (75,3) size 78x15
-                      text run at (75,3) width 78: "Address Book"
-                  LayoutText {#text} at (152,3) size 11x15
-                    text run at (152,3) width 11: " - "
+                    LayoutText {#text} at (76,3) size 78x15
+                      text run at (76,3) width 78: "Address Book"
+                  LayoutText {#text} at (153,3) size 11x15
+                    text run at (153,3) width 11: " - "
                   LayoutInline {A} at (0,0) size 67x15 [color=#0000EE]
-                    LayoutText {#text} at (162,3) size 67x15
-                      text run at (162,3) width 67: "Discussions"
-                  LayoutText {#text} at (228,3) size 11x15
-                    text run at (228,3) width 11: " - "
+                    LayoutText {#text} at (163,3) size 67x15
+                      text run at (163,3) width 67: "Discussions"
+                  LayoutText {#text} at (229,3) size 11x15
+                    text run at (229,3) width 11: " - "
                   LayoutInline {A} at (0,0) size 102x15 [color=#0000EE]
-                    LayoutText {#text} at (238,3) size 102x15
-                      text run at (238,3) width 102: "Instant Messenger"
-                  LayoutText {#text} at (339,3) size 11x15
-                    text run at (339,3) width 11: " - "
+                    LayoutText {#text} at (239,3) size 102x15
+                      text run at (239,3) width 102: "Instant Messenger"
+                  LayoutText {#text} at (340,3) size 11x15
+                    text run at (340,3) width 11: " - "
                   LayoutInline {A} at (0,0) size 79x15 [color=#0000EE]
-                    LayoutText {#text} at (349,3) size 79x15
-                      text run at (349,3) width 79: "Long Distance"
-                  LayoutText {#text} at (427,3) size 11x15
-                    text run at (427,3) width 11: " - "
+                    LayoutText {#text} at (350,3) size 79x15
+                      text run at (350,3) width 79: "Long Distance"
+                  LayoutText {#text} at (428,3) size 11x15
+                    text run at (428,3) width 11: " - "
                   LayoutInline {A} at (0,0) size 51x15 [color=#0000EE]
-                    LayoutText {#text} at (437,3) size 51x15
-                      text run at (437,3) width 51: "Members"
-                  LayoutText {#text} at (487,3) size 11x15
-                    text run at (487,3) width 11: " - "
-                  LayoutInline {A} at (0,0) size 82x15 [color=#0000EE]
-                    LayoutText {#text} at (497,3) size 82x15
-                      text run at (497,3) width 82: "WebMail< /A>"
+                    LayoutText {#text} at (438,3) size 51x15
+                      text run at (438,3) width 51: "Members"
+                  LayoutText {#text} at (488,3) size 11x15
+                    text run at (488,3) width 11: " - "
+                  LayoutInline {A} at (0,0) size 81x15 [color=#0000EE]
+                    LayoutText {#text} at (498,3) size 81x15
+                      text run at (498,3) width 81: "WebMail< /A>"
                 LayoutInline {A} at (0,0) size 1x17 [color=#0000EE]
                   LayoutText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,178) size 600x3
@@ -136,5 +136,5 @@ layer at (0,0) size 800x600
                   LayoutTableSection {TBODY} at (0,0) size 0x1
                     LayoutTableRow {TR} at (0,0) size 0x1
                       LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
-layer at (266,77) size 239x16
+layer at (265,77) size 239x16
   LayoutBlockFlow {DIV} at (2,3) size 239x16

@@ -6,8 +6,8 @@ layer at (0,0) size 785x1116 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,0) size 769x40
         LayoutText {#text} at (0,0) size 746x19
           text run at (0,0) width 364: "The table below should have the same width as the red DIV "
-          text run at (364,0) width 347: "below this paragraph. The inner image should just fit. The "
-          text run at (711,0) width 35: "image"
+          text run at (363,0) width 348: "below this paragraph. The inner image should just fit. The "
+          text run at (710,0) width 36: "image"
         LayoutInline {EM} at (0,0) size 67x19
           LayoutText {#text} at (0,20) size 67x19
             text run at (0,20) width 67: "should not"
@@ -82,7 +82,7 @@ layer at (0,0) size 785x1116 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,1026) size 769x20
         LayoutText {#text} at (0,0) size 569x19
           text run at (0,0) width 474: "(Note: If the image has disappeared from the server, replace it with any 593px "
-          text run at (474,0) width 95: "image you like.)"
+          text run at (473,0) width 96: "image you like.)"
       LayoutBlockFlow {P} at (0,1062) size 769x20
         LayoutText {#text} at (0,0) size 55x19
           text run at (0,0) width 55: "See also "

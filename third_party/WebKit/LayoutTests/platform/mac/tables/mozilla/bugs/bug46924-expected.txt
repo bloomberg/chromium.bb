@@ -27,7 +27,7 @@ layer at (0,0) size 800x256
       LayoutBlockFlow {DIV} at (0,134) size 784x36
         LayoutText {#text} at (0,0) size 761x36
           text run at (0,0) width 761: "ILLEGAL example: TFOOT after TBODY -- THIS IS PROHIBITED BY HTML 4.01 STRICT AND SHOULD NOT"
-          text run at (0,18) width 446: "WORK IN STRICT MODE. Please fix or reenable transitional mode."
+          text run at (0,18) width 445: "WORK IN STRICT MODE. Please fix or reenable transitional mode."
       LayoutTable {TABLE} at (0,170) size 784x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x26
           LayoutTableRow {TR} at (0,2) size 782x22 [bgcolor=#C0C0C0]

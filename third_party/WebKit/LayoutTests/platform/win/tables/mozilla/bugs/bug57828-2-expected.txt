@@ -10,14 +10,14 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (0,0) size 675x65
           LayoutTableRow {TR} at (0,0) size 675x65 [bgcolor=#9999CC]
             LayoutTableCell {TD} at (0,20) size 631x25 [r=0 c=0 rs=1 cs=1]
-              LayoutInline {FONT} at (0,0) size 154x20
-                LayoutInline {B} at (0,0) size 154x20
-                  LayoutText {#text} at (2,2) size 154x20
-                    text run at (2,2) width 154: "Technology News"
+              LayoutInline {FONT} at (0,0) size 152x20
+                LayoutInline {B} at (0,0) size 152x20
+                  LayoutText {#text} at (2,2) size 152x20
+                    text run at (2,2) width 152: "Technology News"
               LayoutInline {FONT} at (0,0) size 182x16
-                LayoutText {#text} at (155,5) size 182x16
-                  text run at (155,5) width 63: " - updated "
-                  text run at (217,5) width 120: "12:15 PM ET Oct 24"
+                LayoutText {#text} at (153,5) size 182x16
+                  text run at (153,5) width 63: " - updated "
+                  text run at (215,5) width 120: "12:15 PM ET Oct 24"
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (631,0) size 44x65 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (2,2) size 40x61
@@ -38,17 +38,17 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,149) size 675x26
         LayoutTableSection {TBODY} at (0,0) size 675x26
           LayoutTableRow {TR} at (0,0) size 675x26 [bgcolor=#9999CC]
-            LayoutTableCell {TD} at (0,0) size 505x25 [r=0 c=0 rs=1 cs=1]
-              LayoutInline {FONT} at (0,0) size 154x20
-                LayoutInline {B} at (0,0) size 154x20
-                  LayoutText {#text} at (2,2) size 154x20
-                    text run at (2,2) width 154: "Technology News"
+            LayoutTableCell {TD} at (0,0) size 504x25 [r=0 c=0 rs=1 cs=1]
+              LayoutInline {FONT} at (0,0) size 152x20
+                LayoutInline {B} at (0,0) size 152x20
+                  LayoutText {#text} at (2,2) size 152x20
+                    text run at (2,2) width 152: "Technology News"
               LayoutInline {FONT} at (0,0) size 182x16
-                LayoutText {#text} at (155,5) size 182x16
-                  text run at (155,5) width 63: " - updated "
-                  text run at (217,5) width 120: "12:15 PM ET Oct 24"
+                LayoutText {#text} at (153,5) size 182x16
+                  text run at (153,5) width 63: " - updated "
+                  text run at (215,5) width 120: "12:15 PM ET Oct 24"
               LayoutText {#text} at (0,0) size 0x0
-            LayoutTableCell {TD} at (505,0) size 170x26 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (504,0) size 171x26 [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (2,2) size 110x22
                 LayoutTableSection {TBODY} at (0,0) size 110x22
                   LayoutTableRow {TR} at (0,0) size 110x22

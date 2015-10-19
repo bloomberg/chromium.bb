@@ -3,9 +3,9 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (5,9) size 451x277
-      LayoutSVGText {text} at (5,9) size 439x38 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 439x38
-          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 31 width 438.15: "Test 'text-anchor' (horizontal)"
+      LayoutSVGText {text} at (5,9) size 435x38 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 435x38
+          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 31 width 434.38: "Test 'text-anchor' (horizontal)"
       LayoutSVGContainer {g} at (21,103) size 435x183
         LayoutSVGContainer {g} at (227,103) size 229x33 [transform={m=((1.00,0.00)(0.00,1.00)) t=(230.00,130.00)}]
           LayoutSVGPath {line} at (230,129) size 50x2 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=50.00] [y2=0.00]

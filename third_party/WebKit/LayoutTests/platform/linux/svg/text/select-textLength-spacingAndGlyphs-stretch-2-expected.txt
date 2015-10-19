@@ -1,13 +1,16 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (50,4) size 700x58
-    LayoutSVGContainer {g} at (285,4) size 97x58
-      LayoutSVGPath {svg:line} at (285,4) size 6x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=57.67] [y1=0.80] [x2=57.67] [y2=12.40]
-      LayoutSVGPath {svg:line} at (376,4) size 6x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=75.71] [y1=0.80] [x2=75.71] [y2=12.40]
-      LayoutSVGRect {svg:rect} at (288,4) size 91x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=57.67] [y=0.80] [width=18.04] [height=11.40]
+  LayoutSVGRoot {svg} at (0,4) size 750x89
+    LayoutSVGContainer {g} at (0,4) size 375x89
+      LayoutSVGPath {svg:line} at (277,4) size 6x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=56.07] [y1=0.80] [x2=56.07] [y2=12.40]
+      LayoutSVGPath {svg:line} at (369,4) size 6x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.42] [y1=0.80] [x2=74.42] [y2=12.40]
+      LayoutSVGRect {svg:rect} at (280,4) size 93x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=56.07] [y=0.80] [width=18.35] [height=11.40]
+      LayoutSVGText {svg:text} at (0,28) size 117x9 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 117x9
+          chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 40 width 116.40: "Expected 'to' to be selected, got: 'etc'"
     LayoutSVGText {text} at (10,0) size 140x13 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 140x12
-        chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 15 width 65.20: "Text to Stretch"
-selection start: position 5 of child 0 {#text} of child 5 {text} of child 0 {svg} of document
-selection end:   position 7 of child 0 {#text} of child 5 {text} of child 0 {svg} of document
+        chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 15 width 64.09: "Text to Stretch"
+selection start: position 11 of child 0 {#text} of child 5 {text} of child 0 {svg} of document
+selection end:   position 14 of child 0 {#text} of child 5 {text} of child 0 {svg} of document

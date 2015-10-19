@@ -6,7 +6,7 @@ layer at (0,0) size 480x360
       LayoutSVGContainer {g} at (30,9) size 393x246
         LayoutSVGText {text} at (5,1) size 53x8 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 53x7
-            chunk 1 text run 1 at (5.00,7.00) startOffset 0 endOffset 21 width 53.00: "Test default value of"
+            chunk 1 text run 1 at (5.00,7.00) startOffset 0 endOffset 21 width 52.33: "Test default value of"
         LayoutSVGText {text} at (5,8) size 61x8 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 61x7
             chunk 1 text run 1 at (5.00,14.00) startOffset 0 endOffset 21 width 60.17: "zoomAndPan attribute."

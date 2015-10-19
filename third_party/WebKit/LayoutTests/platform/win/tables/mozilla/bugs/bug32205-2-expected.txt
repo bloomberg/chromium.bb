@@ -21,8 +21,8 @@ layer at (0,0) size 785x1299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutListItem {LI} at (40,18) size 729x18
           LayoutListMarker (anonymous) at (-16,0) size 16x17: "2"
           LayoutText {#text} at (0,0) size 686x17
-            text run at (0,0) width 443: "If specified heights are insufficient (because the content is too large) "
-            text run at (442,0) width 244: "then the entire table will be expanded."
+            text run at (0,0) width 442: "If specified heights are insufficient (because the content is too large) "
+            text run at (441,0) width 245: "then the entire table will be expanded."
         LayoutListItem {LI} at (40,36) size 729x36
           LayoutListMarker (anonymous) at (-16,0) size 16x17: "3"
           LayoutText {#text} at (0,0) size 670x35
@@ -38,20 +38,20 @@ layer at (0,0) size 785x1299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 116: "It is specifiable as"
       LayoutBlockFlow {BLOCKQUOTE} at (40,260) size 689x54
         LayoutBlockFlow {P} at (0,0) size 689x54
-          LayoutText {#text} at (0,0) size 117x17
-            text run at (0,0) width 117: "Table height: 200 "
-          LayoutBR {BR} at (116,14) size 1x0
+          LayoutText {#text} at (0,0) size 116x17
+            text run at (0,0) width 116: "Table height: 200 "
+          LayoutBR {BR} at (115,14) size 1x0
           LayoutText {#text} at (0,18) size 131x17
             text run at (0,18) width 131: "First Row : 1 or 1% "
-          LayoutInline {I} at (0,0) size 221x17
-            LayoutText {#text} at (130,18) size 221x17
-              text run at (130,18) width 221: "(i.e. expand to minimum required)"
-          LayoutBR {BR} at (350,32) size 1x0
+          LayoutInline {I} at (0,0) size 219x17
+            LayoutText {#text} at (130,18) size 219x17
+              text run at (130,18) width 219: "(i.e. expand to minimum required)"
+          LayoutBR {BR} at (348,32) size 1x0
           LayoutText {#text} at (0,36) size 172x17
             text run at (0,36) width 172: "Second Row : unspecified "
-          LayoutInline {I} at (0,0) size 314x17
-            LayoutText {#text} at (171,36) size 314x17
-              text run at (171,36) width 314: "(i.e. table height - height of other rows+borders)"
+          LayoutInline {I} at (0,0) size 313x17
+            LayoutText {#text} at (171,36) size 313x17
+              text run at (171,36) width 313: "(i.e. table height - height of other rows+borders)"
           LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,330) size 90x200 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 88x198
@@ -70,9 +70,9 @@ layer at (0,0) size 785x1299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 416x17
           text run at (0,0) width 416: "A second attempt is to specify heights that do add up to the total."
       LayoutBlockFlow {P} at (0,614) size 769x54
-        LayoutText {#text} at (0,0) size 117x17
-          text run at (0,0) width 117: "Table height: 200 "
-        LayoutBR {BR} at (116,14) size 1x0
+        LayoutText {#text} at (0,0) size 116x17
+          text run at (0,0) width 116: "Table height: 200 "
+        LayoutBR {BR} at (115,14) size 1x0
         LayoutText {#text} at (0,18) size 89x17
           text run at (0,18) width 89: "First Row : 1 "
         LayoutBR {BR} at (88,32) size 1x0

@@ -3,9 +3,9 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,0) size 480x360
-      LayoutSVGText {text} at (10,53) size 457x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 457x21
-          chunk 1 text run 1 at (10.00,70.00) startOffset 0 endOffset 60 width 457.00: "Test 'overflow'/'clip' on outermost and inner 'svg' elements"
+      LayoutSVGText {text} at (10,53) size 455x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 455x21
+          chunk 1 text run 1 at (10.00,70.00) startOffset 0 endOffset 60 width 455.00: "Test 'overflow'/'clip' on outermost and inner 'svg' elements"
       LayoutSVGContainer {g} at (0,0) size 480x360
         LayoutSVGContainer {g} at (114,0) size 252x41 [transform={m=((1.00,0.00)(0.00,1.00)) t=(115.00,-20.00)}]
           LayoutSVGRect {rect} at (114,0) size 252x41 [stroke={[type=SOLID] [color=#FF8888] [stroke width=2.00]}] [fill={[type=SOLID] [color=#CCCCFF]}] [x=0.00] [y=0.00] [width=250.00] [height=60.00]

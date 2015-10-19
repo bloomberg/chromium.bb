@@ -55,9 +55,9 @@ layer at (0,0) size 480x360
           LayoutSVGEllipse {circle} at (0,0) size 3x3 [fill={[type=SOLID] [color=#008000]}] [cx=5.00] [cy=5.00] [r=7.00]
         LayoutSVGResourceMarker {marker} [id="hmarkerEnd"] [markerUnits=strokeWidth] [ref at (10,10)] [angle=0.00]
           LayoutSVGPath {path} at (0,0) size 4x4 [fill={[type=SOLID] [color=#0000FF]}] [data="M 10 0 L 20 20 L 0 20 Z"]
-      LayoutSVGText {text} at (155,38) size 169x20 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 169x20
-          chunk 1 (middle anchor) text run 1 at (155.98,54.00) startOffset 0 endOffset 20 width 168.04: "Test marker overflow"
+      LayoutSVGText {text} at (156,38) size 167x20 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 167x20
+          chunk 1 (middle anchor) text run 1 at (156.98,54.00) startOffset 0 endOffset 20 width 166.04: "Test marker overflow"
       LayoutSVGContainer {g} at (38,267) size 417x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,280.00)}]
         LayoutSVGText {text} at (38,-13) size 44x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x16

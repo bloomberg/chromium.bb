@@ -52,9 +52,9 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 159x21
               chunk 1 text run 1 at (20.00,220.00) startOffset 0 endOffset 18 width 158.11: "Passed subtest #10"
           LayoutSVGRect {rect} at (19,254) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=225.00] [width=15.00] [height=15.00]
-          LayoutSVGText {text} at (20,223) size 159x21 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 159x21
-              chunk 1 text run 1 at (20.00,240.00) startOffset 0 endOffset 18 width 158.11: "Passed subtest #11"
+          LayoutSVGText {text} at (20,223) size 157x21 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 157x21
+              chunk 1 text run 1 at (20.00,240.00) startOffset 0 endOffset 18 width 156.78: "Passed subtest #11"
           LayoutSVGRect {rect} at (19,274) size 17x17 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=245.00] [width=15.00] [height=15.00]
           LayoutSVGText {text} at (20,243) size 159x21 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 159x21

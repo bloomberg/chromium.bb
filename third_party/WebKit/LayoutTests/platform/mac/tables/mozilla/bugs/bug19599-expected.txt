@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 742x18
-          text run at (0,0) width 742: "The INPUT element using the IMAGE attribute is used to load the image in the table. This image flows outside the "
+        LayoutText {#text} at (0,0) size 741x18
+          text run at (0,0) width 741: "The INPUT element using the IMAGE attribute is used to load the image in the table. This image flows outside the "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutText {#text} at (0,18) size 280x18
           text run at (0,18) width 280: "the table after the window has been resized."

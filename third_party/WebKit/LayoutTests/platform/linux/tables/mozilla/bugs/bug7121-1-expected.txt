@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x80
-        LayoutText {#text} at (0,0) size 772x59
-          text run at (0,0) width 772: "In this table (modeled after mozilla.org template) the cells in column two are requesting colspans of (2,3,2,6) respectively. Notice"
+        LayoutText {#text} at (0,0) size 771x59
+          text run at (0,0) width 771: "In this table (modeled after mozilla.org template) the cells in column two are requesting colspans of (2,3,2,6) respectively. Notice"
           text run at (0,20) width 742: "that they all want to span more than one column (which means, in the case of this table, all rows are requesting to span more"
           text run at (0,40) width 201: "columns than the number of 'real' "
         LayoutInline {CODE} at (0,0) size 32x16

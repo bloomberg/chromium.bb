@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H4} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 155x19
-          text run at (0,0) width 155: "Testcase distilled from "
+        LayoutText {#text} at (0,0) size 154x19
+          text run at (0,0) width 154: "Testcase distilled from "
         LayoutInline {A} at (0,0) size 482x19 [color=#0000EE]
-          LayoutText {#text} at (155,0) size 482x19
-            text run at (155,0) width 482: "http://www.download.com/pc/list/0,339,0-b-0-0-a-1,00.html?st.dl.fd.ag.new"
+          LayoutText {#text} at (153,0) size 482x19
+            text run at (153,0) width 482: "http://www.download.com/pc/list/0,339,0-b-0-0-a-1,00.html?st.dl.fd.ag.new"
       LayoutBlockFlow {H4} at (0,41.27) size 784x20
         LayoutText {#text} at (0,0) size 293x19
           text run at (0,0) width 293: "Minimize the window and then open it again."
@@ -32,8 +32,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,108.53) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutBlockFlow {H4} at (0,149.80) size 784x20
-        LayoutText {#text} at (0,0) size 477x19
-          text run at (0,0) width 477: "This is the same table as above but with all <SPAN> elements removed."
+        LayoutText {#text} at (0,0) size 476x19
+          text run at (0,0) width 476: "This is the same table as above but with all <SPAN> elements removed."
       LayoutTable {TABLE} at (0,191.06) size 784x26
         LayoutTableSection {TBODY} at (0,0) size 784x26
           LayoutTableRow {TR} at (0,2) size 784x22 [bgcolor=#006633]

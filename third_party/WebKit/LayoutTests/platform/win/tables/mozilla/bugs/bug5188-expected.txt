@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
                     LayoutTableCell {TD} at (0,9) size 149x42 [r=1 c=0 rs=1 cs=1]
                       LayoutText {#text} at (3,3) size 132x35
                         text run at (3,3) width 132: "New WidgetMasters"
-                        text run at (3,21) width 83: "every Week!"
+                        text run at (3,21) width 81: "every Week!"
                     LayoutTableCell {TD} at (149,9) size 148x78 [r=1 c=1 rs=1 cs=1]
                       LayoutText {#text} at (3,3) size 140x71
                         text run at (3,3) width 118: "WidgetMaster can"

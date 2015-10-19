@@ -90,8 +90,8 @@ layer at (0,0) size 800x553
               LayoutTableSection (anonymous) at (0,0) size 103x60
                 LayoutTableRow {SPAN} at (0,0) size 103x28
                   LayoutTableCell (anonymous) at (0,0) size 103x28 [r=0 c=0 rs=1 cs=1]
-                    LayoutText {#text} at (0,6) size 28x16
-                      text run at (0,6) width 28: "Title"
+                    LayoutText {#text} at (0,6) size 27x16
+                      text run at (0,6) width 27: "Title"
                 LayoutTableRow (anonymous) at (0,28) size 103x32
                   LayoutTableCell (anonymous) at (0,28) size 103x32 [r=1 c=0 rs=1 cs=1]
                     LayoutTextControl {INPUT} at (0,8) size 103x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

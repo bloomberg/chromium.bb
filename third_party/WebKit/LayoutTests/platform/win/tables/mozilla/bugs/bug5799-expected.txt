@@ -29,9 +29,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 360x17
           text run at (0,0) width 360: "In this table, the second and the third cell are given 40%"
         LayoutBR {BR} at (359,14) size 1x0
-        LayoutText {#text} at (0,18) size 260x17
-          text run at (0,18) width 260: "The cells are competing with each other."
-        LayoutBR {BR} at (259,32) size 1x0
+        LayoutText {#text} at (0,18) size 259x17
+          text run at (0,18) width 259: "The cells are competing with each other."
+        LayoutBR {BR} at (259,32) size 0x0
       LayoutTable {TABLE} at (0,176) size 348x36 [border: (5px outset #808080)]
         LayoutTableSection {TBODY} at (5,5) size 338x26
           LayoutTableRow {TR} at (0,2) size 338x22

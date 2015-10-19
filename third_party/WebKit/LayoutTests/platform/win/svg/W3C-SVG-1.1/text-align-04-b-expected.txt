@@ -3,17 +3,17 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,4) size 477x262
-      LayoutSVGText {text} at (5,4) size 349x44 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 349x44
-          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 21 width 348.75: "Test of 'text-anchor'"
+      LayoutSVGText {text} at (5,4) size 345x44 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 345x44
+          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 21 width 344.32: "Test of 'text-anchor'"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGText {text} at (0,-14) size 78x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 78x17
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 13 width 77.30: "end text tref"
         LayoutSVGPath {path} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [data="M -5 260 L 220 260"]
-      LayoutSVGText {text} at (20,53) size 219x33 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 219x33
-          chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 17 width 218.45: "Tspan, tref, toap"
+      LayoutSVGText {text} at (20,53) size 216x33 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 216x33
+          chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 17 width 215.13: "Tspan, tref, toap"
       LayoutSVGPath {line} at (219,120) size 2x140 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=220.00] [y1=120.00] [x2=220.00] [y2=260.00]
       LayoutSVGContainer {g} at (0,113) size 477x153
         LayoutSVGText {text} at (220,113) size 257x33 contains 1 chunk(s)

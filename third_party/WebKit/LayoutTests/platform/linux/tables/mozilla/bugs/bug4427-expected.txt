@@ -87,13 +87,13 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,22) size 69x19
                 text run at (2,22) width 69: "Joe Banker"
               LayoutBR {BR} at (71,37) size 0x0
-              LayoutText {#text} at (2,42) size 126x19
-                text run at (2,42) width 126: "4633 Ocean Avenue"
-              LayoutBR {BR} at (128,57) size 0x0
+              LayoutText {#text} at (2,42) size 125x19
+                text run at (2,42) width 125: "4633 Ocean Avenue"
+              LayoutBR {BR} at (126,57) size 1x0
               LayoutText {#text} at (2,62) size 172x19
                 text run at (2,62) width 98: "San Francisco,  "
                 text run at (100,62) width 30: "CA  "
-                text run at (130,62) width 44: "94132 "
+                text run at (129,62) width 45: "94132 "
               LayoutBR {BR} at (0,0) size 0x0
             LayoutTableCell {TD} at (252,1) size 24x5 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               LayoutImage {IMG} at (2,2) size 20x1
@@ -118,13 +118,13 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 216x39
                 text run at (2,2) width 216: "FORECLOSURES AAA HOMES"
                 text run at (2,22) width 112: "UP TO 50% OFF"
-              LayoutBR {BR} at (114,37) size 0x0
+              LayoutBR {BR} at (113,37) size 1x0
               LayoutText {#text} at (2,42) size 123x19
                 text run at (2,42) width 123: "Real Estate Services"
               LayoutBR {BR} at (125,57) size 0x0
               LayoutText {#text} at (2,62) size 74x19
                 text run at (2,62) width 30: "CA  "
-                text run at (32,62) width 44: "00000 "
+                text run at (31,62) width 45: "00000 "
               LayoutBR {BR} at (0,0) size 0x0
               LayoutText {#text} at (2,82) size 100x19
                 text run at (2,82) width 100: "(000) 000-0000"

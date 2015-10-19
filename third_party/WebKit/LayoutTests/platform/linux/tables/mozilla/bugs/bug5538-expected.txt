@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H3} at (0,0) size 784x23
-        LayoutText {#text} at (0,0) size 309x22
-          text run at (0,0) width 309: "Testcase for bug 5538 - distilled from "
+        LayoutText {#text} at (0,0) size 307x22
+          text run at (0,0) width 307: "Testcase for bug 5538 - distilled from "
         LayoutInline {A} at (0,0) size 117x22 [color=#0000EE]
-          LayoutText {#text} at (309,0) size 117x22
-            text run at (309,0) width 117: "www.fool.com"
+          LayoutText {#text} at (306,0) size 117x22
+            text run at (306,0) width 117: "www.fool.com"
       LayoutTable {TABLE} at (0,41.72) size 600x89
         LayoutTableSection {TBODY} at (0,0) size 600x89
           LayoutTableRow {TR} at (0,0) size 600x89

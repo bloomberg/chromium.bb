@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           LayoutTableSection {TBODY} at (1,1) size 637x197
             LayoutTableRow {TR} at (0,0) size 637x22
               LayoutTableCell {TD} at (0,0) size 637x22 [border: (2px solid #FF0000)] [r=0 c=0 rs=1 cs=2]
-                LayoutText {#text} at (3,3) size 181x17
-                  text run at (3,3) width 181: "parent table, 1st row, 1st col"
+                LayoutText {#text} at (3,3) size 180x17
+                  text run at (3,3) width 180: "parent table, 1st row, 1st col"
             LayoutTableRow {TR} at (0,22) size 637x175
               LayoutTableCell {TD} at (0,22) size 152x175 [border: (1px solid #FF0000)] [r=1 c=0 rs=1 cs=1]
                 LayoutBlockFlow {FORM} at (3,2) size 148x155

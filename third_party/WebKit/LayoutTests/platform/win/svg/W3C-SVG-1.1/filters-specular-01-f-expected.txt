@@ -2,7 +2,7 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (90,8) size 348x282
+    LayoutSVGContainer {g} at (90,8) size 347x282
       LayoutSVGText {text} at (168,8) size 144x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 143x15
           chunk 1 (middle anchor) text run 1 at (168.50,20.00) startOffset 0 endOffset 27 width 143.00: "Filters: feSpecularLighting"
@@ -43,10 +43,10 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="lightingColorC"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feSpecularLighting surfaceScale="10.00" specualConstant="1.00" specularExponent="1.00"]
             [SourceGraphic]
-      LayoutSVGContainer {g} at (90,31) size 296x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,20.00)}]
-        LayoutSVGText {text} at (90,11) size 296x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 296x17
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 46 width 295.90: "Various values for surfaceScale: 1, 10 and -10"
+      LayoutSVGContainer {g} at (90,31) size 295x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,20.00)}]
+        LayoutSVGText {text} at (90,11) size 295x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 295x17
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 46 width 294.13: "Various values for surfaceScale: 1, 10 and -10"
         LayoutSVGContainer {g} at (90,50) size 280x30
           LayoutSVGRect {rect} at (90,50) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,50) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
@@ -57,10 +57,10 @@ layer at (0,0) size 480x360
           [filter="surfaceScaleB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
         LayoutSVGImage {image} at (320,50) size 50x30
           [filter="surfaceScaleC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
-      LayoutSVGContainer {g} at (90,101) size 311x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,90.00)}]
-        LayoutSVGText {text} at (90,11) size 311x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 311x17
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 48 width 310.16: "Various values for specularConstants: 0, 1 and 2"
+      LayoutSVGContainer {g} at (90,101) size 309x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,90.00)}]
+        LayoutSVGText {text} at (90,11) size 309x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 309x17
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 48 width 308.38: "Various values for specularConstants: 0, 1 and 2"
         LayoutSVGContainer {g} at (90,120) size 280x30
           LayoutSVGRect {rect} at (90,120) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,120) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
@@ -71,10 +71,10 @@ layer at (0,0) size 480x360
           [filter="specularConstantB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
         LayoutSVGImage {image} at (320,120) size 50x30
           [filter="specularConstantC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
-      LayoutSVGContainer {g} at (90,171) size 315x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
-        LayoutSVGText {text} at (90,11) size 315x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 315x17
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 48 width 314.59: "Various values for specularExponents: 1, 2 and 4"
+      LayoutSVGContainer {g} at (90,171) size 313x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,160.00)}]
+        LayoutSVGText {text} at (90,11) size 313x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 313x17
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 48 width 312.81: "Various values for specularExponents: 1, 2 and 4"
         LayoutSVGContainer {g} at (90,190) size 280x30
           LayoutSVGRect {rect} at (90,190) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,190) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]
@@ -85,10 +85,10 @@ layer at (0,0) size 480x360
           [filter="specularExponentB"] LayoutSVGResourceFilter {filter} at (205,30) size 50x30
         LayoutSVGImage {image} at (320,190) size 50x30
           [filter="specularExponentC"] LayoutSVGResourceFilter {filter} at (320,30) size 50x30
-      LayoutSVGContainer {g} at (90,241) size 348x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,230.00)}]
-        LayoutSVGText {text} at (90,11) size 348x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 348x17
-            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 347.91: "Various values for lighting color: red, yellow and blue"
+      LayoutSVGContainer {g} at (90,241) size 347x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,230.00)}]
+        LayoutSVGText {text} at (90,11) size 347x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 347x17
+            chunk 1 text run 1 at (90.00,25.00) startOffset 0 endOffset 55 width 346.14: "Various values for lighting color: red, yellow and blue"
         LayoutSVGContainer {g} at (90,260) size 280x30
           LayoutSVGRect {rect} at (90,260) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=90.00] [y=30.00] [width=50.00] [height=30.00]
           LayoutSVGRect {rect} at (205,260) size 50x30 [fill={[type=SOLID] [color=#000000]}] [x=205.00] [y=30.00] [width=50.00] [height=30.00]

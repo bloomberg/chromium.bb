@@ -4,8 +4,8 @@ layer at (0,0) size 785x667 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {html} at (0,0) size 785x666.58
     LayoutBlockFlow {body} at (11.52,23.03) size 761.97x632.03
       LayoutBlockFlow {p} at (0,0) size 761.97x27 [color=#000080]
-        LayoutText {#text} at (0,0) size 591x26
-          text run at (0,0) width 591: "There should be a blue circle with the word \"TEST\" in it below."
+        LayoutText {#text} at (0,0) size 589x26
+          text run at (0,0) width 589: "There should be a blue circle with the word \"TEST\" in it below."
       LayoutBlockFlow (anonymous) at (0,50.03) size 761.97x582
         LayoutSVGRoot {svg} at (11,73) size 577x577
           LayoutSVGRect {rect} at (11,73) size 577x577 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=400.00] [height=400.00]

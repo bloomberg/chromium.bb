@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 488x18
                   LayoutTableRow {TR} at (0,0) size 488x18
                     LayoutTableCell {TD} at (0,0) size 488x18 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (0,0) size 84x18
-                        text run at (0,0) width 84: "Top Nav Bar"
+                      LayoutText {#text} at (0,0) size 83x18
+                        text run at (0,0) width 83: "Top Nav Bar"
           LayoutTableRow {TR} at (0,82) size 604x146
             LayoutTableCell {TD} at (114,154) size 337x2 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (451,82) size 153x146 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
                   text run at (1,91) width 93: "showing their"
                   text run at (1,109) width 80: "malformed "
                   text run at (80,109) width 52: "asses to"
-                  text run at (1,127) width 127: "the entire world. \""
+                  text run at (1,127) width 126: "the entire world. \""
               LayoutText {#text} at (0,0) size 0x0
 layer at (144,10) size 468x60 clip at (145,11) size 466x58
   LayoutBlockFlow {DIV} at (0,0) size 468x60 [border: (1px solid #C0C0C0)]

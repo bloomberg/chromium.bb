@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 751x39
                 text run at (2,2) width 154: "The Supreme Court says "
                 text run at (156,2) width 465: "Wisconsin can continue using tuition vouchers to help poor parents send their "
-                text run at (621,2) width 132: "children to church-run"
+                text run at (620,2) width 133: "children to church-run"
                 text run at (2,22) width 53: "schools. "
                 text run at (55,22) width 116: "What's your stand?"
           LayoutTableRow {TR} at (0,44) size 782x24

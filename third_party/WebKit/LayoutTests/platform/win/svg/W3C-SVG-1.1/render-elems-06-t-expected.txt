@@ -4,9 +4,9 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (60,13) size 417x332
-      LayoutSVGText {text} at (180,13) size 98x33 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 98x33
-          chunk 1 text run 1 at (180.00,40.00) startOffset 0 endOffset 9 width 97.47: "Text fill"
+      LayoutSVGText {text} at (180,13) size 96x33 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 96x33
+          chunk 1 text run 1 at (180.00,40.00) startOffset 0 endOffset 9 width 95.38: "Text fill"
       LayoutSVGContainer {g} at (60,13) size 417x332
         LayoutSVGText {text} at (60,13) size 217x332 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 217x332

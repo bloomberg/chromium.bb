@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#FFFFFF]
       LayoutBlockFlow {H3} at (0,0) size 784x22
-        LayoutText {#text} at (0,0) size 301x22
-          text run at (0,0) width 301: "Testcase for bug 5538 - distilled from "
-        LayoutInline {A} at (0,0) size 115x22 [color=#0000EE]
-          LayoutText {#text} at (300,0) size 115x22
-            text run at (300,0) width 115: "www.fool.com"
+        LayoutText {#text} at (0,0) size 299x22
+          text run at (0,0) width 299: "Testcase for bug 5538 - distilled from "
+        LayoutInline {A} at (0,0) size 114x22 [color=#0000EE]
+          LayoutText {#text} at (298,0) size 114x22
+            text run at (298,0) width 114: "www.fool.com"
       LayoutTable {TABLE} at (0,40.72) size 600x89
         LayoutTableSection {TBODY} at (0,0) size 600x89
           LayoutTableRow {TR} at (0,0) size 600x89
@@ -26,9 +26,9 @@ layer at (0,0) size 800x600
               LayoutImage {IMG} at (436,0) size 55x18
       LayoutBlockFlow {P} at (0,163.72) size 784x161
         LayoutBlockFlow (anonymous) at (0,0) size 784x54
-          LayoutText {#text} at (0,0) size 476x18
-            text run at (0,0) width 476: "When removing <A HREF=\"...\"> surrounding logo image in first row and"
-          LayoutBR {BR} at (475,14) size 1x0
+          LayoutText {#text} at (0,0) size 475x18
+            text run at (0,0) width 475: "When removing <A HREF=\"...\"> surrounding logo image in first row and"
+          LayoutBR {BR} at (474,14) size 1x0
           LayoutText {#text} at (0,18) size 390x18
             text run at (0,18) width 390: "removing <MAP> element in second row it looks OK to me:"
           LayoutBR {BR} at (389,32) size 1x0

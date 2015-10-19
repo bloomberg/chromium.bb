@@ -3,17 +3,17 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (5,4) size 358x285
-      LayoutSVGText {text} at (5,4) size 358x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 358x45
-          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 24 width 358.00: "Test left-to-right text."
-      LayoutSVGContainer {g} at (10,60) size 219x159
+    LayoutSVGContainer {g} at (5,4) size 354x285
+      LayoutSVGText {text} at (5,4) size 354x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 354x45
+          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 24 width 353.57: "Test left-to-right text."
+      LayoutSVGContainer {g} at (10,60) size 220x159
         LayoutSVGText {text} at (10,60) size 216x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 216x19
             chunk 1 text run 1 at (10.00,75.00) startOffset 0 endOffset 33 width 216.00: "Polish: Mog\x{119} je\x{15B}\x{107} szk\x{142}o, i mi ..."
-        LayoutSVGText {text} at (10,95) size 219x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 219x19
-            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 32 width 219.00: "Russian: \x{42F} \x{43C}\x{43E}\x{433}\x{443} \x{435}\x{441}\x{442}\x{44C} \x{441}\x{442}\x{435}\x{43A}\x{43B}\x{43E}, ..."
+        LayoutSVGText {text} at (10,95) size 220x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 220x19
+            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 32 width 219.42: "Russian: \x{42F} \x{43C}\x{43E}\x{433}\x{443} \x{435}\x{441}\x{442}\x{44C} \x{441}\x{442}\x{435}\x{43A}\x{43B}\x{43E}, ..."
         LayoutSVGText {text} at (10,130) size 174x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 174x19
             chunk 1 text run 1 at (10.00,145.00) startOffset 0 endOffset 23 width 174.00: "Greek: \x{39C}\x{3C0}\x{3BF}\x{3C1}\x{3CE} \x{3BD}\x{3B1} \x{3C6}\x{3AC}\x{3C9} ..."
@@ -24,9 +24,9 @@ layer at (0,0) size 480x360
             chunk 1 text run 1 at (198.00,180.00) startOffset 0 endOffset 4 width 16.00: " ..."
         LayoutSVGText {text} at (10,200) size 200x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 200x19
-            chunk 1 text run 1 at (10.00,215.00) startOffset 0 endOffset 9 width 61.00: "Yiddish: "
-            chunk 1 text run 1 at (71.00,215.00) startOffset 0 endOffset 21 width 123.00 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF}"
-            chunk 1 text run 1 at (194.00,215.00) startOffset 0 endOffset 4 width 16.00: " ..."
+            chunk 1 text run 1 at (10.00,215.00) startOffset 0 endOffset 9 width 60.06: "Yiddish: "
+            chunk 1 text run 1 at (70.06,215.00) startOffset 0 endOffset 21 width 123.00 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF}"
+            chunk 1 text run 1 at (193.06,215.00) startOffset 0 endOffset 4 width 16.00: " ..."
       LayoutSVGContainer {g} at (10,235) size 256x19
         LayoutSVGText {text} at (10,235) size 256x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 256x19

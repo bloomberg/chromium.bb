@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {H4} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 565x18
-          text run at (0,0) width 565: "Try resizing the window horizantally - the red cell should be 195 pixels at all times."
+        LayoutText {#text} at (0,0) size 563x18
+          text run at (0,0) width 563: "Try resizing the window horizantally - the red cell should be 195 pixels at all times."
       LayoutTable {TABLE} at (0,39.27) size 404x78 [bgcolor=#FFFF00] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 402x76
           LayoutTableRow {TR} at (0,0) size 402x20

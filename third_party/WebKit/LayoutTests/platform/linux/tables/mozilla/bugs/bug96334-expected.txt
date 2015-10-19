@@ -1,45 +1,45 @@
-layer at (0,0) size 800x600 scrollWidth 987
+layer at (0,0) size 800x600 scrollWidth 984
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutTable {TABLE} at (0,0) size 979x148 [border: (2px solid #0000FF)]
-        LayoutTableSection {TBODY} at (2,2) size 975x144
-          LayoutTableRow {TR} at (0,2) size 975x140
-            LayoutTableCell {TD} at (2,2) size 235x140 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (2,2) size 231x136 [border: (2px solid #008000)]
-                LayoutTableSection {TBODY} at (2,2) size 227x132
-                  LayoutTableRow {TR} at (0,2) size 227x90
-                    LayoutTableCell {TD} at (2,2) size 223x90 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,0) size 976x148 [border: (2px solid #0000FF)]
+        LayoutTableSection {TBODY} at (2,2) size 972x144
+          LayoutTableRow {TR} at (0,2) size 972x140
+            LayoutTableCell {TD} at (2,2) size 234x140 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (2,2) size 230x136 [border: (2px solid #008000)]
+                LayoutTableSection {TBODY} at (2,2) size 226x132
+                  LayoutTableRow {TR} at (0,2) size 226x90
+                    LayoutTableCell {TD} at (2,2) size 222x90 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
                       LayoutTable {TABLE} at (2,2) size 166x34 [border: (2px solid #FF0000)]
                         LayoutTableSection {TBODY} at (2,2) size 162x30
                           LayoutTableRow {TR} at (0,2) size 162x26
                             LayoutTableCell {TD} at (2,2) size 158x26 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
                               LayoutTextControl {INPUT} at (2,2) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
                               LayoutText {#text} at (0,0) size 0x0
-                      LayoutTable {TABLE} at (2,36) size 219x52 [border: (2px solid #FF0000)]
-                        LayoutTableSection {TBODY} at (2,2) size 215x48
-                          LayoutTableRow {TR} at (0,2) size 215x44
-                            LayoutTableCell {TD} at (2,2) size 211x44 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-                              LayoutText {#text} at (2,2) size 188x39
-                                text run at (2,2) width 188: "THIS TABLE NEEDS TO BE"
+                      LayoutTable {TABLE} at (2,36) size 218x52 [border: (2px solid #FF0000)]
+                        LayoutTableSection {TBODY} at (2,2) size 214x48
+                          LayoutTableRow {TR} at (0,2) size 214x44
+                            LayoutTableCell {TD} at (2,2) size 210x44 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+                              LayoutText {#text} at (2,2) size 187x39
+                                text run at (2,2) width 187: "THIS TABLE NEEDS TO BE"
                                 text run at (2,22) width 39: "HERE"
-                  LayoutTableRow {TR} at (0,94) size 227x36
-                    LayoutTableCell {TD} at (2,94) size 223x36 [border: (1px solid #C0C0C0)] [r=1 c=0 rs=1 cs=1]
-                      LayoutTable {TABLE} at (2,2) size 219x32 [border: (2px solid #FF0000)]
-                        LayoutTableSection {TBODY} at (2,2) size 215x28
-                          LayoutTableRow {TR} at (0,2) size 215x24
-                            LayoutTableCell {TD} at (2,2) size 211x24 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
-                              LayoutMenuList {SELECT} at (2,2) size 207x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                                LayoutBlockFlow (anonymous) at (1,1) size 205x18
-                                  LayoutText (anonymous) at (4,1) size 182x16
-                                    text run at (4,1) width 182: "USE THIS JAVASCRIPT HERE"
+                  LayoutTableRow {TR} at (0,94) size 226x36
+                    LayoutTableCell {TD} at (2,94) size 222x36 [border: (1px solid #C0C0C0)] [r=1 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (2,2) size 218x32 [border: (2px solid #FF0000)]
+                        LayoutTableSection {TBODY} at (2,2) size 214x28
+                          LayoutTableRow {TR} at (0,2) size 214x24
+                            LayoutTableCell {TD} at (2,2) size 210x24 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
+                              LayoutMenuList {SELECT} at (2,2) size 206x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+                                LayoutBlockFlow (anonymous) at (1,1) size 204x18
+                                  LayoutText (anonymous) at (4,1) size 181x16
+                                    text run at (4,1) width 181: "USE THIS JAVASCRIPT HERE"
                               LayoutText {#text} at (0,0) size 0x0
-            LayoutTableCell {TD} at (239,2) size 734x44 [border: (1px solid #C0C0C0)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 730x39
-                text run at (2,2) width 730: "KEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLEooKEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLE"
-                text run at (2,22) width 586: "THIS SIMULATES THE PROBLEM ON THE WWW.MAPBLAST.COM/ \"CREATE MAP\""
-layer at (28,29) size 150x16 scrollWidth 156
+            LayoutTableCell {TD} at (238,2) size 732x44 [border: (1px solid #C0C0C0)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 728x39
+                text run at (2,2) width 728: "KEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLEooKEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLE"
+                text run at (2,22) width 580: "THIS SIMULATES THE PROBLEM ON THE WWW.MAPBLAST.COM/ \"CREATE MAP\""
+layer at (28,29) size 150x16 scrollWidth 155
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 156x16
-      text run at (0,0) width 156: "THIS NEEDS THIS VALUE"
+    LayoutText {#text} at (0,0) size 155x16
+      text run at (0,0) width 155: "THIS NEEDS THIS VALUE"

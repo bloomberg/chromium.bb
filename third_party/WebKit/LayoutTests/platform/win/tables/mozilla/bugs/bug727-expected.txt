@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 348x68
           LayoutTableRow {TR} at (0,2) size 348x22
             LayoutTableCell {TD} at (2,2) size 344x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,2) size 208x17
-                text run at (2,2) width 208: "MozillaZine.org Is Now Active!"
+              LayoutText {#text} at (2,2) size 207x17
+                text run at (2,2) width 207: "MozillaZine.org Is Now Active!"
           LayoutTableRow {TR} at (0,26) size 348x40
             LayoutTableCell {TD} at (2,35) size 194x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 4x17

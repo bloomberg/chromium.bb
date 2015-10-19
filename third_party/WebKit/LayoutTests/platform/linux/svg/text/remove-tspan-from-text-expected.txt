@@ -6,9 +6,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [10, 63, 318, 257],
-        [10, 63, 318, 257],
-        [10, 63, 318, 257]
+        [10, 63, 307, 257],
+        [10, 63, 307, 257],
+        [10, 63, 307, 257]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'FAIL'",

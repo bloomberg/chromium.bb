@@ -4,9 +4,9 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,6) size 437x238
-      LayoutSVGText {text} at (10,6) size 140x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 140x17
-          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 139.62: "Test horizontal text."
+      LayoutSVGText {text} at (10,6) size 138x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 138x17
+          chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 137.84: "Test horizontal text."
       LayoutSVGContainer {g} at (10,44) size 437x200
         LayoutSVGText {text} at (10,44) size 283x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 283x20
@@ -17,16 +17,16 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (10,107) size 421x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 421x17
             chunk 1 text run 1 at (10.00,120.00) startOffset 0 endOffset 57 width 420.41: "Greek: \x{39C}\x{3C0}\x{3BF}\x{3C1}\x{3CE} \x{3BD}\x{3B1} \x{3C6}\x{3AC}\x{3C9} \x{3C3}\x{3C0}\x{3B1}\x{3C3}\x{3BC}\x{3AD}\x{3BD}\x{3B1} \x{3B3}\x{3C5}\x{3B1}\x{3BB}\x{3B9}\x{3AC} \x{3C7}\x{3C9}\x{3C1}\x{3AF}\x{3C2} \x{3BD}\x{3B1} \x{3C0}\x{3AC}\x{3B8}\x{3C9} \x{3C4}\x{3AF}\x{3C0}\x{3BF}\x{3C4}\x{3B1}."
-        LayoutSVGText {text} at (10,134) size 408x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 408x20
-            chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 6 width 42.34: "Text \""
-            chunk 1 text run 1 at (52.34,150.00) startOffset 0 endOffset 36 width 266.94 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D9}\x{5DB}\x{5D5}\x{5DC} \x{5DC}\x{5D0}\x{5DB}\x{5D5}\x{5DC} \x{5D6}\x{5DB}\x{5D5}\x{5DB}\x{5D9}\x{5EA} \x{5D5}\x{5D6}\x{5D4} \x{5DC}\x{5D0} \x{5DE}\x{5D6}\x{5D9}\x{5E7} \x{5DC}\x{5D9}"
-            chunk 1 text run 1 at (319.28,150.00) startOffset 0 endOffset 14 width 98.06: "\" is in Hebrew"
-        LayoutSVGText {text} at (10,164) size 370x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 370x20
-            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 9 width 62.81: "Yiddish: "
-            chunk 1 text run 1 at (72.81,180.00) startOffset 0 endOffset 40 width 302.84 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF} \x{5E2}\x{5E1} \x{5D8}\x{5D5}\x{5D8} \x{5DE}\x{5D9}\x{5E8} \x{5E0}\x{5D9}\x{5E9}\x{5D8} \x{5F0}\x{5F2}"
-            chunk 1 text run 1 at (375.65,180.00) startOffset 0 endOffset 1 width 4.25: "."
+        LayoutSVGText {text} at (10,134) size 407x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 407x20
+            chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 6 width 41.16: "Text \""
+            chunk 1 text run 1 at (51.16,150.00) startOffset 0 endOffset 36 width 266.94 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D9}\x{5DB}\x{5D5}\x{5DC} \x{5DC}\x{5D0}\x{5DB}\x{5D5}\x{5DC} \x{5D6}\x{5DB}\x{5D5}\x{5DB}\x{5D9}\x{5EA} \x{5D5}\x{5D6}\x{5D4} \x{5DC}\x{5D0} \x{5DE}\x{5D6}\x{5D9}\x{5E7} \x{5DC}\x{5D9}"
+            chunk 1 text run 1 at (318.09,150.00) startOffset 0 endOffset 14 width 98.06: "\" is in Hebrew"
+        LayoutSVGText {text} at (10,164) size 369x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 369x20
+            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 9 width 61.88: "Yiddish: "
+            chunk 1 text run 1 at (71.88,180.00) startOffset 0 endOffset 40 width 302.84 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF} \x{5E2}\x{5E1} \x{5D8}\x{5D5}\x{5D8} \x{5DE}\x{5D9}\x{5E8} \x{5E0}\x{5D9}\x{5E9}\x{5D8} \x{5F0}\x{5F2}"
+            chunk 1 text run 1 at (374.72,180.00) startOffset 0 endOffset 1 width 4.25: "."
         LayoutSVGText {text} at (10,194) size 264x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 264x20
             chunk 1 text run 1 at (10.00,210.00) startOffset 0 endOffset 20 width 263.49: "Chinese:\x{6211}\x{80FD}\x{541E}\x{4E0B}\x{73BB}\x{7483}\x{800C}\x{4E0D}\x{4F24}\x{8EAB}\x{4F53}\x{3002}"

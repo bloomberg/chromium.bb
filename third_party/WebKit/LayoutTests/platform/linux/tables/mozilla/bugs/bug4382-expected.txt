@@ -11,12 +11,12 @@ layer at (0,0) size 800x600
         LayoutInline {B} at (0,0) size 46x19
           LayoutText {#text} at (0,1) size 46x19
             text run at (0,1) width 46: "Search"
-        LayoutText {#text} at (46,1) size 4x19
-          text run at (46,1) width 4: " "
-        LayoutTextControl {INPUT} at (50,0) size 142x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        LayoutText {#text} at (192,1) size 4x19
-          text run at (192,1) width 4: " "
-        LayoutMenuList {SELECT} at (196,1) size 73x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+        LayoutText {#text} at (45,1) size 5x19
+          text run at (45,1) width 5: " "
+        LayoutTextControl {INPUT} at (49.70,0) size 142x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (191,1) size 5x19
+          text run at (191,1) width 5: " "
+        LayoutMenuList {SELECT} at (195.70,1) size 73x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 71x18
             LayoutText (anonymous) at (4,1) size 37x16
               text run at (4,1) width 37: "Excite"

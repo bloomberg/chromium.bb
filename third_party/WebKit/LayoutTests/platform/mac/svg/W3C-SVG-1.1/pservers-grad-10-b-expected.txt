@@ -3,9 +3,9 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (10,11) size 460x267
-      LayoutSVGText {text} at (10,11) size 208x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 208x17
-          chunk 1 text run 1 at (10.00,25.00) startOffset 0 endOffset 30 width 207.62: "Testing spreadMethod attribute"
+      LayoutSVGText {text} at (10,11) size 206x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 206x17
+          chunk 1 text run 1 at (10.00,25.00) startOffset 0 endOffset 30 width 205.96: "Testing spreadMethod attribute"
       LayoutSVGResourceLinearGradient {linearGradient} [id="Grad1"] [gradientUnits=objectBoundingBox] [start=(0.40,0)] [end=(0.60,0)]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]

@@ -4,8 +4,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x964
     LayoutBlockFlow {BODY} at (8,8) size 769x948
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 320x18
-          text run at (0,0) width 320: "fixed table - percentage width cell honored to min"
+        LayoutText {#text} at (0,0) size 319x18
+          text run at (0,0) width 319: "fixed table - percentage width cell honored to min"
       LayoutTable {TABLE} at (0,18) size 300x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x26
           LayoutTableRow {TR} at (0,2) size 298x22
@@ -17,8 +17,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,46) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 352x18
-          text run at (0,18) width 352: "fixed table - percentage cells allocated left to rigth first"
+        LayoutText {#text} at (0,18) size 350x18
+          text run at (0,18) width 350: "fixed table - percentage cells allocated left to rigth first"
       LayoutTable {TABLE} at (0,82) size 300x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x44
           LayoutTableRow {TR} at (0,2) size 298x40
@@ -34,8 +34,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 30: "50%"
       LayoutBlockFlow (anonymous) at (0,128) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 525x18
-          text run at (0,18) width 525: "fixed table - percentage cells allocated left to rigth first allocated from left to right"
+        LayoutText {#text} at (0,18) size 523x18
+          text run at (0,18) width 523: "fixed table - percentage cells allocated left to rigth first allocated from left to right"
       LayoutTable {TABLE} at (0,164) size 300x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x44
           LayoutTableRow {TR} at (0,2) size 298x40
@@ -51,8 +51,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 30: "95%"
       LayoutBlockFlow (anonymous) at (0,210) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 352x18
-          text run at (0,18) width 352: "fixed table - percentage cells allocated left to rigth first"
+        LayoutText {#text} at (0,18) size 350x18
+          text run at (0,18) width 350: "fixed table - percentage cells allocated left to rigth first"
       LayoutTable {TABLE} at (0,246) size 200x62 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 198x60
           LayoutTableRow {TR} at (0,10) size 198x40
@@ -65,8 +65,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 30: "50%"
       LayoutBlockFlow (anonymous) at (0,308) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 352x18
-          text run at (0,18) width 352: "fixed table - percentage cells allocated left to right first"
+        LayoutText {#text} at (0,18) size 350x18
+          text run at (0,18) width 350: "fixed table - percentage cells allocated left to right first"
       LayoutTable {TABLE} at (0,344) size 200x80 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 198x78
           LayoutTableRow {TR} at (0,10) size 198x58
@@ -86,8 +86,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,38) width 30: "50%"
       LayoutBlockFlow (anonymous) at (0,424) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 352x18
-          text run at (0,18) width 352: "fixed table - percentage cells allocated left to right first"
+        LayoutText {#text} at (0,18) size 350x18
+          text run at (0,18) width 350: "fixed table - percentage cells allocated left to right first"
       LayoutTable {TABLE} at (0,460) size 400x62 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x60
           LayoutTableRow {TR} at (0,10) size 398x40
@@ -107,8 +107,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 96: "50% 50% 50%"
       LayoutBlockFlow (anonymous) at (0,522) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 352x18
-          text run at (0,18) width 352: "fixed table - percentage cells allocated left to right first"
+        LayoutText {#text} at (0,18) size 350x18
+          text run at (0,18) width 350: "fixed table - percentage cells allocated left to right first"
       LayoutTable {TABLE} at (0,558) size 400x80 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x78
           LayoutTableRow {TR} at (0,10) size 398x58
@@ -147,8 +147,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 23: "zap"
       LayoutBlockFlow (anonymous) at (0,684) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 226x18
-          text run at (0,18) width 226: "PERCENTAGE WIDTH TABLES"
+        LayoutText {#text} at (0,18) size 224x18
+          text run at (0,18) width 224: "PERCENTAGE WIDTH TABLES"
       LayoutTable {TABLE} at (0,720) size 769x82 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x80
           LayoutTableRow {TR} at (0,2) size 767x76

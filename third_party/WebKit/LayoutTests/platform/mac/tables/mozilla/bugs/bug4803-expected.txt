@@ -13,6 +13,6 @@ layer at (0,0) size 800x600
               LayoutImage {IMG} at (0,0) size 1x2
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (1,0) size 139x36 [bgcolor=#FFFFCC] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 129x36
-                text run at (0,0) width 129: " D A I LY  C H E C"
+              LayoutText {#text} at (0,0) size 127x36
+                text run at (0,0) width 127: " D A I LY  C H E C"
                 text run at (0,18) width 12: "K"

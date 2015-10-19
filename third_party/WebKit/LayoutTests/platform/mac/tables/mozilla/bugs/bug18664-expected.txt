@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#999999]
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 471x18
-          text run at (0,0) width 428: "Problem: Tables inside a DIV get border=1 after moving the DIV. "
-          text run at (427,0) width 44: "If you "
-        LayoutInline {A} at (0,0) size 128x18 [color=#0000EE]
-          LayoutInline {B} at (0,0) size 128x18
-            LayoutText {#text} at (470,0) size 128x18
-              text run at (470,0) width 128: "remove the border"
-        LayoutText {#text} at (597,0) size 783x36
-          text run at (597,0) width 186: " attribute from the tables, the"
+        LayoutText {#text} at (0,0) size 468x18
+          text run at (0,0) width 425: "Problem: Tables inside a DIV get border=1 after moving the DIV. "
+          text run at (424,0) width 44: "If you "
+        LayoutInline {A} at (0,0) size 127x18 [color=#0000EE]
+          LayoutInline {B} at (0,0) size 127x18
+            LayoutText {#text} at (467,0) size 127x18
+              text run at (467,0) width 127: "remove the border"
+        LayoutText {#text} at (593,0) size 779x36
+          text run at (593,0) width 186: " attribute from the tables, the"
           text run at (0,18) width 153: "border doesn't show up."
 layer at (70,70) size 173x54
   LayoutBlockFlow (positioned) {DIV} at (70,70) size 173x54
@@ -31,8 +31,8 @@ layer at (70,70) size 173x54
             LayoutText {#text} at (0,0) size 4x18
               text run at (0,0) width 4: " "
           LayoutTableCell {TD} at (11,0) size 150x18 [bgcolor=#FF9900] [r=0 c=1 rs=1 cs=1]
-            LayoutText {#text} at (0,0) size 124x18
-              text run at (0,0) width 124: "Test, test and test..."
+            LayoutText {#text} at (0,0) size 122x18
+              text run at (0,0) width 122: "Test, test and test..."
           LayoutTableCell {TD} at (161,0) size 12x18 [bgcolor=#666666] [r=0 c=2 rs=1 cs=1]
             LayoutText {#text} at (0,0) size 4x18
               text run at (0,0) width 4: " "

@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (10,9) size 240x29
+  LayoutSVGRoot {svg} at (10,9) size 238x29
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feGaussianBlur stdDeviation="1.00, 1.00"]
           [SourceGraphic]
-    LayoutSVGText {text} at (30,12) size 200x23 contains 1 chunk(s)
-      [filter="filter"] LayoutSVGResourceFilter {filter} at (10,9.70) size 239.93x27.60
-      LayoutSVGInlineText {#text} at (0,0) size 132x23
-        [filter="filter"] LayoutSVGResourceFilter {filter} at (16.89,9.70) size 157.29x27.60
-        chunk 1 text run 1 at (30.00,30.00) startOffset 0 endOffset 19 width 131.08: "This is for filter "
+    LayoutSVGText {text} at (30,12) size 198x23 contains 1 chunk(s)
+      [filter="filter"] LayoutSVGResourceFilter {filter} at (10.23,9.70) size 237.30x27.60
+      LayoutSVGInlineText {#text} at (0,0) size 130x23
+        [filter="filter"] LayoutSVGResourceFilter {filter} at (17,9.70) size 155.98x27.60
+        chunk 1 text run 1 at (30.00,30.00) startOffset 0 endOffset 19 width 129.99: "This is for filter "
       LayoutSVGTSpan {tspan} at (0,0) size 64x23
-        LayoutSVGInlineText {#text} at (131,0) size 64x23
-          [filter="filter"] LayoutSVGResourceFilter {filter} at (154.69,9.70) size 76.63x27.60
-          chunk 1 text run 1 at (161.08,30.00) startOffset 0 endOffset 9 width 63.87: "on filter"
-      LayoutSVGInlineText {#text} at (194,0) size 5x23
-        [filter="filter"] LayoutSVGResourceFilter {filter} at (224.44,9.70) size 6x27.60
-        chunk 1 text run 1 at (224.95,30.00) startOffset 0 endOffset 1 width 5.00: "."
+        LayoutSVGInlineText {#text} at (129,0) size 63x23
+          [filter="filter"] LayoutSVGResourceFilter {filter} at (153.71,9.70) size 75.32x27.60
+          chunk 1 text run 1 at (159.99,30.00) startOffset 0 endOffset 9 width 62.77: "on filter"
+      LayoutSVGInlineText {#text} at (192,0) size 5x23
+        [filter="filter"] LayoutSVGResourceFilter {filter} at (222.25,9.70) size 6x27.60
+        chunk 1 text run 1 at (222.76,30.00) startOffset 0 endOffset 1 width 5.00: "."

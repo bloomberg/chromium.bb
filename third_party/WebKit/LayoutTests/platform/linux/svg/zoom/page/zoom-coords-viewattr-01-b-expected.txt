@@ -16,12 +16,12 @@ layer at (0,0) size 800x600
             LayoutSVGPath {path} at (48,155) size 20x11 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 10 19 L 15 23 L 20 19"]
         LayoutSVGText {text} at (10,102) size 40x11 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 40x11
-            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 10 width 39.60: "Viewport 1"
+            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 10 width 39.06: "Viewport 1"
         LayoutSVGContainer {g} at (16,250) size 84x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
           LayoutSVGRect {rect} at (16,250) size 84x50 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
         LayoutSVGText {text} at (10,172) size 40x11 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 40x11
-            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 10 width 39.60: "Viewport 2"
+            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 10 width 39.06: "Viewport 2"
         LayoutSVGContainer {g} at (33,366) size 51x101 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,190.00)}]
           LayoutSVGRect {rect} at (33,366) size 51x101 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
         LayoutSVGContainer {g} at (200,87) size 200x180 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,50.00)}]

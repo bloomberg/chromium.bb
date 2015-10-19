@@ -4,8 +4,8 @@ layer at (0,0) size 800x58
   LayoutBlockFlow {HTML} at (0,0) size 800x58
     LayoutBlockFlow {BODY} at (8,8) size 784x42
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 262x18
-          text run at (0,0) width 262: "This is the first of two lines on this page."
+        LayoutText {#text} at (0,0) size 261x18
+          text run at (0,0) width 261: "This is the first of two lines on this page."
       LayoutBlockFlow {TABLE} at (0,18) size 784x24
         LayoutTable (anonymous) at (0,0) size 286x24
           LayoutTableSection {TBODY} at (0,0) size 286x24

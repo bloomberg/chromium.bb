@@ -4,19 +4,19 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (10,52) size 420x243 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
       LayoutSVGContainer {g} at (10,52) size 420x243
-        LayoutSVGText {text} at (10,22) size 43x10 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 43x10
-            chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 13 width 42.49: "Raster to fit"
+        LayoutSVGText {text} at (10,22) size 42x10 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 42x10
+            chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 13 width 42.00: "Raster to fit"
         LayoutSVGContainer {g} at (20,70) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,40.00)}]
           LayoutSVGImage {image} at (20,70) size 40x40
         LayoutSVGText {text} at (10,102) size 41x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 41x10
-            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 10 width 40.74: "Viewport 1"
+            chunk 1 text run 1 at (10.00,110.00) startOffset 0 endOffset 10 width 40.21: "Viewport 1"
         LayoutSVGContainer {g} at (10,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
           LayoutSVGRect {rect} at (10,150) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
         LayoutSVGText {text} at (10,172) size 41x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 41x10
-            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 10 width 40.74: "Viewport 2"
+            chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 10 width 40.21: "Viewport 2"
         LayoutSVGContainer {g} at (20,220) size 30x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,190.00)}]
           LayoutSVGRect {rect} at (20,220) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
         LayoutSVGContainer {g} at (120,52) size 120x108 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,50.00)}]

@@ -51,11 +51,11 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,87) size 295x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 183x17
                 text run at (2,2) width 183: "This is the second cell, with "
-              LayoutInline {B} at (0,0) size 28x17
-                LayoutText {#text} at (184,2) size 28x17
-                  text run at (184,2) width 28: "row"
-              LayoutText {#text} at (211,2) size 82x17
-                text run at (211,2) width 82: " height 50%."
+              LayoutInline {B} at (0,0) size 27x17
+                LayoutText {#text} at (184,2) size 27x17
+                  text run at (184,2) width 27: "row"
+              LayoutText {#text} at (210,2) size 83x17
+                text run at (210,2) width 83: " height 50%."
           LayoutTableRow {TR} at (0,149) size 299x47
             LayoutTableCell {TD} at (2,161) size 295x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 132x17
@@ -70,11 +70,11 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,26) size 295x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 183x17
                 text run at (2,2) width 183: "This is the second cell, with "
-              LayoutInline {B} at (0,0) size 28x17
-                LayoutText {#text} at (184,2) size 28x17
-                  text run at (184,2) width 28: "row"
-              LayoutText {#text} at (211,2) size 82x17
-                text run at (211,2) width 82: " height 50%."
+              LayoutInline {B} at (0,0) size 27x17
+                LayoutText {#text} at (184,2) size 27x17
+                  text run at (184,2) width 27: "row"
+              LayoutText {#text} at (210,2) size 83x17
+                text run at (210,2) width 83: " height 50%."
           LayoutTableRow {TR} at (0,50) size 299x22
             LayoutTableCell {TD} at (2,50) size 295x22 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 132x17

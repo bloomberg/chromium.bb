@@ -44,9 +44,9 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="xMaxYMaxSlice"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feImage image-size="100x100"]
       LayoutSVGContainer {g} at (10,16) size 420x279 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,30.00)}]
-        LayoutSVGText {text} at (61,-14) size 358x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 357x18
-            chunk 1 (middle anchor) text run 1 at (61.68,0.00) startOffset 0 endOffset 47 width 356.63: "Test preserveAspectRatio on an feImage element."
+        LayoutSVGText {text} at (62,-14) size 356x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 355x18
+            chunk 1 (middle anchor) text run 1 at (62.57,0.00) startOffset 0 endOffset 47 width 354.86: "Test preserveAspectRatio on an feImage element."
         LayoutSVGText {text} at (16,22) size 47x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 46x10
             chunk 1 (middle anchor) text run 1 at (16.99,30.00) startOffset 0 endOffset 13 width 46.02: "Raster to fit"
@@ -55,12 +55,12 @@ layer at (0,0) size 480x360
             [filter="default"] LayoutSVGResourceFilter {filter} at (0,0) size 40x40
         LayoutSVGText {text} at (14,102) size 43x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x10
-            chunk 1 (middle anchor) text run 1 at (14.24,110.00) startOffset 0 endOffset 10 width 42.52: "Viewport 1"
+            chunk 1 (middle anchor) text run 1 at (14.32,110.00) startOffset 0 endOffset 10 width 42.36: "Viewport 1"
         LayoutSVGContainer {g} at (10,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
           LayoutSVGRect {rect} at (10,150) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
         LayoutSVGText {text} at (14,172) size 43x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x10
-            chunk 1 (middle anchor) text run 1 at (14.24,180.00) startOffset 0 endOffset 10 width 42.52: "Viewport 2"
+            chunk 1 (middle anchor) text run 1 at (14.32,180.00) startOffset 0 endOffset 10 width 42.36: "Viewport 2"
         LayoutSVGContainer {g} at (20,220) size 30x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,190.00)}]
           LayoutSVGRect {rect} at (20,220) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
         LayoutSVGContainer {g} at (120,52) size 120x108 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,50.00)}]

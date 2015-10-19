@@ -9,7 +9,7 @@ layer at (0,0) size 480x360
     LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
     LayoutSVGText {text} at (177,10) size 126x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 126x19
-        chunk 1 (middle anchor) text run 1 at (177.00,25.00) startOffset 0 endOffset 18 width 126.00: "<animateTransform>"
+        chunk 1 (middle anchor) text run 1 at (177.28,25.00) startOffset 0 endOffset 18 width 125.44: "<animateTransform>"
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (0,0) size 45x45
         LayoutSVGEllipse {circle} at (0,0) size 41x41 [stroke={[type=SOLID] [color=#C0C0C0] [stroke width=2.00]}] [cx=0.00] [cy=0.00] [r=40.00]
@@ -34,7 +34,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (134,74) size 32x32 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(-30.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGText {text} at (-50,45) size 100x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 99x19
-            chunk 1 (middle anchor) text run 1 at (-49.50,60.00) startOffset 0 endOffset 18 width 99.00: "different rotation"
+            chunk 1 (middle anchor) text run 1 at (-49.36,60.00) startOffset 0 endOffset 18 width 98.71: "different rotation"
         LayoutSVGText {text} at (-22,60) size 44x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 43x19
             chunk 1 (middle anchor) text run 1 at (-21.50,75.00) startOffset 0 endOffset 7 width 43.00: "centers"

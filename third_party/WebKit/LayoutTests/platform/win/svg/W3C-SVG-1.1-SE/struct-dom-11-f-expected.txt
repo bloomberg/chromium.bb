@@ -3,10 +3,10 @@ layer at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,27) size 381x153
-      LayoutSVGText {text} at (10,27) size 381x16 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 381x16
-          chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 67 width 381.00: "Test getIntersectionList and getEnclosureList return value liveness"
+    LayoutSVGContainer {g} at (10,27) size 380x153
+      LayoutSVGText {text} at (10,27) size 380x16 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 380x16
+          chunk 1 text run 1 at (10.00,40.00) startOffset 0 endOffset 67 width 379.56: "Test getIntersectionList and getEnclosureList return value liveness"
       LayoutSVGRect {rect} at (10,70) size 50x50 [fill={[type=SOLID] [color=#00FF00]}] [x=10.00] [y=70.00] [width=50.00] [height=50.00]
       LayoutSVGText {text} at (70,84) size 147x20 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 147x20

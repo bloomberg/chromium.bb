@@ -3,10 +3,10 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (3,3) size 474x354
-    LayoutSVGContainer {g} at (42,3) size 402x307
+    LayoutSVGContainer {g} at (42,3) size 397x307
       LayoutSVGText {text} at (8,0) size 66x10 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 66x10
-          chunk 1 text run 1 at (8.00,8.00) startOffset 0 endOffset 18 width 66.00: "Test a motion path"
+          chunk 1 text run 1 at (8.00,8.00) startOffset 0 endOffset 18 width 65.11: "Test a motion path"
       LayoutSVGText {text} at (11,10) size 60x10 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 60x10
           chunk 1 text run 1 at (11.00,18.00) startOffset 0 endOffset 19 width 59.50: "'values' attribute."

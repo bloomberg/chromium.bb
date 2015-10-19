@@ -12,9 +12,9 @@ layer at (0,0) size 800x600
           LayoutInline {A} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,32.17) size 784x45.17
         LayoutBlockFlow {H2} at (0,0) size 784x25
-          LayoutInline {A} at (0,0) size 169x24
-            LayoutText {#text} at (0,0) size 169x24
-              text run at (0,0) width 169: "Table of Contents"
+          LayoutInline {A} at (0,0) size 168x24
+            LayoutText {#text} at (0,0) size 168x24
+              text run at (0,0) width 168: "Table of Contents"
         LayoutTable {TABLE} at (0,41.17) size 4x4
           LayoutTableSection {TBODY} at (0,0) size 4x4
             LayoutTableRow {TR} at (0,2) size 4x0

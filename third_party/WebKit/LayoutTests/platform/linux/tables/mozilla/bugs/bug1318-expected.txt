@@ -40,7 +40,7 @@ layer at (0,0) size 800x600
                 LayoutInline {FONT} at (0,0) size 76x16
                   LayoutText {#text} at (279,1) size 76x16
                     text run at (279,1) width 76: "View Results"
-              LayoutInline {FONT} at (0,0) size 0x16
+              LayoutInline {FONT} at (0,0) size 1x16
                 LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (634,115) size 150x24 [r=3 c=2 rs=1 cs=2]
               LayoutButton {INPUT} at (55.50,1) size 39x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]

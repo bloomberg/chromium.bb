@@ -115,12 +115,12 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,500) size 400x72 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x70
           LayoutTableRow {TR} at (0,0) size 398x26
-            LayoutTableCell {TD} at (0,0) size 161x26 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutBlockFlow {P} at (4,4) size 153x18
-                LayoutInline {B} at (0,0) size 136x17
-                  LayoutText {#text} at (0,0) size 136x17
-                    text run at (0,0) width 136: "no colspan declared"
-            LayoutTableCell {TD} at (161,0) size 237x26 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,0) size 160x26 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutBlockFlow {P} at (4,4) size 152x18
+                LayoutInline {B} at (0,0) size 135x17
+                  LayoutText {#text} at (0,0) size 135x17
+                    text run at (0,0) width 135: "no colspan declared"
+            LayoutTableCell {TD} at (160,0) size 238x26 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 202x17
                 text run at (4,4) width 202: "Blah Blah Blah Blah Blah Blah"
           LayoutTableRow {TR} at (0,26) size 398x44

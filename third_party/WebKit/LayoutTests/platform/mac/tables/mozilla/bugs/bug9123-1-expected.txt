@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (20,18) size 331x18
           text run at (20,18) width 331: "This table is width 100%; two rows; three columns;"
         LayoutBR {BR} at (350,32) size 1x0
-        LayoutText {#text} at (20,36) size 474x18
-          text run at (20,36) width 474: "The first row: widths 15, 125, 15 ... The second row: widths 15, 100%, 15"
+        LayoutText {#text} at (20,36) size 473x18
+          text run at (20,36) width 473: "The first row: widths 15, 125, 15 ... The second row: widths 15, 100%, 15"
       LayoutTable {TABLE} at (0,70) size 800x39 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 798x37
           LayoutTableRow {TR} at (0,0) size 798x17
@@ -32,9 +32,9 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (781,25) size 17x3 [bgcolor=#666666] [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               LayoutBlockFlow {IMG} at (1,1) size 15x1
       LayoutBlockFlow {P} at (0,125) size 800x36
-        LayoutText {#text} at (20,0) size 730x36
-          text run at (20,0) width 264: "Here's the first row in a table on its own. "
-          text run at (283,0) width 467: "This table is width 100%; one rows; three columns; This row: widths 15,"
+        LayoutText {#text} at (20,0) size 729x36
+          text run at (20,0) width 263: "Here's the first row in a table on its own. "
+          text run at (282,0) width 467: "This table is width 100%; one rows; three columns; This row: widths 15,"
           text run at (20,18) width 48: "125, 15"
       LayoutTable {TABLE} at (0,177) size 800x19 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 798x17

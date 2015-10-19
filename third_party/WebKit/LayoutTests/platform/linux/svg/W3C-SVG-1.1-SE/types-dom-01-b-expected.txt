@@ -5,13 +5,13 @@ layer at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,7) size 365x296
       LayoutSVGContainer {g} at (10,7) size 365x296
-        LayoutSVGContainer {g} at (16,7) size 359x158 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
-          LayoutSVGText {text} at (30,130) size 344x25 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 344x25
-              chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 343.33: "Rotated Text for testing SVGLocatable"
-          LayoutSVGText {text} at (100,111) size 303x24 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 303x23
-              chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 302.86: "Some other text with id 'otherText'"
+        LayoutSVGContainer {g} at (16,7) size 359x157 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,-60.00)}]
+          LayoutSVGText {text} at (30,130) size 342x25 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 342x25
+              chunk 1 text run 1 at (30.00,150.00) startOffset 0 endOffset 37 width 341.12: "Rotated Text for testing SVGLocatable"
+          LayoutSVGText {text} at (100,111) size 301x24 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 301x23
+              chunk 1 text run 1 at (100.00,130.00) startOffset 0 endOffset 35 width 300.64: "Some other text with id 'otherText'"
           LayoutSVGViewportContainer {svg} at (275,45) size 100x100
             LayoutSVGEllipse {circle} at (275,45) size 100x100 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.00] [cy=0.00] [r=50.00]
         LayoutSVGText {text} at (10,188) size 279x15 contains 1 chunk(s)
@@ -20,18 +20,18 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (10,208) size 240x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 240x15
             chunk 1 text run 1 at (10.00,220.00) startOffset 0 endOffset 44 width 240.00: ".getCTM(): 0.42,0.42,-0.42,0.42,70.00,-60.00"
-        LayoutSVGText {text} at (10,228) size 314x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 314x15
-            chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 56 width 314.00: ".getTransformToElement(): 0.42,0.42,-0.42,0.42,0.00,0.00"
+        LayoutSVGText {text} at (10,228) size 313x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 313x15
+            chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 56 width 312.22: ".getTransformToElement(): 0.42,0.42,-0.42,0.42,0.00,0.00"
         LayoutSVGText {text} at (10,248) size 342x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 342x15
             chunk 1 text run 1 at (10.00,260.00) startOffset 0 endOffset 65 width 342.00: ".getBBox() for 'blueCircle': .x=-50,.y=-50,.width=100,.height=100"
         LayoutSVGText {text} at (10,268) size 260x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 260x15
-            chunk 1 text run 1 at (10.00,280.00) startOffset 0 endOffset 47 width 260.00: ".farthestViewportElement of blueCircle=svg-root"
+            chunk 1 text run 1 at (10.00,280.00) startOffset 0 endOffset 47 width 259.78: ".farthestViewportElement of blueCircle=svg-root"
         LayoutSVGText {text} at (10,288) size 279x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 279x15
-            chunk 1 text run 1 at (10.00,300.00) startOffset 0 endOffset 47 width 279.00: ".nearestViewportElement of blueCircle=nestedSVG"
+            chunk 1 text run 1 at (10.00,300.00) startOffset 0 endOffset 47 width 278.78: ".nearestViewportElement of blueCircle=nestedSVG"
     LayoutSVGContainer {g} at (10,311) size 228x36
       LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 228x36

@@ -4,8 +4,8 @@ layer at (0,0) size 785x864 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x864
     LayoutBlockFlow {BODY} at (8,8) size 769x848
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 88x17
-          text run at (0,0) width 88: "ROWSPANS"
+        LayoutText {#text} at (0,0) size 86x17
+          text run at (0,0) width 86: "ROWSPANS"
       LayoutTable {TABLE} at (0,18) size 138x60 [border: (5px outset #808080)]
         LayoutTableSection {TBODY} at (5,5) size 128x50
           LayoutTableRow {TR} at (0,2) size 128x22

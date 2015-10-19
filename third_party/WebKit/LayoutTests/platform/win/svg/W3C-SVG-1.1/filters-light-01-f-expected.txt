@@ -43,10 +43,10 @@ layer at (0,0) size 480x360
         LayoutSVGResourceFilter {filter} [id="spotLightD"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feDiffuseLighting surfaceScale="10.00" diffuseConstant="1.00"]
             [SourceGraphic]
-      LayoutSVGContainer {g} at (70,36) size 361x64 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
-        LayoutSVGText {text} at (70,-4) size 361x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 361x17
-            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 55 width 360.78: "Various values for feDistantLight azimuth and elevation"
+      LayoutSVGContainer {g} at (70,36) size 359x64 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
+        LayoutSVGText {text} at (70,-4) size 359x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 359x17
+            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 55 width 359.01: "Various values for feDistantLight azimuth and elevation"
         LayoutSVGText {text} at (70,11) size 35x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 35x17
             chunk 1 text run 1 at (70.00,25.00) startOffset 0 endOffset 6 width 34.66: "(0, 0)"
@@ -68,9 +68,9 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (355,70) size 50x30
           [filter="distantLightD"] LayoutSVGResourceFilter {filter} at (355,30) size 50x30
       LayoutSVGContainer {g} at (70,116) size 360x32 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
-        LayoutSVGText {text} at (70,-4) size 279x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 279x17
-            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 44 width 278.38: "Various values for fePointLight's x, y and z"
+        LayoutSVGText {text} at (70,-4) size 277x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 277x17
+            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 44 width 276.61: "Various values for fePointLight's x, y and z"
         LayoutSVGText {text} at (70,11) size 59x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 59x17
             chunk 1 text run 1 at (70.00,25.00) startOffset 0 endOffset 10 width 58.66: "(0, 0, 10)"
@@ -93,9 +93,9 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (355,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,150.00)}]
           [filter="pointLightD"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
       LayoutSVGContainer {g} at (70,196) size 410x47 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
-        LayoutSVGText {text} at (70,-14) size 474x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 474x17
-            chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 473.07: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
+        LayoutSVGText {text} at (70,-14) size 469x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 469x17
+            chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 468.20: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
         LayoutSVGText {text} at (70,1) size 67x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 67x17
             chunk 1 text run 1 at (70.00,15.00) startOffset 0 endOffset 11 width 66.66: "(25, 0, 25)"

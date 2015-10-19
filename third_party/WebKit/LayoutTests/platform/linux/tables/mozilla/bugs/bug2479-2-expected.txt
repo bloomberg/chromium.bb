@@ -6,9 +6,9 @@ layer at (0,0) size 800x551
       LayoutBlockFlow {P} at (3,3) size 680x64
         LayoutText {#text} at (0,7) size 652x50
           text run at (0,7) width 613: "These links are in an element with display table-row, and the li elements "
-          text run at (613,7) width 39: "have"
+          text run at (612,7) width 40: "have"
           text run at (0,39) width 160: "display: table-cell. "
-          text run at (160,39) width 132: "They disappear:"
+          text run at (159,39) width 133: "They disappear:"
       LayoutTable (anonymous) at (3,67) size 300x18
         LayoutTableSection (anonymous) at (0,0) size 300x18
           LayoutTableRow {UL} at (0,0) size 300x18 [bgcolor=#00CC99]

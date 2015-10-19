@@ -17,8 +17,8 @@ layer at (0,0) size 800x244
                   text run at (2,2) width 27: "One"
             LayoutTableRow {TR} at (0,26) size 774x22
               LayoutTableCell {TD} at (2,26) size 770x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 30x18
-                  text run at (2,2) width 30: "Two"
+                LayoutText {#text} at (2,2) size 29x18
+                  text run at (2,2) width 29: "Two"
       LayoutBlockFlow (anonymous) at (0,96) size 784x72
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
@@ -35,5 +35,5 @@ layer at (0,0) size 800x244
                   text run at (2,2) width 27: "One"
             LayoutTableRow {TR} at (0,26) size 774x22
               LayoutTableCell {TD} at (2,26) size 770x22 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 30x18
-                  text run at (2,2) width 30: "Two"
+                LayoutText {#text} at (2,2) size 29x18
+                  text run at (2,2) width 29: "Two"

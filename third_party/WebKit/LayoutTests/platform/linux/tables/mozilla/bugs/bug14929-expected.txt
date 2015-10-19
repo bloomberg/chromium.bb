@@ -14,8 +14,8 @@ layer at (0,0) size 800x600
                 LayoutImage {IMG} at (2,2) size 600x58
             LayoutTableRow {TR} at (0,66) size 638x24
               LayoutTableCell {TD} at (2,66) size 127x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 56x19
-                  text run at (2,2) width 56: "MC Visa"
+                LayoutText {#text} at (2,2) size 55x19
+                  text run at (2,2) width 55: "MC Visa"
               LayoutTableCell {TD} at (131,66) size 505x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 42x19
                   text run at (2,2) width 42: "SLmail"
@@ -31,15 +31,15 @@ layer at (0,0) size 800x600
                 LayoutImage {IMG} at (2,2) size 190x18
             LayoutTableRow {TR} at (0,26) size 638x24
               LayoutTableCell {TD} at (2,26) size 127x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 56x19
-                  text run at (2,2) width 56: "MC Visa"
+                LayoutText {#text} at (2,2) size 55x19
+                  text run at (2,2) width 55: "MC Visa"
               LayoutTableCell {TD} at (131,26) size 505x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 42x19
                   text run at (2,2) width 42: "SLmail"
       LayoutBlockFlow {HR} at (0,262) size 130x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,272) size 784x20
-        LayoutText {#text} at (0,0) size 140x19
-          text run at (0,0) width 140: "Testcase without image"
+        LayoutText {#text} at (0,0) size 139x19
+          text run at (0,0) width 139: "Testcase without image"
       LayoutBlockFlow {P} at (0,308) size 784x76
         LayoutTable {TABLE} at (0,0) size 640x76 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 638x74
@@ -50,8 +50,8 @@ layer at (0,0) size 800x600
                   text run at (2,22) width 126: "text text text text text"
             LayoutTableRow {TR} at (0,48) size 638x24
               LayoutTableCell {TD} at (2,48) size 127x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 56x19
-                  text run at (2,2) width 56: "MC Visa"
+                LayoutText {#text} at (2,2) size 55x19
+                  text run at (2,2) width 55: "MC Visa"
               LayoutTableCell {TD} at (131,48) size 505x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 42x19
                   text run at (2,2) width 42: "SLmail"

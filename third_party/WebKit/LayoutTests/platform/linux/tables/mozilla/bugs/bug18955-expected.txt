@@ -12,28 +12,28 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 504x174
           LayoutTableRow {TR} at (0,2) size 504x84
             LayoutTableCell {TD} at (2,2) size 500x84 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,2) size 493x79
+              LayoutText {#text} at (2,2) size 492x79
                 text run at (2,2) width 417: "Cons For Pokemon \"They're Pokemon card sharks out there. This is "
                 text run at (419,2) width 66: "worse than"
                 text run at (2,22) width 366: "the Cabbage Patch Kid craze because now it's the kids who "
                 text run at (368,22) width 114: "are actually fighting"
                 text run at (2,42) width 233: "each other instead of just the parents.\" "
                 text run at (235,42) width 240: "-- Children are doing anything, including"
-                text run at (2,62) width 145: "breaking the law, to get "
-                text run at (147,62) width 348: "their grubby hands on some trading cards, observe police."
+                text run at (2,62) width 144: "breaking the law, to get "
+                text run at (145,62) width 349: "their grubby hands on some trading cards, observe police."
           LayoutTableRow {TR} at (0,88) size 504x84
             LayoutTableCell {TD} at (2,88) size 272x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 40x19
                 text run at (2,2) width 40: "ASDF"
             LayoutTableCell {TD} at (276,88) size 226x84 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 222x79
+              LayoutText {#text} at (2,2) size 221x79
                 text run at (2,2) width 32: "Sat., "
                 text run at (34,2) width 89: "Dec 11, 1999 "
-                text run at (123,2) width 65: "Gay Union"
+                text run at (122,2) width 66: "Gay Union"
                 text run at (2,22) width 187: "Kibosh Hawaii Supreme Court"
                 text run at (2,42) width 59: "slams the "
                 text run at (61,42) width 109: "door on same-sex"
-                text run at (2,62) width 222: "marriages. All eyes look to Vermont."
+                text run at (2,62) width 221: "marriages. All eyes look to Vermont."
       LayoutBlockFlow (anonymous) at (0,232) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutBlockFlow {P} at (0,268) size 784x20
@@ -51,11 +51,11 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 40x19
                 text run at (2,2) width 40: "ASDF"
             LayoutTableCell {TD} at (276,28) size 226x84 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 222x79
+              LayoutText {#text} at (2,2) size 221x79
                 text run at (2,2) width 32: "Sat., "
                 text run at (34,2) width 89: "Dec 11, 1999 "
-                text run at (123,2) width 65: "Gay Union"
+                text run at (122,2) width 66: "Gay Union"
                 text run at (2,22) width 187: "Kibosh Hawaii Supreme Court"
                 text run at (2,42) width 59: "slams the "
                 text run at (61,42) width 109: "door on same-sex"
-                text run at (2,62) width 222: "marriages. All eyes look to Vermont."
+                text run at (2,62) width 221: "marriages. All eyes look to Vermont."

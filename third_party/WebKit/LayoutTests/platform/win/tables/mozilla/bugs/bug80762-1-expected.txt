@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (0,0) size 778x42
                   LayoutTableRow {TR} at (0,2) size 778x38
                     LayoutTableCell {TD} at (2,2) size 774x38 [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (1,1) size 763x35
-                        text run at (1,1) width 567: "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text "
-                        text run at (567,1) width 197: "Text Text Text Text Text Text"
-                        text run at (1,19) width 363: "Text Text Text Text Text Text Text Text Text Text Text"
+                      LayoutText {#text} at (1,1) size 769x35
+                        text run at (1,1) width 548: "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text "
+                        text run at (548,1) width 222: "Text Text Text Text Text Text Text"
+                        text run at (1,19) width 319: "Text Text Text Text Text Text Text Text Text Text"

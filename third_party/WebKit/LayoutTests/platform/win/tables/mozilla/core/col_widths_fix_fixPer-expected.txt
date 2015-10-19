@@ -147,8 +147,8 @@ layer at (0,0) size 785x964 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (2,2) width 23: "zap"
       LayoutBlockFlow (anonymous) at (0,684) size 769x36
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutText {#text} at (0,18) size 226x17
-          text run at (0,18) width 226: "PERCENTAGE WIDTH TABLES"
+        LayoutText {#text} at (0,18) size 224x17
+          text run at (0,18) width 224: "PERCENTAGE WIDTH TABLES"
       LayoutTable {TABLE} at (0,720) size 769x82 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x80
           LayoutTableRow {TR} at (0,2) size 767x76

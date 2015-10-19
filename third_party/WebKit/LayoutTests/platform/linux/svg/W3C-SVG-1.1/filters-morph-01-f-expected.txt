@@ -5,7 +5,7 @@ layer at (0,0) size 480x360
     LayoutSVGContainer {g} at (38,1) size 394x293
       LayoutSVGText {text} at (158,1) size 164x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 163x19
-          chunk 1 (middle anchor) text run 1 at (158.50,16.00) startOffset 0 endOffset 27 width 163.00: "Filter Effect: feMorphology"
+          chunk 1 (middle anchor) text run 1 at (158.64,16.00) startOffset 0 endOffset 27 width 162.71: "Filter Effect: feMorphology"
       LayoutSVGContainer {g} at (38,22) size 394x272 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,-6.00)}]
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="erode1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]

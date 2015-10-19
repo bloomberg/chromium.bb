@@ -3,18 +3,18 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (28,0) size 772x427
-      LayoutSVGText {text} at (19,-5) size 398x79 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 398x78
-          chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 397.20: "Normal Text"
-      LayoutSVGText {text} at (19,55) size 347x79 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 347x78
-          chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 346.20: "Fill opacity"
-      LayoutSVGText {text} at (19,115) size 467x79 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 467x78
-          chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 466.80: "Stroke opacity"
+      LayoutSVGText {text} at (19,-5) size 391x79 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 391x78
+          chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 390.33: "Normal Text"
+      LayoutSVGText {text} at (19,55) size 346x79 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 346x78
+          chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 345.89: "Fill opacity"
+      LayoutSVGText {text} at (19,115) size 466x79 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 466x78
+          chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 465.86: "Stroke opacity"
       LayoutSVGText {text} at (19,175) size 244x79 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 244x78
-          chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 243.60: "Opacity"
+          chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 243.29: "Opacity"
     LayoutSVGText {text} at (10,304) size 266x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 266x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 265.80: "$Revision: 1.3 $"

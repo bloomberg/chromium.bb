@@ -26,11 +26,11 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     text run at (4,36) width 41: "Stocks"
                 LayoutBR {BR} at (45,49) size 0x0
               LayoutText {#text} at (0,0) size 0x0
-              LayoutInline {A} at (0,0) size 73x17
-                LayoutInline {FONT} at (0,0) size 73x16 [color=#FFFFFF]
-                  LayoutText {#text} at (4,52) size 73x16
-                    text run at (4,52) width 73: "Tech Stocks"
-                LayoutBR {BR} at (77,65) size 0x0
+              LayoutInline {A} at (0,0) size 72x17
+                LayoutInline {FONT} at (0,0) size 72x16 [color=#FFFFFF]
+                  LayoutText {#text} at (4,52) size 72x16
+                    text run at (4,52) width 72: "Tech Stocks"
+                LayoutBR {BR} at (75,65) size 1x0
               LayoutText {#text} at (0,0) size 0x0
               LayoutInline {A} at (0,0) size 114x17
                 LayoutInline {FONT} at (0,0) size 114x15 [color=#FFFFFF]
@@ -48,7 +48,7 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {FONT} at (0,0) size 79x16 [color=#FFFFFF]
                   LayoutText {#text} at (4,99) size 79x16
                     text run at (4,99) width 79: "World Indices"
-                LayoutBR {BR} at (83,112) size 0x0
+                LayoutBR {BR} at (82,112) size 1x0
               LayoutText {#text} at (0,0) size 0x0
               LayoutInline {A} at (0,0) size 88x17
                 LayoutInline {FONT} at (0,0) size 88x16 [color=#FFFFFF]
@@ -61,7 +61,7 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {FONT} at (0,0) size 90x16 [color=#FFFFFF]
                   LayoutText {#text} at (4,131) size 90x16
                     text run at (4,131) width 90: "U.S. Treasuries"
-                LayoutBR {BR} at (94,144) size 0x0
+                LayoutBR {BR} at (93,144) size 1x0
               LayoutText {#text} at (0,0) size 0x0
               LayoutInline {A} at (0,0) size 62x17
                 LayoutInline {FONT} at (0,0) size 62x16 [color=#FFFFFF]
@@ -149,7 +149,7 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {FONT} at (0,0) size 95x16 [color=#FFFFFF]
                   LayoutText {#text} at (4,391) size 95x16
                     text run at (4,391) width 95: "Wealth Manager"
-                LayoutBR {BR} at (99,404) size 0x0
+                LayoutBR {BR} at (98,404) size 1x0
               LayoutText {#text} at (0,0) size 0x0
               LayoutBR {BR} at (4,407) size 0x17
               LayoutInline {FONT} at (0,0) size 121x16 [color=#FFFFFF]
@@ -206,11 +206,11 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBR {BR} at (4,589) size 0x17
               LayoutImage {IMG} at (4,607) size 140x1
               LayoutBR {BR} at (144,608) size 0x0
-              LayoutInline {A} at (0,0) size 71x17
-                LayoutInline {FONT} at (0,0) size 71x16 [color=#FFFFFF]
-                  LayoutText {#text} at (4,608) size 71x16
-                    text run at (4,608) width 71: "To Advertise"
-                LayoutBR {BR} at (75,621) size 0x0
+              LayoutInline {A} at (0,0) size 70x17
+                LayoutInline {FONT} at (0,0) size 70x16 [color=#FFFFFF]
+                  LayoutText {#text} at (4,608) size 70x16
+                    text run at (4,608) width 70: "To Advertise"
+                LayoutBR {BR} at (73,621) size 1x0
               LayoutBR {BR} at (4,624) size 0x17
             LayoutTableCell {TD} at (148,0) size 486x24 [bgcolor=#660000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=3]
               LayoutImage {IMG} at (10.50,4) size 465x16
@@ -236,7 +236,7 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     LayoutInline {SPAN} at (0,0) size 147x13
                       LayoutText {#text} at (14,0) size 147x13
                         text run at (14,0) width 147: "Tue, 27 Jul 1999, 2:47pm EDT"
-                      LayoutBR {BR} at (161,10) size 0x0
+                      LayoutBR {BR} at (160,10) size 1x0
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {FONT} at (0,0) size 107x16 [color=#000000]
                   LayoutInline {B} at (0,0) size 107x16
@@ -331,7 +331,7 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutInline {FONT} at (0,0) size 292x80
                 LayoutInline {SPAN} at (0,0) size 292x80
                   LayoutText {#text} at (4,135) size 292x80
-                    text run at (4,135) width 282: "Bloomberg's Top Financial News is now available"
+                    text run at (4,135) width 281: "Bloomberg's Top Financial News is now available"
                     text run at (4,151) width 234: "for download on your Rocket eBook. Get"
                     text run at (4,167) width 292: "tomorrow's news today with Bloomberg's summary"
                     text run at (4,183) width 232: "of the day's top stories. Bloomberg daily"
@@ -349,10 +349,10 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {SPAN} at (0,0) size 291x48
                   LayoutText {#text} at (4,231) size 291x48
                     text run at (4,231) width 165: "Get tomorrow's news today. "
-                    text run at (169,231) width 125: "FREE weekday email"
+                    text run at (168,231) width 126: "FREE weekday email"
                     text run at (4,247) width 291: "report of the top stories in business & finance from"
-                    text run at (4,263) width 205: "BLOOMBERG NEWS at 5pm EST."
-              LayoutBR {BR} at (209,276) size 0x0
+                    text run at (4,263) width 204: "BLOOMBERG NEWS at 5pm EST."
+              LayoutBR {BR} at (207,276) size 1x0
               LayoutInline {A} at (0,0) size 182x17
                 LayoutInline {FONT} at (0,0) size 182x16
                   LayoutInline {SPAN} at (0,0) size 182x16
@@ -360,30 +360,30 @@ layer at (0,0) size 785x701 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                       LayoutInline {U} at (0,0) size 182x16
                         LayoutText {#text} at (4,279) size 182x16
                           text run at (4,279) width 182: "Bloomberg Year 2000 Letters"
-              LayoutBR {BR} at (186,292) size 0x0
+              LayoutBR {BR} at (185,292) size 1x0
               LayoutInline {FONT} at (0,0) size 283x32
                 LayoutInline {SPAN} at (0,0) size 283x32
                   LayoutText {#text} at (4,295) size 283x32
                     text run at (4,295) width 283: "For Y2K information on BLOOMBERG, download"
                     text run at (4,311) width 147: "our customer letters now."
-              LayoutBR {BR} at (151,324) size 0x0
+              LayoutBR {BR} at (150,324) size 1x0
       LayoutBlockFlow {P} at (0,664) size 769x13
-        LayoutInline {FONT} at (0,0) size 432x13
-          LayoutText {#text} at (0,0) size 200x13
-            text run at (0,0) width 200: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
+        LayoutInline {FONT} at (0,0) size 430x13
+          LayoutText {#text} at (0,0) size 199x13
+            text run at (0,0) width 199: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
           LayoutInline {A} at (0,0) size 79x13
-            LayoutText {#text} at (200,0) size 79x13
-              text run at (200,0) width 79: "Terms of Service"
-          LayoutText {#text} at (279,0) size 6x13
-            text run at (279,0) width 6: ", "
-          LayoutInline {A} at (0,0) size 66x13
-            LayoutText {#text} at (285,0) size 66x13
-              text run at (285,0) width 66: "Privacy Policy"
-          LayoutText {#text} at (351,0) size 24x13
-            text run at (351,0) width 24: " and "
-          LayoutInline {A} at (0,0) size 54x13
-            LayoutText {#text} at (375,0) size 54x13
-              text run at (375,0) width 54: "Trademarks"
-          LayoutText {#text} at (429,0) size 3x13
-            text run at (429,0) width 3: "."
+            LayoutText {#text} at (198,0) size 79x13
+              text run at (198,0) width 79: "Terms of Service"
+          LayoutText {#text} at (276,0) size 7x13
+            text run at (276,0) width 7: ", "
+          LayoutInline {A} at (0,0) size 67x13
+            LayoutText {#text} at (282,0) size 67x13
+              text run at (282,0) width 67: "Privacy Policy"
+          LayoutText {#text} at (348,0) size 25x13
+            text run at (348,0) width 25: " and "
+          LayoutInline {A} at (0,0) size 55x13
+            LayoutText {#text} at (372,0) size 55x13
+              text run at (372,0) width 55: "Trademarks"
+          LayoutText {#text} at (426,0) size 4x13
+            text run at (426,0) width 4: "."
         LayoutText {#text} at (0,0) size 0x0

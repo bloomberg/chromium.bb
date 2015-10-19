@@ -3,13 +3,13 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (10,304) size 281x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 281x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 281.00: "$Revision: 1.11 $"
+    LayoutSVGText {text} at (10,304) size 280x46 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 280x46
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 279.52: "$Revision: 1.11 $"
     LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
     LayoutSVGText {text} at (137,10) size 206x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 205x19
-        chunk 1 (middle anchor) text run 1 at (137.50,25.00) startOffset 0 endOffset 32 width 205.00: "<animateTransform> on structure,"
+        chunk 1 (middle anchor) text run 1 at (137.78,25.00) startOffset 0 endOffset 32 width 204.44: "<animateTransform> on structure,"
     LayoutSVGText {text} at (150,30) size 180x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 180x19
         chunk 1 (middle anchor) text run 1 at (150.00,45.00) startOffset 0 endOffset 30 width 180.00: "hyperlinking and text elements"

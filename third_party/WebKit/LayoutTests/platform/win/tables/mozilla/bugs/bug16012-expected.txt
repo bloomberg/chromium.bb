@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 268x17
-          text run at (0,0) width 268: "Tables: both lines should be 1 pixel thick."
-        LayoutBR {BR} at (267,14) size 1x0
+        LayoutText {#text} at (0,0) size 267x17
+          text run at (0,0) width 267: "Tables: both lines should be 1 pixel thick."
+        LayoutBR {BR} at (266,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x17
       LayoutTable {TABLE} at (0,36) size 36x5
         LayoutTableSection {TBODY} at (0,0) size 36x5
@@ -25,10 +25,10 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x17
         LayoutBR {BR} at (0,18) size 0x17
         LayoutBR {BR} at (0,36) size 0x17
-        LayoutText {#text} at (0,54) size 403x17
-          text run at (0,54) width 224: "2 texts, FACE=\"Arial, Helvetica\", "
-          text run at (223,54) width 180: "1st at size=0, 2nd at size=-4"
-        LayoutBR {BR} at (402,68) size 1x0
+        LayoutText {#text} at (0,54) size 402x17
+          text run at (0,54) width 223: "2 texts, FACE=\"Arial, Helvetica\", "
+          text run at (222,54) width 180: "1st at size=0, 2nd at size=-4"
+        LayoutBR {BR} at (401,68) size 1x0
         LayoutBR {BR} at (0,72) size 0x17
         LayoutInline {FONT} at (0,0) size 104x26
           LayoutText {#text} at (0,90) size 104x13
@@ -36,7 +36,7 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (104,100) size 0x0
           LayoutText {#text} at (0,103) size 78x13
             text run at (0,103) width 78: "Available NOW! "
-        LayoutBR {BR} at (78,113) size 0x0
+        LayoutBR {BR} at (77,113) size 1x0
         LayoutBR {BR} at (0,116) size 0x17
         LayoutInline {FONT} at (0,0) size 104x26
           LayoutText {#text} at (0,134) size 104x13
@@ -44,5 +44,5 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (104,144) size 0x0
           LayoutText {#text} at (0,147) size 78x13
             text run at (0,147) width 78: "Available NOW! "
-        LayoutBR {BR} at (78,157) size 0x0
+        LayoutBR {BR} at (77,157) size 1x0
         LayoutBR {BR} at (0,160) size 0x17

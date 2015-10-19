@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (0,6) size 800x594
-      LayoutSVGText {text} at (0,4) size 488x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 488x45
-          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 487.80: "Test 'baseline-shift' (vertic.)"
+      LayoutSVGText {text} at (0,4) size 484x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 484x45
+          chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 483.37: "Test 'baseline-shift' (vertic.)"
       LayoutSVGContainer {g} at (136,100) size 491x500
         LayoutSVGContainer {g} at (136,100) size 491x500 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
           LayoutSVGText {text} at (-9,0) size 25x172 contains 1 chunk(s)

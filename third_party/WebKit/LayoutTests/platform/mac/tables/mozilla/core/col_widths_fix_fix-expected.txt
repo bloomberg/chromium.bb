@@ -30,8 +30,8 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {HR} at (0,100) size 402x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,110) size 784x18
-        LayoutText {#text} at (0,0) size 374x18
-          text run at (0,0) width 374: "fixed table - fixed cells are increased based on fixed width"
+        LayoutText {#text} at (0,0) size 371x18
+          text run at (0,0) width 371: "fixed table - fixed cells are increased based on fixed width"
       LayoutTable {TABLE} at (0,128) size 400x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 398x44
           LayoutTableRow {TR} at (0,2) size 398x40
@@ -45,8 +45,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,174) size 784x54
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
-        LayoutText {#text} at (0,36) size 383x18
-          text run at (0,36) width 383: "excess above min allocated based on fixed widths (not min)"
+        LayoutText {#text} at (0,36) size 382x18
+          text run at (0,36) width 382: "excess above min allocated based on fixed widths (not min)"
       LayoutTable {TABLE} at (0,228) size 100x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 98x44
           LayoutTableRow {TR} at (0,2) size 98x40
@@ -59,8 +59,8 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 22: "foo"
       LayoutBlockFlow (anonymous) at (0,274) size 784x36
         LayoutBR {BR} at (0,0) size 0x18
-        LayoutText {#text} at (0,18) size 383x18
-          text run at (0,18) width 383: "excess above min allocated based on fixed widths (not min)"
+        LayoutText {#text} at (0,18) size 382x18
+          text run at (0,18) width 382: "excess above min allocated based on fixed widths (not min)"
       LayoutTable {TABLE} at (0,310) size 100x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 98x44
           LayoutTableRow {TR} at (0,2) size 98x40

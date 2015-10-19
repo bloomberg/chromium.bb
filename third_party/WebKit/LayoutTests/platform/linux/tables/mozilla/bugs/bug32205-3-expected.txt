@@ -7,9 +7,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x582
           LayoutTableRow {TR} at (0,2) size 782x578
             LayoutTableCell {TD} at (2,269) size 364x44 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 76x19
-                text run at (2,2) width 76: "Outer Table:"
-              LayoutBR {BR} at (78,17) size 0x0
+              LayoutText {#text} at (2,2) size 75x19
+                text run at (2,2) width 75: "Outer Table:"
+              LayoutBR {BR} at (76,17) size 1x0
               LayoutText {#text} at (2,22) size 307x19
                 text run at (2,22) width 307: "<table border=\"1\" width=\"100%\" height=\"100%\">"
             LayoutTableCell {TD} at (368,2) size 412x578 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
                 LayoutTableSection {TBODY} at (1,1) size 406x572
                   LayoutTableRow {TR} at (0,2) size 406x568
                     LayoutTableCell {TD} at (2,254) size 365x64 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                      LayoutText {#text} at (2,2) size 85x19
-                        text run at (2,2) width 85: "Nested Table:"
-                      LayoutBR {BR} at (87,17) size 0x0
+                      LayoutText {#text} at (2,2) size 84x19
+                        text run at (2,2) width 84: "Nested Table:"
+                      LayoutBR {BR} at (85,17) size 1x0
                       LayoutText {#text} at (2,22) size 307x19
                         text run at (2,22) width 307: "<table border=\"1\" width=\"100%\" height=\"100%\">"
                       LayoutBR {BR} at (309,37) size 0x0

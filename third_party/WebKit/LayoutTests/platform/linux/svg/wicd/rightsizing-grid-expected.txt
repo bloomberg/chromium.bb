@@ -28,7 +28,7 @@ layer at (0,0) size 785x1449 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (640,40) width 120: "SVG child elements"
             text run at (640,60) width 113: "sticked together to"
             text run at (0,540) width 148: "build one rectangle grid. "
-            text run at (148,540) width 584: "You should be able to resize your browser window and the grid rendering should adjust to it. The"
+            text run at (148,540) width 583: "You should be able to resize your browser window and the grid rendering should adjust to it. The"
             text run at (0,560) width 327: "outcome should look like in these sample screenshots: "
           LayoutInline {a} at (0,0) size 30x19 [color=#0000EE]
             LayoutText {#text} at (327,560) size 30x19
@@ -46,8 +46,8 @@ layer at (0,0) size 785x1449 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (450,560) size 4x19
             text run at (450,560) width 4: "."
         LayoutBlockFlow {p} at (0,1329.14) size 769x40
-          LayoutText {#text} at (0,0) size 755x39
-            text run at (0,0) width 755: "The test is successful, if all SVG elements resize exacly dependend on the width of the browser window, but keep their aspect"
+          LayoutText {#text} at (0,0) size 754x39
+            text run at (0,0) width 754: "The test is successful, if all SVG elements resize exacly dependend on the width of the browser window, but keep their aspect"
             text run at (0,20) width 553: "ratio and relative position. The complete grid should always show a perfect rectangle object."
         LayoutBlockFlow {p} at (0,1385.14) size 769x40
           LayoutBR {br} at (0,0) size 0x19

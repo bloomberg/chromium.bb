@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutInline {B} at (0,0) size 383x18
-          LayoutText {#text} at (0,0) size 383x18
-            text run at (0,0) width 383: "(1) Colspanning TD has fixed width equal to table width"
+        LayoutInline {B} at (0,0) size 382x18
+          LayoutText {#text} at (0,0) size 382x18
+            text run at (0,0) width 382: "(1) Colspanning TD has fixed width equal to table width"
       LayoutTable {TABLE} at (0,34) size 340x42 [bgcolor=#FFFFCC] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 338x40
           LayoutTableRow {TR} at (0,0) size 338x20

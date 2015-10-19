@@ -30,9 +30,9 @@ layer at (0,0) size 480x360
           chunk 1 text run 1 at (67.00,210.00) startOffset 0 endOffset 8 width 73.00: "SVG Font"
       LayoutSVGContainer {g} at (165,166) size 210x68 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,220.00)}]
         LayoutSVGPath {line} at (165,219) size 210x2 [stroke={[type=SOLID] [color=#888888]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=210.00] [y2=0.00]
-        LayoutSVGText {text} at (0,-54) size 195x68 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 195x68
-            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 5 width 195.00: "Ay\x{D6}@\x{E7}"
+        LayoutSVGText {text} at (0,-54) size 190x68 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 190x68
+            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 5 width 189.49: "Ay\x{D6}@\x{E7}"
     LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 261x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.1 $"

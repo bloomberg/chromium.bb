@@ -6,10 +6,10 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {g} at (174,222) size 419x36
         LayoutSVGText {text} at (104,133) size 252x22 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 251x21
-            chunk 1 (middle anchor) text run 1 at (104.60,150.00) startOffset 0 endOffset 1 width 5.40 RTL: "!"
-            chunk 1 (middle anchor) text run 1 at (110.00,150.00) startOffset 0 endOffset 13 width 123.00: "dirRTL ubNone"
-            chunk 1 (middle anchor) text run 1 at (233.00,150.00) startOffset 0 endOffset 14 width 81.00 RTL: " \x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} "
-            chunk 1 (middle anchor) text run 1 at (314.00,150.00) startOffset 0 endOffset 3 width 41.40: "W3C"
+            chunk 1 (middle anchor) text run 1 at (104.76,150.00) startOffset 0 endOffset 1 width 5.40 RTL: "!"
+            chunk 1 (middle anchor) text run 1 at (110.16,150.00) startOffset 0 endOffset 13 width 122.67: "dirRTL ubNone"
+            chunk 1 (middle anchor) text run 1 at (232.84,150.00) startOffset 0 endOffset 14 width 81.00 RTL: " \x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} "
+            chunk 1 (middle anchor) text run 1 at (313.84,150.00) startOffset 0 endOffset 3 width 41.40: "W3C"
       LayoutSVGText {text} at (20,171) size 85x12 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 85x12
           chunk 1 text run 1 at (20.00,180.00) startOffset 0 endOffset 18 width 84.60: "Reference graphic:"

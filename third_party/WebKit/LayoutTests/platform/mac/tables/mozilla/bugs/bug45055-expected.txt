@@ -47,5 +47,5 @@ layer at (0,0) size 800x248
                 text run at (1,1) width 50: "Line 10"
           LayoutTableRow {TR} at (0,211) size 54x20
             LayoutTableCell {TD} at (1,211) size 52x20 [color=#0000FF] [bgcolor=#CCCCCC] [r=10 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 50x18
-                text run at (1,1) width 50: "Line 11"
+              LayoutText {#text} at (1,1) size 49x18
+                text run at (1,1) width 49: "Line 11"

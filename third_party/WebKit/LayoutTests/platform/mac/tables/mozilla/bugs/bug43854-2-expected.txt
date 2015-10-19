@@ -50,11 +50,11 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (0,0) size 8x18
                   text run at (0,0) width 8: "3"
               LayoutBlockFlow (anonymous) at (2,20) size 108x54
-                LayoutText {#text} at (0,0) size 66x18
-                  text run at (0,0) width 66: "CHORTle"
-                LayoutBR {BR} at (65,14) size 1x0
+                LayoutText {#text} at (0,0) size 65x18
+                  text run at (0,0) width 65: "CHORTle"
+                LayoutBR {BR} at (64,14) size 1x0
                 LayoutText {#text} at (0,18) size 69x36
-                  text run at (0,18) width 63: "Avondale"
+                  text run at (0,18) width 62: "Avondale"
                   text run at (0,36) width 69: "graduation"
             LayoutTableCell {TD} at (111,60) size 112x39 [border: (1px solid #005A8C)] [r=2 c=1 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (2,2) size 109x18
@@ -83,9 +83,9 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (0,0) size 8x18
                   text run at (0,0) width 8: "7"
               LayoutBlockFlow (anonymous) at (2,20) size 109x54
-                LayoutText {#text} at (0,0) size 101x54
+                LayoutText {#text} at (0,0) size 100x54
                   text run at (0,0) width 96: "Castle Hill and"
-                  text run at (0,18) width 101: "Mountain View"
+                  text run at (0,18) width 100: "Mountain View"
                   text run at (0,36) width 90: "Speech nights"
             LayoutTableCell {TD} at (559,60) size 112x39 [border: (1px solid #005A8C)] [r=2 c=5 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (2,2) size 109x18

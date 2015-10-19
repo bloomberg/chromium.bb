@@ -6,8 +6,8 @@ layer at (0,0) size 800x376
       LayoutText {#text} at (349,339) size 3x13
         text run at (349,339) width 3: " "
       LayoutBR {BR} at (351,339) size 1x13
-      LayoutText {#text} at (0,352) size 224x13
-        text run at (0,352) width 224: "The image of Tux should fill the entire red square."
+      LayoutText {#text} at (0,352) size 223x13
+        text run at (0,352) width 223: "The image of Tux should fill the entire red square."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
