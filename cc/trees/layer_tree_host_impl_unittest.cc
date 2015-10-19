@@ -8370,7 +8370,7 @@ TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
   host_impl_->CreatePendingTree();
 
   Region empty_invalidation;
-  scoped_refptr<RasterSource> raster_source_with_tiles(
+  scoped_refptr<DisplayListRasterSource> raster_source_with_tiles(
       FakeDisplayListRasterSource::CreateFilled(gfx::Size(10, 10)));
 
   scoped_ptr<FakePictureLayerImpl> layer =

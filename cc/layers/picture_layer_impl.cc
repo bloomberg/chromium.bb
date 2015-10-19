@@ -524,7 +524,7 @@ PictureLayerImpl* PictureLayerImpl::GetPendingOrActiveTwinLayer() const {
 }
 
 void PictureLayerImpl::UpdateRasterSource(
-    scoped_refptr<RasterSource> raster_source,
+    scoped_refptr<DisplayListRasterSource> raster_source,
     Region* new_invalidation,
     const PictureLayerTilingSet* pending_set) {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
@@ -586,7 +586,7 @@ void PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
 
   // Raster sources are considered const, so in order to update the state
   // a new one must be created and all tiles recreated.
-  scoped_refptr<RasterSource> new_raster_source =
+  scoped_refptr<DisplayListRasterSource> new_raster_source =
       raster_source_->CreateCloneWithoutLCDText();
   raster_source_.swap(new_raster_source);
 

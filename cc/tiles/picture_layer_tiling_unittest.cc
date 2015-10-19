@@ -43,7 +43,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
   static scoped_ptr<TestablePictureLayerTiling> Create(
       WhichTree tree,
       float contents_scale,
-      scoped_refptr<RasterSource> raster_source,
+      scoped_refptr<DisplayListRasterSource> raster_source,
       PictureLayerTilingClient* client,
       const LayerTreeSettings& settings) {
     return make_scoped_ptr(new TestablePictureLayerTiling(
@@ -59,13 +59,14 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
   using PictureLayerTiling::RemoveTileAt;
 
  protected:
-  TestablePictureLayerTiling(WhichTree tree,
-                             float contents_scale,
-                             scoped_refptr<RasterSource> raster_source,
-                             PictureLayerTilingClient* client,
-                             size_t tiling_interest_area_padding,
-                             float skewport_target_time,
-                             int skewport_extrapolation_limit)
+  TestablePictureLayerTiling(
+      WhichTree tree,
+      float contents_scale,
+      scoped_refptr<DisplayListRasterSource> raster_source,
+      PictureLayerTilingClient* client,
+      size_t tiling_interest_area_padding,
+      float skewport_target_time,
+      int skewport_extrapolation_limit)
       : PictureLayerTiling(tree,
                            contents_scale,
                            raster_source,

@@ -173,16 +173,16 @@ class PictureLayerImplTest : public testing::Test {
                                 tile_size, invalidation);
   }
 
-  void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
-                  scoped_refptr<RasterSource> active_raster_source) {
+  void SetupTrees(scoped_refptr<DisplayListRasterSource> pending_raster_source,
+                  scoped_refptr<DisplayListRasterSource> active_raster_source) {
     SetupPendingTree(active_raster_source);
     ActivateTree();
     SetupPendingTreeInternal(pending_raster_source, gfx::Size(), Region());
   }
 
   void SetupTreesWithInvalidation(
-      scoped_refptr<RasterSource> pending_raster_source,
-      scoped_refptr<RasterSource> active_raster_source,
+      scoped_refptr<DisplayListRasterSource> pending_raster_source,
+      scoped_refptr<DisplayListRasterSource> active_raster_source,
       const Region& pending_invalidation) {
     SetupPendingTreeInternal(active_raster_source, gfx::Size(), Region());
     ActivateTree();
@@ -191,8 +191,8 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   void SetupTreesWithFixedTileSize(
-      scoped_refptr<RasterSource> pending_raster_source,
-      scoped_refptr<RasterSource> active_raster_source,
+      scoped_refptr<DisplayListRasterSource> pending_raster_source,
+      scoped_refptr<DisplayListRasterSource> active_raster_source,
       const gfx::Size& tile_size,
       const Region& pending_invalidation) {
     SetupPendingTreeInternal(active_raster_source, tile_size, Region());
@@ -201,26 +201,27 @@ class PictureLayerImplTest : public testing::Test {
                              pending_invalidation);
   }
 
-  void SetupPendingTree(scoped_refptr<RasterSource> raster_source) {
+  void SetupPendingTree(scoped_refptr<DisplayListRasterSource> raster_source) {
     SetupPendingTreeInternal(raster_source, gfx::Size(), Region());
   }
 
   void SetupPendingTreeWithInvalidation(
-      scoped_refptr<RasterSource> raster_source,
+      scoped_refptr<DisplayListRasterSource> raster_source,
       const Region& invalidation) {
     SetupPendingTreeInternal(raster_source, gfx::Size(), invalidation);
   }
 
   void SetupPendingTreeWithFixedTileSize(
-      scoped_refptr<RasterSource> raster_source,
+      scoped_refptr<DisplayListRasterSource> raster_source,
       const gfx::Size& tile_size,
       const Region& invalidation) {
     SetupPendingTreeInternal(raster_source, tile_size, invalidation);
   }
 
-  void SetupPendingTreeInternal(scoped_refptr<RasterSource> raster_source,
-                                const gfx::Size& tile_size,
-                                const Region& invalidation) {
+  void SetupPendingTreeInternal(
+      scoped_refptr<DisplayListRasterSource> raster_source,
+      const gfx::Size& tile_size,
+      const Region& invalidation) {
     host_impl_.CreatePendingTree();
     host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.00001f,
                                                            100000.f);
@@ -286,7 +287,7 @@ class PictureLayerImplTest : public testing::Test {
   }
   static void VerifyAllPrioritizedTilesExistAndHaveRasterSource(
       const PictureLayerTiling* tiling,
-      RasterSource* raster_source) {
+      DisplayListRasterSource* raster_source) {
     auto prioritized_tiles =
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     for (PictureLayerTiling::CoverageIterator iter(
@@ -4497,7 +4498,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
       &client, &invalidation, layer_bounds, layer_rect, frame_number++,
       DisplayListRecordingSource::RECORD_NORMALLY);
 
-  scoped_refptr<RasterSource> pending_raster_source =
+  scoped_refptr<DisplayListRasterSource> pending_raster_source =
       recording_source->CreateRasterSource(true);
 
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
@@ -4561,7 +4562,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
       &client, &invalidation1, layer_bounds, layer_rect, frame_number++,
       DisplayListRecordingSource::RECORD_NORMALLY);
 
-  scoped_refptr<RasterSource> raster_source1 =
+  scoped_refptr<DisplayListRasterSource> raster_source1 =
       recording_source->CreateRasterSource(true);
 
   SetupPendingTree(raster_source1);
@@ -4580,7 +4581,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
       &client, &invalidation2, layer_bounds, layer_rect, frame_number++,
       DisplayListRecordingSource::RECORD_NORMALLY);
 
-  scoped_refptr<RasterSource> raster_source2 =
+  scoped_refptr<DisplayListRasterSource> raster_source2 =
       recording_source->CreateRasterSource(true);
 
   SetupPendingTree(raster_source2);

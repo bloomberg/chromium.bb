@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/trace_event/trace_event.h"
-#include "cc/playback/raster_source.h"
+#include "cc/playback/display_list_raster_source.h"
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/scoped_gpu_raster.h"
@@ -34,7 +34,7 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  void Playback(const RasterSource* raster_source,
+  void Playback(const DisplayListRasterSource* raster_source,
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
                 uint64_t new_content_id,

@@ -11,56 +11,107 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/playback/display_list_recording_source.h"
-#include "cc/playback/raster_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
 class DisplayItemList;
+class DrawImage;
 
-class CC_EXPORT DisplayListRasterSource : public RasterSource {
+class CC_EXPORT DisplayListRasterSource
+    : public base::RefCountedThreadSafe<DisplayListRasterSource> {
  public:
+  struct CC_EXPORT SolidColorAnalysis {
+    SolidColorAnalysis()
+        : is_solid_color(false), solid_color(SK_ColorTRANSPARENT) {}
+    ~SolidColorAnalysis() {}
+
+    bool is_solid_color;
+    SkColor solid_color;
+  };
+
   static scoped_refptr<DisplayListRasterSource>
   CreateFromDisplayListRecordingSource(const DisplayListRecordingSource* other,
                                        bool can_use_lcd_text);
 
-  // RasterSource overrides.
-  void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::Rect& canvas_bitmap_rect,
-                        const gfx::Rect& canvas_playback_rect,
-                        float contents_scale) const override;
+  // Raster a subrect of this RasterSource into the given canvas. It is
+  // assumed that contents_scale has already been applied to this canvas.
+  // Writes the total number of pixels rasterized and the time spent
+  // rasterizing to the stats if the respective pointer is not nullptr.
+  // It is assumed that the canvas passed here will only be rasterized by
+  // this raster source via this call.
+  // virtual for testing.
+  virtual void PlaybackToCanvas(SkCanvas* canvas,
+                                const gfx::Rect& canvas_bitmap_rect,
+                                const gfx::Rect& canvas_playback_rect,
+                                float contents_scale) const;
+
+  // Similar to above, except that the canvas passed here can (or was already)
+  // rasterized into by another raster source. That is, it is not safe to clear
+  // the canvas or discard its underlying memory.
   void PlaybackToSharedCanvas(SkCanvas* canvas,
                               const gfx::Rect& canvas_rect,
-                              float contents_scale) const override;
-  void PerformSolidColorAnalysis(
-      const gfx::Rect& content_rect,
-      float contents_scale,
-      RasterSource::SolidColorAnalysis* analysis) const override;
-  bool IsSolidColor() const override;
-  SkColor GetSolidColor() const override;
-  gfx::Size GetSize() const override;
-  void GetDiscardableImagesInRect(
-      const gfx::Rect& layer_rect,
-      std::vector<DrawImage>* images) const override;
-  bool CoversRect(const gfx::Rect& layer_rect) const override;
-  bool HasRecordings() const override;
-  gfx::Rect RecordedViewport() const override;
-  void SetShouldAttemptToUseDistanceFieldText() override;
-  bool ShouldAttemptToUseDistanceFieldText() const override;
-  void DidBeginTracing() override;
-  void AsValueInto(base::trace_event::TracedValue* array) const override;
-  skia::RefPtr<SkPicture> GetFlattenedPicture() override;
-  size_t GetPictureMemoryUsage() const override;
-  bool CanUseLCDText() const override;
-  scoped_refptr<RasterSource> CreateCloneWithoutLCDText() const override;
+                              float contents_scale) const;
+
+  // Analyze to determine if the given rect at given scale is of solid color in
+  // this raster source.
+  void PerformSolidColorAnalysis(const gfx::Rect& content_rect,
+                                 float contents_scale,
+                                 SolidColorAnalysis* analysis) const;
+
+  // Returns true iff the whole raster source is of solid color.
+  bool IsSolidColor() const;
+
+  // Returns the color of the raster source if it is solid color. The results
+  // are unspecified if IsSolidColor returns false.
+  SkColor GetSolidColor() const;
+
+  // Returns the size of this raster source.
+  gfx::Size GetSize() const;
+
+  // Populate the given list with all images that may overlap the given
+  // rect in layer space.
+  void GetDiscardableImagesInRect(const gfx::Rect& layer_rect,
+                                  std::vector<DrawImage>* images) const;
+
+  // Return true iff this raster source can raster the given rect in layer
+  // space.
+  bool CoversRect(const gfx::Rect& layer_rect) const;
+
+  // Returns true if this raster source has anything to rasterize.
+  virtual bool HasRecordings() const;
+
+  // Valid rectangle in which everything is recorded and can be rastered from.
+  virtual gfx::Rect RecordedViewport() const;
+
+  // Informs the raster source that it should attempt to use distance field text
+  // during rasterization.
+  virtual void SetShouldAttemptToUseDistanceFieldText();
+
+  // Return true iff this raster source would benefit from using distance
+  // field text.
+  virtual bool ShouldAttemptToUseDistanceFieldText() const;
+
+  // Tracing functionality.
+  virtual void DidBeginTracing();
+  virtual void AsValueInto(base::trace_event::TracedValue* array) const;
+  virtual skia::RefPtr<SkPicture> GetFlattenedPicture();
+  virtual size_t GetPictureMemoryUsage() const;
+
+  // Return true if LCD anti-aliasing may be used when rastering text.
+  virtual bool CanUseLCDText() const;
+
+  scoped_refptr<DisplayListRasterSource> CreateCloneWithoutLCDText() const;
 
  protected:
+  friend class base::RefCountedThreadSafe<DisplayListRasterSource>;
+
   DisplayListRasterSource(const DisplayListRecordingSource* other,
                           bool can_use_lcd_text);
   DisplayListRasterSource(const DisplayListRasterSource* other,
                           bool can_use_lcd_text);
-  ~DisplayListRasterSource() override;
+  virtual ~DisplayListRasterSource();
 
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.
@@ -91,6 +142,11 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
                     const gfx::Rect& canvas_bitmap_rect,
                     const gfx::Rect& canvas_playback_rect,
                     float contents_scale) const;
+
+  void PrepareForPlaybackToCanvas(SkCanvas* canvas,
+                                  const gfx::Rect& canvas_bitmap_rect,
+                                  const gfx::Rect& canvas_playback_rect,
+                                  float contents_scale) const;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRasterSource);
 };

@@ -23,7 +23,7 @@ scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
   return recording_source.Pass();
 }
 
-scoped_refptr<RasterSource> CreateRasterSource(
+scoped_refptr<DisplayListRasterSource> CreateRasterSource(
     FakeDisplayListRecordingSource* recording_source) {
   bool can_use_lcd_text = true;
   return DisplayListRasterSource::CreateFromDisplayListRecordingSource(
@@ -250,7 +250,7 @@ TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(false);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // If recording source do not gather images, raster source is not going to
@@ -270,7 +270,7 @@ TEST(DisplayListRecordingSourceTest, EmptyImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators.
@@ -328,7 +328,7 @@ TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators.
@@ -380,7 +380,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators. These should find only one image.
@@ -456,7 +456,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators. These should find only one image.

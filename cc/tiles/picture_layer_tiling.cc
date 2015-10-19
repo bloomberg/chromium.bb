@@ -16,7 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
-#include "cc/playback/raster_source.h"
+#include "cc/playback/display_list_raster_source.h"
 #include "cc/tiles/prioritized_tile.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"
@@ -36,7 +36,7 @@ const float kMaxSoonBorderDistanceInScreenPixels = 312.f;
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     WhichTree tree,
     float contents_scale,
-    scoped_refptr<RasterSource> raster_source,
+    scoped_refptr<DisplayListRasterSource> raster_source,
     PictureLayerTilingClient* client,
     size_t tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
@@ -50,7 +50,7 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
 PictureLayerTiling::PictureLayerTiling(
     WhichTree tree,
     float contents_scale,
-    scoped_refptr<RasterSource> raster_source,
+    scoped_refptr<DisplayListRasterSource> raster_source,
     PictureLayerTilingClient* client,
     size_t tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
@@ -205,7 +205,7 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
 }
 
 void PictureLayerTiling::SetRasterSourceAndResize(
-    scoped_refptr<RasterSource> raster_source) {
+    scoped_refptr<DisplayListRasterSource> raster_source) {
   DCHECK(!raster_source->IsSolidColor());
   gfx::Size old_layer_bounds = raster_source_->GetSize();
   raster_source_.swap(raster_source);

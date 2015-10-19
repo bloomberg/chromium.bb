@@ -42,7 +42,7 @@ class RasterBufferImpl : public RasterBuffer {
   ~RasterBufferImpl() override {}
 
   // Overridden from RasterBuffer:
-  void Playback(const RasterSource* raster_source,
+  void Playback(const DisplayListRasterSource* raster_source,
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
                 uint64_t new_content_id,
@@ -367,7 +367,7 @@ void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(
 void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     const Resource* resource,
     const ResourceProvider::ScopedWriteLockGL* resource_lock,
-    const RasterSource* raster_source,
+    const DisplayListRasterSource* raster_source,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     float scale,

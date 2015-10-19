@@ -38,24 +38,24 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 
 class RasterTaskImpl : public RasterTask {
  public:
-  RasterTaskImpl(
-      const Resource* resource,
-      RasterSource* raster_source,
-      const gfx::Rect& content_rect,
-      const gfx::Rect& invalid_content_rect,
-      float contents_scale,
-      TileResolution tile_resolution,
-      int layer_id,
-      uint64_t source_prepare_tiles_id,
-      const void* tile,
-      uint64_t new_content_id,
-      uint64_t previous_content_id,
-      uint64_t resource_content_id,
-      int source_frame_number,
-      bool analyze_picture,
-      const base::Callback<void(const RasterSource::SolidColorAnalysis&, bool)>&
-          reply,
-      ImageDecodeTask::Vector* dependencies)
+  RasterTaskImpl(const Resource* resource,
+                 DisplayListRasterSource* raster_source,
+                 const gfx::Rect& content_rect,
+                 const gfx::Rect& invalid_content_rect,
+                 float contents_scale,
+                 TileResolution tile_resolution,
+                 int layer_id,
+                 uint64_t source_prepare_tiles_id,
+                 const void* tile,
+                 uint64_t new_content_id,
+                 uint64_t previous_content_id,
+                 uint64_t resource_content_id,
+                 int source_frame_number,
+                 bool analyze_picture,
+                 const base::Callback<
+                     void(const DisplayListRasterSource::SolidColorAnalysis&,
+                          bool)>& reply,
+                 ImageDecodeTask::Vector* dependencies)
       : RasterTask(dependencies),
         resource_(resource),
         raster_source_(raster_source),
@@ -105,7 +105,7 @@ class RasterTaskImpl : public RasterTask {
   ~RasterTaskImpl() override { DCHECK(!raster_buffer_); }
 
  private:
-  void Analyze(const RasterSource* raster_source) {
+  void Analyze(const DisplayListRasterSource* raster_source) {
     frame_viewer_instrumentation::ScopedAnalyzeTask analyze_task(
         tile_, tile_resolution_, source_frame_number_, layer_id_);
 
@@ -117,7 +117,7 @@ class RasterTaskImpl : public RasterTask {
     analysis_.is_solid_color &= kUseColorEstimator;
   }
 
-  void Raster(const RasterSource* raster_source) {
+  void Raster(const DisplayListRasterSource* raster_source) {
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
         tile_, tile_resolution_, source_frame_number_, layer_id_);
     ScopedRasterTaskTimer timer;
@@ -132,8 +132,8 @@ class RasterTaskImpl : public RasterTask {
   }
 
   const Resource* resource_;
-  RasterSource::SolidColorAnalysis analysis_;
-  scoped_refptr<RasterSource> raster_source_;
+  DisplayListRasterSource::SolidColorAnalysis analysis_;
+  scoped_refptr<DisplayListRasterSource> raster_source_;
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
   float contents_scale_;
@@ -146,8 +146,8 @@ class RasterTaskImpl : public RasterTask {
   uint64_t resource_content_id_;
   int source_frame_number_;
   bool analyze_picture_;
-  const base::Callback<void(const RasterSource::SolidColorAnalysis&, bool)>
-      reply_;
+  const base::Callback<void(const DisplayListRasterSource::SolidColorAnalysis&,
+                            bool)> reply_;
   scoped_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
@@ -700,7 +700,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
 void TileManager::OnRasterTaskCompleted(
     Tile::Id tile_id,
     Resource* resource,
-    const RasterSource::SolidColorAnalysis& analysis,
+    const DisplayListRasterSource::SolidColorAnalysis& analysis,
     bool was_canceled) {
   DCHECK(tiles_.find(tile_id) != tiles_.end());
 
@@ -725,7 +725,7 @@ void TileManager::OnRasterTaskCompleted(
 void TileManager::UpdateTileDrawInfo(
     Tile* tile,
     Resource* resource,
-    const RasterSource::SolidColorAnalysis& analysis) {
+    const DisplayListRasterSource::SolidColorAnalysis& analysis) {
   TileDrawInfo& draw_info = tile->draw_info();
 
   ++flush_stats_.completed_count;

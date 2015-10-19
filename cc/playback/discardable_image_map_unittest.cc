@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/region.h"
-#include "cc/playback/raster_source.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/skia_common.h"

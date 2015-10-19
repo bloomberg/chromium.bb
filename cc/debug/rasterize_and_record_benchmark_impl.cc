@@ -24,7 +24,7 @@ namespace {
 
 const int kDefaultRasterizeRepeatCount = 100;
 
-void RunBenchmark(RasterSource* raster_source,
+void RunBenchmark(DisplayListRasterSource* raster_source,
                   const gfx::Rect& content_rect,
                   float contents_scale,
                   size_t repeat_count,
@@ -47,7 +47,7 @@ void RunBenchmark(RasterSource* raster_source,
       bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
-      RasterSource::SolidColorAnalysis analysis;
+      DisplayListRasterSource::SolidColorAnalysis analysis;
 
       raster_source->PerformSolidColorAnalysis(content_rect, contents_scale,
                                                &analysis);
@@ -178,7 +178,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
       tiling_set->AddTiling(1.f, layer->GetRasterSource());
   tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
-  RasterSource* raster_source = tiling->raster_source();
+  DisplayListRasterSource* raster_source = tiling->raster_source();
   for (PictureLayerTiling::CoverageIterator it(tiling, 1.f,
                                                layer->visible_layer_rect());
        it; ++it) {
@@ -203,7 +203,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     rasterize_results_.total_best_time += min_time;
   }
 
-  const RasterSource* layer_raster_source = layer->GetRasterSource();
+  const DisplayListRasterSource* layer_raster_source = layer->GetRasterSource();
   rasterize_results_.total_memory_usage +=
       layer_raster_source->GetPictureMemoryUsage();
 }

@@ -41,7 +41,7 @@ TEST(DisplayListRasterSourceTest, AnalyzeIsSolidUnscaled) {
   // Ensure everything is solid.
   for (int y = 0; y <= 300; y += 100) {
     for (int x = 0; x <= 300; x += 100) {
-      RasterSource::SolidColorAnalysis analysis;
+      DisplayListRasterSource::SolidColorAnalysis analysis;
       gfx::Rect rect(x, y, 100, 100);
       raster->PerformSolidColorAnalysis(rect, 1.0, &analysis);
       EXPECT_TRUE(analysis.is_solid_color) << rect.ToString();
@@ -56,7 +56,7 @@ TEST(DisplayListRasterSourceTest, AnalyzeIsSolidUnscaled) {
   raster = DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       recording_source.get(), false);
 
-  RasterSource::SolidColorAnalysis analysis;
+  DisplayListRasterSource::SolidColorAnalysis analysis;
   raster->PerformSolidColorAnalysis(gfx::Rect(0, 0, 100, 100), 1.0, &analysis);
   EXPECT_FALSE(analysis.is_solid_color);
 
@@ -110,7 +110,7 @@ TEST(DisplayListRasterSourceTest, AnalyzeIsSolidScaled) {
   // Ensure everything is solid.
   for (int y = 0; y <= 30; y += 10) {
     for (int x = 0; x <= 30; x += 10) {
-      RasterSource::SolidColorAnalysis analysis;
+      DisplayListRasterSource::SolidColorAnalysis analysis;
       gfx::Rect rect(x, y, 10, 10);
       raster->PerformSolidColorAnalysis(rect, 0.1f, &analysis);
       EXPECT_TRUE(analysis.is_solid_color) << rect.ToString();
@@ -125,7 +125,7 @@ TEST(DisplayListRasterSourceTest, AnalyzeIsSolidScaled) {
   raster = DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       recording_source.get(), false);
 
-  RasterSource::SolidColorAnalysis analysis;
+  DisplayListRasterSource::SolidColorAnalysis analysis;
   raster->PerformSolidColorAnalysis(gfx::Rect(0, 0, 10, 10), 0.1f, &analysis);
   EXPECT_FALSE(analysis.is_solid_color);
 
@@ -160,7 +160,7 @@ TEST(DisplayListRasterSourceTest, AnalyzeIsSolidEmpty) {
   scoped_refptr<DisplayListRasterSource> raster =
       DisplayListRasterSource::CreateFromDisplayListRecordingSource(
           recording_source.get(), false);
-  RasterSource::SolidColorAnalysis analysis;
+  DisplayListRasterSource::SolidColorAnalysis analysis;
   EXPECT_FALSE(analysis.is_solid_color);
 
   raster->PerformSolidColorAnalysis(gfx::Rect(0, 0, 400, 400), 1.f, &analysis);
@@ -352,7 +352,7 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
                                              black_paint);
   recording_source->Rerecord();
 
-  // Make a new RasterSource from the new recording.
+  // Make a new DisplayListRasterSource from the new recording.
   raster = DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       recording_source.get(), false);
 
@@ -454,7 +454,7 @@ TEST(DisplayListRasterSourceTest, RasterPartialClear) {
                                                    white_paint);
   recording_source_light->Rerecord();
 
-  // Make a new RasterSource from the new recording.
+  // Make a new DisplayListRasterSource from the new recording.
   raster = DisplayListRasterSource::CreateFromDisplayListRecordingSource(
       recording_source_light.get(), false);
 

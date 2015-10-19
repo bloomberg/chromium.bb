@@ -666,7 +666,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   ResourceFormat texture_format = RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       FakeDisplayListRasterSource::CreateEmpty(gfx::Size(100, 100));
   CREATE_SHARED_STATE();
 
@@ -904,7 +904,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
   ResourceFormat texture_format = RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
-  scoped_refptr<RasterSource> raster_source =
+  scoped_refptr<DisplayListRasterSource> raster_source =
       FakeDisplayListRasterSource::CreateEmpty(gfx::Size(100, 100));
 
   CREATE_SHARED_STATE();

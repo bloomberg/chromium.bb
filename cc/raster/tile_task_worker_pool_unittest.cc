@@ -48,8 +48,9 @@ enum TileTaskWorkerPoolType {
 
 class TestRasterTaskImpl : public RasterTask {
  public:
-  typedef base::Callback<void(const RasterSource::SolidColorAnalysis& analysis,
-                              bool was_canceled)> Reply;
+  typedef base::Callback<void(
+      const DisplayListRasterSource::SolidColorAnalysis& analysis,
+      bool was_canceled)> Reply;
 
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
@@ -75,7 +76,8 @@ class TestRasterTaskImpl : public RasterTask {
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
-    reply_.Run(RasterSource::SolidColorAnalysis(), !HasFinishedRunning());
+    reply_.Run(DisplayListRasterSource::SolidColorAnalysis(),
+               !HasFinishedRunning());
   }
 
  protected:
@@ -85,7 +87,7 @@ class TestRasterTaskImpl : public RasterTask {
   const Resource* resource_;
   const Reply reply_;
   scoped_ptr<RasterBuffer> raster_buffer_;
-  scoped_refptr<RasterSource> raster_source_;
+  scoped_refptr<DisplayListRasterSource> raster_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRasterTaskImpl);
 };
@@ -288,10 +290,11 @@ class TileTaskWorkerPoolTest
         output_surface_.get(), &shared_bitmap_manager_, nullptr);
   }
 
-  void OnTaskCompleted(scoped_ptr<ScopedResource> resource,
-                       unsigned id,
-                       const RasterSource::SolidColorAnalysis& analysis,
-                       bool was_canceled) {
+  void OnTaskCompleted(
+      scoped_ptr<ScopedResource> resource,
+      unsigned id,
+      const DisplayListRasterSource::SolidColorAnalysis& analysis,
+      bool was_canceled) {
     RasterTaskResult result;
     result.id = id;
     result.canceled = was_canceled;

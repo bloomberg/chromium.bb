@@ -46,7 +46,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void set_has_valid_tile_priorities(bool has_valid_tile_priorities) {
     has_valid_tile_priorities_ = has_valid_tile_priorities;
   }
-  RasterSource* raster_source() { return raster_source_.get(); }
+  DisplayListRasterSource* raster_source() { return raster_source_.get(); }
 
   TileManager* tile_manager() const {
     return tile_manager_.get();

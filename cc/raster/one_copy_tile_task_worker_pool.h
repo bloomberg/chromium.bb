@@ -78,7 +78,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   void PlaybackAndCopyOnWorkerThread(
       const Resource* resource,
       const ResourceProvider::ScopedWriteLockGL* resource_lock,
-      const RasterSource* raster_source,
+      const DisplayListRasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
       float scale,

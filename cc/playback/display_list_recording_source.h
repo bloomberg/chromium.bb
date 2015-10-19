@@ -16,7 +16,6 @@ namespace cc {
 class ContentLayerClient;
 class DisplayItemList;
 class DisplayListRasterSource;
-class RasterSource;
 class Region;
 
 class CC_EXPORT DisplayListRecordingSource {
@@ -49,7 +48,7 @@ class CC_EXPORT DisplayListRecordingSource {
   void SetRequiresClear(bool requires_clear);
 
   // These functions are virtual for testing.
-  virtual scoped_refptr<RasterSource> CreateRasterSource(
+  virtual scoped_refptr<DisplayListRasterSource> CreateRasterSource(
       bool can_use_lcd_text) const;
   virtual bool IsSuitableForGpuRasterization() const;
 

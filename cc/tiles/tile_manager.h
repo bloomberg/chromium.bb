@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
-#include "cc/playback/raster_source.h"
+#include "cc/playback/display_list_raster_source.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
@@ -251,13 +251,15 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
     int resource_count_;
   };
 
-  void OnRasterTaskCompleted(Tile::Id tile,
-                             Resource* resource,
-                             const RasterSource::SolidColorAnalysis& analysis,
-                             bool was_canceled);
-  void UpdateTileDrawInfo(Tile* tile,
-                          Resource* resource,
-                          const RasterSource::SolidColorAnalysis& analysis);
+  void OnRasterTaskCompleted(
+      Tile::Id tile,
+      Resource* resource,
+      const DisplayListRasterSource::SolidColorAnalysis& analysis,
+      bool was_canceled);
+  void UpdateTileDrawInfo(
+      Tile* tile,
+      Resource* resource,
+      const DisplayListRasterSource::SolidColorAnalysis& analysis);
 
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);

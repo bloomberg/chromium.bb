@@ -228,9 +228,9 @@ bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   return !display_list_ || display_list_->IsSuitableForGpuRasterization();
 }
 
-scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
-    bool can_use_lcd_text) const {
-  return scoped_refptr<RasterSource>(
+scoped_refptr<DisplayListRasterSource>
+DisplayListRecordingSource::CreateRasterSource(bool can_use_lcd_text) const {
+  return scoped_refptr<DisplayListRasterSource>(
       DisplayListRasterSource::CreateFromDisplayListRecordingSource(
           this, can_use_lcd_text));
 }

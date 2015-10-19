@@ -112,14 +112,14 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     active_layer_->set_fixed_tile_size(tile_size);
   }
 
-  void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
-                  scoped_refptr<RasterSource> active_raster_source) {
+  void SetupTrees(scoped_refptr<DisplayListRasterSource> pending_raster_source,
+                  scoped_refptr<DisplayListRasterSource> active_raster_source) {
     SetupPendingTree(active_raster_source);
     ActivateTree();
     SetupPendingTree(pending_raster_source);
   }
 
-  void SetupPendingTree(scoped_refptr<RasterSource> raster_source) {
+  void SetupPendingTree(scoped_refptr<DisplayListRasterSource> raster_source) {
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
@@ -1514,7 +1514,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
   for (size_t i = 0; i < arraysize(resolutions); ++i) {
     SCOPED_TRACE(resolutions[i]);
 
-    // Make a RasterSource that will draw a blue bitmap image.
+    // Make a DisplayListRasterSource that will draw a blue bitmap image.
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(
         SkSurface::NewRasterN32Premul(size.width(), size.height()));
     ASSERT_NE(surface, nullptr);
