@@ -135,6 +135,7 @@
       ],
     },
     {
+      # GN version:  //android_webview:strings_grd
       'target_name': 'android_webview_strings_grd',
       'android_unmangled_name': 1,
       'type': 'none',
@@ -146,6 +147,7 @@
       ],
     },
     {
+      # GN version:  //android_webview/common:version 
       'target_name': 'android_webview_version',
       'type': 'none',
       'direct_dependent_settings': {
@@ -394,6 +396,7 @@
       ],
     },
     {
+      # GN version:  //android_webview:android_webview_java
       'target_name': 'android_webview_java',
       'type': 'none',
       'dependencies': [

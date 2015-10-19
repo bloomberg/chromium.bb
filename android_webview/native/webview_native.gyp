@@ -7,6 +7,7 @@
   },
   'targets': [
     {
+      # GN version: //android_webview/native:native
       'target_name': 'webview_native',
       'type': 'static_library',
       'dependencies': [
@@ -114,6 +115,7 @@
       ],
     },
     {
+      # GN version:  //android_webview/native:cancellation_signal_android_jar_jni_headers' 
       'target_name': 'cancellation_signal_android_jar_jni_headers',
       'type': 'none',
       'variables': {
@@ -123,6 +125,7 @@
       'includes': [ '../../build/jar_file_jni_generator.gypi' ],
     },
     {
+      # GN version:  //android_webview/native:native_jni 
       'target_name': 'android_webview_native_jni',
       'type': 'none',
       'sources': [
@@ -158,6 +161,7 @@
         'cancellation_signal_android_jar_jni_headers',
       ],
     },
+    # GN version:  //android_webview/native:aw_permission_request_resource' 
     {
       'target_name': 'android_webview_aw_permission_request_resource',
       'type': 'none',

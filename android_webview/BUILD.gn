@@ -1,0 +1,140 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+import("//tools/grit/repack.gni")
+
+# This is dummy target for adding WebView gn piece by piece, so we don't need
+# to modify the src/BUILD.gn everytime new targets added.
+group("system_webview_apk") {
+  deps = [
+    ":android_webview_java",
+    ":strings_grd",
+    "//android_webview/native:native",
+  ]
+}
+
+android_library("android_webview_java") {
+  deps = [
+    ":strings_grd",
+    "//base:base_java",
+    "//components/external_video_surface:java",
+    "//components/navigation_interception/android:navigation_interception_java",
+    "//components/policy/android:policy_java",
+    "//components/web_contents_delegate_android:web_contents_delegate_android_java",
+    "//content/public/android:content_java",
+    "//net/android:net_java",
+    "//ui/android:ui_java",
+  ]
+
+  srcjar_deps = [ "//android_webview/native:aw_permission_request_resource" ]
+
+  java_files = [
+    "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
+    "java/src/org/chromium/android_webview/AwAutofillClient.java",
+    "java/src/org/chromium/android_webview/AwBrowserContext.java",
+    "java/src/org/chromium/android_webview/AwBrowserProcess.java",
+    "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
+    "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
+    "java/src/org/chromium/android_webview/AwContentsClientCallbackHelper.java",
+    "java/src/org/chromium/android_webview/AwContentsClient.java",
+    "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
+    "java/src/org/chromium/android_webview/AwContents.java",
+    "java/src/org/chromium/android_webview/AwContentsStatics.java",
+    "java/src/org/chromium/android_webview/AwContentViewClient.java",
+    "java/src/org/chromium/android_webview/AwCookieManager.java",
+    "java/src/org/chromium/android_webview/AwDataReductionProxyManager.java",
+    "java/src/org/chromium/android_webview/AwDebug.java",
+    "java/src/org/chromium/android_webview/AwDevToolsServer.java",
+    "java/src/org/chromium/android_webview/AwFormDatabase.java",
+    "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
+    "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
+    "java/src/org/chromium/android_webview/AwLayoutSizer.java",
+    "java/src/org/chromium/android_webview/AwMessagePort.java",
+    "java/src/org/chromium/android_webview/AwMessagePortService.java",
+    "java/src/org/chromium/android_webview/AwPdfExporter.java",
+    "java/src/org/chromium/android_webview/AwPicture.java",
+    "java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java",
+    "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
+    "java/src/org/chromium/android_webview/AwResource.java",
+    "java/src/org/chromium/android_webview/AwScrollOffsetManager.java",
+    "java/src/org/chromium/android_webview/AwSettings.java",
+    "java/src/org/chromium/android_webview/AwSwitches.java",
+    "java/src/org/chromium/android_webview/AwViewMethods.java",
+    "java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java",
+    "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
+    "java/src/org/chromium/android_webview/AwWebContentsObserver.java",
+    "java/src/org/chromium/android_webview/AwWebResourceResponse.java",
+    "java/src/org/chromium/android_webview/AwZoomControls.java",
+    "java/src/org/chromium/android_webview/ClientCertLookupTable.java",
+    "java/src/org/chromium/android_webview/DefaultVideoPosterRequestHandler.java",
+    "java/src/org/chromium/android_webview/ErrorCodeConversionHelper.java",
+    "java/src/org/chromium/android_webview/FullScreenView.java",
+    "java/src/org/chromium/android_webview/HttpAuthDatabase.java",
+    "java/src/org/chromium/android_webview/InputStreamUtil.java",
+    "java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java",
+    "java/src/org/chromium/android_webview/JsPromptResultReceiver.java",
+    "java/src/org/chromium/android_webview/JsResultHandler.java",
+    "java/src/org/chromium/android_webview/JsResultReceiver.java",
+    "java/src/org/chromium/android_webview/NullAwViewMethods.java",
+    "java/src/org/chromium/android_webview/OverScrollGlow.java",
+    "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
+    "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
+    "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
+    "java/src/org/chromium/android_webview/PostMessageSender.java",
+    "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
+    "java/src/org/chromium/android_webview/SslUtil.java",
+  ]
+}
+
+java_strings_grd("strings_grd") {
+  grd_file = "java/strings/android_webview_strings.grd"
+  outputs = [
+    "values-am/android_webview_strings.xml",
+    "values-ar/android_webview_strings.xml",
+    "values-bg/android_webview_strings.xml",
+    "values-ca/android_webview_strings.xml",
+    "values-cs/android_webview_strings.xml",
+    "values-da/android_webview_strings.xml",
+    "values-de/android_webview_strings.xml",
+    "values-el/android_webview_strings.xml",
+    "values-en-rGB/android_webview_strings.xml",
+    "values-es-rUS/android_webview_strings.xml",
+    "values-es/android_webview_strings.xml",
+    "values-fa/android_webview_strings.xml",
+    "values-fi/android_webview_strings.xml",
+    "values-fr/android_webview_strings.xml",
+    "values-hi/android_webview_strings.xml",
+    "values-hr/android_webview_strings.xml",
+    "values-hu/android_webview_strings.xml",
+    "values-in/android_webview_strings.xml",
+    "values-it/android_webview_strings.xml",
+    "values-iw/android_webview_strings.xml",
+    "values-ja/android_webview_strings.xml",
+    "values-ko/android_webview_strings.xml",
+    "values-lt/android_webview_strings.xml",
+    "values-lv/android_webview_strings.xml",
+    "values-nb/android_webview_strings.xml",
+    "values-nl/android_webview_strings.xml",
+    "values-pl/android_webview_strings.xml",
+    "values-pt-rBR/android_webview_strings.xml",
+    "values-pt-rPT/android_webview_strings.xml",
+    "values-ro/android_webview_strings.xml",
+    "values-ru/android_webview_strings.xml",
+    "values-sk/android_webview_strings.xml",
+    "values-sl/android_webview_strings.xml",
+    "values-sr/android_webview_strings.xml",
+    "values-sv/android_webview_strings.xml",
+    "values-sw/android_webview_strings.xml",
+    "values-th/android_webview_strings.xml",
+    "values-tl/android_webview_strings.xml",
+    "values-tr/android_webview_strings.xml",
+    "values-uk/android_webview_strings.xml",
+    "values-vi/android_webview_strings.xml",
+    "values-zh-rCN/android_webview_strings.xml",
+    "values-zh-rTW/android_webview_strings.xml",
+    "values/android_webview_strings.xml",
+  ]
+}

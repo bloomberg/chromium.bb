@@ -6,9 +6,9 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-static_library("external_video_surface") {
+source_set("external_video_surface") {
   if (is_android) {
-    sources += [
+    sources = [
       "browser/android/external_video_surface_container_impl.cc",
       "browser/android/external_video_surface_container_impl.h",
       "component_jni_registrar.cc",
