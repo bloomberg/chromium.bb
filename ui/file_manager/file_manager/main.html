@@ -36,6 +36,7 @@
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
+    <link rel="import" href="foreground/elements/files_ripple.html">
     <link rel="import" href="foreground/elements/files_toggle_ripple.html">
     <link rel="import" href="foreground/elements/files_tooltip.html">
   </head>
@@ -250,14 +251,14 @@
               i18n-values="aria-label:SHARE_BUTTON_LABEL"
               visibleif="full-page"
               has-tooltip>
-        <paper-ripple fit center class="circle"></paper-ripple>
+        <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
       <button id="delete-button" class="icon-button" tabindex="11" hidden
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
               visibleif="full-page"
               has-tooltip>
-        <paper-ripple fit center class="circle"></paper-ripple>
+        <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
       <button id="search-button" class="icon-button" tabindex="12"
@@ -276,7 +277,7 @@
       <button id="refresh-button" class="icon-button" tabindex="14" hidden
               i18n-values="aria-label:REFRESH_BUTTON_LABEL"
               command="#refresh" has-tooltip>
-        <paper-ripple fit center class="circle"></paper-ripple>
+        <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
       <div id="cloud-import-combo-button"
@@ -306,7 +307,7 @@
       <button id="view-button" class="icon-button" tabindex="16"
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL"
               has-tooltip>
-        <paper-ripple fit center class="circle"></paper-ripple>
+        <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
       <button id="sort-button" class="icon-button" tabindex="17"

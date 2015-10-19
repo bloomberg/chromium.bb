@@ -68,6 +68,7 @@
           '../../background/js/background_base.js',
           '../../background/js/background.js',
           '../../../image_loader/image_loader_client.js',
+          '../elements/files_ripple.js',
           '../elements/files_tooltip.js',
           './metrics_start.js',
           './ui/combobutton.js',
