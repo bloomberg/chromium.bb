@@ -554,6 +554,9 @@ def AddUirobotTestOptions(parser):
   group.add_argument('--app-under-test', required=True,
                      help='APK to run tests on.')
   group.add_argument(
+      '--repeat', dest='repeat', type=int, default=0,
+      help='Number of times to repeat the uirobot test.')
+  group.add_argument(
       '--minutes', default=5, type=int,
       help='Number of minutes to run uirobot test [default: %(default)s].')
 
