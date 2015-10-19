@@ -10,8 +10,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,18) size 375x18
           text run at (0,18) width 375: "that the select automatically recalculates the correct width."
         LayoutBR {BR} at (374,32) size 1x0
-        LayoutMenuList {SELECT} at (0,36) size 130x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 130x18
+        LayoutMenuList {SELECT} at (0,36) size 129x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 129x18
             LayoutText (anonymous) at (8,2) size 28x13
               text run at (8,2) width 28: "Short"
         LayoutText {#text} at (0,0) size 0x0
