@@ -649,7 +649,7 @@ void CSSAnimations::cancel()
 void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& update, const Element* animatingElement, double timelineCurrentTime)
 {
     ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
-    AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
+    AnimationStack* animationStack = elementAnimations ? &elementAnimations->animationStack() : nullptr;
 
     if (update.newAnimations().isEmpty() && update.suppressedAnimations().isEmpty()) {
         ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, KeyframeEffect::DefaultPriority, timelineCurrentTime));
@@ -670,7 +670,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& u
 void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate& update, const Element* animatingElement, double timelineCurrentTime)
 {
     ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
-    AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
+    AnimationStack* animationStack = elementAnimations ? &elementAnimations->animationStack() : nullptr;
 
     ActiveInterpolationsMap activeInterpolationsForTransitions;
     if (update.newTransitions().isEmpty() && update.cancelledTransitions().isEmpty()) {

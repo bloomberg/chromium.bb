@@ -122,7 +122,7 @@ void KeyframeEffect::specifiedTimingChanged()
 
 static AnimationStack& ensureAnimationStack(Element* element)
 {
-    return element->ensureElementAnimations().defaultStack();
+    return element->ensureElementAnimations().animationStack();
 }
 
 bool KeyframeEffect::hasMultipleTransformProperties() const

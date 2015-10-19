@@ -84,13 +84,13 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
     }
 
     if (style.hasCurrentOpacityAnimation())
-        style.setIsRunningOpacityAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyOpacity));
+        style.setIsRunningOpacityAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyOpacity));
     if (style.hasCurrentTransformAnimation())
-        style.setIsRunningTransformAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
+        style.setIsRunningTransformAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
     if (style.hasCurrentFilterAnimation())
-        style.setIsRunningFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
+        style.setIsRunningFilterAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
     if (style.hasCurrentBackdropFilterAnimation())
-        style.setIsRunningBackdropFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyBackdropFilter));
+        style.setIsRunningBackdropFilterAnimationOnCompositor(m_animationStack.hasActiveAnimationsOnCompositor(CSSPropertyBackdropFilter));
 }
 
 void ElementAnimations::restartAnimationOnCompositor()
@@ -102,7 +102,7 @@ void ElementAnimations::restartAnimationOnCompositor()
 DEFINE_TRACE(ElementAnimations)
 {
     visitor->trace(m_cssAnimations);
-    visitor->trace(m_defaultStack);
+    visitor->trace(m_animationStack);
     visitor->trace(m_animations);
 #if !ENABLE(OILPAN)
     visitor->trace(m_effects);
