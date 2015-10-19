@@ -242,7 +242,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     return color;
 
   NOTIMPLEMENTED() << " Invalid color_id: " << color_id;
-  return FallbackTheme::GetSystemColor(color_id);
+  return SK_ColorRED;
 }
 
 void NativeThemeMac::PaintScrollbarTrack(

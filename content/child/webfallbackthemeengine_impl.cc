@@ -7,7 +7,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "ui/native_theme/fallback_theme.h"
+#include "ui/native_theme/native_theme_base.h"
 
 using blink::WebCanvas;
 using blink::WebColor;
@@ -15,6 +15,24 @@ using blink::WebRect;
 using blink::WebFallbackThemeEngine;
 
 namespace content {
+
+class WebFallbackThemeEngineImpl::WebFallbackNativeTheme
+    : public ui::NativeThemeBase {
+ public:
+  WebFallbackNativeTheme() {}
+  ~WebFallbackNativeTheme() override {}
+
+  // NativeTheme:
+  SkColor GetSystemColor(ColorId color_id) const override {
+    // The paint routines in NativeThemeBase only use GetSystemColor for
+    // button focus colors and the fallback theme is not used for buttons.
+    NOTREACHED();
+    return SK_ColorRED;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebFallbackNativeTheme);
+};
 
 static ui::NativeTheme::Part NativeThemePart(
     WebFallbackThemeEngine::Part part) {
@@ -161,8 +179,7 @@ static void GetNativeThemeExtraParams(
 }
 
 WebFallbackThemeEngineImpl::WebFallbackThemeEngineImpl()
-    : theme_(new ui::FallbackTheme()) {
-}
+    : theme_(new WebFallbackNativeTheme()) {}
 
 WebFallbackThemeEngineImpl::~WebFallbackThemeEngineImpl() {}
 

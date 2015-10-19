@@ -8,12 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
 
-namespace ui {
-class FallbackTheme;
-}
-
 namespace content {
 
+// This theme should only be used in layout tests in cases the mock theme can't
+// handle (such as zoomed controls).
 class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
  public:
   WebFallbackThemeEngineImpl();
@@ -29,7 +27,8 @@ class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
       const blink::WebFallbackThemeEngine::ExtraParams* extra_params) override;
 
  private:
-  scoped_ptr<ui::FallbackTheme> theme_;
+  class WebFallbackNativeTheme;
+  scoped_ptr<WebFallbackNativeTheme> theme_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFallbackThemeEngineImpl);
 };

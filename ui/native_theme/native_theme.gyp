@@ -25,8 +25,6 @@
       'sources': [
         'common_theme.cc',
         'common_theme.h',
-        'fallback_theme.cc',
-        'fallback_theme.h',
         'native_theme.cc',
         'native_theme.h',
         'native_theme_android.cc',

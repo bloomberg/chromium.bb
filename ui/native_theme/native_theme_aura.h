@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/native_theme/fallback_theme.h"
+#include "ui/native_theme/native_theme_base.h"
 
 namespace gfx {
 class NineImagePainter;
@@ -16,7 +16,7 @@ class NineImagePainter;
 namespace ui {
 
 // Aura implementation of native theme support.
-class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
+class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
  public:
   static NativeThemeAura* instance();
 
@@ -25,6 +25,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
   ~NativeThemeAura() override;
 
   // Overridden from NativeThemeBase:
+  SkColor GetSystemColor(ColorId color_id) const override;
   void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
