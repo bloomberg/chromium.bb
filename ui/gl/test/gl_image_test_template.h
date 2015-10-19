@@ -51,51 +51,9 @@ class GLImageTest : public testing::Test {
 
 TYPED_TEST_CASE_P(GLImageTest);
 
-TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
-  const Size small_image_size(4, 4);
-  const Size large_image_size(512, 512);
-  const uint8_t image_color[] = {0, 0xff, 0, 0xff};
-
-  // Create a small solid color green image of preferred format. This must
-  // succeed in order for a GLImage to be conformant.
-  scoped_refptr<GLImage> small_image = this->delegate_.CreateSolidColorImage(
-      small_image_size, GLImageTestSupport::GetPreferredInternalFormat(),
-      GLImageTestSupport::GetPreferredBufferFormat(), image_color);
-  ASSERT_TRUE(small_image);
-
-  // Create a large solid color green image of preferred format. This must
-  // succeed in order for a GLImage to be conformant.
-  scoped_refptr<GLImage> large_image = this->delegate_.CreateSolidColorImage(
-      large_image_size, GLImageTestSupport::GetPreferredInternalFormat(),
-      GLImageTestSupport::GetPreferredBufferFormat(), image_color);
-  ASSERT_TRUE(large_image);
-
-  // Verify that image size is correct.
-  EXPECT_EQ(small_image->GetSize().ToString(), small_image_size.ToString());
-  EXPECT_EQ(large_image->GetSize().ToString(), large_image_size.ToString());
-
-  // Verify that internal format is correct.
-  EXPECT_EQ(small_image->GetInternalFormat(),
-            GLImageTestSupport::GetPreferredInternalFormat());
-  EXPECT_EQ(large_image->GetInternalFormat(),
-            GLImageTestSupport::GetPreferredInternalFormat());
-
-  // Verify that destruction of images work correctly both when we have a
-  // context and when we don't.
-  small_image->Destroy(true /* have_context */);
-  large_image->Destroy(false /* have_context */);
-}
-
-// The GLImageTest test case verifies the behaviour that is expected from a
-// GLImage in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GLImageTest, CreateAndDestroy);
-
-template <typename GLImageTestDelegate>
-class GLImageCopyTest : public GLImageTest<GLImageTestDelegate> {};
-
-TYPED_TEST_CASE_P(GLImageCopyTest);
-
-TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
+// Copy image to texture. Support is optional. Texels should be updated if
+// supported, and left unchanged if not.
+TYPED_TEST_P(GLImageTest, CopyTexSubImage) {
   const Size image_size(256, 256);
   const uint8_t image_color[] = {0, 0xff, 0, 0xff};
   const uint8_t texture_color[] = {0, 0, 0xff, 0xff};
@@ -133,9 +91,9 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
                GLImageTestSupport::GetPreferredInternalFormat(),
                GL_UNSIGNED_BYTE, pixels.get());
 
-  // Copy |image| to |texture|.
-  bool rv = image->CopyTexImage(GL_TEXTURE_2D);
-  EXPECT_TRUE(rv);
+  // Attempt to copy |image| to |texture|.
+  // Returns true on success, false on failure.
+  bool rv = image->CopyTexSubImage(GL_TEXTURE_2D, Point(), Rect(image_size));
 
   // clang-format off
   const char kVertexShader[] = STRINGIZE(
@@ -203,7 +161,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   // Draw |texture| to viewport and read back pixels to check expectations.
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
-                            image_color);
+                            rv ? image_color : texture_color);
 
   // Clean up.
   glDeleteProgram(program);
@@ -215,9 +173,9 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   image->Destroy(true);
 }
 
-// The GLImageCopyTest test case verifies that the GLImage implementation
-// handles CopyTexImage correctly.
-REGISTER_TYPED_TEST_CASE_P(GLImageCopyTest, CopyTexImage);
+// The GLImageTest test case verifies behaviour that is expected from a
+// GLImage in order to be conformant.
+REGISTER_TYPED_TEST_CASE_P(GLImageTest, CopyTexSubImage);
 
 }  // namespace gfx
 

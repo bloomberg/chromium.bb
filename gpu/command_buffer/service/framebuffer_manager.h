@@ -52,6 +52,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual size_t GetSignatureSize(TextureManager* texture_manager) const = 0;
     virtual void AddToSignature(
         TextureManager* texture_manager, std::string* signature) const = 0;
+    virtual void OnWillRenderTo() const = 0;
+    virtual void OnDidRenderTo() const = 0;
     virtual bool FormsFeedbackLoop(TextureRef* texture, GLint level) const = 0;
 
    protected:
@@ -158,6 +160,13 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // formats.
   bool HasSameInternalFormatsMRT() const;
 
+  void OnTextureRefDetached(TextureRef* texture);
+
+  // If attachment is 0, apply to all attachments; otherwise, apply only to
+  // the specified attachment.
+  void OnWillRenderTo(GLenum attachment) const;
+  void OnDidRenderTo(GLenum attachment) const;
+
   void set_read_buffer(GLenum read_buffer) {
     read_buffer_ = read_buffer;
   }
@@ -233,6 +242,17 @@ struct DecoderFramebufferState {
 // so we can correctly clear them.
 class GPU_EXPORT FramebufferManager {
  public:
+  class GPU_EXPORT TextureDetachObserver {
+   public:
+    TextureDetachObserver();
+    virtual ~TextureDetachObserver();
+
+    virtual void OnTextureRefDetachedFromFramebuffer(TextureRef* texture) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TextureDetachObserver);
+  };
+
   FramebufferManager(uint32 max_draw_buffers,
                      uint32 max_color_attachments,
                      ContextType context_type,
@@ -270,6 +290,18 @@ class GPU_EXPORT FramebufferManager {
         (framebuffer_state_change_count_ + 1) | 0x80000000U;
   }
 
+  void AddObserver(TextureDetachObserver* observer) {
+    texture_detach_observers_.push_back(observer);
+  }
+
+  void RemoveObserver(TextureDetachObserver* observer) {
+    texture_detach_observers_.erase(
+        std::remove(texture_detach_observers_.begin(),
+                    texture_detach_observers_.end(),
+                    observer),
+        texture_detach_observers_.end());
+  }
+
   ContextType context_type() const { return context_type_; }
 
  private:
@@ -277,6 +309,8 @@ class GPU_EXPORT FramebufferManager {
 
   void StartTracking(Framebuffer* framebuffer);
   void StopTracking(Framebuffer* framebuffer);
+
+  void OnTextureRefDetached(TextureRef* texture);
 
   FramebufferCompletenessCache* GetFramebufferComboCompleteCache() {
     return framebuffer_combo_complete_cache_.get();
@@ -301,6 +335,9 @@ class GPU_EXPORT FramebufferManager {
   uint32 max_color_attachments_;
 
   ContextType context_type_;
+
+  typedef std::vector<TextureDetachObserver*> TextureDetachObserverVector;
+  TextureDetachObserverVector texture_detach_observers_;
 
   scoped_refptr<FramebufferCompletenessCache> framebuffer_combo_complete_cache_;
 

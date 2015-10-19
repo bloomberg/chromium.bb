@@ -26,7 +26,7 @@ bool ValidInternalFormat(unsigned internalformat) {
   }
 }
 
-bool ValidFormat(BufferFormat format) {
+bool ValidFormat(gfx::BufferFormat format) {
   switch (format) {
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
@@ -49,7 +49,7 @@ bool ValidFormat(BufferFormat format) {
   return false;
 }
 
-EGLint FourCC(BufferFormat format) {
+EGLint FourCC(gfx::BufferFormat format) {
   switch (format) {
     case BufferFormat::RGBA_8888:
       return DRM_FORMAT_ABGR8888;
@@ -87,12 +87,12 @@ GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
                                           BufferFormat format) {
   DCHECK(!pixmap_);
+
+  bool result = true;
   if (pixmap->GetEGLClientBuffer()) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
-    if (!GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,
-                                pixmap->GetEGLClientBuffer(), attrs)) {
-      return false;
-    }
+    result = GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,
+                                    pixmap->GetEGLClientBuffer(), attrs);
   } else if (pixmap->GetDmaBufFd() >= 0) {
     if (!ValidInternalFormat(internalformat_)) {
       LOG(ERROR) << "Invalid internalformat: " << internalformat_;
@@ -119,14 +119,13 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
                       EGL_DMA_BUF_PLANE0_PITCH_EXT,
                       pixmap->GetDmaBufPitch(),
                       EGL_NONE};
-    if (!GLImageEGL::Initialize(EGL_LINUX_DMA_BUF_EXT,
-                                static_cast<EGLClientBuffer>(nullptr), attrs)) {
-      return false;
-    }
+    result = GLImageEGL::Initialize(
+        EGL_LINUX_DMA_BUF_EXT, static_cast<EGLClientBuffer>(nullptr), attrs);
   }
 
-  pixmap_ = pixmap;
-  return true;
+  if (result)
+    pixmap_ = pixmap;
+  return result;
 }
 
 unsigned GLImageOzoneNativePixmap::GetInternalFormat() {

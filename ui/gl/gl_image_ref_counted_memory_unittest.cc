@@ -37,9 +37,5 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
                               GLImageTest,
                               GLImageRefCountedMemoryTestDelegate);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
-                              GLImageCopyTest,
-                              GLImageRefCountedMemoryTestDelegate);
-
 }  // namespace
 }  // namespace gfx

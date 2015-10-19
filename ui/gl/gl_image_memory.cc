@@ -7,6 +7,12 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/scoped_binders.h"
+
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+#include "ui/gl/gl_surface_egl.h"
+#endif
 
 namespace gfx {
 namespace {
@@ -146,11 +152,26 @@ GLsizei SizeInBytes(const Size& size, BufferFormat format) {
 GLImageMemory::GLImageMemory(const Size& size, unsigned internalformat)
     : size_(size),
       internalformat_(internalformat),
-      memory_(nullptr),
-      format_(BufferFormat::RGBA_8888) {}
+      memory_(NULL),
+      format_(BufferFormat::RGBA_8888),
+      in_use_(false),
+      target_(0),
+      need_do_bind_tex_image_(false)
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+      ,
+      egl_texture_id_(0u),
+      egl_image_(EGL_NO_IMAGE_KHR)
+#endif
+{
+}
 
 GLImageMemory::~GLImageMemory() {
-  DCHECK(!memory_);
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
+  DCHECK_EQ(0u, egl_texture_id_);
+#endif
 }
 
 // static
@@ -222,7 +243,20 @@ bool GLImageMemory::Initialize(const unsigned char* memory,
 }
 
 void GLImageMemory::Destroy(bool have_context) {
-  memory_ = nullptr;
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  if (egl_image_ != EGL_NO_IMAGE_KHR) {
+    eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+    egl_image_ = EGL_NO_IMAGE_KHR;
+  }
+
+  if (egl_texture_id_) {
+    if (have_context)
+      glDeleteTextures(1, &egl_texture_id_);
+    egl_texture_id_ = 0u;
+  }
+#endif
+  memory_ = NULL;
 }
 
 Size GLImageMemory::GetSize() {
@@ -234,27 +268,19 @@ unsigned GLImageMemory::GetInternalFormat() {
 }
 
 bool GLImageMemory::BindTexImage(unsigned target) {
-  return false;
-}
-
-bool GLImageMemory::CopyTexImage(unsigned target) {
-  TRACE_EVENT2("gpu", "GLImageMemory::CopyTexImage", "width", size_.width(),
-               "height", size_.height());
-
-  // GL_TEXTURE_EXTERNAL_OES is not a supported target.
-  if (target == GL_TEXTURE_EXTERNAL_OES)
+  if (target_ && target_ != target) {
+    LOG(ERROR) << "GLImage can only be bound to one target";
     return false;
+  }
+  target_ = target;
 
-  if (IsCompressedFormat(format_)) {
-    glCompressedTexImage2D(target, 0, TextureFormat(format_), size_.width(),
-                           size_.height(), 0, SizeInBytes(size_, format_),
-                           memory_);
-  } else {
-    glTexImage2D(target, 0, TextureFormat(format_), size_.width(),
-                 size_.height(), 0, DataFormat(format_), DataType(format_),
-                 memory_);
+  // Defer DoBindTexImage if not currently in use.
+  if (!in_use_) {
+    need_do_bind_tex_image_ = true;
+    return true;
   }
 
+  DoBindTexImage(target);
   return true;
 }
 
@@ -264,7 +290,7 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
   TRACE_EVENT2("gpu", "GLImageMemory::CopyTexSubImage", "width", rect.width(),
                "height", rect.height());
 
-  // GL_TEXTURE_EXTERNAL_OES is not a supported target.
+  // GL_TEXTURE_EXTERNAL_OES is not a supported CopyTexSubImage target.
   if (target == GL_TEXTURE_EXTERNAL_OES)
     return false;
 
@@ -282,16 +308,34 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
   DCHECK(memory_);
   const unsigned char* data = memory_ + rect.y() * stride_in_bytes;
   if (IsCompressedFormat(format_)) {
-    glCompressedTexSubImage2D(target, 0, offset.x(), offset.y(), rect.width(),
+    glCompressedTexSubImage2D(target,
+                              0,  // level
+                              offset.x(), offset.y(), rect.width(),
                               rect.height(), DataFormat(format_),
                               SizeInBytes(rect.size(), format_), data);
   } else {
-    glTexSubImage2D(target, 0, offset.x(), offset.y(), rect.width(),
-                    rect.height(), DataFormat(format_), DataType(format_),
-                    data);
+    glTexSubImage2D(target, 0,  // level
+                    offset.x(), offset.y(), rect.width(), rect.height(),
+                    DataFormat(format_), DataType(format_), data);
   }
 
   return true;
+}
+
+void GLImageMemory::WillUseTexImage() {
+  DCHECK(!in_use_);
+  in_use_ = true;
+
+  if (!need_do_bind_tex_image_)
+    return;
+
+  DCHECK(target_);
+  DoBindTexImage(target_);
+}
+
+void GLImageMemory::DidUseTexImage() {
+  DCHECK(in_use_);
+  in_use_ = false;
 }
 
 bool GLImageMemory::ScheduleOverlayPlane(AcceleratedWidget widget,
@@ -300,6 +344,134 @@ bool GLImageMemory::ScheduleOverlayPlane(AcceleratedWidget widget,
                                          const Rect& bounds_rect,
                                          const RectF& crop_rect) {
   return false;
+}
+
+void GLImageMemory::DoBindTexImage(unsigned target) {
+  TRACE_EVENT0("gpu", "GLImageMemory::DoBindTexImage");
+
+  DCHECK(need_do_bind_tex_image_);
+  need_do_bind_tex_image_ = false;
+
+  DCHECK(memory_);
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  if (target == GL_TEXTURE_EXTERNAL_OES) {
+    if (egl_image_ == EGL_NO_IMAGE_KHR) {
+      DCHECK_EQ(0u, egl_texture_id_);
+      glGenTextures(1, &egl_texture_id_);
+
+      {
+        ScopedTextureBinder texture_binder(GL_TEXTURE_2D, egl_texture_id_);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        if (IsCompressedFormat(format_)) {
+          glCompressedTexImage2D(GL_TEXTURE_2D,
+                                 0,  // mip level
+                                 TextureFormat(format_), size_.width(),
+                                 size_.height(),
+                                 0,  // border
+                                 SizeInBytes(size_, format_), memory_);
+        } else {
+          glTexImage2D(GL_TEXTURE_2D,
+                       0,  // mip level
+                       TextureFormat(format_),
+                       size_.width(),
+                       size_.height(),
+                       0,  // border
+                       DataFormat(format_),
+                       DataType(format_),
+                       memory_);
+        }
+      }
+
+      EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
+      // Need to pass current EGL rendering context to eglCreateImageKHR for
+      // target type EGL_GL_TEXTURE_2D_KHR.
+      egl_image_ =
+          eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
+                            eglGetCurrentContext(),
+                            EGL_GL_TEXTURE_2D_KHR,
+                            reinterpret_cast<EGLClientBuffer>(egl_texture_id_),
+                            attrs);
+      DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_)
+          << "Error creating EGLImage: " << eglGetError();
+    } else {
+      ScopedTextureBinder texture_binder(GL_TEXTURE_2D, egl_texture_id_);
+
+      if (IsCompressedFormat(format_)) {
+        glCompressedTexSubImage2D(GL_TEXTURE_2D,
+                                  0,  // mip level
+                                  0,  // x-offset
+                                  0,  // y-offset
+                                  size_.width(), size_.height(),
+                                  DataFormat(format_),
+                                  SizeInBytes(size_, format_), memory_);
+      } else {
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,  // mip level
+                        0,  // x-offset
+                        0,  // y-offset
+                        size_.width(),
+                        size_.height(),
+                        DataFormat(format_),
+                        DataType(format_),
+                        memory_);
+      }
+    }
+
+    glEGLImageTargetTexture2DOES(target, egl_image_);
+    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+    return;
+  }
+#endif
+
+  DCHECK_NE(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), target);
+  if (IsCompressedFormat(format_)) {
+    glCompressedTexImage2D(target,
+                           0,  // mip level
+                           TextureFormat(format_), size_.width(),
+                           size_.height(),
+                           0,  // border
+                           SizeInBytes(size_, format_), memory_);
+  } else {
+    glTexImage2D(target,
+                 0,  // mip level
+                 TextureFormat(format_),
+                 size_.width(),
+                 size_.height(),
+                 0,  // border
+                 DataFormat(format_),
+                 DataType(format_),
+                 memory_);
+  }
+}
+
+void GLImageMemory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                 uint64_t process_tracing_id,
+                                 const std::string& dump_name) {
+  // Note that the following calculation does not consider whether this GLImage
+  // has been un-bound from a texture. It also relies on this GLImage only ever
+  // being bound to a single texture. We could check these conditions more
+  // thoroughly, but at the cost of extra GL queries.
+  bool is_bound_to_texture = target_ && !need_do_bind_tex_image_;
+
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  is_bound_to_texture |= !!egl_texture_id_;
+#endif
+
+  size_t size_in_bytes = is_bound_to_texture ? SizeInBytes(size_, format_) : 0;
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name + "/texture_memory");
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(size_in_bytes));
+
+  // No need for a global shared edge here. This object in the GPU process is
+  // the sole owner of this texture id.
 }
 
 }  // namespace gfx

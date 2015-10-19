@@ -39,9 +39,5 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageTest,
                               GLImageSharedMemoryTestDelegate);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
-                              GLImageCopyTest,
-                              GLImageSharedMemoryTestDelegate);
-
 }  // namespace
 }  // namespace gfx

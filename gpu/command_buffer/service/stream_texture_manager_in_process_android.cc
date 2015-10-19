@@ -19,9 +19,7 @@ namespace {
 // Simply wraps a SurfaceTexture reference as a GLImage.
 class GLImageImpl : public gfx::GLImage {
  public:
-  GLImageImpl(uint32 texture_id,
-              gles2::TextureManager* texture_manager,
-              const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
+  GLImageImpl(const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
               const base::Closure& release_callback);
 
   // implement gfx::GLImage
@@ -30,10 +28,13 @@ class GLImageImpl : public gfx::GLImage {
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
-  bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
                        const gfx::Point& offset,
                        const gfx::Rect& rect) override;
+  void WillUseTexImage() override;
+  void DidUseTexImage() override {}
+  void WillModifyTexImage() override {}
+  void DidModifyTexImage() override {}
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             gfx::OverlayTransform transform,
@@ -46,8 +47,6 @@ class GLImageImpl : public gfx::GLImage {
  private:
   ~GLImageImpl() override;
 
-  uint32 texture_id_;
-  gles2::TextureManager* texture_manager_;
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
   base::Closure release_callback_;
 
@@ -55,14 +54,9 @@ class GLImageImpl : public gfx::GLImage {
 };
 
 GLImageImpl::GLImageImpl(
-    uint32 texture_id,
-    gles2::TextureManager* texture_manager,
     const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
     const base::Closure& release_callback)
-    : texture_id_(texture_id),
-      texture_manager_(texture_manager),
-      surface_texture_(surface_texture),
-      release_callback_(release_callback) {}
+    : surface_texture_(surface_texture), release_callback_(release_callback) {}
 
 GLImageImpl::~GLImageImpl() {
   release_callback_.Run();
@@ -89,25 +83,14 @@ void GLImageImpl::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
-bool GLImageImpl::CopyTexImage(unsigned target) {
-  surface_texture_->UpdateTexImage();
-
-  gles2::Texture* texture =
-      texture_manager_->GetTextureForServiceId(texture_id_);
-  if (texture) {
-    // By setting image state to UNBOUND instead of COPIED we ensure that
-    // CopyTexImage() is called each time the surface texture is used for
-    // drawing.
-    texture->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
-                           gles2::Texture::UNBOUND);
-  }
-  return true;
-}
-
 bool GLImageImpl::CopyTexSubImage(unsigned target,
                                   const gfx::Point& offset,
                                   const gfx::Rect& rect) {
   return false;
+}
+
+void GLImageImpl::WillUseTexImage() {
+  surface_texture_->UpdateTexImage();
 }
 
 bool GLImageImpl::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
@@ -156,17 +139,16 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(
   base::Closure release_callback =
       base::Bind(&StreamTextureManagerInProcess::OnReleaseStreamTexture,
                  weak_factory_.GetWeakPtr(), stream_id);
-  scoped_refptr<gfx::GLImage> gl_image(
-      new GLImageImpl(texture->service_id(), texture_manager, surface_texture,
-                      release_callback));
+  scoped_refptr<gfx::GLImage> gl_image(new GLImageImpl(surface_texture,
+                                       release_callback));
 
   gfx::Size size = gl_image->GetSize();
   texture_manager->SetTarget(texture, GL_TEXTURE_EXTERNAL_OES);
   texture_manager->SetLevelInfo(texture, GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
                                 size.width(), size.height(), 1, 0, GL_RGBA,
                                 GL_UNSIGNED_BYTE, gfx::Rect(size));
-  texture_manager->SetLevelImage(texture, GL_TEXTURE_EXTERNAL_OES, 0,
-                                 gl_image.get(), gles2::Texture::UNBOUND);
+  texture_manager->SetLevelImage(
+      texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get());
 
   {
     base::AutoLock lock(map_lock_);
