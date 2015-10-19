@@ -299,12 +299,16 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
                               BACK,
                               HISTOGRAM_BOUNDING_VALUE);
 
-    // Close the tab if there is no history entry to go back to.
-    DCHECK(web_contents_->GetController().GetTransientEntry());
-    if (web_contents_->GetController().GetEntryCount() == 1)
-      TabCloser::CreateForWebContents(web_contents_);
-
+    // The interstitial's reference to the WebContents will go away after the
+    // DontProceed call.
+    WebContents* web_contents = web_contents_;
+    DCHECK(web_contents->GetController().GetTransientEntry());
     interstitial_page_->DontProceed();
+
+    // Close the tab if there is no history entry to go back to.
+    if (web_contents->GetController().IsInitialBlankNavigation())
+      TabCloser::CreateForWebContents(web_contents);
+
     return;
   }
 

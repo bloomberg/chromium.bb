@@ -1133,9 +1133,9 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                 index,
                 (index == tab_strip_model_->active_index()));
 
-  int entry_count = new_contents->GetController().GetEntryCount();
-  if (entry_count > 0) {
+  if (!new_contents->GetController().IsInitialBlankNavigation()) {
     // Send out notification so that observers are updated appropriately.
+    int entry_count = new_contents->GetController().GetEntryCount();
     new_contents->GetController().NotifyEntryChanged(
         new_contents->GetController().GetEntryAtIndex(entry_count - 1));
   }
