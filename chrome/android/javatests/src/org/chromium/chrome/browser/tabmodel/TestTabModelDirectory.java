@@ -24,7 +24,7 @@ import java.io.FileOutputStream;
  * This gets around an infrastructure bug with setting file permissions.
  */
 public class TestTabModelDirectory {
-    private static final String TAG = "cr.tabmodel";
+    private static final String TAG = "tabmodel";
 
     /**
      * Information about an encoded TabState file.  Although the Tab ID is _not_ encoded in the
@@ -47,6 +47,31 @@ public class TestTabModelDirectory {
             this.filename = "tab" + tabId;
         }
     };
+
+    /**
+     * Information about a TabModel and all of the TabStates it needs to be restored.
+     */
+    public static final class TabModelMetaDataInfo {
+        public final int version;
+        public final int selectedTabId;
+        public final TabStateInfo[] contents;
+        public final int numIncognitoTabs;
+        public final String encodedFile;
+
+        TabModelMetaDataInfo(int version, int numIncognitoTabs, int selectedTabId,
+                TabStateInfo[] contents, String encodedFile) {
+            this.version = version;
+            this.numIncognitoTabs = numIncognitoTabs;
+            this.selectedTabId = selectedTabId;
+            this.contents = contents;
+            this.encodedFile = encodedFile;
+        }
+
+        /** Returns how many non-Incognito tabs are described in the file. */
+        public int getNumRegularTabs() {
+            return contents.length - numIncognitoTabs;
+        }
+    }
 
     public static final TabStateInfo M18_NTP = new TabStateInfo(
             0,
@@ -186,19 +211,54 @@ public class TestTabModelDirectory {
      * Tab model metadata file containing information about multiple tabs, with Baidu selected.
      * Ideally we'd have the M18 NTP in here, too, but it's difficult to get Chrome to visit that
      * URL now that the page is gone.
+     *
+     * This file was created by clearing Chrome's app data, turning off wi-fi, and then visiting
+     * each of the pages in turn.
      */
-    private static final String TAB_MODEL_METADATA_V4 =
+    public static final TabModelMetaDataInfo TAB_MODEL_METADATA_V4 = new TabModelMetaDataInfo(
+            4,
+            0,
+            V2_BAIDU.tabId,
+            new TabStateInfo[] {M18_GOOGLE_COM, M26_GOOGLE_COM, M26_GOOGLE_CA, V2_BAIDU,
+                    V2_DUCK_DUCK_GO, V2_HAARETZ, V2_TEXTAREA},
             "AAAABAAAAAf/////AAAAAwAAAAEAFmh0dHA6Ly93d3cuZ29vZ2xlLmNvbS8AAAACABZodHRw"
             + "Oi8vd3d3Lmdvb2dsZS5jb20vAAAAAwAVaHR0cDovL3d3dy5nb29nbGUuY2EvAAAABAAVaHR0"
             + "cDovL3d3dy5iYWlkdS5jb20vAAAABQAXaHR0cHM6Ly9kdWNrZHVja2dvLmNvbS8AAAAGABlo"
-            + "dHRwOi8vd3d3LmhhYXJldHouY28uaWwvAAAABwAUaHR0cDovL3RleHRhcmVhLm9yZy8=";
-    public static final int TAB_MODEL_METADATA_V4_SELECTED_ID = 4;
-    static final TabStateInfo[] TAB_MODEL_METADATA_V4_CONTENTS = {
-        M18_GOOGLE_COM, M26_GOOGLE_COM, M26_GOOGLE_CA, V2_BAIDU, V2_DUCK_DUCK_GO, V2_HAARETZ,
-        V2_TEXTAREA
-    };
+            + "dHRwOi8vd3d3LmhhYXJldHouY28uaWwvAAAABwAUaHR0cDovL3RleHRhcmVhLm9yZy8=");
+
+    /**
+     * Same as TAB_MODEL_METADATA_V4, but using the version 5 file format.
+     */
+    public static final TabModelMetaDataInfo TAB_MODEL_METADATA_V5 = new TabModelMetaDataInfo(
+            5,
+            0,
+            V2_BAIDU.tabId,
+            new TabStateInfo[] {M18_GOOGLE_COM, M26_GOOGLE_COM, M26_GOOGLE_CA, V2_BAIDU,
+                    V2_DUCK_DUCK_GO, V2_HAARETZ, V2_TEXTAREA},
+            "AAAABQAAAAcAAAAA/////wAAAAMAAAABABZodHRwOi8vd3d3Lmdvb2dsZS5jb20vAAAAAgAWaHR0"
+            + "cDovL3d3dy5nb29nbGUuY29tLwAAAAMAFWh0dHA6Ly93d3cuZ29vZ2xlLmNhLwAAAAQAFWh0dHA6"
+            + "Ly93d3cuYmFpZHUuY29tLwAAAAUAF2h0dHBzOi8vZHVja2R1Y2tnby5jb20vAAAABgAZaHR0cDov"
+            + "L3d3dy5oYWFyZXR6LmNvLmlsLwAAAAcAFGh0dHA6Ly90ZXh0YXJlYS5vcmcv");
+
+    /**
+     * Similar to TAB_MODEL_METADATA_V5, but has a single Incognito tab. The tab state can't be
+     * restored (currently) because this Class doesn't support Incognito TabStates.
+     */
+    public static final TabModelMetaDataInfo TAB_MODEL_METADATA_V5_WITH_INCOGNITO =
+            new TabModelMetaDataInfo(
+                    5,
+                    1,
+                    V2_BAIDU.tabId,
+                    new TabStateInfo[] {null, M18_GOOGLE_COM, M26_GOOGLE_COM, M26_GOOGLE_CA,
+                            V2_BAIDU, V2_DUCK_DUCK_GO, V2_HAARETZ, V2_TEXTAREA},
+                    "AAAABQAAAAgAAAABAAAAAAAAAAQAAAAIABRodHRwOi8vZXJmd29ybGQuY29tLwAAAAEAFmh0dHA6"
+                    + "Ly93d3cuZ29vZ2xlLmNvbS8AAAACABZodHRwOi8vd3d3Lmdvb2dsZS5jb20vAAAAAwAVaHR0cDov"
+                    + "L3d3dy5nb29nbGUuY2EvAAAABAAVaHR0cDovL3d3dy5iYWlkdS5jb20vAAAABQAXaHR0cHM6Ly9k"
+                    + "dWNrZHVja2dvLmNvbS8AAAAGABlodHRwOi8vd3d3LmhhYXJldHouY28uaWwvAAAABwAUaHR0cDov"
+                    + "L3RleHRhcmVhLm9yZy8=");
 
     private File mTestingDirectory;
+    private File mDataDirectory;
 
     /**
      * Creates a temporary directory that stores {@link TabState} files and the metadata required to
@@ -220,25 +280,13 @@ public class TestTabModelDirectory {
         }
 
         // Create the subdirectory.
-        File dataDirectory = mTestingDirectory;
+        mDataDirectory = mTestingDirectory;
         if (subdirectoryName != null) {
-            dataDirectory = new File(mTestingDirectory, subdirectoryName);
-            if (!dataDirectory.exists() && !dataDirectory.mkdirs()) {
-                Log.e(TAG, "Failed to create subdirectory: " + dataDirectory.getName());
+            mDataDirectory = new File(mTestingDirectory, subdirectoryName);
+            if (!mDataDirectory.exists() && !mDataDirectory.mkdirs()) {
+                Log.e(TAG, "Failed to create subdirectory: " + mDataDirectory.getName());
             }
         }
-
-        // Fill the subdirectory with mocked pre-generated TabState files and metadata for the
-        // TabPersistentStore.
-        writeFile(dataDirectory, "tab_state", TAB_MODEL_METADATA_V4);
-        writeFile(dataDirectory, M18_NTP.filename, M18_NTP.encodedTabState);
-        writeFile(dataDirectory, M26_GOOGLE_COM.filename, M26_GOOGLE_COM.encodedTabState);
-        writeFile(dataDirectory, M18_GOOGLE_COM.filename, M18_GOOGLE_COM.encodedTabState);
-        writeFile(dataDirectory, M26_GOOGLE_CA.filename, M26_GOOGLE_CA.encodedTabState);
-        writeFile(dataDirectory, V2_BAIDU.filename, V2_BAIDU.encodedTabState);
-        writeFile(dataDirectory, V2_DUCK_DUCK_GO.filename, V2_DUCK_DUCK_GO.encodedTabState);
-        writeFile(dataDirectory, V2_HAARETZ.filename, V2_HAARETZ.encodedTabState);
-        writeFile(dataDirectory, V2_TEXTAREA.filename, V2_TEXTAREA.encodedTabState);
     }
 
     /** Nukes all the testing data. */
@@ -249,6 +297,23 @@ public class TestTabModelDirectory {
     /** Returns the base data directory. */
     public File getBaseDirectory() {
         return mTestingDirectory;
+    }
+
+    /**
+     * Writes out data required to restore a TabModel to the data directories.
+     * @param writeTabStates Whether or not to write the TabState files for each of the Tabs out.
+     */
+    public void writeTabModelFiles(TabModelMetaDataInfo info, boolean writeTabStates)
+            throws Exception {
+        writeFile(mDataDirectory, "tab_state", info.encodedFile);
+        for (TabStateInfo tabStateInfo : info.contents) {
+            writeTabStateFile(tabStateInfo);
+        }
+    }
+
+    /** Writes out a specific TabState file to the data directories. */
+    public void writeTabStateFile(TabStateInfo info) throws Exception {
+        if (info != null) writeFile(mDataDirectory, info.filename, info.encodedTabState);
     }
 
     private void writeFile(File directory, String filename, String data) throws Exception {

@@ -320,24 +320,18 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      * If there is an asynchronous session restore in-progress, try to synchronously restore
      * the state of a tab with the given url as a frozen tab. This method has no effect if
      * there isn't a tab being restored with this url, or the tab has already been restored.
-     *
-     * @return true if there exists a tab with the url.
      */
-    public boolean tryToRestoreTabStateForUrl(String url) {
-        if (!isSessionRestoreInProgress()) return false;
-        return mTabSaver.restoreTabStateForUrl(url);
+    public void tryToRestoreTabStateForUrl(String url) {
+        if (isSessionRestoreInProgress()) mTabSaver.restoreTabStateForUrl(url);
     }
 
     /**
      * If there is an asynchronous session restore in-progress, try to synchronously restore
      * the state of a tab with the given id as a frozen tab. This method has no effect if
      * there isn't a tab being restored with this id, or the tab has already been restored.
-     *
-     * @return true if there exists a tab with the id.
      */
-    public boolean tryToRestoreTabStateForId(int id) {
-        if (!isSessionRestoreInProgress()) return false;
-        return mTabSaver.restoreTabStateForId(id);
+    public void tryToRestoreTabStateForId(int id) {
+        if (isSessionRestoreInProgress()) mTabSaver.restoreTabStateForId(id);
     }
 
     public void clearState() {

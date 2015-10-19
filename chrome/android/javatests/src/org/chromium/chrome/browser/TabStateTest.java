@@ -33,7 +33,9 @@ public class TabStateTest extends NativeLibraryTestBase {
         super.tearDown();
     }
 
-    private void loadAndCheckTabState(TestTabModelDirectory.TabStateInfo info) {
+    private void loadAndCheckTabState(TestTabModelDirectory.TabStateInfo info) throws Exception {
+        mTestTabModelDirectory.writeTabStateFile(info);
+
         File tabStateFile = new File(mTestTabModelDirectory.getBaseDirectory(), info.filename);
         TabState tabState = TabState.restoreTabState(tabStateFile, false);
         assertNotNull(tabState);

@@ -81,8 +81,8 @@ public class DocumentMigrationHelper {
         private int mSelectedTabId = Tab.INVALID_TAB_ID;
 
         @Override
-        public void onDetailsRead(int index, int id, String url, boolean isStandardActiveIndex,
-                boolean isIncognitoActiveIndex) {
+        public void onDetailsRead(int index, int id, String url, Boolean isIncognito,
+                boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {
             TabIdManager.getInstance().incrementIdCounterTo(id + 1);
             if (!isStandardActiveIndex) return;
             // If the current tab read is the active standard tab, set the last used
