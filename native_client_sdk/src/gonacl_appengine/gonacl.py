@@ -8,6 +8,9 @@ application = webapp2.WSGIApplication([
     '_uri': 'http://developer.chrome.com/native-client'}),
   webapp2.Route('/fire', webapp2.RedirectHandler, defaults={
     '_uri': 'http://developer.chrome.com/native-client/cds2014'}),
+  webapp2.Route('/magic', webapp2.RedirectHandler, defaults={
+    '_uri':
+    'https://flagxor-html5devconf2015.storage.googleapis.com/index.html'}),
   webapp2.Route('/reportissue', webapp2.RedirectHandler, defaults={
     '_uri': 'https://code.google.com/p/nativeclient/issues/entry'}),
 ], debug=True)
