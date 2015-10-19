@@ -17296,6 +17296,47 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.FramesRequested" units="frames">
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The number of frames audio is actually rendered at if the number is
+    different from the desired number of frames.  If the desired frame size is
+    used, this value will be 0. Typically, Chrome will want to use a 10ms buffer
+    (e.g. 480 frames for a sample rate of 48kHz), but we might have to render
+    audio 256 frames at a time. This histogram gives us an indication as to how
+    frequent that is and what buffer sizes are used in practice. This value is
+    logged when an audio output stream is stopped.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.Glitches" units="glitches">
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The number of glitches that were detected at the OS level while an audio
+    stream was active. A glitch is detected if the OS has to skip rendering a
+    set of frames. This value is logged when an audio output stream is stopped.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.LargestGlitchMs" units="ms">
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The length in milliseconds of the largest glitch that was detected at the OS
+    level. This value is logged when an audio output stream that has suffered
+    glitches is stopped.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.LostFramesInMs" units="ms">
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    The combined length in milliseconds of audio glitches. This is useful to
+    know in particular for audio processing such as echo cancellation. This
+    value is logged when an audio output stream that has suffered glitches is
+    stopped.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>Bits per channel of HTML5 audio sample data.</summary>

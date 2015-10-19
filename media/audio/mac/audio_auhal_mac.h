@@ -54,6 +54,13 @@ class AudioPullFifo;
 // 6) Lastly, Close() will be called where we cleanup and notify the audio
 //    manager, which will delete the object.
 
+// TODO(tommi): Since the callback audio thread is shared for all instances of
+// AUHALStream, one stream blocking, can cause others to be delayed.  Several
+// occurrances of this can cause a buildup of delay which forces the OS
+// to skip rendering frames. One known cause of this is the synchronzation
+// between the browser and render process in AudioSyncReader.
+// We need to fix this.
+
 class AUHALStream : public AudioOutputStream {
  public:
   // |manager| creates this object.
@@ -119,6 +126,11 @@ class AUHALStream : public AudioOutputStream {
   // Gets the current playout latency value.
   double GetPlayoutLatency(const AudioTimeStamp* output_time_stamp);
 
+  void UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp);
+
+  // Called from the dtor and when the stream is reset.
+  void ReportAndResetStats();
+
   // Our creator, the audio manager needs to be notified when we close.
   AudioManagerMac* const manager_;
 
@@ -128,6 +140,11 @@ class AUHALStream : public AudioOutputStream {
 
   // Buffer-size.
   const size_t number_of_frames_;
+
+  // Stores the number of frames that we actually get callbacks for.
+  // This may be different from what we ask for, so we use this for stats in
+  // order to understand how often this happens and what are the typical values.
+  size_t number_of_frames_requested_;
 
   // Pointer to the object that will provide the audio samples.
   AudioSourceCallback* source_;
@@ -164,6 +181,20 @@ class AUHALStream : public AudioOutputStream {
 
   // Current buffer delay.  Set by Render().
   uint32 current_hardware_pending_bytes_;
+
+  // Stores the timestamp of the previous audio buffer requested by the OS.
+  // We use this in combination with |last_number_of_frames_| to detect when
+  // the OS has decided to skip rendering frames (i.e. a glitch).
+  // This can happen in case of high CPU load or excessive blocking on the
+  // callback audio thread.
+  // These variables are only touched on the callback thread and then read
+  // in the dtor (when no longer receiving callbacks).
+  // NOTE: Float64 and UInt32 types are used for native API compatibility.
+  Float64 last_sample_time_;
+  UInt32 last_number_of_frames_;
+  UInt32 total_lost_frames_;
+  UInt32 largest_glitch_frames_;
+  int glitches_detected_;
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;

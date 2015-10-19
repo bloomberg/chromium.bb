@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
@@ -37,21 +38,26 @@ static void WrapBufferList(AudioBufferList* buffer_list,
   bus->set_frames(frames);
 }
 
-AUHALStream::AUHALStream(
-    AudioManagerMac* manager,
-    const AudioParameters& params,
-    AudioDeviceID device)
+AUHALStream::AUHALStream(AudioManagerMac* manager,
+                         const AudioParameters& params,
+                         AudioDeviceID device)
     : manager_(manager),
       params_(params),
       output_channels_(params_.channels()),
       number_of_frames_(params_.frames_per_buffer()),
+      number_of_frames_requested_(0),
       source_(NULL),
       device_(device),
       audio_unit_(0),
       volume_(1),
       hardware_latency_frames_(0),
       stopped_(true),
-      current_hardware_pending_bytes_(0) {
+      current_hardware_pending_bytes_(0),
+      last_sample_time_(0.0),
+      last_number_of_frames_(0),
+      total_lost_frames_(0),
+      largest_glitch_frames_(0),
+      glitches_detected_(0) {
   // We must have a manager.
   DCHECK(manager_);
 
@@ -65,6 +71,8 @@ AUHALStream::AUHALStream(
 AUHALStream::~AUHALStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(!audio_unit_);
+
+  ReportAndResetStats();
 }
 
 bool AUHALStream::Open() {
@@ -141,6 +149,8 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     return;
   }
 
+  ReportAndResetStats();
+
   stopped_ = false;
   audio_fifo_.reset();
   {
@@ -194,11 +204,14 @@ OSStatus AUHALStream::Render(
     AudioBufferList* data) {
   TRACE_EVENT0("audio", "AUHALStream::Render");
 
+  UpdatePlayoutTimestamp(output_time_stamp);
+
   // If the stream parameters change for any reason, we need to insert a FIFO
   // since the OnMoreData() pipeline can't handle frame size changes.
   if (number_of_frames != number_of_frames_) {
     // Create a FIFO on the fly to handle any discrepancies in callback rates.
     if (!audio_fifo_) {
+      number_of_frames_requested_ = number_of_frames;
       DVLOG(1) << "Audio frame size changed from " << number_of_frames_
                << " to " << number_of_frames
                << "; adding FIFO to compensate.";
@@ -221,6 +234,8 @@ OSStatus AUHALStream::Render(
     audio_fifo_->Consume(output_bus_.get(), output_bus_->frames());
   else
     ProvideInput(0, output_bus_.get());
+
+  last_number_of_frames_ = number_of_frames;
 
   return noErr;
 }
@@ -329,6 +344,58 @@ double AUHALStream::GetPlayoutLatency(
       (1e-9 * (output_time_ns - now_ns) * output_format_.mSampleRate);
 
   return (delay_frames + hardware_latency_frames_);
+}
+
+void AUHALStream::UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp) {
+  if ((timestamp->mFlags & kAudioTimeStampSampleTimeValid) == 0)
+    return;
+
+  if (last_sample_time_) {
+    DCHECK_NE(0U, last_number_of_frames_);
+    UInt32 diff =
+        static_cast<UInt32>(timestamp->mSampleTime - last_sample_time_);
+    if (diff != last_number_of_frames_) {
+      DCHECK_GT(diff, last_number_of_frames_);
+      // We're being asked to render samples post what we expected. Update the
+      // glitch count etc and keep a record of the largest glitch.
+      auto lost_frames = diff - last_number_of_frames_;
+      total_lost_frames_ += lost_frames;
+      if (lost_frames > largest_glitch_frames_)
+        largest_glitch_frames_ = lost_frames;
+      ++glitches_detected_;
+    }
+  }
+
+  // Store the last sample time for use next time we get called back.
+  last_sample_time_ = timestamp->mSampleTime;
+}
+
+void AUHALStream::ReportAndResetStats() {
+  // A value of 0 indicates that we got the buffer size we asked for.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.Render.FramesRequested",
+                       number_of_frames_requested_);
+  // Even if there aren't any glitches, we want to record it to get a feel for
+  // how often we get no glitches vs the alternative.
+  UMA_HISTOGRAM_COUNTS("Media.Audio.Render.Glitches", glitches_detected_);
+
+  if (glitches_detected_ != 0) {
+    auto lost_frames_ms = (total_lost_frames_ * 1000) / params_.sample_rate();
+    UMA_HISTOGRAM_COUNTS("Media.Audio.Render.LostFramesInMs", lost_frames_ms);
+    auto largest_glitch_ms =
+        (largest_glitch_frames_ * 1000) / params_.sample_rate();
+    UMA_HISTOGRAM_COUNTS("Media.Audio.Render.LargestGlitchMs",
+                         largest_glitch_ms);
+    DLOG(WARNING) << "Total glitches=" << glitches_detected_
+                  << ". Total frames lost=" << total_lost_frames_ << " ("
+                  << lost_frames_ms;
+  }
+
+  number_of_frames_requested_ = 0;
+  glitches_detected_ = 0;
+  last_sample_time_ = 0;
+  last_number_of_frames_ = 0;
+  total_lost_frames_ = 0;
+  largest_glitch_frames_ = 0;
 }
 
 bool AUHALStream::SetStreamFormat(
