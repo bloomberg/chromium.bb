@@ -63,5 +63,7 @@ if (is_nacl) {
 }
 
 group("irt") {
-  data_deps = [ ":nacl_irt_copy(//build/toolchain/nacl:irt_${target_cpu})" ]
+  public_deps = [
+    ":nacl_irt_copy(//build/toolchain/nacl:irt_${target_cpu})",
+  ]
 }

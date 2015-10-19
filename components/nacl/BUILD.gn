@@ -199,6 +199,10 @@ if (enable_nacl) {
       cflags = [ "-fPIE" ]
 
       ldflags = [ "-pie" ]
+
+      data_deps = [
+        "//native_client/src/trusted/service_runtime/linux:bootstrap",
+      ]
     }
 
     source_set("nacl_linux") {

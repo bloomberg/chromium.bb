@@ -151,6 +151,11 @@ process_version("save_build_info") {
 
 # Dependencies for all Linux installer targets.
 group("installer_deps") {
+  # Though many of these things appear in data_deps further down the
+  # dependency chain, they must appear here as public_deps so that they can
+  # be listed as inputs to the actions that depend on ":installer_deps"
+  # and are guaranteed to have been built before those actions run.
+
   public_deps = [
     ":common_packaging_files",
     ":deb_packaging_files",
@@ -162,7 +167,14 @@ group("installer_deps") {
     "//third_party/adobe/flash:flapper_binaries",
   ]
   if (enable_nacl) {
-    public_deps += [ "//components/nacl:nacl_helper" ]
+    public_deps += [
+      "//components/nacl:nacl_helper",
+
+      # These are data_deps of nacl_helper, but that is not enough,
+      # as explained above.
+      "//native_client/src/trusted/service_runtime/linux:bootstrap",
+      "//ppapi/native_client:irt",
+    ]
   }
   if (current_cpu == "x86" || current_cpu == "x64") {
     public_deps += [
@@ -184,7 +196,7 @@ template("linux_package") {
   channel = invoker.channel
 
   if (current_cpu == "x86") {
-    # The shell scruipts use "ia32" instead of "x86".
+    # The shell scripts use "ia32" instead of "x86".
     build_script_arch = "ia32"
   } else {
     build_script_arch = current_cpu
@@ -199,24 +211,26 @@ template("linux_package") {
     "$root_out_dir/xdg-settings",
     "$root_out_dir/locales/en-US.pak",
 
-    #"$root_out_dir/nacl_helper",  TODO(GYP) NaCl support.
-    #"$root_out_dir/nacl_helper_bootstrap",  TODO(GYP) NaCl support.
+    "$root_out_dir/nacl_helper",
+    "$root_out_dir/nacl_helper_bootstrap",
     "$root_out_dir/PepperFlash/libpepflashplayer.so",
     "$root_out_dir/PepperFlash/manifest.json",
   ]
 
   if (current_cpu == "x86") {
     packaging_files_binaries += [
-      #"$root_out_dir/nacl_irt_x86_32.nexe",  TODO(GYP) NaCl support.
+      "$root_out_dir/nacl_irt_x86_32.nexe",
       "$root_out_dir/libwidevinecdmadapter.so",
       "$root_out_dir/libwidevinecdm.so",
     ]
   } else if (current_cpu == "x64") {
     packaging_files_binaries += [
-      #"$root_out_dir/nacl_irt_x86_64.nexe",  TODO(GYP) NaCl support.
+      "$root_out_dir/nacl_irt_x86_64.nexe",
       "$root_out_dir/libwidevinecdmadapter.so",
       "$root_out_dir/libwidevinecdm.so",
     ]
+  } else if (current_cpu == "arm") {
+    packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
   }
   if (is_asan) {
     packaging_files_binaries += [ "$root_out_dir/lib/libc++.so" ]
