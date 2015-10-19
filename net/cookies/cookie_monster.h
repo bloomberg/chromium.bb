@@ -167,6 +167,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  bool secure,
                                  bool http_only,
                                  bool first_party,
+                                 bool enforce_prefixes,
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback);
 
@@ -464,6 +465,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             bool secure,
                             bool http_only,
                             bool first_party,
+                            bool enforce_prefixes,
                             CookiePriority priority);
 
   CookieList GetAllCookies();

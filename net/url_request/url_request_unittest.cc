@@ -78,6 +78,9 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -660,6 +663,11 @@ class MockCertificateReportSender
  private:
   GURL latest_report_uri_;
   std::string latest_report_;
+};
+
+class TestExperimentalFeaturesNetworkDelegate : public TestNetworkDelegate {
+ public:
+  bool OnAreExperimentalCookieFeaturesEnabled() const override { return true; }
 };
 
 }  // namespace
@@ -2202,6 +2210,24 @@ class LocalHttpTestServer : public SpawnedTestServer {
                           base::FilePath()) {}
 };
 
+scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
+    const test_server::HttpRequest& request) {
+  scoped_ptr<test_server::BasicHttpResponse> http_response(
+      new test_server::BasicHttpResponse());
+  if (request.relative_url.find("/set-cookie?") != 0) {
+    http_response->set_code(net::HTTP_NOT_FOUND);
+    http_response->set_content("hello");
+    return http_response.Pass();
+  }
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content("hello");
+  http_response->set_content_type("text/plain");
+  http_response->AddCustomHeader(
+      "Set-Cookie",
+      request.relative_url.substr(request.relative_url.find("?") + 1));
+  return http_response.Pass();
+}
+
 }  // namespace
 
 TEST_F(URLRequestTest, DelayedCookieCallback) {
@@ -2717,6 +2743,182 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesDisabled) {
 
     EXPECT_TRUE(d.data_received().find("FirstPartyCookieToSet=1") !=
                 std::string::npos);
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+}
+
+// Tests that $Secure- cookies can't be set on non-secure origins.
+TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
+  test_server::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(base::Bind(&HandleSetCookieRequest));
+  ASSERT_TRUE(test_server.InitializeAndWaitUntilReady());
+  SpawnedTestServer test_server_https(
+      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server_https.Start());
+
+  TestExperimentalFeaturesNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  // Try to set a Secure $Secure- cookie, with experimental features
+  // enabled.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("/set-cookie?$Secure-nonsecure-origin=1;Secure"),
+        DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the cookie is not set.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server_https.GetURL("echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_TRUE(d.data_received().find("$Secure-nonsecure-origin=1") ==
+                std::string::npos);
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+}
+
+TEST_F(URLRequestTest, SecureCookiePrefixNonexperimental) {
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  // Without experimental features, there should be no restrictions on
+  // $Secure- cookies.
+
+  // Set a non-Secure cookie with the $Secure- prefix.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("set-cookie?$Secure-nonsecure-not-experimental=1"),
+        DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Set a Secure cookie with the $Secure- prefix.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL(
+            "set-cookie?$Secure-secure-not-experimental=1;Secure"),
+        DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the cookies are set. Neither should have any
+  // restrictions because the experimental flag is off.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_TRUE(d.data_received().find("$Secure-secure-not-experimental=1") !=
+                std::string::npos);
+    EXPECT_TRUE(
+        d.data_received().find("$Secure-nonsecure-not-experimental=1") !=
+        std::string::npos);
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+}
+
+TEST_F(URLRequestTest, SecureCookiePrefixExperimentalNonsecure) {
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  TestExperimentalFeaturesNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  // Try to set a non-Secure $Secure- cookie, with experimental features
+  // enabled.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("set-cookie?$Secure-foo=1"), DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the cookie is not set.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_TRUE(d.data_received().find("$Secure-foo=1") == std::string::npos);
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+}
+
+TEST_F(URLRequestTest, SecureCookiePrefixExperimentalSecure) {
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  TestExperimentalFeaturesNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  // Try to set a Secure $Secure- cookie, with experimental features
+  // enabled.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("set-cookie?$Secure-bar=1;Secure"), DEFAULT_PRIORITY,
+        &d));
+    req->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the cookie is set.
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_TRUE(d.data_received().find("$Secure-bar=1") != std::string::npos);
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
