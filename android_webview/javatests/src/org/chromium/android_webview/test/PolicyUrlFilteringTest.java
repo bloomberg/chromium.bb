@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.os.Build;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -111,6 +112,27 @@ public class PolicyUrlFilteringTest extends AwTestBase {
         assertEquals(mBarTestUrl, onPageFinishedHelper.getUrl());
         assertEquals(1, onReceivedErrorHelper.getCallCount());
         assertEquals(ErrorCodeConversionHelper.ERROR_CONNECT, onReceivedErrorHelper.getErrorCode());
+    }
+
+    // Tests that bad policy values are properly handled
+    @SmallTest
+    @Feature({"AndroidWebView", "Policy"})
+    public void testBadPolicyValue() throws Exception {
+        final Bundle newPolicies = new Bundle();
+        newPolicies.putString(sBlacklistPolicyName, "shouldBeAJsonArrayNotAString");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mTestProvider.notifySettingsAvailable(newPolicies);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
+
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        loadUrlSync(mAwContents, onPageFinishedHelper, mFooTestUrl);
+
+        // At the moment this test is written, a failure is a crash, a success is no crash.
     }
 
     private void setFilteringPolicy(final String[] blacklistUrls, final String[] whitelistUrls) {

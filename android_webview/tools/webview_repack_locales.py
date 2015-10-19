@@ -32,6 +32,8 @@ def calc_inputs(locale):
                              'content_strings_%s.pak' % locale))
   inputs.append(os.path.join(SHARE_INT_DIR, 'android_webview',
                              'aw_strings_%s.pak' % locale))
+  inputs.append(os.path.join(SHARE_INT_DIR, 'android_webview',
+                             'components_strings_%s.pak' % locale))
   return inputs
 
 def list_outputs(locales):

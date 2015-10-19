@@ -59,6 +59,17 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'generate_components_strings',
+          'variables': {
+             # components_strings contains strings from all components. WebView
+             # will never display most of them, so we try to limit the included
+             # strings
+            'grit_whitelist': 'ui/grit_components_whitelist.txt',
+            'grit_grd_file': '../components/components_strings.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'android_webview_repack_locales',
           'variables': {
             'repack_locales': 'tools/webview_repack_locales.py',
