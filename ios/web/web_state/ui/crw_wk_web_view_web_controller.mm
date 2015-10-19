@@ -249,6 +249,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Clears all activity indicator tasks for this web controller.
 - (void)clearActivityIndicatorTasks;
 
+#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+
 // Updates |security_style| and |cert_status| for the NavigationItem with ID
 // |navigationItemID|, if URL and certificate chain still match |host| and
 // |certChain|.
@@ -264,7 +266,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)scheduleSSLStatusUpdateUsingCertChain:(NSArray*)chain
                                          host:(NSString*)host;
 
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
@@ -883,6 +884,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       clearNetworkTasksForGroup:[self activityIndicatorGroupID]];
 }
 
+#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+
 - (void)updateSSLStatusForNavigationItemWithID:(int)navigationItemID
                                      certChain:(NSArray*)chain
                                           host:(NSString*)host
@@ -946,8 +949,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                         host:host
            completionHandler:SSLStatusResponse];
 }
-
-#if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 - (void)updateSSLStatusForCurrentNavigationItem {
   if ([self isBeingDestroyed])
