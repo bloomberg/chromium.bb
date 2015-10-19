@@ -2163,47 +2163,4 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(watcher.did_exit_normally());
 }
 
-// Tests that navigating cross-process and reusing an existing RenderViewHost
-// (whose process has been killed/crashed) recreates properly the RenderView and
-// RenderFrameProxy on the renderer side.
-// See https://crbug.com/544271
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       RenderViewInitAfterProcessKill) {
-  StartEmbeddedServer();
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
-
-  // Open a popup to navigate.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
-  FrameTreeNode* popup_root =
-      static_cast<WebContentsImpl*>(new_shell->web_contents())
-          ->GetFrameTree()
-          ->root();
-  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-            new_shell->web_contents()->GetSiteInstance());
-
-  // Navigate the popup to a different site.
-  EXPECT_TRUE(NavigateToURL(
-      new_shell, embedded_test_server()->GetURL("b.com", "/title2.html")));
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            new_shell->web_contents()->GetSiteInstance());
-
-  // Kill the process hosting the popup.
-  RenderProcessHost* process = popup_root->current_frame_host()->GetProcess();
-  RenderProcessHostWatcher crash_observer(
-      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(0, false);
-  crash_observer.Wait();
-  EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
-  EXPECT_FALSE(
-      popup_root->current_frame_host()->render_view_host()->IsRenderViewLive());
-
-  // Navigate the main tab to the site of the popup. This will cause the
-  // RenderView for b.com in the main tab to be recreated. If the issue
-  // is not fixed, this will result in process crash and failing test.
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
-}
-
 }  // namespace content
