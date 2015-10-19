@@ -25,8 +25,8 @@ layer at (8,64) size 48x101 clip at (9,65) size 35x99
       LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "One"
     LayoutBlockFlow {OPTION} at (1,15.19) size 35.06x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Two"
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Two"
     LayoutBlockFlow {OPTION} at (1,29.38) size 35.06x14.19
       LayoutText {#text} at (2,0) size 29x13
         text run at (2,0) width 29: "Three"
@@ -45,8 +45,8 @@ layer at (60,64) size 57x101 clip at (61,65) size 44x99
       LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "One"
     LayoutBlockFlow {OPTION} at (1,15.19) size 43.73x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Two"
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Two"
     LayoutBlockFlow {OPTION} at (1,29.38) size 43.73x14.19
       LayoutText {#text} at (2,0) size 29x13
         text run at (2,0) width 29: "Three"
@@ -69,8 +69,8 @@ layer at (121,64) size 57x101 clip at (122,65) size 44x99
       LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "One"
     LayoutBlockFlow {OPTION} at (1,15.19) size 43.73x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Two"
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Two"
     LayoutBlockFlow {OPTGROUP} at (1,29.38) size 43.73x28.38
       LayoutBlockFlow {DIV} at (0,0) size 43.73x14.19
         LayoutText {#text} at (2,0) size 40x13
@@ -93,8 +93,8 @@ layer at (182,50) size 48x115 clip at (183,51) size 35x113
       LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "One"
     LayoutBlockFlow {OPTION} at (1,15.19) size 35.06x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Two"
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Two"
     LayoutBlockFlow {OPTION} at (1,29.38) size 35.06x14.19
       LayoutText {#text} at (2,0) size 29x13
         text run at (2,0) width 29: "Three"
@@ -107,8 +107,8 @@ layer at (234,50) size 48x115 clip at (235,51) size 35x113
       LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "One"
     LayoutBlockFlow {OPTION} at (1,15.19) size 35.06x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Two"
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Two"
     LayoutBlockFlow {OPTION} at (1,29.38) size 35.06x14.19
       LayoutText {#text} at (2,0) size 29x13
         text run at (2,0) width 29: "Three"
@@ -121,8 +121,8 @@ layer at (286,50) size 54x115 clip at (287,51) size 41x113
       LayoutText {#text} at (2,0) size 21x13
         text run at (2,0) width 21: "One"
     LayoutBlockFlow {OPTION} at (1,15.19) size 40.86x14.19
-      LayoutText {#text} at (2,0) size 22x13
-        text run at (2,0) width 22: "Two"
+      LayoutText {#text} at (2,0) size 21x13
+        text run at (2,0) width 21: "Two"
     LayoutBlockFlow {OPTION} at (1,29.38) size 40.86x14.19
       LayoutText {#text} at (2,0) size 29x13
         text run at (2,0) width 29: "Three"

@@ -4,9 +4,9 @@ layer at (0,0) size 800x408
   LayoutBlockFlow {HTML} at (0,0) size 800x408
     LayoutBlockFlow {BODY} at (8,8) size 784x392
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 615x18
-          text run at (0,0) width 615: "This test verifies the visual alignment of items in a select element while changing text direction."
-        LayoutBR {BR} at (614,0) size 1x18
+        LayoutText {#text} at (0,0) size 614x18
+          text run at (0,0) width 614: "This test verifies the visual alignment of items in a select element while changing text direction."
+        LayoutBR {BR} at (613,0) size 1x18
         LayoutText {#text} at (0,18) size 438x18
           text run at (0,18) width 438: "All the items in the following select elements should be left-aligned."
       LayoutTable {TABLE} at (0,36) size 628x100
@@ -184,15 +184,15 @@ layer at (166,214) size 148x45 clip at (167,215) size 135x43
     LayoutBlockFlow {OPTION} at (1,29.38) size 134.83x14.19
       LayoutText {#text} at (53,0) size 80x13
         text run at (53,0) width 80 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
-layer at (11,283) size 160x45 clip at (23,284) size 147x43
-  LayoutListBox {SELECT} at (1,1.44) size 159.67x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (12,1) size 146.67x14.19
-      LayoutText {#text} at (19,0) size 109x13
-        text run at (19,0) width 109: "This is an English text"
-    LayoutBlockFlow {OPTION} at (12,15.19) size 146.67x14.19
-      LayoutText {#text} at (2,0) size 143x13
-        text run at (2,0) width 143: "It needs to be center aligned"
-    LayoutBlockFlow {OPTION} at (12,29.38) size 146.67x14.19
+layer at (11,283) size 159x45 clip at (23,284) size 146x43
+  LayoutListBox {SELECT} at (1,1.44) size 159.47x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (12,1) size 146.47x14.19
+      LayoutText {#text} at (18,0) size 110x13
+        text run at (18,0) width 110: "This is an English text"
+    LayoutBlockFlow {OPTION} at (12,15.19) size 146.47x14.19
+      LayoutText {#text} at (1,0) size 144x13
+        text run at (1,0) width 144: "It needs to be center aligned"
+    LayoutBlockFlow {OPTION} at (12,29.38) size 146.47x14.19
       LayoutText {#text} at (33,0) size 81x13
         text run at (33,0) width 81: "Some more text"
 layer at (175,283) size 158x45 clip at (187,284) size 145x43

@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 453x18
-        text run at (0,0) width 453: "This tests that a scrollbar will appear when text overflows the textarea "
-      LayoutBR {BR} at (452,14) size 1x0
+      LayoutText {#text} at (0,0) size 452x18
+        text run at (0,0) width 452: "This tests that a scrollbar will appear when text overflows the textarea "
+      LayoutBR {BR} at (451,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 141x84 clip at (9,27) size 124x82 scrollHeight 121
   LayoutTextControl {TEXTAREA} at (0,18) size 141x84 [bgcolor=#FFFFFF] [border: (1px solid #000000)]

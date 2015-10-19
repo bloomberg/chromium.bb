@@ -40,8 +40,8 @@ layer at (152,29) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
 layer at (283,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#640000]
-    LayoutText {#text} at (0,0) size 50x13
-      text run at (0,0) width 50: "password"
+    LayoutText {#text} at (0,0) size 49x13
+      text run at (0,0) width 49: "password"
 layer at (283,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (418,29) size 125x13

@@ -11,65 +11,65 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,72) size 784x486
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutText {#text} at (0,18) size 201x17
-          text run at (0,18) width 201: "Test 1: setSelectionRange(0, 0)"
-        LayoutBR {BR} at (200,32) size 1x0
+        LayoutText {#text} at (0,18) size 200x17
+          text run at (0,18) width 200: "Test 1: setSelectionRange(0, 0)"
+        LayoutBR {BR} at (199,32) size 1x0
         LayoutText {#text} at (0,36) size 48x17
           text run at (0,36) width 48: "Passed."
         LayoutBR {BR} at (47,50) size 1x0
         LayoutBR {BR} at (0,54) size 0x17
-        LayoutText {#text} at (0,72) size 164x17
-          text run at (0,72) width 164: "Test 2: selectionEnd = 17"
-        LayoutBR {BR} at (163,86) size 1x0
+        LayoutText {#text} at (0,72) size 163x17
+          text run at (0,72) width 163: "Test 2: selectionEnd = 17"
+        LayoutBR {BR} at (162,86) size 1x0
         LayoutText {#text} at (0,90) size 48x17
           text run at (0,90) width 48: "Passed."
         LayoutBR {BR} at (47,104) size 1x0
         LayoutBR {BR} at (0,108) size 0x17
-        LayoutText {#text} at (0,126) size 161x17
-          text run at (0,126) width 161: "Test 3: selectionStart = 1"
-        LayoutBR {BR} at (160,140) size 1x0
+        LayoutText {#text} at (0,126) size 159x17
+          text run at (0,126) width 159: "Test 3: selectionStart = 1"
+        LayoutBR {BR} at (158,140) size 1x0
         LayoutText {#text} at (0,144) size 48x17
           text run at (0,144) width 48: "Passed."
         LayoutBR {BR} at (47,158) size 1x0
         LayoutBR {BR} at (0,162) size 0x17
-        LayoutText {#text} at (0,180) size 209x17
-          text run at (0,180) width 209: "Test 4: setSelectionRange(10, 3)"
-        LayoutBR {BR} at (208,194) size 1x0
+        LayoutText {#text} at (0,180) size 208x17
+          text run at (0,180) width 208: "Test 4: setSelectionRange(10, 3)"
+        LayoutBR {BR} at (207,194) size 1x0
         LayoutText {#text} at (0,198) size 48x17
           text run at (0,198) width 48: "Passed."
         LayoutBR {BR} at (47,212) size 1x0
         LayoutBR {BR} at (0,216) size 0x17
-        LayoutText {#text} at (0,234) size 156x17
-          text run at (0,234) width 156: "Test 5: selectionEnd = 2"
-        LayoutBR {BR} at (155,248) size 1x0
+        LayoutText {#text} at (0,234) size 155x17
+          text run at (0,234) width 155: "Test 5: selectionEnd = 2"
+        LayoutBR {BR} at (154,248) size 1x0
         LayoutText {#text} at (0,252) size 48x17
           text run at (0,252) width 48: "Passed."
         LayoutBR {BR} at (47,266) size 1x0
         LayoutBR {BR} at (0,270) size 0x17
-        LayoutText {#text} at (0,288) size 201x17
-          text run at (0,288) width 201: "Test 6: setSelectionRange(5, 4)"
-        LayoutBR {BR} at (200,302) size 1x0
+        LayoutText {#text} at (0,288) size 200x17
+          text run at (0,288) width 200: "Test 6: setSelectionRange(5, 4)"
+        LayoutBR {BR} at (199,302) size 1x0
         LayoutText {#text} at (0,306) size 48x17
           text run at (0,306) width 48: "Passed."
         LayoutBR {BR} at (47,320) size 1x0
         LayoutBR {BR} at (0,324) size 0x17
-        LayoutText {#text} at (0,342) size 212x17
-          text run at (0,342) width 212: "Test 7: setSelectionRange(-5, -4)"
-        LayoutBR {BR} at (211,356) size 1x0
+        LayoutText {#text} at (0,342) size 211x17
+          text run at (0,342) width 211: "Test 7: setSelectionRange(-5, -4)"
+        LayoutBR {BR} at (210,356) size 1x0
         LayoutText {#text} at (0,360) size 48x17
           text run at (0,360) width 48: "Passed."
         LayoutBR {BR} at (47,374) size 1x0
         LayoutBR {BR} at (0,378) size 0x17
-        LayoutText {#text} at (0,396) size 215x17
-          text run at (0,396) width 215: "Test 8: setSelectionRange(-5, 80)"
-        LayoutBR {BR} at (214,410) size 1x0
+        LayoutText {#text} at (0,396) size 214x17
+          text run at (0,396) width 214: "Test 8: setSelectionRange(-5, 80)"
+        LayoutBR {BR} at (213,410) size 1x0
         LayoutText {#text} at (0,414) size 48x17
           text run at (0,414) width 48: "Passed."
         LayoutBR {BR} at (47,428) size 1x0
         LayoutBR {BR} at (0,432) size 0x17
-        LayoutText {#text} at (0,450) size 209x17
-          text run at (0,450) width 209: "Test 9: setSelectionRange(3, 12)"
-        LayoutBR {BR} at (208,464) size 1x0
+        LayoutText {#text} at (0,450) size 208x17
+          text run at (0,450) width 208: "Test 9: setSelectionRange(3, 12)"
+        LayoutBR {BR} at (207,464) size 1x0
         LayoutText {#text} at (0,468) size 48x17
           text run at (0,468) width 48: "Passed."
         LayoutBR {BR} at (47,482) size 1x0

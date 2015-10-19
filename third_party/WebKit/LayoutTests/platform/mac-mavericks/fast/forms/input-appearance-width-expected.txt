@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 353x18
-        text run at (0,0) width 353: "This tests that the new text fields use the correct width."
-      LayoutBR {BR} at (352,14) size 1x0
+      LayoutText {#text} at (0,0) size 352x18
+        text run at (0,0) width 352: "This tests that the new text fields use the correct width."
+      LayoutBR {BR} at (351,14) size 1x0
       LayoutTextControl {INPUT} at (0,18) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBR {BR} at (123,32) size 0x0
       LayoutTextControl {INPUT} at (0,37) size 200x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

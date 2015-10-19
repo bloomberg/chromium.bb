@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 765: "Results that match WinIE are two columns on the right that say \"after\" every time, except for the last row which should"
           text run at (0,18) width 196: "have nothing in either column."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 728x18
-          text run at (0,0) width 728: "Results that match Gecko are like WinIE, but with \"before\" for the attribute in the first two rows and the last row."
+        LayoutText {#text} at (0,0) size 725x18
+          text run at (0,0) width 725: "Results that match Gecko are like WinIE, but with \"before\" for the attribute in the first two rows and the last row."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {FORM} at (0,96) size 784x338
         LayoutTable {TABLE} at (0,0) size 742x338
@@ -95,7 +95,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (1,1) size 226x18
                   text run at (1,1) width 226: "image with value property changed"
               LayoutTableCell {TD} at (396,112) size 214x19 [r=5 c=1 rs=1 cs=1]
-                LayoutBlockFlow {INPUT} at (1,1) size 36.09x17
+                LayoutBlockFlow {INPUT} at (1,1) size 35.89x17
               LayoutTableCell {TD} at (612,112) size 63x20 [r=5 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 30x18
                   text run at (1,1) width 30: "after"
@@ -202,18 +202,18 @@ layer at (0,0) size 800x600
                   text run at (1,1) width 41: "before"
 layer at (408,132) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 33x13
-      text run at (0,0) width 33: "before"
+    LayoutText {#text} at (0,0) size 32x13
+      text run at (0,0) width 32: "before"
 layer at (408,155) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 38x13
       text run at (0,0) width 38: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
 layer at (405,241) size 36x17 clip at (406,242) size 34x15
-  LayoutBlockFlow {DIV} at (0,0) size 36.09x17 [border: (1px solid #C0C0C0)]
+  LayoutBlockFlow {DIV} at (0,0) size 35.89x17 [border: (1px solid #C0C0C0)]
 layer at (407,243) size 32x13
-  LayoutBlockFlow {DIV} at (2,2) size 32.09x13
-    LayoutText {#text} at (0,0) size 33x13
-      text run at (0,0) width 33: "before"
+  LayoutBlockFlow {DIV} at (2,2) size 31.89x13
+    LayoutText {#text} at (0,0) size 32x13
+      text run at (0,0) width 32: "before"
 layer at (408,289) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 23x13

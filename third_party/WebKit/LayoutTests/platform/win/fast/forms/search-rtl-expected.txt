@@ -4,17 +4,17 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 707x17
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=11916"
-          LayoutText {#text} at (359,0) size 402x17
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 398: "REGRESSION (SearchField): RTL search fields are mixed up"
-        LayoutText {#text} at (760,0) size 5x17
-          text run at (760,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 703x17
+          LayoutInline {A} at (0,0) size 304x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 304x17
+              text run at (53,0) width 304: "http://bugs.webkit.org/show_bug.cgi?id=11916"
+          LayoutText {#text} at (356,0) size 400x17
+            text run at (356,0) width 5: " "
+            text run at (360,0) width 396: "REGRESSION (SearchField): RTL search fields are mixed up"
+        LayoutText {#text} at (755,0) size 5x17
+          text run at (755,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x66
         LayoutTextControl {INPUT} at (0,0) size 175x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,3) size 169x16
@@ -36,8 +36,8 @@ layer at (0,0) size 800x600
             LayoutBlockFlow {DIV} at (18,0) size 138x16
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,116) size 784x18
-        LayoutText {#text} at (0,0) size 39x17
-          text run at (0,0) width 39: "PASS"
+        LayoutText {#text} at (0,0) size 37x17
+          text run at (0,0) width 37: "PASS"
 layer at (29,45) size 138x16 scrollX 5.00 scrollWidth 143
   LayoutBlockFlow {DIV} at (0,0) size 138x16
     LayoutText {#text} at (-5,0) size 143x16

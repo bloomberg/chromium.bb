@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 770x54
+      LayoutText {#text} at (0,0) size 767x54
         text run at (0,0) width 763: "The documents in the src attributes of the iframes below only contain comments. This test is for a bug where we would"
-        text run at (0,18) width 770: "only construct LayoutViews for such iframes. We need to propery construct an empty frame instead, so the LayoutView"
+        text run at (0,18) width 767: "only construct LayoutViews for such iframes. We need to propery construct an empty frame instead, so the LayoutView"
         text run at (0,36) width 621: "should have a LayoutBlockFlow and LayoutBlockFlow below it in the dump of the RenderTree. "
       LayoutBR {BR} at (620,50) size 1x0
       LayoutText {#text} at (0,0) size 0x0
@@ -35,5 +35,5 @@ layer at (8,94) size 788x14
                 text run at (0,0) width 505: "error on line 1 at column 15: Extra content at the end of the document"
                 text run at (504,0) width 1: " "
             LayoutBlockFlow {h3} at (18,94.16) size 685x22
-              LayoutText {#text} at (0,0) size 421x22
-                text run at (0,0) width 421: "Below is a rendering of the page up to the first error."
+              LayoutText {#text} at (0,0) size 418x22
+                text run at (0,0) width 418: "Below is a rendering of the page up to the first error."

@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (399,0) size 5x17
           text run at (399,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 411x17
-          text run at (0,0) width 411: "Click inside the right border. The caret should move after \x{201C}bar\x{201D}."
+        LayoutText {#text} at (0,0) size 410x17
+          text run at (0,0) width 410: "Click inside the right border. The caret should move after \x{201C}bar\x{201D}."
       LayoutBlockFlow (anonymous) at (0,68) size 784x18
         LayoutInline {SPAN} at (0,0) size 66x37 [border: (10px solid #0000FF)]
           LayoutText {#text} at (0,0) size 0x0

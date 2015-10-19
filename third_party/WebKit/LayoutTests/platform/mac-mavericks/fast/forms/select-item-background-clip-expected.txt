@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 784x36
-          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x18
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12364"
-          LayoutText {#text} at (359,0) size 784x36
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 421: "REGRESSSION (NativeListBox): Selected option's background is"
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 782x36
+          LayoutInline {A} at (0,0) size 305x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x18
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=12364"
+          LayoutText {#text} at (357,0) size 782x36
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 421: "REGRESSSION (NativeListBox): Selected option's background is"
             text run at (0,18) width 163: "not clipped to the list box"
         LayoutText {#text} at (162,18) size 5x18
           text run at (162,18) width 5: "."

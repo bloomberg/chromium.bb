@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 60: "Line One"
       LayoutBlockFlow (anonymous) at (0,34) size 784x18
         LayoutBlockFlow {P} at (0,0) size 784x18
-          LayoutText {#text} at (0,0) size 61x18
-            text run at (0,0) width 61: "Line Two"
+          LayoutText {#text} at (0,0) size 59x18
+            text run at (0,0) width 59: "Line Two"
       LayoutBlockFlow (anonymous) at (0,68) size 784x18
         LayoutInline {I} at (0,0) size 33x18
           LayoutText {#text} at (0,0) size 33x18

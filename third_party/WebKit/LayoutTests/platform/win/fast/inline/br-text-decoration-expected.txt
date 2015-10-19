@@ -4,21 +4,21 @@ layer at (0,0) size 800x102
   LayoutBlockFlow {HTML} at (0,0) size 800x102
     LayoutBlockFlow {BODY} at (8,16) size 784x70
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutInline {SPAN} at (0,0) size 477x35
+        LayoutInline {SPAN} at (0,0) size 476x35
           LayoutBR {BR} at (0,0) size 0x17
-          LayoutText {#text} at (0,18) size 477x17
-            text run at (0,18) width 477: "There shouldn\x{2019}t be a black dot or line above the first letter of this sentence"
-        LayoutText {#text} at (476,18) size 5x17
-          text run at (476,18) width 5: "."
+          LayoutText {#text} at (0,18) size 476x17
+            text run at (0,18) width 476: "There shouldn\x{2019}t be a black dot or line above the first letter of this sentence"
+        LayoutText {#text} at (475,18) size 5x17
+          text run at (475,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 661x17
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=14245"
-          LayoutText {#text} at (359,0) size 356x17
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 352: "Underline painted under <br>, not repainted properly"
-        LayoutText {#text} at (714,0) size 5x17
-          text run at (714,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 659x17
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x17
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=14245"
+          LayoutText {#text} at (357,0) size 355x17
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 351: "Underline painted under <br>, not repainted properly"
+        LayoutText {#text} at (711,0) size 5x17
+          text run at (711,0) width 5: "."

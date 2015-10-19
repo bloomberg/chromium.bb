@@ -41,13 +41,13 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 182x19
           text run at (0,0) width 182: "This text is before the anchor. "
         LayoutInline {A} at (0,0) size 0x0
-        LayoutText {#text} at (182,0) size 743x39
-          text run at (182,0) width 386: "This text is after the anchor, but should be flush with the anchor. "
-          text run at (568,0) width 175: "There should be no spaces in"
+        LayoutText {#text} at (181,0) size 741x39
+          text run at (181,0) width 385: "This text is after the anchor, but should be flush with the anchor. "
+          text run at (565,0) width 176: "There should be no spaces in"
           text run at (0,20) width 256: "between the anchor and this following text."
       LayoutBlockFlow {P} at (0,272) size 784x20
         LayoutInline {A} at (0,0) size 685x19
           LayoutText {#text} at (0,0) size 685x19
             text run at (0,0) width 685: "This text should be flush with the anchor. There should not be a space between the anchor and the text on this line."
-        LayoutInline {A} at (0,0) size 0x19
+        LayoutInline {A} at (0,0) size 1x19
           LayoutText {#text} at (0,0) size 0x0

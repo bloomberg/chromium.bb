@@ -4,8 +4,8 @@ layer at (0,0) size 800x139
   LayoutBlockFlow {HTML} at (0,0) size 800x139
     LayoutBlockFlow {BODY} at (8,16) size 784x115
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 254x19
-          text run at (0,0) width 254: "Editable text should be centered vertically."
+        LayoutText {#text} at (0,0) size 253x19
+          text run at (0,0) width 253: "Editable text should be centered vertically."
       LayoutBlockFlow {DIV} at (0,36) size 784x23
         LayoutTextControl {INPUT} at (0,0) size 369x22 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,59) size 784x28

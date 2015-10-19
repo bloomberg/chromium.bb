@@ -4,9 +4,9 @@ layer at (0,0) size 800x546
   LayoutBlockFlow {HTML} at (0,0) size 800x546
     LayoutBlockFlow {BODY} at (8,16) size 784x522
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 423x18
-          text run at (0,0) width 332: "The top table was resized while the field\x{2019}s contents "
-          text run at (331,0) width 92: "were selected."
+        LayoutText {#text} at (0,0) size 421x18
+          text run at (0,0) width 331: "The top table was resized while the field\x{2019}s contents "
+          text run at (330,0) width 91: "were selected."
       LayoutTable {TABLE} at (0,34) size 175x244
         LayoutTableSection {TBODY} at (0,0) size 175x244
           LayoutTableRow {TR} at (0,2) size 175x240

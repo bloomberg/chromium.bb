@@ -36,5 +36,5 @@ layer at (8,8) size 56x138 clip at (9,9) size 39x121 scrollHeight 170
       LayoutText {#text} at (2,0) size 26x16
         text run at (2,0) width 26: "Nine"
     LayoutBlockFlow {OPTION} at (1,154) size 39x17
-      LayoutText {#text} at (2,0) size 21x16
-        text run at (2,0) width 21: "Ten"
+      LayoutText {#text} at (2,0) size 20x16
+        text run at (2,0) width 20: "Ten"

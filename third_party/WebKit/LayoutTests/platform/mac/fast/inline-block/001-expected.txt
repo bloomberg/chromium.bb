@@ -15,9 +15,9 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,54) size 337x18
         text run at (0,54) width 337: "The text in the red boxes should be on the same line."
       LayoutBR {BR} at (336,68) size 1x0
-      LayoutText {#text} at (0,72) size 647x18
-        text run at (0,72) width 647: "The top of the first red box should line up with the bottom of the second last line of the last blue box."
-      LayoutBR {BR} at (646,86) size 1x0
+      LayoutText {#text} at (0,72) size 646x18
+        text run at (0,72) width 646: "The top of the first red box should line up with the bottom of the second last line of the last blue box."
+      LayoutBR {BR} at (645,86) size 1x0
       LayoutBlockFlow {P} at (0,90) size 68x76 [border: (2px solid #0000FF)]
         LayoutText {#text} at (2,2) size 64x18
           text run at (2,2) width 64: "All on the"

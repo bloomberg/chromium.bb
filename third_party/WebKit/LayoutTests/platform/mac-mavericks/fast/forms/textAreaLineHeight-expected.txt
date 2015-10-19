@@ -4,19 +4,19 @@ layer at (0,0) size 785x1199 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1199.33
     LayoutBlockFlow {BODY} at (8,8) size 769x1175.33
       LayoutBlockFlow (anonymous) at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 278x18
-          text run at (0,0) width 278: "line-height settings not reflected in textarea"
-        LayoutBR {BR} at (277,0) size 1x18
+        LayoutText {#text} at (0,0) size 277x18
+          text run at (0,0) width 277: "line-height settings not reflected in textarea"
+        LayoutBR {BR} at (276,0) size 1x18
       LayoutBlockFlow {P} at (0,34) size 769x264
-        LayoutText {#text} at (0,0) size 85x18
-          text run at (0,0) width 85: "TEXTAREA"
-        LayoutBR {BR} at (84,0) size 1x18
+        LayoutText {#text} at (0,0) size 84x18
+          text run at (0,0) width 84: "TEXTAREA"
+        LayoutBR {BR} at (83,0) size 1x18
         LayoutText {#text} at (406,210) size 4x18
           text run at (406,210) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBR {BR} at (0,228) size 0x18
-        LayoutText {#text} at (0,246) size 150x18
-          text run at (0,246) width 150: "PARAGRAPH - works"
+        LayoutText {#text} at (0,246) size 148x18
+          text run at (0,246) width 148: "PARAGRAPH - works"
       LayoutBlockFlow {P} at (0,314) size 402x202 [border: (1px dotted #C0C0C0)]
         LayoutText {#text} at (1,19) size 384x69
           text run at (1,19) width 384: "Demo text here that wraps a bit and should demonstrate"
@@ -33,23 +33,23 @@ layer at (0,0) size 785x1199 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,767.33) size 769x408
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
-        LayoutText {#text} at (0,36) size 126x18
-          text run at (0,36) width 126: "Un-Styled Textarea"
-        LayoutBR {BR} at (125,36) size 1x18
+        LayoutText {#text} at (0,36) size 125x18
+          text run at (0,36) width 125: "Un-Styled Textarea"
+        LayoutBR {BR} at (124,36) size 1x18
         LayoutText {#text} at (161,72) size 4x18
           text run at (161,72) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBR {BR} at (0,90) size 0x18
-        LayoutText {#text} at (0,108) size 219x18
-          text run at (0,108) width 219: "Totally Blank Un-Styled Textarea"
-        LayoutBR {BR} at (218,108) size 1x18
+        LayoutText {#text} at (0,108) size 216x18
+          text run at (0,108) width 216: "Totally Blank Un-Styled Textarea"
+        LayoutBR {BR} at (215,108) size 1x18
         LayoutText {#text} at (161,144) size 4x18
           text run at (161,144) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBR {BR} at (0,162) size 0x18
-        LayoutText {#text} at (0,180) size 214x18
-          text run at (0,180) width 214: "Totally Blank STYLED Textarea"
-        LayoutBR {BR} at (213,180) size 1x18
+        LayoutText {#text} at (0,180) size 212x18
+          text run at (0,180) width 212: "Totally Blank STYLED Textarea"
+        LayoutBR {BR} at (211,180) size 1x18
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1191.33) size 769x0
 layer at (8,60) size 406x206 clip at (9,61) size 404x204

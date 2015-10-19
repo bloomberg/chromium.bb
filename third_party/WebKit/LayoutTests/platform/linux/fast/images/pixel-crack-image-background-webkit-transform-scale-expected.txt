@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 697x19
-          text run at (0,0) width 411: "Test pixel cracks when background sprite is transformed with scale. "
-          text run at (411,0) width 286: "Need to run pixel test to verify if it is successful."
+        LayoutText {#text} at (0,0) size 696x19
+          text run at (0,0) width 410: "Test pixel cracks when background sprite is transformed with scale. "
+          text run at (409,0) width 287: "Need to run pixel test to verify if it is successful."
 layer at (12,72) size 16x16
   LayoutBlockFlow (positioned) {DIV} at (12,72) size 16x16
 layer at (24,72) size 16x16

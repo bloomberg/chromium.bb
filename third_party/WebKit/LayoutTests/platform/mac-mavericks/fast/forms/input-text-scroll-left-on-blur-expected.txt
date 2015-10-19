@@ -13,8 +13,8 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (254,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,35) size 784x36
-        LayoutText {#text} at (0,0) size 768x36
-          text run at (0,0) width 768: "Tests scrolling back to the beginning when a text field blurs. The first field should be scrolled to the left, the second and"
+        LayoutText {#text} at (0,0) size 765x36
+          text run at (0,0) width 765: "Tests scrolling back to the beginning when a text field blurs. The first field should be scrolled to the left, the second and"
           text run at (0,18) width 164: "third scrolled to the right."
 layer at (11,11) size 117x13 scrollWidth 316
   LayoutBlockFlow {DIV} at (3,3) size 117x13

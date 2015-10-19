@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 775x35
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 354x17
-              text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9193"
-          LayoutText {#text} at (407,0) size 775x35
-            text run at (407,0) width 5: " "
-            text run at (411,0) width 364: "REGRESSION: setting an opacity on an element with an"
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 773x35
+          LayoutInline {A} at (0,0) size 353x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 353x17
+              text run at (53,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9193"
+          LayoutText {#text} at (405,0) size 773x35
+            text run at (405,0) width 5: " "
+            text run at (409,0) width 364: "REGRESSION: setting an opacity on an element with an"
             text run at (0,18) width 321: "outline causes the outline to disappear completely"
         LayoutText {#text} at (320,18) size 5x17
           text run at (320,18) width 5: "."

@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 120x17
           text run at (0,0) width 120: "Rendering test for "
-        LayoutInline {I} at (0,0) size 776x35
+        LayoutInline {I} at (0,0) size 775x35
           LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
             LayoutText {#text} at (119,0) size 306x17
               text run at (119,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=15156"
-          LayoutText {#text} at (424,0) size 776x35
+          LayoutText {#text} at (424,0) size 775x35
             text run at (424,0) width 5: " "
-            text run at (428,0) width 348: "REGRESSION (r24594-r24668): The bottom of styled"
+            text run at (428,0) width 347: "REGRESSION (r24594-r24668): The bottom of styled"
             text run at (0,18) width 221: "<select> button text is clipped out"
         LayoutText {#text} at (220,18) size 5x17
           text run at (220,18) width 5: "."

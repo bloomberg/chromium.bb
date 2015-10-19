@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 775x35
-          text run at (0,0) width 434: "Test that search field text is vertically centered if the search field is "
-          text run at (433,0) width 342: "taller than the text. In each of the following pairs of a"
+        LayoutText {#text} at (0,0) size 774x35
+          text run at (0,0) width 433: "Test that search field text is vertically centered if the search field is "
+          text run at (432,0) width 342: "taller than the text. In each of the following pairs of a"
           text run at (0,18) width 106: "search field and "
           text run at (105,18) width 366: "a text field, the vertical position of the text should be the "
           text run at (470,18) width 127: "same in both fields."
@@ -39,28 +39,28 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
 layer at (29,75) size 138x16
   LayoutBlockFlow {DIV} at (0,0) size 138x16
-    LayoutText {#text} at (0,0) size 25x16
-      text run at (0,0) width 25: "Text"
+    LayoutText {#text} at (0,0) size 24x16
+      text run at (0,0) width 24: "Text"
 layer at (189,75) size 169x16
   LayoutBlockFlow {DIV} at (2,14.50) size 169x16
-    LayoutText {#text} at (0,0) size 25x16
-      text run at (0,0) width 25: "Text"
+    LayoutText {#text} at (0,0) size 24x16
+      text run at (0,0) width 24: "Text"
 layer at (29,122) size 138x16
   LayoutBlockFlow {DIV} at (0,0) size 138x16
-    LayoutText {#text} at (0,0) size 25x16
-      text run at (0,0) width 25: "Text"
+    LayoutText {#text} at (0,0) size 24x16
+      text run at (0,0) width 24: "Text"
 layer at (189,122) size 169x16
   LayoutBlockFlow {DIV} at (2,0) size 169x16
-    LayoutText {#text} at (0,0) size 25x16
-      text run at (0,0) width 25: "Text"
+    LayoutText {#text} at (0,0) size 24x16
+      text run at (0,0) width 24: "Text"
 layer at (29,158) size 138x6 scrollHeight 16
   LayoutBlockFlow {DIV} at (0,0) size 138x6
-    LayoutText {#text} at (0,0) size 25x16
-      text run at (0,0) width 25: "Text"
+    LayoutText {#text} at (0,0) size 24x16
+      text run at (0,0) width 24: "Text"
 layer at (189,158) size 169x6 scrollHeight 16
   LayoutBlockFlow {DIV} at (2,3) size 169x6
-    LayoutText {#text} at (0,0) size 25x16
-      text run at (0,0) width 25: "Text"
+    LayoutText {#text} at (0,0) size 24x16
+      text run at (0,0) width 24: "Text"
 layer at (168,78) size 9x9 transparent
   LayoutBlockFlow {DIV} at (157,15) size 9x9
 layer at (168,126) size 9x9 transparent

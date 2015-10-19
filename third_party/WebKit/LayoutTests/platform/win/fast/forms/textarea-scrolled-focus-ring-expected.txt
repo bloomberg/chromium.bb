@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x76
   LayoutBlockFlow {HTML} at (0,0) size 800x76
     LayoutBlockFlow {BODY} at (8,8) size 784x60
-      LayoutText {#text} at (0,0) size 579x17
-        text run at (0,0) width 579: "Test passes if a focus ring is visible around text area when focused and scrolled to bottom."
-      LayoutBR {BR} at (578,0) size 1x17
+      LayoutText {#text} at (0,0) size 577x17
+        text run at (0,0) width 577: "Test passes if a focus ring is visible around text area when focused and scrolled to bottom."
+      LayoutBR {BR} at (576,0) size 1x17
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 181x38 clip at (9,27) size 164x36 scrollY 48.00 scrollHeight 84
   LayoutTextControl {TEXTAREA} at (0,18) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]

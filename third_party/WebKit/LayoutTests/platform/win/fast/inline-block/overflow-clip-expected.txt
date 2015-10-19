@@ -6,18 +6,18 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 108x17
           text run at (0,0) width 108: "This is a test for "
-        LayoutInline {I} at (0,0) size 766x35
-          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
-            LayoutText {#text} at (107,0) size 354x17
-              text run at (107,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8118"
-          LayoutText {#text} at (460,0) size 766x35
-            text run at (460,0) width 306: " REGRESSION (r13595): Inline block's clipped"
-            text run at (0,18) width 230: "overflow increases table row height"
-        LayoutText {#text} at (229,18) size 5x17
-          text run at (229,18) width 5: "."
+        LayoutInline {I} at (0,0) size 764x35
+          LayoutInline {A} at (0,0) size 352x17 [color=#0000EE]
+            LayoutText {#text} at (107,0) size 352x17
+              text run at (107,0) width 352: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8118"
+          LayoutText {#text} at (458,0) size 764x35
+            text run at (458,0) width 306: " REGRESSION (r13595): Inline block's clipped"
+            text run at (0,18) width 229: "overflow increases table row height"
+        LayoutText {#text} at (228,18) size 5x17
+          text run at (228,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 271x17
-          text run at (0,0) width 271: "You should see a green square and no red."
+        LayoutText {#text} at (0,0) size 269x17
+          text run at (0,0) width 269: "You should see a green square and no red."
       LayoutTable {TABLE} at (0,86) size 100x100 [bgcolor=#FF0000]
         LayoutTableSection {TBODY} at (0,0) size 100x100
           LayoutTableRow {TR} at (0,0) size 100x100

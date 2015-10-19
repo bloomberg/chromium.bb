@@ -10,12 +10,12 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 62x21
             text run at (0,0) width 62: "Results:"
           LayoutBR {BR} at (61,17) size 1x0
-          LayoutText {#text} at (0,22) size 105x21
-            text run at (0,22) width 105: "Test 1 Passed"
-          LayoutBR {BR} at (104,39) size 1x0
-          LayoutText {#text} at (0,44) size 101x21
-            text run at (0,44) width 101: "Test 2 Failed"
-          LayoutBR {BR} at (100,61) size 1x0
+          LayoutText {#text} at (0,22) size 104x21
+            text run at (0,22) width 104: "Test 1 Passed"
+          LayoutBR {BR} at (103,39) size 1x0
+          LayoutText {#text} at (0,44) size 99x21
+            text run at (0,44) width 99: "Test 2 Failed"
+          LayoutBR {BR} at (98,61) size 1x0
         LayoutBlockFlow {PRE} at (0,81.59) size 780.81x36
           LayoutText {#text} at (0,0) size 1150x18
             text run at (0,0) width 1150: "     Expected: false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false"

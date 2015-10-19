@@ -16,11 +16,11 @@ layer at (0,0) size 800x368
           LayoutInline {CODE} at (0,0) size 87x15
             LayoutText {#text} at (166,20) size 87x15
               text run at (166,20) width 87: "float: left"
-          LayoutText {#text} at (252,18) size 33x18
-            text run at (252,18) width 33: " div. "
-          LayoutInline {A} at (0,0) size 421x36 [color=#0000EE]
-            LayoutText {#text} at (284,18) size 421x36
-              text run at (284,18) width 137: "Screenshot of correct"
+          LayoutText {#text} at (252,18) size 32x18
+            text run at (252,18) width 32: " div. "
+          LayoutInline {A} at (0,0) size 420x36 [color=#0000EE]
+            LayoutText {#text} at (283,18) size 420x36
+              text run at (283,18) width 137: "Screenshot of correct"
               text run at (0,36) width 56: "behavior"
           LayoutText {#text} at (55,36) size 10x18
             text run at (55,36) width 10: "; "
@@ -32,17 +32,17 @@ layer at (0,0) size 800x368
         LayoutBlockFlow {P} at (0,86) size 470.39x36
           LayoutText {#text} at (0,0) size 455x18
             text run at (0,0) width 455: "This bug only occurs on pages with a standards-compliant DOCTYPE."
-          LayoutInline {A} at (0,0) size 262x18 [color=#0000EE]
-            LayoutText {#text} at (0,18) size 262x18
-              text run at (0,18) width 262: "View this test case without a DOCTYPE"
-          LayoutText {#text} at (261,18) size 5x18
-            text run at (261,18) width 5: "."
+          LayoutInline {A} at (0,0) size 261x18 [color=#0000EE]
+            LayoutText {#text} at (0,18) size 261x18
+              text run at (0,18) width 261: "View this test case without a DOCTYPE"
+          LayoutText {#text} at (260,18) size 5x18
+            text run at (260,18) width 5: "."
         LayoutBlockFlow {OL} at (0,138) size 470.39x198
           LayoutListItem {LI} at (40,0) size 430.39x36
             LayoutListMarker (anonymous) at (-16,0) size 16x18: "1"
             LayoutText {#text} at (0,0) size 406x36
-              text run at (0,0) width 160: "New larger PowerBook. "
-              text run at (159,0) width 247: "Still 1 GHz, but with a 17-inch screen."
+              text run at (0,0) width 159: "New larger PowerBook. "
+              text run at (158,0) width 248: "Still 1 GHz, but with a 17-inch screen."
               text run at (0,18) width 44: "$3299."
           LayoutListItem {LI} at (40,36) size 430.39x18
             LayoutListMarker (anonymous) at (-16,0) size 16x18: "2"
@@ -64,11 +64,11 @@ layer at (0,0) size 800x368
                 text run at (204,0) width 78: "open source"
             LayoutText {#text} at (281,0) size 21x18
               text run at (281,0) width 21: " (a "
-            LayoutInline {A} at (0,0) size 110x18 [color=#0000EE]
-              LayoutText {#text} at (301,0) size 110x18
-                text run at (301,0) width 110: "modified version"
-            LayoutText {#text} at (410,0) size 18x18
-              text run at (410,0) width 18: " of"
+            LayoutInline {A} at (0,0) size 109x18 [color=#0000EE]
+              LayoutText {#text} at (301,0) size 109x18
+                text run at (301,0) width 109: "modified version"
+            LayoutText {#text} at (409,0) size 18x18
+              text run at (409,0) width 18: " of"
             LayoutInline {A} at (0,0) size 57x18 [color=#0000EE]
               LayoutText {#text} at (0,18) size 57x18
                 text run at (0,18) width 57: "KHTML"
@@ -97,12 +97,12 @@ layer at (0,0) size 800x368
                 text run at (163,0) width 42: "iPhoto"
             LayoutText {#text} at (204,0) size 9x18
               text run at (204,0) width 9: ", "
-            LayoutInline {A} at (0,0) size 45x18 [color=#0000EE]
-              LayoutText {#text} at (212,0) size 45x18
-                text run at (212,0) width 45: "iTunes"
-            LayoutText {#text} at (256,0) size 173x18
-              text run at (256,0) width 9: ". "
-              text run at (264,0) width 165: "Bundled into a box called"
+            LayoutInline {A} at (0,0) size 44x18 [color=#0000EE]
+              LayoutText {#text} at (212,0) size 44x18
+                text run at (212,0) width 44: "iTunes"
+            LayoutText {#text} at (255,0) size 174x18
+              text run at (255,0) width 9: ". "
+              text run at (263,0) width 166: "Bundled into a box called"
             LayoutInline {A} at (0,0) size 32x18 [color=#0000EE]
               LayoutText {#text} at (0,18) size 32x18
                 text run at (0,18) width 32: "iLife"
@@ -174,9 +174,9 @@ layer at (0,0) size 800x368
         LayoutBlockFlow {UL} at (0,194) size 784x108
           LayoutListItem {LI} at (40,0) size 744x18
             LayoutListMarker (anonymous) at (413.39,0) size 7x18: bullet
-            LayoutInline {A} at (0,0) size 93x18 [color=#0000EE]
-              LayoutText {#text} at (651,0) size 93x18
-                text run at (651,0) width 93: "RSS Validator"
+            LayoutInline {A} at (0,0) size 92x18 [color=#0000EE]
+              LayoutText {#text} at (652,0) size 92x18
+                text run at (652,0) width 92: "RSS Validator"
           LayoutListItem {LI} at (40,18) size 744x18
             LayoutListMarker (anonymous) at (413.39,0) size 7x18: bullet
             LayoutInline {A} at (0,0) size 149x18 [color=#0000EE]

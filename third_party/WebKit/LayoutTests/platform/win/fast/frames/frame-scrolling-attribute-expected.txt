@@ -12,7 +12,7 @@ layer at (0,0) size 195x145
         LayoutBlockFlow {BODY} at (8,8) size 164x488
           LayoutBlockFlow {P} at (0,0) size 164x72
             LayoutText {#text} at (0,0) size 139x71
-              text run at (0,0) width 114: "This page is large"
+              text run at (0,0) width 113: "This page is large"
               text run at (0,18) width 134: "enough to need to be"
               text run at (0,36) width 139: "scrolled in a 200x200"
               text run at (0,54) width 42: "frame."
@@ -26,7 +26,7 @@ layer at (201,0) size 195x145
         LayoutBlockFlow {BODY} at (8,8) size 164x488
           LayoutBlockFlow {P} at (0,0) size 164x72
             LayoutText {#text} at (0,0) size 139x71
-              text run at (0,0) width 114: "This page is large"
+              text run at (0,0) width 113: "This page is large"
               text run at (0,18) width 134: "enough to need to be"
               text run at (0,36) width 139: "scrolled in a 200x200"
               text run at (0,54) width 42: "frame."
@@ -40,7 +40,7 @@ layer at (402,0) size 195x145
         LayoutBlockFlow {BODY} at (8,8) size 164x488
           LayoutBlockFlow {P} at (0,0) size 164x72
             LayoutText {#text} at (0,0) size 139x71
-              text run at (0,0) width 114: "This page is large"
+              text run at (0,0) width 113: "This page is large"
               text run at (0,18) width 134: "enough to need to be"
               text run at (0,36) width 139: "scrolled in a 200x200"
               text run at (0,54) width 42: "frame."
@@ -67,7 +67,7 @@ layer at (0,151) size 195x145
         LayoutBlockFlow {BODY} at (8,8) size 164x488
           LayoutBlockFlow {P} at (0,0) size 164x72
             LayoutText {#text} at (0,0) size 139x71
-              text run at (0,0) width 114: "This page is large"
+              text run at (0,0) width 113: "This page is large"
               text run at (0,18) width 134: "enough to need to be"
               text run at (0,36) width 139: "scrolled in a 200x200"
               text run at (0,54) width 42: "frame."
@@ -94,7 +94,7 @@ layer at (402,151) size 195x145
         LayoutBlockFlow {BODY} at (8,8) size 164x488
           LayoutBlockFlow {P} at (0,0) size 164x72
             LayoutText {#text} at (0,0) size 139x71
-              text run at (0,0) width 114: "This page is large"
+              text run at (0,0) width 113: "This page is large"
               text run at (0,18) width 134: "enough to need to be"
               text run at (0,36) width 139: "scrolled in a 200x200"
               text run at (0,54) width 42: "frame."

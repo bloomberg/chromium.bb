@@ -4,26 +4,26 @@ layer at (0,0) size 800x139
   LayoutBlockFlow {HTML} at (0,0) size 800x139
     LayoutBlockFlow {BODY} at (8,8) size 784x123
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutInline {SPAN} at (0,0) size 644x17
-          LayoutText {#text} at (0,0) size 644x17
-            text run at (0,0) width 644: "Test for crbug.com/335285: On OS Mac, Options of a multiple select are shifted right in RTL mode."
+        LayoutInline {SPAN} at (0,0) size 642x17
+          LayoutText {#text} at (0,0) size 642x17
+            text run at (0,0) width 642: "Test for crbug.com/335285: On OS Mac, Options of a multiple select are shifted right in RTL mode."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,18) size 784x105
         LayoutText {#text} at (0,0) size 0x0
 layer at (592,26) size 200x104 clip at (608,27) size 183x102
   LayoutListBox {SELECT} at (584,0) size 200x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (16,1) size 183x17
-      LayoutText {#text} at (145,0) size 36x16
-        text run at (145,0) width 36: "Test 1"
+      LayoutText {#text} at (146,0) size 35x16
+        text run at (146,0) width 35: "Test 1"
     LayoutBlockFlow {OPTION} at (16,18) size 183x17
-      LayoutText {#text} at (145,0) size 36x16
-        text run at (145,0) width 36: "Test 2"
+      LayoutText {#text} at (146,0) size 35x16
+        text run at (146,0) width 35: "Test 2"
     LayoutBlockFlow {OPTION} at (16,35) size 183x17
-      LayoutText {#text} at (145,0) size 36x16
-        text run at (145,0) width 36: "Test 3"
+      LayoutText {#text} at (146,0) size 35x16
+        text run at (146,0) width 35: "Test 3"
     LayoutBlockFlow {OPTION} at (16,52) size 183x17
-      LayoutText {#text} at (145,0) size 36x16
-        text run at (145,0) width 36: "Test 4"
+      LayoutText {#text} at (146,0) size 35x16
+        text run at (146,0) width 35: "Test 4"
     LayoutBlockFlow {OPTION} at (16,69) size 183x17
-      LayoutText {#text} at (145,0) size 36x16
-        text run at (145,0) width 36: "Test 5"
+      LayoutText {#text} at (146,0) size 35x16
+        text run at (146,0) width 35: "Test 5"

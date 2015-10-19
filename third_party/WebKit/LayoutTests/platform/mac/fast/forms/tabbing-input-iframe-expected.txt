@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 455x18
-        text run at (0,0) width 455: "This tests that you can tab out of a text field if an iframe comes after it."
-      LayoutBR {BR} at (454,14) size 1x0
+      LayoutText {#text} at (0,0) size 454x18
+        text run at (0,0) width 454: "This tests that you can tab out of a text field if an iframe comes after it."
+      LayoutBR {BR} at (453,14) size 1x0
       LayoutTextControl {INPUT} at (0,156) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (131,156) size 4x18
         text run at (131,156) width 4: " "

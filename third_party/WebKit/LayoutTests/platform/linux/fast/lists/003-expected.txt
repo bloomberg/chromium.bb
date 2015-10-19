@@ -16,11 +16,11 @@ layer at (0,0) size 800x380
           LayoutInline {CODE} at (0,0) size 88x16
             LayoutText {#text} at (164,23) size 88x16
               text run at (164,23) width 88: "float: left"
-          LayoutText {#text} at (252,20) size 30x19
-            text run at (252,20) width 30: " div. "
-          LayoutInline {A} at (0,0) size 412x39 [color=#0000EE]
-            LayoutText {#text} at (282,20) size 412x39
-              text run at (282,20) width 130: "Screenshot of correct"
+          LayoutText {#text} at (252,20) size 29x19
+            text run at (252,20) width 29: " div. "
+          LayoutInline {A} at (0,0) size 411x39 [color=#0000EE]
+            LayoutText {#text} at (280,20) size 411x39
+              text run at (280,20) width 131: "Screenshot of correct"
               text run at (0,40) width 52: "behavior"
           LayoutText {#text} at (52,40) size 8x19
             text run at (52,40) width 8: "; "
@@ -43,7 +43,7 @@ layer at (0,0) size 800x380
             LayoutListMarker (anonymous) at (-16,0) size 16x19: "1"
             LayoutText {#text} at (0,0) size 384x39
               text run at (0,0) width 154: "New larger PowerBook. "
-              text run at (154,0) width 230: "Still 1 GHz, but with a 17-inch screen."
+              text run at (153,0) width 231: "Still 1 GHz, but with a 17-inch screen."
               text run at (0,20) width 44: "$3299."
           LayoutListItem {LI} at (40,40) size 430.39x20
             LayoutListMarker (anonymous) at (-16,0) size 16x19: "2"
@@ -100,9 +100,9 @@ layer at (0,0) size 800x380
             LayoutInline {A} at (0,0) size 39x19 [color=#0000EE]
               LayoutText {#text} at (200,0) size 39x19
                 text run at (200,0) width 39: "iTunes"
-            LayoutText {#text} at (239,0) size 161x19
-              text run at (239,0) width 8: ". "
-              text run at (247,0) width 153: "Bundled into a box called"
+            LayoutText {#text} at (238,0) size 162x19
+              text run at (238,0) width 9: ". "
+              text run at (246,0) width 154: "Bundled into a box called"
             LayoutInline {A} at (0,0) size 26x19 [color=#0000EE]
               LayoutText {#text} at (0,20) size 26x19
                 text run at (0,20) width 26: "iLife"
@@ -174,9 +174,9 @@ layer at (0,0) size 800x380
         LayoutBlockFlow {UL} at (0,212) size 784x120
           LayoutListItem {LI} at (40,0) size 744x20
             LayoutListMarker (anonymous) at (412.39,0) size 7x19: bullet
-            LayoutInline {A} at (0,0) size 88x19 [color=#0000EE]
-              LayoutText {#text} at (656,0) size 88x19
-                text run at (656,0) width 88: "RSS Validator"
+            LayoutInline {A} at (0,0) size 87x19 [color=#0000EE]
+              LayoutText {#text} at (657,0) size 87x19
+                text run at (657,0) width 87: "RSS Validator"
           LayoutListItem {LI} at (40,20) size 744x20
             LayoutListMarker (anonymous) at (412.39,0) size 7x19: bullet
             LayoutInline {A} at (0,0) size 135x19 [color=#0000EE]

@@ -4,8 +4,8 @@ layer at (0,0) size 800x592
   LayoutBlockFlow {HTML} at (0,0) size 800x591.59
     LayoutBlockFlow {BODY} at (8,21.44) size 784x378.25
       LayoutBlockFlow {H1} at (0,0) size 784x37 [color=#990000]
-        LayoutText {#text} at (0,0) size 699x36
-          text run at (0,0) width 699: "Webkit background image positioning on RTL text"
+        LayoutText {#text} at (0,0) size 696x36
+          text run at (0,0) width 696: "Webkit background image positioning on RTL text"
       LayoutBlockFlow {H2} at (0,58.44) size 784x27
         LayoutText {#text} at (0,0) size 262x26
           text run at (0,0) width 262: "Behaviour within <p> tag"

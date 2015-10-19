@@ -94,8 +94,8 @@ layer at (18,228) size 173x17
   LayoutBlockFlow {DIV} at (5,6) size 173x17
 layer at (10,259) size 150x25
   LayoutBlockFlow {DIV} at (2,3) size 150x25
-    LayoutText {#text} at (0,4) size 33x16
-      text run at (0,4) width 33: "Value"
+    LayoutText {#text} at (0,4) size 32x16
+      text run at (0,4) width 32: "Value"
 layer at (168,259) size 150x25
   LayoutBlockFlow {DIV} at (2,3) size 150x25 [color=#A9A9A9]
     LayoutText {#text} at (0,4) size 66x16
@@ -104,8 +104,8 @@ layer at (168,259) size 150x25
   LayoutBlockFlow {DIV} at (2,3) size 150x25
 layer at (10,290) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (58,0) size 34x16
-      text run at (58,0) width 34: "Value"
+    LayoutText {#text} at (59,0) size 32x16
+      text run at (59,0) width 32: "Value"
 layer at (168,290) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16 [color=#A9A9A9]
     LayoutText {#text} at (42,0) size 66x16

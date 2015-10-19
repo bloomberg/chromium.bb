@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 392x18
-          text run at (0,0) width 392: "Only the second search field should have a cancel button (\x{D7})."
+        LayoutText {#text} at (0,0) size 391x18
+          text run at (0,0) width 391: "Only the second search field should have a cancel button (\x{D7})."
       LayoutBlockFlow (anonymous) at (0,34) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13

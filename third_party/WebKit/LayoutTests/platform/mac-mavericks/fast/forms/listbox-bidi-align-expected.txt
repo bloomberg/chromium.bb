@@ -4,9 +4,9 @@ layer at (0,0) size 800x408
   LayoutBlockFlow {HTML} at (0,0) size 800x408
     LayoutBlockFlow {BODY} at (8,8) size 784x392
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 615x18
-          text run at (0,0) width 615: "This test verifies the visual alignment of items in a select element while changing text direction."
-        LayoutBR {BR} at (614,0) size 1x18
+        LayoutText {#text} at (0,0) size 614x18
+          text run at (0,0) width 614: "This test verifies the visual alignment of items in a select element while changing text direction."
+        LayoutBR {BR} at (613,0) size 1x18
         LayoutText {#text} at (0,18) size 438x18
           text run at (0,18) width 438: "All the items in the following select elements should be left-aligned."
       LayoutTable {TABLE} at (0,36) size 650x100

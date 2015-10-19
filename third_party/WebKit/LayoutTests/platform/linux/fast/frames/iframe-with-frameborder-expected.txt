@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 201x19
         text run at (0,0) width 201: "This iframe should have a border."
-      LayoutBR {BR} at (201,15) size 0x0
+      LayoutBR {BR} at (200,15) size 1x0
       LayoutText {#text} at (304,159) size 4x19
         text run at (304,159) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (304,349) size 0x0
       LayoutText {#text} at (0,354) size 205x19
         text run at (0,354) width 205: "This iframe should have a border. "
-      LayoutBR {BR} at (205,369) size 0x0
+      LayoutBR {BR} at (204,369) size 1x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,28) size 304x154
   LayoutIFrame {IFRAME} at (0,20) size 304x154 [border: (2px inset #EEEEEE)]

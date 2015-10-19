@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 754x19
-          text run at (0,0) width 754: "Test appearances of spin buttons. Disabled state and read-only state should have appearances different from the normal state."
+        LayoutText {#text} at (0,0) size 753x19
+          text run at (0,0) width 753: "Test appearances of spin buttons. Disabled state and read-only state should have appearances different from the normal state."
       LayoutBlockFlow {DIV} at (0,36) size 784x30
         LayoutInline {LABEL} at (0,0) size 311x19
           LayoutTextControl {INPUT} at (0,0) size 229x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

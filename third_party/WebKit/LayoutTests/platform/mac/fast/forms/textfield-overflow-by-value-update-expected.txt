@@ -8,5 +8,5 @@ layer at (0,0) size 800x52
       LayoutText {#text} at (0,0) size 0x0
 layer at (9,9) size 100x0 scrollHeight 38
   LayoutBlockFlow {DIV} at (1,1) size 100x0
-    LayoutText {#text} at (0,0) size 67x38
-      text run at (0,0) width 67: "FAIL"
+    LayoutText {#text} at (0,0) size 65x38
+      text run at (0,0) width 65: "FAIL"

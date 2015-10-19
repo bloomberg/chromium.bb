@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 780x53
           text run at (0,0) width 780: "Assuming the port-specific theme draws focus rings, this test can be used to ensure that a focus ring is drawn for an <area"
-          text run at (0,18) width 758: "shape=\"circle\"> that overflows the img element. This test PASSED if a half-circule-shaped focus ring is drawn for the"
+          text run at (0,18) width 757: "shape=\"circle\"> that overflows the img element. This test PASSED if a half-circule-shaped focus ring is drawn for the"
           text run at (0,36) width 214: "<area> in the imagemap (below)."
       LayoutBlockFlow (anonymous) at (0,70) size 784x128
         LayoutInline {MAP} at (0,0) size 0x0

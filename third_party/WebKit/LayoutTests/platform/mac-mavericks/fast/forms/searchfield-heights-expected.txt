@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 377x18
-        text run at (0,0) width 377: "This tests that aqua-style search fields do not honor height."
-      LayoutBR {BR} at (376,14) size 1x0
+      LayoutText {#text} at (0,0) size 376x18
+        text run at (0,0) width 376: "This tests that aqua-style search fields do not honor height."
+      LayoutBR {BR} at (375,14) size 1x0
       LayoutTextControl {INPUT} at (0,23) size 100x15 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (3,2) size 94x11
           LayoutBlockFlow {DIV} at (0,0) size 14x11

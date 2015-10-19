@@ -11,39 +11,42 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 800x0
       LayoutBlockFlow {DIV} at (0,0) size 800x0
       LayoutBlockFlow {DIV} at (0,0) size 800x0
-layer at (159,563) size 249x27
-  LayoutBlockFlow (positioned) {FONT} at (159.31,563) size 248.69x27
-    LayoutText {#text} at (0,0) size 249x26
-      text run at (0,0) width 249: "RTL-Center-Aligned"
+layer at (162,536) size 246x54
+  LayoutBlockFlow (positioned) {FONT} at (161.52,536) size 246.48x54
+    LayoutText {#text} at (46,0) size 154x53
+      text run at (46,0) width 154: "RTL-Center-"
+      text run at (75,27) width 96: "Aligned"
 layer at (-87,469) size 95x81 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {FONT} at (-86.59,469) size 94.59x81
     LayoutText {#text} at (0,0) size 95x80
-      text run at (0,0) width 62: "RTL-"
+      text run at (0,0) width 60: "RTL-"
       text run at (0,27) width 63: "Left-"
       text run at (0,54) width 95: "Aligned"
-layer at (575,473) size 233x27 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow (positioned) {FONT} at (575.48,473) size 232.52x27
-    LayoutText {#text} at (0,0) size 233x26
-      text run at (0,0) width 233: "RTL-Right-Aligned"
-layer at (608,423) size 200x27 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow (positioned) {FONT} at (608.48,423) size 199.52x27
-    LayoutText {#text} at (0,0) size 200x26
-      text run at (0,0) width 200: "RTL-No-Aligned"
-layer at (408,373) size 249x27
-  LayoutBlockFlow (positioned) {FONT} at (408,373) size 248.69x27
-    LayoutText {#text} at (0,0) size 249x26
-      text run at (0,0) width 249: "LTR-Center-Aligned"
-layer at (8,323) size 219x27
-  LayoutBlockFlow (positioned) {FONT} at (8,323) size 218.80x27
-    LayoutText {#text} at (0,0) size 219x26
-      text run at (0,0) width 219: "LTR-Left-Aligned"
+layer at (578,446) size 230x54 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow (positioned) {FONT} at (577.69,446) size 230.31x54
+    LayoutText {#text} at (93,0) size 138x53
+      text run at (93,0) width 138: "RTL-Right-"
+      text run at (135,27) width 96: "Aligned"
+layer at (611,396) size 197x54 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow (positioned) {FONT} at (610.69,396) size 197.31x54
+    LayoutText {#text} at (93,0) size 105x53
+      text run at (93,0) width 105: "RTL-No-"
+      text run at (102,27) width 96: "Aligned"
+layer at (408,373) size 246x27
+  LayoutBlockFlow (positioned) {FONT} at (408,373) size 246.48x27
+    LayoutText {#text} at (0,0) size 247x26
+      text run at (0,0) width 247: "LTR-Center-Aligned"
+layer at (8,323) size 217x27
+  LayoutBlockFlow (positioned) {FONT} at (8,323) size 216.59x27
+    LayoutText {#text} at (0,0) size 217x26
+      text run at (0,0) width 217: "LTR-Left-Aligned"
 layer at (808,219) size 95x81 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {FONT} at (808,219) size 94.59x81
-    LayoutText {#text} at (33,0) size 95x80
-      text run at (33,0) width 62: "LTR-"
+    LayoutText {#text} at (35,0) size 95x80
+      text run at (35,0) width 60: "LTR-"
       text run at (18,27) width 77: "Right-"
       text run at (0,54) width 95: "Aligned"
-layer at (8,223) size 200x27
-  LayoutBlockFlow (positioned) {FONT} at (8,223) size 199.52x27
-    LayoutText {#text} at (0,0) size 200x26
-      text run at (0,0) width 200: "LTR-No-Aligned"
+layer at (8,223) size 197x27
+  LayoutBlockFlow (positioned) {FONT} at (8,223) size 197.31x27
+    LayoutText {#text} at (0,0) size 198x26
+      text run at (0,0) width 198: "LTR-No-Aligned"

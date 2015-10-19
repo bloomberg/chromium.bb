@@ -9,11 +9,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 62x22
           text run at (0,0) width 62: "Results:"
         LayoutBR {BR} at (61,17) size 1x0
-        LayoutText {#text} at (0,22) size 105x22
-          text run at (0,22) width 105: "Test 1 Passed"
-        LayoutBR {BR} at (104,39) size 1x0
-        LayoutText {#text} at (0,44) size 105x22
-          text run at (0,44) width 105: "Test 2 Passed"
+        LayoutText {#text} at (0,22) size 104x22
+          text run at (0,22) width 104: "Test 1 Passed"
+        LayoutBR {BR} at (103,39) size 1x0
+        LayoutText {#text} at (0,44) size 104x22
+          text run at (0,44) width 104: "Test 2 Passed"
 layer at (10,10) size 128x162 clip at (22,22) size 93x138 scrollHeight 316
   LayoutListBox {SELECT} at (0,0) size 128.09x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
     LayoutBlockFlow {OPTION} at (24,24) size 69.09x17.19

@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 522x18
-        text run at (0,0) width 522: "This tests that the text color changes appropriately when the text field is disabled."
-      LayoutBR {BR} at (521,14) size 1x0
+      LayoutText {#text} at (0,0) size 521x18
+        text run at (0,0) width 521: "This tests that the text color changes appropriately when the text field is disabled."
+      LayoutBR {BR} at (520,14) size 1x0
       LayoutTextControl {INPUT} at (0,18) size 131x19 [color=#545454] [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (131,18) size 4x18
         text run at (131,18) width 4: " "

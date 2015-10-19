@@ -6,19 +6,19 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218 LTR override: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 784x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x17
-              text run at (217,0) width 355 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8076"
-          LayoutText {#text} at (571,0) size 784x35
-            text run at (571,0) width 213 LTR override: " REGRESSION: native text fields"
-            text run at (0,18) width 253 LTR override: "are reversed on \"visual Hebrew\" pages"
-        LayoutText {#text} at (252,18) size 5x17
-          text run at (252,18) width 5 LTR override: "."
+        LayoutInline {I} at (0,0) size 783x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x17
+              text run at (217,0) width 354 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8076"
+          LayoutText {#text} at (570,0) size 783x35
+            text run at (570,0) width 213 LTR override: " REGRESSION: native text fields"
+            text run at (0,18) width 251 LTR override: "are reversed on \"visual Hebrew\" pages"
+        LayoutText {#text} at (250,18) size 5x17
+          text run at (250,18) width 5 LTR override: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,70) size 784x18
-        LayoutText {#text} at (0,0) size 280x17
-          text run at (0,0) width 280 LTR override: "Text in the field should look like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
+        LayoutText {#text} at (0,0) size 279x17
+          text run at (0,0) width 279 LTR override: "Text in the field should look like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
       LayoutBlockFlow (anonymous) at (0,104) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
