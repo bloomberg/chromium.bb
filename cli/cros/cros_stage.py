@@ -6,11 +6,9 @@
 
 from __future__ import print_function
 
-import httplib
 import os
 import re
 import shutil
-import urllib2
 
 from chromite.cbuildbot import commands
 from chromite.cli import command
@@ -227,21 +225,21 @@ NOTES:
       # Delete this image from the Devserver in case it was previously staged.
       device.RunCommand(['rm', '-rf', os.path.join(MOBLAB_STATIC_DIR,
                                                    self.staged_image_name)])
-      try:
-        stage_url = DEVSERVER_STAGE_URL % dict(moblab=self.options.remote,
-                                               staged_dir=self.stage_directory)
-        res = urllib2.urlopen(stage_url).read()
-      except (urllib2.HTTPError, httplib.HTTPException, urllib2.URLError) as e:
-        logging.error('Unable to stage artifacts on moblab. Error: %s', e)
+      stage_url = DEVSERVER_STAGE_URL % dict(moblab=self.options.remote,
+                                             staged_dir=self.stage_directory)
+      # Stage the image from the moblab, as port 8080 might not be reachable
+      # from the developer's system.
+      res = device.RunCommand(['curl', '--fail',
+                               cros_build_lib.ShellQuote(stage_url)],
+                              error_code_ok=True)
+      if res.returncode == 0:
+        logging.info('\n\nStaging Completed!')
+        logging.info('Image is staged on Moblab as %s',
+                     self.staged_image_name)
       else:
-        if res == 'Success':
-          logging.info('\n\nStaging Completed!')
-          logging.info('Image is staged on Moblab as %s',
-                       self.staged_image_name)
-        else:
-          logging.info('Staging failed. Error Message: %s', res)
-      finally:
-        device.RunCommand(['rm', '-rf', self.stage_directory])
+        logging.info('Staging failed. Error Message: %s', res.error)
+
+      device.RunCommand(['rm', '-rf', self.stage_directory])
 
   def _StageOnGS(self, tempdir):
     """Stage the generated payloads and test bits into a Google Storage bucket.
