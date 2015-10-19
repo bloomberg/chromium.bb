@@ -148,9 +148,9 @@ math        \x00B1        235-25-36           ±                   PLUS-MINUS SI
 sign        \x00B2        16-3456-12          ²                   SUPERSCRIPT TWO
 sign        \x00B3        16-3456-14          ³                   SUPERSCRIPT THREE
 sign        \x00B5        4-134               µ                   MICRO SIGN
-math        \x00BC        1456-2-145          ¼                   VULGAR FRACTION ONE QUARTER
-math        \x00BD        1456-2-12           ½                   VULGAR FRACTION ONE HALF
-math        \x00BE        1456-25-145         ¾                   VULGAR FRACTION THREE QUARTERS
+math        \x00BC        3456-2-145          ¼                   VULGAR FRACTION ONE QUARTER
+math        \x00BD        3456-2-12           ½                   VULGAR FRACTION ONE HALF
+math        \x00BE        3456-25-145         ¾                   VULGAR FRACTION THREE QUARTERS
 
 
 # ----------------------------------------------------------------------------------------------
