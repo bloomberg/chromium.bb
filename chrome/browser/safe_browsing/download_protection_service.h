@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 
@@ -30,7 +31,6 @@ class PageNavigator;
 }
 
 namespace net {
-class URLRequestContextGetter;
 class X509Certificate;
 }  // namespace net
 

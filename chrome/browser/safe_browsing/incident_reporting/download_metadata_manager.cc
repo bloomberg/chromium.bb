@@ -360,7 +360,9 @@ DownloadMetadataManager::~DownloadMetadataManager() {
 
 void DownloadMetadataManager::AddDownloadManager(
     content::DownloadManager* download_manager) {
-  DCHECK_EQ(contexts_.count(download_manager), 0U);
+  // Nothing to do if this download manager is already being observed.
+  if (contexts_.count(download_manager))
+    return;
   download_manager->AddObserver(this);
   contexts_[download_manager] =
       new ManagerContext(read_runner_, write_runner_, download_manager);

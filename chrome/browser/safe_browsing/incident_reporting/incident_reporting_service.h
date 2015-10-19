@@ -78,6 +78,9 @@ class IncidentReportingService : public content::NotificationObserver {
   // dropped at destruction.
   ~IncidentReportingService() override;
 
+  // Returns true if incident reporting is enabled for the given profile.
+  static bool IsEnabledForProfile(Profile* profile);
+
   // Returns an object by which external components can add an incident to the
   // service. The object may outlive the service, but will no longer have any
   // effect after the service is deleted.
@@ -96,9 +99,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // Adds |download_manager| to the set monitored for client download request
   // storage.
   void AddDownloadManager(content::DownloadManager* download_manager);
-
-  // Returns true if incident reporting is enabled via a field trial.
-  static bool IsEnabled();
 
  protected:
   // A pointer to a function that populates a protobuf with environment data.
@@ -331,6 +331,10 @@ class IncidentReportingService : public content::NotificationObserver {
   // An object that asynchronously searches for the most recent binary download.
   // Non-NULL while such a search is outstanding.
   scoped_ptr<LastDownloadFinder> last_download_finder_;
+
+  // True if IncidentReportingService is enabled at the process level, by a
+  // field trial.
+  bool enabled_by_field_trial_;
 
   // A factory for handing out weak pointers for IncidentReceiver objects.
   base::WeakPtrFactory<IncidentReportingService> receiver_weak_ptr_factory_;

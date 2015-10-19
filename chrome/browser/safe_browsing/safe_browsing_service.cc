@@ -254,12 +254,9 @@ void SafeBrowsingService::Initialize() {
   download_service_.reset(new safe_browsing::DownloadProtectionService(
       this, url_request_context_getter_.get()));
 
-  if (safe_browsing::IncidentReportingService::IsEnabled()) {
-    incident_service_.reset(new safe_browsing::IncidentReportingService(
-        this, url_request_context_getter_));
-    resource_request_detector_.reset(new safe_browsing::ResourceRequestDetector(
-        incident_service_->GetIncidentReceiver()));
-  }
+  incident_service_.reset(CreateIncidentReportingService());
+  resource_request_detector_.reset(new safe_browsing::ResourceRequestDetector(
+      incident_service_->GetIncidentReceiver()));
 
   off_domain_inclusion_detector_.reset(
       new safe_browsing::OffDomainInclusionDetector(database_manager_));
@@ -370,25 +367,23 @@ scoped_ptr<TrackedPreferenceValidationDelegate>
 SafeBrowsingService::CreatePreferenceValidationDelegate(
     Profile* profile) const {
 #if defined(FULL_SAFE_BROWSING)
-  if (incident_service_)
-    return incident_service_->CreatePreferenceValidationDelegate(profile);
-#endif
+  return incident_service_->CreatePreferenceValidationDelegate(profile);
+#else
   return scoped_ptr<TrackedPreferenceValidationDelegate>();
+#endif
 }
 
 #if defined(FULL_SAFE_BROWSING)
 void SafeBrowsingService::RegisterDelayedAnalysisCallback(
     const safe_browsing::DelayedAnalysisCallback& callback) {
-  if (incident_service_)
-    incident_service_->RegisterDelayedAnalysisCallback(callback);
+  incident_service_->RegisterDelayedAnalysisCallback(callback);
 }
 #endif
 
 void SafeBrowsingService::AddDownloadManager(
     content::DownloadManager* download_manager) {
 #if defined(FULL_SAFE_BROWSING)
-  if (incident_service_)
-    incident_service_->AddDownloadManager(download_manager);
+  incident_service_->AddDownloadManager(download_manager);
 #endif
 }
 
@@ -414,6 +409,14 @@ SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
   return NULL;
 #endif
 }
+
+#if defined(FULL_SAFE_BROWSING)
+safe_browsing::IncidentReportingService*
+SafeBrowsingService::CreateIncidentReportingService() {
+  return new safe_browsing::IncidentReportingService(
+      this, url_request_context_getter_);
+}
+#endif
 
 void SafeBrowsingService::RegisterAllDelayedAnalysis() {
 #if defined(FULL_SAFE_BROWSING)

@@ -13,10 +13,12 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -108,7 +110,7 @@ class LastDownloadFinderTest : public testing::Test {
   // Creates a new profile that participates in safe browsing and adds a
   // download to its history.
   void CreateProfileWithDownload() {
-    TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
+    TestingProfile* profile = CreateProfile(EXTENDED_REPORTING_OPT_IN);
     history::HistoryService* history_service =
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS);
@@ -134,6 +136,7 @@ class LastDownloadFinderTest : public testing::Test {
   enum SafeBrowsingDisposition {
     SAFE_BROWSING_OPT_OUT,
     SAFE_BROWSING_OPT_IN,
+    EXTENDED_REPORTING_OPT_IN,
   };
 
   LastDownloadFinderTest() : profile_number_() {}
@@ -177,7 +180,9 @@ class LastDownloadFinderTest : public testing::Test {
         new syncable_prefs::TestingPrefServiceSyncable);
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
-                      safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);
+                      safe_browsing_opt_in != SAFE_BROWSING_OPT_OUT);
+    prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+                      safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
 
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
         profile_name,
@@ -327,6 +332,23 @@ TEST_F(LastDownloadFinderTest, NoParticipatingProfiles) {
 // Tests that a download is found from a single profile.
 TEST_F(LastDownloadFinderTest, SimpleEndToEnd) {
   // Create a profile with a history service that is opted-in.
+  TestingProfile* profile = CreateProfile(EXTENDED_REPORTING_OPT_IN);
+
+  // Add a download.
+  AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
+
+  ExpectFoundTestDownload(RunLastDownloadFinder());
+}
+
+// Tests that a download is found from a single profile when the field trial is
+// enabled.
+TEST_F(LastDownloadFinderTest, SimpleEndToEndFieldTrial) {
+  // Set up a field trial
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SafeBrowsingIncidentReportingService",
+                                         "Enabled");
+  // Create a profile with a history service that is opted-in to Safe Browsing
+  // only.
   TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
 
   // Add a download.
@@ -339,7 +361,7 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEnd) {
 // Tests that nothing happens if the binary is an executable for a different OS.
 TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
   // Create a profile with a history service that is opted-in.
-  TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
+  TestingProfile* profile = CreateProfile(EXTENDED_REPORTING_OPT_IN);
 
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileNameForOtherOS));
@@ -351,7 +373,7 @@ TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
 // Tests that there is no crash if the finder is deleted before results arrive.
 TEST_F(LastDownloadFinderTest, DeleteBeforeResults) {
   // Create a profile with a history service that is opted-in.
-  TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
+  TestingProfile* profile = CreateProfile(EXTENDED_REPORTING_OPT_IN);
 
   // Add a download.
   AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
@@ -368,7 +390,7 @@ TEST_F(LastDownloadFinderTest, DeleteBeforeResults) {
 // Tests that a download in profile added after the search is begun is found.
 TEST_F(LastDownloadFinderTest, AddProfileAfterStarting) {
   // Create a profile with a history service that is opted-in.
-  CreateProfile(SAFE_BROWSING_OPT_IN);
+  CreateProfile(EXTENDED_REPORTING_OPT_IN);
 
   scoped_ptr<ClientIncidentReport_DownloadDetails> last_download;
   base::RunLoop run_loop;

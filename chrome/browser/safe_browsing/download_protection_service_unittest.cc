@@ -24,6 +24,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_database_manager.h"
@@ -96,6 +97,10 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
     mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
     return mock_database_manager_;
+  }
+
+  IncidentReportingService* CreateIncidentReportingService() override {
+    return new IncidentReportingService(nullptr, nullptr);
   }
 
   SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {

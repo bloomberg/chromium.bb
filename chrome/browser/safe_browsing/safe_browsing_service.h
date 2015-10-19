@@ -198,6 +198,11 @@ class SafeBrowsingService
 
   virtual SafeBrowsingUIManager* CreateUIManager();
 
+#if defined(FULL_SAFE_BROWSING)
+  virtual safe_browsing::IncidentReportingService*
+  CreateIncidentReportingService();
+#endif
+
   // Registers all the delayed analysis with the incident reporting service.
   // This is where you register your process-wide, profile-independent analysis.
   virtual void RegisterAllDelayedAnalysis();

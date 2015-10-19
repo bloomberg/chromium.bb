@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
@@ -226,10 +227,8 @@ LastDownloadFinder::LastDownloadFinder(
 void LastDownloadFinder::SearchInProfile(Profile* profile) {
   // Do not look in OTR profiles or in profiles that do not participate in
   // safe browsing.
-  if (profile->IsOffTheRecord() ||
-      !profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  if (!IncidentReportingService::IsEnabledForProfile(profile))
     return;
-  }
 
   // Exit early if already processing this profile. This could happen if, for
   // example, NOTIFICATION_PROFILE_ADDED arrives after construction while
