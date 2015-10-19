@@ -52,7 +52,8 @@ class MemoryHealthPlan(_MemoryInfra):
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     return (value.tir_label in ['foreground', 'background']
-            and value.name.startswith('memory_'))
+            and value.name.startswith('memory_')
+            and not 'allocated_objects_' in value.name)
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
