@@ -48,7 +48,7 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
     return;  // Our storage has been wiped via DeleteAndStartOver.
   resource_map_[url] =
       ServiceWorkerDatabase::ResourceRecord(resource_id, url, -1);
-  context_->storage()->StoreUncommittedResponseId(resource_id);
+  context_->storage()->StoreUncommittedResourceId(resource_id);
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
@@ -63,7 +63,7 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
   if (!status.is_success()) {
-    context_->storage()->DoomUncommittedResponse(LookupResourceId(url));
+    context_->storage()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);
     if (owner_->script_url() == url) {
       main_script_status_ = status;

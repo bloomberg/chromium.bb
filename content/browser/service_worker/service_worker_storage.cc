@@ -536,30 +536,35 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64 response_id) {
       new ServiceWorkerResponseMetadataWriter(response_id, disk_cache()));
 }
 
-void ServiceWorkerStorage::StoreUncommittedResponseId(int64 id) {
-  DCHECK_NE(kInvalidServiceWorkerResponseId, id);
+void ServiceWorkerStorage::StoreUncommittedResourceId(int64 resource_id) {
+  DCHECK_NE(kInvalidServiceWorkerResponseId, resource_id);
   DCHECK_EQ(INITIALIZED, state_);
 
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
 
-  database_task_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(
-          &ServiceWorkerDatabase::WriteUncommittedResourceIds),
-          base::Unretained(database_.get()),
-          std::set<int64>(&id, &id + 1)));
+  PostTaskAndReplyWithResult(
+      database_task_manager_->GetTaskRunner(), FROM_HERE,
+      base::Bind(&ServiceWorkerDatabase::WriteUncommittedResourceIds,
+                 base::Unretained(database_.get()),
+                 std::set<int64>(&resource_id, &resource_id + 1)),
+      base::Bind(&ServiceWorkerStorage::DidWriteUncommittedResourceIds,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void ServiceWorkerStorage::DoomUncommittedResponse(int64 id) {
-  DCHECK_NE(kInvalidServiceWorkerResponseId, id);
-  database_task_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(
-          &ServiceWorkerDatabase::PurgeUncommittedResourceIds),
-          base::Unretained(database_.get()),
-          std::set<int64>(&id, &id + 1)));
-  StartPurgingResources(std::vector<int64>(1, id));
+void ServiceWorkerStorage::DoomUncommittedResource(int64 resource_id) {
+  DCHECK_NE(kInvalidServiceWorkerResponseId, resource_id);
+  DoomUncommittedResources(std::set<int64>(&resource_id, &resource_id + 1));
+}
+
+void ServiceWorkerStorage::DoomUncommittedResources(
+    const std::set<int64>& resource_ids) {
+  PostTaskAndReplyWithResult(
+      database_task_manager_->GetTaskRunner(), FROM_HERE,
+      base::Bind(&ServiceWorkerDatabase::PurgeUncommittedResourceIds,
+                 base::Unretained(database_.get()), resource_ids),
+      base::Bind(&ServiceWorkerStorage::DidPurgeUncommittedResourceIds,
+                 weak_factory_.GetWeakPtr(), resource_ids));
 }
 
 void ServiceWorkerStorage::StoreUserData(
@@ -729,16 +734,10 @@ void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
     ResourceList resources;
     version->script_cache_map()->GetResources(&resources);
 
-    std::set<int64> ids;
+    std::set<int64> resource_ids;
     for (const auto& resource : resources)
-      ids.insert(resource.resource_id);
-
-    database_task_manager_->GetTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(
-            &ServiceWorkerDatabase::PurgeUncommittedResourceIds),
-            base::Unretained(database_.get()),
-            ids));
+      resource_ids.insert(resource.resource_id);
+    DoomUncommittedResources(resource_ids);
   }
 }
 
@@ -1152,6 +1151,22 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     StartPurgingResources(newly_purgeable_resources);
 }
 
+void ServiceWorkerStorage::DidWriteUncommittedResourceIds(
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK)
+    ScheduleDeleteAndStartOver();
+}
+
+void ServiceWorkerStorage::DidPurgeUncommittedResourceIds(
+    const std::set<int64>& resource_ids,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    ScheduleDeleteAndStartOver();
+    return;
+  }
+  StartPurgingResources(resource_ids);
+}
+
 void ServiceWorkerStorage::DidStoreUserData(
     const StatusCallback& callback,
     ServiceWorkerDatabase::Status status) {
@@ -1388,10 +1403,18 @@ void ServiceWorkerStorage::DeleteOldDiskCache() {
 }
 
 void ServiceWorkerStorage::StartPurgingResources(
-    const std::vector<int64>& ids) {
+    const std::set<int64>& resource_ids) {
   DCHECK(has_checked_for_stale_resources_);
-  for (const auto& id : ids)
-    purgeable_resource_ids_.push_back(id);
+  for (int64 resource_id : resource_ids)
+    purgeable_resource_ids_.push_back(resource_id);
+  ContinuePurgingResources();
+}
+
+void ServiceWorkerStorage::StartPurgingResources(
+    const std::vector<int64>& resource_ids) {
+  DCHECK(has_checked_for_stale_resources_);
+  for (int64 resource_id : resource_ids)
+    purgeable_resource_ids_.push_back(resource_id);
   ContinuePurgingResources();
 }
 

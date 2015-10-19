@@ -148,13 +148,14 @@ class CONTENT_EXPORT ServiceWorkerStorage
   scoped_ptr<ServiceWorkerResponseMetadataWriter> CreateResponseMetadataWriter(
       int64 response_id);
 
-  // Adds |id| to the set of resources ids that are in the disk
-  // cache but not yet stored with a registration.
-  void StoreUncommittedResponseId(int64 id);
+  // Adds |resource_id| to the set of resources that are in the disk cache
+  // but not yet stored with a registration.
+  void StoreUncommittedResourceId(int64 resource_id);
 
-  // Removes |id| from uncommitted list, adds it to the
-  // purgeable list and purges it.
-  void DoomUncommittedResponse(int64 id);
+  // Removes resource ids from uncommitted list, adds them to the purgeable list
+  // and purges them.
+  void DoomUncommittedResource(int64 resource_id);
+  void DoomUncommittedResources(const std::set<int64>& resource_ids);
 
   // Provide a storage mechanism to read/write arbitrary data associated with
   // a registration. Each registration has its own key namespace. Stored data
@@ -360,6 +361,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& deleted_version,
       const std::vector<int64>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status);
+  void DidWriteUncommittedResourceIds(ServiceWorkerDatabase::Status status);
+  void DidPurgeUncommittedResourceIds(const std::set<int64>& resource_ids,
+                                      ServiceWorkerDatabase::Status status);
   void DidStoreUserData(
       const StatusCallback& callback,
       ServiceWorkerDatabase::Status status);
@@ -401,7 +405,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   void DeleteOldDiskCache();
 
-  void StartPurgingResources(const std::vector<int64>& ids);
+  void StartPurgingResources(const std::set<int64>& resource_ids);
+  void StartPurgingResources(const std::vector<int64>& resource_ids);
   void StartPurgingResources(const ResourceList& resources);
   void ContinuePurgingResources();
   void PurgeResource(int64 id);
