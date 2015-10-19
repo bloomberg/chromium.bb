@@ -15,18 +15,21 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }
 
 namespace content_settings {
 
 // A content settings provider which disables certain plugins for platform apps.
 class InternalExtensionProvider : public ObservableProvider,
-                                  public content::NotificationObserver {
+                                  public content::NotificationObserver,
+                                  public extensions::ExtensionRegistryObserver {
  public:
   explicit InternalExtensionProvider(Profile* profile);
 
@@ -52,6 +55,14 @@ class InternalExtensionProvider : public ObservableProvider,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+
  private:
   void ApplyPluginContentSettingsForExtension(
       const extensions::Extension* extension,
@@ -71,6 +82,8 @@ class InternalExtensionProvider : public ObservableProvider,
 
   // Extension IDs used by the Chrome Remote Desktop app.
   std::set<std::string> chrome_remote_desktop_;
+
+  extensions::ExtensionRegistry* extension_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalExtensionProvider);
 };
