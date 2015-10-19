@@ -197,17 +197,11 @@ def AddPDFPluginActions(actions):
   Arguments
     actions: set of actions to add to.
   """
-  actions.add('PDF.FitToHeightButton')
-  actions.add('PDF.FitToWidthButton')
   actions.add('PDF.LoadFailure')
   actions.add('PDF.LoadSuccess')
   actions.add('PDF.PreviewDocumentLoadFailure')
-  actions.add('PDF.PrintButton')
   actions.add('PDF.PrintPage')
-  actions.add('PDF.SaveButton')
   actions.add('PDF.ZoomFromBrowser')
-  actions.add('PDF.ZoomInButton')
-  actions.add('PDF.ZoomOutButton')
   actions.add('PDF_Unsupported_3D')
   actions.add('PDF_Unsupported_Attachment')
   actions.add('PDF_Unsupported_Bookmarks')

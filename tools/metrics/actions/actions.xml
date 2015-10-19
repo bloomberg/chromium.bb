@@ -10598,16 +10598,19 @@ should be able to be added at any place in this file.
 <action name="PDF.FitToHeightButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF.FitToPageButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF.FitToWidthButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF.LoadFailure">
@@ -10628,6 +10631,7 @@ should be able to be added at any place in this file.
 <action name="PDF.PrintButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF.PrintPage">
@@ -10638,6 +10642,7 @@ should be able to be added at any place in this file.
 <action name="PDF.SaveButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF.SavePage">
@@ -10653,11 +10658,13 @@ should be able to be added at any place in this file.
 <action name="PDF.ZoomInButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF.ZoomOutButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
 </action>
 
 <action name="PDF_EnableReaderInfoBarCancel">
