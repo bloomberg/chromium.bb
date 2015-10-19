@@ -35,10 +35,8 @@
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/CompositedDisplayList.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCompositedDisplayList.h"
 #include "public/platform/WebCompositorAnimationTimeline.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebFloatSize.h"
@@ -273,9 +271,6 @@ public:
     void setShowFPSCounter(bool) override;
     void setShowScrollBottleneckRects(bool) override;
     void acceptLanguagesChanged() override;
-
-    void setCompositedDisplayList(PassOwnPtr<CompositedDisplayList>);
-    WebCompositedDisplayList* compositedDisplayList() override;
 
     // WebViewImpl
     void enableViewport();
@@ -726,8 +721,6 @@ private:
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
-
-    WebCompositedDisplayList m_compositedDisplayList;
 
     MediaKeysClientImpl m_mediaKeysClientImpl;
     OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;

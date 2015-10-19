@@ -746,18 +746,6 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFr
     }
 }
 
-void ChromeClientImpl::setCompositedDisplayList(PassOwnPtr<CompositedDisplayList> compositedDisplayList)
-{
-    m_webView->setCompositedDisplayList(compositedDisplayList);
-}
-
-CompositedDisplayList* ChromeClientImpl::compositedDisplayListForTesting()
-{
-    if (WebCompositedDisplayList* compositedDisplayList = m_webView->compositedDisplayList())
-        return compositedDisplayList->compositedDisplayListForTesting();
-    return nullptr;
-}
-
 void ChromeClientImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
 {
     // FIXME: For top-level frames we still use the WebView as a WebWidget. This

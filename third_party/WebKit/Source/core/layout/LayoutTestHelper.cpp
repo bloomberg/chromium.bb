@@ -8,7 +8,6 @@
 #include "core/loader/EmptyClients.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
-#include "public/platform/WebCompositedDisplayList.h"
 
 namespace blink {
 
@@ -29,19 +28,6 @@ public:
         static FakeGraphicsLayerFactory* factory = adoptPtr(new FakeGraphicsLayerFactory).leakPtr();
         return factory;
     }
-
-    void setCompositedDisplayList(PassOwnPtr<CompositedDisplayList> compositedDisplayList) override
-    {
-        m_compositedDisplayList.assign(compositedDisplayList);
-    }
-
-    CompositedDisplayList* compositedDisplayListForTesting() override
-    {
-        return m_compositedDisplayList.compositedDisplayListForTesting();
-    }
-
-private:
-    WebCompositedDisplayList m_compositedDisplayList;
 };
 
 void RenderingTest::SetUp()

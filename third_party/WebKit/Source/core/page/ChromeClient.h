@@ -32,7 +32,6 @@
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"
-#include "platform/graphics/CompositedDisplayList.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebFocusType.h"
@@ -184,9 +183,6 @@ public:
     // This sets the graphics layer for the LocalFrame's WebWidget, if it has
     // one. Otherwise it sets it for the WebViewImpl.
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) = 0;
-
-    virtual void setCompositedDisplayList(PassOwnPtr<CompositedDisplayList>) { }
-    virtual CompositedDisplayList* compositedDisplayListForTesting() { return nullptr; }
 
     virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
     virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }

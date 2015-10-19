@@ -23,7 +23,6 @@
 #define LayoutView_h
 
 #include "core/CoreExport.h"
-#include "core/compositing/DisplayListCompositingBuilder.h"
 #include "core/layout/HitTestCache.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"

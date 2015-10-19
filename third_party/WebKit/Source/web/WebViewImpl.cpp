@@ -3316,16 +3316,6 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
     return IntSize(widthScaled, heightScaled);
 }
 
-void WebViewImpl::setCompositedDisplayList(PassOwnPtr<CompositedDisplayList> compositedDisplayList)
-{
-    m_compositedDisplayList.assign(compositedDisplayList);
-}
-
-WebCompositedDisplayList* WebViewImpl::compositedDisplayList()
-{
-    return &m_compositedDisplayList;
-}
-
 void WebViewImpl::enableViewport()
 {
     settings()->setViewportEnabled(true);

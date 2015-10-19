@@ -29,7 +29,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
-#include "core/compositing/DisplayListCompositingBuilder.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -2526,14 +2525,8 @@ void FrameView::compositeForSlimmingPaintV2()
     forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2); });
 
     // Detached frames can have no root graphics layer.
-    if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking()) {
+    if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking())
         rootGraphicsLayer->paintController()->commitNewDisplayItems(rootGraphicsLayer);
-
-        DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->paintController());
-        OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
-        compositingBuilder.build(*compositedDisplayList);
-        page()->setCompositedDisplayList(compositedDisplayList.release());
-    }
 
     forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean); });
 }

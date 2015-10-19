@@ -540,16 +540,6 @@ void Page::acceptLanguagesChanged()
         frames[i]->localDOMWindow()->acceptLanguagesChanged();
 }
 
-void Page::setCompositedDisplayList(PassOwnPtr<CompositedDisplayList> compositedDisplayList)
-{
-    chromeClient().setCompositedDisplayList(compositedDisplayList);
-}
-
-CompositedDisplayList* Page::compositedDisplayListForTesting()
-{
-    return chromeClient().compositedDisplayListForTesting();
-}
-
 DEFINE_TRACE(Page)
 {
 #if ENABLE(OILPAN)
