@@ -3,9 +3,9 @@ layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1236
 layer at (0,0) size 785x1236 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x1236
     LayoutBlockFlow {BODY} at (8,8) size 769x1220
-      LayoutText {#text} at (0,0) size 292x18
-        text run at (0,0) width 292: "LTR fieldset with left/center/right text-align: "
-      LayoutBR {BR} at (291,14) size 1x0
+      LayoutText {#text} at (0,0) size 289x18
+        text run at (0,0) width 289: "LTR fieldset with left/center/right text-align: "
+      LayoutBR {BR} at (288,14) size 1x0
       LayoutFieldset {FIELDSET} at (16,34) size 228x119.59 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (34,0) size 104x25
           LayoutBlockFlow {DIV} at (2,0) size 100x25 [bgcolor=#FFA500]
@@ -21,9 +21,9 @@ layer at (0,0) size 785x1236 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutText {#text} at (260,310) size 4x18
         text run at (260,310) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,328) size 292x18
-        text run at (0,328) width 292: "RTL fieldset with left/center/right text-align: "
-      LayoutBR {BR} at (291,342) size 1x0
+      LayoutText {#text} at (0,328) size 290x18
+        text run at (0,328) width 290: "RTL fieldset with left/center/right text-align: "
+      LayoutBR {BR} at (289,342) size 1x0
       LayoutFieldset {FIELDSET} at (16,362) size 228x119.59 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (14,0) size 104x25
           LayoutBlockFlow {DIV} at (2,0) size 100x25 [bgcolor=#FFA500]
@@ -39,9 +39,9 @@ layer at (0,0) size 785x1236 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutText {#text} at (260,638) size 4x18
         text run at (260,638) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,656) size 347x18
-        text run at (0,656) width 347: "Vertical LTR fieldset with left/center/right text-align: "
-      LayoutBR {BR} at (346,670) size 1x0
+      LayoutText {#text} at (0,656) size 343x18
+        text run at (0,656) width 343: "Vertical LTR fieldset with left/center/right text-align: "
+      LayoutBR {BR} at (342,670) size 1x0
       LayoutFieldset {FIELDSET} at (16,690) size 119.59x228 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (0,34) size 25x104
           LayoutBlockFlow {DIV} at (0,2) size 25x100 [bgcolor=#FFA500]
@@ -58,9 +58,9 @@ layer at (0,0) size 785x1236 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutText {#text} at (462,920) size 5x18
         text run at (462,920) width 5: " "
       LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,938) size 347x18
-        text run at (0,938) width 347: "Vertical RTL fieldset with left/center/right text-align: "
-      LayoutBR {BR} at (346,952) size 1x0
+      LayoutText {#text} at (0,938) size 343x18
+        text run at (0,938) width 343: "Vertical RTL fieldset with left/center/right text-align: "
+      LayoutBR {BR} at (342,952) size 1x0
       LayoutFieldset {FIELDSET} at (16,972) size 119.59x228 [border: (2px groove #C0C0C0)]
         LayoutBlockFlow {LEGEND} at (0,14) size 25x104
           LayoutBlockFlow {DIV} at (0,2) size 25x100 [bgcolor=#FFA500]

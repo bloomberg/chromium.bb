@@ -13,5 +13,5 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,27) size 784x27
             LayoutTableCell {TD} at (0,27) size 784x27 [border: none (1px solid #FFFFFF) none] [r=1 c=0 rs=1 cs=1]
               LayoutBlockFlow {A} at (0,0) size 784x26 [color=#0000EE]
-                LayoutText {#text} at (4,4) size 164x17
-                  text run at (4,4) width 164: "Locate a Transit Provider"
+                LayoutText {#text} at (4,4) size 163x17
+                  text run at (4,4) width 163: "Locate a Transit Provider"

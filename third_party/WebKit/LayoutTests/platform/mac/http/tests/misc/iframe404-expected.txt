@@ -4,19 +4,19 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
         LayoutInline {A} at (0,0) size 61x18 [color=#0000EE]
-          LayoutText {#text} at (54,0) size 61x18
-            text run at (54,0) width 61: "bug 8121"
-        LayoutText {#text} at (114,0) size 291x18
-          text run at (114,0) width 291: ": REGRESSION: 404s are not displayed and "
+          LayoutText {#text} at (53,0) size 61x18
+            text run at (53,0) width 61: "bug 8121"
+        LayoutText {#text} at (113,0) size 291x18
+          text run at (113,0) width 291: ": REGRESSION: 404s are not displayed and "
         LayoutInline {A} at (0,0) size 61x18 [color=#0000EE]
-          LayoutText {#text} at (404,0) size 61x18
-            text run at (404,0) width 61: "bug 7739"
-        LayoutText {#text} at (464,0) size 778x36
-          text run at (464,0) width 314: ": REGRESSION: Assertion failure loading acid2"
-          text run at (0,18) width 307: "test in -[WebCoreFrameBridge installInFrame:]"
+          LayoutText {#text} at (403,0) size 61x18
+            text run at (403,0) width 61: "bug 7739"
+        LayoutText {#text} at (463,0) size 777x36
+          text run at (463,0) width 314: ": REGRESSION: Assertion failure loading acid2"
+          text run at (0,18) width 305: "test in -[WebCoreFrameBridge installInFrame:]"
       LayoutBlockFlow {P} at (0,52) size 784x36
         LayoutText {#text} at (0,0) size 764x36
           text run at (0,0) width 168: "Here is an invalid iframe. "

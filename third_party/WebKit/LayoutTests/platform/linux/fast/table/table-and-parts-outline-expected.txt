@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 626x19
-          text run at (0,0) width 626: "You should see a table with a dotted green outline, and four table cells inside it with a solid black outline."
-        LayoutBR {BR} at (626,15) size 0x0
+        LayoutText {#text} at (0,0) size 625x19
+          text run at (0,0) width 625: "You should see a table with a dotted green outline, and four table cells inside it with a solid black outline."
+        LayoutBR {BR} at (624,15) size 1x0
         LayoutBR {BR} at (0,20) size 0x19
       LayoutTable {TABLE} at (0,40) size 82x50
         LayoutTableSection {TBODY} at (0,0) size 82x50

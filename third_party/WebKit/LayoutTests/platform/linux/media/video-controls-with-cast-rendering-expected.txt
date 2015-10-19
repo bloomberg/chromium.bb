@@ -4,8 +4,8 @@ layer at (0,0) size 785x550
   LayoutBlockFlow {HTML} at (0,0) size 785x550
     LayoutBlockFlow {BODY} at (8,16) size 769x526
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 241x19
-          text run at (0,0) width 241: "Test controls rendering with cast button."
+        LayoutText {#text} at (0,0) size 240x19
+          text run at (0,0) width 240: "Test controls rendering with cast button."
       LayoutBlockFlow {DIV} at (0,36) size 769x245
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,281) size 769x245

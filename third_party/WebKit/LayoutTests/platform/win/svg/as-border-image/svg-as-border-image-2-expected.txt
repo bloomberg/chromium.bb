@@ -5,8 +5,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 370x436.81 [border: (1px solid #000000)]
         LayoutBlockFlow {H2} at (1,20.91) size 368x27
-          LayoutText {#text} at (0,0) size 196x26
-            text run at (0,0) width 196: "SVG border-image"
+          LayoutText {#text} at (0,0) size 195x26
+            text run at (0,0) width 195: "SVG border-image"
         LayoutBlockFlow (anonymous) at (1,67.81) size 368x368
           LayoutBlockFlow {DIV} at (10,10) size 160x160 [border: (30px none #000000)]
           LayoutText {#text} at (180,166) size 4x17
@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
         text run at (370,417) width 4: " "
       LayoutBlockFlow {DIV} at (374,0) size 370x436.81 [border: (1px solid #000000)]
         LayoutBlockFlow {H2} at (1,20.91) size 368x27
-          LayoutText {#text} at (0,0) size 197x26
-            text run at (0,0) width 197: "PNG border-image"
+          LayoutText {#text} at (0,0) size 196x26
+            text run at (0,0) width 196: "PNG border-image"
         LayoutBlockFlow (anonymous) at (1,67.81) size 368x368
           LayoutBlockFlow {DIV} at (10,10) size 160x160 [border: (30px none #000000)]
           LayoutText {#text} at (180,166) size 4x17

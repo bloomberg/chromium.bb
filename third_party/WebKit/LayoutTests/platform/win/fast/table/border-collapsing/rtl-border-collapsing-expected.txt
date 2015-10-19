@@ -6,28 +6,28 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 764x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x17
-              text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6888"
-          LayoutText {#text} at (571,0) size 764x35
-            text run at (571,0) width 193: " Collapsed borders appear on"
-            text run at (0,18) width 319: "the wrong side or on the wrong cell in RTL tables"
-        LayoutText {#text} at (318,18) size 5x17
-          text run at (318,18) width 5: "."
+        LayoutInline {I} at (0,0) size 762x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x17
+              text run at (217,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6888"
+          LayoutText {#text} at (570,0) size 762x35
+            text run at (570,0) width 192: " Collapsed borders appear on"
+            text run at (0,18) width 318: "the wrong side or on the wrong cell in RTL tables"
+        LayoutText {#text} at (317,18) size 5x17
+          text run at (317,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 374x17
-          text run at (0,0) width 374: "The RTL table should be a mirror image of the LTR table."
+        LayoutText {#text} at (0,0) size 371x17
+          text run at (0,0) width 371: "The RTL table should be a mirror image of the LTR table."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,96) size 133x74
         LayoutTableSection {TBODY} at (0,0) size 133x74
           LayoutTableRow {TR} at (0,0) size 133x26
             LayoutTableCell {TD} at (0,0) size 67x26 [border: none (1px solid #000000) none] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (17,4) size 32x17
-                text run at (17,4) width 32: "RTL"
+              LayoutText {#text} at (18,4) size 30x17
+                text run at (18,4) width 30: "RTL"
             LayoutTableCell {TD} at (67,0) size 66x26 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (17,4) size 32x17
-                text run at (17,4) width 32: "LTR"
+              LayoutText {#text} at (18,4) size 30x17
+                text run at (18,4) width 30: "LTR"
           LayoutTableRow {TR} at (0,26) size 133x48
             LayoutTableCell {TD} at (0,26) size 67x48 [border: none (1px solid #000000) none] [r=1 c=0 rs=1 cs=1]
               LayoutTable {TABLE} at (4,4) size 58x40 [border: none (1px solid #0000FF) none (1px solid #FF0000)]

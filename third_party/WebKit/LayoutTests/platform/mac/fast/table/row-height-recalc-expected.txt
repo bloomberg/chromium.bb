@@ -4,17 +4,17 @@ layer at (0,0) size 800x168
   LayoutBlockFlow {HTML} at (0,0) size 800x168
     LayoutBlockFlow {BODY} at (8,16) size 784x144
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x18
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 676x18
-          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 354x18
-              text run at (54,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9012"
-          LayoutText {#text} at (407,0) size 323x18
-            text run at (407,0) width 5: " "
-            text run at (411,0) width 319: "Row height not updated when cell heights change"
-        LayoutText {#text} at (729,0) size 5x18
-          text run at (729,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x18
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 675x18
+          LayoutInline {A} at (0,0) size 353x18 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 353x18
+              text run at (53,0) width 353: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9012"
+          LayoutText {#text} at (405,0) size 323x18
+            text run at (405,0) width 5: " "
+            text run at (409,0) width 319: "Row height not updated when cell heights change"
+        LayoutText {#text} at (727,0) size 5x18
+          text run at (727,0) width 5: "."
       LayoutBlockFlow {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,44) size 100x100
         LayoutTableSection {TBODY} at (0,0) size 100x100

@@ -58,9 +58,9 @@ layer at (0,0) size 785x5732 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,320) size 32x19
           text run at (0,320) width 32: "0000"
         LayoutBR {BR} at (32,335) size 0x0
-        LayoutText {#text} at (0,340) size 32x19
-          text run at (0,340) width 32: "1111"
-        LayoutBR {BR} at (32,355) size 0x0
+        LayoutText {#text} at (0,340) size 31x19
+          text run at (0,340) width 31: "1111"
+        LayoutBR {BR} at (30,355) size 1x0
         LayoutText {#text} at (0,360) size 32x19
           text run at (0,360) width 32: "2222"
         LayoutBR {BR} at (32,375) size 0x0
@@ -219,7 +219,7 @@ layer at (0,0) size 785x5732 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (28,1395) size 0x0
         LayoutText {#text} at (0,1400) size 16x19
           text run at (0,1400) width 16: "ffff"
-        LayoutBR {BR} at (16,1415) size 0x0
+        LayoutBR {BR} at (15,1415) size 1x0
         LayoutText {#text} at (0,1420) size 28x19
           text run at (0,1420) width 28: "gggg"
         LayoutBR {BR} at (28,1435) size 0x0
@@ -342,9 +342,9 @@ layer at (0,0) size 785x5732 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,320) size 32x19
             text run at (0,320) width 32: "0000"
           LayoutBR {BR} at (32,335) size 0x0
-          LayoutText {#text} at (0,340) size 32x19
-            text run at (0,340) width 32: "1111"
-          LayoutBR {BR} at (32,355) size 0x0
+          LayoutText {#text} at (0,340) size 30x19
+            text run at (0,340) width 30: "1111"
+          LayoutBR {BR} at (29,355) size 1x0
           LayoutText {#text} at (0,360) size 32x19
             text run at (0,360) width 32: "2222"
           LayoutBR {BR} at (32,375) size 0x0
@@ -627,9 +627,9 @@ layer at (0,0) size 785x5732 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,320) size 32x19
             text run at (0,320) width 32: "0000"
           LayoutBR {BR} at (32,335) size 0x0
-          LayoutText {#text} at (0,340) size 32x19
-            text run at (0,340) width 32: "1111"
-          LayoutBR {BR} at (32,355) size 0x0
+          LayoutText {#text} at (0,340) size 29x19
+            text run at (0,340) width 29: "1111"
+          LayoutBR {BR} at (28,355) size 1x0
           LayoutText {#text} at (0,360) size 32x19
             text run at (0,360) width 32: "2222"
           LayoutBR {BR} at (32,375) size 0x0

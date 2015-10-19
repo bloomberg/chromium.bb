@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 448x498
-    LayoutSVGText {text} at (157,31) size 136x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 136x17
-        chunk 1 (middle anchor) text run 1 at (157.42,45.00) startOffset 0 endOffset 19 width 135.16: "Gradient Limit Test"
+    LayoutSVGText {text} at (158,31) size 134x17 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 134x17
+        chunk 1 (middle anchor) text run 1 at (158.31,45.00) startOffset 0 endOffset 19 width 133.38: "Gradient Limit Test"
     LayoutSVGContainer {g} at (13,80) size 433x173
       LayoutSVGContainer {g} at (13,80) size 124x73
         LayoutSVGResourceLinearGradient {linearGradient} [id="closeOffsetsLinearGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(0,0.10)]
@@ -13,20 +13,20 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (35,80) size 80x40 [fill={[type=LINEAR-GRADIENT] [id="closeOffsetsLinearGradient"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
         LayoutSVGText {text} at (13,121) size 124x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 124x17
-            chunk 1 (middle anchor) text run 1 at (13.20,135.00) startOffset 0 endOffset 17 width 123.60: "Two close offsets"
+          LayoutSVGInlineText {#text} at (0,0) size 123x17
+            chunk 1 (middle anchor) text run 1 at (13.79,135.00) startOffset 0 endOffset 17 width 122.43: "Two close offsets"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17
             chunk 1 (middle anchor) text run 1 at (15.41,150.00) startOffset 0 endOffset 16 width 119.19: "<linearGradient>"
-      LayoutSVGContainer {g} at (145,80) size 160x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,0.00)}]
+      LayoutSVGContainer {g} at (146,80) size 158x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,0.00)}]
         LayoutSVGResourceLinearGradient {linearGradient} [id="closeOffsetsLinearGradient2"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(0,0.10)]
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (185,80) size 80x40 [fill={[type=LINEAR-GRADIENT] [id="closeOffsetsLinearGradient2"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
-        LayoutSVGText {text} at (-5,121) size 160x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 159x17
-            chunk 1 (middle anchor) text run 1 at (-4.14,135.00) startOffset 0 endOffset 22 width 158.27: "Two very close offsets"
+        LayoutSVGText {text} at (-4,121) size 158x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 158x17
+            chunk 1 (middle anchor) text run 1 at (-3.55,135.00) startOffset 0 endOffset 22 width 157.10: "Two very close offsets"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17
             chunk 1 (middle anchor) text run 1 at (15.41,150.00) startOffset 0 endOffset 16 width 119.19: "<linearGradient>"
@@ -37,20 +37,20 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (35,180) size 80x40 [fill={[type=RADIAL-GRADIENT] [id="closeOffsetsRadialGradient"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
         LayoutSVGText {text} at (13,121) size 124x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 124x17
-            chunk 1 (middle anchor) text run 1 at (13.20,135.00) startOffset 0 endOffset 17 width 123.60: "Two close offsets"
+          LayoutSVGInlineText {#text} at (0,0) size 123x17
+            chunk 1 (middle anchor) text run 1 at (13.79,135.00) startOffset 0 endOffset 17 width 122.43: "Two close offsets"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17
             chunk 1 (middle anchor) text run 1 at (15.41,150.00) startOffset 0 endOffset 16 width 119.19: "<radialGradient>"
-      LayoutSVGContainer {g} at (145,180) size 160x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,100.00)}]
+      LayoutSVGContainer {g} at (146,180) size 158x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,100.00)}]
         LayoutSVGResourceRadialGradient {radialGradient} [id="closeOffsetsRadialGradient2"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.10] [focalRadius=0.00]
           LayoutSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (185,180) size 80x40 [fill={[type=RADIAL-GRADIENT] [id="closeOffsetsRadialGradient2"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
-        LayoutSVGText {text} at (-5,121) size 160x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 159x17
-            chunk 1 (middle anchor) text run 1 at (-4.14,135.00) startOffset 0 endOffset 22 width 158.27: "Two very close offsets"
+        LayoutSVGText {text} at (-4,121) size 158x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 158x17
+            chunk 1 (middle anchor) text run 1 at (-3.55,135.00) startOffset 0 endOffset 22 width 157.10: "Two very close offsets"
         LayoutSVGText {text} at (15,136) size 120x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x17
             chunk 1 (middle anchor) text run 1 at (15.41,150.00) startOffset 0 endOffset 16 width 119.19: "<radialGradient>"

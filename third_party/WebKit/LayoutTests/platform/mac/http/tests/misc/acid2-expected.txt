@@ -8,9 +8,9 @@ layer at (0,0) size 800x4064 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (12,46) width 131: "Hello World!"
 layer at (36,2638) size 764x226 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (relative positioned) {DIV} at (36,2554) size 764x226 [border: (12px solid #00000000)]
-    LayoutTable {TABLE} at (12,12) size 1x0
-      LayoutTableSection {TBODY} at (0,0) size 1x0
-        LayoutTableRow {TR} at (0,0) size 1x0
+    LayoutTable {TABLE} at (12,12) size 0x0
+      LayoutTableSection {TBODY} at (0,0) size 0x0
+        LayoutTableRow {TR} at (0,0) size 0x0
           LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (60,60) size 120x12 [bgcolor=#FF0000] [border: none (12px solid #000000) none (12px solid #000000)]
       LayoutBlockFlow {DIV} at (12,0) size 144x12
@@ -38,7 +38,7 @@ layer at (36,2638) size 764x226 backgroundClip at (0,0) size 800x600 clip at (0,
           LayoutTableCell {LI} at (0,0) size 12x0 [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
           LayoutTableCell (anonymous) at (12,0) size 12x12 [r=0 c=1 rs=1 cs=1]
             LayoutTable {LI} at (0,0) size 12x12 [bgcolor=#000000]
-          LayoutTableCell {LI} at (24,6) size 12x0 [bgcolor=#000000] [r=0 c=2 rs=1 cs=1]
+          LayoutTableCell {LI} at (24,0) size 12x0 [bgcolor=#000000] [r=0 c=2 rs=1 cs=1]
           LayoutTableCell (anonymous) at (36,0) size 12x12 [r=0 c=3 rs=1 cs=1]
             LayoutListItem {LI} at (0,0) size 12x12 [bgcolor=#000000]
 layer at (48,2842) size 740x10 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 276
@@ -76,13 +76,13 @@ layer at (48,84) size 704x82
       LayoutText {#text} at (0,0) size 253x28
         text run at (0,0) width 253: "Standards compliant?"
     LayoutBlockFlow {P} at (13,41) size 678x28
-      LayoutInline {A} at (0,0) size 222x28 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 222x28
-          text run at (0,0) width 222: "Take The Acid2 Test"
-      LayoutText {#text} at (221,0) size 200x28
-        text run at (221,0) width 200: " and compare it to "
-      LayoutInline {A} at (0,0) size 250x28 [color=#0000FF]
-        LayoutText {#text} at (420,0) size 250x28
-          text run at (420,0) width 250: "the reference rendering"
-      LayoutText {#text} at (669,0) size 8x28
-        text run at (669,0) width 8: "."
+      LayoutInline {A} at (0,0) size 217x28 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 217x28
+          text run at (0,0) width 217: "Take The Acid2 Test"
+      LayoutText {#text} at (216,0) size 199x28
+        text run at (216,0) width 199: " and compare it to "
+      LayoutInline {A} at (0,0) size 251x28 [color=#0000FF]
+        LayoutText {#text} at (414,0) size 251x28
+          text run at (414,0) width 251: "the reference rendering"
+      LayoutText {#text} at (664,0) size 7x28
+        text run at (664,0) width 7: "."

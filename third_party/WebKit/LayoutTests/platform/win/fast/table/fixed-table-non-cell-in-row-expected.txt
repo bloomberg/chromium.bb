@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
         LayoutInline {A} at (0,0) size 61x17 [color=#0000EE]
           LayoutText {#text} at (64,0) size 61x17
             text run at (64,0) width 61: "bug 6960"
-        LayoutText {#text} at (124,0) size 773x35
-          text run at (124,0) width 649: ", which was an assertion that failed for fixed-layout tables with non-cells in them. This can arise with"
+        LayoutText {#text} at (124,0) size 772x35
+          text run at (124,0) width 648: ", which was an assertion that failed for fixed-layout tables with non-cells in them. This can arise with"
           text run at (0,18) width 95: "forms, at least."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 438x17

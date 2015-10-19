@@ -36,30 +36,30 @@ layer at (0,0) size 800x280
         LayoutBlockFlow {caption} at (0,126) size 128x0
 layer at (8,218) size 128x54 transparent
   LayoutBlockFlow {caption} at (0,210) size 128x54
-    LayoutText {#text} at (25,0) size 120x54
-      text run at (25,0) width 78: "PASS: First"
+    LayoutText {#text} at (26,0) size 120x54
+      text run at (26,0) width 76: "PASS: First"
       text run at (4,18) width 120: "Caption aligned to"
       text run at (29,36) width 70: "the bottom"
-layer at (10,156) size 233x18
-  LayoutBlockFlow (positioned) {caption} at (10,156) size 233.34x18
-    LayoutText {#text} at (0,0) size 234x18
-      text run at (0,0) width 234: "PASS: Caption with a fixed position"
+layer at (10,156) size 231x18
+  LayoutBlockFlow (positioned) {caption} at (10,156) size 231x18
+    LayoutText {#text} at (0,0) size 231x18
+      text run at (0,0) width 231: "PASS: Caption with a fixed position"
 layer at (8,8) size 128x36 transparent
   LayoutBlockFlow {caption} at (0,0) size 128x36
-    LayoutText {#text} at (15,0) size 104x36
-      text run at (15,0) width 98: "PASS: Caption"
+    LayoutText {#text} at (16,0) size 104x36
+      text run at (16,0) width 96: "PASS: Caption"
       text run at (12,18) width 104: "with opacity 0.7"
-layer at (10,196) size 336x18 transparent
-  LayoutBlockFlow (positioned) {caption} at (10,196) size 335.55x18
-    LayoutText {#text} at (0,0) size 336x18
-      text run at (0,0) width 336: "PASS: Caption with a fixed position and opacity 0.6"
+layer at (10,196) size 333x18 transparent
+  LayoutBlockFlow (positioned) {caption} at (10,196) size 333.20x18
+    LayoutText {#text} at (0,0) size 334x18
+      text run at (0,0) width 334: "PASS: Caption with a fixed position and opacity 0.6"
 layer at (8,80) size 120x54 transparent
   LayoutInline {a} at (0,0) size 120x54
-    LayoutText {#text} at (15,0) size 120x54
-      text run at (15,0) width 98: "PASS: Caption"
+    LayoutText {#text} at (16,0) size 120x54
+      text run at (16,0) width 96: "PASS: Caption"
       text run at (4,18) width 120: "with opacity 0.5 in"
       text run at (14,36) width 100: "one of its child."
-layer at (72,134) size 450x18 transparent
-  LayoutBlockFlow (positioned) {a} at (72,134) size 449.73x18
-    LayoutText {#text} at (0,0) size 450x18
-      text run at (0,0) width 450: "PASS: Caption with opacity 0.4 and fixed position of one of the child."
+layer at (72,134) size 447x18 transparent
+  LayoutBlockFlow (positioned) {a} at (72,134) size 447.39x18
+    LayoutText {#text} at (0,0) size 448x18
+      text run at (0,0) width 448: "PASS: Caption with opacity 0.4 and fixed position of one of the child."

@@ -4,19 +4,19 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 664x17
-          LayoutInline {A} at (0,0) size 157x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 157x17
-              text run at (54,0) width 157: "rdar://problem/5615307"
-          LayoutText {#text} at (210,0) size 508x17
-            text run at (210,0) width 508: " Repro crash in WebKit!WebCore::RenderContainer::destroyLeftoverChildren"
-        LayoutText {#text} at (717,0) size 5x17
-          text run at (717,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 657x17
+          LayoutInline {A} at (0,0) size 156x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 156x17
+              text run at (53,0) width 156: "rdar://problem/5615307"
+          LayoutText {#text} at (208,0) size 502x17
+            text run at (208,0) width 502: " Repro crash in WebKit!WebCore::RenderContainer::destroyLeftoverChildren"
+        LayoutText {#text} at (709,0) size 5x17
+          text run at (709,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 275x17
-          text run at (0,0) width 275: "There should be a line of green text below."
+        LayoutText {#text} at (0,0) size 274x17
+          text run at (0,0) width 274: "There should be a line of green text below."
       LayoutTable {TABLE} at (0,68) size 150x30 [color=#FF0000]
         LayoutTableSection {TBODY} at (0,0) size 150x30
           LayoutTableRow {TR} at (0,2) size 150x26

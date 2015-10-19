@@ -6,19 +6,19 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 218x17
           text run at (0,0) width 218: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 745x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x17
-              text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7054"
-          LayoutText {#text} at (571,0) size 745x35
-            text run at (571,0) width 5: " "
-            text run at (575,0) width 170: "Vertical scroll bars do not"
+        LayoutInline {I} at (0,0) size 742x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x17
+              text run at (217,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7054"
+          LayoutText {#text} at (570,0) size 742x35
+            text run at (570,0) width 5: " "
+            text run at (574,0) width 168: "Vertical scroll bars do not"
             text run at (0,18) width 222: "appear or do not scroll completely"
         LayoutText {#text} at (221,18) size 5x17
           text run at (221,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 661x17
-          text run at (0,0) width 661: "The top two boxes should have horizontal scroll bars. The bottom box should have a vertical scroll bar."
+        LayoutText {#text} at (0,0) size 660x17
+          text run at (0,0) width 660: "The top two boxes should have horizontal scroll bars. The bottom box should have a vertical scroll bar."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,198) size 784x18
         LayoutBR {BR} at (0,0) size 0x17

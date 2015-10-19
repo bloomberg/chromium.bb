@@ -7,13 +7,13 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 384x17
           text run at (0,0) width 384: "This page has a few form elements on it with various styles."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 584x17
-          text run at (0,0) width 584: "In older versions of WebKit, the table styles would cause infinite recursion and hangs. See "
+        LayoutText {#text} at (0,0) size 583x17
+          text run at (0,0) width 583: "In older versions of WebKit, the table styles would cause infinite recursion and hangs. See "
         LayoutInline {A} at (0,0) size 116x17 [color=#0000EE]
-          LayoutText {#text} at (583,0) size 116x17
-            text run at (583,0) width 116: "bugzilla bug 5731"
-        LayoutText {#text} at (698,0) size 5x17
-          text run at (698,0) width 5: "."
+          LayoutText {#text} at (582,0) size 116x17
+            text run at (582,0) width 116: "bugzilla bug 5731"
+        LayoutText {#text} at (697,0) size 5x17
+          text run at (697,0) width 5: "."
       LayoutBlockFlow {DIV} at (0,68) size 784x18
         LayoutInline {FORM} at (0,0) size 92x17
           LayoutText {#text} at (0,0) size 92x17

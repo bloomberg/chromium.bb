@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 147x19
-          text run at (0,0) width 147: "Test controls placement."
+        LayoutText {#text} at (0,0) size 146x19
+          text run at (0,0) width 146: "Test controls placement."
       LayoutBlockFlow (anonymous) at (0,36) size 784x120
         LayoutBR {BR} at (300,30) size 0x0
         LayoutBR {BR} at (0,30) size 0x19

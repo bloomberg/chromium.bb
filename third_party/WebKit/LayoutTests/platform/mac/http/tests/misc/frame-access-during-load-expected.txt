@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 756x36
-          text run at (0,0) width 139: "This test verifies that "
-          text run at (138,0) width 618: "accessing a frame's document while it is still loading does not prevent the load, but can access at"
+        LayoutText {#text} at (0,0) size 755x36
+          text run at (0,0) width 138: "This test verifies that "
+          text run at (137,0) width 618: "accessing a frame's document while it is still loading does not prevent the load, but can access at"
           text run at (0,18) width 226: "least a temporary empty document."
       LayoutBlockFlow (anonymous) at (0,52) size 784x116
         LayoutBR {BR} at (300,40) size 0x0

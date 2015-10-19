@@ -13,8 +13,8 @@ layer at (8,208) size 304x104
     layer at (0,0) size 300x34
       LayoutBlockFlow {HTML} at (0,0) size 300x34
         LayoutBlockFlow {BODY} at (8,8) size 284x18
-          LayoutText {#text} at (0,0) size 246x18
-            text run at (0,0) width 246: "You should see this text when printed."
+          LayoutText {#text} at (0,0) size 245x18
+            text run at (0,0) width 245: "You should see this text when printed."
 layer at (316,8) size 304x304
   LayoutIFrame {IFRAME} at (308,0) size 304x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x300
@@ -36,6 +36,6 @@ layer at (316,8) size 304x304
         layer at (0,0) size 200x52
           LayoutBlockFlow {HTML} at (0,0) size 200x52
             LayoutBlockFlow {BODY} at (8,8) size 184x36
-              LayoutText {#text} at (0,0) size 154x36
-                text run at (0,0) width 154: "You should see this text"
+              LayoutText {#text} at (0,0) size 153x36
+                text run at (0,0) width 153: "You should see this text"
                 text run at (0,18) width 88: "when printed."

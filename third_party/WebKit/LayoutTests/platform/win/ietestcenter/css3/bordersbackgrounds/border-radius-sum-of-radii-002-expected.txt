@@ -4,8 +4,8 @@ layer at (0,0) size 800x684 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x684
     LayoutBlockFlow {BODY} at (8,16) size 784x660
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 660x17
-          text run at (0,0) width 660: "Test passes if there are no more than two rectangles on the page and there is no red visible on the page."
+        LayoutText {#text} at (0,0) size 659x17
+          text run at (0,0) width 659: "Test passes if there are no more than two rectangles on the page and there is no red visible on the page."
       LayoutTable {TABLE} at (0,34) size 314x106
         LayoutTableSection {TBODY} at (0,0) size 314x106
           LayoutTableRow {TR} at (0,2) size 314x102

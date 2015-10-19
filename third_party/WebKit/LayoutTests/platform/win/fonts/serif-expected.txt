@@ -8,9 +8,9 @@ layer at (0,0) size 785x5468 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 316: "This tests font choices and metrics for serif fonts."
       LayoutBlockFlow {P} at (0,34) size 769x126
         LayoutInline {FONT} at (0,0) size 768x125
-          LayoutText {#text} at (0,0) size 125x17
-            text run at (0,0) width 125: "Times New Roman"
-          LayoutBR {BR} at (124,14) size 1x0
+          LayoutText {#text} at (0,0) size 124x17
+            text run at (0,0) width 124: "Times New Roman"
+          LayoutBR {BR} at (123,14) size 1x0
           LayoutText {#text} at (0,18) size 763x35
             text run at (0,18) width 763: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ["
             text run at (0,36) width 390: "\\ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } > "
@@ -108,9 +108,9 @@ layer at (0,0) size 785x5468 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (0,306) size 32x17
                 text run at (0,306) width 32: "0000"
               LayoutBR {BR} at (32,320) size 0x0
-              LayoutText {#text} at (0,324) size 32x17
-                text run at (0,324) width 32: "1111"
-              LayoutBR {BR} at (32,338) size 0x0
+              LayoutText {#text} at (0,324) size 31x17
+                text run at (0,324) width 31: "1111"
+              LayoutBR {BR} at (30,338) size 1x0
               LayoutText {#text} at (0,342) size 32x17
                 text run at (0,342) width 32: "2222"
               LayoutBR {BR} at (32,356) size 0x0
@@ -267,9 +267,9 @@ layer at (0,0) size 785x5468 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (0,1260) size 29x17
                 text run at (0,1260) width 29: "eeee"
               LayoutBR {BR} at (28,1274) size 1x0
-              LayoutText {#text} at (0,1278) size 22x17
-                text run at (0,1278) width 22: "ffff"
-              LayoutBR {BR} at (21,1292) size 1x0
+              LayoutText {#text} at (0,1278) size 21x17
+                text run at (0,1278) width 21: "ffff"
+              LayoutBR {BR} at (20,1292) size 1x0
               LayoutText {#text} at (0,1296) size 32x17
                 text run at (0,1296) width 32: "gggg"
               LayoutBR {BR} at (32,1310) size 0x0
@@ -396,9 +396,9 @@ layer at (0,0) size 785x5468 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,288) size 32x17
                   text run at (0,288) width 32: "0000"
                 LayoutBR {BR} at (32,302) size 0x0
-                LayoutText {#text} at (0,306) size 32x17
-                  text run at (0,306) width 32: "1111"
-                LayoutBR {BR} at (32,320) size 0x0
+                LayoutText {#text} at (0,306) size 30x17
+                  text run at (0,306) width 30: "1111"
+                LayoutBR {BR} at (29,320) size 1x0
                 LayoutText {#text} at (0,324) size 32x17
                   text run at (0,324) width 32: "2222"
                 LayoutBR {BR} at (32,338) size 0x0
@@ -685,9 +685,9 @@ layer at (0,0) size 785x5468 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,288) size 32x17
                   text run at (0,288) width 32: "0000"
                 LayoutBR {BR} at (32,302) size 0x0
-                LayoutText {#text} at (0,306) size 32x17
-                  text run at (0,306) width 32: "1111"
-                LayoutBR {BR} at (32,320) size 0x0
+                LayoutText {#text} at (0,306) size 29x17
+                  text run at (0,306) width 29: "1111"
+                LayoutBR {BR} at (28,320) size 1x0
                 LayoutText {#text} at (0,324) size 32x17
                   text run at (0,324) width 32: "2222"
                 LayoutBR {BR} at (32,338) size 0x0

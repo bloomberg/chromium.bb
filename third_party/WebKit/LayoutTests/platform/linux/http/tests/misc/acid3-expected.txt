@@ -38,12 +38,12 @@ layer at (20,20) size 644x433
         LayoutInline {MAP} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (41,334) size 582x98 [color=#808080]
-        LayoutText {#text} at (0,0) size 114x18
-          text run at (0,0) width 114: "To pass the test,"
+        LayoutText {#text} at (0,0) size 113x18
+          text run at (0,0) width 113: "To pass the test,"
         LayoutBlockFlow (floating) {SPAN} at (562,0) size 20x20 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (114,0) size 550x56
-          text run at (114,0) width 436: " a browser must use its default settings, the animation has to be"
-          text run at (0,19) width 547: "smooth, the score has to end on 100/100, and the final page has to look exactly,"
+        LayoutText {#text} at (112,0) size 549x56
+          text run at (112,0) width 437: " a browser must use its default settings, the animation has to be"
+          text run at (0,19) width 546: "smooth, the score has to end on 100/100, and the final page has to look exactly,"
           text run at (0,38) width 126: "pixel for pixel, like "
         LayoutInline {A} at (0,0) size 164x18 [color=#0000FF]
           LayoutText {#text} at (126,38) size 164x18
@@ -237,7 +237,7 @@ layer at (638,18) size 20x20
   LayoutBlockFlow (positioned) {<pseudo:after>} at (638,18) size 20x20 [color=#FFFFFF] [bgcolor=#FF00FF]
     LayoutTextFragment (anonymous) at (0,0) size 20x20
       text run at (0,0) width 20: "X"
-layer at (10,10) size 83x46
-  LayoutBlockFlow (positioned) {DIV} at (10,10) size 83x46 [color=#00000000]
-    LayoutText {#text} at (0,0) size 83x45
-      text run at (0,0) width 83: "FAIL"
+layer at (10,10) size 81x46
+  LayoutBlockFlow (positioned) {DIV} at (10,10) size 80.80x46 [color=#00000000]
+    LayoutText {#text} at (0,0) size 81x45
+      text run at (0,0) width 81: "FAIL"

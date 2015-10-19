@@ -4,8 +4,8 @@ layer at (0,0) size 800x134
   LayoutBlockFlow {HTML} at (0,0) size 800x134
     LayoutBlockFlow {BODY} at (8,8) size 784x118
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 373x18
-          text run at (0,0) width 373: "Will be green if relative positioning stacking is supported:"
+        LayoutText {#text} at (0,0) size 372x18
+          text run at (0,0) width 372: "Will be green if relative positioning stacking is supported:"
       LayoutTable {TABLE} at (0,18) size 100x100
         LayoutTableSection {TBODY} at (0,0) size 100x100
           LayoutTableRow {TR} at (0,0) size 100x0

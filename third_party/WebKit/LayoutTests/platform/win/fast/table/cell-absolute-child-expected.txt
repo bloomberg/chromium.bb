@@ -6,19 +6,19 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 213x17
           text run at (0,0) width 213: "This tests for regressions against "
-        LayoutInline {I} at (0,0) size 748x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (212,0) size 355x17
-              text run at (212,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8081"
-          LayoutText {#text} at (566,0) size 748x35
-            text run at (566,0) width 5: " "
-            text run at (570,0) width 178: "REGRESSION: Drop-down"
+        LayoutInline {I} at (0,0) size 747x35
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (212,0) size 354x17
+              text run at (212,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8081"
+          LayoutText {#text} at (565,0) size 747x35
+            text run at (565,0) width 5: " "
+            text run at (569,0) width 178: "REGRESSION: Drop-down"
             text run at (0,18) width 130: "menu has gap at top"
         LayoutText {#text} at (129,18) size 5x17
           text run at (129,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 543x17
-          text run at (0,0) width 543: "You should see two identical green squares, 100x100 pixels each, next to each other."
+        LayoutText {#text} at (0,0) size 541x17
+          text run at (0,0) width 541: "You should see two identical green squares, 100x100 pixels each, next to each other."
       LayoutTable {TABLE} at (0,86) size 106x156
         LayoutTableSection {TBODY} at (0,0) size 106x156
           LayoutTableRow {TR} at (0,2) size 106x50

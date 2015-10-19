@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,1) size 715x342
-        text run at (0,1) width 692: "You should see"
+        text run at (0,1) width 683: "You should see"
         text run at (0,116) width 715: "pictographs of a"
         text run at (0,231) width 637: "bug and a cat."
       LayoutBR {BR} at (637,321) size 0x0

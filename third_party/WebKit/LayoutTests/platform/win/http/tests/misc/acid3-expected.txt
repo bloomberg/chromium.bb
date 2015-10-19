@@ -38,18 +38,18 @@ layer at (20,20) size 644x433
         LayoutInline {MAP} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (41,334) size 582x98 [color=#808080]
-        LayoutText {#text} at (0,1) size 119x17
-          text run at (0,1) width 119: "To pass the test,"
+        LayoutText {#text} at (0,1) size 117x17
+          text run at (0,1) width 117: "To pass the test,"
         LayoutBlockFlow (floating) {SPAN} at (562,0) size 20x20 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (118,1) size 548x55
-          text run at (118,1) width 430: " a browser must use its default settings, the animation has to"
+        LayoutText {#text} at (116,1) size 547x55
+          text run at (116,1) width 431: " a browser must use its default settings, the animation has to"
           text run at (0,20) width 532: "be smooth, the score has to end on 100/100, and the final page has to look"
-          text run at (0,39) width 190: "exactly, pixel for pixel, like "
+          text run at (0,39) width 189: "exactly, pixel for pixel, like "
         LayoutInline {A} at (0,0) size 170x17 [color=#0000FF]
-          LayoutText {#text} at (189,39) size 170x17
-            text run at (189,39) width 170: "this reference rendering"
-        LayoutText {#text} at (358,39) size 5x17
-          text run at (358,39) width 5: "."
+          LayoutText {#text} at (188,39) size 170x17
+            text run at (188,39) width 170: "this reference rendering"
+        LayoutText {#text} at (357,39) size 5x17
+          text run at (357,39) width 5: "."
 layer at (57,350) size 0x0
   LayoutIFrame (floating) {IFRAME} at (0,0) size 0x0
     layer at (0,0) size 0x0 scrollWidth 1 scrollHeight 1
@@ -237,7 +237,7 @@ layer at (638,18) size 20x20
   LayoutBlockFlow (positioned) {<pseudo:after>} at (638,18) size 20x20 [color=#FFFFFF] [bgcolor=#FF00FF]
     LayoutTextFragment (anonymous) at (0,0) size 20x20
       text run at (0,0) width 20: "X"
-layer at (10,10) size 84x45
-  LayoutBlockFlow (positioned) {DIV} at (10,10) size 84.48x45 [color=#00000000]
-    LayoutText {#text} at (0,0) size 85x44
-      text run at (0,0) width 85: "FAIL"
+layer at (10,10) size 82x45
+  LayoutBlockFlow (positioned) {DIV} at (10,10) size 82.27x45 [color=#00000000]
+    LayoutText {#text} at (0,0) size 83x44
+      text run at (0,0) width 83: "FAIL"

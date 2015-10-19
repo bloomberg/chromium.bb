@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 471x19
         text run at (0,0) width 471: "This tests that toggling the display property won't make the controls disappear."
-      LayoutBR {BR} at (471,15) size 0x0
+      LayoutBR {BR} at (470,15) size 1x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,28) size 320x240
   LayoutVideo {VIDEO} at (0,20) size 320x240

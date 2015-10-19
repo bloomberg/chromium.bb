@@ -4,11 +4,11 @@ layer at (0,0) size 800x362
   LayoutBlockFlow {HTML} at (0,0) size 800x362
     LayoutBlockFlow {BODY} at (8,16) size 784x338
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 484x19
-          text run at (0,0) width 484: "You should see a green box inside a gray box. If you see red, the test has failed. "
-        LayoutInline {A} at (0,0) size 291x19 [color=#0000EE]
-          LayoutText {#text} at (484,0) size 291x19
-            text run at (484,0) width 291: "https://bugs.webkit.org/show_bug.cgi?id=18885"
+        LayoutText {#text} at (0,0) size 483x19
+          text run at (0,0) width 483: "You should see a green box inside a gray box. If you see red, the test has failed. "
+        LayoutInline {A} at (0,0) size 292x19 [color=#0000EE]
+          LayoutText {#text} at (482,0) size 292x19
+            text run at (482,0) width 292: "https://bugs.webkit.org/show_bug.cgi?id=18885"
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,52) size 302x302
   LayoutBlockFlow (relative positioned) {DIV} at (0,36) size 302x302 [border: (1px solid #000000)]

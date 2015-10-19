@@ -6,18 +6,18 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 218x18
           text run at (0,0) width 218: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 764x36
-          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 355x18
-              text run at (217,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6888"
-          LayoutText {#text} at (571,0) size 764x36
-            text run at (571,0) width 193: " Collapsed borders appear on"
-            text run at (0,18) width 319: "the wrong side or on the wrong cell in RTL tables"
-        LayoutText {#text} at (318,18) size 5x18
-          text run at (318,18) width 5: "."
+        LayoutInline {I} at (0,0) size 763x36
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x18
+              text run at (217,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6888"
+          LayoutText {#text} at (570,0) size 763x36
+            text run at (570,0) width 193: " Collapsed borders appear on"
+            text run at (0,18) width 318: "the wrong side or on the wrong cell in RTL tables"
+        LayoutText {#text} at (317,18) size 5x18
+          text run at (317,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 374x18
-          text run at (0,0) width 374: "The RTL table should be a mirror image of the LTR table."
+        LayoutText {#text} at (0,0) size 371x18
+          text run at (0,0) width 371: "The RTL table should be a mirror image of the LTR table."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,96) size 74x139
         LayoutTableSection {TBODY} at (0,0) size 74x139

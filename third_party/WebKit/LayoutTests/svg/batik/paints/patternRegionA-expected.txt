@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x498
-    LayoutSVGText {text} at (108,36) size 234x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 234x17
-        chunk 1 (middle anchor) text run 1 at (108.49,50.00) startOffset 0 endOffset 34 width 233.02: "patternRegion, x, y, width, height"
+    LayoutSVGText {text} at (109,36) size 232x17 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 232x17
+        chunk 1 (middle anchor) text run 1 at (109.08,50.00) startOffset 0 endOffset 34 width 231.84: "patternRegion, x, y, width, height"
     LayoutSVGContainer {g} at (24,71) size 426x390
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGContainer {g} at (0,0) size 20x20
@@ -152,7 +152,7 @@ layer at (0,0) size 450x500
             LayoutSVGContainer {g} at (70,130) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
               LayoutSVGRect {rect} at (70,130) size 20x20 [fill={[type=SOLID] [color=#6464FF]}] [x=0.00] [y=0.00] [width=5.00] [height=5.00]
               LayoutSVGRect {rect} at (90,150) size 20x20 [fill={[type=SOLID] [color=#6464FF]}] [x=5.00] [y=5.00] [width=5.00] [height=5.00]
-      LayoutSVGContainer {g} at (24,181) size 248x280 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,200.00)}]
+      LayoutSVGContainer {g} at (24,181) size 247x280 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,200.00)}]
         LayoutSVGContainer {g} at (29,181) size 186x70
           LayoutSVGText {text} at (0,-19) size 185x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 185x17
@@ -162,19 +162,19 @@ layer at (0,0) size 450x500
         LayoutSVGContainer {g} at (24,251) size 221x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,70.00)}]
           LayoutSVGText {text} at (0,-19) size 215x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 215x17
-              chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 32 width 214.36: "patternRegion offset to the left"
+              chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 32 width 214.07: "patternRegion offset to the left"
           LayoutSVGRect {rect} at (29,269) size 102x52 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="patternTranslateRegionX"]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           LayoutSVGRect {rect} at (24,269) size 22x22 [stroke={[type=SOLID] [color=#FFFFFF]}] [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [x=-5.00] [y=0.00] [width=20.00] [height=20.00]
-        LayoutSVGContainer {g} at (29,321) size 217x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,140.00)}]
-          LayoutSVGText {text} at (0,-19) size 216x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 216x17
-              chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 31 width 215.26: "patternRegion offset to the top"
+        LayoutSVGContainer {g} at (29,321) size 216x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,140.00)}]
+          LayoutSVGText {text} at (0,-19) size 215x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 215x17
+              chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 31 width 214.97: "patternRegion offset to the top"
           LayoutSVGRect {rect} at (29,339) size 102x52 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="patternTranslateRegionY"]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           LayoutSVGRect {rect} at (29,334) size 22x22 [stroke={[type=SOLID] [color=#FFFFFF]}] [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [x=0.00] [y=-5.00] [width=20.00] [height=20.00]
-        LayoutSVGContainer {g} at (29,391) size 243x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
-          LayoutSVGText {text} at (0,-19) size 242x17 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 242x17
-              chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 36 width 241.05: "patternRegion offset to the top/left"
+        LayoutSVGContainer {g} at (29,391) size 242x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
+          LayoutSVGText {text} at (0,-19) size 241x17 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 241x17
+              chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 36 width 240.76: "patternRegion offset to the top/left"
           LayoutSVGRect {rect} at (29,409) size 102x52 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="patternTranslateRegionXY"]}] [x=0.00] [y=0.00] [width=100.00] [height=50.00]
           LayoutSVGRect {rect} at (39,419) size 22x22 [stroke={[type=SOLID] [color=#FFFFFF]}] [fill={[type=SOLID] [color=#000000] [opacity=0.12]}] [x=10.00] [y=10.00] [width=20.00] [height=20.00]
       LayoutSVGContainer {g} at (254,181) size 196x210 [transform={m=((1.00,0.00)(0.00,1.00)) t=(255.00,200.00)}]

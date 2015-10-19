@@ -129,9 +129,9 @@ layer at (0,0) size 785x6119 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (0,323) size 36x18
                 text run at (0,323) width 36: "0000"
               LayoutBR {BR} at (36,338) size 0x0
-              LayoutText {#text} at (0,342) size 36x18
-                text run at (0,342) width 36: "1111"
-              LayoutBR {BR} at (36,357) size 0x0
+              LayoutText {#text} at (0,342) size 33x18
+                text run at (0,342) width 33: "1111"
+              LayoutBR {BR} at (32,357) size 1x0
               LayoutText {#text} at (0,361) size 36x18
                 text run at (0,361) width 36: "2222"
               LayoutBR {BR} at (36,376) size 0x0
@@ -290,7 +290,7 @@ layer at (0,0) size 785x6119 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBR {BR} at (36,1345) size 0x0
               LayoutText {#text} at (0,1349) size 16x18
                 text run at (0,1349) width 16: "ffff"
-              LayoutBR {BR} at (16,1364) size 0x0
+              LayoutBR {BR} at (15,1364) size 1x0
               LayoutText {#text} at (0,1368) size 36x18
                 text run at (0,1368) width 36: "gggg"
               LayoutBR {BR} at (36,1383) size 0x0
@@ -417,9 +417,9 @@ layer at (0,0) size 785x6119 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,320) size 36x19
                   text run at (0,320) width 36: "0000"
                 LayoutBR {BR} at (36,335) size 0x0
-                LayoutText {#text} at (0,340) size 36x19
-                  text run at (0,340) width 36: "1111"
-                LayoutBR {BR} at (36,355) size 0x0
+                LayoutText {#text} at (0,340) size 34x19
+                  text run at (0,340) width 34: "1111"
+                LayoutBR {BR} at (33,355) size 1x0
                 LayoutText {#text} at (0,360) size 36x19
                   text run at (0,360) width 36: "2222"
                 LayoutBR {BR} at (36,375) size 0x0
@@ -706,9 +706,9 @@ layer at (0,0) size 785x6119 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,320) size 36x19
                   text run at (0,320) width 36: "0000"
                 LayoutBR {BR} at (36,336) size 0x0
-                LayoutText {#text} at (0,340) size 36x19
-                  text run at (0,340) width 36: "1111"
-                LayoutBR {BR} at (36,356) size 0x0
+                LayoutText {#text} at (0,340) size 33x19
+                  text run at (0,340) width 33: "1111"
+                LayoutBR {BR} at (32,356) size 1x0
                 LayoutText {#text} at (0,360) size 36x19
                   text run at (0,360) width 36: "2222"
                 LayoutBR {BR} at (36,376) size 0x0

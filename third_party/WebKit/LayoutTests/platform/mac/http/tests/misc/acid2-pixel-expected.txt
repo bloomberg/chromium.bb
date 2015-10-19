@@ -8,9 +8,9 @@ layer at (0,0) size 800x298
           text run at (12,46) width 131: "Hello World!"
 layer at (36,72) size 764x226
   LayoutBlockFlow (relative positioned) {DIV} at (36,72) size 764x226 [border: (12px solid #00000000)]
-    LayoutTable {TABLE} at (12,12) size 1x0
-      LayoutTableSection {TBODY} at (0,0) size 1x0
-        LayoutTableRow {TR} at (0,0) size 1x0
+    LayoutTable {TABLE} at (12,12) size 0x0
+      LayoutTableSection {TBODY} at (0,0) size 0x0
+        LayoutTableRow {TR} at (0,0) size 0x0
           LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (60,60) size 120x12 [bgcolor=#FF0000] [border: none (12px solid #000000) none (12px solid #000000)]
       LayoutBlockFlow {DIV} at (12,0) size 144x12
@@ -38,7 +38,7 @@ layer at (36,72) size 764x226
           LayoutTableCell {LI} at (0,0) size 12x0 [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
           LayoutTableCell (anonymous) at (12,0) size 12x12 [r=0 c=1 rs=1 cs=1]
             LayoutTable {LI} at (0,0) size 12x12 [bgcolor=#000000]
-          LayoutTableCell {LI} at (24,6) size 12x0 [bgcolor=#000000] [r=0 c=2 rs=1 cs=1]
+          LayoutTableCell {LI} at (24,0) size 12x0 [bgcolor=#000000] [r=0 c=2 rs=1 cs=1]
           LayoutTableCell (anonymous) at (36,0) size 12x12 [r=0 c=3 rs=1 cs=1]
             LayoutListItem {LI} at (0,0) size 12x12 [bgcolor=#000000]
 layer at (48,276) size 740x10 scrollHeight 276

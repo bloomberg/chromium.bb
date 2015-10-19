@@ -7,7 +7,7 @@ layer at (0,224) size 800x376
         LayoutText {#text} at (0,0) size 109x17
           text run at (0,0) width 109: "Something Fishy"
       LayoutText {#text} at (0,0) size 0x0
-layer at (0,16) size 401x18
-  LayoutBlockFlow (positioned) {P} at (0,566) size 401.27x18
-    LayoutText {#text} at (0,0) size 402x17
-      text run at (0,0) width 402: "Test passes if the full 15px box-shadow beneath text is visible."
+layer at (0,16) size 400x18
+  LayoutBlockFlow (positioned) {P} at (0,566) size 400.14x18
+    LayoutText {#text} at (0,0) size 401x17
+      text run at (0,0) width 401: "Test passes if the full 15px box-shadow beneath text is visible."

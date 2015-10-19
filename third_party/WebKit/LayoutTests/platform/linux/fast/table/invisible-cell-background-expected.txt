@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (433,0) size 102x19
           text run at (433,0) width 102: " is never painted."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 440x19
-          text run at (0,0) width 440: "You should see nine green squares and no red, orange or yellow squares."
+        LayoutText {#text} at (0,0) size 439x19
+          text run at (0,0) width 439: "You should see nine green squares and no red, orange or yellow squares."
       LayoutTable {TABLE} at (4,72) size 27x25
         LayoutTableSection {TBODY} at (0,0) size 27x25 [bgcolor=#FFFF00]
           LayoutTableRow {TR} at (0,0) size 27x25 [bgcolor=#FFA500]

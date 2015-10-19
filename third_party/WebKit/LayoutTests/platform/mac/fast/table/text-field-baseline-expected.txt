@@ -6,20 +6,20 @@ layer at (0,0) size 800x391
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 177x18
           text run at (0,0) width 177: "This is a regression test for "
-        LayoutInline {I} at (0,0) size 751x36
-          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
-            LayoutText {#text} at (176,0) size 355x18
-              text run at (176,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9122"
-          LayoutText {#text} at (530,0) size 751x36
-            text run at (530,0) width 5: " "
-            text run at (534,0) width 217: "REGRESSION: Incorrect vertical"
-            text run at (0,18) width 313: "position for text fields in a \"display: table\" block"
-        LayoutText {#text} at (312,18) size 5x18
-          text run at (312,18) width 5: "."
+        LayoutInline {I} at (0,0) size 750x36
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (176,0) size 354x18
+              text run at (176,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9122"
+          LayoutText {#text} at (529,0) size 750x36
+            text run at (529,0) width 5: " "
+            text run at (533,0) width 217: "REGRESSION: Incorrect vertical"
+            text run at (0,18) width 312: "position for text fields in a \"display: table\" block"
+        LayoutText {#text} at (311,18) size 5x18
+          text run at (311,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x36
-        LayoutText {#text} at (0,0) size 756x36
-          text run at (0,0) width 756: "Type something in the text field. Resize the window. The text field should not jump down. Delete what you typed and"
-          text run at (0,18) width 326: "resize the window. The text field should not move."
+        LayoutText {#text} at (0,0) size 752x36
+          text run at (0,0) width 752: "Type something in the text field. Resize the window. The text field should not jump down. Delete what you typed and"
+          text run at (0,18) width 324: "resize the window. The text field should not move."
       LayoutBlockFlow {FORM} at (0,104) size 784x255
         LayoutTable {DL} at (0,0) size 156x19
           LayoutTableSection (anonymous) at (0,0) size 156x19
@@ -33,7 +33,7 @@ layer at (0,0) size 800x391
         LayoutBlockFlow {P} at (0,53) size 784x36
           LayoutText {#text} at (0,0) size 771x36
             text run at (0,0) width 771: "And here's more. There should not be a difference in distance between the labels, nor any difference in distance between"
-            text run at (0,18) width 92: "the text fields."
+            text run at (0,18) width 91: "the text fields."
         LayoutTable {DL} at (0,105) size 237x150
           LayoutTableSection (anonymous) at (0,0) size 237x150
             LayoutTableRow {DIV} at (0,0) size 237x19

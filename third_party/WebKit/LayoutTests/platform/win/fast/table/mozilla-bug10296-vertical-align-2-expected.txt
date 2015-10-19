@@ -4,71 +4,71 @@ layer at (0,0) size 800x479
   LayoutBlockFlow {HTML} at (0,0) size 800x478.88
     LayoutBlockFlow {BODY} at (8,21.44) size 784x449.44
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 484x36
-          text run at (0,0) width 484: "Vertical alignment and table height"
+        LayoutText {#text} at (0,0) size 481x36
+          text run at (0,0) width 481: "Vertical alignment and table height"
       LayoutBlockFlow {P} at (0,58.44) size 784x18
         LayoutText {#text} at (0,0) size 547x17
           text run at (0,0) width 547: "In each of the following tables the cells with 'Data' should all have the same baseline:"
-      LayoutTable {TABLE} at (0,92.44) size 464x119
-        LayoutTableSection {TBODY} at (0,0) size 464x119
-          LayoutTableRow {TR} at (0,2) size 464x115
+      LayoutTable {TABLE} at (0,92.44) size 463x119
+        LayoutTableSection {TBODY} at (0,0) size 463x119
+          LayoutTableRow {TR} at (0,2) size 463x115
             LayoutTableCell {TD} at (2,2) size 186x115 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,4) size 182x107
                 text run at (2,4) width 182: "Data"
-            LayoutTableCell {TD} at (190,2) size 30x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x17
-                text run at (2,2) width 26: "Top"
-            LayoutTableCell {TD} at (222,48) size 51x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (190,2) size 29x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 25x17
+                text run at (2,2) width 25: "Top"
+            LayoutTableCell {TD} at (221,48) size 51x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 47x17
                 text run at (2,2) width 47: "Middle"
-            LayoutTableCell {TD} at (275,76) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (274,76) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 31x17
                 text run at (2,2) width 31: "Data"
-            LayoutTableCell {TD} at (312,95) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (311,95) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 48x17
                 text run at (2,2) width 48: "Bottom"
-            LayoutTableCell {TD} at (367,46) size 95x59 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
+            LayoutTableCell {TD} at (366,46) size 95x59 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
               LayoutText {#text} at (2,3) size 91x53
                 text run at (2,3) width 91: "Data"
-      LayoutTable {TABLE} at (0,211.44) size 464x119
-        LayoutTableSection {TBODY} at (0,0) size 464x119
-          LayoutTableRow {TR} at (0,2) size 464x115
-            LayoutTableCell {TD} at (2,2) size 30x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x17
-                text run at (2,2) width 26: "Top"
-            LayoutTableCell {TD} at (34,76) size 35x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,211.44) size 463x119
+        LayoutTableSection {TBODY} at (0,0) size 463x119
+          LayoutTableRow {TR} at (0,2) size 463x115
+            LayoutTableCell {TD} at (2,2) size 29x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 25x17
+                text run at (2,2) width 25: "Top"
+            LayoutTableCell {TD} at (33,76) size 35x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 31x17
                 text run at (2,2) width 31: "Data"
-            LayoutTableCell {TD} at (71,46) size 95x59 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (70,46) size 95x59 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,3) size 91x53
                 text run at (2,3) width 91: "Data"
-            LayoutTableCell {TD} at (168,48) size 51x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (167,48) size 51x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 47x17
                 text run at (2,2) width 47: "Middle"
-            LayoutTableCell {TD} at (221,95) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (220,95) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 48x17
                 text run at (2,2) width 48: "Bottom"
-            LayoutTableCell {TD} at (276,2) size 186x115 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
+            LayoutTableCell {TD} at (275,2) size 186x115 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
               LayoutText {#text} at (2,4) size 182x107
                 text run at (2,4) width 182: "Data"
-      LayoutTable {TABLE} at (0,330.44) size 464x119
-        LayoutTableSection {TBODY} at (0,0) size 464x119
-          LayoutTableRow {TR} at (0,2) size 464x115
-            LayoutTableCell {TD} at (2,2) size 30x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 26x17
-                text run at (2,2) width 26: "Top"
-            LayoutTableCell {TD} at (34,46) size 95x59 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,330.44) size 463x119
+        LayoutTableSection {TBODY} at (0,0) size 463x119
+          LayoutTableRow {TR} at (0,2) size 463x115
+            LayoutTableCell {TD} at (2,2) size 29x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 25x17
+                text run at (2,2) width 25: "Top"
+            LayoutTableCell {TD} at (33,46) size 95x59 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,3) size 91x53
                 text run at (2,3) width 91: "Data"
-            LayoutTableCell {TD} at (131,95) size 53x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (130,95) size 53x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 48x17
                 text run at (2,2) width 48: "Bottom"
-            LayoutTableCell {TD} at (186,76) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
+            LayoutTableCell {TD} at (185,76) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 31x17
                 text run at (2,2) width 31: "Data"
-            LayoutTableCell {TD} at (223,2) size 186x115 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
+            LayoutTableCell {TD} at (222,2) size 186x115 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
               LayoutText {#text} at (2,4) size 182x107
                 text run at (2,4) width 182: "Data"
-            LayoutTableCell {TD} at (411,48) size 51x22 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
+            LayoutTableCell {TD} at (410,48) size 51x22 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 47x17
                 text run at (2,2) width 47: "Middle"

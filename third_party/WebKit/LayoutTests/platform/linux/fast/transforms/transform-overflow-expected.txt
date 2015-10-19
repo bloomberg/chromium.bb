@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x584
       LayoutBlockFlow {P} at (0,216) size 800x20
-        LayoutText {#text} at (0,0) size 241x19
-          text run at (0,0) width 241: "You should see one green square above"
+        LayoutText {#text} at (0,0) size 240x19
+          text run at (0,0) width 240: "You should see one green square above"
 layer at (50,50) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (50,50) size 100x100 [bgcolor=#FF0000]
 layer at (0,0) size 200x200
