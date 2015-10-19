@@ -60,16 +60,6 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // |primary_account_id| must not be an empty string.
   void ReloadCredentials(const std::string& primary_account_id);
 
-  // Sets the account that should be ignored by this token service.
-  // |ReloadCredentials| needs to be called for this change to be effective.
-  void ExcludeSecondaryAccount(const std::string& account_id);
-  void IncludeSecondaryAccount(const std::string& account_id);
-  void ExcludeSecondaryAccounts(const std::vector<std::string>& account_ids);
-
-  // Excludes all secondary accounts. |ReloadCredentials| needs to be called for
-  // this change to be effective.
-  void ExcludeAllSecondaryAccounts();
-
  protected:
   // Adds |account_id| to |accounts_| if it does not exist or udpates
   // the auth error state of |account_id| if it exists. Fires
@@ -109,23 +99,8 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // to information about the account.
   typedef std::map<std::string, linked_ptr<AccountStatus>> AccountStatusMap;
 
-  // Returns the account ids that should be ignored by this token service.
-  std::set<std::string> GetExcludedSecondaryAccounts();
-
-  // Returns true if this token service should exclude all secondary accounts.
-  bool GetExcludeAllSecondaryAccounts();
-
   // Clears exclude secondary accounts preferences.
   void ClearExcludedSecondaryAccounts();
-
-  // Returns true if the account having GAIA id |gaia| and email |email| is
-  // excluded.
-  bool IsAccountExcluded(const std::string& gaia,
-                         const std::string& email,
-                         const std::set<std::string>& excluded_account_ids);
-
-  // Migrates the excluded secondary accounts from emails to account ids.
-  void MigrateExcludedSecondaryAccountIds();
 
   // The primary account id.
   std::string primary_account_id_;

@@ -200,10 +200,9 @@ void ProfileOAuth2TokenServiceIOSDelegate::Shutdown() {
 void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (account_tracker_service_->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_IN_PROGRESS) {
-    MigrateExcludedSecondaryAccountIds();
-  }
+
+  // Clean-up stale data from prefs.
+  ClearExcludedSecondaryAccounts();
 
   // LoadCredentials() is called iff the user is signed in to Chrome, so the
   // primary account id must not be empty.
@@ -230,21 +229,18 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
   }
 
   // Get the list of new account ids.
-  std::set<std::string> excluded_account_ids = GetExcludedSecondaryAccounts();
   std::set<std::string> new_account_ids;
   for (const auto& new_account : provider_->GetAllAccounts()) {
     DCHECK(!new_account.gaia.empty());
     DCHECK(!new_account.email.empty());
-    if (!IsAccountExcluded(new_account.gaia, new_account.email,
-                           excluded_account_ids)) {
-      // Account must to be seeded before adding an account to ensure that
-      // the GAIA ID is available if any client of this token service starts
-      // a fetch access token operation when it receives a
-      // |OnRefreshTokenAvailable| notification.
-      std::string account_id = account_tracker_service_->SeedAccountInfo(
-          new_account.gaia, new_account.email);
-      new_account_ids.insert(account_id);
-    }
+
+    // Account must to be seeded before adding an account to ensure that
+    // the GAIA ID is available if any client of this token service starts
+    // a fetch access token operation when it receives a
+    // |OnRefreshTokenAvailable| notification.
+    std::string account_id = account_tracker_service_->SeedAccountInfo(
+        new_account.gaia, new_account.email);
+    new_account_ids.insert(account_id);
   }
 
   // Get the list of existing account ids.
@@ -386,154 +382,8 @@ void ProfileOAuth2TokenServiceIOSDelegate::RemoveAccount(
   }
 }
 
-std::set<std::string>
-ProfileOAuth2TokenServiceIOSDelegate::GetExcludedSecondaryAccounts() {
-  const base::ListValue* excluded_secondary_accounts_pref =
-      client_->GetPrefs()->GetList(
-          prefs::kTokenServiceExcludedSecondaryAccounts);
-  std::set<std::string> excluded_secondary_accounts;
-  for (base::Value* pref_value : *excluded_secondary_accounts_pref) {
-    std::string value;
-    if (pref_value->GetAsString(&value))
-      excluded_secondary_accounts.insert(value);
-  }
-  return excluded_secondary_accounts;
-}
-
-void ProfileOAuth2TokenServiceIOSDelegate::ExcludeSecondaryAccounts(
-    const std::vector<std::string>& account_ids) {
-  for (const auto& account_id : account_ids)
-    ExcludeSecondaryAccount(account_id);
-}
-
-void ProfileOAuth2TokenServiceIOSDelegate::ExcludeSecondaryAccount(
-    const std::string& account_id) {
-  if (GetExcludeAllSecondaryAccounts()) {
-    // Avoid excluding individual secondary accounts when all secondary
-    // accounts are excluded.
-    return;
-  }
-
-  DCHECK(!account_id.empty());
-  ListPrefUpdate update(client_->GetPrefs(),
-                        prefs::kTokenServiceExcludedSecondaryAccounts);
-  base::ListValue* excluded_secondary_accounts = update.Get();
-  for (base::Value* pref_value : *excluded_secondary_accounts) {
-    std::string value_at_it;
-    if (pref_value->GetAsString(&value_at_it) && (value_at_it == account_id)) {
-      // |account_id| is already excluded.
-      return;
-    }
-  }
-  excluded_secondary_accounts->AppendString(account_id);
-}
-
-void ProfileOAuth2TokenServiceIOSDelegate::IncludeSecondaryAccount(
-    const std::string& account_id) {
-  if (GetExcludeAllSecondaryAccounts()) {
-    // Avoid including individual secondary accounts when all secondary
-    // accounts are excluded.
-    return;
-  }
-
-  DCHECK_NE(account_id, primary_account_id_);
-  DCHECK(!primary_account_id_.empty());
-
-  // Excluded secondary account ids is a logical set (not a list) of accounts.
-  // As the value stored in the excluded account ids preference is a list,
-  // the code below removes all occurences of |account_id| from this list. This
-  // ensures that |account_id| is actually included even in cases when the
-  // preference value was corrupted (see bug http://crbug.com/453470 as
-  // example).
-  ListPrefUpdate update(client_->GetPrefs(),
-                        prefs::kTokenServiceExcludedSecondaryAccounts);
-  base::ListValue* excluded_secondary_accounts = update.Get();
-  base::ListValue::iterator it = excluded_secondary_accounts->begin();
-  while (it != excluded_secondary_accounts->end()) {
-    base::Value* pref_value = *it;
-    std::string value_at_it;
-    if (pref_value->GetAsString(&value_at_it) && (value_at_it == account_id)) {
-      it = excluded_secondary_accounts->Erase(it, nullptr);
-      continue;
-    }
-    ++it;
-  }
-}
-
-bool ProfileOAuth2TokenServiceIOSDelegate::GetExcludeAllSecondaryAccounts() {
-  return client_->GetPrefs()->GetBoolean(
-      prefs::kTokenServiceExcludeAllSecondaryAccounts);
-}
-
-void ProfileOAuth2TokenServiceIOSDelegate::ExcludeAllSecondaryAccounts() {
-  client_->GetPrefs()->SetBoolean(
-      prefs::kTokenServiceExcludeAllSecondaryAccounts, true);
-}
-
 void ProfileOAuth2TokenServiceIOSDelegate::ClearExcludedSecondaryAccounts() {
   client_->GetPrefs()->ClearPref(
       prefs::kTokenServiceExcludeAllSecondaryAccounts);
   client_->GetPrefs()->ClearPref(prefs::kTokenServiceExcludedSecondaryAccounts);
-}
-
-bool ProfileOAuth2TokenServiceIOSDelegate::IsAccountExcluded(
-    const std::string& gaia,
-    const std::string& email,
-    const std::set<std::string>& excluded_account_ids) {
-  std::string account_id =
-      account_tracker_service_->PickAccountIdForAccount(gaia, email);
-  if (account_id == primary_account_id_) {
-    // Only secondary account ids are excluded.
-    return false;
-  }
-
-  if (GetExcludeAllSecondaryAccounts())
-    return true;
-  return excluded_account_ids.count(account_id) > 0;
-}
-
-void ProfileOAuth2TokenServiceIOSDelegate::
-    MigrateExcludedSecondaryAccountIds() {
-  DCHECK_EQ(AccountTrackerService::MIGRATION_IN_PROGRESS,
-            account_tracker_service_->GetMigrationState());
-
-  // Before the account id migration, emails were used as account identifiers.
-  // Thus the pref |prefs::kTokenServiceExcludedSecondaryAccounts| holds the
-  // emails of the excluded secondary accounts.
-  std::set<std::string> excluded_emails = GetExcludedSecondaryAccounts();
-  if (excluded_emails.empty())
-    return;
-
-  std::vector<std::string> excluded_account_ids;
-  for (const std::string& excluded_email : excluded_emails) {
-    ProfileOAuth2TokenServiceIOSProvider::AccountInfo account_info =
-        provider_->GetAccountInfoForEmail(excluded_email);
-    if (account_info.gaia.empty()) {
-      // The provider no longer has an account with email |excluded_email|.
-      // This can occur for 2 reasons:
-      // 1. The account with email |excluded_email| was removed before being
-      //   migrated. It may simply be ignored in this case (no need to exclude
-      //   an account that is no longer available).
-      // 2. The migration of the excluded account ids was already done before,
-      //   but the entire migration of the accounts did not end for whatever
-      //   reason (e.g. the app crashed during the previous attempt to migrate
-      //   the accounts). The entire migration should be ignored in this case.
-      if (provider_->GetAccountInfoForGaia(excluded_email).gaia.empty()) {
-        // Case 1 above (account was removed).
-        DVLOG(1) << "Excluded secondary account with email " << excluded_email
-                 << " was removed before migration.";
-      } else {
-        // Case 2 above (migration already done).
-        DVLOG(1) << "Excluded secondary account ids were already migrated.";
-        return;
-      }
-    } else {
-      std::string excluded_account_id =
-          account_tracker_service_->PickAccountIdForAccount(account_info.gaia,
-                                                            account_info.email);
-      excluded_account_ids.push_back(excluded_account_id);
-    }
-  }
-  ClearExcludedSecondaryAccounts();
-  ExcludeSecondaryAccounts(excluded_account_ids);
 }
