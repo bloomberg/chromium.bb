@@ -13,6 +13,7 @@
       '<(PRODUCT_DIR)/md5sum_bin_host',
       '<(PRODUCT_DIR)/md5sum_dist/',
       'devil/',
+      'incremental_install/',
       'lighttpd_server.py',
       'pylib/',
       'test_runner.py',
