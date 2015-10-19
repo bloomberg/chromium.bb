@@ -17,10 +17,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/composition_text_chromeos.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -39,8 +40,7 @@ namespace {
 const base::string16 kSampleText = base::UTF8ToUTF16(
     "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
 
-typedef chromeos::IMEEngineHandlerInterface::KeyEventDoneCallback
-    KeyEventCallback;
+typedef IMEEngineHandlerInterface::KeyEventDoneCallback KeyEventCallback;
 
 uint32 GetOffsetInUTF16(
     const base::string16& utf16_string, uint32 utf8_offset) {
@@ -206,16 +206,16 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   ~InputMethodChromeOSTest() override {}
 
   void SetUp() override {
-    chromeos::IMEBridge::Initialize();
+    IMEBridge::Initialize();
 
     mock_ime_engine_handler_.reset(
         new chromeos::MockIMEEngineHandler());
-    chromeos::IMEBridge::Get()->SetCurrentEngineHandler(
+    IMEBridge::Get()->SetCurrentEngineHandler(
         mock_ime_engine_handler_.get());
 
     mock_ime_candidate_window_handler_.reset(
         new chromeos::MockIMECandidateWindowHandler());
-    chromeos::IMEBridge::Get()->SetCandidateWindowHandler(
+    IMEBridge::Get()->SetCandidateWindowHandler(
         mock_ime_candidate_window_handler_.get());
 
     ime_.reset(new TestableInputMethodChromeOS(this));
@@ -226,11 +226,11 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     if (ime_.get())
       ime_->SetFocusedTextInputClient(NULL);
     ime_.reset();
-    chromeos::IMEBridge::Get()->SetCurrentEngineHandler(NULL);
-    chromeos::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+    IMEBridge::Get()->SetCurrentEngineHandler(NULL);
+    IMEBridge::Get()->SetCandidateWindowHandler(NULL);
     mock_ime_engine_handler_.reset();
     mock_ime_candidate_window_handler_.reset();
-    chromeos::IMEBridge::Shutdown();
+    IMEBridge::Shutdown();
 
     ResetFlags();
   }
@@ -896,7 +896,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
   EXPECT_EQ(kFlags, key_event->flags());
   EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
 
-  (static_cast<chromeos::IMEInputContextHandlerInterface*>(ime_.get()))
+  (static_cast<IMEInputContextHandlerInterface*>(ime_.get()))
       ->CommitText("A");
 
   EXPECT_EQ(0, inserted_char_);
@@ -949,7 +949,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
 
   chromeos::CompositionText comp;
   comp.set_text(base::ASCIIToUTF16("B"));
-  (static_cast<chromeos::IMEInputContextHandlerInterface*>(ime_.get()))
+  (static_cast<IMEInputContextHandlerInterface*>(ime_.get()))
       ->UpdateCompositionText(comp, comp.text().length(), true);
 
   EXPECT_EQ(0, composition_text_.text[0]);

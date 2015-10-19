@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
 
 class GURL;
 
@@ -21,7 +21,7 @@ struct KeyEventHandle;
 
 // InputMethodEngine is used to translate from the Chrome IME API to the native
 // API.
-class InputMethodEngineInterface : public IMEEngineHandlerInterface {
+class InputMethodEngineInterface : public ui::IMEEngineHandlerInterface {
  public:
   struct KeyboardEvent {
     KeyboardEvent();

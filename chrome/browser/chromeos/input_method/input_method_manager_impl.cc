@@ -38,6 +38,7 @@
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -472,7 +473,7 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
   if (IsActive()) {
     if (extension_id == extension_ime_util::GetExtensionIDFromInputMethodID(
                             current_input_method.id())) {
-      IMEBridge::Get()->SetCurrentEngineHandler(engine);
+      ui::IMEBridge::Get()->SetCurrentEngineHandler(engine);
       engine->Enable(extension_ime_util::GetComponentIDByInputMethodID(
           current_input_method.id()));
     }
@@ -507,9 +508,9 @@ void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
   extra_input_methods.swap(new_extra_input_methods);
 
   if (IsActive()) {
-    if (IMEBridge::Get()->GetCurrentEngineHandler() ==
+    if (ui::IMEBridge::Get()->GetCurrentEngineHandler() ==
         manager_->engine_map_[profile][extension_id]) {
-      IMEBridge::Get()->SetCurrentEngineHandler(NULL);
+      ui::IMEBridge::Get()->SetCurrentEngineHandler(NULL);
     }
     manager_->engine_map_[profile].erase(extension_id);
   }
@@ -985,8 +986,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
   }
 
   // Disable the current engine handler.
-  IMEEngineHandlerInterface* engine =
-      IMEBridge::Get()->GetCurrentEngineHandler();
+  ui::IMEEngineHandlerInterface* engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
   if (engine)
     engine->Disable();
 
@@ -999,7 +1000,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
       extension_ime_util::GetComponentIDByInputMethodID(descriptor.id());
   engine = engine_map_[profile][extension_id];
 
-  IMEBridge::Get()->SetCurrentEngineHandler(engine);
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine);
 
   if (engine) {
     engine->Enable(component_id);
@@ -1057,8 +1058,8 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
 
   if (ui::ime::InputMethodMenuManager::GetInstance()->
       HasInputMethodMenuItemForKey(key)) {
-    IMEEngineHandlerInterface* engine =
-        IMEBridge::Get()->GetCurrentEngineHandler();
+    ui::IMEEngineHandlerInterface* engine =
+        ui::IMEBridge::Get()->GetCurrentEngineHandler();
     if (engine)
       engine->PropertyActivate(key);
     return;
@@ -1135,8 +1136,8 @@ void InputMethodManagerImpl::InitializeComponentExtensionForTesting(
 }
 
 void InputMethodManagerImpl::CandidateClicked(int index) {
-  IMEEngineHandlerInterface* engine =
-      IMEBridge::Get()->GetCurrentEngineHandler();
+  ui::IMEEngineHandlerInterface* engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
   if (engine)
     engine->CandidateClicked(index);
 }

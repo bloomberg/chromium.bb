@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/ime/chromeos/character_composer.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/input_method_base.h"
 
 namespace ui {
@@ -22,7 +22,7 @@ namespace ui {
 // A ui::InputMethod implementation based on IBus.
 class UI_BASE_IME_EXPORT InputMethodChromeOS
     : public InputMethodBase,
-      public chromeos::IMEInputContextHandlerInterface {
+      public ui::IMEInputContextHandlerInterface {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   ~InputMethodChromeOS() override;
@@ -97,7 +97,7 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
   // true if character composer comsumes key event.
   bool ExecuteCharacterComposer(const ui::KeyEvent& event);
 
-  // chromeos::IMEInputContextHandlerInterface overrides:
+  // ui::IMEInputContextHandlerInterface overrides:
   void CommitText(const std::string& text) override;
   void UpdateCompositionText(const chromeos::CompositionText& text,
                              uint32 cursor_pos,

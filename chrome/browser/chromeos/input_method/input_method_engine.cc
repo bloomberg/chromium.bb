@@ -26,6 +26,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
@@ -49,8 +50,8 @@ const char kCandidateNotFound[] = "Candidate not found";
 void UpdateComposition(const CompositionText& composition_text,
                        uint32 cursor_pos,
                        bool is_visible) {
-  IMEInputContextHandlerInterface* input_context =
-      IMEBridge::Get()->GetInputContextHandler();
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
     input_context->UpdateCompositionText(
         composition_text, cursor_pos, is_visible);
@@ -268,7 +269,7 @@ bool InputMethodEngine::CommitText(int context_id, const char* text,
     return false;
   }
 
-  IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
+  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
 
   // Records histograms for committed characters.
   if (!composition_text_->text().empty()) {
@@ -349,7 +350,7 @@ void InputMethodEngine::SetCandidateWindowProperty(
 
   if (IsActive()) {
     IMECandidateWindowHandlerInterface* cw_handler =
-        IMEBridge::Get()->GetCandidateWindowHandler();
+        ui::IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
       cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
@@ -364,7 +365,7 @@ bool InputMethodEngine::SetCandidateWindowVisible(bool visible,
 
   window_visible_ = visible;
   IMECandidateWindowHandlerInterface* cw_handler =
-      IMEBridge::Get()->GetCandidateWindowHandler();
+      ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
@@ -404,7 +405,7 @@ bool InputMethodEngine::SetCandidates(
   }
   if (IsActive()) {
     IMECandidateWindowHandlerInterface* cw_handler =
-        IMEBridge::Get()->GetCandidateWindowHandler();
+        ui::IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
       cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
@@ -431,7 +432,7 @@ bool InputMethodEngine::SetCursorPosition(int context_id, int candidate_id,
 
   candidate_window_->set_cursor_position(position->second);
   IMECandidateWindowHandlerInterface* cw_handler =
-      IMEBridge::Get()->GetCandidateWindowHandler();
+      ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
@@ -479,8 +480,8 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
 
   // TODO(nona): Return false if there is ongoing composition.
 
-  IMEInputContextHandlerInterface* input_context =
-      IMEBridge::Get()->GetInputContextHandler();
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
     input_context->DeleteSurroundingText(offset, number_of_chars);
 
@@ -515,7 +516,7 @@ void InputMethodEngine::EnableInputView() {
 }
 
 void InputMethodEngine::FocusIn(
-    const IMEEngineHandlerInterface::InputContext& input_context) {
+    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
   if (!CheckProfile())
     return;
   current_input_type_ = input_context.type;
@@ -581,8 +582,8 @@ void InputMethodEngine::Enable(const std::string& component_id) {
   DCHECK(!component_id.empty());
   active_component_id_ = component_id;
   observer_->OnActivate(component_id);
-  const IMEEngineHandlerInterface::InputContext& input_context =
-      IMEBridge::Get()->GetCurrentInputContext();
+  const ui::IMEEngineHandlerInterface::InputContext& input_context =
+      ui::IMEBridge::Get()->GetCurrentInputContext();
   current_input_type_ = input_context.type;
   FocusIn(input_context);
   EnableInputView();
@@ -592,7 +593,7 @@ void InputMethodEngine::Disable() {
   if (!CheckProfile())
     return;
   active_component_id_.clear();
-  IMEBridge::Get()->GetInputContextHandler()->CommitText(
+  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
       base::UTF16ToUTF8(composition_text_->text()));
   composition_text_.reset(new CompositionText());
   observer_->OnDeactivated(active_component_id_);

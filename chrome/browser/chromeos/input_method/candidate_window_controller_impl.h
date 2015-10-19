@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/chromeos/ime/candidate_window_view.h"
 #include "ui/views/widget/widget_observer.h"

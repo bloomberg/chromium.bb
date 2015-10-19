@@ -6,7 +6,7 @@
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 
 #include "ui/base/ime/candidate_window.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {

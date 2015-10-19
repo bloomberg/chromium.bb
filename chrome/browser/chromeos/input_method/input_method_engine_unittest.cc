@@ -16,6 +16,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -121,13 +122,13 @@ class InputMethodEngineTest :  public testing::Test {
     languages_.push_back("en-US");
     layouts_.push_back("us");
     InitInputMethod();
-    IMEBridge::Initialize();
+    ui::IMEBridge::Initialize();
     mock_ime_input_context_handler_.reset(new MockIMEInputContextHandler());
-    IMEBridge::Get()->SetInputContextHandler(
+    ui::IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
   }
   ~InputMethodEngineTest() override {
-    IMEBridge::Get()->SetInputContextHandler(NULL);
+    ui::IMEBridge::Get()->SetInputContextHandler(NULL);
     engine_.reset();
     Shutdown();
   }
@@ -143,10 +144,10 @@ class InputMethodEngineTest :  public testing::Test {
   }
 
   void FocusIn(ui::TextInputType input_type) {
-    IMEEngineHandlerInterface::InputContext input_context(
+    ui::IMEEngineHandlerInterface::InputContext input_context(
         input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE);
     engine_->FocusIn(input_context);
-    IMEBridge::Get()->SetCurrentInputContext(input_context);
+    ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
   scoped_ptr<InputMethodEngine> engine_;

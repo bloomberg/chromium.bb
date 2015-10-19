@@ -12,6 +12,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/infolist_window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -26,14 +27,14 @@ namespace {
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : candidate_window_view_(NULL),
       infolist_window_(NULL) {
-  IMEBridge::Get()->SetCandidateWindowHandler(this);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(this);
   // Create the mode indicator controller.
   mode_indicator_controller_.reset(
       new ModeIndicatorController(InputMethodManager::Get()));
 }
 
 CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
-  IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
   if (candidate_window_view_) {
     candidate_window_view_->RemoveObserver(this);
     candidate_window_view_->GetWidget()->RemoveObserver(this);

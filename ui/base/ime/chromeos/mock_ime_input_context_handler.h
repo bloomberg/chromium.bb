@@ -6,13 +6,13 @@
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
 #include "ui/base/ime/chromeos/composition_text_chromeos.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {
 
 class UI_BASE_IME_EXPORT MockIMEInputContextHandler
-    : public IMEInputContextHandlerInterface {
+    : public ui::IMEInputContextHandlerInterface {
  public:
   struct UpdateCompositionTextArg {
     CompositionText composition_text;

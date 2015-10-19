@@ -14,11 +14,12 @@
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/composition_text_chromeos.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
@@ -158,11 +159,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
 
-  IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
-  IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  ui::IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
-  IMEEngineHandlerInterface* engine_handler =
-      IMEBridge::Get()->GetCurrentEngineHandler();
+  ui::IMEEngineHandlerInterface* engine_handler =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   // onActivate event should be fired if Enable function is called.
@@ -173,9 +174,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
   // onFocus event should be fired if FocusIn function is called.
   ExtensionTestMessageListener focus_listener("onFocus:text", false);
-  IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
-                                                  ui::TEXT_INPUT_MODE_DEFAULT,
-                                                  ui::TEXT_INPUT_FLAG_NONE);
+  ui::IMEEngineHandlerInterface::InputContext context(
+      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
+      ui::TEXT_INPUT_FLAG_NONE);
   engine_handler->FocusIn(context);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
@@ -225,8 +226,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(disabled_listener.WaitUntilSatisfied());
   ASSERT_TRUE(disabled_listener.was_satisfied());
 
-  IMEBridge::Get()->SetInputContextHandler(NULL);
-  IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetInputContextHandler(NULL);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
@@ -241,11 +242,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
 
-  IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
-  IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  ui::IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
-  IMEEngineHandlerInterface* engine_handler =
-      IMEBridge::Get()->GetCurrentEngineHandler();
+  ui::IMEEngineHandlerInterface* engine_handler =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   extensions::ExtensionHost* host =
@@ -254,9 +255,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(host);
 
   engine_handler->Enable("APIArgumentIME");
-  IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
-                                                  ui::TEXT_INPUT_MODE_DEFAULT,
-                                                  ui::TEXT_INPUT_FLAG_NONE);
+  ui::IMEEngineHandlerInterface::InputContext context(
+      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
+      ui::TEXT_INPUT_FLAG_NONE);
   engine_handler->FocusIn(context);
 
   {
@@ -933,7 +934,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     {
       ExtensionTestMessageListener focus_listener("onFocus:text", false);
-      IMEEngineHandlerInterface::InputContext context(
+      ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
           ui::TEXT_INPUT_FLAG_NONE);
       engine_handler->FocusIn(context);
@@ -942,7 +943,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:search", false);
-      IMEEngineHandlerInterface::InputContext context(
+      ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT,
           ui::TEXT_INPUT_FLAG_NONE);
       engine_handler->FocusIn(context);
@@ -951,7 +952,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:tel", false);
-      IMEEngineHandlerInterface::InputContext context(
+      ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_TELEPHONE, ui::TEXT_INPUT_MODE_DEFAULT,
           ui::TEXT_INPUT_FLAG_NONE);
       engine_handler->FocusIn(context);
@@ -960,7 +961,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:url", false);
-      IMEEngineHandlerInterface::InputContext context(
+      ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT,
           ui::TEXT_INPUT_FLAG_NONE);
       engine_handler->FocusIn(context);
@@ -969,7 +970,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:email", false);
-      IMEEngineHandlerInterface::InputContext context(
+      ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT,
           ui::TEXT_INPUT_FLAG_NONE);
       engine_handler->FocusIn(context);
@@ -978,7 +979,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:number", false);
-      IMEEngineHandlerInterface::InputContext context(
+      ui::IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_NUMBER, ui::TEXT_INPUT_MODE_DEFAULT,
           ui::TEXT_INPUT_FLAG_NONE);
       engine_handler->FocusIn(context);
@@ -1040,8 +1041,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     EXPECT_EQ("", mock_input_context->last_commit_text());
   }
 
-  IMEBridge::Get()->SetInputContextHandler(NULL);
-  IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetInputContextHandler(NULL);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
 }
 
 }  // namespace

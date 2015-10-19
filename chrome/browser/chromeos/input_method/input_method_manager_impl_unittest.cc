@@ -29,6 +29,7 @@
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
@@ -140,8 +141,8 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     keyboard_ = new FakeImeKeyboard;
     manager_->SetImeKeyboardForTesting(keyboard_);
     mock_engine_handler_.reset(new MockInputMethodEngine());
-    IMEBridge::Initialize();
-    IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
+    ui::IMEBridge::Initialize();
+    ui::IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
     menu_manager_ = ui::ime::InputMethodMenuManager::GetInstance();
 

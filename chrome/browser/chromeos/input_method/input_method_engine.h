@@ -76,8 +76,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
                              std::string* error) override;
 
   // IMEEngineHandlerInterface overrides.
-  void FocusIn(
-      const IMEEngineHandlerInterface::InputContext& input_context) override;
+  void FocusIn(const ui::IMEEngineHandlerInterface::InputContext& input_context)
+      override;
   void FocusOut() override;
   void Enable(const std::string& component_id) override;
   void Disable() override;

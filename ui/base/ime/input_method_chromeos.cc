@@ -20,13 +20,15 @@
 #include "ui/base/ime/chromeos/composition_text_chromeos.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace {
-chromeos::IMEEngineHandlerInterface* GetEngine() {
-  return chromeos::IMEBridge::Get()->GetCurrentEngineHandler();
+ui::IMEEngineHandlerInterface* GetEngine() {
+  return ui::IMEBridge::Get()->GetCurrentEngineHandler();
 }
 }  // namespace
 
@@ -40,7 +42,7 @@ InputMethodChromeOS::InputMethodChromeOS(
       handling_key_event_(false),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
-  chromeos::IMEBridge::Get()->SetInputContextHandler(this);
+  ui::IMEBridge::Get()->SetInputContextHandler(this);
 
   UpdateContextFocusState();
 }
@@ -50,8 +52,8 @@ InputMethodChromeOS::~InputMethodChromeOS() {
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
-  if (chromeos::IMEBridge::Get())
-    chromeos::IMEBridge::Get()->SetInputContextHandler(NULL);
+  if (ui::IMEBridge::Get())
+    ui::IMEBridge::Get()->SetInputContextHandler(NULL);
 }
 
 void InputMethodChromeOS::OnFocus() {
@@ -154,13 +156,13 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
 
   UpdateContextFocusState();
 
-  chromeos::IMEEngineHandlerInterface* engine = GetEngine();
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
   if (engine) {
     // When focused input client is not changed, a text input type change should
     // cause blur/focus events to engine.
     // The focus in to or out from password field should also notify engine.
     engine->FocusOut();
-    chromeos::IMEEngineHandlerInterface::InputContext context(
+    ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
     engine->FocusIn(context);
   }
@@ -204,7 +206,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     GetEngine()->SetCompositionBounds(rects);
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
-      chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
+      ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window)
     return;
   candidate_window->SetCursorBounds(caret_rect, composition_head);
@@ -282,7 +284,7 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   UpdateContextFocusState();
 
   if (GetEngine()) {
-    chromeos::IMEEngineHandlerInterface::InputContext context(
+    ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
     GetEngine()->FocusIn(context);
   }
@@ -324,13 +326,13 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   // Propagate the focus event to the candidate window handler which also
   // manages the input method mode indicator.
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
-      chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
+      ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
     candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
 
-  chromeos::IMEEngineHandlerInterface::InputContext context(
+  ui::IMEEngineHandlerInterface::InputContext context(
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
-  chromeos::IMEBridge::Get()->SetCurrentInputContext(context);
+  ui::IMEBridge::Get()->SetCurrentInputContext(context);
 
   if (!IsTextInputTypeNone())
     OnCaretBoundsChanged(GetTextInputClient());
@@ -506,7 +508,7 @@ void InputMethodChromeOS::UpdateCompositionText(
 
   if (!CanComposeInline()) {
     chromeos::IMECandidateWindowHandlerInterface* candidate_window =
-        chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
+        ui::IMEBridge::Get()->GetCandidateWindowHandler();
     if (candidate_window)
       candidate_window->UpdatePreeditText(text.text(), cursor_pos, visible);
   }
