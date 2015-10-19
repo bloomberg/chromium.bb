@@ -297,6 +297,11 @@ public class WebappActivity extends FullScreenActivity {
             public void onPageLoadFailed(Tab tab, int errorCode) {
                 hideSplashScreen();
             }
+
+            @Override
+            public void onCrash(Tab tab, boolean sadTabShown) {
+                hideSplashScreen();
+            }
         };
     }
 
