@@ -384,6 +384,12 @@ component("media") {
       "capture/video/android/video_capture_device_factory_android.cc",
       "capture/video/android/video_capture_device_factory_android.h",
     ]
+    sources -= [
+      "filters/decrypting_audio_decoder.cc",
+      "filters/decrypting_audio_decoder.h",
+      "filters/decrypting_video_decoder.cc",
+      "filters/decrypting_video_decoder.h",
+    ]
     deps += [
       "//media/base/android",
       "//media/base/android:media_jni_headers",
@@ -676,6 +682,10 @@ test("media_unittests") {
       "//media/base/android",
       # TODO(GYP)
       #"//testing/android/native_test:native_test_native_code"
+    ]
+    sources -= [
+      "filters/decrypting_audio_decoder_unittest.cc",
+      "filters/decrypting_video_decoder_unittest.cc",
     ]
   }
 

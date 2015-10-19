@@ -149,14 +149,21 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                     const InitCB& init_cb,
                                     const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!config.is_encrypted());
+  DCHECK(config.IsValidConfig());
 
-  FFmpegGlue::InitializeFFmpeg();
-
-  config_ = config;
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
-  if (!config.IsValidConfig() || !ConfigureDecoder()) {
+  if (config.is_encrypted()) {
+    bound_init_cb.Run(false);
+    return;
+  }
+
+  FFmpegGlue::InitializeFFmpeg();
+  config_ = config;
+
+  // TODO(xhwang): Only set |config_| after we successfully configure the
+  // decoder. Make sure we clean up all member variables upon failure.
+  if (!ConfigureDecoder()) {
     bound_init_cb.Run(false);
     return;
   }
@@ -334,19 +341,8 @@ void FFmpegAudioDecoder::ReleaseFFmpegResources() {
 }
 
 bool FFmpegAudioDecoder::ConfigureDecoder() {
-  if (!config_.IsValidConfig()) {
-    DLOG(ERROR) << "Invalid audio stream -"
-                << " codec: " << config_.codec()
-                << " channel layout: " << config_.channel_layout()
-                << " bits per channel: " << config_.bits_per_channel()
-                << " samples per second: " << config_.samples_per_second();
-    return false;
-  }
-
-  if (config_.is_encrypted()) {
-    DLOG(ERROR) << "Encrypted audio stream not supported";
-    return false;
-  }
+  DCHECK(config_.IsValidConfig());
+  DCHECK(!config_.is_encrypted());
 
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();

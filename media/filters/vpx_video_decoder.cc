@@ -282,12 +282,11 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
-  DCHECK(!config.is_encrypted());
   DCHECK(decode_cb_.is_null());
 
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
-  if (!ConfigureDecoder(config)) {
+  if (config.is_encrypted() || !ConfigureDecoder(config)) {
     bound_init_cb.Run(false);
     return;
   }

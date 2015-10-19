@@ -257,6 +257,11 @@ void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
+  if (config.is_encrypted()) {
+    bound_init_cb.Run(false);
+    return;
+  }
+
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
 

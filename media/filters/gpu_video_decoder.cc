@@ -128,11 +128,18 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DVLOG(3) << "Initialize()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(config.IsValidConfig());
-  DCHECK(!config.is_encrypted());
 
   InitCB bound_init_cb =
       base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
                  BindToCurrentLoop(init_cb));
+
+#if !defined(OS_ANDROID)
+  if (config.is_encrypted()) {
+    DVLOG(1) << "Encrypted stream not supported.";
+    bound_init_cb.Run(false);
+    return;
+  }
+#endif
 
   bool previously_initialized = config_.IsValidConfig();
   DVLOG(1) << "(Re)initializing GVD with config: "

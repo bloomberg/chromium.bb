@@ -404,18 +404,6 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
   InitializeDecoderWithResult(decoder_config, false);
 }
 
-TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
-  const AudioDecoderConfig decoder_config(kCodecVorbis,
-                                          kSampleFormatF32,
-                                          CHANNEL_LAYOUT_STEREO,
-                                          // Invalid sample rate of zero.
-                                          0,
-                                          NULL,
-                                          0,
-                                          false);
-  InitializeDecoderWithResult(decoder_config, false);
-}
-
 #if defined(OPUS_FIXED_POINT)
 const DecodedBufferExpectations kSfxOpusExpectations[] = {
     {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},

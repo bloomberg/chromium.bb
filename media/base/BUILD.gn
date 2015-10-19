@@ -417,6 +417,7 @@ source_set("unittests") {
     "user_input_monitor_unittest.cc",
     "vector_math_testing.h",
     "vector_math_unittest.cc",
+    "video_decoder_config_unittest.cc",
     "video_frame_pool_unittest.cc",
     "video_frame_unittest.cc",
     "video_util_unittest.cc",

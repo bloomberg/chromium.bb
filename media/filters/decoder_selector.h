@@ -76,7 +76,11 @@ class MEDIA_EXPORT DecoderSelector {
                      const base::Closure& waiting_for_decryption_key_cb);
 
  private:
+#if !defined(OS_ANDROID)
+  void InitializeDecryptingDecoder();
   void DecryptingDecoderInitDone(bool success);
+#endif
+  void InitializeDecryptingDemuxerStream();
   void DecryptingDemuxerStreamInitDone(PipelineStatus status);
   void InitializeDecoder();
   void DecoderInitDone(bool success);

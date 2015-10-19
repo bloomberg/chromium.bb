@@ -168,15 +168,22 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     const InitCB& init_cb,
                                     const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!config.is_encrypted());
+  DCHECK(config.IsValidConfig());
   DCHECK(!output_cb.is_null());
 
-  FFmpegGlue::InitializeFFmpeg();
-
-  config_ = config;
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
-  if (!config.IsValidConfig() || !ConfigureDecoder(low_delay)) {
+  if (config.is_encrypted()) {
+    bound_init_cb.Run(false);
+    return;
+  }
+
+  FFmpegGlue::InitializeFFmpeg();
+  config_ = config;
+
+  // TODO(xhwang): Only set |config_| after we successfully configure the
+  // decoder.
+  if (!ConfigureDecoder(low_delay)) {
     bound_init_cb.Run(false);
     return;
   }
@@ -336,6 +343,9 @@ void FFmpegVideoDecoder::ReleaseFFmpegResources() {
 }
 
 bool FFmpegVideoDecoder::ConfigureDecoder(bool low_delay) {
+  DCHECK(config_.IsValidConfig());
+  DCHECK(!config_.is_encrypted());
+
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
 

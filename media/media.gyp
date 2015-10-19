@@ -730,6 +730,10 @@
             'base/audio_video_metadata_extractor.h',
             'base/media_file_checker.cc',
             'base/media_file_checker.h',
+            'filters/decrypting_audio_decoder.cc',
+            'filters/decrypting_audio_decoder.h',
+            'filters/decrypting_video_decoder.cc',
+            'filters/decrypting_video_decoder.h',
             'filters/ffmpeg_video_decoder.cc',
             'filters/ffmpeg_video_decoder.h',
           ],
@@ -1240,6 +1244,7 @@
         'base/user_input_monitor_unittest.cc',
         'base/vector_math_testing.h',
         'base/vector_math_unittest.cc',
+        'base/video_decoder_config_unittest.cc',
         'base/video_frame_pool_unittest.cc',
         'base/video_frame_unittest.cc',
         'base/video_util_unittest.cc',
@@ -1377,6 +1382,10 @@
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
             'player_android',
+          ],
+          'sources!': [
+            'filters/decrypting_audio_decoder_unittest.cc',
+            'filters/decrypting_video_decoder_unittest.cc',
           ],
         }],
         ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {

@@ -17,8 +17,11 @@
 #include "content/public/browser/web_ui.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_log_event.h"
-#include "media/filters/decrypting_video_decoder.h"
 #include "media/filters/gpu_video_decoder.h"
+
+#if !defined(OS_ANDROID)
+#include "media/filters/decrypting_video_decoder.h"
+#endif
 
 namespace {
 
@@ -374,10 +377,12 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     return uma_name + "Other";
   }
 
+#if !defined(OS_ANDROID)
   if (player_info.video_decoder ==
       media::DecryptingVideoDecoder::kDecoderName) {
     return uma_name + "DVD";
   }
+#endif
 
   if (player_info.video_dds) {
     uma_name += "DDS.";
