@@ -203,15 +203,15 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
 }
 
 void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
-  std::string auth_account_id = SigninManagerFactory::GetForProfile(profile_)
-      ->GetAuthenticatedAccountId();
-  if (!info.IsValid() || info.account_id != auth_account_id)
-    return;
-
   if (!IsChildAccountDetectionEnabled()) {
     SetIsChildAccount(false);
     return;
   }
+
+  std::string auth_account_id = SigninManagerFactory::GetForProfile(profile_)
+      ->GetAuthenticatedAccountId();
+  if (info.account_id != auth_account_id)
+    return;
 
   SetIsChildAccount(info.is_child_account);
 }
