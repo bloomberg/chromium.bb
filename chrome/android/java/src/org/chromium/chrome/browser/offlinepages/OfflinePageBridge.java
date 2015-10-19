@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.content.pm.PackageManager;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -13,7 +15,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.offlinepages.SavePageResult;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -171,14 +176,34 @@ public final class OfflinePageBridge {
      * @see SavePageCallback
      */
     @VisibleForTesting
-    public void savePage(
-            WebContents webContents, BookmarkId bookmarkId, SavePageCallback callback) {
+    public void savePage(final WebContents webContents, final BookmarkId bookmarkId,
+            final SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         RecordHistogram.recordEnumeratedHistogram(
                 "OfflinePages.SavePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
         RecordHistogram.recordCustomCountHistogram(
                 "OfflinePages.SavePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
-        nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
+
+        ContentViewCore view = ContentViewCore.fromWebContents(webContents);
+        if (view == null) {
+            callback.onSavePageDone(SavePageResult.CONTENT_UNAVAILABLE, webContents.getUrl());
+        } else if (OfflinePageUtils.hasFileAccessPermission(view)) {
+            nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
+        } else {
+            PermissionCallback permissionCallback = new PermissionCallback() {
+                @Override
+                public void onRequestPermissionsResult(String[] permission, int[] grantResults) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        nativeSavePage(mNativeOfflinePageBridge, callback, webContents,
+                                bookmarkId.getId());
+                    } else {
+                        callback.onSavePageDone(SavePageResult.CANCELLED, webContents.getUrl());
+                    }
+                }
+            };
+
+            OfflinePageUtils.requestFileAccessPermission(view, permissionCallback);
+        }
     }
 
     /**

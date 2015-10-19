@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.Manifest.permission;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,8 +18,10 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 /**
  * A class holding static util functions for offline pages.
@@ -105,6 +108,28 @@ public class OfflinePageUtils {
         } else {
             showOfflineSnackbar(activity, tab.getId(), save);
         }
+    }
+
+    /**
+     * Returns whether file access is allowed.
+     *
+     * @param view The ContentViewCore to access the file system.
+     * @return true if allowed, or false otherwise.
+     */
+    public static boolean hasFileAccessPermission(ContentViewCore view) {
+        return view.getWindowAndroid().hasPermission(permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    /**
+     * Called to prompt user with the file access permission.
+     *
+     * @param view The ContentViewCore to access the file system.
+     * @param callback Callback for the permission request.
+     */
+    public static void requestFileAccessPermission(
+            ContentViewCore view, PermissionCallback callback) {
+        view.getWindowAndroid().requestPermissions(
+                new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, callback);
     }
 
     /**
