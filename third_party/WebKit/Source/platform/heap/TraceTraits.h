@@ -101,7 +101,10 @@ struct TraceIfEnabled;
 template<typename T>
 struct TraceIfEnabled<T, false>  {
     template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher, T&) { }
+    static void trace(VisitorDispatcher, T&)
+    {
+        static_assert(!WTF::NeedsTracing<T>::value, "T should not be traced");
+    }
 };
 
 template<typename T>
@@ -109,6 +112,7 @@ struct TraceIfEnabled<T, true> {
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, T& t)
     {
+        static_assert(WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value, "T should be traced");
         visitor->trace(t);
     }
 };
@@ -118,7 +122,11 @@ template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldW
 template<WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceCollectionIfEnabled<false, WTF::NoWeakHandlingInCollections, strongify, T, Traits> {
     template<typename VisitorDispatcher>
-    static bool trace(VisitorDispatcher, T&) { return false; }
+    static bool trace(VisitorDispatcher, T&)
+    {
+        static_assert(!WTF::NeedsTracingTrait<Traits>::value, "Traits should not be traced");
+        return false;
+    }
 };
 
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
@@ -126,6 +134,7 @@ struct TraceCollectionIfEnabled {
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, T& t)
     {
+        static_assert(WTF::NeedsTracingTrait<Traits>::value || weakHandlingFlag == WTF::WeakHandlingInCollections, "Traits should be traced");
         return WTF::TraceInCollectionTrait<weakHandlingFlag, strongify, T, Traits>::trace(visitor, t);
     }
 };
@@ -159,6 +168,7 @@ template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 template<typename T>
 void TraceTrait<T>::trace(Visitor* visitor, void* self)
 {
+    static_assert(WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value, "T should be traced");
     if (visitor->markingMode() == Visitor::GlobalMarking) {
         // Switch to inlined global marking dispatch.
         static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(visitor));
@@ -170,6 +180,7 @@ void TraceTrait<T>::trace(Visitor* visitor, void* self)
 template<typename T>
 void TraceTrait<T>::trace(InlinedGlobalMarkingVisitor visitor, void* self)
 {
+    static_assert(WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value, "T should be traced");
     static_cast<T*>(self)->trace(visitor);
 }
 
@@ -338,6 +349,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, T, Traits>
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, T& t)
     {
+        ASSERT(NeedsTracingTrait<Traits>::value);
         visitor->trace(t);
         return false;
     }
@@ -419,6 +431,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     {
         static_assert(strongify == WTF::WeakPointersActStrong, "An on-stack HeapHashTable needs to be visited strongly.");
 
+        ASSERT(NeedsTracingTrait<Traits>::value || Traits::weakHandlingFlag == WeakHandlingInCollections);
         Value* array = reinterpret_cast<Value*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
         ASSERT(header->checkHeader());
@@ -549,6 +562,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSe
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, Node* node)
     {
+        ASSERT(NeedsTracingTrait<Traits>::value);
         traceListHashSetValue(visitor, node->m_value);
         // Just mark the node without tracing because we already traced the
         // contents, and there is no need to trace the next and prev fields
