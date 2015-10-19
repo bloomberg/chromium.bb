@@ -4163,7 +4163,10 @@ TEST_P(ParameterizedWebFrameTest, SelectRange)
     frame->executeCommand(WebString::fromUTF8("Unselect"));
     EXPECT_EQ("", selectionAsString(frame));
     frame->selectRange(topLeft(startWebRect), bottomRightMinusOne(endWebRect));
-    EXPECT_EQ("Some offscreen test text for testing.", selectionAsString(frame));
+    // On some devices, the above bottomRightMinusOne() causes the ending '.' not selected.
+    std::string selectionString = selectionAsString(frame);
+    EXPECT_TRUE(selectionString == "Some offscreen test text for testing."
+        || selectionString == "Some offscreen test text for testing");
 }
 
 TEST_P(ParameterizedWebFrameTest, SelectRangeInIframe)
@@ -4184,7 +4187,10 @@ TEST_P(ParameterizedWebFrameTest, SelectRangeInIframe)
     subframe->executeCommand(WebString::fromUTF8("Unselect"));
     EXPECT_EQ("", selectionAsString(subframe));
     subframe->selectRange(topLeft(startWebRect), bottomRightMinusOne(endWebRect));
-    EXPECT_EQ("Some test text for testing.", selectionAsString(subframe));
+    // On some devices, the above bottomRightMinusOne() causes the ending '.' not selected.
+    std::string selectionString = selectionAsString(subframe);
+    EXPECT_TRUE(selectionString == "Some test text for testing."
+        || selectionString == "Some test text for testing");
 }
 
 TEST_P(ParameterizedWebFrameTest, SelectRangeDivContentEditable)
