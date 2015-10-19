@@ -4,18 +4,18 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x572
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 772x35
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=17033"
-          LayoutText {#text} at (359,0) size 772x35
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 409: "REGRESSION: Really long <option> causes unnecessary page"
-            text run at (0,18) width 230: "scroll bars to accommodate content"
-        LayoutText {#text} at (229,18) size 5x17
-          text run at (229,18) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 771x35
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x17
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=17033"
+          LayoutText {#text} at (357,0) size 771x35
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 410: "REGRESSION: Really long <option> causes unnecessary page"
+            text run at (0,18) width 229: "scroll bars to accommodate content"
+        LayoutText {#text} at (228,18) size 5x17
+          text run at (228,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 761x17
           text run at (0,0) width 317: "There should not be scroll bars below the popup. "

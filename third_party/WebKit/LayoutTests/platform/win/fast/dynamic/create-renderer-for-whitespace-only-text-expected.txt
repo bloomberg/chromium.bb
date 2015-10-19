@@ -4,22 +4,22 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 754x35
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=14134"
-          LayoutText {#text} at (359,0) size 754x35
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 391: "REGRESSION (r25353): Whitespace nodes ignored between"
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 752x35
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x17
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=14134"
+          LayoutText {#text} at (357,0) size 752x35
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 391: "REGRESSION (r25353): Whitespace nodes ignored between"
             text run at (0,18) width 98: "inline list items"
         LayoutText {#text} at (97,18) size 5x17
           text run at (97,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 760x17
+        LayoutText {#text} at (0,0) size 759x17
           text run at (0,0) width 475: "This tests that whitespace-only text nodes get renderers when they should "
-          text run at (474,0) width 286: "even if initially they did not need a renderer."
+          text run at (474,0) width 285: "even if initially they did not need a renderer."
       LayoutBlockFlow {P} at (0,86) size 784x18
         LayoutText {#text} at (0,0) size 358x17
           text run at (0,0) width 358: "The left column should be identical to the right column."

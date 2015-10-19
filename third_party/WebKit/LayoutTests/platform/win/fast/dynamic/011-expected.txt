@@ -4,12 +4,12 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutInline {SPAN} at (0,0) size 729x35
-          LayoutInline {SPAN} at (0,0) size 729x35
-            LayoutText {#text} at (0,0) size 729x35
+        LayoutInline {SPAN} at (0,0) size 728x35
+          LayoutInline {SPAN} at (0,0) size 728x35
+            LayoutText {#text} at (0,0) size 728x35
               text run at (0,0) width 103: "Bug #3810389. "
               text run at (102,0) width 395: "Make sure we don't crash manipulating blocks inside inlines. "
-              text run at (496,0) width 233: "You should see the numbers 1 and 2"
+              text run at (496,0) width 232: "You should see the numbers 1 and 2"
               text run at (0,18) width 215: "vertically stacked below this line."
       LayoutBlockFlow (anonymous) at (0,36) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 784x18

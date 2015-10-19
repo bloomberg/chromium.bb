@@ -5,9 +5,9 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x74 [border: (1px solid #FF0000)]
         LayoutBlockFlow {P} at (1,17) size 782x40
-          LayoutText {#text} at (0,0) size 781x39
+          LayoutText {#text} at (0,0) size 780x39
             text run at (0,0) width 731: "This test verifies that JavaScript returns only direct descendent element nodes in the 'children' collection (an IE extension). "
-            text run at (731,0) width 50: "We also"
+            text run at (731,0) width 49: "We also"
             text run at (0,20) width 615: "verify that the 'childNodes' collection contains direct descendent nodes of any type (text, element, etc.)"
       LayoutBlockFlow {DIV} at (0,74) size 784x100
         LayoutBlockFlow {DIV} at (0,0) size 784x20
@@ -63,9 +63,9 @@ layer at (0,0) size 800x600
           text run at (0,120) width 107: "  node: DIV (five)"
         LayoutBR {BR} at (107,135) size 0x0
         LayoutBR {BR} at (0,140) size 0x19
-        LayoutText {#text} at (0,160) size 314x19
-          text run at (0,160) width 314: "childNodes.length = 11 (should be 11 nodes below)"
-        LayoutBR {BR} at (314,175) size 0x0
+        LayoutText {#text} at (0,160) size 313x19
+          text run at (0,160) width 313: "childNodes.length = 11 (should be 11 nodes below)"
+        LayoutBR {BR} at (312,175) size 1x0
         LayoutText {#text} at (0,180) size 147x19
           text run at (0,180) width 147: "  node: #text (undefined)"
         LayoutBR {BR} at (147,195) size 0x0

@@ -4,9 +4,9 @@ layer at (0,0) size 800x408
   LayoutBlockFlow {HTML} at (0,0) size 800x408
     LayoutBlockFlow {BODY} at (8,8) size 784x392
       LayoutBlockFlow {DIV} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 352x18
-          text run at (0,0) width 352: "Test all of the values of text-justify for 8bits characters"
-        LayoutBR {BR} at (351,0) size 1x18
+        LayoutText {#text} at (0,0) size 351x18
+          text run at (0,0) width 351: "Test all of the values of text-justify for 8bits characters"
+        LayoutBR {BR} at (350,0) size 1x18
         LayoutText {#text} at (0,18) size 623x18
           text run at (0,18) width 623: "This test checks that all of the values for text-justify property works properly for 8bits characters."
         LayoutBR {BR} at (622,18) size 1x18

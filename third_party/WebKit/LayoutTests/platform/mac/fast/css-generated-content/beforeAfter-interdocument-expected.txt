@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (74,0) size 579x18
           text run at (74,0) width 579: ": Potential bug with before/after rule while moving element from one document to another"
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 553x18
-          text run at (0,0) width 553: "This test that moving a quote element sets the before / after flag in the final document."
+        LayoutText {#text} at (0,0) size 551x18
+          text run at (0,0) width 551: "This test that moving a quote element sets the before / after flag in the final document."
       LayoutBlockFlow {DIV} at (0,68) size 784x52
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutInline {Q} at (0,0) size 160x18

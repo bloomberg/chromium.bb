@@ -4,8 +4,8 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x615.88
     LayoutBlockFlow {BODY} at (8,8) size 784x599.88
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 423x37
-          text run at (0,0) width 423: "Form Element Geometry Tests"
+        LayoutText {#text} at (0,0) size 420x37
+          text run at (0,0) width 420: "Form Element Geometry Tests"
       LayoutBlockFlow {P} at (0,58.44) size 784x18
         LayoutText {#text} at (0,0) size 551x18
           text run at (0,0) width 551: "These tests help us tune the widget classes in KWQ to have all the right fudge factors."
@@ -242,8 +242,8 @@ layer at (0,0) size 800x616 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 0x0
 layer at (16,244) size 67x13
   LayoutBlockFlow {DIV} at (3,3) size 67x13
-    LayoutText {#text} at (0,0) size 49x13
-      text run at (0,0) width 49: "text field"
+    LayoutText {#text} at (0,0) size 48x13
+      text run at (0,0) width 48: "text field"
 layer at (94,242) size 33x59 clip at (95,243) size 20x56 scrollHeight 71
   LayoutListBox {SELECT} at (2,2.25) size 33.09x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 20.09x14.19
@@ -268,8 +268,8 @@ layer at (381,241) size 161x32 clip at (382,242) size 159x30
         text run at (0,0) width 44: "textarea"
 layer at (39,459) size 67x13
   LayoutBlockFlow {DIV} at (3,3) size 67x13
-    LayoutText {#text} at (0,0) size 49x13
-      text run at (0,0) width 49: "text field"
+    LayoutText {#text} at (0,0) size 48x13
+      text run at (0,0) width 48: "text field"
 layer at (354,438) size 161x32 clip at (355,439) size 159x30
   LayoutTextControl {TEXTAREA} at (345.98,0) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x13

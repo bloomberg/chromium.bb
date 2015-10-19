@@ -10,6 +10,6 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DT} at (0,18) size 784x18
           LayoutText {#text} at (0,0) size 34x17
             text run at (0,0) width 34: "Line "
-          LayoutInline {SPAN} at (0,0) size 30x17
-            LayoutText {#text} at (33,0) size 30x17
-              text run at (33,0) width 30: "Two"
+          LayoutInline {SPAN} at (0,0) size 29x17
+            LayoutText {#text} at (33,0) size 29x17
+              text run at (33,0) width 29: "Two"

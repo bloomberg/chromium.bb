@@ -8,229 +8,229 @@ layer at (0,0) size 785x1033 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,-2) size 179x17
             text run at (0,-2) width 179: "Plain textarea with little content"
         LayoutBlockFlow {DIV} at (1,15) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,52) size 350x14
           LayoutText {#text} at (0,-2) size 77x17
             text run at (0,-2) width 77: "Plain textarea"
         LayoutBlockFlow {DIV} at (1,66) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,103) size 350x14
           LayoutText {#text} at (0,-2) size 98x17
             text run at (0,-2) width 98: "Disabled textarea"
         LayoutBlockFlow {DIV} at (1,117) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,154) size 350x14
           LayoutText {#text} at (0,-2) size 123x17
             text run at (0,-2) width 123: "style=\"padding:10px\""
         LayoutBlockFlow {DIV} at (1,168) size 352x53 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,36) size 14x17
-            text run at (1,36) width 14: "A "
-          LayoutText {#text} at (191,36) size 14x17
-            text run at (191,36) width 14: " B"
+          LayoutText {#text} at (1,36) size 13x17
+            text run at (1,36) width 13: "A "
+          LayoutText {#text} at (190,36) size 14x17
+            text run at (190,36) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,221) size 350x14
           LayoutText {#text} at (0,-2) size 116x17
             text run at (0,-2) width 116: "style=\"padding:0px\""
         LayoutBlockFlow {DIV} at (1,235) size 352x33 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,16) size 14x17
-            text run at (1,16) width 14: "A "
-          LayoutText {#text} at (171,16) size 14x17
-            text run at (171,16) width 14: " B"
+          LayoutText {#text} at (1,16) size 13x17
+            text run at (1,16) width 13: "A "
+          LayoutText {#text} at (170,16) size 14x17
+            text run at (170,16) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,268) size 350x14
           LayoutText {#text} at (0,-2) size 118x17
             text run at (0,-2) width 118: "style=\"margin:10px\""
         LayoutBlockFlow {DIV} at (1,282) size 352x57 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,40) size 14x17
-            text run at (1,40) width 14: "A "
-          LayoutText {#text} at (195,40) size 14x17
-            text run at (195,40) width 14: " B"
+          LayoutText {#text} at (1,40) size 13x17
+            text run at (1,40) width 13: "A "
+          LayoutText {#text} at (194,40) size 14x17
+            text run at (194,40) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,339) size 350x14
           LayoutText {#text} at (0,-2) size 111x17
             text run at (0,-2) width 111: "style=\"margin:0px\""
         LayoutBlockFlow {DIV} at (1,353) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,390) size 350x14
           LayoutText {#text} at (0,-2) size 38x17
             text run at (0,-2) width 38: "cols=3"
         LayoutBlockFlow {DIV} at (1,404) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (56,20) size 14x17
-            text run at (56,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (55,20) size 14x17
+            text run at (55,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,441) size 350x14
           LayoutText {#text} at (0,-2) size 43x17
             text run at (0,-2) width 43: "rows=3"
         LayoutBlockFlow {DIV} at (1,455) size 352x50 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,33) size 14x17
-            text run at (1,33) width 14: "A "
-          LayoutText {#text} at (175,33) size 14x17
-            text run at (175,33) width 14: " B"
+          LayoutText {#text} at (1,33) size 13x17
+            text run at (1,33) width 13: "A "
+          LayoutText {#text} at (174,33) size 14x17
+            text run at (174,33) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,505) size 350x14
           LayoutText {#text} at (0,-2) size 45x17
             text run at (0,-2) width 45: "cols=10"
         LayoutBlockFlow {DIV} at (1,519) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (105,20) size 14x17
-            text run at (105,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (104,20) size 14x17
+            text run at (104,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,556) size 350x14
           LayoutText {#text} at (0,-2) size 50x17
             text run at (0,-2) width 50: "rows=10"
         LayoutBlockFlow {DIV} at (1,570) size 352x141 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,124) size 14x17
-            text run at (1,124) width 14: "A "
-          LayoutText {#text} at (175,124) size 14x17
-            text run at (175,124) width 14: " B"
+          LayoutText {#text} at (1,124) size 13x17
+            text run at (1,124) width 13: "A "
+          LayoutText {#text} at (174,124) size 14x17
+            text run at (174,124) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,711) size 350x14
           LayoutText {#text} at (0,-2) size 84x17
             text run at (0,-2) width 84: "cols=5 rows=4"
         LayoutBlockFlow {DIV} at (1,725) size 352x63 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,46) size 14x17
-            text run at (1,46) width 14: "A "
-          LayoutText {#text} at (70,46) size 14x17
-            text run at (70,46) width 14: " B"
+          LayoutText {#text} at (1,46) size 13x17
+            text run at (1,46) width 13: "A "
+          LayoutText {#text} at (69,46) size 14x17
+            text run at (69,46) width 14: " B"
       LayoutBlockFlow (floating) {DIV} at (352,0) size 352x1025 [border: (1px solid #FF0000)]
         LayoutBlockFlow (anonymous) at (1,1) size 350x14
           LayoutText {#text} at (0,-2) size 110x17
             text run at (0,-2) width 110: "style=\"width:60px\""
         LayoutBlockFlow {DIV} at (1,15) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (74,20) size 14x17
-            text run at (74,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (73,20) size 14x17
+            text run at (73,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,52) size 350x14
           LayoutText {#text} at (0,-2) size 191x17
             text run at (0,-2) width 191: "style=\"width:60px;padding:20px\""
         LayoutBlockFlow {DIV} at (1,66) size 352x73 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,56) size 14x17
-            text run at (1,56) width 14: "A "
-          LayoutText {#text} at (74,56) size 14x17
-            text run at (74,56) width 14: " B"
+          LayoutText {#text} at (1,56) size 13x17
+            text run at (1,56) width 13: "A "
+          LayoutText {#text} at (73,56) size 14x17
+            text run at (73,56) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,139) size 350x14
           LayoutText {#text} at (0,-2) size 170x17
             text run at (0,-2) width 170: "style=\"width:60px;padding:0\""
         LayoutBlockFlow {DIV} at (1,153) size 352x33 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,16) size 14x17
-            text run at (1,16) width 14: "A "
-          LayoutText {#text} at (74,16) size 14x17
-            text run at (74,16) width 14: " B"
+          LayoutText {#text} at (1,16) size 13x17
+            text run at (1,16) width 13: "A "
+          LayoutText {#text} at (73,16) size 14x17
+            text run at (73,16) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,186) size 350x14
           LayoutText {#text} at (0,-2) size 113x17
             text run at (0,-2) width 113: "style=\"height:60px\""
         LayoutBlockFlow {DIV} at (1,200) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (175,48) size 14x17
-            text run at (175,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (174,48) size 14x17
+            text run at (174,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,265) size 350x14
           LayoutText {#text} at (0,-2) size 181x17
             text run at (0,-2) width 181: "style=\"width:60px;height:60px\""
         LayoutBlockFlow {DIV} at (1,279) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (74,48) size 14x17
-            text run at (74,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (73,48) size 14x17
+            text run at (73,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,344) size 350x14
-          LayoutText {#text} at (0,-2) size 139x17
-            text run at (0,-2) width 139: "style=\"overflow:hidden\""
+          LayoutText {#text} at (0,-2) size 138x17
+            text run at (0,-2) width 138: "style=\"overflow:hidden\""
         LayoutBlockFlow {DIV} at (1,358) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 14: " B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,395) size 350x14
-          LayoutText {#text} at (0,-2) size 132x17
-            text run at (0,-2) width 132: "style=\"overflow:scroll\""
+          LayoutText {#text} at (0,-2) size 131x17
+            text run at (0,-2) width 131: "style=\"overflow:scroll\""
         LayoutBlockFlow {DIV} at (1,409) size 352x52 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,35) size 14x17
-            text run at (1,35) width 14: "A "
-          LayoutText {#text} at (175,35) size 14x17
-            text run at (175,35) width 14: " B"
+          LayoutText {#text} at (1,35) size 13x17
+            text run at (1,35) width 13: "A "
+          LayoutText {#text} at (174,35) size 14x17
+            text run at (174,35) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,461) size 350x14
-          LayoutText {#text} at (0,-2) size 277x17
-            text run at (0,-2) width 277: "style=\"overflow:hidden;width:60px;height:60px\""
+          LayoutText {#text} at (0,-2) size 276x17
+            text run at (0,-2) width 276: "style=\"overflow:hidden;width:60px;height:60px\""
         LayoutBlockFlow {DIV} at (1,475) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (74,48) size 14x17
-            text run at (74,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (73,48) size 14x17
+            text run at (73,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,540) size 350x14
-          LayoutText {#text} at (0,-2) size 270x17
-            text run at (0,-2) width 270: "style=\"overflow:scroll;width:60px;height:60px\""
+          LayoutText {#text} at (0,-2) size 269x17
+            text run at (0,-2) width 269: "style=\"overflow:scroll;width:60px;height:60px\""
         LayoutBlockFlow {DIV} at (1,554) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (74,48) size 14x17
-            text run at (74,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (73,48) size 14x17
+            text run at (73,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,619) size 350x14
           LayoutText {#text} at (0,-2) size 222x17
             text run at (0,-2) width 222: "cols=5 style=\"width:60px;height:60px\""
         LayoutBlockFlow {DIV} at (1,633) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (74,48) size 14x17
-            text run at (74,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (73,48) size 14x17
+            text run at (73,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,698) size 350x14
           LayoutText {#text} at (0,-2) size 226x17
             text run at (0,-2) width 226: "rows=4 style=\"width:60px;height:60px\""
         LayoutBlockFlow {DIV} at (1,712) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (74,48) size 14x17
-            text run at (74,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (73,48) size 14x17
+            text run at (73,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,777) size 350x14
           LayoutText {#text} at (0,-2) size 267x17
             text run at (0,-2) width 267: "cols=5 rows=4 style=\"width:60px;height:60px\""
         LayoutBlockFlow {DIV} at (1,791) size 352x65 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,48) size 14x17
-            text run at (1,48) width 14: "A "
-          LayoutText {#text} at (74,48) size 14x17
-            text run at (74,48) width 14: " B"
+          LayoutText {#text} at (1,48) size 13x17
+            text run at (1,48) width 13: "A "
+          LayoutText {#text} at (73,48) size 14x17
+            text run at (73,48) width 14: " B"
         LayoutBlockFlow (anonymous) at (1,856) size 350x14
           LayoutText {#text} at (0,-2) size 64x17
             text run at (0,-2) width 64: "wrap=\"off\""
         LayoutBlockFlow {DIV} at (1,870) size 352x52 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,35) size 14x17
-            text run at (1,35) width 14: "A "
-          LayoutText {#text} at (175,35) size 14x17
-            text run at (175,35) width 5: " "
-            text run at (179,35) width 10: "B"
+          LayoutText {#text} at (1,35) size 13x17
+            text run at (1,35) width 13: "A "
+          LayoutText {#text} at (174,35) size 14x17
+            text run at (174,35) width 5: " "
+            text run at (178,35) width 10: "B"
         LayoutBlockFlow (anonymous) at (1,922) size 350x14
           LayoutText {#text} at (0,-2) size 73x17
             text run at (0,-2) width 73: "wrap=\"hard\""
         LayoutBlockFlow {DIV} at (1,936) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 5: " "
-            text run at (179,20) width 10: "B"
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 5: " "
+            text run at (178,20) width 10: "B"
         LayoutBlockFlow (anonymous) at (1,973) size 350x14
           LayoutText {#text} at (0,-2) size 69x17
             text run at (0,-2) width 69: "wrap=\"soft\""
         LayoutBlockFlow {DIV} at (1,987) size 352x37 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,20) size 14x17
-            text run at (1,20) width 14: "A "
-          LayoutText {#text} at (175,20) size 14x17
-            text run at (175,20) width 5: " "
-            text run at (179,20) width 10: "B"
-layer at (24,24) size 161x32 clip at (25,25) size 159x30
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          LayoutText {#text} at (1,20) size 13x17
+            text run at (1,20) width 13: "A "
+          LayoutText {#text} at (174,20) size 14x17
+            text run at (174,20) width 5: " "
+            text run at (178,20) width 10: "B"
+layer at (23,24) size 161x32 clip at (24,25) size 159x30
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x13
       LayoutText {#text} at (0,0) size 102x13
         text run at (0,0) width 102: "Lorem ipsum dolor"
-layer at (24,75) size 161x32 clip at (25,76) size 144x30 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,75) size 161x32 clip at (24,76) size 144x30 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -240,8 +240,8 @@ layer at (24,75) size 161x32 clip at (25,76) size 144x30 scrollHeight 56
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,126) size 161x32 clip at (25,127) size 144x30 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
+layer at (23,126) size 161x32 clip at (24,127) size 144x30 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [color=#545454] [bgcolor=#FFFFFF] [border: (1px solid #545454)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -251,8 +251,8 @@ layer at (24,126) size 161x32 clip at (25,127) size 144x30 scrollHeight 56
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,177) size 177x48 clip at (25,178) size 160x46 scrollHeight 72
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 177x48 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,177) size 177x48 clip at (24,178) size 160x46 scrollHeight 72
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 177x48 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (11,11) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -262,8 +262,8 @@ layer at (24,177) size 177x48 clip at (25,178) size 160x46 scrollHeight 72
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,244) size 157x28 clip at (25,245) size 140x26 scrollHeight 52
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 157x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,244) size 157x28 clip at (24,245) size 140x26 scrollHeight 52
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 157x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (1,1) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -273,8 +273,8 @@ layer at (24,244) size 157x28 clip at (25,245) size 140x26 scrollHeight 52
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (34,301) size 161x32 clip at (35,302) size 144x30 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (24.61,11) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (33,301) size 161x32 clip at (34,302) size 144x30 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (23.84,11) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -284,8 +284,8 @@ layer at (34,301) size 161x32 clip at (35,302) size 144x30 scrollHeight 56
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,362) size 161x32 clip at (25,363) size 144x30 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,362) size 161x32 clip at (24,363) size 144x30 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -295,8 +295,8 @@ layer at (24,362) size 161x32 clip at (25,363) size 144x30 scrollHeight 56
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,413) size 42x32 clip at (25,414) size 25x30 scrollHeight 316
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 42x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,413) size 42x32 clip at (24,414) size 25x30 scrollHeight 316
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 42x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 21x312
       LayoutText {#text} at (0,0) size 21x312
         text run at (0,0) width 18: "Lor"
@@ -328,8 +328,8 @@ layer at (24,413) size 42x32 clip at (25,414) size 25x30 scrollHeight 316
         text run at (0,286) width 18: "qrs"
         text run at (0,299) width 17: "tuv"
         text run at (16,299) width 5: " "
-layer at (24,464) size 161x45 clip at (25,465) size 144x43 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x45 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,464) size 161x45 clip at (24,465) size 144x43 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x45 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -339,8 +339,8 @@ layer at (24,464) size 161x45 clip at (25,465) size 144x43 scrollHeight 56
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,528) size 91x32 clip at (25,529) size 74x30 scrollHeight 95
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 91x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,528) size 91x32 clip at (24,529) size 74x30 scrollHeight 95
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 91x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 70x91
       LayoutText {#text} at (0,0) size 70x91
         text run at (0,0) width 70: "Lorem ipsum"
@@ -354,8 +354,8 @@ layer at (24,528) size 91x32 clip at (25,529) size 74x30 scrollHeight 95
         text run at (0,65) width 66: "abcdefghijkl"
         text run at (0,78) width 65: "mnopqrstuv"
         text run at (64,78) width 4: " "
-layer at (24,579) size 161x136 backgroundClip at (24,579) size 161x21 clip at (25,580) size 159x20
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,579) size 161x136 backgroundClip at (23,579) size 161x21 clip at (24,580) size 159x20
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x52
       LayoutText {#text} at (0,0) size 153x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -365,8 +365,8 @@ layer at (24,579) size 161x136 backgroundClip at (24,579) size 161x21 clip at (2
         text run at (29,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,734) size 56x58 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 186
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 56x58 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (23,734) size 56x58 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 186
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 56x58 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 35x182
       LayoutText {#text} at (0,0) size 35x182
         text run at (0,0) width 34: "Lorem"
@@ -387,8 +387,8 @@ layer at (24,734) size 56x58 backgroundClip at (0,0) size 0x0 clip at (0,0) size
         text run at (0,143) width 31: "mnop"
         text run at (0,156) width 34: "qrstuv"
         text run at (0,169) width 4: " "
-layer at (376,24) size 60x32 clip at (377,25) size 43x30 scrollHeight 160
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,24) size 60x32 clip at (376,25) size 43x30 scrollHeight 160
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x156
       LayoutText {#text} at (0,0) size 39x156
         text run at (0,0) width 34: "Lorem"
@@ -408,8 +408,8 @@ layer at (376,24) size 60x32 clip at (377,25) size 43x30 scrollHeight 160
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,75) size 60x68 clip at (377,76) size 43x66 scrollHeight 924
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x68 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,75) size 60x68 clip at (376,76) size 43x66 scrollHeight 924
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x68 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (21,21) size 3x884
       LayoutText {#text} at (0,0) size 11x884
         text run at (0,0) width 6: "L"
@@ -480,8 +480,8 @@ layer at (376,75) size 60x68 clip at (377,76) size 43x66 scrollHeight 924
         text run at (0,845) width 7: "u"
         text run at (0,858) width 6: "v"
         text run at (0,871) width 3: " "
-layer at (376,162) size 60x28 clip at (377,163) size 43x26 scrollHeight 156
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,162) size 60x28 clip at (376,163) size 43x26 scrollHeight 156
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (1,1) size 43x156
       LayoutText {#text} at (0,0) size 43x156
         text run at (0,0) width 34: "Lorem"
@@ -501,8 +501,8 @@ layer at (376,162) size 60x28 clip at (377,163) size 43x26 scrollHeight 156
         text run at (0,130) width 42: "opqrstu"
         text run at (0,143) width 6: "v"
         text run at (5,143) width 5: " "
-layer at (376,209) size 161x60 clip at (377,210) size 159x58
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,209) size 161x60 clip at (376,210) size 159x58
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x52
       LayoutText {#text} at (0,0) size 153x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -512,8 +512,8 @@ layer at (376,209) size 161x60 clip at (377,210) size 159x58
         text run at (29,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (376,288) size 60x60 clip at (377,289) size 43x58 scrollHeight 160
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,288) size 60x60 clip at (376,289) size 43x58 scrollHeight 160
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x156
       LayoutText {#text} at (0,0) size 39x156
         text run at (0,0) width 34: "Lorem"
@@ -533,8 +533,8 @@ layer at (376,288) size 60x60 clip at (377,289) size 43x58 scrollHeight 160
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,367) size 161x32 clip at (377,368) size 159x30 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,367) size 161x32 clip at (376,368) size 159x30 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 155x52
       LayoutText {#text} at (0,0) size 153x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -544,8 +544,8 @@ layer at (376,367) size 161x32 clip at (377,368) size 159x30 scrollHeight 56
         text run at (29,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (376,418) size 161x47 clip at (377,419) size 144x30 scrollHeight 56
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,418) size 161x47 clip at (376,419) size 144x30 scrollHeight 56
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x52
       LayoutText {#text} at (0,0) size 138x52
         text run at (0,0) width 102: "Lorem ipsum dolor"
@@ -555,8 +555,8 @@ layer at (376,418) size 161x47 clip at (377,419) size 144x30 scrollHeight 56
         text run at (44,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (376,484) size 60x60 clip at (377,485) size 58x58 scrollHeight 134
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,484) size 60x60 clip at (376,485) size 58x58 scrollHeight 134
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 54x130
       LayoutText {#text} at (0,0) size 54x130
         text run at (0,0) width 34: "Lorem"
@@ -574,8 +574,8 @@ layer at (376,484) size 60x60 clip at (377,485) size 58x58 scrollHeight 134
         text run at (0,104) width 51: "jklmnopq"
         text run at (0,117) width 27: "rstuv"
         text run at (26,117) width 5: " "
-layer at (376,563) size 60x60 backgroundClip at (376,563) size 60x37 clip at (377,564) size 43x36 scrollHeight 160
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,563) size 60x60 backgroundClip at (375,563) size 60x37 clip at (376,564) size 43x36 scrollHeight 160
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x156
       LayoutText {#text} at (0,0) size 39x156
         text run at (0,0) width 34: "Lorem"
@@ -595,8 +595,8 @@ layer at (376,563) size 60x60 backgroundClip at (376,563) size 60x37 clip at (37
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,642) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 160
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,642) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 160
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x156
       LayoutText {#text} at (0,0) size 39x156
         text run at (0,0) width 34: "Lorem"
@@ -616,8 +616,8 @@ layer at (376,642) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,721) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 160
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,721) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 160
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x156
       LayoutText {#text} at (0,0) size 39x156
         text run at (0,0) width 34: "Lorem"
@@ -637,8 +637,8 @@ layer at (376,721) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 160
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 160
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 39x156
       LayoutText {#text} at (0,0) size 39x156
         text run at (0,0) width 34: "Lorem"
@@ -658,8 +658,8 @@ layer at (376,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,879) size 161x47 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 190 scrollHeight 212
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,879) size 161x47 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 190 scrollHeight 212
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x208
       LayoutText {#text} at (0,0) size 4x13
         text run at (0,0) width 4: " "
@@ -707,8 +707,8 @@ layer at (376,879) size 161x47 backgroundClip at (0,0) size 0x0 clip at (0,0) si
         text run at (0,182) width 189: "This is a text area with wrap=\"soft\""
       LayoutBR {BR} at (0,0) size 0x0
       LayoutBR {BR} at (0,195) size 0x13
-layer at (376,945) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,945) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x390
       LayoutText {#text} at (0,0) size 4x13
         text run at (0,0) width 4: " "
@@ -784,8 +784,8 @@ layer at (376,945) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) si
         text run at (0,364) width 64: "wrap=\"soft\""
       LayoutBR {BR} at (63,375) size 1x0
       LayoutBR {BR} at (0,377) size 0x13
-layer at (376,996) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
-  LayoutTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (375,996) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
+  LayoutTextControl {TEXTAREA} at (13.84,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 140x390
       LayoutText {#text} at (0,0) size 4x13
         text run at (0,0) width 4: " "

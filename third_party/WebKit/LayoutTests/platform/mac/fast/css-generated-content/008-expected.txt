@@ -5,9 +5,9 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x0
       LayoutBlockFlow {DIV} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 606x18
-          text run at (0,0) width 443: "In this paragraph, there should be a right floating green ::after block. "
-          text run at (442,0) width 164: "It should be ok to do this."
+        LayoutText {#text} at (0,0) size 605x18
+          text run at (0,0) width 442: "In this paragraph, there should be a right floating green ::after block. "
+          text run at (441,0) width 164: "It should be ok to do this."
         LayoutBlockFlow (floating) {<pseudo:after>} at (684,0) size 100x100 [color=#008000] [bgcolor=#008000]
           LayoutTextFragment (anonymous) at (0,0) size 56x18
             text run at (0,0) width 56: "Invisible"

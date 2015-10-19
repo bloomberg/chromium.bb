@@ -27,5 +27,5 @@ layer at (0,0) size 800x600
           text run at (430,29) width 161: "letter to the left. "
           text run at (591,29) width 134: "However, this"
           text run at (55,57) width 722: "floated element should still inherit the font properties (green and sans-serif)"
-          text run at (55,85) width 726: "from the first-line: selector. It does not -- instead, the font is black, and uses"
+          text run at (55,85) width 725: "from the first-line: selector. It does not -- instead, the font is black, and uses"
           text run at (1,113) width 451: "the serif font. .... And here's some more text ...."

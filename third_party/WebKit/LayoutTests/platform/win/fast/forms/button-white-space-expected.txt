@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
                     text run at (0,0) width 69: "Search Mail"
               LayoutText {#text} at (86,3) size 4x17
                 text run at (86,3) width 4: " "
-              LayoutButton {BUTTON} at (90,1) size 110x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                LayoutBlockFlow (anonymous) at (8,3) size 94x16
+              LayoutButton {BUTTON} at (90,1) size 109.77x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+                LayoutBlockFlow (anonymous) at (8,3) size 93.77x16
                   LayoutText {#text} at (0,0) size 94x16
                     text run at (0,0) width 94: "Search the Web"
               LayoutText {#text} at (0,0) size 0x0

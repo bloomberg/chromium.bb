@@ -27,30 +27,30 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (42,128) size 1x0
       LayoutBR {BR} at (42,158) size 1x0
       LayoutBR {BR} at (42,188) size 1x0
-      LayoutText {#text} at (0,192) size 497x18
-        text run at (0,192) width 497: "PASS: sel1 correctly set to selectedIndex 1 by sel1.options[1].selected = true."
-      LayoutBR {BR} at (496,206) size 1x0
-      LayoutText {#text} at (0,210) size 447x18
-        text run at (0,210) width 447: "PASS: sel2 correctly set to selectedIndex 1 by sel2.selectedIndex = 1."
-      LayoutBR {BR} at (446,224) size 1x0
-      LayoutText {#text} at (0,228) size 497x18
-        text run at (0,228) width 497: "PASS: sel3 correctly set to selectedIndex 1 by sel3.options[1].selected = true."
-      LayoutBR {BR} at (496,242) size 1x0
-      LayoutText {#text} at (0,246) size 447x18
-        text run at (0,246) width 447: "PASS: sel4 correctly set to selectedIndex 1 by sel4.selectedIndex = 1."
-      LayoutBR {BR} at (446,260) size 1x0
-      LayoutText {#text} at (0,264) size 497x18
-        text run at (0,264) width 497: "PASS: sel5 correctly set to selectedIndex 1 by sel5.options[1].selected = true."
-      LayoutBR {BR} at (496,278) size 1x0
-      LayoutText {#text} at (0,282) size 447x18
-        text run at (0,282) width 447: "PASS: sel6 correctly set to selectedIndex 1 by sel6.selectedIndex = 1."
-      LayoutBR {BR} at (446,296) size 1x0
-      LayoutText {#text} at (0,300) size 497x18
-        text run at (0,300) width 497: "PASS: sel7 correctly set to selectedIndex 1 by sel7.options[1].selected = true."
-      LayoutBR {BR} at (496,314) size 1x0
-      LayoutText {#text} at (0,318) size 447x18
-        text run at (0,318) width 447: "PASS: sel8 correctly set to selectedIndex 1 by sel8.selectedIndex = 1."
-      LayoutBR {BR} at (446,332) size 1x0
+      LayoutText {#text} at (0,192) size 495x18
+        text run at (0,192) width 495: "PASS: sel1 correctly set to selectedIndex 1 by sel1.options[1].selected = true."
+      LayoutBR {BR} at (494,206) size 1x0
+      LayoutText {#text} at (0,210) size 445x18
+        text run at (0,210) width 445: "PASS: sel2 correctly set to selectedIndex 1 by sel2.selectedIndex = 1."
+      LayoutBR {BR} at (444,224) size 1x0
+      LayoutText {#text} at (0,228) size 495x18
+        text run at (0,228) width 495: "PASS: sel3 correctly set to selectedIndex 1 by sel3.options[1].selected = true."
+      LayoutBR {BR} at (494,242) size 1x0
+      LayoutText {#text} at (0,246) size 445x18
+        text run at (0,246) width 445: "PASS: sel4 correctly set to selectedIndex 1 by sel4.selectedIndex = 1."
+      LayoutBR {BR} at (444,260) size 1x0
+      LayoutText {#text} at (0,264) size 495x18
+        text run at (0,264) width 495: "PASS: sel5 correctly set to selectedIndex 1 by sel5.options[1].selected = true."
+      LayoutBR {BR} at (494,278) size 1x0
+      LayoutText {#text} at (0,282) size 445x18
+        text run at (0,282) width 445: "PASS: sel6 correctly set to selectedIndex 1 by sel6.selectedIndex = 1."
+      LayoutBR {BR} at (444,296) size 1x0
+      LayoutText {#text} at (0,300) size 495x18
+        text run at (0,300) width 495: "PASS: sel7 correctly set to selectedIndex 1 by sel7.options[1].selected = true."
+      LayoutBR {BR} at (494,314) size 1x0
+      LayoutText {#text} at (0,318) size 445x18
+        text run at (0,318) width 445: "PASS: sel8 correctly set to selectedIndex 1 by sel8.selectedIndex = 1."
+      LayoutBR {BR} at (444,332) size 1x0
 layer at (8,80) size 43x30 clip at (9,81) size 30x28
   LayoutListBox {SELECT} at (0,71.63) size 42.53x30.38 [color=#7F7F7F] [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 29.53x14.19

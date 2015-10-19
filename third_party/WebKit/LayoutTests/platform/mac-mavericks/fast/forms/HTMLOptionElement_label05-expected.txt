@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 681x18
-        text run at (0,0) width 681: "In the list box below, the text \"This text should appear\" should be shown as the first entry into the list box."
-      LayoutBR {BR} at (680,14) size 1x0
+      LayoutText {#text} at (0,0) size 680x18
+        text run at (0,0) width 680: "In the list box below, the text \"This text should appear\" should be shown as the first entry into the list box."
+      LayoutBR {BR} at (679,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 144x73 clip at (9,27) size 131x71
   LayoutListBox {SELECT} at (0,18.06) size 143.88x72.94 [bgcolor=#FFFFFF] [border: (1px solid #999999)]

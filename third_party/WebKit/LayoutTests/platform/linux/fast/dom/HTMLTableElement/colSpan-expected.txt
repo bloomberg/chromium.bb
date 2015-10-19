@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 160x19
-          text run at (0,0) width 160: "Tests: the colspan attribute"
-        LayoutBR {BR} at (160,15) size 0x0
+        LayoutText {#text} at (0,0) size 159x19
+          text run at (0,0) width 159: "Tests: the colspan attribute"
+        LayoutBR {BR} at (158,15) size 1x0
       LayoutBlockFlow {P} at (0,36) size 784x80
         LayoutText {#text} at (0,0) size 68x19
           text run at (0,0) width 68: "Conditions:"

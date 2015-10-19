@@ -8,16 +8,16 @@ layer at (0,0) size 800x600
           text run at (0,0) width 332: "This tests basic inputs. Here's what you should see: "
         LayoutBR {BR} at (331,14) size 1x0
         LayoutBR {BR} at (0,18) size 0x18
-        LayoutText {#text} at (0,36) size 462x54
-          text run at (0,36) width 445: "first line: the letter \"a\" and then a text input field filled with repeating"
+        LayoutText {#text} at (0,36) size 461x54
+          text run at (0,36) width 442: "first line: the letter \"a\" and then a text input field filled with repeating"
           text run at (0,54) width 86: "\"foobarbaz\", "
-          text run at (85,54) width 377: "then the word \"text\" followed by a disabled text input field"
-          text run at (0,72) width 336: "filled with \"foo\" and then the letter \"b\" and then \"a\" "
-        LayoutBR {BR} at (335,86) size 1x0
+          text run at (85,54) width 376: "then the word \"text\" followed by a disabled text input field"
+          text run at (0,72) width 335: "filled with \"foo\" and then the letter \"b\" and then \"a\" "
+        LayoutBR {BR} at (334,86) size 1x0
         LayoutBR {BR} at (0,90) size 0x18
-        LayoutText {#text} at (0,108) size 469x54
-          text run at (0,108) width 439: "second line: and then a password input field that's filled and then the"
-          text run at (0,126) width 469: "word \"password\" and then a disabled password field that's filled and then"
+        LayoutText {#text} at (0,108) size 467x54
+          text run at (0,108) width 437: "second line: and then a password input field that's filled and then the"
+          text run at (0,126) width 467: "word \"password\" and then a disabled password field that's filled and then"
           text run at (0,144) width 86: "the letter \"b\" "
         LayoutBR {BR} at (85,158) size 1x0
         LayoutBR {BR} at (0,162) size 0x18

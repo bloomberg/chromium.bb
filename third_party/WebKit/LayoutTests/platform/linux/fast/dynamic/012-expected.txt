@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 289: "This table below has three hierarchical sections. "
           text run at (289,0) width 365: "Collapsing a section should cause those below it to move up."
       LayoutBlockFlow {P} at (0,82.91) size 784x20
-        LayoutText {#text} at (0,0) size 736x19
-          text run at (0,0) width 736: "This works on the latest Windows IE and Mozilla Firefox (Win and Mac) but not on Safari 1.2.3 (v125.9) {or 2.0 (146)}."
+        LayoutText {#text} at (0,0) size 735x19
+          text run at (0,0) width 735: "This works on the latest Windows IE and Mozilla Firefox (Win and Mac) but not on Safari 1.2.3 (v125.9) {or 2.0 (146)}."
       LayoutBlockFlow {P} at (0,118.91) size 784x20
         LayoutText {#text} at (0,0) size 716x19
           text run at (0,0) width 554: "Note that the second section is collapsed when the page opens and expanding it works fine. "
@@ -25,8 +25,8 @@ layer at (0,0) size 800x600
             text run at (16,1) width 75: " Block One"
         LayoutBlockFlow {DIV} at (0,31) size 784x21
           LayoutImage {IMG} at (0,0) size 16x16
-          LayoutText {#text} at (16,1) size 75x19
-            text run at (16,1) width 75: " Block Two"
+          LayoutText {#text} at (16,1) size 74x19
+            text run at (16,1) width 74: " Block Two"
         LayoutBlockFlow {DIV} at (0,52) size 784x21
           LayoutImage {IMG} at (0,0) size 16x16
           LayoutText {#text} at (16,1) size 87x19

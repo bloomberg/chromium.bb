@@ -7,12 +7,12 @@ layer at (0,0) size 800x156
         LayoutText {#text} at (0,0) size 177x17
           text run at (0,0) width 177: "This is a regression test for "
         LayoutInline {I} at (0,0) size 735x35
-          LayoutInline {A} at (0,0) size 355x17 [color=#0000EE]
-            LayoutText {#text} at (176,0) size 355x17
-              text run at (176,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8835"
-          LayoutText {#text} at (530,0) size 735x35
-            text run at (530,0) width 5: " "
-            text run at (534,0) width 201: "REGRESSION: Line moves but"
+          LayoutInline {A} at (0,0) size 354x17 [color=#0000EE]
+            LayoutText {#text} at (176,0) size 354x17
+              text run at (176,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8835"
+          LayoutText {#text} at (529,0) size 735x35
+            text run at (529,0) width 5: " "
+            text run at (533,0) width 202: "REGRESSION: Line moves but"
             text run at (0,18) width 203: "selection highlight stays behind"
         LayoutText {#text} at (202,18) size 5x17
           text run at (202,18) width 5: "."

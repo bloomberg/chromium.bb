@@ -38,9 +38,9 @@ layer at (0,0) size 800x600
                 LayoutBlockFlow {DIV} at (3,3) size 61.59x10 [bgcolor=#008000]
         LayoutListItem {LI} at (40,85) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-          LayoutText {#text} at (0,0) size 81x17
-            text run at (0,0) width 81: "Value style: "
-          LayoutBlockFlow {PROGRESS} at (80.86,1.19) size 160x16
+          LayoutText {#text} at (0,0) size 80x17
+            text run at (0,0) width 80: "Value style: "
+          LayoutBlockFlow {PROGRESS} at (79.09,1.19) size 160x16
             LayoutProgress {DIV} at (0,0) size 160x16
               LayoutBlockFlow {DIV} at (0,0) size 160x16 [bgcolor=#808080]
                 LayoutBlockFlow {DIV} at (0,0) size 80x16 [bgcolor=#FFFF00] [border: (3px solid #999900)]

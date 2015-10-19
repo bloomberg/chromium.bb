@@ -4,17 +4,17 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x748
     LayoutBlockFlow {BODY} at (8,8) size 769x732
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 51x19
-          text run at (0,0) width 51: "Test for "
-        LayoutInline {I} at (0,0) size 638x19
-          LayoutInline {A} at (0,0) size 305x19 [color=#0000EE]
-            LayoutText {#text} at (51,0) size 305x19
-              text run at (51,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=15362"
-          LayoutText {#text} at (356,0) size 333x19
-            text run at (356,0) width 4: " "
-            text run at (360,0) width 329: "Safari Crashes when opening a JS TreeGrid widget"
-        LayoutText {#text} at (689,0) size 4x19
-          text run at (689,0) width 4: "."
+        LayoutText {#text} at (0,0) size 50x19
+          text run at (0,0) width 50: "Test for "
+        LayoutInline {I} at (0,0) size 637x19
+          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
+            LayoutText {#text} at (49,0) size 306x19
+              text run at (49,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=15362"
+          LayoutText {#text} at (354,0) size 332x19
+            text run at (354,0) width 5: " "
+            text run at (358,0) width 328: "Safari Crashes when opening a JS TreeGrid widget"
+        LayoutText {#text} at (685,0) size 5x19
+          text run at (685,0) width 5: "."
       LayoutBlockFlow {P} at (0,36) size 769x80
         LayoutText {#text} at (0,0) size 744x79
           text run at (0,0) width 739: "The test sets up an inline parent with a child that is some kind of table part. The child gets broken off into a continuation and"
@@ -23,11 +23,11 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,60) width 38: "block."
       LayoutBlockFlow {DIV} at (0,132) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 123x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
-            LayoutText {#text} at (39,0) size 84x19
-              text run at (39,0) width 84: "goes here and"
+          LayoutInline {SPAN} at (0,0) size 122x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
+            LayoutText {#text} at (37,0) size 85x19
+              text run at (37,0) width 85: "goes here and"
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -39,9 +39,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,172) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -54,9 +54,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,212) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -69,10 +69,10 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,252) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
-            LayoutInline {SPAN} at (0,0) size 0x19
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
+            LayoutInline {SPAN} at (0,0) size 1x19
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -84,9 +84,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,292) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutBlockFlow {DIV} at (0,0) size 769x0
           LayoutTable (anonymous) at (0,0) size 98x20
@@ -99,11 +99,11 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,332) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 123x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
-            LayoutText {#text} at (39,0) size 84x19
-              text run at (39,0) width 84: "goes here and"
+          LayoutInline {SPAN} at (0,0) size 122x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
+            LayoutText {#text} at (37,0) size 85x19
+              text run at (37,0) width 85: "goes here and"
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -115,9 +115,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,372) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -131,9 +131,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,412) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -146,10 +146,10 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,452) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
-            LayoutInline {SPAN} at (0,0) size 0x19
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
+            LayoutInline {SPAN} at (0,0) size 1x19
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
@@ -161,9 +161,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,492) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutBlockFlow {DIV} at (0,0) size 769x0
           LayoutTable (anonymous) at (0,0) size 98x20
@@ -176,11 +176,11 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,532) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 123x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
-            LayoutText {#text} at (39,0) size 84x19
-              text run at (39,0) width 84: "goes here and"
+          LayoutInline {SPAN} at (0,0) size 122x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
+            LayoutText {#text} at (37,0) size 85x19
+              text run at (37,0) width 85: "goes here and"
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection {DIV} at (0,0) size 98x20
@@ -192,9 +192,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,572) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x0
@@ -209,9 +209,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,612) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x0
@@ -225,10 +225,10 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,652) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
-            LayoutInline {SPAN} at (0,0) size 0x19
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
+            LayoutInline {SPAN} at (0,0) size 1x19
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutTable (anonymous) at (0,0) size 98x20
             LayoutTableSection {DIV} at (0,0) size 98x20
@@ -240,9 +240,9 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,692) size 769x40
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
-          LayoutInline {SPAN} at (0,0) size 39x19
-            LayoutText {#text} at (0,0) size 39x19
-              text run at (0,0) width 39: "Text..."
+          LayoutInline {SPAN} at (0,0) size 38x19
+            LayoutText {#text} at (0,0) size 38x19
+              text run at (0,0) width 38: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutBlockFlow {DIV} at (0,0) size 769x0
           LayoutTable (anonymous) at (0,0) size 98x20

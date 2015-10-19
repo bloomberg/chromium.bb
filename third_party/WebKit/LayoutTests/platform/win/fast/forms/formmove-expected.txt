@@ -5,24 +5,24 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {FORM} at (0,0) size 784x20
         LayoutBlockFlow {INPUT} at (5,3) size 13x13
-        LayoutText {#text} at (21,2) size 34x17
-          text run at (21,2) width 34: "Two "
-        LayoutBlockFlow {INPUT} at (59.33,3) size 13x13
-        LayoutText {#text} at (75,2) size 38x17
-          text run at (75,2) width 38: "Three"
+        LayoutText {#text} at (21,2) size 33x17
+          text run at (21,2) width 33: "Two "
+        LayoutBlockFlow {INPUT} at (58.20,3) size 13x13
+        LayoutText {#text} at (74,2) size 38x17
+          text run at (74,2) width 38: "Three"
       LayoutBlockFlow {FORM} at (0,36) size 784x20
         LayoutBlockFlow {INPUT} at (5,3) size 13x13
         LayoutText {#text} at (21,2) size 31x17
           text run at (21,2) width 31: "One "
         LayoutBlockFlow {INPUT} at (56.66,3) size 13x13
-        LayoutText {#text} at (72,2) size 34x17
-          text run at (72,2) width 34: "Two "
-        LayoutBlockFlow {INPUT} at (110.98,3) size 13x13
-        LayoutText {#text} at (126,2) size 43x17
-          text run at (126,2) width 43: "Three "
-        LayoutBlockFlow {INPUT} at (173.28,3) size 13x13
-        LayoutText {#text} at (189,2) size 27x17
-          text run at (189,2) width 27: "One"
+        LayoutText {#text} at (72,2) size 33x17
+          text run at (72,2) width 33: "Two "
+        LayoutBlockFlow {INPUT} at (109.86,3) size 13x13
+        LayoutText {#text} at (125,2) size 43x17
+          text run at (125,2) width 43: "Three "
+        LayoutBlockFlow {INPUT} at (172.16,3) size 13x13
+        LayoutText {#text} at (188,2) size 27x17
+          text run at (188,2) width 27: "One"
       LayoutBlockFlow (anonymous) at (0,72) size 784x36
         LayoutText {#text} at (0,0) size 779x35
           text run at (0,0) width 514: "The count of the # of elements in form 1 should be 2 and in form 2 should be 4. "

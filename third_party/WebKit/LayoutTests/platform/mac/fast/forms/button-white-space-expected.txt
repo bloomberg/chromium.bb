@@ -13,20 +13,20 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 365x18
           text run at (0,0) width 365: "Buttons should appear next to each other in a single row:"
-      LayoutTable {TABLE} at (0,70) size 182x25
-        LayoutTableSection {TBODY} at (0,0) size 182x25
-          LayoutTableRow {TR} at (0,2) size 182x21
-            LayoutTableCell {TD} at (2,2) size 178x21 [r=0 c=0 rs=1 cs=1]
-              LayoutButton {BUTTON} at (1,2) size 75.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-                LayoutBlockFlow (anonymous) at (8,2) size 59.02x13
+      LayoutTable {TABLE} at (0,70) size 181x25
+        LayoutTableSection {TBODY} at (0,0) size 181x25
+          LayoutTableRow {TR} at (0,2) size 181x21
+            LayoutTableCell {TD} at (2,2) size 177x21 [r=0 c=0 rs=1 cs=1]
+              LayoutButton {BUTTON} at (1,2) size 74.81x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+                LayoutBlockFlow (anonymous) at (8,2) size 58.81x13
                   LayoutText {#text} at (0,0) size 59x13
                     text run at (0,0) width 59: "Search Mail"
-              LayoutText {#text} at (76,1) size 5x18
-                text run at (76,1) width 5: " "
-              LayoutButton {BUTTON} at (80.02,2) size 96.14x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-                LayoutBlockFlow (anonymous) at (8,2) size 80.14x13
-                  LayoutText {#text} at (0,0) size 81x13
-                    text run at (0,0) width 81: "Search the Web"
+              LayoutText {#text} at (75,1) size 5x18
+                text run at (75,1) width 5: " "
+              LayoutButton {BUTTON} at (79.81,2) size 95.30x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+                LayoutBlockFlow (anonymous) at (8,2) size 79.30x13
+                  LayoutText {#text} at (0,0) size 80x13
+                    text run at (0,0) width 80: "Search the Web"
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,95) size 784x18
         LayoutText {#text} at (0,0) size 193x18

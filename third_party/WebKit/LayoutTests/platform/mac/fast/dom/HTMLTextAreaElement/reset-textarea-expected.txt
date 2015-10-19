@@ -14,22 +14,22 @@ layer at (0,0) size 800x600
               text run at (0,0) width 29: "Reset"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,53) size 784x72
-        LayoutText {#text} at (0,0) size 369x18
-          text run at (0,0) width 369: "This test verifies that textarea controls are properly reset. "
-        LayoutBR {BR} at (368,14) size 1x0
-        LayoutText {#text} at (0,18) size 477x18
-          text run at (0,18) width 477: "You should see two element IDs below, and the word \"SUCCESS\" twice: "
-        LayoutBR {BR} at (476,32) size 1x0
-        LayoutText {#text} at (0,36) size 176x18
-          text run at (0,36) width 176: "noDefaultText: SUCCESS "
-        LayoutBR {BR} at (175,50) size 1x0
-        LayoutText {#text} at (0,54) size 177x18
-          text run at (0,54) width 177: "hasDefaultText: SUCCESS"
+        LayoutText {#text} at (0,0) size 368x18
+          text run at (0,0) width 368: "This test verifies that textarea controls are properly reset. "
+        LayoutBR {BR} at (367,14) size 1x0
+        LayoutText {#text} at (0,18) size 474x18
+          text run at (0,18) width 474: "You should see two element IDs below, and the word \"SUCCESS\" twice: "
+        LayoutBR {BR} at (473,32) size 1x0
+        LayoutText {#text} at (0,36) size 174x18
+          text run at (0,36) width 174: "noDefaultText: SUCCESS "
+        LayoutBR {BR} at (173,50) size 1x0
+        LayoutText {#text} at (0,54) size 176x18
+          text run at (0,54) width 176: "hasDefaultText: SUCCESS"
 layer at (8,8) size 141x32 clip at (9,9) size 139x30
   LayoutTextControl {TEXTAREA} at (0,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13
 layer at (153,8) size 141x32 clip at (154,9) size 139x30
   LayoutTextControl {TEXTAREA} at (145,0) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13
-      LayoutText {#text} at (0,0) size 61x13
-        text run at (0,0) width 61: "Default Text"
+      LayoutText {#text} at (0,0) size 59x13
+        text run at (0,0) width 59: "Default Text"

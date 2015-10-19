@@ -4,16 +4,16 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 334x17
-          LayoutInline {A} at (0,0) size 157x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 157x17
-              text run at (54,0) width 157: "rdar://problem/7898436"
-          LayoutText {#text} at (210,0) size 178x17
-            text run at (210,0) width 178: " :after content is duplicated"
-        LayoutText {#text} at (387,0) size 5x17
-          text run at (387,0) width 5: "."
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 333x17
+          LayoutInline {A} at (0,0) size 156x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 156x17
+              text run at (53,0) width 156: "rdar://problem/7898436"
+          LayoutText {#text} at (208,0) size 178x17
+            text run at (208,0) width 178: " :after content is duplicated"
+        LayoutText {#text} at (385,0) size 5x17
+          text run at (385,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 518x17
           text run at (0,0) width 518: "The test passed if the word \x{201C}not\x{201D} appears exactly once in the following sentence:"

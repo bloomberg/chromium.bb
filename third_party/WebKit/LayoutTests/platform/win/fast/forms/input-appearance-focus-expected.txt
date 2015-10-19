@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 772x17
-          text run at (0,0) width 772: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."
+        LayoutText {#text} at (0,0) size 771x17
+          text run at (0,0) width 771: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."
       LayoutBlockFlow {P} at (0,34) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (173,2) size 4x17
@@ -14,21 +14,21 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,72) size 784x72
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutText {#text} at (0,18) size 328x17
-          text run at (0,18) width 328: "Test Passed. Text field 1's onFocus event has fired."
-        LayoutBR {BR} at (327,32) size 1x0
-        LayoutText {#text} at (0,36) size 318x17
-          text run at (0,36) width 318: "Test Passed. Text field 1's onBlur event has fired."
-        LayoutBR {BR} at (317,50) size 1x0
-        LayoutText {#text} at (0,54) size 328x17
-          text run at (0,54) width 328: "Test Passed. Text field 2's onFocus event has fired."
+        LayoutText {#text} at (0,18) size 326x17
+          text run at (0,18) width 326: "Test Passed. Text field 1's onFocus event has fired."
+        LayoutBR {BR} at (325,32) size 1x0
+        LayoutText {#text} at (0,36) size 316x17
+          text run at (0,36) width 316: "Test Passed. Text field 1's onBlur event has fired."
+        LayoutBR {BR} at (315,50) size 1x0
+        LayoutText {#text} at (0,54) size 326x17
+          text run at (0,54) width 326: "Test Passed. Text field 2's onFocus event has fired."
       LayoutBlockFlow {P} at (0,160) size 784x0
 layer at (10,45) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
-    LayoutText {#text} at (0,0) size 90x16
-      text run at (0,0) width 90: "My Text Field 1"
+    LayoutText {#text} at (0,0) size 89x16
+      text run at (0,0) width 89: "My Text Field 1"
 layer at (187,45) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
-    LayoutText {#text} at (0,0) size 90x16
-      text run at (0,0) width 90: "My Text Field 2"
+    LayoutText {#text} at (0,0) size 89x16
+      text run at (0,0) width 89: "My Text Field 2"
 caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of child 1 {P} of body

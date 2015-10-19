@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 782x36
-          text run at (0,0) width 782: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by"
+        LayoutText {#text} at (0,0) size 780x36
+          text run at (0,0) width 780: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by"
           text run at (0,18) width 106: "a blue rectangle."
       LayoutBlockFlow {P} at (0,52) size 784x99
         LayoutBlockFlow {IMG} at (0,0) size 54.66x22

@@ -6,16 +6,16 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 213x18
           text run at (0,0) width 213: "This tests for regressions against "
-        LayoutInline {I} at (0,0) size 738x36
-          LayoutInline {A} at (0,0) size 355x18 [color=#0000EE]
-            LayoutText {#text} at (212,0) size 355x18
-              text run at (212,0) width 355: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8420"
-          LayoutText {#text} at (566,0) size 738x36
-            text run at (566,0) width 5: " "
-            text run at (570,0) width 168: "iExploder(#12): Assertion"
-            text run at (0,18) width 302: "failure in RenderContainer::removeChildNode"
-        LayoutText {#text} at (301,18) size 5x18
-          text run at (301,18) width 5: "."
+        LayoutInline {I} at (0,0) size 784x36
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (212,0) size 354x18
+              text run at (212,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=8420"
+          LayoutText {#text} at (565,0) size 784x36
+            text run at (565,0) width 5: " "
+            text run at (569,0) width 215: "iExploder(#12): Assertion failure"
+            text run at (0,18) width 255: "in RenderContainer::removeChildNode"
+        LayoutText {#text} at (254,18) size 5x18
+          text run at (254,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x36
         LayoutText {#text} at (0,0) size 716x36
           text run at (0,0) width 568: "In the render tree, the button should have only one child, an anonymous block wrapping "

@@ -4,8 +4,8 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x652.88
     LayoutBlockFlow {BODY} at (8,8) size 784x636.88
       LayoutBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 420x36
-          text run at (0,0) width 420: "Form Element Geometry Tests"
+        LayoutText {#text} at (0,0) size 418x36
+          text run at (0,0) width 418: "Form Element Geometry Tests"
       LayoutBlockFlow {P} at (0,58.44) size 784x20
         LayoutText {#text} at (0,0) size 514x19
           text run at (0,0) width 514: "These tests help us tune the widget classes in KWQ to have all the right fudge factors."

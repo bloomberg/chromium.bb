@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 441x19
         text run at (0,0) width 441: "The white text and grey backgrounds should all clip to the border-radius. "
-      LayoutBR {BR} at (441,15) size 0x0
+      LayoutBR {BR} at (440,15) size 1x0
       LayoutText {#text} at (240,145) size 4x19
         text run at (240,145) width 4: " "
       LayoutText {#text} at (484,145) size 4x19

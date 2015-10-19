@@ -10,5 +10,5 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (11,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 62x13
-      text run at (0,0) width 62: "Test Passed"
+    LayoutText {#text} at (0,0) size 61x13
+      text run at (0,0) width 61: "Test Passed"

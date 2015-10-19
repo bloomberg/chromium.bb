@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBR {BR} at (0,0) size 0x18
-      LayoutText {#text} at (0,18) size 682x18
-        text run at (0,18) width 682: "This tests that preventDefault called onmousedown will prevent a caret from being placed in the text field."
+      LayoutText {#text} at (0,18) size 681x18
+        text run at (0,18) width 681: "This tests that preventDefault called onmousedown will prevent a caret from being placed in the text field."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (10,50) size 123x19
@@ -15,7 +15,7 @@ layer at (13,53) size 117x13 scrollWidth 128
     LayoutText {#text} at (0,0) size 128x13
       text run at (0,0) width 128: "No caret should be here"
 layer at (10,70) size 328x36
-  LayoutBlockFlow (positioned) {DIV} at (10,70) size 327.92x36
+  LayoutBlockFlow (positioned) {DIV} at (10,70) size 327.64x36
     LayoutBR {BR} at (0,0) size 0x18
     LayoutText {#text} at (0,18) size 328x18
       text run at (0,18) width 328: "mousedown on target [object HTMLInputElement]"

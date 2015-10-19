@@ -4,9 +4,9 @@ layer at (0,0) size 800x444
   LayoutBlockFlow {HTML} at (0,0) size 800x444
     LayoutBlockFlow {BODY} at (8,8) size 784x428
       LayoutBlockFlow {DIV} at (0,0) size 784x60
-        LayoutText {#text} at (0,0) size 325x19
-          text run at (0,0) width 325: "Test all of the values of text-justify for 8bits characters"
-        LayoutBR {BR} at (325,0) size 0x19
+        LayoutText {#text} at (0,0) size 324x19
+          text run at (0,0) width 324: "Test all of the values of text-justify for 8bits characters"
+        LayoutBR {BR} at (323,0) size 1x19
         LayoutText {#text} at (0,20) size 583x19
           text run at (0,20) width 583: "This test checks that all of the values for text-justify property works properly for 8bits characters."
         LayoutBR {BR} at (583,20) size 0x19
@@ -39,7 +39,7 @@ layer at (0,0) size 800x444
         LayoutInline {B} at (0,0) size 149x19
           LayoutText {#text} at (0,20) size 149x19
             text run at (0,20) width 149: "text-justify: inter-word"
-        LayoutBR {BR} at (149,20) size 0x19
+        LayoutBR {BR} at (148,20) size 1x19
       LayoutBlockFlow {DIV} at (0,274) size 302x47 [border: (1px solid #000000)]
         LayoutText {#text} at (1,1) size 300x45
           text run at (1,1) width 300: "Lorem ipsum dolor sit amet, consectetuer"

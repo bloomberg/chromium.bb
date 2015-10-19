@@ -9,5 +9,5 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (2,0) size 77x18
             text run at (2,0) width 77: "Hello world"
         LayoutBlockFlow (anonymous) at (14,23.59) size 704x18
-          LayoutText {#text} at (0,0) size 143x18
-            text run at (0,0) width 143: "Some fieldset content."
+          LayoutText {#text} at (0,0) size 142x18
+            text run at (0,0) width 142: "Some fieldset content."

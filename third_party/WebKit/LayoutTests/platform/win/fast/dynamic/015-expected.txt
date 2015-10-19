@@ -5,8 +5,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 759x35
-          text run at (0,0) width 759: "You should see a table with 6 rows, labeled \"Row_0\", \"Row_1\", \"Row_2\", \"Row_3\", \"Row_4\", \"Row_5\", from top to"
+        LayoutText {#text} at (0,0) size 757x35
+          text run at (0,0) width 757: "You should see a table with 6 rows, labeled \"Row_0\", \"Row_1\", \"Row_2\", \"Row_3\", \"Row_4\", \"Row_5\", from top to"
           text run at (0,18) width 50: "bottom."
       LayoutTable {TABLE} at (0,52) size 57x148 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 55x146

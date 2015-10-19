@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutInline {A} at (0,0) size 268x18 [color=#0000EE]
-        LayoutText {#text} at (0,0) size 268x18
-          text run at (0,0) width 268: "You should not see anything but this link."
+      LayoutInline {A} at (0,0) size 266x18 [color=#0000EE]
+        LayoutText {#text} at (0,0) size 266x18
+          text run at (0,0) width 266: "You should not see anything but this link."
       LayoutText {#text} at (0,0) size 0x0

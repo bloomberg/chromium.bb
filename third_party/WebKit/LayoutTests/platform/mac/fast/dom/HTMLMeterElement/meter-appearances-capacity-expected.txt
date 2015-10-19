@@ -38,13 +38,13 @@ layer at (0,0) size 800x600
             LayoutMeter (floating) {METER} at (664,0) size 80x18
           LayoutListItem {LI} at (40,90) size 744x18 [bgcolor=#CCCCCC]
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-            LayoutText {#text} at (0,0) size 39x18
-              text run at (0,0) width 39: "RTL:"
+            LayoutText {#text} at (0,0) size 38x18
+              text run at (0,0) width 38: "RTL:"
             LayoutMeter (floating) {METER} at (664,0) size 80x18
           LayoutListItem {LI} at (40,108) size 744x50 [bgcolor=#EEEEEE]
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-            LayoutText {#text} at (0,0) size 33x18
-              text run at (0,0) width 33: "Tall:"
+            LayoutText {#text} at (0,0) size 32x18
+              text run at (0,0) width 32: "Tall:"
             LayoutMeter (floating) {METER} at (664,0) size 80x50
           LayoutListItem {LI} at (40,158) size 744x18 [bgcolor=#CCCCCC]
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
@@ -93,13 +93,13 @@ layer at (0,0) size 800x600
             LayoutMeter (floating) {METER} at (664,0) size 80x16
           LayoutListItem {LI} at (40,90) size 744x18 [bgcolor=#CCCCCC]
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-            LayoutText {#text} at (0,0) size 39x18
-              text run at (0,0) width 39: "RTL:"
+            LayoutText {#text} at (0,0) size 38x18
+              text run at (0,0) width 38: "RTL:"
             LayoutMeter (floating) {METER} at (664,0) size 80x16
           LayoutListItem {LI} at (40,108) size 744x50 [bgcolor=#EEEEEE]
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-            LayoutText {#text} at (0,0) size 33x18
-              text run at (0,0) width 33: "Tall:"
+            LayoutText {#text} at (0,0) size 32x18
+              text run at (0,0) width 32: "Tall:"
             LayoutMeter (floating) {METER} at (664,0) size 80x50
           LayoutListItem {LI} at (40,158) size 744x18 [bgcolor=#CCCCCC]
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet

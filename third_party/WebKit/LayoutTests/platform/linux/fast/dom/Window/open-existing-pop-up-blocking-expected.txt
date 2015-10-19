@@ -26,4 +26,4 @@ layer at (316,8) size 304x154
         LayoutBlockFlow {BODY} at (8,8) size 284x134
           LayoutText {#text} at (0,0) size 276x39
             text run at (0,0) width 276: "This text successfully replaced the original text"
-            text run at (0,20) width 177: "in the frame. Test succeeded!"
+            text run at (0,20) width 176: "in the frame. Test succeeded!"

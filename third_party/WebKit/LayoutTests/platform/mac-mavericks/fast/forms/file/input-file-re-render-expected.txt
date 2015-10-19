@@ -11,5 +11,5 @@ layer at (0,0) size 800x77
                 text run at (0,0) width 68: "Choose Files"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,35) size 784x18
-        LayoutText {#text} at (0,0) size 451x18
-          text run at (0,0) width 451: "The file upload control above should have text '2 files,' not a filename."
+        LayoutText {#text} at (0,0) size 449x18
+          text run at (0,0) width 449: "The file upload control above should have text '2 files,' not a filename."

@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 177x17
           text run at (0,0) width 177: "This is a regression test for "
-        LayoutInline {I} at (0,0) size 773x35
-          LayoutInline {A} at (0,0) size 307x17 [color=#0000EE]
-            LayoutText {#text} at (176,0) size 307x17
-              text run at (176,0) width 307: "http://bugs.webkit.org/show_bug.cgi?id=11672"
-          LayoutText {#text} at (482,0) size 773x35
-            text run at (482,0) width 5: " "
-            text run at (486,0) width 287: "REGRESSION (r17068): Repro crash due to"
+        LayoutInline {I} at (0,0) size 771x35
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (176,0) size 305x17
+              text run at (176,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=11672"
+          LayoutText {#text} at (480,0) size 771x35
+            text run at (480,0) width 5: " "
+            text run at (484,0) width 287: "REGRESSION (r17068): Repro crash due to"
             text run at (0,18) width 150: "painting without layout"
         LayoutText {#text} at (149,18) size 131x17
           text run at (149,18) width 131: ". It should not crash."

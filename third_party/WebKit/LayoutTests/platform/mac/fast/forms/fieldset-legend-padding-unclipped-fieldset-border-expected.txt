@@ -9,8 +9,8 @@ layer at (0,0) size 800x146
         LayoutInline {A} at (0,0) size 41x18 [color=#0000EE]
           LayoutText {#text} at (30,0) size 41x18
             text run at (30,0) width 41: "78684"
-        LayoutText {#text} at (70,0) size 276x18
-          text run at (70,0) width 276: ": Layout issue with fieldset legend element"
+        LayoutText {#text} at (70,0) size 275x18
+          text run at (70,0) width 275: ": Layout issue with fieldset legend element"
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 735x18
           text run at (0,0) width 735: "For this test to pass, you should see a full border with out any clipping, especially under blue box(legend element)."

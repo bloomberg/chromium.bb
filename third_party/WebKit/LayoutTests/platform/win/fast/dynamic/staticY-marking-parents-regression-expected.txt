@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 55x17
-          text run at (0,0) width 55: "Test for "
-        LayoutInline {I} at (0,0) size 732x35
-          LayoutInline {A} at (0,0) size 306x17 [color=#0000EE]
-            LayoutText {#text} at (54,0) size 306x17
-              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12818"
-          LayoutText {#text} at (359,0) size 732x35
-            text run at (359,0) width 5: " "
-            text run at (363,0) width 369: "REGRESSION (r19148): shacknews.com does not render"
+        LayoutText {#text} at (0,0) size 54x17
+          text run at (0,0) width 54: "Test for "
+        LayoutInline {I} at (0,0) size 730x35
+          LayoutInline {A} at (0,0) size 305x17 [color=#0000EE]
+            LayoutText {#text} at (53,0) size 305x17
+              text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=12818"
+          LayoutText {#text} at (357,0) size 730x35
+            text run at (357,0) width 5: " "
+            text run at (361,0) width 369: "REGRESSION (r19148): shacknews.com does not render"
             text run at (0,18) width 70: "completely"
         LayoutText {#text} at (69,18) size 5x17
           text run at (69,18) width 5: "."
@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 338: "There should be a green square to the left of the text."
       LayoutBlockFlow {DIV} at (0,86) size 100x100 [bgcolor=#008000]
       LayoutBlockFlow {DIV} at (0,186) size 784x18
-        LayoutText {#text} at (0,0) size 39x17
-          text run at (0,0) width 39: "PASS"
+        LayoutText {#text} at (0,0) size 37x17
+          text run at (0,0) width 37: "PASS"
 layer at (8,94) size 792x126
   LayoutBlockFlow (positioned) {DIV} at (8,94) size 792x126
     LayoutBlockFlow {DIV} at (100,0) size 692x126
