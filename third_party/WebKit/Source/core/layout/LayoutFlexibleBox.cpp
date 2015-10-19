@@ -132,6 +132,11 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
 
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
 
+    // Due to negative margins, it is possible that we calculated a negative intrinsic width. Make sure that we
+    // never return a negative width.
+    minLogicalWidth = std::max(LayoutUnit(), minLogicalWidth);
+    maxLogicalWidth = std::max(LayoutUnit(), maxLogicalWidth);
+
     LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
     maxLogicalWidth += scrollbarWidth;
     minLogicalWidth += scrollbarWidth;
@@ -1208,6 +1213,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
             maxAscent = std::max(maxAscent, ascent);
             maxDescent = std::max(maxDescent, descent);
 
+            // TODO(cbiesinger): Take scrollbar into account
             childCrossAxisMarginBoxExtent = maxAscent + maxDescent;
         } else {
             childCrossAxisMarginBoxExtent = crossAxisIntrinsicExtentForChild(*child) + crossAxisMarginExtentForChild(*child) + crossAxisScrollbarExtentForChild(*child);
