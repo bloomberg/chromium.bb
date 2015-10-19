@@ -2812,9 +2812,18 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
     gl_->DeleteQueriesEXT(1, &query);
   }
 
-  PendingAsyncReadPixels* current_read = pending_async_read_pixels_.back();
-  // Make sure we service the readbacks in order.
-  DCHECK_EQ(source_buffer, current_read->buffer);
+  // Make sure we are servicing the right readback. There is no guarantee that
+  // callbacks to this function are in the same order as we post the copy
+  // requests.
+  // Nevertheless, it is very likely that the order is preserved, and thus
+  // start searching from back to the front.
+  auto iter = pending_async_read_pixels_.rbegin();
+  const auto& reverse_end = pending_async_read_pixels_.rend();
+  while (iter != reverse_end && (*iter)->buffer != source_buffer)
+    ++iter;
+
+  DCHECK(iter != reverse_end);
+  PendingAsyncReadPixels* current_read = *iter;
 
   uint8* src_pixels = NULL;
   scoped_ptr<SkBitmap> bitmap;
@@ -2857,7 +2866,12 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
 
   if (bitmap)
     current_read->copy_request->SendBitmapResult(bitmap.Pass());
-  pending_async_read_pixels_.pop_back();
+
+  // Conversion from reverse iterator to iterator:
+  // Iterator |iter.base() - 1| points to the same element with reverse iterator
+  // |iter|. The difference |-1| is due to the fact of correspondence of end()
+  // with rbegin().
+  pending_async_read_pixels_.erase(iter.base() - 1);
 }
 
 void GLRenderer::GetFramebufferTexture(unsigned texture_id,

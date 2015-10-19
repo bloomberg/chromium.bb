@@ -54,10 +54,17 @@ class TestContextSupport : public gpu::ContextSupport {
   void SetScheduleOverlayPlaneCallback(
       const ScheduleOverlayPlaneCallback& schedule_overlay_plane_callback);
 
+  // If set true, callbacks triggering will be in a reverse order as SignalQuery
+  // calls.
+  void set_out_of_order_callbacks(bool out_of_order_callbacks) {
+    out_of_order_callbacks_ = out_of_order_callbacks;
+  }
+
  private:
   std::vector<base::Closure> sync_point_callbacks_;
   SurfaceVisibleCallback set_visible_callback_;
   ScheduleOverlayPlaneCallback schedule_overlay_plane_callback_;
+  bool out_of_order_callbacks_;
 
   base::WeakPtrFactory<TestContextSupport> weak_ptr_factory_;
 

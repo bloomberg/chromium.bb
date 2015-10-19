@@ -30,6 +30,10 @@ class LayerTreeHostCopyRequestTestMultipleRequests
     child->SetBounds(gfx::Size(10, 10));
     root->AddChild(child);
 
+    grand_child = FakePictureLayer::Create(layer_settings(), &client_);
+    grand_child->SetBounds(gfx::Size(5, 5));
+    child->AddChild(grand_child);
+
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostCopyRequestTest::SetupTree();
   }
@@ -51,8 +55,8 @@ class LayerTreeHostCopyRequestTestMultipleRequests
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(&LayerTreeHostCopyRequestTestMultipleRequests::
-                            CopyOutputCallback,
-                       base::Unretained(this))));
+                           CopyOutputCallback,
+                       base::Unretained(this), 0)));
         EXPECT_EQ(0u, callbacks_.size());
         break;
       case 2:
@@ -65,16 +69,16 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(&LayerTreeHostCopyRequestTestMultipleRequests::
-                            CopyOutputCallback,
-                       base::Unretained(this))));
+                           CopyOutputCallback,
+                       base::Unretained(this), 1)));
         root->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(&LayerTreeHostCopyRequestTestMultipleRequests::
-                            CopyOutputCallback,
-                       base::Unretained(this))));
-        child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+                           CopyOutputCallback,
+                       base::Unretained(this), 2)));
+        grand_child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(&LayerTreeHostCopyRequestTestMultipleRequests::
-                            CopyOutputCallback,
-                       base::Unretained(this))));
+                           CopyOutputCallback,
+                       base::Unretained(this), 3)));
         EXPECT_EQ(1u, callbacks_.size());
         break;
       case 3:
@@ -83,39 +87,52 @@ class LayerTreeHostCopyRequestTestMultipleRequests
           return;
         }
         EXPECT_EQ(4u, callbacks_.size());
-        // The child was copied to a bitmap and passed back twice.
+
+        // The |child| was copied to a bitmap and passed back in Case 1.
+        EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[0].ToString());
+
+        // The |child| was copied to a bitmap and passed back in Case 2.
         EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[1].ToString());
-        EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[2].ToString());
-        // The root was copied to a bitmap and passed back also.
-        EXPECT_EQ(gfx::Size(20, 20).ToString(), callbacks_[3].ToString());
+        // The |root| was copied to a bitmap and passed back also in Case 2.
+        EXPECT_EQ(gfx::Size(20, 20).ToString(), callbacks_[2].ToString());
+        // The |grand_child| was copied to a bitmap and passed back in Case 2.
+        EXPECT_EQ(gfx::Size(5, 5).ToString(), callbacks_[3].ToString());
         EndTest();
         break;
     }
   }
 
-  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+  void CopyOutputCallback(size_t id, scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
     scoped_ptr<SkBitmap> bitmap = result->TakeBitmap().Pass();
     EXPECT_EQ(result->size().ToString(),
               gfx::Size(bitmap->width(), bitmap->height()).ToString());
-    callbacks_.push_back(result->size());
+    callbacks_[id] = result->size();
   }
 
   void AfterTest() override { EXPECT_EQ(4u, callbacks_.size()); }
 
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    if (use_gl_renderer_)
-      return FakeOutputSurface::Create3d();
-    return FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice));
+    if (!use_gl_renderer_) {
+      return FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice));
+    }
+    scoped_ptr<FakeOutputSurface> output_surface =
+        FakeOutputSurface::Create3d();
+    TestContextSupport* context_support = static_cast<TestContextSupport*>(
+        output_surface->context_provider()->ContextSupport());
+    context_support->set_out_of_order_callbacks(out_of_order_callbacks_);
+    return output_surface;
   }
 
   bool use_gl_renderer_;
-  std::vector<gfx::Size> callbacks_;
+  bool out_of_order_callbacks_ = false;
+  std::map<size_t, gfx::Size> callbacks_;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root;
   scoped_refptr<FakePictureLayer> child;
+  scoped_refptr<FakePictureLayer> grand_child;
 };
 
 // Readback can't be done with a delegating renderer.
@@ -128,6 +145,20 @@ TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        GLRenderer_RunMultiThread) {
   use_gl_renderer_ = true;
+  RunTest(true, false);
+}
+
+TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
+       GLRenderer_RunSingleThread_OutOfOrderCallbacks) {
+  use_gl_renderer_ = true;
+  out_of_order_callbacks_ = true;
+  RunTest(false, false);
+}
+
+TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
+       GLRenderer_RunMultiThread_OutOfOrderCallbacks) {
+  use_gl_renderer_ = true;
+  out_of_order_callbacks_ = true;
   RunTest(true, false);
 }
 
