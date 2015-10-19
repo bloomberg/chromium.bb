@@ -231,7 +231,7 @@ void StoragePartitionHttpCacheDataRemover::DoCountCache(int rv) {
 
         rv = http_cache->GetBackend(
             &cache_,
-            base::Bind(&StoragePartitionHttpCacheDataRemover::DoClearCache,
+            base::Bind(&StoragePartitionHttpCacheDataRemover::DoCountCache,
                        base::Unretained(this)));
         break;
       }

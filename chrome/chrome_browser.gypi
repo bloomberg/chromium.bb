@@ -339,6 +339,8 @@
       'browser/browsing_data/browsing_data_remover.h',
       'browser/browsing_data/browsing_data_service_worker_helper.cc',
       'browser/browsing_data/browsing_data_service_worker_helper.h',
+      'browser/browsing_data/cache_counter.cc',
+      'browser/browsing_data/cache_counter.h',
       'browser/browsing_data/canonical_cookie_hash.cc',
       'browser/browsing_data/canonical_cookie_hash.h',
       'browser/browsing_data/cookies_tree_model.cc',
