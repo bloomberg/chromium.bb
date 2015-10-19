@@ -74,28 +74,18 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
       CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
 }
 
-// Tests that a MIXEDSCRIPT type ContentSettingBubbleModel works for an iframe.
+// Tests that a MIXEDSCRIPT type ContentSettingBubbleModel does not work
+// for an iframe (mixed script in iframes is never allowed and the mixed
+// content shield isn't shown for it).
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, Iframe) {
   GURL url(https_server_->GetURL(
       "files/content_setting_bubble/mixed_script_in_iframe.html"));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
-
-  scoped_ptr<ContentSettingBubbleModel> model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          browser()->content_setting_bubble_model_delegate(),
-          browser()->tab_strip_model()->GetActiveWebContents(),
-          browser()->profile(),
-          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
-  model->OnCustomLinkClicked();
-
-  content::TestNavigationObserver observer(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  observer.Wait();
-
+  // Blink does not ask the browser to handle mixed content in the case
+  // of active subresources in an iframe, so the content type should not
+  // be marked as blocked.
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
 }

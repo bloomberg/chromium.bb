@@ -60,6 +60,11 @@ static void measureStricterVersionOfIsMixedContent(LocalFrame* frame, const KURL
     }
 }
 
+bool requestIsSubframeSubresource(LocalFrame* frame, WebURLRequest::FrameType frameType)
+{
+    return (frame && frame != frame->tree().top() && frameType != WebURLRequest::FrameTypeNested);
+}
+
 // static
 bool MixedContentChecker::isMixedContent(SecurityOrigin* securityOrigin, const KURL& url)
 {
@@ -328,6 +333,14 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         break;
 
     case ContextTypeBlockable: {
+        // Strictly block subresources in subframes, unless all insecure
+        // content is allowed.
+        if (!settings->allowRunningOfInsecureContent() && requestIsSubframeSubresource(frame, frameType)) {
+            UseCounter::count(mixedFrame, UseCounter::BlockableMixedContentInSubframeBlocked);
+            allowed = false;
+            break;
+        }
+
         bool shouldAskEmbedder = !strictMode && settings && (!settings->strictlyBlockBlockableMixedContent() || settings->allowRunningOfInsecureContent());
         allowed = shouldAskEmbedder && client->allowRunningInsecureContent(settings && settings->allowRunningOfInsecureContent(), securityOrigin, url);
         if (allowed) {

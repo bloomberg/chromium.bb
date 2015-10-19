@@ -60510,6 +60510,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="963" label="CredentialManagerStore"/>
   <int value="964" label="CredentialManagerRequireUserMediation"/>
   <int value="965" label="RequestAutocomplete"/>
+  <int value="966" label="BlockableMixedContentInSubframeBlocked"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

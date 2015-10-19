@@ -843,6 +843,7 @@ public:
         // The above items are available in M47 branch.
 
         RequestAutocomplete = 965,
+        BlockableMixedContentInSubframeBlocked = 966,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
