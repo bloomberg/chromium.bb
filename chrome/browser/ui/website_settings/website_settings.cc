@@ -214,24 +214,20 @@ void WebsiteSettings::RecordWebsiteSettingsAction(
   }
 }
 
-// Get corresponding Rappor Metric.
+// Get corresponding Rappor Metric. TODO(raymes): This should use the same
+// code that's in permission_context_uma_util.cc. Figure out how to do that.
+// crbug.com/544745.
 const std::string GetRapporMetric(ContentSettingsType permission) {
   std::string permission_str;
-  switch (permission) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      permission_str = "Geolocation";
-      break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      permission_str = "Notifications";
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      permission_str = "Mic";
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      permission_str = "Camera";
-      break;
-    default:
-      return "";
+
+  if (permission == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    permission_str = "Geolocation";
+  } else if (permission == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    permission_str = "Notifications";
+  } else if (permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+    permission_str = "Mic";
+  } else if (permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+    permission_str = "Camera";
   }
 
   return base::StringPrintf("ContentSettings.PermissionActions_%s.Revoked.Url",
@@ -268,39 +264,33 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   // compare it against other kinds of actions in WebsiteSettings[PopupView].
   RecordWebsiteSettingsAction(WEBSITE_SETTINGS_CHANGED_PERMISSION);
 
+  // TODO(raymes): The scoping here should be a property of ContentSettingsInfo.
+  // Make this happen! crbug.com/444742.
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
-      // TODO(markusheintz): The rule we create here should also change the
-      // location permission for iframed content.
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      break;
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      primary_pattern = ContentSettingsPattern::FromURL(site_url_);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      break;
-    default:
-      NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
-      break;
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
+      type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX ||
+      type == CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+    // TODO(markusheintz): The rule we create here should also change the
+    // location permission for iframed content.
+    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+    secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+  } else if (type == CONTENT_SETTINGS_TYPE_IMAGES ||
+             type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+             type == CONTENT_SETTINGS_TYPE_PLUGINS ||
+             type == CONTENT_SETTINGS_TYPE_POPUPS ||
+             type == CONTENT_SETTINGS_TYPE_MOUSELOCK ||
+             type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
+             type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
+    primary_pattern = ContentSettingsPattern::FromURL(site_url_);
+    secondary_pattern = ContentSettingsPattern::Wildcard();
+  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
+             type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+    secondary_pattern = ContentSettingsPattern::Wildcard();
+  } else {
+    NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
   }
 
   // Permission settings are specified via rules. There exists always at least
