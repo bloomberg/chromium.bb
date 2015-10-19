@@ -1,0 +1,30 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+# GYP: //tools/android/kerberos:kerberos.gyp:spnego_authenticator_apk
+android_apk("spnego_authenticator_apk") {
+  testonly = true
+  android_manifest = "AndroidManifest.xml"
+  apk_name = "SpnegoAuthenticator"
+
+  deps = [
+    "//base:base_java",
+    "//net/android:net_java",
+    ":spnego_authenticator_apk_assets",
+  ]
+
+  java_files = [
+    "src/org/chromium/tools/spnegoauthenticator/SpnegoAuthenticator.java",
+    "src/org/chromium/tools/spnegoauthenticator/SpnegoAuthenticatorService.java",
+  ]
+}
+
+android_resources("spnego_authenticator_apk_assets") {
+  testonly = true
+  resource_dirs = [ "res" ]
+  android_manifest = "AndroidManifest.xml"
+}

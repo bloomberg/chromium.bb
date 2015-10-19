@@ -239,6 +239,7 @@ group("both_gn_and_gyp") {
       "//third_party/errorprone:chromium_errorprone",
       "//tools/android:android_tools",
       "//tools/android/heap_profiler:heap_profiler_unittests",
+      "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/imagediff($host_toolchain)",
 
       # TODO(GYP): Remove these when the components_unittests work.

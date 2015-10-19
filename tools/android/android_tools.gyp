@@ -62,6 +62,13 @@
       ],
     },
     {
+      'target_name': 'spnego_authenticator',
+      'type': 'none',
+      'dependencies': [
+        'kerberos/kerberos.gyp:spnego_authenticator_apk',
+      ],
+    },
+    {
       # GN: //tools/android:customtabs_benchmark
       'target_name': 'customtabs_benchmark',
       'type': 'none',

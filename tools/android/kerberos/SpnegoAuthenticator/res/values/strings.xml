@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">SpnegoAuthenticator</string>
+    <string name="account_type">org.chromium.tools.SpnegoAuthenticator</string>
+</resources>
