@@ -939,6 +939,26 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnSpan(CSSParserTokenRange& r
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    const CSSParserToken& token = range.peek();
+    CSSValueID id = token.id();
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> zoom;
+    if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument) {
+        zoom = consumeIdent(range);
+    } else {
+        zoom = consumePercent(range, ValueRangeNonNegative);
+        if (!zoom)
+            zoom = consumeNumber(range, ValueRangeNonNegative);
+    }
+    if (zoom && context.useCounter()
+        && !(id == CSSValueNormal
+            || (token.type() == NumberToken && zoom->getDoubleValue() == 1)
+            || (token.type() == PercentageToken && zoom->getDoubleValue() == 100)))
+        context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
+    return zoom.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -1017,6 +1037,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeColumnGap(m_range, m_context.mode());
     case CSSPropertyWebkitColumnSpan:
         return consumeColumnSpan(m_range, m_context.mode());
+    case CSSPropertyZoom:
+        return consumeZoom(m_range, m_context);
     default:
         return nullptr;
     }

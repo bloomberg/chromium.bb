@@ -699,18 +699,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = (id == CSSValueAuto || id == CSSValueUnder);
         break;
 
-    case CSSPropertyZoom:          // normal | reset | document | <number> | <percentage> | inherit
-        if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FNumber | FPercent | FNonNeg);
-        if (validPrimitive && m_context.useCounter()
-            && !(id == CSSValueNormal
-                || (value->unit() == CSSPrimitiveValue::UnitType::Number && value->fValue == 1)
-                || (value->unit() == CSSPrimitiveValue::UnitType::Percentage && value->fValue == 100)))
-            m_context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
-        break;
-
     case CSSPropertySrc:
     case CSSPropertyUnicodeRange:
         /* @font-face only descriptors */
@@ -1267,6 +1255,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitColumns:
     case CSSPropertyWebkitColumnGap:
     case CSSPropertyWebkitColumnSpan:
+    case CSSPropertyZoom:
         validPrimitive = false;
         break;
 
