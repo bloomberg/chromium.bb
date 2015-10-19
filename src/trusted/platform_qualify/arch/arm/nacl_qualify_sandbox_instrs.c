@@ -9,9 +9,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/arm_sandbox.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
 
 static sigjmp_buf try_state;
@@ -36,14 +37,23 @@ int NaClQualifySandboxInstrs(void) {
   sigemptyset(&try_sigaction.sa_mask);
   try_sigaction.sa_flags = 0;
 
-  (void) sigaction(SIGTRAP, &try_sigaction, &old_sigaction_trap);
-  (void) sigaction(SIGILL, &try_sigaction, &old_sigaction_ill);
+  if (0 != sigaction(SIGTRAP, &try_sigaction, &old_sigaction_trap)) {
+    NaClLog(LOG_FATAL, "Failed to install handler for SIGTRAP.\n");
+    return 0;
+  }
+  if (0 != sigaction(SIGILL, &try_sigaction, &old_sigaction_ill)) {
+    NaClLog(LOG_FATAL, "Failed to install handler for SIGILL.\n");
+    return 0;
+  }
 #if NACL_ANDROID
   /*
    * Android yields a SIGBUS for the breakpoint instruction used to mark
    * literal pools heads.
    */
-  (void) sigaction(SIGBUS, &try_sigaction, &old_sigaction_bus);
+  if (0 != sigaction(SIGBUS, &try_sigaction, &old_sigaction_bus)) {
+    NaClLog(LOG_FATAL, "Failed to install handler for SIGBUS.\n");
+    return 0;
+  }
 #endif
 
   /* Each of the following should trap, successively executing
@@ -66,10 +76,19 @@ int NaClQualifySandboxInstrs(void) {
   }
 
 #if NACL_ANDROID
-  (void) sigaction(SIGBUS, &old_sigaction_bus, NULL);
+  if (0 != sigaction(SIGBUS, &old_sigaction_bus, NULL)) {
+    NaClLog(LOG_FATAL, "Failed to restore handler for SIGBUS.\n");
+    return 0;
+  }
 #endif
-  (void) sigaction(SIGILL, &old_sigaction_ill, NULL);
-  (void) sigaction(SIGTRAP, &old_sigaction_trap, NULL);
+  if (0 != sigaction(SIGILL, &old_sigaction_ill, NULL)) {
+    NaClLog(LOG_FATAL, "Failed to restore handler for SIGILL.\n");
+    return 0;
+  }
+  if (0 != sigaction(SIGTRAP, &old_sigaction_trap, NULL)) {
+    NaClLog(LOG_FATAL, "Failed to restore handler for SIGTRAP.\n");
+    return 0;
+  }
 
   return !fell_through;
 }

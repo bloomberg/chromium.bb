@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
 
 static sigjmp_buf try_state;
@@ -29,7 +30,10 @@ int NaClQualifyFpu(void) {
   sigemptyset(&try_sigaction.sa_mask);
   try_sigaction.sa_flags = 0;
 
-  (void) sigaction(SIGILL, &try_sigaction, &old_sigaction);
+  if (0 != sigaction(SIGILL, &try_sigaction, &old_sigaction)) {
+    NaClLog(LOG_FATAL, "Failed to install handler for SIGILL.\n");
+    return 0;
+  }
 
   if (0 == sigsetjmp(try_state, 1)) {
     volatile struct {
@@ -47,7 +51,10 @@ int NaClQualifyFpu(void) {
                x.v[1] == 0x2f2e2e2d2f2a2c2eULL);
   }
 
-  (void) sigaction(SIGILL, &old_sigaction, NULL);
+  if (0 != sigaction(SIGILL, &old_sigaction, NULL)) {
+    NaClLog(LOG_FATAL, "Failed to restore handler for SIGILL.\n");
+    return 0;
+  }
 
   return success;
 }

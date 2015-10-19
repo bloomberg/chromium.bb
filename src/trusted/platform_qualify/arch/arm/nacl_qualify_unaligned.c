@@ -12,6 +12,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
 
 /*
@@ -35,16 +36,16 @@ static void signal_catch(int sig) {
   siglongjmp(try_state, sig);
 }
 
-#define LOAD_TEST_START(size, value)                            \
+#define LOAD_TEST_START(size, offset, value)                    \
   typedef NACL_CONCAT(NACL_CONCAT(uint, size), _t) Value;       \
   struct Data {                                                 \
-    uint8_t misalign; /* Only test misaligned by 1 byte. */     \
+    uint8_t misalign[offset];                                   \
     Value val;                                                  \
-    uint8_t pad[sizeof(Value) - 1];                             \
+    uint8_t pad[sizeof(Value) - offset];                        \
   } __attribute__((aligned(sizeof(Value)), packed));            \
                                                                 \
   static const struct Data data = {                             \
-    0, value, { 0 /* Zero-init rest. */ }                       \
+    { 0 }, value, { 0 /* Zero-init rest. */ }                   \
   };                                                            \
   const char *addr = (const char *) &data;                      \
   const Value val = value; /* Local aligned copy. */            \
@@ -57,17 +58,18 @@ static void signal_catch(int sig) {
   int success = 1;                                              \
   Value out;                                                    \
                                                                 \
-  NACL_COMPILE_TIME_ASSERT(offsetof(struct Data, val) == 1);    \
+  NACL_COMPILE_TIME_ASSERT(                                     \
+      offsetof(struct Data, val) == offset);                    \
   success &= (((uintptr_t) &data.val & (sizeof(Value) - 1)) ==  \
-              1);                                               \
+              offset);                                          \
                                                                 \
   (void) (zero + one + minus_size) /* Sometimes unused on Thumb. */
 
 
-#define STORE_TEST_START(size, value)                           \
+#define STORE_TEST_START(size, offset, value)                   \
   typedef NACL_CONCAT(NACL_CONCAT(uint, size), _t) Value;       \
   struct Data {                                                 \
-    uint8_t misalign; /* Only test misaligned by 1 byte. */     \
+    uint8_t misalign[offset];                                   \
     Value val;                                                  \
     uint8_t pad[sizeof(Value) - 1];                             \
   } __attribute__((aligned(sizeof(Value)), packed));            \
@@ -83,9 +85,10 @@ static void signal_catch(int sig) {
                                                                 \
   int success = 1;                                              \
                                                                 \
-  NACL_COMPILE_TIME_ASSERT(offsetof(struct Data, val) == 1);    \
+  NACL_COMPILE_TIME_ASSERT(                                     \
+      offsetof(struct Data, val) == offset);                    \
   success &= (((uintptr_t) &data.val & (sizeof(Value) - 1)) ==  \
-              1);                                               \
+              offset);                                          \
                                                                 \
   (void) (zero + one + minus_size) /* Sometimes unused on Thumb. */
 
@@ -138,18 +141,20 @@ static void signal_catch(int sig) {
 enum { CANARY = 0x69 };
 
 #define STORE_TEST(instr, address, offset_constraint, offset) do {      \
-    size_t i;                                                           \
-    data.misalign = CANARY;                                             \
-    for (i = 0; i < sizeof(Value) - 1; ++i)                             \
+    size_t i, o = offsetof(struct Data, val);                           \
+    for (i = 0; i < o; ++i)                                             \
+      data.misalign[i] = CANARY;                                        \
+    for (i = 0; i < sizeof(Value) - o; ++i)                             \
       data.pad[i] = CANARY;                                             \
     asm(instr " %[Rt], [%[Rn], %[off]]\n"                               \
         : "=m" (data)                                                   \
         : [Rt] "r" (val), [Rn] "r" (address),                           \
           [off] offset_constraint (offset));                            \
-    success &= (data.misalign == CANARY);                               \
+    for (i = 0; i < o; ++i)                                             \
+      success &= (data.misalign[i] == CANARY);                          \
     success &= (data.val == val);                                       \
-    for (i = 0; i < sizeof(Value) - 1; ++i)                             \
-      success &= data.pad[i] = CANARY;                                  \
+    for (i = 0; i < sizeof(Value) - o; ++i)                             \
+      success &= (data.pad[i] == CANARY);                               \
   } while (0)
 
 #define STORE_RI_TEST(instr, address, immediate_offset)                 \
@@ -159,7 +164,7 @@ enum { CANARY = 0x69 };
 
 
 static int test_halfword_load(void) {
-  LOAD_TEST_START(16, 0xDEAD);
+  LOAD_TEST_START(16, 1, 0xDEAD);
   LOAD_RI_TEST("ldrh",  addr + 1,               0);
   LOAD_RI_TEST("ldrh",  addr,                   1);
   LOAD_RI_TEST("ldrh",  addr + 1 + sizeof(val), -sizeof(val));
@@ -176,7 +181,7 @@ static int test_halfword_load(void) {
 }
 
 static int test_halfword_store(void) {
-  STORE_TEST_START(16, 0xDEAD);
+  STORE_TEST_START(16, 1, 0xDEAD);
   STORE_RI_TEST("strh", addr + 1,               0);
   STORE_RI_TEST("strh", addr,                   1);
   STORE_RI_TEST("strh", addr + 1 + sizeof(val), -sizeof(val));
@@ -187,7 +192,7 @@ static int test_halfword_store(void) {
 }
 
 int test_word_load(void) {
-  LOAD_TEST_START(32, 0xC0BEBEEF);
+  LOAD_TEST_START(32, 1, 0xC0BEBEEF);
   LOAD_RI_TEST("ldr", addr + 1,               0);
   LOAD_RI_TEST("ldr", addr,                   1);
   LOAD_RI_TEST("ldr", addr + 1 + sizeof(val), -sizeof(val));
@@ -198,7 +203,7 @@ int test_word_load(void) {
 }
 
 int test_word_store(void) {
-  STORE_TEST_START(32, 0xC0BEBEEF);
+  STORE_TEST_START(32, 1, 0xC0BEBEEF);
   STORE_RI_TEST("str", addr + 1,               0);
   STORE_RI_TEST("str", addr,                   1);
   STORE_RI_TEST("str", addr + 1 + sizeof(val), -sizeof(val));
@@ -208,32 +213,42 @@ int test_word_store(void) {
   return success;
 }
 
+/*
+ * ldrd/strd only support unaligned access at word boundary by design.
+ * Executing ldrd/strd on unaligned addresses at byte boundary will result in
+ * alignment fault. On ARCH_ARM kernel, for legacy reasons, the kernel contains
+ * a fixup code in the alignment fault handler to emulate unaligned ldrd/strd
+ * instructions [1]. The ARCH_ARM64 kernel does not emulate these unaligned
+ * ldrd/strd instructions.
+ *
+ * [1]: http://lxr.free-electrons.com/source/arch/arm/mm/alignment.c#L385
+ */
 int test_doubleword_load(void) {
-  LOAD_TEST_START(64, GG_UINT64_C(0xC0FEBEEFDEADBABE));
-  LOAD_RI_TEST("ldrd", addr + 1,               0);
+  LOAD_TEST_START(64, 4, GG_UINT64_C(0xC0FEBEEFDEADBABE));
+  LOAD_RI_TEST("ldrd", addr + 4,               0);
   /* Thumb forces the immediate to be a multiple of 4. */
-  LOAD_RI_TEST("ldrd", addr - 3,               4);
-  LOAD_RI_TEST("ldrd", addr + 1 + sizeof(val), -sizeof(val));
+  LOAD_RI_TEST("ldrd", addr,                   4);
+  LOAD_RI_TEST("ldrd", addr + 4 + sizeof(val), -sizeof(val));
 # if !defined(__thumb__)
   /* Reg-reg ldrd doesn't exist in Thumb. */
-  LOAD_RR_TEST("ldrd", addr + 1,               zero);
-  LOAD_RR_TEST("ldrd", addr,                   one);
-  LOAD_RR_TEST("ldrd", addr + 1 + sizeof(val), minus_size);
+  LOAD_RR_TEST("ldrd", addr + 4,               zero);
+  LOAD_RR_TEST("ldrd", addr,                   one * 4);
+  LOAD_RR_TEST("ldrd", addr + 4 + sizeof(val), minus_size);
 # endif
   return success;
 }
 
 int test_doubleword_store(void) {
-  STORE_TEST_START(64, GG_UINT64_C(0xC0FEBEEFDEADBABE));
-  STORE_RI_TEST("strd", addr + 1,               0);
+  STORE_TEST_START(64, 4, GG_UINT64_C(0xC0FEBEEFDEADBABE));
+  STORE_RI_TEST("strd", addr + 4,               0);
   /* Thumb forces the immediate to be a multiple of 4. */
-  STORE_RI_TEST("strd", addr - 3,               4);
-  STORE_RI_TEST("strd", addr + 1 + sizeof(val), -sizeof(val));
+  STORE_RI_TEST("strd", addr,                   4);
+  STORE_RI_TEST("strd", addr + 4 + sizeof(val), -sizeof(val));
 # if !defined(__thumb__)
-  /* Reg-reg ldrd doesn't exist in Thumb. */
-  STORE_RR_TEST("strd", addr + 1,               zero);
-  STORE_RR_TEST("strd", addr,                   one);
-  STORE_RR_TEST("strd", addr + 1 + sizeof(val), minus_size);
+  /* Reg-reg strd doesn't exist in Thumb. */
+  STORE_RR_TEST("strd", addr + 4,               zero);
+  STORE_RR_TEST("strd", addr,                   one * 4);
+  STORE_RR_TEST("strd", addr + 4 + sizeof(val), minus_size);
 #endif
   return success;
 }
@@ -250,7 +265,10 @@ int NaClQualifyUnaligned(void) {
   sigemptyset(&try_sigaction.sa_mask);
   try_sigaction.sa_flags = 0;
 
-  (void) sigaction(SIGBUS, &try_sigaction, &old_sigaction);
+  if (0 != sigaction(SIGBUS, &try_sigaction, &old_sigaction)) {
+    NaClLog(LOG_FATAL, "Failed to install handler for SIGBUS.\n");
+    return 0;
+  }
 
   if (0 == sigsetjmp(try_state, 1)) {
     /*
@@ -292,7 +310,10 @@ int NaClQualifyUnaligned(void) {
     success = 0;
   }
 
-  (void) sigaction(SIGBUS, &old_sigaction, NULL);
+  if (0 != sigaction(SIGBUS, &old_sigaction, NULL)) {
+    NaClLog(LOG_FATAL, "Failed to restore handler for SIGBUS.\n");
+    return 0;
+  }
 
   return success;
 }
