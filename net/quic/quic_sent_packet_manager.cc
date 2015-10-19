@@ -144,7 +144,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(SendAlgorithmInterface::Create(
         clock_, &rtt_stats_, kCubicBytes, stats_, initial_congestion_window_));
   }
-  EnablePacing();
+  if (!FLAGS_quic_disable_pacing) {
+    EnablePacing();
+  }
 
   if (config.HasClientSentConnectionOption(k1CON, perspective_)) {
     send_algorithm_->SetNumEmulatedConnections(1);

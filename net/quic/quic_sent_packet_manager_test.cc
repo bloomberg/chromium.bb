@@ -52,6 +52,10 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
       : manager_(Perspective::IS_SERVER, &clock_, &stats_, kCubic, kNack, true),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
+    // These tests only work with pacing enabled.
+    saved_FLAGS_quic_disable_pacing_ = FLAGS_quic_disable_pacing;
+    FLAGS_quic_disable_pacing = false;
+
     QuicSentPacketManagerPeer::SetSendAlgorithm(&manager_, send_algorithm_);
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 0);
@@ -68,7 +72,10 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*send_algorithm_, InRecovery()).Times(AnyNumber());
   }
 
-  ~QuicSentPacketManagerTest() override { STLDeleteElements(&packets_); }
+  ~QuicSentPacketManagerTest() override {
+    STLDeleteElements(&packets_);
+    FLAGS_quic_disable_pacing = saved_FLAGS_quic_disable_pacing_;
+  }
 
   QuicByteCount BytesInFlight() {
     return QuicSentPacketManagerPeer::GetBytesInFlight(&manager_);
@@ -265,6 +272,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   QuicConnectionStats stats_;
   MockSendAlgorithm* send_algorithm_;
   scoped_ptr<MockNetworkChangeVisitor> network_change_visitor_;
+  bool saved_FLAGS_quic_disable_pacing_;
 };
 
 TEST_F(QuicSentPacketManagerTest, IsUnacked) {

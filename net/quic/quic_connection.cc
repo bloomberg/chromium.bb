@@ -974,7 +974,7 @@ void QuicConnection::OnPacketComplete() {
   }
 
   DVLOG(1) << ENDPOINT << (last_packet_revived_ ? "Revived" : "Got")
-           << " packet " << last_header_.packet_packet_number << "for "
+           << " packet " << last_header_.packet_packet_number << " for "
            << last_header_.public_header.connection_id;
 
   ++num_packets_received_since_last_ack_sent_;

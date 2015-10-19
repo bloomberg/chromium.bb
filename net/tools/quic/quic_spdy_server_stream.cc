@@ -34,7 +34,7 @@ void QuicSpdyServerStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
   QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
   if (!ParseRequestHeaders(decompressed_headers().data(),
                            decompressed_headers().length())) {
-    // Headers were invalid.
+    DVLOG(1) << "Invalid headers";
     SendErrorResponse();
   }
   MarkHeadersConsumed(decompressed_headers().length());
@@ -52,6 +52,8 @@ void QuicSpdyServerStream::OnDataAvailable() {
 
     if (content_length_ >= 0 &&
         static_cast<int>(body_.size()) > content_length_) {
+      DVLOG(1) << "Body size (" << body_.size() << ") > content length ("
+               << content_length_ << ").";
       SendErrorResponse();
       return;
     }
@@ -71,12 +73,15 @@ void QuicSpdyServerStream::OnDataAvailable() {
   }
 
   if (request_headers_.empty()) {
+    DVLOG(1) << "Request headers empty.";
     SendErrorResponse();
     return;
   }
 
   if (content_length_ > 0 &&
       content_length_ != static_cast<int>(body_.size())) {
+    DVLOG(1) << "Content length (" << content_length_ << ") != body size ("
+             << body_.size() << ").";
     SendErrorResponse();
     return;
   }
@@ -88,9 +93,8 @@ bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
                                                uint32 data_len) {
   DCHECK(headers_decompressed());
   SpdyFramer framer(HTTP2);
-  size_t len = framer.ParseHeaderBlockInBuffer(data,
-                                               data_len,
-                                               &request_headers_);
+  size_t len =
+      framer.ParseHeaderBlockInBuffer(data, data_len, &request_headers_);
   DCHECK_LE(len, data_len);
   if (len == 0 || request_headers_.empty()) {
     return false;  // Headers were invalid.
@@ -127,6 +131,7 @@ bool QuicSpdyServerStream::ParseRequestHeaders(const char* data,
 void QuicSpdyServerStream::SendResponse() {
   if (!ContainsKey(request_headers_, ":authority") ||
       !ContainsKey(request_headers_, ":path")) {
+    DVLOG(1) << "Request headers do not contain :authority or :path.";
     SendErrorResponse();
     return;
   }
@@ -136,6 +141,7 @@ void QuicSpdyServerStream::SendResponse() {
       QuicInMemoryCache::GetInstance()->GetResponse(
           request_headers_[":authority"], request_headers_[":path"]);
   if (response == nullptr) {
+    DVLOG(1) << "Response not found in cache.";
     SendErrorResponse();
     return;
   }

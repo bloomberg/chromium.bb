@@ -91,3 +91,6 @@ bool FLAGS_quic_measure_headers_hol_blocking_time = true;
 // If true, skip a check for mismatched stream IDs inside
 // ReliableQuicStream::OnStreamFrame.
 bool FLAGS_quic_stop_checking_for_mismatch_ids = true;
+
+// Disable QUIC's userspace pacing.
+bool FLAGS_quic_disable_pacing = false;
