@@ -32,10 +32,6 @@ public class ContextualSearchFieldTrial {
     static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
     static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
 
-    // The default navigation-detection-delay in milliseconds.
-    private static final int DEFAULT_TAP_NAVIGATION_DETECTION_DELAY = 16;
-    private static final String NAVIGATION_DETECTION_DELAY = "tap_navigation_detection_delay";
-
     private static final int UNLIMITED_TAPS = -1;
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
     private static final int DEFAULT_TAP_PREFETCH_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
@@ -107,14 +103,6 @@ public class ContextualSearchFieldTrial {
      */
     static int getPromoTapTriggeredLimit() {
         return getIntParamValueOrDefault(TAP_TRIGGERED_PROMO_LIMIT, UNLIMITED_TAPS);
-    }
-
-    /**
-     * @return The delay to use for navigation-detection when triggering on a Tap.
-     */
-    static int getNavigationDetectionDelay() {
-        return getIntParamValueOrDefault(NAVIGATION_DETECTION_DELAY,
-                DEFAULT_TAP_NAVIGATION_DETECTION_DELAY);
     }
 
     /**

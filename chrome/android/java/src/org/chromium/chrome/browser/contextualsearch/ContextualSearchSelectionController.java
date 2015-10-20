@@ -36,6 +36,9 @@ public class ContextualSearchSelectionController {
     private static final int INVALID_IF_NO_SELECTION_CHANGE_AFTER_TAP_MS = 50;
     private static final double RETAP_DISTANCE_SQUARED_DP = Math.pow(75, 2);
 
+    // The default navigation-detection-delay in milliseconds.
+    private static final int TAP_NAVIGATION_DETECTION_DELAY = 16;
+
     private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
@@ -277,7 +280,7 @@ public class ContextualSearchSelectionController {
                 public void run() {
                     mHandler.handleValidTap();
                 }
-            }, ContextualSearchFieldTrial.getNavigationDetectionDelay());
+            }, TAP_NAVIGATION_DETECTION_DELAY);
         }
         if (!mWasTapGestureDetected) {
             mWasLastTapValid = false;
