@@ -19,7 +19,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 class InfoBarsTest : public InProcessBrowserTest {
@@ -33,9 +35,8 @@ class InfoBarsTest : public InProcessBrowserTest {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
 
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver observer(
+        extensions::ExtensionRegistry::Get(browser()->profile()));
 
     scoped_ptr<ExtensionInstallPrompt> client(new ExtensionInstallPrompt(
         browser()->tab_strip_model()->GetActiveWebContents()));
@@ -44,7 +45,7 @@ class InfoBarsTest : public InProcessBrowserTest {
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
     installer->InstallCrx(path);
 
-    observer.Wait();
+    observer.WaitForExtensionLoaded();
   }
 };
 
