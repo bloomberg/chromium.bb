@@ -230,8 +230,6 @@
         '../v8/tools/gyp/v8.gyp:v8',
         'android_webview_pak',
         'android_webview_version',
-        '../components/components.gyp:policy',
-        '../components/components.gyp:policy_component',
         '../components/components.gyp:pref_registry',
         '../components/url_formatter/url_formatter.gyp:url_formatter',
       ],
@@ -388,6 +386,14 @@
         'renderer/print_render_frame_observer.cc',
         'renderer/print_render_frame_observer.h',
       ],
+      'conditions': [
+        ['configuration_policy==1', {
+          'dependencies': [
+            '../components/components.gyp:policy',
+            '../components/components.gyp:policy_component',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'libwebviewchromium',
@@ -403,7 +409,6 @@
         '../android_webview/native/webview_native.gyp:android_webview_aw_permission_request_resource',
         '../components/components.gyp:external_video_surface_java',
         '../components/components.gyp:navigation_interception_java',
-        '../components/components.gyp:policy_java',
         '../components/components.gyp:web_contents_delegate_android_java',
         '../content/content.gyp:content_java',
         '../ui/android/ui_android.gyp:ui_java',
@@ -417,6 +422,13 @@
         'R_package_relpath': 'org/chromium/android_webview',
         'android_manifest_path': '../android_webview/apk/java/AndroidManifest.xml', # for lint
       },
+      'conditions': [
+        ['configuration_policy==1', {
+          'dependencies': [
+            '../components/components.gyp:policy_java',
+          ],
+        }],
+      ],
       'includes': [ '../build/java.gypi' ],
     },
     {

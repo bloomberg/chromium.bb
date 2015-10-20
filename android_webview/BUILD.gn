@@ -22,12 +22,15 @@ android_library("android_webview_java") {
     "//base:base_java",
     "//components/external_video_surface:java",
     "//components/navigation_interception/android:navigation_interception_java",
-    "//components/policy/android:policy_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//content/public/android:content_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
   ]
+
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy/android:policy_java" ]
+  }
 
   srcjar_deps = [ "//android_webview/native:aw_permission_request_resource" ]
 

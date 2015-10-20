@@ -109,7 +109,6 @@ group("all_components") {
       "//components/pdf/renderer",
       "//components/plugins/common",
       "//components/plugins/renderer",
-      "//components/policy",
       "//components/power",
       "//components/precache/core",
       "//components/precache/content",
@@ -168,6 +167,10 @@ group("all_components") {
       "//components/test_runner",
       "//components/webcrypto",
     ]
+
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy" ]
+    }
 
     if (!is_chromeos || !enable_extensions) {
       deps -= [ "//components/chrome_apps" ]
