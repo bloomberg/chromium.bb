@@ -777,9 +777,12 @@ void RenderViewContextMenu::AppendDeveloperItems() {
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE))
     menu_model_.AddItemWithStringId(IDC_VIEW_SOURCE,
                                     IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_FRAME))
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_FRAME)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE,
                                     IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOADFRAME,
+                                    IDS_CONTENT_CONTEXT_RELOADFRAME);
+  }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTELEMENT,
                                   IDS_CONTENT_CONTEXT_INSPECTELEMENT);
 }
