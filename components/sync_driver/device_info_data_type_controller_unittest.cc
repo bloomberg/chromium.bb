@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/device_info_data_type_controller.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/sync_driver/device_info_data_type_controller.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sync_api_component_factory.h"

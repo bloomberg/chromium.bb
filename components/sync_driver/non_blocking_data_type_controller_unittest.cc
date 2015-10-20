@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/non_blocking_data_type_controller.h"
+
 #include <list>
 
 #include "base/bind.h"
@@ -12,7 +14,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"

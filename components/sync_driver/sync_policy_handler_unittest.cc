@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/sync_policy_handler.h"
+
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/sync_driver/pref_names.h"
-#include "components/sync_driver/sync_policy_handler.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

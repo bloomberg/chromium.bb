@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/glue/ui_model_worker.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -12,7 +14,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "components/sync_driver/glue/ui_model_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::UIModelWorker;

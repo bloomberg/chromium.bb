@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/frontend_data_type_controller.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -15,7 +17,6 @@
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/fake_sync_service.h"
-#include "components/sync_driver/frontend_data_type_controller.h"
 #include "components/sync_driver/frontend_data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
@@ -50,6 +51,8 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   syncer::ModelType type() const override { return syncer::BOOKMARKS; }
 
  private:
+  ~FrontendDataTypeControllerFake() override {}
+
   void CreateSyncComponents() override {
     sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
         sync_client_->GetSyncApiComponentFactory()->
@@ -72,8 +75,6 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   void RecordStartFailure(DataTypeController::ConfigureResult result) override {
     mock_->RecordStartFailure(result);
   }
- private:
-  ~FrontendDataTypeControllerFake() override {}
 
   FrontendDataTypeControllerMock* mock_;
   sync_driver::SyncClient* sync_client_;
