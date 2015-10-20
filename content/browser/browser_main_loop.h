@@ -52,7 +52,6 @@ class ClientNativePixmapFactory;
 namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
-class BrowserShutdownImpl;
 class BrowserThreadImpl;
 class MediaStreamManager;
 class MojoShellContext;
@@ -138,8 +137,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 
  private:
   class MemoryObserver;
-  // For ShutdownThreadsAndCleanUp.
-  friend class BrowserShutdownImpl;
 
   void InitializeMainThread();
 
