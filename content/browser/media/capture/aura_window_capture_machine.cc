@@ -30,6 +30,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace content {
 
@@ -409,6 +410,16 @@ gfx::Point AuraWindowCaptureMachine::UpdateCursorState(
   gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
   if (!window_bounds.Contains(cursor_position)) {
     // Return early if there is no need to draw the cursor.
+    ClearCursorState();
+    return gfx::Point();
+  }
+
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(desktop_window_->GetRootWindow());
+  DCHECK(activation_client);
+  aura::Window* active_window = activation_client->GetActiveWindow();
+  if (!desktop_window_->Contains(active_window)) {
+    // Return early if the target window is not active.
     ClearCursorState();
     return gfx::Point();
   }
