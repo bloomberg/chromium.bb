@@ -35,6 +35,11 @@ if sys.platform == 'darwin':
       'Test Framework.framework/Versions/A/Libraries/empty.c',
       chdir='framework')
 
+  # Verify BUILT_FRAMEWORKS_DIR is set and working.
+  test.build('framework.gyp', 'copy_embedded', chdir='framework')
+
+  test.built_file_must_exist(
+      'Embedded/Test Framework.framework', chdir='framework')
 
   # Check that rebuilding the target a few times works.
   dep_bundle = test.built_file_path('Dependency Bundle.framework',
