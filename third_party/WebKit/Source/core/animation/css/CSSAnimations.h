@@ -140,8 +140,8 @@ private:
     static void calculateTransitionUpdate(CSSAnimationUpdate&, const Element* animatingElement, const ComputedStyle&);
     static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSTransitionData&, size_t transitionIndex, const ComputedStyle& oldStyle, const ComputedStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate&, const Element*);
 
-    static void calculateAnimationActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement, double timelineCurrentTime);
-    static void calculateTransitionActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement, double timelineCurrentTime);
+    static void calculateAnimationActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement);
+    static void calculateTransitionActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement);
 
     class AnimationEventDelegate final : public AnimationEffect::EventDelegate {
     public:
