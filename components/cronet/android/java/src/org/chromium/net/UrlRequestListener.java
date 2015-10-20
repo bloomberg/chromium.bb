@@ -64,16 +64,16 @@ public abstract class UrlRequestListener {
      * @param request Request that received data.
      * @param info Response information.
      * @param byteBuffer The buffer that was passed in to
-     *     {@link UrlRequest#read}, now containing the received data. The
-     *     buffer's position is updated to the end of the received data. The
-     *     buffer's limit is not changed.
+     *         {@link UrlRequest#read}, now containing the received data. The
+     *         buffer's position is updated to the end of the received data. The
+     *         buffer's limit is not changed.
      */
     public abstract void onReadCompleted(
             UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer);
 
     /**
-     * Called when request is completed successfully, no callbacks will be
-     * called afterwards.
+     * Called when request is completed successfully. Once called, no other
+     * {@link UrlRequestListener} methods will be called.
      *
      * @param request Request that succeeded.
      * @param info Response information.
@@ -81,14 +81,26 @@ public abstract class UrlRequestListener {
     public abstract void onSucceeded(UrlRequest request, UrlResponseInfo info);
 
     /**
-     * Called if request failed for any reason after start(). Once
-     * called, no other functions can be called. UrlRequestException
-     * provides information about error.
+     * Called if request failed for any reason after {@link UrlRequest#start}.
+     * Once called, no other {@link UrlRequestListener} methods will be called.
+     * {@code error} provides information about the failure.
      *
      * @param request Request that failed.
-     * @param info Response information. May be {@code null} if no response was received.
+     * @param info Response information. May be {@code null} if no response was
+     *         received.
      * @param error information about error.
      */
     public abstract void onFailed(
             UrlRequest request, UrlResponseInfo info, UrlRequestException error);
+
+    /**
+     * Called if request was canceled via {@link UrlRequest#cancel}. Once
+     * called, no other {@link UrlRequestListener} methods will be called.
+     * Default implementation takes no action.
+     *
+     * @param request Request that was canceled.
+     * @param info Response information. May be {@code null} if no response was
+     *         received.
+     */
+    public void onCanceled(UrlRequest request, UrlResponseInfo info) {}
 }

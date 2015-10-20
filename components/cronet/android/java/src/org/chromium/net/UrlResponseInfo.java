@@ -148,8 +148,8 @@ public final class UrlResponseInfo {
      * (for example GZIP and SDCH) and includes headers and data from all redirects.
      *
      * This value may change (even for one {@link UrlResponseInfo} instance) as the request
-     * progresses until completion, when {@link UrlRequestListener#onSucceeded} or
-     * {@link UrlRequestListener#onFailed} is called.
+     * progresses until completion, when {@link UrlRequestListener#onSuccess},
+     * {@link UrlRequestListener#onFailure}, or {@link UrlRequestListener#onCanceled} is called.
      */
     public long getReceivedBytesCount() {
         return mReceivedBytesCount.get();

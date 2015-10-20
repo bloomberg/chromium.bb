@@ -196,7 +196,9 @@ jboolean CronetURLRequestAdapter::ReadData(
   return JNI_TRUE;
 }
 
-void CronetURLRequestAdapter::Destroy(JNIEnv* env, jobject jcaller) {
+void CronetURLRequestAdapter::Destroy(JNIEnv* env,
+                                      jobject jcaller,
+                                      jboolean jsend_on_canceled) {
   // Destroy could be called from any thread, including network thread (if
   // posting task to executor throws an exception), but is posted, so |this|
   // is valid until calling task is complete. Destroy() is always called from
@@ -204,7 +206,7 @@ void CronetURLRequestAdapter::Destroy(JNIEnv* env, jobject jcaller) {
   // network thread with the adapter pointer.
   context_->PostTaskToNetworkThread(
       FROM_HERE, base::Bind(&CronetURLRequestAdapter::DestroyOnNetworkThread,
-                            base::Unretained(this)));
+                            base::Unretained(this), jsend_on_canceled));
 }
 
 void CronetURLRequestAdapter::PopulateResponseHeaders(JNIEnv* env,
@@ -365,8 +367,12 @@ void CronetURLRequestAdapter::ReadDataOnNetworkThread(
   OnReadCompleted(url_request_.get(), bytes_read);
 }
 
-void CronetURLRequestAdapter::DestroyOnNetworkThread() {
+void CronetURLRequestAdapter::DestroyOnNetworkThread(bool send_on_canceled) {
   DCHECK(context_->IsOnNetworkThread());
+  if (send_on_canceled) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    cronet::Java_CronetUrlRequest_onCanceled(env, owner_.obj());
+  }
   delete this;
 }
 

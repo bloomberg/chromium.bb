@@ -32,7 +32,7 @@ public abstract class UploadDataProvider {
      * {@code uploadDataSink}: {@link UploadDataSink#onReadSucceeded} on success
      * or {@link UploadDataSink#onReadError} on failure. Neither read nor rewind
      * will be called until one of those methods or the other is called. Even if
-     * the associated {@link UrlRequest} is cancelled, one or the other must
+     * the associated {@link UrlRequest} is canceled, one or the other must
      * still be called before resources can be safely freed. Throwing an
      * exception will also result in resources being freed and the request being
      * errored out.
@@ -51,7 +51,7 @@ public abstract class UploadDataProvider {
      * {@link UploadDataSink#onRewindSucceeded} on success or
      * {@link UploadDataSink#onRewindError} on failure. Neither read nor rewind
      * will be called until one of those methods or the other is called.
-     * Even if the associated {@link UrlRequest} is cancelled, one or the other
+     * Even if the associated {@link UrlRequest} is canceled, one or the other
      * must still be called before resources can be safely freed. Throwing an
      * exception will also result in resources being freed and the request being
      * errored out.

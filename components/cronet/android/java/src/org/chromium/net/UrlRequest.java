@@ -458,16 +458,10 @@ public interface UrlRequest {
      * @param buffer {@link ByteBuffer} to write response body to. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
      *     position, limit, or data between its position and capacity until the
-     *     request calls back into the {@link URLRequestListener}. If the
-     *     request is cancelled before such a call occurs, it's never safe to
-     *     use the buffer again.
+     *     request calls back into the {@link URLRequestListener}.
      * @deprecated Use readNew() instead though note that it updates the
      *     buffer's position not limit.
      */
-    // TODO(mmenke):  Should we add some ugliness to allow reclaiming the buffer
-    //     on cancellation?  If it's a C++-allocated buffer, then the consumer
-    //     can never safely free it, unless they put off cancelling a request
-    //     until a callback has been invoked.
     // TODO(pauljensen): Switch all callers to call readNew().
     @Deprecated public void read(ByteBuffer buffer);
 
@@ -486,25 +480,22 @@ public interface UrlRequest {
      * @param buffer {@link ByteBuffer} to write response body to. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
      *     position, limit, or data between its position and limit until the
-     *     request calls back into the {@link URLRequestListener}. If the
-     *     request is cancelled before such a call occurs, it's never safe to
-     *     use the buffer again.
+     *     request calls back into the {@link URLRequestListener}.
      */
-    // TODO(mmenke):  Should we add some ugliness to allow reclaiming the buffer
-    //     on cancellation?  If it's a C++-allocated buffer, then the consumer
-    //     can never safely free it, unless they put off cancelling a request
-    //     until a callback has been invoked.
     // TODO(pauljensen): Rename to read() once original read() is removed.
     public void readNew(ByteBuffer buffer);
 
     /**
-     * Cancels the request.
-     *
-     * Can be called at any time. If the {@link Executor} passed in during
-     * {@code UrlRequest} construction runs tasks on a single thread, and cancel
-     * is called on that thread, no listener methods will be invoked after
-     * cancel is called. Otherwise, at most one listener method may be made
-     * after cancel has completed.
+     * Cancels the request. Can be called at any time.
+     * {@link UrlRequestListener#onCanceled} will be invoked when cancellation
+     * is complete and no further listener methods will be invoked. If the
+     * request has completed or has not started, calling {@code cancel()} has no
+     * effect and {@code onCanceled} will not be invoked. If the
+     * {@link Executor} passed in during {@code UrlRequest} construction runs
+     * tasks on a single thread, and {@code cancel()} is called on that thread,
+     * no listener methods (besides {@code onCanceled()}) will be invoked after
+     * {@code cancel()} is called. Otherwise, at most one listener method may be
+     * invoked after {@code cancel()} has completed.
      */
     public void cancel();
 
@@ -521,6 +512,9 @@ public interface UrlRequest {
      * this call has no effect.
      * @deprecated Use {@link Builder#disableCache}.
      */
+    // TODO(pauljensen): When all callers shifted to Builder.disableCache(),
+    // remove this method and instead add constructor argument and make
+    // CronetUrlRequest.mDisableCache final.
     @Deprecated public void disableCache();
 
     /**

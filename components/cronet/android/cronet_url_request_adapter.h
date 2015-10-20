@@ -86,7 +86,9 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
                     jint jcapacity);
 
   // Releases all resources for the request and deletes the object itself.
-  void Destroy(JNIEnv* env, jobject jcaller);
+  // |jsend_on_canceled| indicates if Java onCanceled callback should be
+  // issued to indicate when no more callbacks will be issued.
+  void Destroy(JNIEnv* env, jobject jcaller, jboolean jsend_on_canceled);
 
   // Populate response headers on network thread.
   void PopulateResponseHeaders(JNIEnv* env,
@@ -137,7 +139,7 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
-  void DestroyOnNetworkThread();
+  void DestroyOnNetworkThread(bool send_on_canceled);
 
   // Checks status of the request_adapter, return false if |is_success()| is
   // true, otherwise report error and cancel request_adapter.

@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * UrlRequest using Chromium HTTP stack implementation. Could be accessed from
  * any thread on Executor. Cancel can be called from any thread.
@@ -34,12 +36,12 @@ import java.util.concurrent.RejectedExecutionException;
 @JNIAdditionalImport(UrlRequest.class)
 final class CronetUrlRequest implements UrlRequest {
     /* Native adapter object, owned by UrlRequest. */
-    private long mUrlRequestAdapter;
+    @GuardedBy("mUrlRequestAdapterLock") private long mUrlRequestAdapter;
 
-    private boolean mStarted = false;
+    @GuardedBy("mUrlRequestAdapterLock") private boolean mStarted = false;
     private boolean mDisableCache = false;
-    private boolean mWaitingOnRedirect = false;
-    private boolean mWaitingOnRead = false;
+    @GuardedBy("mUrlRequestAdapterLock") private boolean mWaitingOnRedirect = false;
+    @GuardedBy("mUrlRequestAdapterLock") private boolean mWaitingOnRead = false;
     /*
      * When a read call completes, should the ByteBuffer limit() be updated
      * instead of the position(). This controls legacy read() behavior.
@@ -191,7 +193,7 @@ final class CronetUrlRequest implements UrlRequest {
                     }
                     if (!nativeAddRequestHeader(
                                 mUrlRequestAdapter, header.getKey(), header.getValue())) {
-                        destroyRequestAdapter();
+                        destroyRequestAdapter(false);
                         throw new IllegalArgumentException(
                                 "Invalid header " + header.getKey() + "=" + header.getValue());
                     }
@@ -206,7 +208,7 @@ final class CronetUrlRequest implements UrlRequest {
             } catch (RuntimeException e) {
                 // If there's an exception, cleanup and then throw the
                 // exception to the caller.
-                destroyRequestAdapter();
+                destroyRequestAdapter(false);
                 throw e;
             }
             if (mDisableCache) {
@@ -302,7 +304,7 @@ final class CronetUrlRequest implements UrlRequest {
             if (isDone() || !mStarted) {
                 return;
             }
-            destroyRequestAdapter();
+            destroyRequestAdapter(true);
         }
     }
 
@@ -405,12 +407,12 @@ final class CronetUrlRequest implements UrlRequest {
         }
     }
 
-    private void destroyRequestAdapter() {
+    private void destroyRequestAdapter(boolean sendOnCanceled) {
         synchronized (mUrlRequestAdapterLock) {
             if (mUrlRequestAdapter == 0) {
                 return;
             }
-            nativeDestroy(mUrlRequestAdapter);
+            nativeDestroy(mUrlRequestAdapter, sendOnCanceled);
             mRequestContext.onRequestDestroyed(this);
             mUrlRequestAdapter = 0;
             if (mOnDestroyedCallbackForTests != null) {
@@ -434,7 +436,7 @@ final class CronetUrlRequest implements UrlRequest {
             if (isDone()) {
                 return;
             }
-            destroyRequestAdapter();
+            destroyRequestAdapter(false);
         }
         try {
             mListener.onFailed(this, mResponseInfo, requestError);
@@ -464,7 +466,7 @@ final class CronetUrlRequest implements UrlRequest {
                     if (isDone()) {
                         return;
                     }
-                    destroyRequestAdapter();
+                    destroyRequestAdapter(false);
                 }
                 try {
                     mListener.onFailed(CronetUrlRequest.this,
@@ -607,7 +609,7 @@ final class CronetUrlRequest implements UrlRequest {
                     }
                     // Destroy adapter first, so request context could be shut
                     // down from the listener.
-                    destroyRequestAdapter();
+                    destroyRequestAdapter(false);
                 }
                 try {
                     mListener.onSucceeded(CronetUrlRequest.this, mResponseInfo);
@@ -638,6 +640,24 @@ final class CronetUrlRequest implements UrlRequest {
                 "Exception in CronetUrlRequest: " + errorString,
                 nativeError);
         failWithException(requestError);
+    }
+
+    /**
+     * Called when request is canceled, no callbacks will be called afterwards.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onCanceled() {
+        Runnable task = new Runnable() {
+            public void run() {
+                try {
+                    mListener.onCanceled(CronetUrlRequest.this, mResponseInfo);
+                } catch (Exception e) {
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", e);
+                }
+            }
+        };
+        postTaskToExecutor(task);
     }
 
     /**
@@ -691,7 +711,7 @@ final class CronetUrlRequest implements UrlRequest {
             int position, int capacity);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native void nativeDestroy(long nativePtr);
+    private native void nativeDestroy(long nativePtr, boolean sendOnCanceled);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native void nativePopulateResponseHeaders(long nativePtr, HeadersList headers);

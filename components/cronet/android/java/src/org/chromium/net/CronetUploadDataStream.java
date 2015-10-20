@@ -175,7 +175,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         // Just fail the request - simpler to fail directly, and
         // UploadDataStream only supports failing during initialization, not
         // while reading. The request is smart enough to handle the case where
-        // it was already cancelled by the embedder.
+        // it was already canceled by the embedder.
         mRequest.onUploadException(exception);
     }
 
@@ -248,7 +248,7 @@ final class CronetUploadDataStream implements UploadDataSink {
             mExecutor.execute(task);
         } catch (RejectedExecutionException e) {
             // Just fail the request. The request is smart enough to handle the
-            // case where it was already cancelled by the embedder.
+            // case where it was already canceled by the embedder.
             mRequest.onUploadException(e);
         }
     }

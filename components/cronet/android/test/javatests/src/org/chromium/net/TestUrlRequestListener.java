@@ -33,6 +33,7 @@ class TestUrlRequestListener extends UrlRequestListener {
 
     public int mRedirectCount = 0;
     public boolean mOnErrorCalled = false;
+    public boolean mOnCanceledCalled = false;
 
     public int mHttpResponseDataLength = 0;
     public String mResponseAsString = "";
@@ -194,6 +195,8 @@ class TestUrlRequestListener extends UrlRequestListener {
         assertTrue(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                    || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+        assertFalse(mOnErrorCalled);
+        assertFalse(mOnCanceledCalled);
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_SUCCEEDED;
@@ -210,10 +213,25 @@ class TestUrlRequestListener extends UrlRequestListener {
         assertTrue(mResponseStep != ResponseStep.ON_SUCCEEDED);
         // Should happen at most once for a single request.
         assertFalse(mOnErrorCalled);
+        assertFalse(mOnCanceledCalled);
         assertNull(mError);
 
         mOnErrorCalled = true;
         mError = error;
+        openDone();
+        maybeThrowCancelOrPause(request);
+    }
+
+    @Override
+    public void onCanceled(UrlRequest request, UrlResponseInfo info) {
+        assertEquals(mExecutorThread, Thread.currentThread());
+        assertTrue(request.isDone());
+        // Should happen at most once for a single request.
+        assertFalse(mOnCanceledCalled);
+        assertFalse(mOnErrorCalled);
+        assertNull(mError);
+
+        mOnCanceledCalled = true;
         openDone();
         maybeThrowCancelOrPause(request);
     }
@@ -257,7 +275,6 @@ class TestUrlRequestListener extends UrlRequestListener {
         Runnable task = new Runnable() {
             public void run() {
                 request.cancel();
-                openDone();
             }
         };
         if (mFailureType == FailureType.CANCEL_ASYNC

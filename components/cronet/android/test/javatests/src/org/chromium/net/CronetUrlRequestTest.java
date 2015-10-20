@@ -1418,6 +1418,10 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(expectResponseInfo, listener.mResponseInfo != null);
         assertEquals(expectError, listener.mError != null);
         assertEquals(expectError, listener.mOnErrorCalled);
+        assertEquals(failureType == FailureType.CANCEL_SYNC
+                        || failureType == FailureType.CANCEL_ASYNC
+                        || failureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE,
+                listener.mOnCanceledCalled);
     }
 
     @SmallTest

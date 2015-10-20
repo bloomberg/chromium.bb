@@ -529,7 +529,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     // Private methods called by native library.
 
     /**
-     * If @CalledByNative method throws an exception, request gets cancelled
+     * If @CalledByNative method throws an exception, request gets canceled
      * and exception could be retrieved from request using getException().
      */
     private void onCalledByNativeException(Exception e) {
