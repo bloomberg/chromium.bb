@@ -154,6 +154,9 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
+      'export_dependent_settings': [
+        '../testing/gmock.gyp:gmock',
+      ],
       'include_dirs': [
         '..',
       ],

@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +57,9 @@ class PasswordManagerPresenterTest : public testing::Test {
   ~PasswordManagerPresenterTest() override {}
   void SetUp() override {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        &profile_, MockPasswordStoreService::Build);
+        &profile_,
+        password_manager::BuildPasswordStoreService<
+            content::BrowserContext, password_manager::MockPasswordStore>);
     mock_controller_.reset(new MockPasswordUIView(&profile_));
   }
   void AddPasswordEntry(const GURL& origin,

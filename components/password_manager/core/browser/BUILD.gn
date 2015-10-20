@@ -159,11 +159,11 @@ source_set("test_support") {
 
   public_deps = [
     ":browser",
+    "//testing/gmock",
   ]
   deps = [
     "//base",
     "//components/autofill/core/common",
-    "//testing/gmock",
     "//testing/gtest",
   ]
 }

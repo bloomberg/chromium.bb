@@ -8,7 +8,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -40,7 +40,9 @@ class ManagePasswordItemViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        profile(), MockPasswordStoreService::Build);
+        profile(),
+        password_manager::BuildPasswordStoreService<
+            content::BrowserContext, password_manager::MockPasswordStore>);
     ui_controller()->SetPendingPassword(credentials());
   }
 

@@ -4,13 +4,14 @@
 
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -20,6 +21,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/render_frame_host.h"
@@ -188,7 +190,9 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   // PasswordManager will ignore any forms in a page if the load from the
   // PasswordStore has not completed.
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
-      browser()->profile(), TestPasswordStoreService::Build);
+      browser()->profile(),
+      password_manager::BuildPasswordStoreService<
+          content::BrowserContext, password_manager::TestPasswordStore>);
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       password_manager::switches::kEnableAutomaticPasswordSaving));

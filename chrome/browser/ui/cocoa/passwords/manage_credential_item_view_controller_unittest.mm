@@ -6,12 +6,12 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
@@ -67,7 +67,9 @@ class ManageCredentialItemViewControllerTest
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        profile(), MockPasswordStoreService::Build);
+        profile(),
+        password_manager::BuildPasswordStoreService<
+            content::BrowserContext, password_manager::MockPasswordStore>);
     ui_controller()->SetPendingPassword(TestForm());
     [[test_window() contentView] addSubview:[controller() view]];
   }

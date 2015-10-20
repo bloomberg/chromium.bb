@@ -1569,6 +1569,7 @@
       'type': 'static_library',
       'dependencies': [
         '../components/components.gyp:metrics_test_support',
+        '../components/components.gyp:password_manager_core_browser_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
       ],
