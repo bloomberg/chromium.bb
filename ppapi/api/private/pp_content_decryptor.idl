@@ -81,7 +81,7 @@ struct PP_DecryptSubsampleDescription {
  * The <code>PP_EncryptedBlockInfo</code> struct contains all the information
  * needed to decrypt an encrypted block.
  */
-[assert_size(240)]
+[assert_size(368)]
 struct PP_EncryptedBlockInfo {
   /**
    * Information needed by the client to track the block to be decrypted.
@@ -96,11 +96,11 @@ struct PP_EncryptedBlockInfo {
   /**
    * Key ID of the block to be decrypted.
    *
-   * TODO(xhwang): For WebM the key ID can be as large as 2048 bytes in theory.
-   * But it's not used in current implementations. If we really need to support
-   * it, we should move key ID out as a separate parameter, e.g.
-   * as a <code>PP_Var</code>, or make the whole
-   * <code>PP_EncryptedBlockInfo</code> as a <code>PP_Resource</code>.
+   * For WebM the key ID can be as large as 2048 bytes in theory. But it's not
+   * used in current implementations. If we really need to support it, we should
+   * move key ID out as a separate parameter, e.g. as a <code>PP_Var</code>, or
+   * make the whole <code>PP_EncryptedBlockInfo</code> as a
+   * <code>PP_Resource</code>.
    */
   uint8_t[64] key_id;
   uint32_t key_id_size;
@@ -113,8 +113,13 @@ struct PP_EncryptedBlockInfo {
 
   /**
    * Subsample information of the block to be decrypted.
+   *
+   * We need to have a fixed size of |subsamples| here. Choose 32 because it is
+   * sufficient for almost all real life scenarios. Note that in theory the
+   * number of subsamples could be larger than 32. If that happens, playback
+   * will fail.
    */
-  PP_DecryptSubsampleDescription[16] subsamples;
+  PP_DecryptSubsampleDescription[32] subsamples;
   uint32_t num_subsamples;
 };
 

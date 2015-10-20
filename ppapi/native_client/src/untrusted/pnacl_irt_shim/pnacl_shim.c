@@ -204,7 +204,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1;
 /* END Declarations for all Wrapper Infos. */
 
@@ -4546,100 +4546,100 @@ static void Pnacl_M19_PPB_X509Certificate_Private_GetField(struct PP_Var* _struc
 
 /* End wrapper methods for PPB_X509Certificate_Private_0_1 */
 
-/* Begin wrapper methods for PPP_ContentDecryptor_Private_0_15 */
+/* Begin wrapper methods for PPP_ContentDecryptor_Private_0_16 */
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_Initialize(PP_Instance instance, uint32_t promise_id, struct PP_Var key_system, PP_Bool allow_distinctive_identifier, PP_Bool allow_persistent_state) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_Initialize(PP_Instance instance, uint32_t promise_id, struct PP_Var key_system, PP_Bool allow_distinctive_identifier, PP_Bool allow_persistent_state) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* key_system, PP_Bool allow_distinctive_identifier, PP_Bool allow_persistent_state) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* key_system, PP_Bool allow_distinctive_identifier, PP_Bool allow_persistent_state))iface->Initialize);
   temp_fp(instance, promise_id, &key_system, allow_distinctive_identifier, allow_persistent_state);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_SetServerCertificate(PP_Instance instance, uint32_t promise_id, struct PP_Var server_certificate) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_SetServerCertificate(PP_Instance instance, uint32_t promise_id, struct PP_Var server_certificate) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* server_certificate) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* server_certificate))iface->SetServerCertificate);
   temp_fp(instance, promise_id, &server_certificate);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_CreateSessionAndGenerateRequest(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var init_data) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_CreateSessionAndGenerateRequest(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var init_data) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var* init_data) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var* init_data))iface->CreateSessionAndGenerateRequest);
   temp_fp(instance, promise_id, session_type, init_data_type, &init_data);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_LoadSession(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var session_id) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_LoadSession(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var session_id) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var* session_id) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var* session_id))iface->LoadSession);
   temp_fp(instance, promise_id, session_type, &session_id);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_UpdateSession(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id, struct PP_Var response) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_UpdateSession(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id, struct PP_Var response) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* session_id, struct PP_Var* response) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* session_id, struct PP_Var* response))iface->UpdateSession);
   temp_fp(instance, promise_id, &session_id, &response);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_CloseSession(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_CloseSession(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* session_id) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* session_id))iface->CloseSession);
   temp_fp(instance, promise_id, &session_id);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_RemoveSession(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_RemoveSession(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* session_id) =
     ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* session_id))iface->RemoveSession);
   temp_fp(instance, promise_id, &session_id);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_Decrypt(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_Decrypt(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) =
     ((void (*)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))iface->Decrypt);
   temp_fp(instance, encrypted_block, encrypted_block_info);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_InitializeAudioDecoder(PP_Instance instance, const struct PP_AudioDecoderConfig* decoder_config, PP_Resource codec_extra_data) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_InitializeAudioDecoder(PP_Instance instance, const struct PP_AudioDecoderConfig* decoder_config, PP_Resource codec_extra_data) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, const struct PP_AudioDecoderConfig* decoder_config, PP_Resource codec_extra_data) =
     ((void (*)(PP_Instance instance, const struct PP_AudioDecoderConfig* decoder_config, PP_Resource codec_extra_data))iface->InitializeAudioDecoder);
   temp_fp(instance, decoder_config, codec_extra_data);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_InitializeVideoDecoder(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_InitializeVideoDecoder(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data) =
     ((void (*)(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data))iface->InitializeVideoDecoder);
   temp_fp(instance, decoder_config, codec_extra_data);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_DeinitializeDecoder(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_DeinitializeDecoder(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) =
     ((void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))iface->DeinitializeDecoder);
   temp_fp(instance, decoder_type, request_id);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_ResetDecoder(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_ResetDecoder(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) =
     ((void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))iface->ResetDecoder);
   temp_fp(instance, decoder_type, request_id);
 }
 
-static void Pnacl_M44_PPP_ContentDecryptor_Private_DecryptAndDecode(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
-  const struct PPP_ContentDecryptor_Private_0_15 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15.real_iface;
+static void Pnacl_M48_PPP_ContentDecryptor_Private_DecryptAndDecode(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
+  const struct PPP_ContentDecryptor_Private_0_16 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16.real_iface;
   void (*temp_fp)(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info) =
     ((void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info))iface->DecryptAndDecode);
   temp_fp(instance, decoder_type, encrypted_buffer, encrypted_block_info);
 }
 
-/* End wrapper methods for PPP_ContentDecryptor_Private_0_15 */
+/* End wrapper methods for PPP_ContentDecryptor_Private_0_16 */
 
 /* Not generating wrapper methods for PPP_Find_Private_0_3 */
 
@@ -5866,20 +5866,20 @@ static const struct PPB_X509Certificate_Private_0_1 Pnacl_Wrappers_PPB_X509Certi
     .GetField = (struct PP_Var (*)(PP_Resource resource, PP_X509Certificate_Private_Field field))&Pnacl_M19_PPB_X509Certificate_Private_GetField
 };
 
-static const struct PPP_ContentDecryptor_Private_0_15 Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_15 = {
-    .Initialize = &Pnacl_M44_PPP_ContentDecryptor_Private_Initialize,
-    .SetServerCertificate = &Pnacl_M44_PPP_ContentDecryptor_Private_SetServerCertificate,
-    .CreateSessionAndGenerateRequest = &Pnacl_M44_PPP_ContentDecryptor_Private_CreateSessionAndGenerateRequest,
-    .LoadSession = &Pnacl_M44_PPP_ContentDecryptor_Private_LoadSession,
-    .UpdateSession = &Pnacl_M44_PPP_ContentDecryptor_Private_UpdateSession,
-    .CloseSession = &Pnacl_M44_PPP_ContentDecryptor_Private_CloseSession,
-    .RemoveSession = &Pnacl_M44_PPP_ContentDecryptor_Private_RemoveSession,
-    .Decrypt = &Pnacl_M44_PPP_ContentDecryptor_Private_Decrypt,
-    .InitializeAudioDecoder = &Pnacl_M44_PPP_ContentDecryptor_Private_InitializeAudioDecoder,
-    .InitializeVideoDecoder = &Pnacl_M44_PPP_ContentDecryptor_Private_InitializeVideoDecoder,
-    .DeinitializeDecoder = &Pnacl_M44_PPP_ContentDecryptor_Private_DeinitializeDecoder,
-    .ResetDecoder = &Pnacl_M44_PPP_ContentDecryptor_Private_ResetDecoder,
-    .DecryptAndDecode = &Pnacl_M44_PPP_ContentDecryptor_Private_DecryptAndDecode
+static const struct PPP_ContentDecryptor_Private_0_16 Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_16 = {
+    .Initialize = &Pnacl_M48_PPP_ContentDecryptor_Private_Initialize,
+    .SetServerCertificate = &Pnacl_M48_PPP_ContentDecryptor_Private_SetServerCertificate,
+    .CreateSessionAndGenerateRequest = &Pnacl_M48_PPP_ContentDecryptor_Private_CreateSessionAndGenerateRequest,
+    .LoadSession = &Pnacl_M48_PPP_ContentDecryptor_Private_LoadSession,
+    .UpdateSession = &Pnacl_M48_PPP_ContentDecryptor_Private_UpdateSession,
+    .CloseSession = &Pnacl_M48_PPP_ContentDecryptor_Private_CloseSession,
+    .RemoveSession = &Pnacl_M48_PPP_ContentDecryptor_Private_RemoveSession,
+    .Decrypt = &Pnacl_M48_PPP_ContentDecryptor_Private_Decrypt,
+    .InitializeAudioDecoder = &Pnacl_M48_PPP_ContentDecryptor_Private_InitializeAudioDecoder,
+    .InitializeVideoDecoder = &Pnacl_M48_PPP_ContentDecryptor_Private_InitializeVideoDecoder,
+    .DeinitializeDecoder = &Pnacl_M48_PPP_ContentDecryptor_Private_DeinitializeDecoder,
+    .ResetDecoder = &Pnacl_M48_PPP_ContentDecryptor_Private_ResetDecoder,
+    .DecryptAndDecode = &Pnacl_M48_PPP_ContentDecryptor_Private_DecryptAndDecode
 };
 
 /* Not generating wrapper interface for PPP_Find_Private_0_3 */
@@ -6556,9 +6556,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15 = {
-  .iface_macro = PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_15,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_15,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16 = {
+  .iface_macro = PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_16,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_16,
   .real_iface = NULL
 };
 
@@ -6683,7 +6683,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
 
 static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
   &Pnacl_WrapperInfo_PPP_Messaging_1_0,
-  &Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15,
+  &Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_16,
   &Pnacl_WrapperInfo_PPP_Instance_Private_0_1,
   NULL
 };

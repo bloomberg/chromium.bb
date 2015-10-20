@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M44 = 0.15
+  M48 = 0.16
 };
 
 /**
