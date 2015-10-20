@@ -21,13 +21,13 @@
 namespace remoting {
 
 // The implementation here requires that the decoder allocates at least 3
-// pictures. PPB_VideoDecode didn't support this parameter prior to
+// pictures. PPB_VideoDecoder didn't support this parameter prior to
 // 1.1, so we have to pass 0 for backwards compatibility with older versions of
 // the browser. Currently all API implementations allocate more than 3 buffers
 // by default.
 //
-// TODO(sergeyu): Change this to 3 once PPB_VideoDecode v1.1 is enabled on
-// stable channel.
+// TODO(sergeyu): Change this to 3 once PPB_VideoDecoder v1.1 is enabled on
+// stable channel (crbug.com/520323).
 const uint32_t kMinimumPictureCount = 0;  // 3
 
 class PepperVideoRenderer3D::PendingPacket {
@@ -313,6 +313,21 @@ void PepperVideoRenderer3D::OnPictureReady(int32_t result,
 
   perf_tracker_->OnFrameDecoded(picture.decode_id);
 
+  // Workaround crbug.com/542945 by filling in visible_rect if it isn't set.
+  if (picture.visible_rect.size.width == 0 ||
+      picture.visible_rect.size.height == 0) {
+    static bool warning_logged = false;
+    if (!warning_logged) {
+      LOG(WARNING) << "PPB_VideoDecoder doesn't set visible_rect.";
+      warning_logged = true;
+    }
+
+    picture.visible_rect.size.width =
+        std::min(frame_size_.width(), picture.texture_size.width);
+    picture.visible_rect.size.height =
+        std::min(frame_size_.height(), picture.texture_size.height);
+  }
+
   next_picture_.reset(new Picture(&video_decoder_, picture));
 
   PaintIfNeeded();
@@ -340,6 +355,7 @@ void PepperVideoRenderer3D::PaintIfNeeded() {
   double scale_x = picture.visible_rect.size.width;
   double scale_y = picture.visible_rect.size.height;
   if (picture.texture_target != GL_TEXTURE_RECTANGLE_ARB) {
+    CHECK(picture.texture_size.width > 0 && picture.texture_size.height > 0);
     scale_x /= picture.texture_size.width;
     scale_y /= picture.texture_size.height;
   }
@@ -365,6 +381,8 @@ void PepperVideoRenderer3D::PaintIfNeeded() {
   // nearest-neighbor scaling to achieve crisper image. Linear filter is used in
   // all other cases.
   GLint mag_filter = GL_LINEAR;
+  CHECK(picture.visible_rect.size.width > 0 &&
+        picture.visible_rect.size.height > 0);
   if (view_size_.width() % picture.visible_rect.size.width == 0 &&
       view_size_.height() % picture.visible_rect.size.height == 0) {
     mag_filter = GL_NEAREST;
