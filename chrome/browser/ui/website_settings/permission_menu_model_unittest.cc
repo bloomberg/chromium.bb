@@ -37,14 +37,18 @@ TEST(PermissionMenuModelTest, TestDefault) {
 }
 
 TEST(PermissionMenuModelTest, TestDefaultMediaHttp) {
-  TestCallback callback;
-  WebsiteSettingsUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_MEDIASTREAM;
-  permission.setting = CONTENT_SETTING_ALLOW;
-  permission.default_setting = CONTENT_SETTING_ALLOW;
-  PermissionMenuModel model(
-      GURL("http://www.google.com"), permission, callback.callback());
-  EXPECT_EQ(2, model.GetItemCount());
+  for (int i = 0; i < 2; ++i) {
+    ContentSettingsType type = i ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+                                 : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+    TestCallback callback;
+    WebsiteSettingsUI::PermissionInfo permission;
+    permission.type = type;
+    permission.setting = CONTENT_SETTING_ALLOW;
+    permission.default_setting = CONTENT_SETTING_ALLOW;
+    PermissionMenuModel model(
+        GURL("http://www.google.com"), permission, callback.callback());
+    EXPECT_EQ(2, model.GetItemCount());
+  }
 }
 
 TEST(PermissionMenuModelTest, TestAllowBlock) {

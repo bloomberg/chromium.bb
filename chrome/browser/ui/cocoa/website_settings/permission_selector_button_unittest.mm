@@ -15,7 +15,7 @@
 namespace {
 
 const ContentSettingsType kTestPermissionType =
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM;
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
 
 class PermissionSelectorButtonTest : public CocoaTest {
  public:
