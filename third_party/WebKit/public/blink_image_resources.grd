@@ -12,46 +12,26 @@
       <structure type="chrome_scaled_image" name="IDR_BROKENIMAGE" file="blink/broken_image.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON" file="blink/mediaplayer_pause.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_NEW" file="blink/mediaplayer_pause_new.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER" file="blink/mediaplayer_pause_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN" file="blink/mediaplayer_pause_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PLAY_BUTTON" file="blink/mediaplayer_play.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PLAY_BUTTON_NEW" file="blink/mediaplayer_play_new.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PLAY_BUTTON_HOVER" file="blink/mediaplayer_play_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PLAY_BUTTON_DOWN" file="blink/mediaplayer_play_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PLAY_BUTTON_DISABLED" file="blink/mediaplayer_play_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON" file="blink/mediaplayer_sound_level3.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_NEW" file="blink/mediaplayer_sound_level3_new.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_HOVER" file="blink/mediaplayer_sound_level3_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_DOWN" file="blink/mediaplayer_sound_level3_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON" file="blink/mediaplayer_sound_level2.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_HOVER" file="blink/mediaplayer_sound_level2_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_DOWN" file="blink/mediaplayer_sound_level2_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON" file="blink/mediaplayer_sound_level1.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_HOVER" file="blink/mediaplayer_sound_level1_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_DOWN" file="blink/mediaplayer_sound_level1_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON" file="blink/mediaplayer_sound_level0.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_HOVER" file="blink/mediaplayer_sound_level0_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_DOWN" file="blink/mediaplayer_sound_level0_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_NEW" file="blink/mediaplayer_sound_level0_new.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SOUND_DISABLED" file="blink/mediaplayer_sound_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SLIDER_THUMB" file="blink/mediaplayer_slider_thumb.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SLIDER_THUMB_NEW" file="blink/mediaplayer_slider_thumb_new.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SLIDER_THUMB_HOVER" file="blink/mediaplayer_slider_thumb_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_SLIDER_THUMB_DOWN" file="blink/mediaplayer_slider_thumb_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB" file="blink/mediaplayer_volume_slider_thumb.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_NEW" file="blink/mediaplayer_volume_slider_thumb_new.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER" file="blink/mediaplayer_volume_slider_thumb_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN" file="blink/mediaplayer_volume_slider_thumb_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DISABLED" file="blink/mediaplayer_volume_slider_thumb_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON" file="blink/mediaplayer_closedcaption.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_NEW" file="blink/mediaplayer_closedcaption_new.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_HOVER" file="blink/mediaplayer_closedcaption_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_DOWN" file="blink/mediaplayer_closedcaption_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_DISABLED" file="blink/mediaplayer_closedcaption_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_DISABLED_NEW" file="blink/mediaplayer_closedcaption_disabled_new.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON" file="blink/mediaplayer_fullscreen.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER" file="blink/mediaplayer_fullscreen_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN" file="blink/mediaplayer_fullscreen_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DISABLED" file="blink/mediaplayer_fullscreen_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_ENTER_FULLSCREEN_BUTTON" file="blink/mediaplayer_enter_fullscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_EXIT_FULLSCREEN_BUTTON" file="blink/mediaplayer_exit_fullscreen.png" />
