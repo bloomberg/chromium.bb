@@ -28,7 +28,7 @@ protected:
         // Garbage collection is required prior to switching out the
         // test's memory cache; image resources are released, evicting
         // them from the cache.
-        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
         replaceMemoryCacheForTesting(m_globalMemoryCache.release());
     }

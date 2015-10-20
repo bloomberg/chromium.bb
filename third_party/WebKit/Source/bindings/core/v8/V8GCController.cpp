@@ -475,7 +475,7 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         // to collect all garbage, you need to wait until the next event loop.
         // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
         // GCController.collectAll() forces 7 V8's GC.
-        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
         // Forces a precise GC at the end of the current event loop.
         if (ThreadState::current())

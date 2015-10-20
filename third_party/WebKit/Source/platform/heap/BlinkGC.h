@@ -63,6 +63,16 @@ public:
         ThreadTerminationGC,
     };
 
+    enum GCReason {
+        IdleGC,
+        PreciseGC,
+        ConservativeGC,
+        ForcedGC,
+        MemoryPressureGC,
+        PageNavigationGC,
+        NumberOfGCReason,
+    };
+
     enum HeapIndices {
         EagerSweepHeapIndex = 0,
         NormalPage1HeapIndex,

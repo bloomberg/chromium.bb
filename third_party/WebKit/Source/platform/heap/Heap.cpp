@@ -399,23 +399,28 @@ void Heap::postGC(BlinkGC::GCType gcType)
         state->postGC(gcType);
 }
 
-const char* Heap::gcReasonString(GCReason reason)
+const char* Heap::gcReasonString(BlinkGC::GCReason reason)
 {
     switch (reason) {
-#define STRINGIFY_REASON(reason) case reason: return #reason;
-        STRINGIFY_REASON(IdleGC);
-        STRINGIFY_REASON(PreciseGC);
-        STRINGIFY_REASON(ConservativeGC);
-        STRINGIFY_REASON(ForcedGC);
-        STRINGIFY_REASON(MemoryPressureGC);
-        STRINGIFY_REASON(PageNavigationGC);
-#undef STRINGIFY_REASON
-    case NumberOfGCReason: ASSERT_NOT_REACHED();
+    case BlinkGC::IdleGC:
+        return "IdleGC";
+    case BlinkGC::PreciseGC:
+        return "PreciseGC";
+    case BlinkGC::ConservativeGC:
+        return "ConservativeGC";
+    case BlinkGC::ForcedGC:
+        return "ForcedGC";
+    case BlinkGC::MemoryPressureGC:
+        return "MemoryPressureGC";
+    case BlinkGC::PageNavigationGC:
+        return "PageNavigationGC";
+    default:
+        ASSERT_NOT_REACHED();
     }
     return "<Unknown>";
 }
 
-void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType, GCReason reason)
+void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType, BlinkGC::GCReason reason)
 {
     ThreadState* state = ThreadState::current();
     // Nested collectGarbage() invocations aren't supported.
@@ -480,7 +485,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
     Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
     Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
-    Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReason);
+    Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, BlinkGC::NumberOfGCReason);
     Heap::reportMemoryUsageHistogram();
     WTF::Partitions::reportMemoryUsageHistogram();
 
@@ -584,7 +589,7 @@ void Heap::collectAllGarbage()
     // We need to run multiple GCs to collect a chain of persistent handles.
     size_t previousLiveObjects = 0;
     for (int i = 0; i < 5; ++i) {
-        collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, ForcedGC);
+        collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
         size_t liveObjects = Heap::markedObjectSize();
         if (liveObjects == previousLiveObjects)
             break;

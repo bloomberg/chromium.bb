@@ -671,7 +671,7 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gcType)
 #if PRINT_HEAP_STATS
         dataLogF("Scheduled MemoryPressureGC\n");
 #endif
-        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::MemoryPressureGC);
+        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::MemoryPressureGC);
         return;
     }
     if (shouldScheduleV8FollowupGC()) {
@@ -709,7 +709,7 @@ void ThreadState::willStartV8GC()
 #if PRINT_HEAP_STATS
         dataLogF("Scheduled PageNavigationGC\n");
 #endif
-        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, Heap::PageNavigationGC);
+        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::PageNavigationGC);
     }
 }
 
@@ -736,7 +736,7 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
 #if PRINT_HEAP_STATS
         dataLogF("Scheduled MemoryPressureGC\n");
 #endif
-        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::MemoryPressureGC);
+        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::MemoryPressureGC);
         return;
     }
     if (shouldSchedulePageNavigationGC(estimatedRemovalRatio)) {
@@ -775,7 +775,7 @@ void ThreadState::scheduleGCIfNeeded()
 #if PRINT_HEAP_STATS
             dataLogF("Scheduled MemoryPressureGC\n");
 #endif
-            Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::MemoryPressureGC);
+            Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::MemoryPressureGC);
             return;
         }
     }
@@ -790,7 +790,7 @@ void ThreadState::scheduleGCIfNeeded()
 #if PRINT_HEAP_STATS
             dataLogF("Scheduled ConservativeGC\n");
 #endif
-            Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ConservativeGC);
+            Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::ConservativeGC);
             return;
         }
     }
@@ -820,7 +820,7 @@ void ThreadState::performIdleGC(double deadlineSeconds)
         return;
     }
 
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::IdleGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::IdleGC);
 }
 
 void ThreadState::performIdleLazySweep(double deadlineSeconds)
@@ -996,10 +996,10 @@ void ThreadState::runScheduledGC(BlinkGC::StackState stackState)
         Heap::collectAllGarbage();
         break;
     case PreciseGCScheduled:
-        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::PreciseGC);
+        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::PreciseGC);
         break;
     case PageNavigationGCScheduled:
-        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::PageNavigationGC);
+        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::PageNavigationGC);
         break;
     case IdleGCScheduled:
         // Idle time GC will be scheduled by Blink Scheduler.

@@ -195,17 +195,8 @@ public:
     template<typename T> static Address allocate(size_t, bool eagerlySweep = false);
     template<typename T> static Address reallocate(void* previous, size_t);
 
-    enum GCReason {
-        IdleGC,
-        PreciseGC,
-        ConservativeGC,
-        ForcedGC,
-        MemoryPressureGC,
-        PageNavigationGC,
-        NumberOfGCReason,
-    };
-    static const char* gcReasonString(GCReason);
-    static void collectGarbage(BlinkGC::StackState, BlinkGC::GCType, GCReason);
+    static const char* gcReasonString(BlinkGC::GCReason);
+    static void collectGarbage(BlinkGC::StackState, BlinkGC::GCType, BlinkGC::GCReason);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
 

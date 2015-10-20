@@ -50,12 +50,12 @@ namespace blink {
 
 static void preciselyCollectGarbage()
 {
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 }
 
 static void conservativelyCollectGarbage()
 {
-    Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 }
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
@@ -548,7 +548,7 @@ protected:
                 // Taking snapshot shouldn't have any bad side effect.
                 // TODO(haraken): This snapshot GC causes crashes, so disable
                 // it at the moment. Fix the crash and enable it.
-                // Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, Heap::ForcedGC);
+                // Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
                 preciselyCollectGarbage();
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
@@ -603,7 +603,7 @@ private:
                 // Taking snapshot shouldn't have any bad side effect.
                 // TODO(haraken): This snapshot GC causes crashes, so disable
                 // it at the moment. Fix the crash and enable it.
-                // Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, Heap::ForcedGC);
+                // Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
                 preciselyCollectGarbage();
                 EXPECT_TRUE(weakMap->isEmpty());
                 EXPECT_TRUE(weakMap2.isEmpty());
@@ -1971,7 +1971,7 @@ TEST(HeapTest, LazySweepingPages)
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     for (int i = 0; i < 1000; i++)
         SimpleFinalizedObject::create();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     for (int i = 0; i < 10000; i++)
         SimpleFinalizedObject::create();
@@ -1998,7 +1998,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages)
     EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     for (int i = 0; i < 10; i++)
         LargeHeapObject::create();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(0, LargeHeapObject::s_destructorCalls);
     for (int i = 0; i < 10; i++) {
         LargeHeapObject::create();
@@ -2007,7 +2007,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages)
     LargeHeapObject::create();
     LargeHeapObject::create();
     EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
     preciselyCollectGarbage();
     EXPECT_EQ(22, LargeHeapObject::s_destructorCalls);
@@ -2082,7 +2082,7 @@ TEST(HeapTest, EagerlySweepingPages)
         SimpleFinalizedEagerObject::create();
     for (int i = 0; i < 100; i++)
         SimpleFinalizedObjectInstanceOfTemplate::create();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     EXPECT_EQ(100, SimpleFinalizedEagerObject::s_destructorCalls);
     EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::s_destructorCalls);
@@ -6381,7 +6381,7 @@ void workerThreadMainForCrossThreadWeakPersistentTest(DestructorLockingObject** 
     parkWorkerThread();
 
     // Step 4: Run a GC.
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     wakeMainThread();
     parkWorkerThread();
 

@@ -241,11 +241,11 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilResolved)
         resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
     resolver->keepAliveWhilePending();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     resolver->resolve("hello");
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 
@@ -258,11 +258,11 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilRejected)
         resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
     resolver->keepAliveWhilePending();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     resolver->reject("hello");
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 
@@ -275,11 +275,11 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilStopped)
         resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
     resolver->keepAliveWhilePending();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     executionContext()->stopActiveDOMObjects();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 
@@ -292,16 +292,16 @@ TEST_F(ScriptPromiseResolverTest, suspend)
         resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
     }
     resolver->keepAliveWhilePending();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     executionContext()->suspendActiveDOMObjects();
     resolver->resolve("hello");
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
     executionContext()->stopActiveDOMObjects();
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
 

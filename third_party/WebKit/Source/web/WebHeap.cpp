@@ -48,7 +48,7 @@ WebHeap::SafePointScope::~SafePointScope()
 
 void WebHeap::collectGarbageForTesting()
 {
-    Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, Heap::ForcedGC);
+    Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 }
 
 void WebHeap::collectAllGarbageForTesting()
