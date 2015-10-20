@@ -244,8 +244,6 @@ class MediaRouterMojoImpl : public MediaRouter,
 
   IssueManager issue_manager_;
 
-  scoped_ptr<media_router::MediaRoutesObserver> routes_observer_;
-
   // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
   scoped_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
 
@@ -270,7 +268,12 @@ class MediaRouterMojoImpl : public MediaRouter,
   // therefore stale.
   std::string instance_id_;
 
+  // Set to true if there are routes started on this instance.
   bool has_local_route_;
+
+  // Observes local routes in order to notify LocalMediaRoutesObservers when
+  // there are no more local routes.
+  scoped_ptr<MediaRoutesObserver> routes_observer_;
 
   base::ThreadChecker thread_checker_;
 

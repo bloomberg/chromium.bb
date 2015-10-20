@@ -99,6 +99,10 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Make sure |routes_observer_| is destroyed first, because it triggers
+  // additional cleanup logic in this class that depends on other fields.
+  routes_observer_.reset();
 }
 
 // static
