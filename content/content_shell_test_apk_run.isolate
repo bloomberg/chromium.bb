@@ -14,7 +14,7 @@
       '<(PRODUCT_DIR)/apks/ContentShell.apk',
     ],
     'files': [
-      '../third_party/proguard/'
+      '../third_party/proguard/',
       '<(PRODUCT_DIR)/apks/ContentShell.apk',
       '<(PRODUCT_DIR)/apks/ContentShellTest.apk',
       '<(PRODUCT_DIR)/bin/run_content_shell_test_apk',
