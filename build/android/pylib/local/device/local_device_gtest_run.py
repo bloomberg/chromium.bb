@@ -10,6 +10,7 @@ import posixpath
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import ports
+from devil.utils import reraiser_thread
 from incremental_install import installer
 from pylib import constants
 from pylib.gtest import gtest_test_instance
@@ -224,34 +225,43 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def SetUp(self):
-
     @local_device_test_run.handle_shard_failures
-    def individual_device_set_up(dev, host_device_tuples):
-      # Install test APK.
-      self._delegate.Install(dev, incremental=self._env.incremental_install)
+    def individual_device_set_up(dev):
+      def install_apk():
+        # Install test APK.
+        self._delegate.Install(dev, incremental=self._env.incremental_install)
 
-      # Push data dependencies.
-      external_storage = dev.GetExternalStoragePath()
-      host_device_tuples = [
-          (h, d if d is not None else external_storage)
-          for h, d in host_device_tuples]
-      dev.PushChangedFiles(host_device_tuples)
+      def push_test_data():
+        # Push data dependencies.
+        external_storage = dev.GetExternalStoragePath()
+        data_deps = self._test_instance.GetDataDependencies()
+        host_device_tuples = [
+            (h, d if d is not None else external_storage)
+            for h, d in data_deps]
+        dev.PushChangedFiles(host_device_tuples)
 
-      tool = self.GetTool(dev)
-      tool.CopyFiles(dev)
-      tool.SetupEnvironment()
+      def init_tool_and_start_servers():
+        tool = self.GetTool(dev)
+        tool.CopyFiles(dev)
+        tool.SetupEnvironment()
 
-      self._servers[str(dev)] = []
-      if self.TestPackage() in _SUITE_REQUIRES_TEST_SERVER_SPAWNER:
-        self._servers[str(dev)].append(
-            local_test_server_spawner.LocalTestServerSpawner(
-                ports.AllocateTestServerPort(), dev, tool))
+        self._servers[str(dev)] = []
+        if self.TestPackage() in _SUITE_REQUIRES_TEST_SERVER_SPAWNER:
+          self._servers[str(dev)].append(
+              local_test_server_spawner.LocalTestServerSpawner(
+                  ports.AllocateTestServerPort(), dev, tool))
 
-      for s in self._servers[str(dev)]:
-        s.SetUp()
+        for s in self._servers[str(dev)]:
+          s.SetUp()
 
-    self._env.parallel_devices.pMap(individual_device_set_up,
-                                    self._test_instance.GetDataDependencies())
+      steps = (install_apk, push_test_data, init_tool_and_start_servers)
+      if self._env.concurrent_adb:
+        reraiser_thread.RunAsync(steps)
+      else:
+        for step in steps:
+          step()
+
+    self._env.parallel_devices.pMap(individual_device_set_up)
 
   #override
   def _ShouldShard(self):

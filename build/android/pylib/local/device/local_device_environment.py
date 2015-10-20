@@ -33,6 +33,7 @@ class LocalDeviceEnvironment(environment.Environment):
     self._tool_name = args.tool
     self._enable_device_cache = args.enable_device_cache
     self._incremental_install = args.incremental_install
+    self._concurrent_adb = args.enable_concurrent_adb
 
   #override
   def SetUp(self):
@@ -63,6 +64,10 @@ class LocalDeviceEnvironment(environment.Environment):
     if not self._devices:
       raise device_errors.NoDevicesError()
     return self._devices
+
+  @property
+  def concurrent_adb(self):
+    return self._concurrent_adb
 
   @property
   def incremental_install(self):

@@ -188,6 +188,9 @@ def AddDeviceOptions(parser):
                      help='Cache device state to disk between runs')
   group.add_argument('--incremental-install', action='store_true',
                      help='Use an _incremental apk.')
+  group.add_argument('--enable-concurrent-adb', action='store_true',
+                     help='Run multiple adb commands at the same time, even '
+                          'for the same device.')
 
 
 def AddGTestOptions(parser):
