@@ -780,12 +780,9 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-#if defined(OS_WIN)  // flaky http://crbug.com/523255
-#define MAYBE_OpenMenuOnClickAndHold DISABLED_OpenMenuOnClickAndHold
-#else
-#define MAYBE_OpenMenuOnClickAndHold OpenMenuOnClickAndHold
-#endif
-VIEW_TEST(BookmarkBarViewTest6, MAYBE_OpenMenuOnClickAndHold)
+// TODO(sky): remove comment if proves stable and reenable other tests.
+// If this flakes, disable and log details in http://crbug.com/523255.
+VIEW_TEST(BookmarkBarViewTest6, OpenMenuOnClickAndHold)
 
 // Tests drag and drop to different menu.
 class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
