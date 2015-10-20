@@ -10,10 +10,11 @@
       '<(PRODUCT_DIR)/bin/run_chrome_sync_shell_test_apk',
       '--enable-platform-mode',
       '-e', 'local', '--apk-under-test',
-      '<(PRODUCT_DIR)/apks/ChromeSyncShell.apk'
+      '<(PRODUCT_DIR)/apks/ChromeSyncShell.apk',
     ],
     'files': [
       '../../third_party/proguard/',
+      '../test/data/',
       '<(PRODUCT_DIR)/apks/ChromeSyncShell.apk',
       '<(PRODUCT_DIR)/apks/ChromeSyncShellTest.apk',
       '<(PRODUCT_DIR)/bin/run_chrome_sync_shell_test_apk',
