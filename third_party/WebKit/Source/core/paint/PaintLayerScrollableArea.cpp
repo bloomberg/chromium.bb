@@ -482,7 +482,7 @@ IntPoint PaintLayerScrollableArea::maximumScrollPosition() const
     if (layer()->isRootLayer()) {
         FrameView* frameView = box().frameView();
         contentSize = frameView->contentsSize();
-        visibleSize = frameView->visibleContentSize(ExcludeScrollbars) + frameView->topControlsSize();
+        visibleSize = frameView->visibleContentSize(IncludeScrollbars) + frameView->topControlsSize() - IntSize(verticalScrollbarWidth(), horizontalScrollbarHeight());
     } else if (box().hasOverflowClip()) {
         contentSize = IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
         visibleSize = enclosingIntRect(box().clientBoxRect()).size();
