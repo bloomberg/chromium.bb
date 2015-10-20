@@ -140,7 +140,9 @@ message Verifiers {
     }
 
     message Bucket {
-      // Name of the bucket. This is typically the same as a master name.
+      // Name of the bucket. This is typically the same as a master name without
+      // the 'master.' prefix, e.g. 'chromium.linux' or 'tryserver.webrtc'. CQ
+      // will automatically add 'master.' prefix if not there.
       optional string name = 1;
 
       // Builders on which tryjobs should be triggered.
