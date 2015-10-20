@@ -340,47 +340,43 @@ std::string CalculateSelectedLanguage(const std::string& requested_locale,
 }
 
 void ResolveLanguageListOnBlockingPool(
-    const chromeos::locale_util::LanguageSwitchResult* language_switch_result,
-    scoped_ptr<base::ListValue>* list,
-    std::string* list_locale,
-    std::string* selected_language) {
+    scoped_ptr<chromeos::locale_util::LanguageSwitchResult>
+        language_switch_result,
+    const scoped_refptr<base::TaskRunner> task_runner,
+    const UILanguageListResolvedCallback& resolved_callback) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
+  std::string selected_language;
   if (!language_switch_result) {
-    *selected_language =
+    selected_language =
         StartupCustomizationDocument::GetInstance()->initial_locale_default();
   } else {
     if (language_switch_result->success) {
       if (language_switch_result->requested_locale ==
           language_switch_result->loaded_locale) {
-        *selected_language = language_switch_result->requested_locale;
+        selected_language = language_switch_result->requested_locale;
       } else {
-        *selected_language =
+        selected_language =
             CalculateSelectedLanguage(language_switch_result->requested_locale,
                                       language_switch_result->loaded_locale);
       }
     } else {
-      *selected_language = language_switch_result->loaded_locale;
+      selected_language = language_switch_result->loaded_locale;
     }
   }
   const std::string selected_code =
-      selected_language->empty() ? g_browser_process->GetApplicationLocale()
-                                 : *selected_language;
+      selected_language.empty() ? g_browser_process->GetApplicationLocale()
+                                : selected_language;
 
-  *list_locale = language_switch_result
-                     ? language_switch_result->loaded_locale
-                     : g_browser_process->GetApplicationLocale();
-  list->reset(chromeos::GetUILanguageList(NULL, selected_code).release());
-}
+  const std::string list_locale =
+      language_switch_result ? language_switch_result->loaded_locale
+                             : g_browser_process->GetApplicationLocale();
+  scoped_ptr<base::ListValue> language_list(
+      chromeos::GetUILanguageList(nullptr, selected_code));
 
-void OnLanguageListResolved(
-    UILanguageListResolvedCallback callback,
-    scoped_ptr<scoped_ptr<base::ListValue>> new_language_list,
-    scoped_ptr<std::string> new_language_list_locale,
-    scoped_ptr<std::string> new_selected_language) {
-  callback.Run(new_language_list->Pass(),
-               *new_language_list_locale,
-               *new_selected_language);
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(resolved_callback, base::Passed(&language_list),
+                            list_locale, selected_language));
 }
 
 void AdjustUILanguageList(const std::string& selected,
@@ -421,30 +417,13 @@ void AdjustUILanguageList(const std::string& selected,
 void ResolveUILanguageList(
     scoped_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
-    UILanguageListResolvedCallback callback) {
+    const UILanguageListResolvedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<scoped_ptr<base::ListValue>> new_language_list(
-      new scoped_ptr<base::ListValue>());
-  scoped_ptr<std::string> new_language_list_locale(new std::string);
-  scoped_ptr<std::string> new_selected_language(new std::string);
-
-  base::Closure resolve_on_pool =
-      base::Bind(&ResolveLanguageListOnBlockingPool,
-                 base::Owned(language_switch_result.release()),
-                 base::Unretained(new_language_list.get()),
-                 base::Unretained(new_language_list_locale.get()),
-                 base::Unretained(new_selected_language.get()));
-
-  base::Closure on_language_list_resolved =
-      base::Bind(&OnLanguageListResolved,
-                 callback,
-                 base::Passed(new_language_list.Pass()),
-                 base::Passed(new_language_list_locale.Pass()),
-                 base::Passed(new_selected_language.Pass()));
-
-  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
-      FROM_HERE, resolve_on_pool, on_language_list_resolved);
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE, base::Bind(&ResolveLanguageListOnBlockingPool,
+                            base::Passed(&language_switch_result),
+                            base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 scoped_ptr<base::ListValue> GetMinimalUILanguageList() {

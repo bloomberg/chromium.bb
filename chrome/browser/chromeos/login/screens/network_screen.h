@@ -145,8 +145,8 @@ class NetworkScreen : public NetworkModel,
 
   // Callback for chromeos::ResolveUILanguageList() (from l10n_util).
   void OnLanguageListResolved(scoped_ptr<base::ListValue> new_language_list,
-                              std::string new_language_list_locale,
-                              std::string new_selected_language);
+                              const std::string& new_language_list_locale,
+                              const std::string& new_selected_language);
 
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();

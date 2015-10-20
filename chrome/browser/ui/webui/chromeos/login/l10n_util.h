@@ -21,8 +21,8 @@ class ListValue;
 namespace chromeos {
 
 typedef base::Callback<void(scoped_ptr<base::ListValue> /* new_language_list */,
-                            std::string /* new_language_list_locale */,
-                            std::string /* new_selected_language */)>
+                            const std::string& /* new_language_list_locale */,
+                            const std::string& /* new_selected_language */)>
     UILanguageListResolvedCallback;
 
 // GetUILanguageList() returns a concatenated list of the most relevant
@@ -50,7 +50,7 @@ scoped_ptr<base::ListValue> GetUILanguageList(
 // correct and has been successfully loaded.
 void ResolveUILanguageList(
     scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result,
-    UILanguageListResolvedCallback callback);
+    const UILanguageListResolvedCallback& callback);
 
 // Returns a minimal list of UI languages, which consists of active language
 // only. It is used as a placeholder until ResolveUILanguageList() finishes
