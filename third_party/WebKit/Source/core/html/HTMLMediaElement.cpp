@@ -3043,7 +3043,12 @@ void HTMLMediaElement::userCancelledLoad()
 
     // 1 - The user agent should cancel the fetching process.
     clearMediaPlayer(-1);
+    // Reset m_readyState and m_readyStateMaximum since m_webMediaPlayer is gone.
+    ReadyState readyState = m_readyState;
+    m_readyState = HAVE_NOTHING;
+    m_readyStateMaximum = HAVE_NOTHING;
 
+    // TODO(srirama.m): Investigate if this condition can be dropped entirely without any issues.
     if (m_networkState == NETWORK_EMPTY || m_completelyLoaded || m_isFinalizing)
         return;
 
@@ -3057,7 +3062,7 @@ void HTMLMediaElement::userCancelledLoad()
     // element's networkState attribute to the NETWORK_EMPTY value and queue a task to fire a
     // simple event named emptied at the element. Otherwise, set the element's networkState
     // attribute to the NETWORK_IDLE value.
-    if (m_readyState == HAVE_NOTHING) {
+    if (readyState == HAVE_NOTHING) {
         m_networkState = NETWORK_EMPTY;
         scheduleEvent(EventTypeNames::emptied);
     } else {
@@ -3070,8 +3075,6 @@ void HTMLMediaElement::userCancelledLoad()
     // 6 - Abort the overall resource selection algorithm.
     m_currentSourceNode = nullptr;
 
-    // Reset m_readyState since m_webMediaPlayer is gone.
-    m_readyState = HAVE_NOTHING;
     invalidateCachedTime();
     updateMediaController();
     cueTimeline().updateActiveCues(0);
