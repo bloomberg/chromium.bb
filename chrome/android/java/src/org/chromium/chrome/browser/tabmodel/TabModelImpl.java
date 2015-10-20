@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -37,7 +37,8 @@ public class TabModelImpl extends TabModelJniBridge {
      */
     private final List<Tab> mTabs = new ArrayList<Tab>();
 
-    private final ChromeActivity mActivity;
+    private final TabCreator mRegularTabCreator;
+    private final TabCreator mIncognitoTabCreator;
     private final TabModelSelectorUma mUma;
     private final TabModelOrderController mOrderController;
     private final TabContentManager mTabContentManager;
@@ -60,12 +61,14 @@ public class TabModelImpl extends TabModelJniBridge {
      */
     private int mIndex = INVALID_TAB_INDEX;
 
-    public TabModelImpl(boolean incognito, ChromeActivity activity, TabModelSelectorUma uma,
+    public TabModelImpl(boolean incognito, TabCreator regularTabCreator,
+            TabCreator incognitoTabCreator, TabModelSelectorUma uma,
             TabModelOrderController orderController, TabContentManager tabContentManager,
             TabPersistentStore tabSaver, TabModelDelegate modelDelegate) {
         super(incognito);
         initializeNative();
-        mActivity = activity;
+        mRegularTabCreator = regularTabCreator;
+        mIncognitoTabCreator = incognitoTabCreator;
         mUma = uma;
         mOrderController = orderController;
         mTabContentManager = tabContentManager;
@@ -231,7 +234,8 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public boolean supportsPendingClosures() {
-        return !isIncognito() && DeviceClassManager.enableUndo(mActivity);
+        return !isIncognito()
+                && DeviceClassManager.enableUndo(ApplicationStatus.getApplicationContext());
     }
 
     @Override
@@ -366,7 +370,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
         if (allowDelegation && mModelDelegate.closeAllTabsRequest(isIncognito())) return;
 
-        if (HomepageManager.isHomepageEnabled(mActivity)) {
+        if (HomepageManager.isHomepageEnabled(ApplicationStatus.getApplicationContext())) {
             commitAllTabClosures();
 
             for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
@@ -679,13 +683,13 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     protected TabCreator getTabCreator(boolean incognito) {
-        return mActivity.getTabCreator(incognito);
+        return incognito ? mIncognitoTabCreator : mRegularTabCreator;
     }
 
     @Override
     protected boolean createTabWithWebContents(
             boolean incognito, WebContents webContents, int parentId) {
-        return mActivity.getTabCreator(incognito).createTabWithWebContents(
+        return getTabCreator(incognito).createTabWithWebContents(
                 webContents, parentId, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
     }
 

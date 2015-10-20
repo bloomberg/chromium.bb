@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
@@ -57,7 +58,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     private ChromeTabCreator mIncognitoTabCreator;
 
     private static class TabModelImplCreator implements OffTheRecordTabModelDelegate {
-        private final ChromeActivity mActivity;
+        private final TabCreator mRegularTabCreator;
+        private final TabCreator mIncognitoTabCreator;
         private final TabModelSelectorUma mUma;
         private final TabModelOrderController mOrderController;
         private final TabContentManager mTabContentManager;
@@ -67,17 +69,20 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         /**
          * Constructor for an Incognito TabModelImpl.
          *
-         * @param activity           The activity owning this TabModel.
-         * @param uma                Handles UMA tracking for the model.
-         * @param orderController    Determines the order for inserting new Tabs.
-         * @param tabContentManager  Manages the display content of the tab.
-         * @param tabSaver           Handler for saving tabs.
-         * @param modelDelegate      Delegate to handle external dependencies and interactions.
+         * @param regularTabCreator   Creates regular tabs.
+         * @param incognitoTabCreator Creates incognito tabs.
+         * @param uma                 Handles UMA tracking for the model.
+         * @param orderController     Determines the order for inserting new Tabs.
+         * @param tabContentManager   Manages the display content of the tab.
+         * @param tabSaver            Handler for saving tabs.
+         * @param modelDelegate       Delegate to handle external dependencies and interactions.
          */
-        public TabModelImplCreator(ChromeActivity activity, TabModelSelectorUma uma,
-                TabModelOrderController orderController, TabContentManager tabContentManager,
-                TabPersistentStore tabSaver, TabModelDelegate modelDelegate) {
-            mActivity = activity;
+        public TabModelImplCreator(TabCreator regularTabCreator, TabCreator incognitoTabCreator,
+                TabModelSelectorUma uma, TabModelOrderController orderController,
+                TabContentManager tabContentManager, TabPersistentStore tabSaver,
+                TabModelDelegate modelDelegate) {
+            mRegularTabCreator = regularTabCreator;
+            mIncognitoTabCreator = incognitoTabCreator;
             mUma = uma;
             mOrderController = orderController;
             mTabContentManager = tabContentManager;
@@ -87,8 +92,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
         @Override
         public TabModel createTabModel() {
-            return new TabModelImpl(true, mActivity, mUma, mOrderController,
-                    mTabContentManager, mTabSaver, mModelDelegate);
+            return new TabModelImpl(true, mRegularTabCreator, mIncognitoTabCreator, mUma,
+                    mOrderController, mTabContentManager, mTabSaver, mModelDelegate);
         }
 
         @Override
@@ -181,10 +186,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         assert !mActiveState : "onNativeLibraryReady called twice!";
         mTabContentManager = tabContentProvider;
 
-        TabModel normalModel = new TabModelImpl(false, mActivity, mUma, mOrderController,
-                mTabContentManager, mTabSaver, this);
+        TabModel normalModel = new TabModelImpl(false, mRegularTabCreator, mIncognitoTabCreator,
+                mUma, mOrderController, mTabContentManager, mTabSaver, this);
         TabModel incognitoModel = new OffTheRecordTabModel(new TabModelImplCreator(
-                mActivity, mUma, mOrderController, mTabContentManager, mTabSaver, this));
+                mRegularTabCreator, mIncognitoTabCreator, mUma, mOrderController,
+                mTabContentManager, mTabSaver, this));
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
         mRegularTabCreator.setTabModel(normalModel, mTabContentManager);
         mIncognitoTabCreator.setTabModel(incognitoModel, mTabContentManager);
