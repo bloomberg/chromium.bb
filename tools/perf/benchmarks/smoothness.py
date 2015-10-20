@@ -27,7 +27,8 @@ class _Smoothness(perf_benchmark.PerfBenchmark):
     return 'smoothness'
 
   @classmethod
-  def ValueCanBeAddedPredicate(cls, value, _):
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    del is_first_result  # unused
     if (value.name == 'first_gesture_scroll_update_latency' and
         value.page.url in cls._PAGES_WITHOUT_SCROLL_GESTURE_BLACKLIST and
         value.values is None):
@@ -325,6 +326,14 @@ class SmoothnessGpuRasterizationPolymer(_Smoothness):
 
 class SmoothnessToughScrollingCases(_Smoothness):
   page_set = page_sets.ToughScrollingCasesPageSet
+
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+    del is_first_result  # unused
+    # Only keep 'mean_pixels_approximated' and 'mean_pixels_checkerboarded'
+    # metrics. (crbug.com/529331)
+    return value.name in ('mean_pixels_approximated',
+                          'mean_pixels_checkerboarded')
 
   @classmethod
   def Name(cls):
