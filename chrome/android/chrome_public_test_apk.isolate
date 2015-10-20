@@ -14,12 +14,12 @@
       '<(PRODUCT_DIR)/apks/ChromePublic.apk',
     ],
     'files': [
+      '../../third_party/proguard/',
       '../chrome_public_test_apk.isolate',
       '<(PRODUCT_DIR)/apks/ChromePublic.apk',
       '<(PRODUCT_DIR)/apks/ChromePublicTest.apk',
       '<(PRODUCT_DIR)/bin/run_chrome_public_test_apk',
       '<(PRODUCT_DIR)/test.lib.java/ChromePublicTest.jar',
-      '<(PRODUCT_DIR)/test.lib.java/ChromePublicTest.jar-proguard.pickle',
     ]
   },
 }
