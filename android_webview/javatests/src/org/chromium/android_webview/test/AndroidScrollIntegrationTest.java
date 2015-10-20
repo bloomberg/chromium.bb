@@ -14,6 +14,7 @@ import org.chromium.android_webview.AwScrollOffsetManager;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -205,15 +206,13 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
     private boolean checkScrollOnMainSync(final ScrollTestContainerView testContainerView,
             final int scrollXPix, final int scrollYPix) {
-        final AtomicBoolean equal = new AtomicBoolean(false);
-        getInstrumentation().runOnMainSync(new Runnable() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public void run() {
-                equal.set((scrollXPix == testContainerView.getScrollX())
-                        && (scrollYPix == testContainerView.getScrollY()));
+            public Boolean call() {
+                return scrollXPix == testContainerView.getScrollX()
+                        && scrollYPix == testContainerView.getScrollY();
             }
         });
-        return equal.get();
     }
 
     private void assertScrollOnMainSync(final ScrollTestContainerView testContainerView,
