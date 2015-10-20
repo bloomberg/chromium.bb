@@ -15,6 +15,7 @@
 #include "components/devtools_discovery/basic_target_descriptor.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/favicon_status.h"
@@ -120,7 +121,7 @@ CreateSocketFactory() {
     std::string port_str =
         command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
     if (base::StringToInt(port_str, &temp_port) &&
-        temp_port > 0 && temp_port < 65535) {
+        temp_port >= 0 && temp_port < 65535) {
       port = static_cast<uint16>(temp_port);
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
@@ -214,7 +215,7 @@ ShellDevToolsManagerDelegate::CreateHttpHandler(
       CreateSocketFactory(),
       frontend_url,
       new ShellDevToolsDelegate(browser_context),
-      base::FilePath(),
+      browser_context->GetPath(),
       base::FilePath(),
       std::string(),
       GetShellUserAgent());
