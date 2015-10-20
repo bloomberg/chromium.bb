@@ -58,6 +58,9 @@ class CONTENT_EXPORT WebBluetoothImpl
   void characteristicObjectRemoved(
       const blink::WebString& characteristic_instance_id,
       blink::WebBluetoothGATTCharacteristic* characteristic) override;
+  void registerCharacteristicObject(
+      const blink::WebString& characteristic_instance_id,
+      blink::WebBluetoothGATTCharacteristic* characteristic) override;
 
  private:
   BluetoothDispatcher* GetDispatcher();

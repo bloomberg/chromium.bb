@@ -168,10 +168,20 @@ class LayoutTestBluetoothAdapterProvider {
   //      - Generic Access UUID (0x1800)
   //      - Heart Rate UUID (0x180D)
   //      - Heart Rate Service
+  //         - Body Sensor Location
+  //           - Mock Functions:
+  //              - Read: Calls GattCharacteristicValueChanged and success
+  //                      callback with [1] which corresponds to chest.
   //         - Heart Rate Measurement Characteristic:
   //            - Mock Functions:
-  //               - StartNotifySession: Calls success callback with a
+  //               - StartNotifySession: Sets a timer to call
+  //                 GattCharacteristicValueChanged every 10ms and calls success
+  //                 callback with a
   //                 BaseGATTNotifySession(characteristic_instance_id)
+  //                 TODO: Instead of a timer we should be able to tell
+  //                 the fake adapter to call GattCharacteristicValueChanged
+  //                 from js.
+  //                 https://crbug.com/543884
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
 
@@ -432,7 +442,7 @@ class LayoutTestBluetoothAdapterProvider {
   //   - IsActive:
   //       Returns: true
   //   - Stop:
-  //       Run callback.
+  //       Stops calling GattCharacteristicValueChanged and runs callback.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattNotifySession>>
   GetBaseGATTNotifySession(const std::string& characteristic_identifier);
 

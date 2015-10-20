@@ -302,12 +302,15 @@ interface BluetoothDevice
     method connectGATT
     method constructor
 interface BluetoothGATTCharacteristic
+    getter oncharacteristicvaluechanged
     getter uuid
+    getter value
     method constructor
     method readValue
     method startNotifications
     method stopNotifications
     method writeValue
+    setter oncharacteristicvaluechanged
 interface BluetoothGATTRemoteServer
     getter connected
     method constructor

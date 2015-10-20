@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/Event.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
@@ -37,6 +38,16 @@ BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseReso
     return characteristic;
 }
 
+void BluetoothGATTCharacteristic::dispatchCharacteristicValueChanged(
+    const WebVector<uint8_t>& value)
+{
+    static_assert(sizeof(*value.data()) == 1, "uint8_t should be a single byte");
+
+    m_value = DOMArrayBuffer::create(value.data(), value.size());
+
+    dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
+}
+
 void BluetoothGATTCharacteristic::stop()
 {
     notifyCharacteristicObjectRemoved();
@@ -54,6 +65,27 @@ void BluetoothGATTCharacteristic::notifyCharacteristicObjectRemoved()
         WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(ActiveDOMObject::executionContext());
         webbluetooth->characteristicObjectRemoved(m_webCharacteristic->characteristicInstanceID, this);
     }
+}
+
+const WTF::AtomicString& BluetoothGATTCharacteristic::interfaceName() const
+{
+    return EventTargetNames::BluetoothGATTCharacteristic;
+}
+
+ExecutionContext* BluetoothGATTCharacteristic::executionContext() const
+{
+    return ActiveDOMObject::executionContext();
+}
+
+bool BluetoothGATTCharacteristic::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+{
+    // We will also need to unregister a characteristic once all the event
+    // listeners have been removed. See http://crbug.com/541390
+    if (eventType == EventTypeNames::characteristicvaluechanged) {
+        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(executionContext());
+        webbluetooth->registerCharacteristicObject(m_webCharacteristic->characteristicInstanceID, this);
+    }
+    return EventTarget::addEventListener(eventType, listener, useCapture);
 }
 
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
@@ -109,6 +141,7 @@ ScriptPromise BluetoothGATTCharacteristic::stopNotifications(ScriptState* script
 
 DEFINE_TRACE(BluetoothGATTCharacteristic)
 {
+    RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothGATTCharacteristic>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

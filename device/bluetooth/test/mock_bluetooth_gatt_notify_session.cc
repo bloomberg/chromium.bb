@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
 
 using testing::Return;
 
@@ -16,6 +18,32 @@ MockBluetoothGattNotifySession::MockBluetoothGattNotifySession(
 }
 
 MockBluetoothGattNotifySession::~MockBluetoothGattNotifySession() {
+}
+
+void MockBluetoothGattNotifySession::StartTestNotifications(
+    MockBluetoothAdapter* adapter,
+    MockBluetoothGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  test_notifications_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(10),
+      base::Bind(&MockBluetoothGattNotifySession::DoNotify,
+                 // base::Timer guarantees it won't call back after its
+                 // destructor starts.
+                 base::Unretained(this), base::Unretained(adapter),
+                 characteristic, value));
+}
+
+void MockBluetoothGattNotifySession::StopTestNotifications() {
+  test_notifications_timer_.Stop();
+}
+
+void MockBluetoothGattNotifySession::DoNotify(
+    MockBluetoothAdapter* adapter,
+    MockBluetoothGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  FOR_EACH_OBSERVER(
+      BluetoothAdapter::Observer, adapter->GetObservers(),
+      GattCharacteristicValueChanged(adapter, characteristic, value));
 }
 
 }  // namespace device

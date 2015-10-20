@@ -84,6 +84,13 @@ void WebBluetoothImpl::characteristicObjectRemoved(
                                                characteristic);
 }
 
+void WebBluetoothImpl::registerCharacteristicObject(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic) {
+  GetDispatcher()->registerCharacteristicObject(characteristic_instance_id,
+                                                characteristic);
+}
+
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
   return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
       thread_safe_sender_.get());

@@ -86,6 +86,11 @@ public:
     virtual void stopNotifications(const WebString& characteristicInstanceID,
         WebBluetoothGATTCharacteristic*,
         WebBluetoothNotificationsCallbacks*) {}
+
+    // Called when addEventListener is called on a characteristic.
+    virtual void registerCharacteristicObject(
+        const WebString& characteristicInstanceID,
+        WebBluetoothGATTCharacteristic*) = 0;
     virtual void characteristicObjectRemoved(
         const WebString& characteristicInstanceID,
         WebBluetoothGATTCharacteristic*) {}

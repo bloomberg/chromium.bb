@@ -213,6 +213,10 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_WriteValue, OnWriteValue)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_StartNotifications, OnStartNotifications)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_StopNotifications, OnStopNotifications)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_RegisterCharacteristic,
+                      OnRegisterCharacteristicObject);
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_UnregisterCharacteristic,
+                      OnUnregisterCharacteristicObject);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -371,9 +375,36 @@ void BluetoothDispatcherHost::GattCharacteristicValueChanged(
     device::BluetoothAdapter* adapter,
     device::BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8>& value) {
-  // TODO(ortuno): Notify renderer the characteristic changed.
-  // http://crbug.com/529560
-  VLOG(1) << "Characteristic updated.";
+  VLOG(1) << "Characteristic updated: " << characteristic->GetIdentifier();
+  auto iter =
+      active_characteristic_threads_.find(characteristic->GetIdentifier());
+
+  if (iter == active_characteristic_threads_.end()) {
+    return;
+  }
+
+  for (int thread_id : iter->second) {
+    // Yield to the event loop so that the event gets dispatched after the
+    // readValue promise resolves.
+    // TODO(ortuno): Make sure the order of fulfulling promises and triggering
+    // events matches the spec and that events don't get lost.
+    // https://crbug.com/543882
+    if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::Bind(&BluetoothDispatcherHost::NotifyActiveCharacteristic,
+                       weak_ptr_on_ui_thread_, thread_id,
+                       characteristic->GetIdentifier(), value))) {
+      LOG(WARNING) << "No TaskRunner.";
+    }
+  }
+}
+
+void BluetoothDispatcherHost::NotifyActiveCharacteristic(
+    int thread_id,
+    const std::string& characteristic_instance_id,
+    const std::vector<uint8>& value) {
+  Send(new BluetoothMsg_CharacteristicValueChanged(
+      thread_id, characteristic_instance_id, value));
 }
 
 void BluetoothDispatcherHost::OnRequestDevice(
@@ -803,6 +834,29 @@ void BluetoothDispatcherHost::OnStopNotifications(
       base::Bind(&BluetoothDispatcherHost::OnStopNotifySession,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
                  characteristic_instance_id));
+}
+
+void BluetoothDispatcherHost::OnRegisterCharacteristicObject(
+    int thread_id,
+    const std::string& characteristic_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  active_characteristic_threads_[characteristic_instance_id].insert(thread_id);
+}
+
+void BluetoothDispatcherHost::OnUnregisterCharacteristicObject(
+    int thread_id,
+    const std::string& characteristic_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto active_iter =
+      active_characteristic_threads_.find(characteristic_instance_id);
+  if (active_iter == active_characteristic_threads_.end()) {
+    return;
+  }
+  std::set<int>& thread_ids_set = active_iter->second;
+  thread_ids_set.erase(thread_id);
+  if (thread_ids_set.empty()) {
+    active_characteristic_threads_.erase(active_iter);
+  }
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(

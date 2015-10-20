@@ -4,5 +4,6 @@ include_rules = [
     "+heap",
     "-modules",
     "+modules/bluetooth",
+    "+modules/EventTargetModules.h",
     "-web",
 ]

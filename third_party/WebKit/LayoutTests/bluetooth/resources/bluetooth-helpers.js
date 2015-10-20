@@ -132,5 +132,55 @@ function runGarbageCollection()
         GCController.collect();
         setTimeout(resolve, 0);
       });
-  return Promise.resolve();
+}
+
+// Creates |num_listeners| promises. Each adds an event listener
+// to object. The promises resolve once the object fires |event| but
+// reject if the event is fired before |object|.|func|() resolves.
+// Returns a promise that fulfills with the result of |object|.|func()|
+// and |event.target.value| of each of the other promises.
+function assert_event_fires_after_promise(object, func, event, num_listeners) {
+  num_listeners = num_listeners !== undefined ? num_listeners : 1;
+
+  if (object[func] === undefined) {
+    return Promise.reject('Function \'' + func + '\' not available in object.');
+  }
+  let should_resolve = false;
+  let event_promises = [];
+  for (let i = 0; i < num_listeners; i++) {
+    event_promises.push(new Promise((resolve, reject) => {
+      let event_listener = (e) => {
+        object.removeEventListener(event, event_listener);
+        if (should_resolve) {
+          resolve(e.target.value);
+        } else {
+          reject(event + ' was triggered before the promise resolved.');
+        }
+      };
+      object.addEventListener(event, event_listener);
+    }));
+  }
+  return object[func]().then(result => {
+    should_resolve = true;
+    return Promise.all([result, ...event_promises]);
+  });
+}
+
+// Returns a promise that resolves after 100ms unless
+// the the event is fired on the object in which case
+// the promise rejects.
+function assert_no_events(object, event_name) {
+  return new Promise((resolve, reject) => {
+    let event_listener = (e) => {
+      object.removeEventListener(event_name, event_listener);
+      assert_unreached('Object should not fire an event.');
+    };
+    object.addEventListener(event_name, event_listener);
+    // TODO(ortuno): Remove timeout.
+    // http://crbug.com/543884
+    setTimeout(() => {
+      object.removeEventListener(event_name, event_listener);
+      resolve();
+    }, 100);
+  });
 }

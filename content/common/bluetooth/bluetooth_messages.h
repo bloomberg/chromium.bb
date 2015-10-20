@@ -202,6 +202,12 @@ IPC_MESSAGE_CONTROL2(BluetoothMsg_StopNotificationsSuccess,
                      int /* thread_id */,
                      int /* request_id */)
 
+// Informs the renderer that a characteristic's value changed.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_CharacteristicValueChanged,
+                     int /* thread_id */,
+                     std::string /* characteristic_instance_id */,
+                     std::vector<uint8_t> /* value */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
@@ -256,3 +262,13 @@ IPC_MESSAGE_CONTROL3(BluetoothHostMsg_StopNotifications,
                      int /* thread_id */,
                      int /* request_id */,
                      std::string /* characteristic_instance_id */)
+
+// Register to receive characteristic value changed events.
+IPC_MESSAGE_CONTROL2(BluetoothHostMsg_RegisterCharacteristic,
+                     int /* thread_id */,
+                     std::string /* characteristics_instance_id */)
+
+// Unregister from characteristic value changed events.
+IPC_MESSAGE_CONTROL2(BluetoothHostMsg_UnregisterCharacteristic,
+                     int /* thread_id */,
+                     std::string /* characteristics_instance_id */)

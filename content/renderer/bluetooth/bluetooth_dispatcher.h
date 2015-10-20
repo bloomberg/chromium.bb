@@ -86,6 +86,9 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void characteristicObjectRemoved(
       const blink::WebString& characteristic_instance_id,
       blink::WebBluetoothGATTCharacteristic* delegate);
+  void registerCharacteristicObject(
+      const blink::WebString& characteristic_instance_id,
+      blink::WebBluetoothGATTCharacteristic* characteristic);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
@@ -140,6 +143,19 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void ResolveOrSendStartNotificationRequest(int request_id);
   void ResolveOrSendStopNotificationsRequest(int request_id);
 
+  // Tells BluetoothDispatcherHost that we are no longer interested in
+  // events for the characteristic.
+  //
+  // TODO(ortuno): We should unregister a characteristic once there are no
+  // characteristic objects that have listeners attached.
+  // For now, we call this function when an object gets destroyed. So if there
+  // are two frames registered for notifications from the same characteristic
+  // and one of the characteristic objects gets destroyed both will stop
+  // receiving notifications.
+  // https://crbug.com/541388
+  void UnregisterCharacteristicObject(
+      const blink::WebString& characteristic_instance_id);
+
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDeviceSuccess(int thread_id,
                               int request_id,
@@ -181,6 +197,10 @@ class BluetoothDispatcher : public WorkerThread::Observer {
                                  int request_id,
                                  blink::WebBluetoothError error);
   void OnStopNotificationsSuccess(int thread_id, int request_id);
+  void OnCharacteristicValueChanged(
+      int thread_id,
+      const std::string& characteristic_instance_id,
+      const std::vector<uint8_t> value);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
@@ -216,6 +236,16 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   // objects are subscribed to notifications.
   std::map<std::string, std::set<blink::WebBluetoothGATTCharacteristic*>>
       active_notification_subscriptions_;
+
+  // Map of characteristic_instance_ids to WebBluetoothGATTCharacteristics.
+  // Keeps track of what characteristics have listeners.
+  // TODO(ortuno): We are assuming that there exists a single frame per
+  // dispatcher, so there could be at most one characteristic object per
+  // characteristic_instance_id. Change to a set when we support multiple
+  // frames.
+  // http://crbug.com/541388
+  std::map<std::string, blink::WebBluetoothGATTCharacteristic*>
+      active_characteristics_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

@@ -34,6 +34,7 @@ using device::MockBluetoothGattNotifySession;
 using device::MockBluetoothGattService;
 using testing::ElementsAre;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 using testing::ResultOf;
 using testing::Return;
 using testing::_;
@@ -58,6 +59,7 @@ const char kGenericAccessServiceUUID[] = "1800";
 const char kGlucoseServiceUUID[] = "1808";
 const char kHeartRateServiceUUID[] = "180d";
 const char kHeartRateMeasurementUUID[] = "2a37";
+const char kBodySensorLocation[] = "2a38";
 const char kDeviceNameUUID[] = "2a00";
 
 // Invokes Run() on the k-th argument of the function with no arguments.
@@ -363,22 +365,58 @@ LayoutTestBluetoothAdapterProvider::GetGenericAccessAdapter() {
 scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetHeartRateAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+  // Used by lambdas that need the adapter.
+  NiceMockBluetoothAdapter* adapter_ptr = adapter.get();
+
   scoped_ptr<NiceMockBluetoothDevice> device(GetHeartRateDevice(adapter.get()));
   scoped_ptr<NiceMockBluetoothGattService> heart_rate(
       GetBaseGATTService(device.get(), kHeartRateServiceUUID));
 
   // TODO(ortuno): Implement the rest of the service's characteristics
   // See: http://crbug.com/529975
+
+  // Body Sensor Location Characteristic
+  scoped_ptr<NiceMockBluetoothGattCharacteristic> body_sensor_location(
+      GetBaseGATTCharacteristic(heart_rate.get(), kBodySensorLocation));
+  BluetoothGattCharacteristic* location_ptr = body_sensor_location.get();
+
+  ON_CALL(*body_sensor_location, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          [adapter_ptr, location_ptr]() {
+            std::vector<uint8_t> location(1 /* size */);
+            location[0] = 1;  // Chest
+            // Read a characteristic has a side effect of
+            // GattCharacteristicValueChanged being called.
+            FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
+                              adapter_ptr->GetObservers(),
+                              GattCharacteristicValueChanged(
+                                  adapter_ptr, location_ptr, location));
+            return location;
+          }));
+
+  // Heart Rate Measurement Characteristic
   scoped_ptr<NiceMockBluetoothGattCharacteristic> heart_rate_measurement(
       GetBaseGATTCharacteristic(heart_rate.get(), kHeartRateMeasurementUUID));
-  BluetoothGattCharacteristic* measurement_ptr = heart_rate_measurement.get();
+  NiceMockBluetoothGattCharacteristic* measurement_ptr =
+      heart_rate_measurement.get();
+
   ON_CALL(*heart_rate_measurement, StartNotifySession(_, _))
-      .WillByDefault(
-          RunCallbackWithResult<0 /* success_callback */>([measurement_ptr]() {
-            return GetBaseGATTNotifySession(measurement_ptr->GetIdentifier());
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          [adapter_ptr, measurement_ptr]() {
+            scoped_ptr<NiceMockBluetoothGattNotifySession> notify_session(
+                GetBaseGATTNotifySession(measurement_ptr->GetIdentifier()));
+
+            std::vector<uint8_t> rate(1 /* size */);
+            rate[0] = 60;
+
+            notify_session->StartTestNotifications(adapter_ptr, measurement_ptr,
+                                                   rate);
+
+            return notify_session.Pass();
           }));
 
   heart_rate->AddMockCharacteristic(heart_rate_measurement.Pass());
+  heart_rate->AddMockCharacteristic(body_sensor_location.Pass());
   device->AddMockService(heart_rate.Pass());
   adapter->AddMockDevice(device.Pass());
 
@@ -633,7 +671,12 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTNotifySession(
   scoped_ptr<NiceMockBluetoothGattNotifySession> session(
       new NiceMockBluetoothGattNotifySession(characteristic_identifier));
 
-  ON_CALL(*session, Stop(_)).WillByDefault(RunCallback<0>());
+  ON_CALL(*session, Stop(_))
+      .WillByDefault(testing::DoAll(
+          InvokeWithoutArgs(
+              session.get(),
+              &MockBluetoothGattNotifySession::StopTestNotifications),
+          RunCallback<0>()));
 
   return session.Pass();
 }

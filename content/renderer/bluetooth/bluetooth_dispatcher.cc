@@ -177,6 +177,8 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnStartNotificationsError)
   IPC_MESSAGE_HANDLER(BluetoothMsg_StopNotificationsSuccess,
                       OnStopNotificationsSuccess)
+  IPC_MESSAGE_HANDLER(BluetoothMsg_CharacteristicValueChanged,
+                      OnCharacteristicValueChanged)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -295,9 +297,18 @@ void BluetoothDispatcher::stopNotifications(
 void BluetoothDispatcher::characteristicObjectRemoved(
     const blink::WebString& characteristic_instance_id,
     blink::WebBluetoothGATTCharacteristic* characteristic) {
-  // A characteristic object is in the queue waiting for a response
-  // or in the set of active notifications.
+  // We need to remove references to the object from the following:
+  //  1) The set of active characteristics
+  //  2) The queue waiting for a response
+  //  3) The set of active notifications
 
+  // 1
+  // TODO(ortuno): We should only unregister a characteristic once
+  // there are no characteristic objects that have listeners attached.
+  // https://crbug.com/541388
+  UnregisterCharacteristicObject(characteristic_instance_id);
+
+  // 2
   // If the object is in the queue we null the characteristic. If this is the
   // first object waiting for a response OnStartNotificationsSuccess will make
   // sure not to add the characteristic to the map and it will queue a Stop
@@ -324,6 +335,7 @@ void BluetoothDispatcher::characteristicObjectRemoved(
     return;
   }
 
+  // 3
   // If the object is not in the queue then:
   //   1. The subscription was inactive already: this characteristic
   //      object didn't subscribe to notifications.
@@ -343,6 +355,22 @@ void BluetoothDispatcher::characteristicObjectRemoved(
   ResolveOrSendStopNotificationsRequest(QueueNotificationRequest(
       characteristic_instance_id.utf8(), characteristic,
       nullptr /* callbacks */, NotificationsRequestType::STOP));
+}
+
+void BluetoothDispatcher::registerCharacteristicObject(
+    const blink::WebString& characteristic_instance_id,
+    blink::WebBluetoothGATTCharacteristic* characteristic) {
+  // TODO(ortuno): After the Object manager is implemented, there will
+  // only be one object per characteristic. But for now we remove
+  // the previous object.
+  // https://crbug.com/495270
+  active_characteristics_.erase(characteristic_instance_id.utf8());
+
+  active_characteristics_.insert(
+      std::make_pair(characteristic_instance_id.utf8(), characteristic));
+
+  Send(new BluetoothHostMsg_RegisterCharacteristic(
+      CurrentWorkerId(), characteristic_instance_id.utf8()));
 }
 
 void BluetoothDispatcher::WillStopCurrentWorkerThread() {
@@ -498,6 +526,16 @@ void BluetoothDispatcher::ResolveOrSendStopNotificationsRequest(
     callbacks->onSuccess();
   }
   PopNotificationRequestQueueAndProcessNext(request_id);
+}
+
+void BluetoothDispatcher::UnregisterCharacteristicObject(
+    const blink::WebString& characteristic_instance_id) {
+  int removed =
+      active_characteristics_.erase(characteristic_instance_id.utf8());
+  if (removed != 0) {
+    Send(new BluetoothHostMsg_UnregisterCharacteristic(
+        CurrentWorkerId(), characteristic_instance_id.utf8()));
+  }
 }
 
 void BluetoothDispatcher::OnRequestDeviceSuccess(
@@ -714,6 +752,16 @@ void BluetoothDispatcher::OnStopNotificationsSuccess(int thread_id,
   }
 
   PopNotificationRequestQueueAndProcessNext(request_id);
+}
+
+void BluetoothDispatcher::OnCharacteristicValueChanged(
+    int thread_id,
+    const std::string& characteristic_instance_id,
+    const std::vector<uint8_t> new_value) {
+  auto active_iter = active_characteristics_.find(characteristic_instance_id);
+  if (active_iter != active_characteristics_.end()) {
+    active_iter->second->dispatchCharacteristicValueChanged(new_value);
+  }
 }
 
 }  // namespace content

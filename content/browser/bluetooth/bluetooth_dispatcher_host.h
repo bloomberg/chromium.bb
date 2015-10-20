@@ -82,6 +82,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       device::BluetoothGattCharacteristic* characteristic,
       const std::vector<uint8>& value) override;
 
+  // Sends an IPC to the thread informing that a the characteristic's
+  // value changed.
+  void NotifyActiveCharacteristic(int thread_id,
+                                  const std::string& characteristic_instance_id,
+                                  const std::vector<uint8>& value);
+
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(
       int thread_id,
@@ -112,6 +118,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnStopNotifications(int thread_id,
                            int request_id,
                            const std::string& characteristic_instance_id);
+  void OnRegisterCharacteristicObject(
+      int thread_id,
+      const std::string& characteristic_instance_id);
+  void OnUnregisterCharacteristicObject(
+      int thread_id,
+      const std::string& characteristic_instance_id);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
@@ -208,6 +220,11 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   base::ScopedPtrMap<std::string,
                      scoped_ptr<device::BluetoothGattNotifySession>>
       characteristic_id_to_notify_session_;
+
+  // Map of characteristic_instance_id to a set of thread ids.
+  // A thread_id in the set represents a BluetoothDispatcher that
+  // needs to be notified of changes to the characteristic.
+  std::map<std::string, std::set<int>> active_characteristic_threads_;
 
   // Defines how long to scan for and how long to discover services for.
   int current_delay_time_;
