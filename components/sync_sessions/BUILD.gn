@@ -5,6 +5,10 @@
 # GYP version: components/sync_sessions.gypi:sync_sessions
 source_set("sync_sessions") {
   sources = [
+    "revisit/bookmarks_by_url_provider_impl.cc",
+    "revisit/bookmarks_by_url_provider_impl.h",
+    "revisit/bookmarks_page_revisit_observer.cc",
+    "revisit/bookmarks_page_revisit_observer.h",
     "revisit/current_tab_matcher.cc",
     "revisit/current_tab_matcher.h",
     "revisit/offset_tab_matcher.cc",
@@ -21,6 +25,7 @@ source_set("sync_sessions") {
 
   deps = [
     "//base",
+    "//components/bookmarks/browser",
     "//components/history/core/browser",
     "//components/sessions",
     "//components/sync_driver",
@@ -31,6 +36,7 @@ source_set("sync_sessions") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "revisit/bookmarks_page_revisit_observer_unittest.cc",
     "revisit/current_tab_matcher_unittest.cc",
     "revisit/offset_tab_matcher_unittest.cc",
     "revisit/sessions_page_revisit_observer_unittest.cc",

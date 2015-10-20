@@ -7,12 +7,14 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_session_util.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync_sessions/revisit/bookmarks_by_url_provider_impl.h"
+#include "components/sync_sessions/revisit/bookmarks_page_revisit_observer.h"
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 #include "components/sync_sessions/revisit/typed_url_page_revisit_observer.h"
 
@@ -41,23 +43,25 @@ class SessionsSyncManagerWrapper
 
 }  // namespace
 
-PageRevisitBroadcaster::PageRevisitBroadcaster(SessionsSyncManager* manager,
-                                               Profile* profile) {
+PageRevisitBroadcaster::PageRevisitBroadcaster(
+    SessionsSyncManager* sessions,
+    history::HistoryService* history,
+    bookmarks::BookmarkModel* bookmarks) {
   const std::string group_name =
       base::FieldTrialList::FindFullName("PageRevisitInstrumentation");
   bool shouldInstrument = group_name == "Enabled";
   if (shouldInstrument) {
     revisit_observers_.push_back(new sync_sessions::SessionsPageRevisitObserver(
         scoped_ptr<sync_sessions::ForeignSessionsProvider>(
-            new SessionsSyncManagerWrapper(manager))));
+            new SessionsSyncManagerWrapper(sessions))));
 
-    history::HistoryService* history =
-        HistoryServiceFactory::GetForProfileWithoutCreating(profile);
-    if (history) {
-      revisit_observers_.push_back(
-          new sync_sessions::TypedUrlPageRevisitObserver(history));
-    }
-    // TODO(skym): Add bookmarks observer.
+    revisit_observers_.push_back(
+        new sync_sessions::TypedUrlPageRevisitObserver(history));
+
+    revisit_observers_.push_back(
+        new sync_sessions::BookmarksPageRevisitObserver(
+            scoped_ptr<sync_sessions::BookmarksByUrlProvider>(
+                new sync_sessions::BookmarksByUrlProviderImpl(bookmarks))));
   }
 }
 

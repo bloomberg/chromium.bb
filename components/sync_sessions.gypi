@@ -14,11 +14,16 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../sync/sync.gyp:sync',
+        'bookmarks_browser',
         'history_core_browser',
         'sync_driver',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'sync_sessions/revisit/bookmarks_by_url_provider_impl.cc',
+        'sync_sessions/revisit/bookmarks_by_url_provider_impl.h',
+        'sync_sessions/revisit/bookmarks_page_revisit_observer.cc',
+        'sync_sessions/revisit/bookmarks_page_revisit_observer.h',
         'sync_sessions/revisit/current_tab_matcher.cc',
         'sync_sessions/revisit/current_tab_matcher.h',
         'sync_sessions/revisit/offset_tab_matcher.cc',

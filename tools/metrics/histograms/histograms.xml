@@ -45828,6 +45828,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Breakdown of sync's nigori node keystore migration state.</summary>
 </histogram>
 
+<histogram name="Sync.PageRevisitBookmarksDuration" units="milliseconds">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    The client side execution time to check for revisits with bookmarks data.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitBookmarksMatchAge" units="minutes">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Age of bookmark that matches a navigation event, where matching means the
+    urls match. If multiple bookmarks match, the most recently created is used.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitBookmarksMatchTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type to a page that didn't match a bookmark.</summary>
+</histogram>
+
+<histogram name="Sync.PageRevisitBookmarksMissTransition"
+    units="PageVisitTransitionType">
+  <owner>skym@chromium.org</owner>
+  <summary>Transition type to a page that matched a bookmark.</summary>
+</histogram>
+
 <histogram name="Sync.PageRevisitNavigationMatchAge" units="minutes">
   <owner>skym@chromium.org</owner>
   <summary>

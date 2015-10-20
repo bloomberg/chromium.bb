@@ -674,6 +674,7 @@
       'sync_driver/ui_data_type_controller_unittest.cc',
     ],
     'sync_sessions_unittest_sources': [
+      'sync_sessions/revisit/bookmarks_page_revisit_observer_unittest.cc',
       'sync_sessions/revisit/current_tab_matcher_unittest.cc',
       'sync_sessions/revisit/offset_tab_matcher_unittest.cc',
       'sync_sessions/revisit/sessions_page_revisit_observer_unittest.cc',

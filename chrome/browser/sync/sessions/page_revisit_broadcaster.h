@@ -10,8 +10,13 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-class Profile;
-class PrefService;
+namespace bookmarks {
+class BookmarkModel;
+}  // namespace bookmarks
+
+namespace history {
+class HistoryService;
+}  // namespace history
 
 namespace browser_sync {
 
@@ -22,7 +27,9 @@ class SessionsSyncManager;
 // revisists.
 class PageRevisitBroadcaster {
  public:
-  PageRevisitBroadcaster(SessionsSyncManager* manager, Profile* profile);
+  PageRevisitBroadcaster(SessionsSyncManager* sessions,
+                         history::HistoryService* history,
+                         bookmarks::BookmarkModel* bookmarks);
   ~PageRevisitBroadcaster();
 
   // Broadcasts to all observers the given page visit event. Should only be
