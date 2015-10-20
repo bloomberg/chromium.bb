@@ -20,13 +20,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/os_crypt/os_crypt_switches.h"
-#include "components/password_manager/core/browser/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation_service.h"
-#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
-#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/browser/password_store_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -69,76 +66,18 @@ const char kLibsecretFieldTrialName[] = "Libsecret";
 const char kLibsecretFieldTrialDisabledGroupName[] = "Disabled";
 #endif
 
-base::FilePath GetAffiliationDatabasePath(Profile* profile) {
-  DCHECK(profile);
-  return profile->GetPath().Append(
-      password_manager::kAffiliationDatabaseFileName);
-}
-
-bool ShouldAffiliationBasedMatchingBeActive(Profile* profile) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!password_manager::IsAffiliationBasedMatchingEnabled(*command_line))
-    return false;
-
-  DCHECK(profile);
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return profile_sync_service &&
-         profile_sync_service->CanSyncStart() &&
-         profile_sync_service->IsSyncActive() &&
-         profile_sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
-         !profile_sync_service->IsUsingSecondaryPassphrase();
-}
-
-bool ShouldPropagatingPasswordChangesToWebCredentialsBeEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return password_manager::IsPropagatingPasswordChangesToWebCredentialsEnabled(
-      *command_line);
-}
-
-void ActivateAffiliationBasedMatching(PasswordStore* password_store,
-                                      Profile* profile) {
-  DCHECK(password_store);
-  DCHECK(profile);
-
-  // The PasswordStore is so far the only consumer of the AffiliationService,
-  // therefore the service is owned by the AffiliatedMatchHelper, which in
-  // turn is owned by the PasswordStore.
-  // TODO(engedy): Double-check which request context we want.
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::DB));
-  scoped_ptr<password_manager::AffiliationService> affiliation_service(
-      new password_manager::AffiliationService(db_thread_runner));
-  affiliation_service->Initialize(profile->GetRequestContext(),
-                                  GetAffiliationDatabasePath(profile));
-  scoped_ptr<password_manager::AffiliatedMatchHelper> affiliated_match_helper(
-      new password_manager::AffiliatedMatchHelper(password_store,
-                                                  affiliation_service.Pass()));
-  affiliated_match_helper->Initialize();
-  password_store->SetAffiliatedMatchHelper(affiliated_match_helper.Pass());
-  password_store->enable_propagating_password_changes_to_web_credentials(
-      ShouldPropagatingPasswordChangesToWebCredentialsBeEnabled());
-}
-
 }  // namespace
 
 // static
 scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
     Profile* profile,
-    ServiceAccessType sat) {
-  if (sat == ServiceAccessType::IMPLICIT_ACCESS && profile->IsOffTheRecord()) {
-    NOTREACHED() << "This profile is OffTheRecord";
-    return nullptr;
-  }
-
-  PasswordStoreFactory* factory = GetInstance();
+    ServiceAccessType access_type) {
   password_manager::PasswordStoreService* service =
       static_cast<password_manager::PasswordStoreService*>(
-          factory->GetServiceForBrowserContext(profile, true));
-  if (!service)
-    return nullptr;
-  return service->GetPasswordStore();
+          GetInstance()->GetServiceForBrowserContext(profile, true));
+
+  return password_manager::GetPasswordStoreFromService(
+      service, access_type, profile->IsOffTheRecord());
 }
 
 // static
@@ -153,30 +92,25 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
       GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (!password_store)
     return;
+  sync_driver::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  net::URLRequestContextGetter* request_context_getter =
+      profile->GetRequestContext();
 
-  if (ShouldAffiliationBasedMatchingBeActive(profile) &&
-      !password_store->affiliated_match_helper()) {
-    ActivateAffiliationBasedMatching(password_store.get(), profile);
-  } else if (!ShouldAffiliationBasedMatchingBeActive(profile) &&
-             password_store->affiliated_match_helper()) {
-    password_store->SetAffiliatedMatchHelper(
-        make_scoped_ptr<password_manager::AffiliatedMatchHelper>(nullptr));
-  }
+  password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
+      password_store.get(), sync_service, request_context_getter,
+      profile->GetPath(), content::BrowserThread::GetMessageLoopProxyForThread(
+                              content::BrowserThread::DB));
 }
 
 // static
 void PasswordStoreFactory::TrimOrDeleteAffiliationCache(Profile* profile) {
   scoped_refptr<PasswordStore> password_store =
       GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
-  if (password_store && password_store->affiliated_match_helper()) {
-    password_store->TrimAffiliationCache();
-  } else {
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::DB));
-    password_manager::AffiliationService::DeleteCache(
-        GetAffiliationDatabasePath(profile), db_thread_runner.get());
-  }
+  password_manager::TrimOrDeleteAffiliationCacheForStoreAndPath(
+      password_store.get(), profile->GetPath(),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::DB));
 }
 
 PasswordStoreFactory::PasswordStoreFactory()
@@ -217,13 +151,8 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #endif
   Profile* profile = static_cast<Profile*>(context);
 
-  // Given that LoginDatabase::Init() takes ~100ms on average; it will be called
-  // by PasswordStore::Init() on the background thread to avoid UI jank.
-  base::FilePath login_db_file_path = profile->GetPath();
-  login_db_file_path =
-      login_db_file_path.Append(password_manager::kLoginDataFileName);
   scoped_ptr<password_manager::LoginDatabase> login_db(
-      new password_manager::LoginDatabase(login_db_file_path));
+      password_manager::CreateLoginDatabase(profile->GetPath()));
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
       base::ThreadTaskRunnerHandle::Get());
@@ -336,14 +265,10 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #else
   NOTIMPLEMENTED();
 #endif
-  if (!ps.get() ||
-      !ps->Init(
-          sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
-    NOTREACHED() << "Could not initialize password manager.";
-    return nullptr;
-  }
-
-  return new password_manager::PasswordStoreService(ps);
+  return password_manager::BuildServiceInstanceFromStore(
+             ps,
+             sync_start_util::GetFlareForSyncableService(profile->GetPath()))
+      .release();
 }
 
 void PasswordStoreFactory::RegisterProfilePrefs(

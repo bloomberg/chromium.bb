@@ -22,6 +22,7 @@
         '../third_party/re2/re2.gyp:re2',
         'password_manager_core_common',
         'password_manager_core_browser_proto',
+        'sync_driver',
         'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'include_dirs': [
@@ -102,6 +103,8 @@
         'password_manager/core/browser/password_store_consumer.h',
         'password_manager/core/browser/password_store_default.cc',
         'password_manager/core/browser/password_store_default.h',
+        'password_manager/core/browser/password_store_factory_util.cc',
+        'password_manager/core/browser/password_store_factory_util.h',
         'password_manager/core/browser/password_store_service.cc',
         'password_manager/core/browser/password_store_service.h',
         'password_manager/core/browser/password_store_sync.cc',
