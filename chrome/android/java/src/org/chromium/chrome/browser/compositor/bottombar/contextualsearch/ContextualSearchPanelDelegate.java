@@ -192,6 +192,12 @@ public interface ContextualSearchPanelDelegate {
     void notifyPanelTouched();
 
     /**
+     * Destroys the Content.
+     * TODO(pedrosimonetti): Fix for M47. Replace this with a better delayed load approach.
+     */
+    void destroyContent();
+
+    /**
      * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable}
      * and adds it to the animation, setting the start value at the beginning of the animation.
      */

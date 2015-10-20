@@ -459,6 +459,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
             removeLastSearchVisit();
         }
 
+        // TODO(pedrosimonetti): Fix for M47. Replace this with a better delayed load approach.
+        mSearchPanelDelegate.destroyContent();
+
         boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
         boolean didRequestSurroundings = false;
 

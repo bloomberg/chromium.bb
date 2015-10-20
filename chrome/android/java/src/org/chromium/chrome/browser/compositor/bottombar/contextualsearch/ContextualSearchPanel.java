@@ -11,8 +11,6 @@ import android.view.View.MeasureSpec;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -26,13 +24,6 @@ import org.chromium.content.browser.ContentViewCore;
  */
 public class ContextualSearchPanel extends OverlayPanel
         implements ContextualSearchPanelDelegate {
-
-    /**
-     * The animation duration of a URL being promoted to a tab when triggered by an
-     * intercept navigation. This is faster than the standard tab promotion animation
-     * so that it completes before the navigation.
-     */
-    private static final long INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS = 40;
 
     /**
      * The extra dp added around the close button touch target.
@@ -753,5 +744,10 @@ public class ContextualSearchPanel extends OverlayPanel
     @Override
     public void notifyPanelTouched() {
         getOverlayPanelContent().notifyPanelTouched();
+    }
+
+    @Override
+    public void destroyContent() {
+        super.destroyOverlayPanelContent();
     }
 }
