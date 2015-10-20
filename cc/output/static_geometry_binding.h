@@ -19,6 +19,10 @@ class StaticGeometryBinding {
 
   void PrepareForDraw();
 
+  enum {
+    NUM_QUADS = 8,
+  };
+
  private:
   gpu::gles2::GLES2Interface* gl_;
 

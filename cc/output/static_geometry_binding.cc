@@ -12,15 +12,15 @@ namespace cc {
 StaticGeometryBinding::StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
                                              const gfx::RectF& quad_vertex_rect)
     : gl_(gl), quad_vertices_vbo_(0), quad_elements_vbo_(0) {
-  GeometryBindingQuad quads[8];
-  GeometryBindingQuadIndex quad_indices[8];
+  GeometryBindingQuad quads[NUM_QUADS];
+  GeometryBindingQuadIndex quad_indices[NUM_QUADS];
 
   static_assert(sizeof(GeometryBindingQuad) == 24 * sizeof(float),
                 "struct Quad should be densely packed");
   static_assert(sizeof(GeometryBindingQuadIndex) == 6 * sizeof(uint16_t),
                 "struct QuadIndex should be densely packed");
 
-  for (size_t i = 0; i < 8; i++) {
+  for (size_t i = 0; i < NUM_QUADS; i++) {
     GeometryBindingVertex v0 = {
         {quad_vertex_rect.x(), quad_vertex_rect.bottom(), 0.0f},
         {0.0f, 1.0f},
@@ -50,12 +50,13 @@ StaticGeometryBinding::StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
   gl_->GenBuffers(1, &quad_elements_vbo_);
 
   gl_->BindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_);
-  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * 8, quads,
-                  GL_STATIC_DRAW);
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * NUM_QUADS,
+                  quads, GL_STATIC_DRAW);
 
   gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_elements_vbo_);
-  gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GeometryBindingQuadIndex) * 8,
-                  &quad_indices, GL_STATIC_DRAW);
+  gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER,
+                  sizeof(GeometryBindingQuadIndex) * NUM_QUADS, &quad_indices,
+                  GL_STATIC_DRAW);
 }
 
 StaticGeometryBinding::~StaticGeometryBinding() {

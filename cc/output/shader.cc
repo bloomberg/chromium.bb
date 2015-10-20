@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "cc/output/static_geometry_binding.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,7 +27,7 @@ std::string StripLambda(const char(&shader)[size]) {
 // Shaders are passed in with lambda syntax, which tricks clang-format into
 // handling them correctly. StipLambda removes this.
 #define SHADER0(Src) StripLambda(#Src)
-#define VERTEX_SHADER(Head, Body) SetVertexTexCoordPrecision(Head + Body)
+#define VERTEX_SHADER(Head, Body) SetVertexShaderDefines(Head + Body)
 #define FRAGMENT_SHADER(Head, Body) \
   SetFragmentTexCoordPrecision(     \
       precision,                    \
@@ -76,13 +78,16 @@ static std::string SetFragmentTexCoordPrecision(
   return shader_string;
 }
 
-static std::string SetVertexTexCoordPrecision(
-    const std::string& shader_string) {
+static std::string SetVertexShaderDefines(const std::string& shader_string) {
   // We unconditionally use highp in the vertex shader since
   // we are unlikely to be vertex shader bound when drawing large quads.
   // Also, some vertex shaders mutate the texture coordinate in such a
   // way that the effective precision might be lower than expected.
-  return "#define TexCoordPrecision highp\n" + shader_string;
+  return base::StringPrintf(
+             "#define TexCoordPrecision highp\n"
+             "#define NUM_STATIC_QUADS %d\n",
+             StaticGeometryBinding::NUM_QUADS) +
+         shader_string;
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
@@ -340,9 +345,9 @@ std::string VertexShaderPosTexTransform::GetShaderHead() {
     attribute vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
     attribute float a_index;
-    uniform mat4 matrix[8];
-    uniform TexCoordPrecision vec4 texTransform[8];
-    uniform float opacity[32];
+    uniform mat4 matrix[NUM_STATIC_QUADS];
+    uniform TexCoordPrecision vec4 texTransform[NUM_STATIC_QUADS];
+    uniform float opacity[NUM_STATIC_QUADS * 4];
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
   });

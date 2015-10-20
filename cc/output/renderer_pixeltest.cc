@@ -2894,6 +2894,87 @@ TEST_F(GLRendererPixelTest, CheckReadbackSubset) {
       &capture_rect));
 }
 
+TEST_F(GLRendererPixelTest, TextureQuadBatching) {
+  // This test verifies that multiple texture quads using the same resource
+  // get drawn correctly.  It implicitly is trying to test that the
+  // GLRenderer does the right thing with its draw quad cache.
+
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPassId id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+
+  // Make a mask.
+  gfx::Rect mask_rect = rect;
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(mask_rect.width(), mask_rect.height()));
+  SkCanvas canvas(bitmap);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(SkIntToScalar(4));
+  paint.setColor(SK_ColorGREEN);
+  canvas.clear(SK_ColorWHITE);
+  gfx::Rect inset_rect = rect;
+  while (!inset_rect.IsEmpty()) {
+    inset_rect.Inset(6, 6, 4, 4);
+    canvas.drawRect(SkRect::MakeXYWH(inset_rect.x(), inset_rect.y(),
+                                     inset_rect.width(), inset_rect.height()),
+                    paint);
+    inset_rect.Inset(6, 6, 4, 4);
+  }
+
+  ResourceId resource = this->resource_provider_->CreateResource(
+      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+  {
+    SkAutoLockPixels lock(bitmap);
+    this->resource_provider_->CopyToResource(
+        resource, reinterpret_cast<uint8_t*>(bitmap.getPixels()),
+        mask_rect.size());
+  }
+
+  // Arbitrary dividing lengths to divide up the resource into 16 quads.
+  int widths[] = {
+      0, 60, 50, 40,
+  };
+  int heights[] = {
+      0, 10, 80, 50,
+  };
+  size_t num_quads = 4;
+  for (size_t i = 0; i < num_quads; ++i) {
+    int x_start = widths[i];
+    int x_end = i == num_quads - 1 ? rect.width() : widths[i + 1];
+    DCHECK_LE(x_end, rect.width());
+    for (size_t j = 0; j < num_quads; ++j) {
+      int y_start = heights[j];
+      int y_end = j == num_quads - 1 ? rect.height() : heights[j + 1];
+      DCHECK_LE(y_end, rect.height());
+
+      float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+      gfx::Rect layer_rect(x_start, y_start, x_end - x_start, y_end - y_start);
+      gfx::RectF uv_rect = gfx::ScaleRect(
+          gfx::RectF(layer_rect), 1.f / rect.width(), 1.f / rect.height());
+
+      TextureDrawQuad* texture_quad =
+          pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      texture_quad->SetNew(shared_state, layer_rect, layer_rect, layer_rect,
+                           resource, true, uv_rect.origin(),
+                           uv_rect.bottom_right(), SK_ColorWHITE,
+                           vertex_opacity, false, false);
+    }
+  }
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("spiral.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace

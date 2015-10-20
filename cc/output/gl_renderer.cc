@@ -2314,12 +2314,13 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
 
   int resource_id = quad->resource_id();
 
+  size_t max_quads = StaticGeometryBinding::NUM_QUADS;
   if (draw_cache_.program_id != binding.program_id ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
-      draw_cache_.matrix_data.size() >= 8) {
+      draw_cache_.matrix_data.size() >= max_quads) {
     FlushTextureQuadCache(SHARED_BINDING);
     draw_cache_.program_id = binding.program_id;
     draw_cache_.resource_id = resource_id;
