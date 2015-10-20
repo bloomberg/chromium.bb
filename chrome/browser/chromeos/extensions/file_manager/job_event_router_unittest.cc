@@ -13,25 +13,44 @@ namespace {
 
 class JobEventRouterImpl : public JobEventRouter {
  public:
-  JobEventRouterImpl() : JobEventRouter(base::TimeDelta::FromMilliseconds(0)) {}
+  JobEventRouterImpl() : JobEventRouter(base::TimeDelta::FromMilliseconds(0)) {
+    listener_extension_ids_.insert("extension_a");
+  }
   std::vector<linked_ptr<base::DictionaryValue>> events;
 
- protected:
-  GURL ConvertDrivePathToFileSystemUrl(const base::FilePath& path,
-                                       const std::string& id) const override {
-    return GURL();
+  void SetListenerExtensionIds(std::set<std::string> extension_ids) {
+    listener_extension_ids_ = extension_ids;
   }
 
-  void BroadcastEvent(extensions::events::HistogramValue histogram_value,
-                      const std::string& event_name,
-                      scoped_ptr<base::ListValue> event_args) override {
-    ASSERT_EQ(1u, event_args->GetSize());
+ protected:
+  std::set<std::string> GetFileTransfersUpdateEventListenerExtensionIds()
+      override {
+    return listener_extension_ids_;
+  }
+
+  GURL ConvertDrivePathToFileSystemUrl(
+      const base::FilePath& file_path,
+      const std::string& extension_id) override {
+    std::string url;
+    url.append("filesystem:chrome-extension://");
+    url.append(extension_id);
+    url.append(file_path.value());
+    return GURL(url);
+  }
+
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      scoped_ptr<base::ListValue> event_args) override {
     const base::DictionaryValue* event;
     event_args->GetDictionary(0, &event);
     events.push_back(make_linked_ptr(event->DeepCopy()));
   }
 
  private:
+  std::set<std::string> listener_extension_ids_;
+
   DISALLOW_COPY_AND_ASSIGN(JobEventRouterImpl);
 };
 
@@ -41,11 +60,13 @@ class JobEventRouterTest : public testing::Test {
 
   drive::JobInfo CreateJobInfo(drive::JobID id,
                                int64 num_completed_bytes,
-                               int64 num_total_bytes) {
+                               int64 num_total_bytes,
+                               const base::FilePath& file_path) {
     drive::JobInfo job(drive::TYPE_DOWNLOAD_FILE);
     job.job_id = id;
     job.num_total_bytes = num_total_bytes;
     job.num_completed_bytes = num_completed_bytes;
+    job.file_path = file_path;
     return job;
   }
 
@@ -69,7 +90,8 @@ class JobEventRouterTest : public testing::Test {
 
 TEST_F(JobEventRouterTest, Basic) {
   // Add a job.
-  job_event_router->OnJobAdded(CreateJobInfo(0, 0, 100));
+  job_event_router->OnJobAdded(
+      CreateJobInfo(0, 0, 100, base::FilePath("/test/a")));
   // Event should be throttled.
   ASSERT_EQ(0u, job_event_router->events.size());
   base::RunLoop().RunUntilIdle();
@@ -80,8 +102,10 @@ TEST_F(JobEventRouterTest, Basic) {
   job_event_router->events.clear();
 
   // Job is updated.
-  job_event_router->OnJobUpdated(CreateJobInfo(0, 50, 100));
-  job_event_router->OnJobUpdated(CreateJobInfo(0, 100, 100));
+  job_event_router->OnJobUpdated(
+      CreateJobInfo(0, 50, 100, base::FilePath("/test/a")));
+  job_event_router->OnJobUpdated(
+      CreateJobInfo(0, 100, 100, base::FilePath("/test/a")));
   // Event should be throttled.
   ASSERT_EQ(0u, job_event_router->events.size());
   base::RunLoop().RunUntilIdle();
@@ -92,7 +116,9 @@ TEST_F(JobEventRouterTest, Basic) {
   job_event_router->events.clear();
 
   // Complete first job.
-  job_event_router->OnJobDone(CreateJobInfo(0, 100, 100), drive::FILE_ERROR_OK);
+  job_event_router->OnJobDone(
+      CreateJobInfo(0, 100, 100, base::FilePath("/test/a")),
+      drive::FILE_ERROR_OK);
   // Complete event should not be throttled.
   ASSERT_EQ(1u, job_event_router->events.size());
   EXPECT_EQ("completed", GetEventString(0, "transferState"));
@@ -102,7 +128,9 @@ TEST_F(JobEventRouterTest, Basic) {
 }
 
 TEST_F(JobEventRouterTest, CompleteWithInvalidCompletedBytes) {
-  job_event_router->OnJobDone(CreateJobInfo(0, 50, 100), drive::FILE_ERROR_OK);
+  job_event_router->OnJobDone(
+      CreateJobInfo(0, 50, 100, base::FilePath("/test/a")),
+      drive::FILE_ERROR_OK);
   ASSERT_EQ(1u, job_event_router->events.size());
   EXPECT_EQ("completed", GetEventString(0, "transferState"));
   EXPECT_EQ(100.0f, GetEventDouble(0, "processed"));
@@ -110,9 +138,12 @@ TEST_F(JobEventRouterTest, CompleteWithInvalidCompletedBytes) {
 }
 
 TEST_F(JobEventRouterTest, AnotherJobAddedBeforeComplete) {
-  job_event_router->OnJobAdded(CreateJobInfo(0, 0, 100));
-  job_event_router->OnJobUpdated(CreateJobInfo(0, 50, 100));
-  job_event_router->OnJobAdded(CreateJobInfo(1, 0, 100));
+  job_event_router->OnJobAdded(
+      CreateJobInfo(0, 0, 100, base::FilePath("/test/a")));
+  job_event_router->OnJobUpdated(
+      CreateJobInfo(0, 50, 100, base::FilePath("/test/a")));
+  job_event_router->OnJobAdded(
+      CreateJobInfo(1, 0, 100, base::FilePath("/test/b")));
 
   // Event should be throttled.
   ASSERT_EQ(0u, job_event_router->events.size());
@@ -123,8 +154,12 @@ TEST_F(JobEventRouterTest, AnotherJobAddedBeforeComplete) {
   EXPECT_EQ(200.0f, GetEventDouble(0, "total"));
   job_event_router->events.clear();
 
-  job_event_router->OnJobDone(CreateJobInfo(0, 100, 100), drive::FILE_ERROR_OK);
-  job_event_router->OnJobDone(CreateJobInfo(1, 100, 100), drive::FILE_ERROR_OK);
+  job_event_router->OnJobDone(
+      CreateJobInfo(0, 100, 100, base::FilePath("/test/a")),
+      drive::FILE_ERROR_OK);
+  job_event_router->OnJobDone(
+      CreateJobInfo(1, 100, 100, base::FilePath("/test/b")),
+      drive::FILE_ERROR_OK);
   // Complete event should not be throttled.
   ASSERT_EQ(2u, job_event_router->events.size());
   EXPECT_EQ("completed", GetEventString(0, "transferState"));
@@ -136,11 +171,18 @@ TEST_F(JobEventRouterTest, AnotherJobAddedBeforeComplete) {
 }
 
 TEST_F(JobEventRouterTest, AnotherJobAddedAfterComplete) {
-  job_event_router->OnJobAdded(CreateJobInfo(0, 0, 100));
-  job_event_router->OnJobUpdated(CreateJobInfo(0, 50, 100));
-  job_event_router->OnJobDone(CreateJobInfo(0, 100, 100), drive::FILE_ERROR_OK);
-  job_event_router->OnJobAdded(CreateJobInfo(1, 0, 100));
-  job_event_router->OnJobDone(CreateJobInfo(1, 100, 100), drive::FILE_ERROR_OK);
+  job_event_router->OnJobAdded(
+      CreateJobInfo(0, 0, 100, base::FilePath("/test/a")));
+  job_event_router->OnJobUpdated(
+      CreateJobInfo(0, 50, 100, base::FilePath("/test/a")));
+  job_event_router->OnJobDone(
+      CreateJobInfo(0, 100, 100, base::FilePath("/test/a")),
+      drive::FILE_ERROR_OK);
+  job_event_router->OnJobAdded(
+      CreateJobInfo(1, 0, 100, base::FilePath("/test/b")));
+  job_event_router->OnJobDone(
+      CreateJobInfo(1, 100, 100, base::FilePath("/test/b")),
+      drive::FILE_ERROR_OK);
 
   // Complete event should not be throttled.
   ASSERT_EQ(2u, job_event_router->events.size());
@@ -154,9 +196,11 @@ TEST_F(JobEventRouterTest, AnotherJobAddedAfterComplete) {
 }
 
 TEST_F(JobEventRouterTest, UpdateTotalSizeAfterAdded) {
-  job_event_router->OnJobAdded(CreateJobInfo(0, 0, 0));
+  job_event_router->OnJobAdded(
+      CreateJobInfo(0, 0, 0, base::FilePath("/test/a")));
   base::RunLoop().RunUntilIdle();
-  job_event_router->OnJobUpdated(CreateJobInfo(0, 0, 100));
+  job_event_router->OnJobUpdated(
+      CreateJobInfo(0, 0, 100, base::FilePath("/test/a")));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2u, job_event_router->events.size());
@@ -168,6 +212,33 @@ TEST_F(JobEventRouterTest, UpdateTotalSizeAfterAdded) {
   EXPECT_EQ("in_progress", GetEventString(1, "transferState"));
   EXPECT_EQ(0.0f, GetEventDouble(1, "processed"));
   EXPECT_EQ(100.0f, GetEventDouble(1, "total"));
+}
+
+TEST_F(JobEventRouterTest, MultipleListenerExtensions) {
+  std::set<std::string> extension_ids;
+  extension_ids.insert("extension_a");
+  extension_ids.insert("extension_b");
+  job_event_router->SetListenerExtensionIds(extension_ids);
+
+  // Add a job.
+  job_event_router->OnJobAdded(
+      CreateJobInfo(0, 0, 100, base::FilePath("/test/a")));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2u, job_event_router->events.size());
+
+  // Check event for extension_a.
+  EXPECT_EQ("in_progress", GetEventString(0, "transferState"));
+  EXPECT_EQ(0.0f, GetEventDouble(0, "processed"));
+  EXPECT_EQ(100.0f, GetEventDouble(0, "total"));
+  EXPECT_EQ("filesystem:chrome-extension://extension_a/test/a",
+            GetEventString(0, "fileUrl"));
+
+  // Check event for extension_b.
+  EXPECT_EQ("in_progress", GetEventString(1, "transferState"));
+  EXPECT_EQ(0.0f, GetEventDouble(1, "processed"));
+  EXPECT_EQ(100.0f, GetEventDouble(1, "total"));
+  EXPECT_EQ("filesystem:chrome-extension://extension_b/test/a",
+            GetEventString(1, "fileUrl"));
 }
 
 }  // namespace

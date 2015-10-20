@@ -325,16 +325,37 @@ class JobEventRouterImpl : public JobEventRouter {
         profile_(profile) {}
 
  protected:
-  GURL ConvertDrivePathToFileSystemUrl(const base::FilePath& path,
-                                       const std::string& id) const override {
-    return file_manager::util::ConvertDrivePathToFileSystemUrl(profile_, path,
-                                                               id);
+  std::set<std::string> GetFileTransfersUpdateEventListenerExtensionIds()
+      override {
+    const extensions::EventListenerMap::ListenerList& listeners =
+        extensions::EventRouter::Get(profile_)
+            ->listeners()
+            .GetEventListenersByName(
+                file_manager_private::OnFileTransfersUpdated::kEventName);
+
+    std::set<std::string> extension_ids;
+
+    for (const auto listener : listeners) {
+      extension_ids.insert(listener->extension_id());
+    }
+
+    return extension_ids;
   }
-  void BroadcastEvent(extensions::events::HistogramValue histogram_value,
-                      const std::string& event_name,
-                      scoped_ptr<base::ListValue> event_args) override {
-    ::file_manager::BroadcastEvent(profile_, histogram_value, event_name,
-                                   event_args.Pass());
+
+  GURL ConvertDrivePathToFileSystemUrl(
+      const base::FilePath& file_path,
+      const std::string& extension_id) override {
+    return file_manager::util::ConvertDrivePathToFileSystemUrl(
+        profile_, file_path, extension_id);
+  }
+
+  void DispatchEventToExtension(
+      const std::string& extension_id,
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      scoped_ptr<base::ListValue> event_args) override {
+    ::file_manager::DispatchEventToExtension(
+        profile_, extension_id, histogram_value, event_name, event_args.Pass());
   }
 
  private:

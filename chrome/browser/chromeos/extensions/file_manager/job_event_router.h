@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_JOB_EVENT_ROUTER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -33,12 +34,18 @@ class JobEventRouter : public drive::JobListObserver {
                  drive::FileError error) override;
 
  protected:
-  // Helper method to convert drive path to file system URL.
-  virtual GURL ConvertDrivePathToFileSystemUrl(const base::FilePath& path,
-                                               const std::string& id) const = 0;
+  // Helper method for getting set of listener extension ids.
+  virtual std::set<std::string>
+  GetFileTransfersUpdateEventListenerExtensionIds() = 0;
 
-  // Helper method to dispatch events.
-  virtual void BroadcastEvent(
+  // Helper method for converting drive path to file system url.
+  virtual GURL ConvertDrivePathToFileSystemUrl(
+      const base::FilePath& file_path,
+      const std::string& extension_id) = 0;
+
+  // Helper method for dispatching an event to an extension.
+  virtual void DispatchEventToExtension(
+      const std::string& extension_id,
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
       scoped_ptr<base::ListValue> event_args) = 0;
@@ -58,16 +65,27 @@ class JobEventRouter : public drive::JobListObserver {
   // Update |num_completed_bytes_| and |num_total_bytes_| depends on |job|.
   void UpdateBytes(const drive::JobInfo& job_info);
 
+  // Dispatches FileTransfersUpdate event to an extension.
+  void DispatchFileTransfersUpdateEventToExtension(
+      const std::string& extension_id,
+      const drive::JobInfo& job_info,
+      const extensions::api::file_manager_private::TransferState& state,
+      const int64 num_total_jobs,
+      const int64 num_completed_bytes,
+      const int64 num_total_bytes);
+
   // Delay time before sending progress events.
   base::TimeDelta event_delay_;
 
   // Set of job that are in the job schedular.
   std::map<drive::JobID, linked_ptr<drive::JobInfo>> drive_jobs_;
 
-  // Pending transfer event. |ScheduleDriveFileTransferEvent| registers timeout
-  // callback to dispatch this.
-  scoped_ptr<extensions::api::file_manager_private::FileTransferStatus>
-      pending_event_;
+  // Job info of pending event. |ScheduleDriveFileTransferEvent| registers
+  // timeout callback to dispatch this.
+  scoped_ptr<drive::JobInfo> pending_job_info_;
+
+  // Transfer state of pending event.
+  extensions::api::file_manager_private::TransferState pending_state_;
 
   // Computed bytes of tasks that have been processed. Once it completes all
   // tasks, it clears the variable.
