@@ -6,7 +6,6 @@
 #define MemoryPurgeController_h
 
 #include "platform/PlatformExport.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/MainThread.h"
 
@@ -27,7 +26,7 @@ enum class DeviceKind {
 // interface to be informed when they should reduce memory consumption.
 // MemoryPurgeController assumes that subclasses of MemoryPurgeClient are
 // WillBes.
-class PLATFORM_EXPORT MemoryPurgeClient : public WillBeGarbageCollectedMixin {
+class MemoryPurgeClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~MemoryPurgeClient() { }
 
@@ -35,7 +34,7 @@ public:
     // has occurred.
     virtual void purgeMemory(MemoryPurgeMode, DeviceKind) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DECLARE_TRACE();
 };
 
 // MemoryPurgeController listens to some events which could be opportunities
@@ -65,10 +64,6 @@ public:
         m_clients.remove(client);
     }
 
-    void pageBecameActive();
-    void pageBecameInactive();
-    void pageInactiveTask(Timer<MemoryPurgeController>*);
-
     DECLARE_TRACE();
 
 private:
@@ -78,7 +73,6 @@ private:
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<MemoryPurgeClient>> m_clients;
     DeviceKind m_deviceKind;
-    Timer<MemoryPurgeController> m_inactiveTimer;
 };
 
 } // namespace blink

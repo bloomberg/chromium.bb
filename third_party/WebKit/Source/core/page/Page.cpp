@@ -27,7 +27,6 @@
 #include "core/editing/commands/UndoStack.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/FrameConsole.h"
@@ -49,6 +48,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/MemoryPurgeController.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
@@ -130,14 +130,10 @@ Page::Page(PageClients& pageClients)
 
     ASSERT(!allPages().contains(this));
     allPages().add(this);
-    memoryPurgeController().registerClient(this);
 }
 
 Page::~Page()
 {
-#if !ENABLE(OILPAN)
-    memoryPurgeController().unregisterClient(this);
-#endif
     // willBeDestroyed() must be called before Page destruction.
     ASSERT(!m_mainFrame);
 }
@@ -397,12 +393,9 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
     if (visibilityState == PageVisibilityStateVisible) {
         m_frameHost->frameHostScheduler()->setPageInBackground(false);
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
-        m_memoryPurgeController->pageBecameActive();
     } else {
         m_frameHost->frameHostScheduler()->setPageInBackground(true);
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
-        if (!isInitialState)
-            m_memoryPurgeController->pageBecameInactive();
     }
 
     if (!isInitialState)
@@ -547,18 +540,6 @@ void Page::acceptLanguagesChanged()
         frames[i]->localDOMWindow()->acceptLanguagesChanged();
 }
 
-void Page::purgeMemory(MemoryPurgeMode mode, DeviceKind deviceKind)
-{
-    Frame* frame = mainFrame();
-    if (deviceKind != DeviceKind::LowEnd || !frame || !frame->isLocalFrame())
-        return;
-    if (mode == MemoryPurgeMode::InactiveTab) {
-        if (Document* document = toLocalFrame(frame)->document())
-            document->fetcher()->garbageCollectDocumentResources();
-        memoryCache()->pruneAll();
-    }
-}
-
 DEFINE_TRACE(Page)
 {
 #if ENABLE(OILPAN)
@@ -579,7 +560,6 @@ DEFINE_TRACE(Page)
     HeapSupplementable<Page>::trace(visitor);
 #endif
     PageLifecycleNotifier::trace(visitor);
-    MemoryPurgeClient::trace(visitor);
 }
 
 void Page::willBeDestroyed()
