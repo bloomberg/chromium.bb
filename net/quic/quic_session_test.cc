@@ -885,6 +885,7 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstAfterRst) {
   TestStream* stream = session_.CreateOutgoingDynamicStream();
   EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   stream->Reset(QUIC_STREAM_CANCELLED);
+  EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream));
 
   // Now receive a RST from the peer. We should handle this by adjusting the
   // connection level flow control receive window to take into account the total
@@ -1039,6 +1040,41 @@ TEST_P(QuicSessionTestClient, AvailableStreamsClient) {
   ASSERT_TRUE(session_.GetIncomingDynamicStream(4) != nullptr);
   // And 5 should be not available.
   EXPECT_FALSE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
+}
+
+TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
+  // Verify that an incoming FIN is recorded in a stream object even if the read
+  // side has been closed.  This prevents an entry from being made in
+  // locally_closed_streams_highest_offset_ (which will never be deleted).
+  TestStream* stream = session_.CreateOutgoingDynamicStream();
+  QuicStreamId stream_id = stream->id();
+
+  // Close the read side manually.
+  ReliableQuicStreamPeer::CloseReadSide(stream);
+
+  // Receive a stream data frame with FIN.
+  QuicStreamFrame frame(stream_id, true, 0, StringPiece());
+  session_.OnStreamFrame(frame);
+  if (FLAGS_quic_fix_fin_accounting) {
+    EXPECT_TRUE(stream->fin_received());
+  }
+
+  // Reset stream locally.
+  EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
+  stream->Reset(QUIC_STREAM_CANCELLED);
+  EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream));
+
+  // Allow the session to delete the stream object.
+  session_.PostProcessAfterData();
+  EXPECT_TRUE(connection_->connected());
+  EXPECT_TRUE(QuicSessionPeer::IsStreamClosed(&session_, stream_id));
+  EXPECT_EQ(nullptr, QuicSessionPeer::dynamic_streams(&session_)[stream_id]);
+
+  // Verify that there is no entry for the stream in
+  // locally_closed_streams_highest_offset_.
+  EXPECT_EQ(
+      FLAGS_quic_fix_fin_accounting ? 0u : 1u,
+      QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(&session_).size());
 }
 
 }  // namespace

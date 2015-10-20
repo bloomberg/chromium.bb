@@ -1907,7 +1907,7 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   revived_header.is_in_fec_group = NOT_IN_FEC_GROUP;
   revived_header.fec_group = 0;
   group_map_.erase(last_header_.fec_group);
-  last_decrypted_packet_level_ = group->effective_encryption_level();
+  last_decrypted_packet_level_ = group->EffectiveEncryptionLevel();
   DCHECK_LT(last_decrypted_packet_level_, NUM_ENCRYPTION_LEVELS);
   delete group;
 

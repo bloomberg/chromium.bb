@@ -239,9 +239,8 @@ QuicAckFrame::QuicAckFrame()
 
 QuicAckFrame::~QuicAckFrame() {}
 
-QuicRstStreamErrorCode AdjustErrorForVersion(
-    QuicRstStreamErrorCode error_code,
-    QuicVersion version) {
+QuicRstStreamErrorCode AdjustErrorForVersion(QuicRstStreamErrorCode error_code,
+                                             QuicVersion /*version*/) {
   return error_code;
 }
 

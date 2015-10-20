@@ -174,10 +174,13 @@ void ReliableQuicStream::SetFromConfig() {
 void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
 
-  if (read_side_closed_) {
-    DVLOG(1) << ENDPOINT << "Ignoring frame " << frame.stream_id;
-    // The subclass does not want read data:  blackhole the data.
-    return;
+  bool flag_value = FLAGS_quic_fix_fin_accounting;
+  if (!flag_value) {
+    if (read_side_closed_) {
+      DVLOG(1) << ENDPOINT << "Ignoring frame " << frame.stream_id;
+      // The subclass does not want to read data:  blackhole the data.
+      return;
+    }
   }
 
   if (!FLAGS_quic_stop_checking_for_mismatch_ids && frame.stream_id != id_) {
@@ -189,6 +192,14 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     fin_received_ = true;
     if (fin_sent_) {
       session_->StreamDraining(id_);
+    }
+  }
+
+  if (flag_value) {
+    if (read_side_closed_) {
+      DVLOG(1) << ENDPOINT << "Ignoring data in frame " << frame.stream_id;
+      // The subclass does not want to read data:  blackhole the data.
+      return;
     }
   }
 
@@ -478,6 +489,15 @@ bool ReliableQuicStream::HasBufferedData() const {
 
 QuicVersion ReliableQuicStream::version() const {
   return session_->connection()->version();
+}
+
+void ReliableQuicStream::StopReading() {
+  if (!FLAGS_quic_implement_stop_reading) {
+    CloseReadSide();
+    return;
+  }
+  DVLOG(1) << ENDPOINT << "Stop reading from stream " << id();
+  sequencer_.StopReading();
 }
 
 void ReliableQuicStream::OnClose() {

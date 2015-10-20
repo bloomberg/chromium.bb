@@ -7,10 +7,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/spdy_balsa_utils.h"
@@ -22,6 +24,7 @@ using base::StringPiece;
 using net::test::MockConnection;
 using net::test::MockHelper;
 using net::test::MockQuicSpdySession;
+using net::test::ReliableQuicStreamPeer;
 using net::test::SupportedVersions;
 using net::test::kInitialSessionFlowControlWindowForTest;
 using net::test::kInitialStreamFlowControlWindowForTest;
@@ -205,7 +208,12 @@ TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
       WillOnce(Return(QuicConsumedData(3, true)));
 
   QuicSpdyServerStreamPeer::SendResponse(stream_.get());
-  EXPECT_TRUE(stream_->read_side_closed());
+  if (!FLAGS_quic_implement_stop_reading) {
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  } else {
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  }
+  EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -220,7 +228,12 @@ TEST_F(QuicSpdyServerStreamTest, TestSendErrorResponse) {
       WillOnce(Return(QuicConsumedData(3, true)));
 
   QuicSpdyServerStreamPeer::SendErrorResponse(stream_.get());
-  EXPECT_TRUE(stream_->read_side_closed());
+  if (!FLAGS_quic_implement_stop_reading) {
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  } else {
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  }
+  EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -238,7 +251,12 @@ TEST_F(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
 
-  EXPECT_TRUE(stream_->read_side_closed());
+  if (!FLAGS_quic_implement_stop_reading) {
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  } else {
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  }
+  EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -256,7 +274,12 @@ TEST_F(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
 
-  EXPECT_TRUE(stream_->read_side_closed());
+  if (!FLAGS_quic_implement_stop_reading) {
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  } else {
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  }
+  EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -271,7 +294,8 @@ TEST_F(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
 
   EXPECT_EQ(11, QuicSpdyServerStreamPeer::content_length(stream_.get()));
-  EXPECT_FALSE(stream_->read_side_closed());
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  EXPECT_FALSE(stream_->reading_stopped());
   EXPECT_FALSE(stream_->write_side_closed());
 }
 

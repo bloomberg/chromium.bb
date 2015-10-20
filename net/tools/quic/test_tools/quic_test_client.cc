@@ -181,11 +181,12 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                                   PRIVACY_MODE_DISABLED),
                                      config,
                                      supported_versions,
-                                     &epoll_server_)) {
+                                     &epoll_server_)),
+      allow_bidirectional_data_(false) {
   Initialize(secure);
 }
 
-QuicTestClient::QuicTestClient() {}
+QuicTestClient::QuicTestClient() : allow_bidirectional_data_(false) {}
 
 QuicTestClient::~QuicTestClient() {
   if (stream_) {
@@ -267,7 +268,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     }
     ret = stream->SendRequest(spdy_headers, body, fin);
   } else {
-    stream->SendBody(body.data(), fin, delegate);
+    stream->SendBody(body.as_string(), fin, delegate);
     ret = body.length();
   }
   if (FLAGS_enable_quic_stateless_reject_support) {
@@ -385,7 +386,9 @@ QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
       return nullptr;
     }
     stream_->set_visitor(this);
-    reinterpret_cast<QuicSpdyClientStream*>(stream_)->set_priority(priority_);
+    QuicSpdyClientStream* cs = reinterpret_cast<QuicSpdyClientStream*>(stream_);
+    cs->set_priority(priority_);
+    cs->set_allow_bidirectional_data(allow_bidirectional_data_);
     // Set FEC policy on stream.
     ReliableQuicStreamPeer::SetFecPolicy(stream_, fec_policy_);
   }

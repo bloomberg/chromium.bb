@@ -57,6 +57,12 @@ QuicErrorCode QuicDispatcherPeer::GetAndClearLastError(
   return ret;
 }
 
+// static
+const QuicDispatcher::SessionMap& QuicDispatcherPeer::session_map(
+    QuicDispatcher* dispatcher) {
+  return dispatcher->session_map();
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

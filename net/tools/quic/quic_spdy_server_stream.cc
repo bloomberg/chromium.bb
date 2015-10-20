@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_protocol.h"
@@ -167,16 +168,19 @@ void QuicSpdyServerStream::SendErrorResponse() {
   DVLOG(1) << "Sending error response for stream " << id();
   SpdyHeaderBlock headers;
   headers[":status"] = "500";
-  headers["content-length"] = "3";
-  SendHeadersAndBody(headers, "bad");
+  headers["content-length"] = base::UintToString(strlen(kErrorResponseBody));
+  SendHeadersAndBody(headers, kErrorResponseBody);
 }
 
 void QuicSpdyServerStream::SendHeadersAndBody(
     const SpdyHeaderBlock& response_headers,
     StringPiece body) {
-  // We only support SPDY and HTTP, and neither handles bidirectional streaming.
-  if (!read_side_closed()) {
-    CloseReadSide();
+  // This server only supports SPDY and HTTP, and neither handles bidirectional
+  // streaming.
+  if (!reading_stopped()) {
+    // If FLAGS_quic_implement_stop_reading is false,
+    // behaves as ReliableQuicStream::CloseReadSide().
+    StopReading();
   }
 
   WriteHeaders(response_headers, body.empty(), nullptr);
@@ -185,6 +189,8 @@ void QuicSpdyServerStream::SendHeadersAndBody(
     WriteOrBufferData(body, true, nullptr);
   }
 }
+
+const char* const QuicSpdyServerStream::kErrorResponseBody = "bad";
 
 }  // namespace tools
 }  // namespace net

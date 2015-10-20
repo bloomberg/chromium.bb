@@ -210,6 +210,18 @@ size_t QuicFrameList::ReadvAndInvalidate(const struct iovec* iov,
   return total_bytes_read_ - initial_bytes_consumed;
 }
 
+size_t QuicFrameList::FlushBufferedFrames() {
+  QuicStreamOffset initial_bytes_consumed = total_bytes_read_;
+  if (!frame_list_.empty()) {
+    // Consume all of the bytes up to the last byte yet seen, including the
+    // ones that haven't arrived yet.
+    auto it = frame_list_.back();
+    total_bytes_read_ = it.offset + it.segment.length();
+    frame_list_.clear();
+  }
+  return total_bytes_read_ - initial_bytes_consumed;
+}
+
 bool QuicFrameList::HasBytesToRead() const {
   return !frame_list_.empty() &&
          frame_list_.begin()->offset == total_bytes_read_;

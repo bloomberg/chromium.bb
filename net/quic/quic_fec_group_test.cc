@@ -232,22 +232,22 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
 
 TEST_F(QuicFecGroupTest, EffectiveEncryptionLevel) {
   QuicFecGroup group;
-  EXPECT_EQ(NUM_ENCRYPTION_LEVELS, group.effective_encryption_level());
+  EXPECT_EQ(NUM_ENCRYPTION_LEVELS, group.EffectiveEncryptionLevel());
 
   QuicPacketHeader header;
   header.packet_packet_number = 5;
   ASSERT_TRUE(group.Update(ENCRYPTION_INITIAL, header, kDataSingle));
-  EXPECT_EQ(ENCRYPTION_INITIAL, group.effective_encryption_level());
+  EXPECT_EQ(ENCRYPTION_INITIAL, group.EffectiveEncryptionLevel());
 
   QuicFecData fec;
   fec.fec_group = 1u;
   fec.redundancy = kDataSingle;
   ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, 7, fec));
-  EXPECT_EQ(ENCRYPTION_INITIAL, group.effective_encryption_level());
+  EXPECT_EQ(ENCRYPTION_INITIAL, group.EffectiveEncryptionLevel());
 
   header.packet_packet_number = 3;
   ASSERT_TRUE(group.Update(ENCRYPTION_NONE, header, kDataSingle));
-  EXPECT_EQ(ENCRYPTION_NONE, group.effective_encryption_level());
+  EXPECT_EQ(ENCRYPTION_NONE, group.EffectiveEncryptionLevel());
 }
 
 // Test the code assuming it is going to be operating in 128-bit chunks (which

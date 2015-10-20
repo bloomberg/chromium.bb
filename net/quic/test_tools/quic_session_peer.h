@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session.h"
 #include "net/quic/quic_write_blocked_list.h"
 
 namespace net {
@@ -32,6 +33,8 @@ class QuicSessionPeer {
                                                       QuicStreamId stream_id);
   static std::map<QuicStreamId, QuicStreamOffset>&
   GetLocallyClosedStreamsHighestOffset(QuicSession* session);
+  static QuicSession::StreamMap& static_streams(QuicSession* session);
+  static QuicSession::StreamMap& dynamic_streams(QuicSession* session);
   static base::hash_set<QuicStreamId>* GetDrainingStreams(QuicSession* session);
 
   // Discern the state of a stream.  Exactly one of these should be true at a

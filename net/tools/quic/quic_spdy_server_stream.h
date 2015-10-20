@@ -36,10 +36,17 @@ class QuicSpdyServerStream : public QuicDataStream {
   // data (or a FIN) to be read.
   void OnDataAvailable() override;
 
+  // The response body of error responses.
+  static const char* const kErrorResponseBody;
+
  protected:
   // Sends a basic 200 response using SendHeaders for the headers and WriteData
   // for the body.
   virtual void SendResponse();
+
+  // Sends a basic 500 response using SendHeaders for the headers and WriteData
+  // for the body
+  virtual void SendErrorResponse();
 
   void SendHeadersAndBody(const SpdyHeaderBlock& response_headers,
                           base::StringPiece body);
@@ -54,10 +61,6 @@ class QuicSpdyServerStream : public QuicDataStream {
   // Parses the request headers from |data| to |request_headers_|.
   // Returns false if there was an error parsing the headers.
   bool ParseRequestHeaders(const char* data, uint32 data_len);
-
-  // Sends a basic 500 response using SendHeaders for the headers and WriteData
-  // for the body
-  void SendErrorResponse();
 
   // The parsed headers received from the client.
   SpdyHeaderBlock request_headers_;

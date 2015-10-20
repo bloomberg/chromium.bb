@@ -184,6 +184,12 @@ class QuicTestClient : public SimpleClient,
 
   EpollServer* epoll_server() { return &epoll_server_; }
 
+  void set_allow_bidirectional_data(bool value) {
+    allow_bidirectional_data_ = value;
+  }
+
+  bool allow_bidirectional_data() const { return allow_bidirectional_data_; }
+
  protected:
   QuicTestClient();
 
@@ -243,6 +249,9 @@ class QuicTestClient : public SimpleClient,
   bool buffer_body_;
   // FEC policy for data sent by this client.
   FecPolicy fec_policy_;
+  // When true allows the sending of a request to continue while the response is
+  // arriving.
+  bool allow_bidirectional_data_;
   // proof_verifier_ points to a RecordingProofVerifier that is owned by
   // client_.
   ProofVerifier* proof_verifier_;

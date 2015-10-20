@@ -94,3 +94,12 @@ bool FLAGS_quic_stop_checking_for_mismatch_ids = true;
 
 // Disable QUIC's userspace pacing.
 bool FLAGS_quic_disable_pacing = false;
+
+// If true, a FIN received on a stream with read_side_closed_ true will be
+// recorded correctly.
+bool FLAGS_quic_fix_fin_accounting = true;
+
+// If true, ReliableQuicStream::StopReading (formerly CloseReadSide) causes
+// incoming data to be ignored but the read side of the stream object is not
+// closed.
+bool FLAGS_quic_implement_stop_reading = true;

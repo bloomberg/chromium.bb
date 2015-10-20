@@ -21,10 +21,16 @@ class ReliableQuicStreamPeer {
   static void SetWriteSideClosed(bool value, ReliableQuicStream* stream);
   static void SetStreamBytesWritten(QuicStreamOffset stream_bytes_written,
                                     ReliableQuicStream* stream);
+  static bool read_side_closed(ReliableQuicStream* stream);
   static void CloseReadSide(ReliableQuicStream* stream);
 
   static bool FinSent(ReliableQuicStream* stream);
+  static bool FinReceived(ReliableQuicStream* stream);
   static bool RstSent(ReliableQuicStream* stream);
+  static bool RstReceived(ReliableQuicStream* stream);
+
+  static bool ReadSideClosed(ReliableQuicStream* stream);
+  static bool WriteSideClosed(ReliableQuicStream* stream);
 
   static uint32 SizeOfQueuedData(ReliableQuicStream* stream);
 

@@ -527,8 +527,8 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, true, &header);
   QuicFecData fec_data;
-  fec_data.fec_group = fec_group_->min_protected_packet();
-  fec_data.redundancy = fec_group_->payload_parity();
+  fec_data.fec_group = fec_group_->MinProtectedPacket();
+  fec_data.redundancy = fec_group_->PayloadParity();
   scoped_ptr<QuicPacket> packet(framer_->BuildFecPacket(header, fec_data));
   fec_group_.reset(nullptr);
   packet_size_ = 0;

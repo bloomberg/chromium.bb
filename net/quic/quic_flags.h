@@ -31,5 +31,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_read_packets_full_recvmmsg;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_stop_checking_for_mismatch_ids;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pacing;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_fix_fin_accounting;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_implement_stop_reading;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

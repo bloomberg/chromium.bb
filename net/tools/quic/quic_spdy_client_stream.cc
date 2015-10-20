@@ -25,14 +25,14 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
       content_length_(-1),
       response_code_(0),
       header_bytes_read_(0),
-      header_bytes_written_(0) {
-}
+      header_bytes_written_(0),
+      allow_bidirectional_data_(false) {}
 
 QuicSpdyClientStream::~QuicSpdyClientStream() {
 }
 
 void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
-  if (!write_side_closed()) {
+  if (!allow_bidirectional_data_ && !write_side_closed()) {
     DVLOG(1) << "Got a response before the request was complete.  "
              << "Aborting request.";
     CloseWriteSide();

@@ -6,6 +6,7 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -23,6 +24,7 @@ using base::StringPiece;
 using std::min;
 using std::string;
 using testing::AnyNumber;
+using testing::AtLeast;
 using testing::CreateFunctor;
 using testing::InSequence;
 using testing::Invoke;
@@ -63,7 +65,6 @@ class TestStream : public ReliableQuicStream {
   }
 
   using ReliableQuicStream::WriteOrBufferData;
-  using ReliableQuicStream::CloseReadSide;
   using ReliableQuicStream::CloseWriteSide;
   using ReliableQuicStream::OnClose;
 
@@ -315,7 +316,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithFecProtectOptional) {
 TEST_F(ReliableQuicStreamTest, ConnectionCloseAfterStreamClose) {
   Initialize(kShouldProcessData);
 
-  stream_->CloseReadSide();
+  ReliableQuicStreamPeer::CloseReadSide(stream_);
   stream_->CloseWriteSide();
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
@@ -623,6 +624,35 @@ TEST_F(ReliableQuicStreamTest,
   stream_->OnStreamFrame(frame);
 }
 
+// Verify that after the consumer calls StopReading(), the stream still sends
+// flow control updates.
+TEST_F(ReliableQuicStreamTest, StopReadingSendsFlowControl) {
+  if (!FLAGS_quic_implement_stop_reading) {
+    return;
+  }
+
+  Initialize(kShouldProcessData);
+
+  stream_->StopReading();
+
+  // Connection should not get terminated due to flow control errors.
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA))
+      .Times(0);
+  EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(AtLeast(1));
+
+  string data(1000, 'x');
+  for (QuicStreamOffset offset = 0;
+       offset < 2 * kInitialStreamFlowControlWindowForTest;
+       offset += data.length()) {
+    QuicStreamFrame frame(stream_->id(), false, offset, data);
+    stream_->OnStreamFrame(frame);
+  }
+  EXPECT_LT(
+      kInitialStreamFlowControlWindowForTest,
+      QuicFlowControllerPeer::ReceiveWindowOffset(stream_->flow_controller()));
+}
+
 TEST_F(ReliableQuicStreamTest, FinalByteOffsetFromFin) {
   Initialize(kShouldProcessData);
 
@@ -658,7 +688,8 @@ TEST_F(ReliableQuicStreamTest, SetDrainingIncomingOutgoing) {
   stream_->OnStreamFrame(stream_frame_with_fin);
   // The FIN has been received but not consumed.
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
-  EXPECT_FALSE(stream_->read_side_closed());
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
+  EXPECT_FALSE(stream_->reading_stopped());
 
   EXPECT_EQ(1u, session_->GetNumOpenStreams());
 
@@ -691,7 +722,8 @@ TEST_F(ReliableQuicStreamTest, SetDrainingOutgoingIncoming) {
   stream_->OnStreamFrame(stream_frame_with_fin);
   // The FIN has been received but not consumed.
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
-  EXPECT_FALSE(stream_->read_side_closed());
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
+  EXPECT_FALSE(stream_->reading_stopped());
 
   EXPECT_EQ(1u, QuicSessionPeer::GetDrainingStreams(session_.get())
                     ->count(kTestStreamId));
@@ -709,6 +741,46 @@ TEST_F(ReliableQuicStreamTest, FecSendPolicyReceivedConnectionOption) {
   EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream_->fec_policy());
   stream_->SetFromConfig();
   EXPECT_EQ(FEC_PROTECT_ALWAYS, stream_->fec_policy());
+}
+
+static QuicConsumedData ConsumeAllData(
+    QuicStreamId id,
+    const QuicIOVector& data,
+    QuicStreamOffset offset,
+    bool fin,
+    FecProtection fec_protection,
+    QuicAckListenerInterface* ack_notifier_delegate) {
+  return QuicConsumedData(data.total_length, fin);
+}
+
+TEST_F(ReliableQuicStreamTest, EarlyResponseFinHandling) {
+  // Verify that if the server completes the response before reading the end of
+  // the request, the received FIN is recorded.
+
+  Initialize(kShouldProcessData);
+  EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+      .WillRepeatedly(Invoke(ConsumeAllData));
+
+  // Receive data for the request.
+  QuicStreamFrame frame1(stream_->id(), false, 0, StringPiece("Start"));
+  stream_->OnStreamFrame(frame1);
+  // When QuicSpdyServerStream sends the response, it calls
+  // ReliableQuicStream::CloseReadSide() first.
+  ReliableQuicStreamPeer::CloseReadSide(stream_);
+  // Send data and FIN for the response.
+  stream_->WriteOrBufferData(kData1, false, nullptr);
+  EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
+  // Receive remaining data and FIN for the request.
+  QuicStreamFrame frame2(stream_->id(), true, 0, StringPiece("End"));
+  stream_->OnStreamFrame(frame2);
+  if (FLAGS_quic_fix_fin_accounting) {
+    EXPECT_TRUE(stream_->fin_received());
+    EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
+  } else {
+    EXPECT_FALSE(stream_->fin_received());
+    EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
+  }
 }
 
 }  // namespace

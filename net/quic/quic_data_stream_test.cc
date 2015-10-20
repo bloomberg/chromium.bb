@@ -50,7 +50,6 @@ class TestStream : public QuicDataStream {
   }
 
   using ReliableQuicStream::WriteOrBufferData;
-  using ReliableQuicStream::CloseReadSide;
   using ReliableQuicStream::CloseWriteSide;
 
   const string& data() const { return data_; }

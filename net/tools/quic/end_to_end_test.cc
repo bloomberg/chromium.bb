@@ -39,6 +39,7 @@
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/quic_spdy_server_stream.h"
 #include "net/tools/quic/test_tools/http_message.h"
 #include "net/tools/quic/test_tools/packet_dropping_test_writer.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
@@ -46,6 +47,7 @@
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
 #include "net/tools/quic/test_tools/quic_server_peer.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
+#include "net/tools/quic/test_tools/quic_test_server.h"
 #include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -237,7 +239,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         server_address_(IPEndPoint(Loopback4(), 0)),
         server_hostname_("example.com"),
         server_started_(false),
-        strike_register_no_startup_period_(false) {
+        strike_register_no_startup_period_(false),
+        stream_creator_(nullptr) {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
@@ -334,6 +337,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // Start the server first, because CreateQuicClient() attempts
     // to connect to the server.
     StartServer();
+
     client_.reset(CreateQuicClient(client_writer_));
     if (GetParam().use_fec) {
       // Set FecPolicy to always protect data on all streams.
@@ -364,7 +368,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void StartServer() {
     server_thread_.reset(new ServerThread(
-        new QuicServer(server_config_, server_supported_versions_),
+        new QuicTestServer(server_config_, server_supported_versions_),
         /*is_secure=*/true, server_address_,
         strike_register_no_startup_period_));
     server_thread_->Initialize();
@@ -390,6 +394,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_writer_->Initialize(
         QuicDispatcherPeer::GetHelper(dispatcher),
         new ServerDelegate(packet_writer_factory, dispatcher));
+    if (stream_creator_ != nullptr) {
+      static_cast<QuicTestServer*>(server_thread_->server())
+          ->SetSpdyStreamCreator(stream_creator_);
+    }
+
     server_thread_->Start();
     server_started_ = true;
   }
@@ -487,6 +496,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
               QuicFlowControllerPeer::SendWindowSize(server));
   }
 
+  // Must be called before Initialize to have effect.
+  void SetSpdyStreamCreator(QuicTestServer::StreamCreationFunction function) {
+    stream_creator_ = function;
+  }
+
   bool initialized_;
   IPEndPoint server_address_;
   string server_hostname_;
@@ -501,6 +515,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   QuicVersionVector server_supported_versions_;
   QuicVersion negotiated_version_;
   bool strike_register_no_startup_period_;
+  QuicTestServer::StreamCreationFunction stream_creator_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -615,7 +630,7 @@ TEST_P(EndToEndTest, PostMissingBytes) {
   // This should be detected as stream fin without complete request,
   // triggering an error response.
   client_->SendCustomSynchronousRequest(request);
-  EXPECT_EQ("bad", client_->response_body());
+  EXPECT_EQ(QuicSpdyServerStream::kErrorResponseBody, client_->response_body());
   EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
@@ -1375,7 +1390,7 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
 
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& real_self_address,
+                          const IPAddressNumber& /*real_self_address*/,
                           const IPEndPoint& peer_address) override {
     // Use wrong address!
     return QuicPacketWriterWrapper::WritePacket(
@@ -1921,6 +1936,154 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   // The connection should not be terminated.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+}
+
+// A test stream that gives |response_body_| as an error response body.
+class ServerStreamWithErrorResponseBody : public QuicSpdyServerStream {
+ public:
+  ServerStreamWithErrorResponseBody(QuicStreamId id,
+                                    QuicSpdySession* session,
+                                    string response_body)
+      : QuicSpdyServerStream(id, session), response_body_(response_body) {}
+
+  ~ServerStreamWithErrorResponseBody() override {}
+
+ protected:
+  void SendErrorResponse() override {
+    DVLOG(1) << "Sending error response for stream " << id();
+    SpdyHeaderBlock headers;
+    headers[":status"] = "500";
+    headers["content-length"] = base::UintToString(response_body_.size());
+    // This method must call CloseReadSide to cause the test case, StopReading
+    // is not sufficient.
+    ReliableQuicStreamPeer::CloseReadSide(this);
+    SendHeadersAndBody(headers, response_body_);
+  }
+
+  string response_body_;
+};
+
+TEST_P(EndToEndTest, EarlyResponseFinRecording) {
+  // Verify that an incoming FIN is recorded in a stream object even if the read
+  // side has been closed.  This prevents an entry from being made in
+  // locally_close_streams_highest_offset_ (which will never be deleted).
+  // To set up the test condition, the server must do the following in order:
+  // start sending the response and call CloseReadSide
+  // receive the FIN of the request
+  // send the FIN of the response
+
+  string response_body;
+  // The response body must be larger than the flow control window so the server
+  // must receive a window update from the client before it can finish sending
+  // it.
+  uint32 response_body_size =
+      2 * client_config_.GetInitialStreamFlowControlWindowToSend();
+  GenerateBody(&response_body, response_body_size);
+  SetSpdyStreamCreator([response_body](QuicStreamId id,
+                                       QuicSpdySession* session) {
+    return new ServerStreamWithErrorResponseBody(id, session, response_body);
+  });
+
+  ASSERT_TRUE(Initialize());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // A POST that gets an early error response, after the headers are received
+  // and before the body is received, due to invalid content-length.
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/garbage");
+  // The body must be large enough that the FIN will be in a different packet
+  // than the end of the headers, but short enough to not require a flow control
+  // update.  This allows headers processing to trigger the error response
+  // before the request FIN is processed but receive the request FIN before the
+  // response is sent completely.
+  const uint32 kRequestBodySize = kMaxPacketSize + 10;
+  string request_body;
+  GenerateBody(&request_body, kRequestBodySize);
+  request.AddBody(request_body, false);
+  // Set an invalid content-length, so the request will receive an early 500
+  // response.  Must be done after AddBody, which also sets content-length.
+  request.AddHeader("content-length", "-1");
+  request.set_skip_message_validation(true);
+
+  // Send the request.
+  client_->SendMessage(request);
+  client_->WaitForResponse();
+  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
+
+  // Pause the server so we can access the server's internals without races.
+  server_thread_->Pause();
+
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicDispatcher::SessionMap const& map =
+      QuicDispatcherPeer::session_map(dispatcher);
+  QuicDispatcher::SessionMap::const_iterator it = map.begin();
+  EXPECT_TRUE(it != map.end());
+  QuicServerSession* server_session = it->second;
+
+  // Verify that the stream is not pending the arrival of the peer's final
+  // offset.
+  if (FLAGS_quic_fix_fin_accounting) {
+    EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
+                      server_session)
+                      .size());
+  } else {
+    EXPECT_EQ(1u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
+                      server_session)
+                      .size());
+  }
+
+  server_thread_->Resume();
+}
+
+TEST_P(EndToEndTest, LargePostEarlyResponse) {
+  const uint32 kWindowSize = 65536;
+  set_client_initial_stream_flow_control_receive_window(kWindowSize);
+  set_client_initial_session_flow_control_receive_window(kWindowSize);
+  set_server_initial_stream_flow_control_receive_window(kWindowSize);
+  set_server_initial_session_flow_control_receive_window(kWindowSize);
+
+  ASSERT_TRUE(Initialize());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // POST to a URL that gets an early error response, after the headers are
+  // received and before the body is received.
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/garbage");
+  const uint32 kBodySize = 2 * kWindowSize;
+  // Invalid content-length so the request will receive an early 500 response.
+  request.AddHeader("content-length", "-1");
+  request.set_skip_message_validation(true);
+  request.set_has_complete_message(false);
+
+  // Tell the client to not close the stream if it receives an early response.
+  client_->set_allow_bidirectional_data(true);
+  // Send the headers.
+  client_->SendMessage(request);
+  // Receive the response and let the server close writing.
+  client_->WaitForInitialResponse();
+  EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
+  // Send a body larger than the stream flow control window.
+  string body;
+  GenerateBody(&body, kBodySize);
+  client_->SendData(body, true);
+
+  if (FLAGS_quic_implement_stop_reading) {
+    // Run the client to let any buffered data be sent.
+    // (This is OK despite already waiting for a response.)
+    client_->WaitForResponse();
+    // There should be no buffered data to write in the client's stream.
+    ReliableQuicStream* stream = client_->client()->session()->GetStream(5);
+    EXPECT_FALSE(stream != nullptr && stream->HasBufferedData());
+  } else {
+    // Run the client for 0.1 second to let any buffered data be sent.
+    // Must have a timeout, as the stream will not close and cause a return.
+    // (This is OK despite already waiting for a response.)
+    client_->WaitForResponseForMs(static_cast<int64>(100));
+    // There will be buffered data to write in the client's stream.
+    ReliableQuicStream* stream = client_->client()->session()->GetStream(5);
+    EXPECT_TRUE(stream != nullptr && stream->HasBufferedData());
+  }
 }
 
 }  // namespace

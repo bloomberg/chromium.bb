@@ -58,6 +58,10 @@ class NET_EXPORT_PRIVATE QuicFrameList {
   // Returns the number of bytes read into iov.
   size_t ReadvAndInvalidate(const struct iovec* iov, size_t iov_len);
 
+  // Invalidate all currently readable bytes.
+  // Returns the number of bytes invalidated.
+  size_t FlushBufferedFrames();
+
   // Returns the readable region of valid data in iovec format. The readable
   // region is the buffer region where there is valid data not yet read by
   // client. ReadAndInvalidate() and WriteAtOffset() change the readable region.

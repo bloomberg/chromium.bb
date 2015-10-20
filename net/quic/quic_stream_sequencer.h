@@ -73,6 +73,11 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Blocks processing of frames until |SetUnblocked| is called.
   void SetBlockedUntilFlush();
 
+  // Sets the sequencer to discard all incoming data itself and not call
+  // |stream_->OnDataAvailable()|.  |stream_->OnFinRead()| will be called
+  // automatically when the FIN is consumed (which may be immediately).
+  void StopReading();
+
   size_t num_bytes_buffered() const { return num_bytes_buffered_; }
   QuicStreamOffset num_bytes_consumed() const { return num_bytes_consumed_; }
 
@@ -84,8 +89,14 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   int num_early_frames_received() const { return num_early_frames_received_; }
 
+  bool ignore_read_data() const { return ignore_read_data_; }
+
  private:
   friend class test::QuicStreamSequencerPeer;
+
+  // Deletes and records as consumed any buffered data that is now in-sequence.
+  // (To be called only after StopReading has been called.)
+  void FlushBufferedFrames();
 
   // Wait until we've seen 'offset' bytes, and then terminate the stream.
   void CloseStreamAtOffset(QuicStreamOffset offset);
@@ -130,6 +141,9 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Not owned.
   const QuicClock* clock_;
+
+  // If true, all incoming data will be discarded.
+  bool ignore_read_data_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencer);
 };
