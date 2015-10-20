@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
 #include "ash/shell.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -26,6 +27,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "components/login/localized_values_builder.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/google_api_keys.h"
 #include "grit/components_strings.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/display.h"
@@ -96,6 +98,9 @@ void CoreOobeHandler::DeclareLocalizedValues(
 
   // Strings for Asset Identifier shown in version string.
   builder->Add("assetIdLabel", IDS_OOBE_ASSET_ID_LABEL);
+
+  builder->AddF("missingAPIKeysNotice", IDS_LOGIN_API_KEYS_NOTICE,
+                base::ASCIIToUTF16(google_apis::kAPIKeysDevelopersHowToURL));
 }
 
 void CoreOobeHandler::Initialize() {
@@ -343,6 +348,11 @@ void CoreOobeHandler::UpdateA11yState() {
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
+  const std::string& display = oobe_ui_->display_type();
+  CallJS("showAPIKeysNotice", !google_apis::HasKeysConfigured() &&
+                                  (display == OobeUI::kOobeDisplay ||
+                                   display == OobeUI::kLoginDisplay));
+
   // Don't show version label on the stable channel by default.
   bool should_show_version = true;
   version_info::Channel channel = chrome::GetChannel();

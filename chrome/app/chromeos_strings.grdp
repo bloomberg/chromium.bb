@@ -5437,6 +5437,9 @@ Battery full
   <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
     <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>) <ph name="DEVICE_SERIAL_NUMBER">$4<ex>SN:123456789ABC</ex></ph>
   </message>
+  <message name="IDS_LOGIN_API_KEYS_NOTICE" desc="Notice displayed on the login screen in case if API keys are missing.">
+    You will not be able to add users because Google API keys are missing. See <ph name="DETAILS_URL">$1<ex>http://www.example.com</ex></ph> for details.
+  </message>
   <message name="IDS_DEVICE_OWNED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
     This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
   </message>

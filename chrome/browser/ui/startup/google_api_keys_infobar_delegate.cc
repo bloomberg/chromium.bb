@@ -42,5 +42,5 @@ base::string16 GoogleApiKeysInfoBarDelegate::GetLinkText() const {
 }
 
 GURL GoogleApiKeysInfoBarDelegate::GetLinkURL() const {
-  return GURL("http://www.chromium.org/developers/how-tos/api-keys");
+  return GURL(google_apis::kAPIKeysDevelopersHowToURL);
 }

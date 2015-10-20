@@ -56,6 +56,8 @@
 
 namespace google_apis {
 
+extern const char kAPIKeysDevelopersHowToURL[];
+
 // Returns true if no dummy API keys or OAuth2 tokens are set.
 bool HasKeysConfigured();
 

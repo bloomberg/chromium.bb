@@ -36,7 +36,7 @@ html[dir=rtl] #signin-banner-container2 {
   padding: 20px;
   position: relative;
   text-align: center;
-  width: 722px; /* same as gaia-signin width. */
+  width: 722px;
 }
 
 html[dir=rtl] #signin-banner {
