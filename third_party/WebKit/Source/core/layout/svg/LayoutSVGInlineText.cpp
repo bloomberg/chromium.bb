@@ -226,20 +226,6 @@ void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* layoutObjec
     ASSERT(style);
     ASSERT(layoutObject);
 
-    // layoutTextOnLineOrPath() expects fonts to do nothing for vertical flow so
-    // that it can position each glyph precisely. Make sure the selected font is
-    // the one for horizontal flow to not to break the assumption.
-    // TODO(kojii): This might be done better by obsoleting the
-    // 'glyph-orientation-vertical' property as recommended in:
-    // https://drafts.csswg.org/css-writing-modes/#glyph-orientation
-    if (style->font().fontDescription().orientation() != FontOrientation::Horizontal) {
-        FontDescription description = style->font().fontDescription();
-        FontSelector* fontSelector = style->font().fontSelector();
-        description.setOrientation(FontOrientation::Horizontal);
-        layoutObject->mutableStyleRef().setFontDescription(description);
-        style->font().update(fontSelector);
-    }
-
     // Alter font-size to the right on-screen value to avoid scaling the glyphs themselves, except when GeometricPrecision is specified.
     scalingFactor = SVGLayoutSupport::calculateScreenFontSizeScalingFactor(layoutObject);
     if (style->effectiveZoom() == 1 && (scalingFactor == 1 || !scalingFactor)) {

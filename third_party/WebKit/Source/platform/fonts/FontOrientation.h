@@ -55,6 +55,15 @@ inline bool isVerticalUpright(FontOrientation orientation, UChar32 character)
 }
 inline bool isVerticalBaseline(FontOrientation orientation) { return orientation != FontOrientation::Horizontal; }
 
+inline FontOrientation adjustOrientationForCharacterInMixedVertical(FontOrientation orientation, UChar32 character)
+{
+    if (orientation != FontOrientation::VerticalMixed)
+        return orientation;
+    return Character::isUprightInMixedVertical(character)
+        ? FontOrientation::VerticalUpright
+        : FontOrientation::VerticalRotated;
+}
+
 } // namespace blink
 
 #endif // FontOrientation_h

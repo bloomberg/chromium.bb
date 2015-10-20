@@ -42,8 +42,6 @@ public:
 
     float calculateBaselineShift(const ComputedStyle&) const;
     float calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textLayoutObject) const;
-    float calculateGlyphOrientationAngle(bool isVerticalText, const SVGComputedStyle&, const UChar32 character) const;
-    float calculateGlyphAdvanceAndOrientation(bool isVerticalText, const SVGTextMetrics&, float angle, float& xOrientationShift, float& yOrientationShift) const;
 
 private:
     EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, const LayoutObject* textLayoutObject) const;

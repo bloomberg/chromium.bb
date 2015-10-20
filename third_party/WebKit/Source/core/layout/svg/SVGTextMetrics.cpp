@@ -22,6 +22,7 @@
 #include "core/layout/svg/SVGTextMetrics.h"
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "platform/fonts/FontOrientation.h"
 
 namespace blink {
 
@@ -101,6 +102,20 @@ SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* text, unsigned length, float
     m_height = text->scaledFont().fontMetrics().floatHeight() / scalingFactor;
 
     m_length = length;
+}
+
+float SVGTextMetrics::advance(FontOrientation orientation) const
+{
+    switch (orientation) {
+    case FontOrientation::Horizontal:
+    case FontOrientation::VerticalRotated:
+        return width();
+    case FontOrientation::VerticalUpright:
+        return height();
+    default:
+        ASSERT_NOT_REACHED();
+        return width();
+    }
 }
 
 }

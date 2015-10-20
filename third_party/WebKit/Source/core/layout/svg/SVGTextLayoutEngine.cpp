@@ -334,8 +334,6 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
     if (m_inPathLayout && !m_textPathCalculator)
         return;
 
-    const SVGComputedStyle& svgStyle = style.svgStyle();
-
     // Find the start of the current text box in the metrics list.
     m_visualMetricsIterator.advanceToTextStart(&text, textBox->start());
 
@@ -386,13 +384,15 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
         float angle = SVGTextLayoutAttributes::isEmptyValue(data.rotate) ? 0 : data.rotate;
 
         // Calculate glyph orientation angle.
+        // Font::width() calculates the resolved FontOrientation for each character,
+        // but is not exposed today to avoid the API complexity.
         UChar32 currentCharacter = text.codepointAt(m_visualMetricsIterator.characterOffset());
-        float orientationAngle = baselineLayout.calculateGlyphOrientationAngle(m_isVerticalText, svgStyle, currentCharacter);
+        FontOrientation fontOrientation = font.fontDescription().orientation();
+        fontOrientation = adjustOrientationForCharacterInMixedVertical(fontOrientation, currentCharacter);
 
-        // Calculate glyph advance & x/y orientation shifts.
-        float xOrientationShift = 0;
-        float yOrientationShift = 0;
-        float glyphAdvance = baselineLayout.calculateGlyphAdvanceAndOrientation(m_isVerticalText, visualMetrics, orientationAngle, xOrientationShift, yOrientationShift);
+        // Calculate glyph advance.
+        // Shaping engine takes care of x/y orientation shifts for different fontOrientation values.
+        float glyphAdvance = visualMetrics.advance(fontOrientation);
 
         // Assign current text position to x/y values, if needed.
         updateCharacterPositionIfNeeded(x, y);
@@ -404,6 +404,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
         float spacing = spacingLayout.calculateCSSSpacing(currentCharacter);
 
         float textPathOffset = 0;
+        float textPathShiftX = 0;
+        float textPathShiftY = 0;
         if (m_inPathLayout) {
             float scaledGlyphAdvance = glyphAdvance * m_textPathScaling;
             if (m_isVerticalText) {
@@ -415,8 +417,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
                 m_dy = 0;
 
                 // Apply dx/dy correction and setup translations that move to the glyph midpoint.
-                xOrientationShift += m_dx + baselineShift;
-                yOrientationShift -= scaledGlyphAdvance / 2;
+                textPathShiftX += m_dx + baselineShift;
+                textPathShiftY -= scaledGlyphAdvance / 2;
             } else {
                 // If there's an absolute x position available, it marks the beginning of a new position along the path.
                 if (!SVGTextLayoutAttributes::isEmptyValue(x))
@@ -426,8 +428,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
                 m_dx = 0;
 
                 // Apply dx/dy correction and setup translations that move to the glyph midpoint.
-                xOrientationShift -= scaledGlyphAdvance / 2;
-                yOrientationShift += m_dy - baselineShift;
+                textPathShiftX -= scaledGlyphAdvance / 2;
+                textPathShiftY += m_dy - baselineShift;
             }
 
             // Calculate current offset along path.
@@ -469,7 +471,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
 
         // Determine whether we have to start a new fragment.
         bool shouldStartNewFragment = m_dx || m_dy || m_isVerticalText || m_inPathLayout || angle || angle != lastAngle
-            || orientationAngle || applySpacingToNextCharacter || m_textLengthSpacingInEffect;
+            || applySpacingToNextCharacter || m_textLengthSpacingInEffect;
 
         // If we already started a fragment, close it now.
         if (didStartTextFragment && shouldStartNewFragment) {
@@ -492,11 +494,13 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
             if (angle)
                 m_currentTextFragment.transform.rotate(angle);
 
-            if (xOrientationShift || yOrientationShift)
-                m_currentTextFragment.transform.translate(xOrientationShift, yOrientationShift);
+            if (textPathShiftX || textPathShiftY)
+                m_currentTextFragment.transform.translate(textPathShiftX, textPathShiftY);
 
-            if (orientationAngle)
-                m_currentTextFragment.transform.rotate(orientationAngle);
+            // In vertical text, always rotate by 90 degrees regardless of fontOrientation.
+            // Shaping engine takes care of the necessary orientation.
+            if (m_isVerticalText)
+                m_currentTextFragment.transform.rotate(90);
 
             m_currentTextFragment.isTextOnPath = m_inPathLayout && m_textPathScaling != 1;
             if (m_currentTextFragment.isTextOnPath) {
