@@ -1675,3 +1675,7 @@ crbug.com/404597 tables/mozilla/bugs/bug2947.html [ NeedsRebaseline ]
 crbug.com/404597 tables/mozilla_expected_failures/bugs/bug1010.html [ NeedsRebaseline ]
 crbug.com/404597 tables/mozilla/marvin/tables_width_percent.html [ NeedsRebaseline ]
 crbug.com/404597 virtual/spv2/paint/invalidation/non-text-link-invalidation-optimization.html [ NeedsRebaseline ]
+crbug.com/404597 [ Android ] fast/inline-block/overflow-clip.html [ NeedsRebaseline ]
+crbug.com/404597 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
+
+crbug.com/545551 [ Win10 ] svg/custom/repaint-shadow.svg [ Failure ]
