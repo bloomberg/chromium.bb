@@ -2022,3 +2022,15 @@ ntdll.dll!RtlSetLastWin32ErrorAndNtStatusFromNtStatus
 UNINITIALIZED READ
 name=bug_519041_b
 ntdll.dll!RtlDecodePointer
+
+UNADDRESSABLE ACCESS
+name=bug_545273
+v8.dll!v8::internal::LookupIterator::LookupIterator
+v8.dll!v8::internal::LookupIterator::PropertyOrElement
+v8.dll!v8::internal::Runtime::GetObjectProperty
+v8.dll!v8::internal::KeyedLoadIC::Load
+v8.dll!v8::internal::Runtime_KeyedLoadIC_Miss
+v8.dll!v8::internal::`anonymous namespace'::Invoke
+v8.dll!v8::internal::Execution::Call
+...
+net_with_v8.dll!net::ProxyResolverV8::Context::*
