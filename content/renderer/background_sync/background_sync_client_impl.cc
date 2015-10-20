@@ -40,7 +40,14 @@ void BackgroundSyncClientImpl::Sync(int64_t handle_id,
   // DuplicateRegistrationHandle and then this cast can go.
   BackgroundSyncProvider* provider = static_cast<BackgroundSyncProvider*>(
       blink::Platform::current()->backgroundSyncProvider());
-  DCHECK(provider);
+
+  if (provider == nullptr) {
+    // This can happen if the renderer is shutting down when sync fires. See
+    // crbug.com/543898. No need to fire the callback as the browser will
+    // automatically fail all pending sync events when the mojo connection
+    // closes.
+    return;
+  }
 
   // TODO(jkarlin): Find a way to claim the handle safely without requiring a
   // round-trip IPC.
