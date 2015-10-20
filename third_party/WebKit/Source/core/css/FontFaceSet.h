@@ -81,9 +81,9 @@ public:
     ScriptPromise load(ScriptState*, const String& font, const String& text);
     ScriptPromise ready(ScriptState*);
 
-    void add(FontFace*, ExceptionState&);
-    void clear();
-    bool remove(FontFace*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<FontFaceSet> addForBinding(ScriptState*, FontFace*, ExceptionState&);
+    void clearForBinding(ScriptState*, ExceptionState&);
+    bool deleteForBinding(ScriptState*, FontFace*, ExceptionState&);
     bool hasForBinding(ScriptState*, FontFace*, ExceptionState&) const;
 
     size_t size() const;

@@ -257,19 +257,19 @@ ScriptPromise FontFaceSet::ready(ScriptState* scriptState)
     return m_ready->promise(scriptState->world());
 }
 
-void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<FontFaceSet> FontFaceSet::addForBinding(ScriptState*, FontFace* fontFace, ExceptionState& exceptionState)
 {
     if (!inActiveDocumentContext())
-        return;
+        return this;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
-        return;
+        return this;
     }
     if (m_nonCSSConnectedFaces.contains(fontFace))
-        return;
+        return this;
     if (isCSSConnectedFontFace(fontFace)) {
         exceptionState.throwDOMException(InvalidModificationError, "Cannot add a CSS-connected FontFace.");
-        return;
+        return this;
     }
     CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
     m_nonCSSConnectedFaces.add(fontFace);
@@ -277,9 +277,10 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
     if (fontFace->loadStatus() == FontFace::Loading)
         addToLoadingFonts(fontFace);
     fontSelector->fontFaceInvalidated();
+    return this;
 }
 
-void FontFaceSet::clear()
+void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&)
 {
     if (!inActiveDocumentContext() || m_nonCSSConnectedFaces.isEmpty())
         return;
@@ -294,7 +295,7 @@ void FontFaceSet::clear()
     fontSelector->fontFaceInvalidated();
 }
 
-bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
+bool FontFaceSet::deleteForBinding(ScriptState*, FontFace* fontFace, ExceptionState& exceptionState)
 {
     if (!inActiveDocumentContext())
         return false;

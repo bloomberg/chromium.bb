@@ -36,7 +36,8 @@ function verify() {
     ahemElement = document.getElementById('ahem');
 
     shouldBe('testElement.offsetWidth', 'arialElement.offsetWidth');
-    document.fonts.add(ahemFace);
+    addResult = document.fonts.add(ahemFace);
+    shouldBeTrue('addResult === document.fonts');
     shouldBe('testElement.offsetWidth', 'ahemElement.offsetWidth');
     document.fonts.delete(ahemFace);
     shouldBe('testElement.offsetWidth', 'arialElement.offsetWidth');
@@ -50,8 +51,8 @@ function verify() {
 </script>
 </head>
 <body onload="runTest()">
-<span id="test">abcdefg</span>
-<span id="arial">abcdefg</span>
-<span id="ahem">abcdefg</span>
+<br><span id="test">abcdefg</span>
+<br><span id="arial">abcdefg</span>
+<br><span id="ahem">abcdefg</span>
 </body>
 </html>

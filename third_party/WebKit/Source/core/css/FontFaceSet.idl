@@ -39,13 +39,8 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
     SetWrapperReferenceFrom=document,
     NoInterfaceObject,
 ] interface FontFaceSet : EventTarget {
-    // TODO(toyoshim): Drop 'readonly' to use setlike's add, delete, and clear.
-    readonly setlike<FontFace>;
+    setlike<FontFace>;
     readonly attribute unsigned long size;
-    // TODO(philipj): add() should return the FontFaceSet.
-    [RaisesException] void add(FontFace fontFace);
-    [RaisesException, ImplementedAs=remove] boolean delete(FontFace fontFace);
-    void clear();
 
     // events for when loading state changes
     attribute EventHandler onloading;
