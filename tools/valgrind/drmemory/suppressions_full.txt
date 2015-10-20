@@ -1871,7 +1871,7 @@ USER32.dll!UnregisterClassW
 USER32.dll!CreateWindowExW
 gfx.dll!gfx::WindowImpl::Init
 win_window.dll!ui::WinWindow::WinWindow
-aura.dll!aura::WindowTreeHostWin::WindowTreeHostWin
+aura.dll!aura::WindowTreeHostPlatform::WindowTreeHostPlatform
 aura.dll!aura::WindowTreeHost::Create
 
 UNINITIALIZED READ
