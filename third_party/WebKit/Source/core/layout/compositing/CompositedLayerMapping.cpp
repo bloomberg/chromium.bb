@@ -1838,17 +1838,20 @@ bool CompositedLayerMapping::containsPaintedContent() const
     return paintsChildren();
 }
 
-// An image can be directly compositing if it's the sole content of the layer, and has no box decorations
-// that require painting. Direct compositing saves backing store.
+// An image can be directly composited if it's the sole content of the layer,
+// and has no box decorations or clipping that require painting. Direct
+// compositing saves a backing store.
 bool CompositedLayerMapping::isDirectlyCompositedImage() const
 {
     ASSERT(layoutObject()->isImage());
+    LayoutImage* imageLayoutObject = toLayoutImage(layoutObject());
 
-    LayoutObject* layoutObject = this->layoutObject();
-    if (m_owningLayer.hasBoxDecorationsOrBackground() || layoutObject->hasClip() || layoutObject->hasClipPath())
+    if (m_owningLayer.hasBoxDecorationsOrBackground()
+        || imageLayoutObject->hasClip()
+        || imageLayoutObject->hasClipPath()
+        || imageLayoutObject->hasObjectFit())
         return false;
 
-    LayoutImage* imageLayoutObject = toLayoutImage(layoutObject);
     if (ImageResource* cachedImage = imageLayoutObject->cachedImage()) {
         if (!cachedImage->hasImage())
             return false;

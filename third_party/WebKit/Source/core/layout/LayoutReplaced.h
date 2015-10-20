@@ -69,6 +69,8 @@ public:
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) const { }
     LayoutRect localSelectionRect() const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
 
+    bool hasObjectFit() const { return style()->objectFit() != ComputedStyle::initialObjectFit(); }
+
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
 protected:
