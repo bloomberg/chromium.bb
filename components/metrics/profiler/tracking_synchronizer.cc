@@ -5,6 +5,7 @@
 #include "components/metrics/profiler/tracking_synchronizer.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"

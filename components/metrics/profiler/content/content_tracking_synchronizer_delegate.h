@@ -42,7 +42,7 @@ class ContentTrackingSynchronizerDelegate : public TrackingSynchronizerDelegate,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
       content::ProcessType process_type) override;
 
-  TrackingSynchronizer* synchronizer_;
+  TrackingSynchronizer* const synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentTrackingSynchronizerDelegate);
 };

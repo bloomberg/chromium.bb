@@ -30,7 +30,7 @@ class IOSTrackingSynchronizerDelegate : public TrackingSynchronizerDelegate {
                                         int current_profiling_phase) override;
   void OnProfilingPhaseCompleted(int profiling_phase) override;
 
-  TrackingSynchronizer* synchronizer_;
+  TrackingSynchronizer* const synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSTrackingSynchronizerDelegate);
 };
