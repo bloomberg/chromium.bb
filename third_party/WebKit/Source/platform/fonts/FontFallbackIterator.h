@@ -5,7 +5,7 @@
 #ifndef FontFallbackIterator_h
 #define FontFallbackIterator_h
 
-#include "platform/fonts/SegmentedFontData.h"
+#include "platform/fonts/FontDataRange.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

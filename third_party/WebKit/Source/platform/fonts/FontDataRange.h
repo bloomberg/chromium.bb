@@ -23,43 +23,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SegmentedFontData_h
-#define SegmentedFontData_h
+#ifndef FontDataRange_h
+#define FontDataRange_h
 
-#include "platform/PlatformExport.h"
 #include "platform/fonts/FontData.h"
-#include "platform/fonts/FontDataRange.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT SegmentedFontData : public FontData {
-public:
-    static PassRefPtr<SegmentedFontData> create() { return adoptRef(new SegmentedFontData); }
+class SimpleFontData;
 
-    ~SegmentedFontData() override;
+struct FontDataRange {
 
-    void appendRange(const FontDataRange& range) { m_ranges.append(range); }
-    unsigned numRanges() const { return m_ranges.size(); }
-    const FontDataRange& rangeAt(unsigned i) const { return m_ranges[i]; }
-    bool containsCharacter(UChar32) const;
+    explicit FontDataRange(PassRefPtr<SimpleFontData> fontData)
+        : m_from(0)
+        , m_to(kMaxCodepoint)
+        , m_fontData(fontData)
+    {
+    }
+
+    FontDataRange()
+        : m_from(0)
+        , m_to(kMaxCodepoint)
+        , m_fontData(nullptr)
+    {
+    }
+
+    explicit FontDataRange(UChar32 from, UChar32 to, PassRefPtr<SimpleFontData> fontData)
+        : m_from(from)
+        , m_to(to)
+        , m_fontData(fontData)
+    {
+    }
+
+    UChar32 from() const { return m_from; }
+    UChar32 to() const { return m_to; }
+    bool isEntireRange() const { return !m_from && m_to >= kMaxCodepoint; }
+    PassRefPtr<SimpleFontData> fontData() const { return m_fontData; }
 
 private:
-    SegmentedFontData() { }
-
-    const SimpleFontData* fontDataForCharacter(UChar32) const override;
-
-    bool isCustomFont() const override;
-    bool isLoading() const override;
-    bool isLoadingFallback() const override;
-    bool isSegmented() const override;
-    bool shouldSkipDrawing() const override;
-
-    Vector<FontDataRange, 1> m_ranges;
+    UChar32 m_from;
+    UChar32 m_to;
+    RefPtr<SimpleFontData> m_fontData;
 };
 
-DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);
+}
 
-} // namespace blink
-
-#endif // SegmentedFontData_h
+#endif

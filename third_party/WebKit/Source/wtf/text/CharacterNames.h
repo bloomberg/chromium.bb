@@ -107,6 +107,7 @@ const UChar zeroWidthJoinerCharacter = 0x200D;
 const UChar zeroWidthNonJoinerCharacter = 0x200C;
 const UChar zeroWidthSpaceCharacter = 0x200B;
 const UChar zeroWidthNoBreakSpaceCharacter = 0xFEFF;
+const UChar32 kMaxCodepoint = 0x10ffff;
 
 } // namespace Unicode
 } // namespace WTF
@@ -182,5 +183,6 @@ using WTF::Unicode::zeroWidthJoinerCharacter;
 using WTF::Unicode::zeroWidthNonJoinerCharacter;
 using WTF::Unicode::zeroWidthSpaceCharacter;
 using WTF::Unicode::zeroWidthNoBreakSpaceCharacter;
+using WTF::Unicode::kMaxCodepoint;
 
 #endif // CharacterNames_h

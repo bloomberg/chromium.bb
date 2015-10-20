@@ -369,6 +369,7 @@
       'fonts/FontCustomPlatformData.cpp',
       'fonts/FontData.cpp',
       'fonts/FontData.h',
+      'fonts/FontDataRange.h',
       'fonts/FontDataCache.cpp',
       'fonts/FontDataCache.h',
       'fonts/FontDescription.cpp',
