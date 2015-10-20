@@ -133,28 +133,21 @@ GURL CanonicalizeCookieSource(const net::CanonicalCookie& cookie) {
 #if defined(ENABLE_EXTENSIONS)
 bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
   switch (type) {
-    case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
-      return false;
+    // Fall through each below cases to return true.
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
-      return true;
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
-      return true;
     case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
-      return true;
     case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
-      return true;
     case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
-      return true;
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
-      return true;
-    case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
-      return false;
-    case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
-      return false;
     case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
-      return true;
     case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
       return true;
+
+    // Fall through each below cases to return false.
+    case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
+    case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
+    case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
     case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
       return false;
     default:
@@ -301,8 +294,7 @@ void CookieTreeNode::DeleteStoredObjects() {
 CookiesTreeModel* CookieTreeNode::GetModel() const {
   if (parent())
     return parent()->GetModel();
-  else
-    return nullptr;
+  return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1031,28 +1023,24 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
   switch (ct_node->GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_HOST:
       return ORIGIN;
+
+    // Fall through each below cases to return COOKIE.
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
+    case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
       return COOKIE;
+
+    // Fall through each below cases to return DATABASE.
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
-      return DATABASE;
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
-      return DATABASE;  // close enough
     case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
-      return DATABASE;  // ditto
     case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
-      return DATABASE;  // ditto
     case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
-      return DATABASE;  // ditto
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
-      return DATABASE;  // ditto
+    case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
+    case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
+      return DATABASE;
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
       return -1;
-    case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
-      return COOKIE;  // It's kinda like a cookie?
-    case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
-      return DATABASE;  // Just like appcache
-    case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
-      return DATABASE;  // ditto
     default:
       break;
   }
