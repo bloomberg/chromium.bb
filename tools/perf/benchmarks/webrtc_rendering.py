@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from core import perf_benchmark
+from telemetry import benchmark
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
@@ -10,6 +11,7 @@ import page_sets
 
 BENCHMARK_VALUES = 'WebRTCRendering_'
 
+@benchmark.Disabled('mac')  # http://crbug.com/545119
 class WebRTCRendering(perf_benchmark.PerfBenchmark):
   """Timeline based benchmark for the WebRtc rendering."""
 
