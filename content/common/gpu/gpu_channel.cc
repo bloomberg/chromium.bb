@@ -833,7 +833,7 @@ void GpuChannel::HandleMessage() {
     // deleted, invalid routing id), we need to retire the sync point
     // immediately.
     if (stub) {
-      stub->AddSyncPoint(m->sync_point, m->retire_sync_point);
+      stub->InsertSyncPoint(m->sync_point, m->retire_sync_point);
     } else {
       sync_point_manager_->RetireSyncPoint(m->sync_point);
     }

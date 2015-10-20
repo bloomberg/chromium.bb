@@ -920,10 +920,12 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
 }
 
-void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point, bool retire) {
+void GpuCommandBufferStub::InsertSyncPoint(uint32 sync_point, bool retire) {
   sync_points_.push_back(sync_point);
-  if (retire)
-    OnRetireSyncPoint(sync_point);
+  if (retire) {
+    OnMessageReceived(
+        GpuCommandBufferMsg_RetireSyncPoint(route_id_, sync_point));
+  }
 }
 
 void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {

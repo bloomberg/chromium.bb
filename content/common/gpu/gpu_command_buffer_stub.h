@@ -139,7 +139,7 @@ class GpuCommandBufferStub
 
   // Associates a sync point to this stub. When the stub is destroyed, it will
   // retire all sync points that haven't been previously retired.
-  void AddSyncPoint(uint32 sync_point, bool retire);
+  void InsertSyncPoint(uint32 sync_point, bool retire);
 
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
 
