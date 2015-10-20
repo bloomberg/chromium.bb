@@ -34,23 +34,47 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
       Delegate* delegate);
 
  private:
+  // Reasons for which profiling is deemed complete. Logged in UMA (do not re-
+  // order or re-assign).
+  enum FinishReason {
+    // All metrics were successfully gathered.
+    DONE = 0,
+    // Abandon if blocking UI was shown during startup.
+    ABANDON_BLOCKING_UI = 1,
+    // Abandon if the content is hidden (lowers scheduling priority).
+    ABANDON_CONTENT_HIDDEN = 2,
+    // Abandon if the content is destroyed.
+    ABANDON_CONTENT_DESTROYED = 3,
+    // Abandon if the WebContents navigates away from its initial page.
+    ABANDON_NAVIGATION = 4,
+    ENUM_MAX
+  };
+
   FirstWebContentsProfiler(content::WebContents* web_contents,
                            Delegate* delegate);
 
   // content::WebContentsObserver:
   void DidFirstVisuallyNonEmptyPaint() override;
   void DocumentOnLoadCompletedInMainFrame() override;
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
+  void WasHidden() override;
   void WebContentsDestroyed() override;
 
   // Whether this instance has finished collecting all of its metrics.
   bool IsFinishedCollectingMetrics();
 
   // Informs the delegate that this instance has finished collecting all of its
-  // metrics.
-  void FinishedCollectingMetrics();
+  // metrics. Logs |finish_reason| to UMA.
+  void FinishedCollectingMetrics(FinishReason finish_reason);
 
   // Initialize histograms for unresponsiveness metrics.
   void InitHistograms();
+
+  // Becomes true on the first invocation of NavigationEntryCommitted() for the
+  // main frame. Any follow-up navigation to a different page will result in
+  // aborting first WebContents profiling.
+  bool initial_entry_committed_;
 
   // Whether an attempt was made to collect the "NonEmptyPaint" metric.
   bool collected_paint_metric_;

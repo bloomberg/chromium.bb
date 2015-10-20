@@ -21,8 +21,10 @@
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 
 namespace {
+
 // The initial delay for responsiveness prober in milliseconds.
 const int kInitialDelayMs = 20;
 
@@ -115,6 +117,7 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents,
     Delegate* delegate)
     : content::WebContentsObserver(web_contents),
+      initial_entry_committed_(false),
       collected_paint_metric_(false),
       collected_load_metric_(false),
       delegate_(delegate),
@@ -131,7 +134,7 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   if (collected_paint_metric_)
     return;
   if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
-    FinishedCollectingMetrics();
+    FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
 
@@ -162,14 +165,14 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
       base::TimeDelta::FromSeconds(10));
 
   if (IsFinishedCollectingMetrics())
-    FinishedCollectingMetrics();
+    FinishedCollectingMetrics(FinishReason::DONE);
 }
 
 void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   if (collected_load_metric_)
     return;
   if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
-    FinishedCollectingMetrics();
+    FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
 
@@ -177,18 +180,51 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   startup_metric_utils::RecordFirstWebContentsMainFrameLoad(base::Time::Now());
 
   if (IsFinishedCollectingMetrics())
-    FinishedCollectingMetrics();
+    FinishedCollectingMetrics(FinishReason::DONE);
+}
+
+void FirstWebContentsProfiler::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  // Abandon profiling on any navigation to a different page as it:
+  //   (1) is no longer a fair timing; and
+  //   (2) can cause http://crbug.com/525209 where one of the timing heuristics
+  //       (e.g. first paint) didn't fire for the initial content but fires
+  //       after a lot of idle time when the user finally navigates to another
+  //       page that does trigger it.
+  if (load_details.is_navigation_to_different_page()) {
+    if (initial_entry_committed_)
+      FinishedCollectingMetrics(FinishReason::ABANDON_NAVIGATION);
+    else
+      initial_entry_committed_ = true;
+  }
+}
+
+void FirstWebContentsProfiler::WasHidden() {
+  // Stop profiling if the content gets hidden as its load may be deprioritized
+  // and timing it becomes meaningless.
+  FinishedCollectingMetrics(FinishReason::ABANDON_CONTENT_HIDDEN);
 }
 
 void FirstWebContentsProfiler::WebContentsDestroyed() {
-  FinishedCollectingMetrics();
+  FinishedCollectingMetrics(FinishReason::ABANDON_CONTENT_DESTROYED);
 }
 
 bool FirstWebContentsProfiler::IsFinishedCollectingMetrics() {
   return collected_paint_metric_ && collected_load_metric_;
 }
 
-void FirstWebContentsProfiler::FinishedCollectingMetrics() {
+void FirstWebContentsProfiler::FinishedCollectingMetrics(
+    FinishReason finish_reason) {
+  UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
+                            finish_reason, FinishReason::ENUM_MAX);
+  if (!collected_paint_metric_) {
+    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoPaint",
+                              finish_reason, FinishReason::ENUM_MAX);
+  }
+  if (!collected_load_metric_) {
+    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoLoad",
+                              finish_reason, FinishReason::ENUM_MAX);
+  }
   delegate_->ProfilerFinishedCollectingMetrics();
 }
 

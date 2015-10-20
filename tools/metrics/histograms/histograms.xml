@@ -44290,6 +44290,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.FirstWebContents.FinishReason"
+    enum="StartupProfilingFinishReason">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The reason for which startup profiling was deemed complete. Logged once per
+    session on startup.
+  </summary>
+</histogram>
+
 <histogram name="Startup.FirstWebContents.MainFrameLoad" units="milliseconds">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -73166,6 +73175,16 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Displayed clock interstitial. (DISPLAYED_CLOCK_INTERSTITIAL)"/>
 </enum>
 
+<enum name="StartupProfilingFinishReason" type="int">
+  <int value="0" label="Done (all metrics gathered)"/>
+  <int value="1"
+      label="Abandoned because blocking UI was displayed on startup"/>
+  <int value="2" label="Abandoned because profiled content was hidden"/>
+  <int value="3" label="Abandoned because profiled content was destroyed"/>
+  <int value="4"
+      label="Abandoned because profiled content was navigated away from"/>
+</enum>
+
 <enum name="StartupTemperature" type="int">
   <int value="0" label="Cold startup (mostly hard faults)"/>
   <int value="1" label="Warm startup (nearly no hard faults)"/>
@@ -80188,6 +80207,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.SSL_Connection_Latency_2"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="StartupProfilingAbandonState">
+  <suffix name="NoPaint" label="Abandoned before first paint."/>
+  <suffix name="NoLoad" label="Abandoned before first main frame load."/>
+  <affected-histogram name="Startup.FirstWebContents.FinishReason"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="StartupTemperature" separator=".">
