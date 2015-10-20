@@ -1048,6 +1048,9 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^cloud_print[\\\/]",
                  r"^components[\\\/]html_viewer[\\\/]"
                      r"web_test_delegate_impl\.cc$",
+                 # TODO(peter): Remove this exception. https://crbug.com/534537
+                 r"^content[\\\/]browser[\\\/]notifications[\\\/]"
+                     r"notification_event_dispatcher_impl\.cc$",
                  r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
                      r"gl_helper_benchmark\.cc$",
                  r"^courgette[\\\/]courgette_tool\.cc$",

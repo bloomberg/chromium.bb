@@ -29,6 +29,14 @@ void NotificationClickEventFinished(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+#if defined(OS_ANDROID)
+  // This LOG(INFO) deliberately exists to help track down the cause of
+  // https://crbug.com/534537, where notifications sometimes do not react to
+  // the user clicking on them. It should be removed once that's fixed.
+  LOG(INFO) << "The notificationclick event has finished: "
+            << service_worker_status;
+#endif
+
   PersistentNotificationStatus status = PERSISTENT_NOTIFICATION_STATUS_SUCCESS;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
@@ -79,6 +87,13 @@ void DispatchNotificationClickEventOnRegistration(
         base::Bind(&NotificationClickEventFinished,
                    dispatch_complete_callback,
                    service_worker_registration);
+
+#if defined(OS_ANDROID)
+    // This LOG(INFO) deliberately exists to help track down the cause of
+    // https://crbug.com/534537, where notifications sometimes do not react to
+    // the user clicking on them. It should be removed once that's fixed.
+    LOG(INFO) << "Dispatching notificationclick event to the Service Worker.";
+#endif
 
     DCHECK(service_worker_registration->active_version());
     service_worker_registration->active_version()->

@@ -33,6 +33,8 @@ public class NotificationService extends IntentService {
     public static class Receiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "Received a notification intent in the NotificationService's receiver.");
+
             // TODO(peter): Do we need to acquire a wake lock here?
 
             intent.setClass(context, NotificationService.class);
