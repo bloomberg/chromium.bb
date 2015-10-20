@@ -163,11 +163,16 @@ public class CrashFileManagerTest extends CrashTestCase {
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testAttemptNumberRename() {
-        assertEquals("file.dmp.try1", CrashFileManager.incrementAttemptNumber("file.dmp"));
-        assertEquals("f.dmp.try2", CrashFileManager.incrementAttemptNumber("f.dmp.try1"));
-        assertEquals("f.dmp.try20", CrashFileManager.incrementAttemptNumber("f.dmp.try10"));
-        assertEquals("f.try2.dmp", CrashFileManager.incrementAttemptNumber("f.try1.dmp"));
-        assertEquals("f.tryN.dmp.try1", CrashFileManager.incrementAttemptNumber("f.tryN.dmp"));
+        assertEquals("file.dmp.try1",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("file.dmp"));
+        assertEquals("f.dmp.try2",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try1"));
+        assertEquals("f.dmp.try20",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("f.dmp.try10"));
+        assertEquals("f.try2.dmp",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("f.try1.dmp"));
+        assertEquals("f.tryN.dmp.try1",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp"));
     }
 
     @SmallTest

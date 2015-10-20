@@ -79,8 +79,8 @@ public class DeferredStartupHandler {
                             new CrashFileManager(application.getCacheDir());
                     crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
-                    MinidumpUploadService.storeBreakpadUploadAttemptsInUma(
-                                ChromePreferenceManager.getInstance(application));
+                    MinidumpUploadService.storeBreakpadUploadStatsInUma(
+                            ChromePreferenceManager.getInstance(application));
 
                     // Force a widget refresh in order to wake up any possible zombie widgets.
                     // This is needed to ensure the right behavior when the process is suddenly

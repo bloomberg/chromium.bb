@@ -80,7 +80,7 @@ public class CrashFileManager {
     }
 
     public static String tryIncrementAttemptNumber(File mFileToUpload) {
-        String newName = incrementAttemptNumber(mFileToUpload.getPath());
+        String newName = filenameWithIncrementedAttemptNumber(mFileToUpload.getPath());
         return mFileToUpload.renameTo(new File(newName)) ? newName : null;
     }
 
@@ -88,7 +88,7 @@ public class CrashFileManager {
      * @return The file name to rename to after an addition attempt to upload
      */
     @VisibleForTesting
-    public static String incrementAttemptNumber(String filename) {
+    public static String filenameWithIncrementedAttemptNumber(String filename) {
         int numTried = readAttemptNumber(filename);
         if (numTried > 0) {
             int newCount = numTried + 1;

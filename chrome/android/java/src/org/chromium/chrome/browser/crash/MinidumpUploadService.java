@@ -119,8 +119,8 @@ public class MinidumpUploadService extends IntentService {
     }
 
     /**
-     * Creates an intent that when started will find the last created minidump,
-     * and try to upload it.
+     * Creates an intent that when started will find the last created or
+     * updated minidump, and try to upload it.
      *
      * @param context the context to use for the intent.
      * @return an Intent to use to start the service.
@@ -131,7 +131,11 @@ public class MinidumpUploadService extends IntentService {
         return intent;
     }
 
-    public static void storeBreakpadUploadAttemptsInUma(ChromePreferenceManager pref) {
+    /**
+     * Stores the successes and failures from uploading crash to UMA,
+     * and clears them from breakpad.
+     */
+    public static void storeBreakpadUploadStatsInUma(ChromePreferenceManager pref) {
         for (int success = pref.getBreakpadUploadSuccessCount(); success > 0; success--) {
             RecordUserAction.record("MobileBreakpadUploadSuccess");
         }
