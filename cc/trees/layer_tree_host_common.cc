@@ -2520,36 +2520,9 @@ void CalculateRenderSurfaceLayerListInternal(
     descendants->push_back(layer);
   }
 
-  // The render surface's content rect is the union of drawable content rects
-  // of the layers that draw into the surface. If the render surface is clipped,
-  // it is also intersected with the render's surface clip rect.
-  if (verify_property_trees) {
-    if (render_to_separate_surface) {
-      if (IsRootLayer(layer)) {
-        // The root layer's surface content rect is always the entire viewport.
-        gfx::Rect viewport =
-            gfx::ToEnclosingRect(property_trees->clip_tree.ViewportClip());
-        layer->render_surface()->SetAccumulatedContentRect(viewport);
-      } else {
-        // If the owning layer of a render surface draws content, the content
-        // rect of the render surface is initialized to the drawable content
-        // rect of the layer.
-        gfx::Rect content_rect = layer->DrawsContent()
-                                     ? layer->drawable_content_rect()
-                                     : gfx::Rect();
-        layer->render_surface()->SetAccumulatedContentRect(content_rect);
-      }
-    } else if (!layer_should_be_skipped &&
-               !IsRootLayer(layer->render_target())) {
-      // In this case, the layer's drawable content rect can expand the
-      // content rect of the render surface it is drawing into.
-      gfx::Rect surface_content_rect =
-          layer->render_target()->render_surface()->accumulated_content_rect();
-      surface_content_rect.Union(layer->drawable_content_rect());
-      layer->render_target()->render_surface()->SetAccumulatedContentRect(
-          surface_content_rect);
-    }
-  }
+  // Clear the old accumulated content rect of surface.
+  if (verify_property_trees && render_to_separate_surface)
+    layer->render_surface()->SetAccumulatedContentRect(gfx::Rect());
 
   for (auto& child_layer : layer->children()) {
     CalculateRenderSurfaceLayerListInternal(
@@ -2582,46 +2555,63 @@ void CalculateRenderSurfaceLayerListInternal(
     return;
   }
 
-  if (verify_property_trees && render_to_separate_surface &&
-      !IsRootLayer(layer)) {
-    if (!layer->replica_layer() && layer->render_surface()->is_clipped()) {
-      // Here, we clip the render surface's content rect with its clip rect.
-      // As the clip rect of render surface is in the surface's target space,
-      // we first map the content rect into the target space, intersect it with
-      // clip rect and project back the result to the surface space.
-      gfx::Rect surface_content_rect =
-          layer->render_surface()->accumulated_content_rect();
+  // The render surface's content rect is the union of drawable content rects
+  // of the layers that draw into the surface. If the render surface is clipped,
+  // it is also intersected with the render's surface clip rect.
+  if (verify_property_trees) {
+    if (!IsRootLayer(layer)) {
+      if (render_to_separate_surface) {
+        gfx::Rect surface_content_rect =
+            layer->render_surface()->accumulated_content_rect();
+        // If the owning layer of a render surface draws content, the content
+        // rect of the render surface is expanded to include the drawable
+        // content rect of the layer.
+        if (layer->DrawsContent())
+          surface_content_rect.Union(layer->drawable_content_rect());
 
-      if (!surface_content_rect.IsEmpty()) {
-        gfx::Rect surface_clip_rect = LayerTreeHostCommon::CalculateVisibleRect(
-            layer->render_surface()->clip_rect(), surface_content_rect,
-            layer->render_surface()->draw_transform());
-        surface_content_rect.Intersect(surface_clip_rect);
-        layer->render_surface()->SetAccumulatedContentRect(
+        if (!layer->replica_layer() && layer->render_surface()->is_clipped()) {
+          // Here, we clip the render surface's content rect with its clip rect.
+          // As the clip rect of render surface is in the surface's target
+          // space, we first map the content rect into the target space,
+          // intersect it with clip rect and project back the result to the
+          // surface space.
+          if (!surface_content_rect.IsEmpty()) {
+            gfx::Rect surface_clip_rect =
+                LayerTreeHostCommon::CalculateVisibleRect(
+                    layer->render_surface()->clip_rect(), surface_content_rect,
+                    layer->render_surface()->draw_transform());
+            surface_content_rect.Intersect(surface_clip_rect);
+          }
+        }
+        layer->render_surface()->SetContentRectFromPropertyTrees(
             surface_content_rect);
       }
-    }
-    layer->render_surface()->SetContentRectFromPropertyTrees(
-        layer->render_surface()->accumulated_content_rect());
-    if (!IsRootLayer(layer->parent()->render_target())) {
-      // The surface's drawable content rect may expand the content rect
-      // of its target's surface(surface's target's surface).
-      gfx::Rect surface_target_rect = layer->parent()
-                                          ->render_target()
-                                          ->render_surface()
-                                          ->accumulated_content_rect();
-      surface_target_rect.Union(
-          gfx::ToEnclosedRect(layer->render_surface()->DrawableContentRect()));
-      layer->parent()
-          ->render_target()
-          ->render_surface()
-          ->SetAccumulatedContentRect(surface_target_rect);
+      const LayerImpl* parent_target = layer->parent()->render_target();
+      if (!IsRootLayer(parent_target)) {
+        gfx::Rect surface_content_rect =
+            parent_target->render_surface()->accumulated_content_rect();
+        if (render_to_separate_surface) {
+          // If the layer owns a surface, then the content rect is in the wrong
+          // space. Instead, we will use the surface's DrawableContentRect which
+          // is in target space as required. We also need to clip it with the
+          // target's clip if the target is clipped.
+          surface_content_rect.Union(gfx::ToEnclosedRect(
+              layer->render_surface()->DrawableContentRect()));
+          if (parent_target->is_clipped())
+            surface_content_rect.Intersect(parent_target->clip_rect());
+        } else if (layer->DrawsContent()) {
+          surface_content_rect.Union(layer->drawable_content_rect());
+        }
+        parent_target->render_surface()->SetAccumulatedContentRect(
+            surface_content_rect);
+      }
+    } else {
+      // The root layer's surface content rect is always the entire viewport.
+      gfx::Rect viewport =
+          gfx::ToEnclosingRect(property_trees->clip_tree.ViewportClip());
+      layer->render_surface()->SetContentRectFromPropertyTrees(viewport);
     }
   }
-
-  if (verify_property_trees && IsRootLayer(layer))
-    layer->render_surface()->SetContentRectFromPropertyTrees(
-        layer->render_surface()->accumulated_content_rect());
 
   if (render_to_separate_surface && !IsRootLayer(layer) &&
       layer->render_surface()->DrawableContentRect().IsEmpty()) {
