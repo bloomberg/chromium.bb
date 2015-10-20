@@ -443,6 +443,18 @@ test("components_unittests") {
         "//components/password_manager/core/common:unit_tests",
         "//components/password_manager/sync/browser:unit_tests",
       ]
+
+      apk_deps = [
+        "//components/invalidation/impl:java",
+        "//components/safe_json/android:safe_json_java",
+        "//components/signin/core/browser/android:java",
+        "//content/public/android:content_java",
+        "//ui/android:ui_java",
+      ]
+
+      if (enable_configuration_policy) {
+        apk_deps += [ "//components/policy/android:policy_java" ]
+      }
     }
     if (is_chromeos) {
       deps += [ "//components/ownership:unit_tests" ]
