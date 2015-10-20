@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -894,6 +895,12 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         LOG(WARNING) << "Improperly formed JSON response from history server.";
         continue;
       }
+
+      // Ignore any URLs that should not be shown in the history page.
+      GURL gurl(url);
+      if (!CanAddURLToHistory(gurl))
+        continue;
+
       // Title is optional, so the return value is ignored here.
       result->GetString("title", &title);
 
@@ -921,7 +928,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         web_history_query_results_.push_back(
             HistoryEntry(
                 HistoryEntry::REMOTE_ENTRY,
-                GURL(url),
+                gurl,
                 title,
                 time,
                 client_id,
