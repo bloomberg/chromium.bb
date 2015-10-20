@@ -778,8 +778,9 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(const PaintLayer
     if (compositingContainer && compositingContainer->needsCompositedScrolling()) {
         LayoutBox* layoutBox = toLayoutBox(compositingContainer->layoutObject());
         IntSize scrollOffset = layoutBox->scrolledContentOffset();
-        IntPoint scrollOrigin(layoutBox->borderLeft(), layoutBox->borderTop());
-        graphicsLayerParentLocation = scrollOrigin - scrollOffset;
+        IntPoint scrollOrigin = compositingContainer->scrollableArea()->scrollOrigin();
+        scrollOrigin.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
+        graphicsLayerParentLocation = -(scrollOrigin + scrollOffset);
     }
 }
 
