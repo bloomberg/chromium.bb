@@ -50,11 +50,10 @@ const int kStatisticsUpdatePeriod = 4;
 }  // namespace
 
 MediaPipelineImpl::MediaPipelineImpl()
-    : audio_decoder_(nullptr),
+    : cdm_(nullptr),
+      audio_decoder_(nullptr),
       video_decoder_(nullptr),
       backend_initialized_(false),
-      has_audio_(false),
-      has_video_(false),
       paused_(false),
       target_playback_rate_(1.0f),
       enable_time_update_(false),
@@ -133,31 +132,37 @@ void MediaPipelineImpl::OnVideoResolutionChanged(
 void MediaPipelineImpl::OnPushBufferComplete(
     MediaPipelineBackend::Decoder* decoder,
     MediaPipelineBackend::BufferStatus status) {
-  if (decoder == audio_decoder_)
+  if (decoder == audio_decoder_) {
     audio_pipeline_->OnBufferPushed(status);
-  else if (decoder == video_decoder_)
+  } else if (decoder == video_decoder_) {
     video_pipeline_->OnBufferPushed(status);
+  }
 }
 
 void MediaPipelineImpl::OnEndOfStream(MediaPipelineBackend::Decoder* decoder) {
-  if (decoder == audio_decoder_)
+  if (decoder == audio_decoder_) {
     audio_pipeline_->OnEndOfStream();
-  else if (decoder == video_decoder_)
+  } else if (decoder == video_decoder_) {
     video_pipeline_->OnEndOfStream();
+  }
 }
 
 void MediaPipelineImpl::OnDecoderError(MediaPipelineBackend::Decoder* decoder) {
-  if (decoder == audio_decoder_)
+  if (decoder == audio_decoder_) {
     audio_pipeline_->OnError();
-  else if (decoder == video_decoder_)
+  } else if (decoder == video_decoder_) {
     video_pipeline_->OnError();
+  }
 }
 
 void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  audio_pipeline_->SetCdm(cdm);
-  video_pipeline_->SetCdm(cdm);
+  cdm_ = cdm;
+  if (audio_pipeline_)
+    audio_pipeline_->SetCdm(cdm);
+  if (video_pipeline_)
+    video_pipeline_->SetCdm(cdm);
 }
 
 void MediaPipelineImpl::InitializeAudio(
@@ -166,9 +171,7 @@ void MediaPipelineImpl::InitializeAudio(
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!has_audio_);
-
-  has_audio_ = true;
+  DCHECK(!audio_decoder_);
 
   audio_decoder_ = media_pipeline_backend_->CreateAudioDecoder();
   if (!audio_decoder_) {
@@ -176,6 +179,8 @@ void MediaPipelineImpl::InitializeAudio(
     return;
   }
   audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_, client));
+  if (cdm_)
+    audio_pipeline_->SetCdm(cdm_);
   audio_pipeline_->Initialize(config, frame_provider.Pass(), status_cb);
 }
 
@@ -185,23 +190,23 @@ void MediaPipelineImpl::InitializeVideo(
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!has_video_);
+  DCHECK(!video_decoder_);
 
-  has_video_ = true;
   video_decoder_ = media_pipeline_backend_->CreateVideoDecoder();
   if (!video_decoder_) {
     status_cb.Run(::media::PIPELINE_ERROR_ABORT);
     return;
   }
   video_pipeline_.reset(new VideoPipelineImpl(video_decoder_, client));
-
+  if (cdm_)
+    video_pipeline_->SetCdm(cdm_);
   video_pipeline_->Initialize(configs, frame_provider.Pass(), status_cb);
 }
 
 void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_audio_ || has_video_);
+  DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_callbacks_);
   // When starting, we always enter the "playing" state (not paused).
   paused_ = false;
@@ -231,7 +236,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   }
 
   // Setup the audio and video pipeline for the new timeline.
-  if (has_audio_) {
+  if (audio_pipeline_) {
     scoped_refptr<BufferingState> buffering_state;
     if (buffering_controller_)
       buffering_state = buffering_controller_->AddStream("audio");
@@ -240,7 +245,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
       return;
     }
   }
-  if (has_video_) {
+  if (video_pipeline_) {
     scoped_refptr<BufferingState> buffering_state;
     if (buffering_controller_)
       buffering_state = buffering_controller_->AddStream("video");
@@ -254,7 +259,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
 void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_audio_ || has_video_);
+  DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_callbacks_);
 
   // No need to update media time anymore.
@@ -270,12 +275,12 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
 
   // Flush both the audio and video pipeline.
   ::media::SerialRunner::Queue bound_fns;
-  if (has_audio_) {
+  if (audio_pipeline_) {
     bound_fns.Push(base::Bind(
         &AudioPipelineImpl::Flush,
         base::Unretained(audio_pipeline_.get())));
   }
-  if (has_video_) {
+  if (video_pipeline_) {
     bound_fns.Push(base::Bind(
         &VideoPipelineImpl::Flush,
         base::Unretained(video_pipeline_.get())));
@@ -289,7 +294,7 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
 void MediaPipelineImpl::Stop() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_audio_ || has_video_);
+  DCHECK(audio_pipeline_ || video_pipeline_);
 
   // Cancel pending flush callbacks since we are about to stop/shutdown
   // audio/video pipelines. This will ensure A/V Flush won't happen in
@@ -300,9 +305,9 @@ void MediaPipelineImpl::Stop() {
   enable_time_update_ = false;
 
   // Stop both the audio and video pipeline.
-  if (has_audio_)
+  if (audio_pipeline_)
     audio_pipeline_->Stop();
-  if (has_video_)
+  if (video_pipeline_)
     video_pipeline_->Stop();
 
   // Release hardware resources on Stop.

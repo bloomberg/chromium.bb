@@ -80,10 +80,9 @@ class MediaPipelineImpl : public MediaPipelineBackend::Delegate {
   void OnError(::media::PipelineStatus error);
 
   base::ThreadChecker thread_checker_;
-
   MediaPipelineClient client_;
-
   scoped_ptr<BufferingController> buffering_controller_;
+  BrowserCdmCast* cdm_;
 
   // Interface with the underlying hardware media pipeline.
   scoped_ptr<MediaPipelineBackend> media_pipeline_backend_;
@@ -91,11 +90,9 @@ class MediaPipelineImpl : public MediaPipelineBackend::Delegate {
   MediaPipelineBackend::VideoDecoder* video_decoder_;
 
   bool backend_initialized_;
-  bool has_audio_;
-  bool has_video_;
   scoped_ptr<AudioPipelineImpl> audio_pipeline_;
   scoped_ptr<VideoPipelineImpl> video_pipeline_;
-  scoped_ptr< ::media::SerialRunner> pending_flush_callbacks_;
+  scoped_ptr<::media::SerialRunner> pending_flush_callbacks_;
 
   // Whether or not the backend is currently paused.
   bool paused_;
