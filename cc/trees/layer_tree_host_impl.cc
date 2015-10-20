@@ -407,8 +407,8 @@ void LayerTreeHostImpl::Animate() {
   if (input_handler_client_) {
     // This animates fling scrolls. But on Android WebView root flings are
     // controlled by the application, so the compositor does not animate them.
-    bool ignore_fling =
-        settings_.ignore_root_layer_flings && IsCurrentlyScrollingRoot();
+    bool ignore_fling = settings_.ignore_root_layer_flings &&
+                        IsCurrentlyScrollingInnerViewport();
     if (!ignore_fling)
       input_handler_client_->Animate(monotonic_time);
   }
@@ -476,12 +476,12 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 }
 
 void LayerTreeHostImpl::SetNeedsAnimateInput() {
-  DCHECK_IMPLIES(IsCurrentlyScrollingRoot(),
+  DCHECK_IMPLIES(IsCurrentlyScrollingInnerViewport(),
                  !settings_.ignore_root_layer_flings);
   SetNeedsAnimate();
 }
 
-bool LayerTreeHostImpl::IsCurrentlyScrollingRoot() const {
+bool LayerTreeHostImpl::IsCurrentlyScrollingInnerViewport() const {
   LayerImpl* scrolling_layer = CurrentlyScrollingLayer();
   if (!scrolling_layer)
     return false;
@@ -1885,7 +1885,7 @@ bool LayerTreeHostImpl::IsActivelyScrolling() const {
   // On Android WebView root flings are controlled by the application,
   // so the compositor does not animate them and can't tell if they
   // are actually animating. So assume there are none.
-  if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingRoot())
+  if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingInnerViewport())
     return false;
   return did_lock_scrolling_layer_;
 }
@@ -2414,6 +2414,14 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   if (potentially_scrolling_layer_impl == OuterViewportScrollLayer())
     potentially_scrolling_layer_impl = InnerViewportScrollLayer();
 
+  // Animated wheel scrolls need to scroll the outer viewport layer, and do not
+  // go through Viewport::ScrollBy which would normally handle the distribution.
+  // NOTE: This will need refactoring if we want smooth scrolling on Android.
+  if (type == ANIMATED_WHEEL &&
+      potentially_scrolling_layer_impl == InnerViewportScrollLayer()) {
+    potentially_scrolling_layer_impl = OuterViewportScrollLayer();
+  }
+
   return potentially_scrolling_layer_impl;
 }
 
@@ -2437,7 +2445,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   top_controls_manager_->ScrollBegin();
 
   active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
-  wheel_scrolling_ = (type == WHEEL);
+  wheel_scrolling_ = (type == WHEEL || type == ANIMATED_WHEEL);
   client_->RenewTreePriority();
   UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
   return SCROLL_STARTED;
@@ -2495,16 +2503,17 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
                ? SCROLL_STARTED
                : SCROLL_IGNORED;
   }
-  // ScrollAnimated is only used for wheel scrolls. We use the same bubbling
-  // behavior as ScrollBy to determine which layer to animate, but we do not
-  // do the Android-specific things in ScrollBy like showing top controls.
-  InputHandler::ScrollStatus scroll_status = ScrollBegin(viewport_point, WHEEL);
+  // ScrollAnimated is used for animated wheel scrolls. We find the first layer
+  // that can scroll and set up an animation of its scroll offset. Note that
+  // this does not currently go through the scroll customization and viewport
+  // machinery that ScrollBy uses for non-animated wheel scrolls.
+  InputHandler::ScrollStatus scroll_status =
+      ScrollBegin(viewport_point, ANIMATED_WHEEL);
   if (scroll_status == SCROLL_STARTED) {
     gfx::Vector2dF pending_delta = scroll_delta;
     for (LayerImpl* layer_impl = CurrentlyScrollingLayer(); layer_impl;
          layer_impl = NextLayerInScrollOrder(layer_impl)) {
-      // The inner viewport layer represents the viewport.
-      if (!layer_impl->scrollable() || layer_impl == OuterViewportScrollLayer())
+      if (!layer_impl->scrollable())
         continue;
 
       gfx::ScrollOffset current_offset = layer_impl->CurrentScrollOffset();

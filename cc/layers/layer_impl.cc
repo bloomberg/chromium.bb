@@ -526,7 +526,8 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     return InputHandler::SCROLL_ON_MAIN_THREAD;
   }
 
-  if (type == InputHandler::WHEEL && have_wheel_event_handlers() &&
+  if ((type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) &&
+      have_wheel_event_handlers() &&
       effective_block_mode & SCROLL_BLOCKS_ON_WHEEL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
     return InputHandler::SCROLL_ON_MAIN_THREAD;

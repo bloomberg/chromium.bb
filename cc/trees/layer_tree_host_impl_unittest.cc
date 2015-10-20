@@ -8247,6 +8247,11 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
+
+  // Shrink the outer viewport clip layer so that the outer viewport can scroll.
+  host_impl_->OuterViewportScrollLayer()->parent()->SetBounds(
+      gfx::Size(50, 100));
+
   DrawFrame();
 
   base::TimeTicks start_time =
@@ -8259,6 +8264,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
             host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
 
   LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(), scrolling_layer);
 
   begin_frame_args.frame_time = start_time;
   host_impl_->WillBeginImplFrame(begin_frame_args);

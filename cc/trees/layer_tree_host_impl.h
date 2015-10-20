@@ -187,7 +187,7 @@ class CC_EXPORT LayerTreeHostImpl
                                float page_scale,
                                base::TimeDelta duration);
   void SetNeedsAnimateInput() override;
-  bool IsCurrentlyScrollingRoot() const override;
+  bool IsCurrentlyScrollingInnerViewport() const override;
   bool IsCurrentlyScrollingLayerAt(
       const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) const override;

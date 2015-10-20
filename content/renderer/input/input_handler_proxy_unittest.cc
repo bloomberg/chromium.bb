@@ -138,7 +138,9 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD1(SetSynchronousInputHandlerRootScrollOffset,
                void(const gfx::ScrollOffset& root_offset));
 
-  bool IsCurrentlyScrollingRoot() const override { return is_scrolling_root_; }
+  bool IsCurrentlyScrollingInnerViewport() const override {
+    return is_scrolling_root_;
+  }
   void set_is_scrolling_root(bool is) { is_scrolling_root_ = is; }
 
  private:

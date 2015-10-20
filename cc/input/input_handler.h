@@ -84,7 +84,7 @@ class CC_EXPORT InputHandler {
     // This must be the last entry.
     ScrollStatusCount
   };
-  enum ScrollInputType { GESTURE, WHEEL, NON_BUBBLING_GESTURE };
+  enum ScrollInputType { GESTURE, WHEEL, ANIMATED_WHEEL, NON_BUBBLING_GESTURE };
 
   // Binds a client to this handler to receive notifications. Only one client
   // can be bound to an InputHandler. The client must live at least until the
@@ -151,9 +151,8 @@ class CC_EXPORT InputHandler {
   // Request another callback to InputHandlerClient::Animate().
   virtual void SetNeedsAnimateInput() = 0;
 
-  // If there is a scroll active, this reports whether the scroll is on the
-  // root layer, or on some other sublayer.
-  virtual bool IsCurrentlyScrollingRoot() const = 0;
+  // Returns true if there is an active scroll on the inner viewport layer.
+  virtual bool IsCurrentlyScrollingInnerViewport() const = 0;
 
   // Whether the layer under |viewport_point| is the currently scrolling layer.
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
