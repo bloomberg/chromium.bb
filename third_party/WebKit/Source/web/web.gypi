@@ -321,13 +321,6 @@
       'tests/sim/SimWebViewClient.h',
     ],
     'conditions': [
-      ['OS=="win"',
-        {
-          'web_unittest_files': [
-            'tests/WebPageSerializerTest.cpp',
-          ],
-        }
-      ],
       ['OS!="mac"',
         {
           'web_unittest_files': [

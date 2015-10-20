@@ -368,6 +368,14 @@ if (!is_mac) {
 
     sources = platform_test_files
 
+    if (is_win) {
+      sources += [ "text/LocaleWinTest.cpp" ]
+    } else if (is_mac) {
+      sources += [ "text/LocaleMacTest.cpp" ]
+    } else if (is_posix) {
+      sources += [ "text/LocaleICUTest.cpp" ]
+    }
+
     sources += [ "testing/RunAllTests.cpp" ]
 
     configs += [

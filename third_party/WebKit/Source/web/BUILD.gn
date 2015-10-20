@@ -11,12 +11,15 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 import("//third_party/WebKit/Source/platform/platform.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
-web_gypi = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("web.gypi") ],
-    "scope",
-    [ "web.gypi" ])
-
+web_gypi = exec_script("//build/gypi_to_gn.py",
+                       [ rebase_path("web.gypi") ],
+                       "scope",
+                       [ "web.gypi" ])
+if (!is_mac) {
+  # TODO(GYP): Can't link Blink binaries yet on mac.
+  web_unittest_files = web_gypi.web_unittest_files
+  web_unittest_files += [ "tests/ScrollAnimatorNoneTest.cpp" ]
+}
 
 component("web") {
   output_name = "blink_web"
@@ -31,9 +34,7 @@ component("web") {
     "//third_party/angle:translator",
   ]
 
-  include_dirs = [
-    "//third_party/skia/include/utils",
-  ]
+  include_dirs = [ "//third_party/skia/include/utils" ]
 
   configs += [
     "//third_party/WebKit/Source:config",
@@ -58,11 +59,9 @@ component("web") {
       "//third_party/WebKit/Source/wtf:test_support",
     ]
 
-    configs -= [
-      "//third_party/WebKit/Source:non_test_config",
-    ]
+    configs -= [ "//third_party/WebKit/Source:non_test_config" ]
 
-    sources += web_gypi.web_unittest_files
+    sources += web_unittest_files
     sources += bindings_unittest_files
     sources += core_unittest_files
     sources += modules_unittest_files
@@ -91,15 +90,13 @@ source_set("test_support") {
       "//v8",
     ]
 
-    sources = [ "WebTestingSupport.cpp" ]
-
-    configs += [
-      "//third_party/WebKit/Source:config",
+    sources = [
+      "WebTestingSupport.cpp",
     ]
 
-    include_dirs = [
-      "$root_gen_dir/blink",
-    ]
+    configs += [ "//third_party/WebKit/Source:config" ]
+
+    include_dirs = [ "$root_gen_dir/blink" ]
   }
 }
 
@@ -127,7 +124,9 @@ if (!is_mac) {
       "//v8",
     ]
 
-    sources = [ "tests/RunAllTests.cpp" ]
+    sources = [
+      "tests/RunAllTests.cpp",
+    ]
 
     configs += [ "//third_party/WebKit/Source:config" ]
 
@@ -136,7 +135,7 @@ if (!is_mac) {
 
       configs += [ "//third_party/WebKit/Source:inside_blink" ]
 
-      sources += web_gypi.web_unittest_files
+      sources += web_unittest_files
       sources += bindings_unittest_files
       sources += core_unittest_files
       sources += modules_unittest_files
