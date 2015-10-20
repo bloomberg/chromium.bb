@@ -383,8 +383,9 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
 
-    client_port_.reset(IPC::ReceiveMachPort(server_port_).release());
-    IPC::SendMachPort(client_port_, mach_task_self(), MACH_MSG_TYPE_COPY_SEND);
+    client_port_.reset(IPC::ReceiveMachPort(server_port_.get()).release());
+    IPC::SendMachPort(
+        client_port_.get(), mach_task_self(), MACH_MSG_TYPE_COPY_SEND);
     active_names_at_start_ = IPC::GetActiveNameCount();
     get_proxy_listener()->set_listener(&result_listener_);
   }
@@ -470,14 +471,15 @@ scoped_ptr<ChildProcessGlobals> CommonChildProcessSetUp() {
   base::mac::ScopedMachReceiveRight client_port(IPC::MakeReceivingPort());
 
   // Send the port that this process is listening on to the server.
-  IPC::SendMachPort(server_port, client_port, MACH_MSG_TYPE_MAKE_SEND);
+  IPC::SendMachPort(
+      server_port.get(), client_port.get(), MACH_MSG_TYPE_MAKE_SEND);
 
   // Receive the task port of the server process.
   base::mac::ScopedMachSendRight server_task_port(
-      IPC::ReceiveMachPort(client_port));
+      IPC::ReceiveMachPort(client_port.get()));
 
   scoped_ptr<ChildProcessGlobals> globals(new ChildProcessGlobals);
-  globals->port_provider.InsertEntry(getppid(), server_task_port);
+  globals->port_provider.InsertEntry(getppid(), server_task_port.get());
   globals->broker.SetPortProvider(&globals->port_provider);
   globals->server_task_port.reset(server_task_port.release());
   return globals;

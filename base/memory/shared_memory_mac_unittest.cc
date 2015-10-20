@@ -126,7 +126,7 @@ mach_port_t CommonChildProcessSetUp() {
   mach_port_t client_port = MakeReceivingPort();
 
   // Send the port that this process is listening on to the server.
-  SendMachPort(server_port, client_port, MACH_MSG_TYPE_MAKE_SEND);
+  SendMachPort(server_port.get(), client_port, MACH_MSG_TYPE_MAKE_SEND);
   return client_port;
 }
 
@@ -161,7 +161,7 @@ class SharedMemoryMacMultiProcessTest : public MultiProcessTest {
     service_name_ = CreateRandomServiceName();
     server_port_.reset(BecomeMachServer(service_name_.c_str()));
     child_process_ = SpawnChild(name);
-    client_port_.reset(ReceiveMachPort(server_port_));
+    client_port_.reset(ReceiveMachPort(server_port_.get()));
   }
 
   static const int s_memory_size = 99999;
@@ -193,7 +193,8 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemory) {
   memset(shared_memory.memory(), 'a', s_memory_size);
 
   // Send the underlying memory object to the client process.
-  SendMachPort(client_port_, shm.GetMemoryObject(), MACH_MSG_TYPE_COPY_SEND);
+  SendMachPort(
+      client_port_.get(), shm.GetMemoryObject(), MACH_MSG_TYPE_COPY_SEND);
   int rv = -1;
   ASSERT_TRUE(child_process_.WaitForExitWithTimeout(
       TestTimeouts::action_timeout(), &rv));
@@ -203,7 +204,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemory) {
 MULTIPROCESS_TEST_MAIN(MachBasedSharedMemoryClient) {
   mac::ScopedMachReceiveRight client_port(CommonChildProcessSetUp());
   // The next mach port should be for a memory object.
-  mach_port_t memory_object = ReceiveMachPort(client_port);
+  mach_port_t memory_object = ReceiveMachPort(client_port.get());
   SharedMemoryHandle shm(memory_object,
                          SharedMemoryMacMultiProcessTest::s_memory_size,
                          GetCurrentProcId());
@@ -232,7 +233,8 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemoryWithOffset) {
   memset(start + 2 * page_size, 'c', page_size);
 
   // Send the underlying memory object to the client process.
-  SendMachPort(client_port_, shm.GetMemoryObject(), MACH_MSG_TYPE_COPY_SEND);
+  SendMachPort(
+      client_port_.get(), shm.GetMemoryObject(), MACH_MSG_TYPE_COPY_SEND);
   int rv = -1;
   ASSERT_TRUE(child_process_.WaitForExitWithTimeout(
       TestTimeouts::action_timeout(), &rv));
@@ -242,7 +244,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemoryWithOffset) {
 MULTIPROCESS_TEST_MAIN(MachBasedSharedMemoryWithOffsetClient) {
   mac::ScopedMachReceiveRight client_port(CommonChildProcessSetUp());
   // The next mach port should be for a memory object.
-  mach_port_t memory_object = ReceiveMachPort(client_port);
+  mach_port_t memory_object = ReceiveMachPort(client_port.get());
   SharedMemoryHandle shm(memory_object,
                          SharedMemoryMacMultiProcessTest::s_memory_size,
                          GetCurrentProcId());

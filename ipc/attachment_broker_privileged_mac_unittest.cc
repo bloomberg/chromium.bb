@@ -89,10 +89,10 @@ base::mac::ScopedMachReceiveRight CommonChildProcessSetUp(
   *original_name_count = GetActiveNameCount() - 1;
 
   // Send the port that this process is listening on to the server.
-  SendMachPort(server_port, client_port, MACH_MSG_TYPE_MAKE_SEND);
+  SendMachPort(server_port.get(), client_port.get(), MACH_MSG_TYPE_MAKE_SEND);
 
   // Send the task port for this process.
-  SendMachPort(server_port, mach_task_self(), MACH_MSG_TYPE_COPY_SEND);
+  SendMachPort(server_port.get(), mach_task_self(), MACH_MSG_TYPE_COPY_SEND);
   return client_port;
 }
 
@@ -138,8 +138,8 @@ class AttachmentBrokerPrivilegedMacMultiProcessTest
     service_name_ = CreateRandomServiceName();
     server_port_.reset(BecomeMachServer(service_name_.c_str()).release());
     child_process_ = SpawnChild(name);
-    client_port_.reset(ReceiveMachPort(server_port_).release());
-    client_task_port_.reset(ReceiveMachPort(server_port_).release());
+    client_port_.reset(ReceiveMachPort(server_port_.get()).release());
+    client_task_port_.reset(ReceiveMachPort(server_port_.get()).release());
   }
 
   static const int s_memory_size = 99999;
@@ -179,11 +179,11 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertRight) {
   IncrementMachRefCount(shared_memory->handle().GetMemoryObject(),
                         MACH_PORT_RIGHT_SEND);
   mach_port_name_t inserted_memory_object = broker.CreateIntermediateMachPort(
-      client_task_port_, base::mac::ScopedMachSendRight(
-                             shared_memory->handle().GetMemoryObject()));
+      client_task_port_.get(), base::mac::ScopedMachSendRight(
+                                   shared_memory->handle().GetMemoryObject()));
   EXPECT_NE(inserted_memory_object,
             static_cast<mach_port_name_t>(MACH_PORT_NULL));
-  SendUInt32(client_port_, inserted_memory_object);
+  SendUInt32(client_port_.get(), inserted_memory_object);
 
   // Check that no names have been leaked.
   shared_memory.reset();
@@ -199,8 +199,10 @@ MULTIPROCESS_TEST_MAIN(InsertRightClient) {
   mach_msg_type_number_t original_name_count = 0;
   base::mac::ScopedMachReceiveRight client_port(
       CommonChildProcessSetUp(&original_name_count).release());
-  base::mac::ScopedMachReceiveRight inserted_port(ReceiveUInt32(client_port));
-  base::mac::ScopedMachSendRight memory_object(ReceiveMachPort(inserted_port));
+  base::mac::ScopedMachReceiveRight inserted_port(
+      ReceiveUInt32(client_port.get()));
+  base::mac::ScopedMachSendRight memory_object(
+      ReceiveMachPort(inserted_port.get()));
   inserted_port.reset();
 
   // The server should have inserted a right into this process.
@@ -241,11 +243,12 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertSameRightTwice) {
     IncrementMachRefCount(shared_memory->handle().GetMemoryObject(),
                           MACH_PORT_RIGHT_SEND);
     mach_port_name_t inserted_memory_object = broker.CreateIntermediateMachPort(
-        client_task_port_, base::mac::ScopedMachSendRight(
-                               shared_memory->handle().GetMemoryObject()));
+        client_task_port_.get(),
+        base::mac::ScopedMachSendRight(
+            shared_memory->handle().GetMemoryObject()));
     EXPECT_NE(inserted_memory_object,
               static_cast<mach_port_name_t>(MACH_PORT_NULL));
-    SendUInt32(client_port_, inserted_memory_object);
+    SendUInt32(client_port_.get(), inserted_memory_object);
   }
 
   // Check that no names have been leaked.
@@ -264,11 +267,14 @@ MULTIPROCESS_TEST_MAIN(InsertSameRightTwiceClient) {
       CommonChildProcessSetUp(&original_name_count).release());
 
   // Receive two memory objects.
-  base::mac::ScopedMachReceiveRight inserted_port(ReceiveUInt32(client_port));
-  base::mac::ScopedMachReceiveRight inserted_port2(ReceiveUInt32(client_port));
-  base::mac::ScopedMachSendRight memory_object(ReceiveMachPort(inserted_port));
+  base::mac::ScopedMachReceiveRight inserted_port(
+      ReceiveUInt32(client_port.get()));
+  base::mac::ScopedMachReceiveRight inserted_port2(
+      ReceiveUInt32(client_port.get()));
+  base::mac::ScopedMachSendRight memory_object(
+      ReceiveMachPort(inserted_port.get()));
   base::mac::ScopedMachSendRight memory_object2(
-      ReceiveMachPort(inserted_port2));
+      ReceiveMachPort(inserted_port2.get()));
   inserted_port.reset();
   inserted_port2.reset();
 
@@ -329,11 +335,12 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertTwoRights) {
     IncrementMachRefCount(shared_memory->handle().GetMemoryObject(),
                           MACH_PORT_RIGHT_SEND);
     mach_port_name_t inserted_memory_object = broker.CreateIntermediateMachPort(
-        client_task_port_, base::mac::ScopedMachSendRight(
-                               shared_memory->handle().GetMemoryObject()));
+        client_task_port_.get(),
+        base::mac::ScopedMachSendRight(
+            shared_memory->handle().GetMemoryObject()));
     EXPECT_NE(inserted_memory_object,
               static_cast<mach_port_name_t>(MACH_PORT_NULL));
-    SendUInt32(client_port_, inserted_memory_object);
+    SendUInt32(client_port_.get(), inserted_memory_object);
   }
 
   // Check that no names have been leaked.
@@ -351,11 +358,14 @@ MULTIPROCESS_TEST_MAIN(InsertTwoRightsClient) {
       CommonChildProcessSetUp(&original_name_count).release());
 
   // Receive two memory objects.
-  base::mac::ScopedMachReceiveRight inserted_port(ReceiveUInt32(client_port));
-  base::mac::ScopedMachReceiveRight inserted_port2(ReceiveUInt32(client_port));
-  base::mac::ScopedMachSendRight memory_object(ReceiveMachPort(inserted_port));
+  base::mac::ScopedMachReceiveRight inserted_port(
+      ReceiveUInt32(client_port.get()));
+  base::mac::ScopedMachReceiveRight inserted_port2(
+      ReceiveUInt32(client_port.get()));
+  base::mac::ScopedMachSendRight memory_object(
+      ReceiveMachPort(inserted_port.get()));
   base::mac::ScopedMachSendRight memory_object2(
-      ReceiveMachPort(inserted_port2));
+      ReceiveMachPort(inserted_port2.get()));
   inserted_port.reset();
   inserted_port2.reset();
 

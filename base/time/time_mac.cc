@@ -83,7 +83,7 @@ int64_t ComputeThreadTicks() {
   }
 
   kern_return_t kr = thread_info(
-      thread,
+      thread.get(),
       THREAD_BASIC_INFO,
       reinterpret_cast<thread_info_t>(&thread_info_data),
       &thread_info_count);

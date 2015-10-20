@@ -44,12 +44,12 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
     return false;
   }
   sandbox_port_.reset(port);
-  if ((kr = mach_port_insert_right(task, sandbox_port_, sandbox_port_,
-          MACH_MSG_TYPE_MAKE_SEND) != KERN_SUCCESS)) {
+  if ((kr = mach_port_insert_right(task, sandbox_port_.get(),
+          sandbox_port_.get(), MACH_MSG_TYPE_MAKE_SEND) != KERN_SUCCESS)) {
     MACH_LOG(ERROR, kr) << "Failed to allocate dummy sandbox port send right.";
     return false;
   }
-  sandbox_send_port_.reset(sandbox_port_);
+  sandbox_send_port_.reset(sandbox_port_.get());
 
   if (base::mac::IsOSYosemiteOrLater()) {
     message_server_.reset(new XPCMessageServer(this, server_receive_right));

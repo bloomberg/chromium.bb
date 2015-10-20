@@ -104,7 +104,7 @@ mach_port_t XPCMessageServer::GetServerPort() const {
 
 void XPCMessageServer::ReceiveMessage() {
   IPCMessage request;
-  int rv = xpc_pipe_receive(server_port_, &request.xpc);
+  int rv = xpc_pipe_receive(server_port_.get(), &request.xpc);
   if (rv) {
     LOG(ERROR) << "Failed to xpc_pipe_receive(): " << rv;
     return;

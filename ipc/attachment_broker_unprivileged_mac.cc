@@ -90,7 +90,8 @@ void AttachmentBrokerUnprivilegedMac::OnMachPortHasBeenDuplicated(
   }
 
   base::mac::ScopedMachReceiveRight message_port(wire_format.mach_port);
-  base::mac::ScopedMachSendRight memory_object(ReceiveMachPort(message_port));
+  base::mac::ScopedMachSendRight memory_object(
+      ReceiveMachPort(message_port.get()));
   IPC::internal::MachPortAttachmentMac::WireFormat translated_wire_format(
       memory_object.release(), wire_format.destination_process,
       wire_format.attachment_id);

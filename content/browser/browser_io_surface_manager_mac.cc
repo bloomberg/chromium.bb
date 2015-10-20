@@ -192,7 +192,7 @@ void BrowserIOSurfaceManager::HandleRequest() {
 
   kern_return_t kr =
       mach_msg(&request.msg.header, MACH_RCV_MSG, 0, sizeof(request),
-               server_port_, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+               server_port_.get(), MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
   if (kr != KERN_SUCCESS) {
     MACH_LOG(ERROR, kr) << "mach_msg";
     return;

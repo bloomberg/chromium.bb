@@ -200,7 +200,7 @@ void MachBroker::HandleRequest() {
                               options,
                               0,
                               sizeof(msg),
-                              server_port_,
+                              server_port_.get(),
                               MACH_MSG_TIMEOUT_NONE,
                               MACH_PORT_NULL);
   if (kr != KERN_SUCCESS) {

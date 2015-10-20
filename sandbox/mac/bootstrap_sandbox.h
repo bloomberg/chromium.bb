@@ -83,7 +83,7 @@ class SANDBOX_EXPORT BootstrapSandbox {
   const BootstrapSandboxPolicy* PolicyForProcess(pid_t pid) const;
 
   std::string server_bootstrap_name() const { return server_bootstrap_name_; }
-  mach_port_t real_bootstrap_port() const { return real_bootstrap_port_; }
+  mach_port_t real_bootstrap_port() const { return real_bootstrap_port_.get(); }
 
  private:
   BootstrapSandbox();

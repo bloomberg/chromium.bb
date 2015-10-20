@@ -231,7 +231,8 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
             send_right_type);
 
   // This call takes ownership of |send_once_right|.
-  kr = SendMachPort(send_once_right, port_to_insert, MACH_MSG_TYPE_COPY_SEND);
+  kr = SendMachPort(
+      send_once_right, port_to_insert.get(), MACH_MSG_TYPE_COPY_SEND);
   if (kr != KERN_SUCCESS) {
     // TODO(erikchen): UMA metric.
     mach_port_deallocate(task_port, endpoint);
