@@ -249,14 +249,13 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
 #if !defined(OS_ANDROID)
 void BrowserProcessImpl::StartTearDown() {
-    TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
+  TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
   // PromoResourceService, and SafeBrowsing ClientSideDetectionService (owned by
   // the SafeBrowsingService) before the io_thread_ gets destroyed, since their
   // destructors can call the URLFetcher destructor, which does a
   // PostDelayedTask operation on the IO thread. (The IO thread will handle that
   // URLFetcher operation before going away.)
-  metrics_services_manager_.reset();
   intranet_redirect_detector_.reset();
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
@@ -288,6 +287,10 @@ void BrowserProcessImpl::StartTearDown() {
     profile_manager_.reset();
   }
 
+  // MetricsServiceManager holds reference to RapporService, wich is needed by
+  // WebContents (which can be held by ProfileManager). To prevent use after
+  // free, it must be destroyed after profile_manager_.
+  metrics_services_manager_.reset();
   // PromoResourceService must be destroyed after the keyed services and before
   // the IO thread.
   promo_resource_service_.reset();
