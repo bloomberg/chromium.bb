@@ -32,6 +32,7 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -40,7 +41,6 @@
 #include "public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 
 namespace blink {
 
@@ -65,6 +65,21 @@ PassRefPtr<TracedValue> toTracedValue(const WebRect& clip)
     return tracedValue;
 }
 
+static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const PaintArtifact& artifact, const WebRect& bounds)
+{
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        // This is a temporary path to paint the artifact using the paint chunk
+        // properties. Ultimately, we should instead split the artifact into
+        // separate layers and send those to the compositor, instead of sending
+        // one big flat SkPicture.
+        SkRect skBounds = SkRect::MakeXYWH(bounds.x, bounds.y, bounds.width, bounds.height);
+        RefPtr<SkPicture> picture = paintArtifactToSkPicture(artifact, skBounds);
+        list->appendDrawingItem(picture.get());
+        return;
+    }
+    artifact.appendToWebDisplayItemList(list);
+}
+
 void ContentLayerDelegate::paintContents(
     WebDisplayItemList* webDisplayItemList, const WebRect& clip,
     WebContentLayerClient::PaintingControlSetting paintingControl)
@@ -75,7 +90,7 @@ void ContentLayerDelegate::paintContents(
     // here so the browser is usable during development and does not crash due
     // to committing the new display items twice.
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        m_painter->paintController()->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
+        paintArtifactToWebDisplayItemList(webDisplayItemList, m_painter->paintController()->paintArtifact(), clip);
         return;
     }
 
@@ -98,7 +113,7 @@ void ContentLayerDelegate::paintContents(
     m_painter->paint(context, clip);
 
     paintController->commitNewDisplayItems();
-    paintController->paintArtifact().appendToWebDisplayItemList(webDisplayItemList);
+    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController->paintArtifact(), clip);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
