@@ -1800,15 +1800,15 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <if expr="chromeos">
         <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE"
-                 desc=".">
+                 desc="The title of a download notification: the current download status is in progress.">
                  Downloading <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
         </message>
         <message name="IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE"
-                 desc=".">
+                 desc="The title of a download notification: the current download status is finished successufully.">
                  <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> downloaded
         </message>
         <message name="IDS_DOWNLOAD_STATUS_DOWNLOAD_FAILED_TITLE"
-                 desc=".">
+                 desc="The title of a download notification: the current download status is failed.">
                  <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> download unsuccessful
         </message>
         <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS"
