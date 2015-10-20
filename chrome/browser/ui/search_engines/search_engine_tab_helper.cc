@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -121,6 +123,18 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // necessary uses TemplateURLFetcher to download the OSDD and create a
   // keyword.
 
+  TemplateURLFetcher::ProviderType provider_type =
+      (msg_provider_type == search_provider::AUTODETECTED_PROVIDER)
+          ? TemplateURLFetcher::AUTODETECTED_PROVIDER
+          : TemplateURLFetcher::EXPLICIT_PROVIDER;
+
+  if (provider_type == TemplateURLFetcher::EXPLICIT_PROVIDER) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Search.AddSearchProvider",
+        EditSearchEngineController::ADD_SEARCH_PROVIDER_CALLED,
+        EditSearchEngineController::NUM_EDIT_SEARCH_ENGINE_ACTIONS);
+  }
+
   // Make sure that the page is the current page and other basic checks.
   // When |page_url| has file: scheme, this method doesn't work because of
   // http://b/issue?id=863583. For that reason, this doesn't check and allow
@@ -134,11 +148,6 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       !TemplateURLFetcherFactory::GetForProfile(profile) ||
       profile->IsOffTheRecord())
     return;
-
-  TemplateURLFetcher::ProviderType provider_type =
-      (msg_provider_type == search_provider::AUTODETECTED_PROVIDER) ?
-          TemplateURLFetcher::AUTODETECTED_PROVIDER :
-          TemplateURLFetcher::EXPLICIT_PROVIDER;
 
   // If the current page is a form submit, find the last page that was not a
   // form submit and use its url to generate the keyword from.

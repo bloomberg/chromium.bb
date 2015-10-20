@@ -40833,6 +40833,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.AddSearchProvider" enum="AddSearchProvider">
+  <owner>estade@chromium.org</owner>
+  <summary>
+    Measures usage of window.external.AddSearchProvider and user interaction
+    with the resulting confirmation dialog (if any).
+  </summary>
+</histogram>
+
 <histogram name="Search.DefaultSearchChangeOrigin"
     enum="DefaultSearchChangeOrigin">
   <owner>mathp@chromium.org</owner>
@@ -52488,6 +52496,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Unspecified"/>
   <int value="1" label="IPv4"/>
   <int value="2" label="IPv6"/>
+</enum>
+
+<enum name="AddSearchProvider" type="int">
+  <int value="0" label="window.external.AddSearchProvider was called"/>
+  <int value="1" label="A confirmation dialog was shown"/>
+  <int value="2" label="The user added a search engine via the dialog"/>
+  <int value="3"
+      label="The user saw the dialog but closed it without adding an engine"/>
 </enum>
 
 <enum name="AffiliationFetchResult" type="int">
