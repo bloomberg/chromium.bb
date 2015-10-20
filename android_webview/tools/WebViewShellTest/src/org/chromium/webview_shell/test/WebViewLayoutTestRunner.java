@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.webview_shell;
+package org.chromium.webview_shell.test;
 
 import android.os.Bundle;
 import android.test.AndroidTestRunner;
@@ -13,7 +13,7 @@ import org.chromium.test.reporter.TestStatusListener;
 /**
  * Customized test runner for running instrumentation tests in WebViewBrowserTests.
  */
-public class WebViewShellTestRunner extends InstrumentationTestRunner {
+public class WebViewLayoutTestRunner extends InstrumentationTestRunner {
     private String mModeArgument;
     private static final String MODE_REBASELINE = "rebaseline";
 
