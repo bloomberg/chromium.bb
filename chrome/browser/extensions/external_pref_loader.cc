@@ -72,8 +72,7 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 // occurs). An empty dictionary is returned in case of failure (e.g. invalid
 // path or json content).
 // Caller takes ownership of the returned dictionary.
-// TODO(Olli Raula) Make return scoped_ptr
-base::DictionaryValue* ExtractExtensionPrefs(
+scoped_ptr<base::DictionaryValue> ExtractExtensionPrefs(
     base::ValueDeserializer* deserializer,
     const base::FilePath& path) {
   std::string error_msg;
@@ -82,18 +81,19 @@ base::DictionaryValue* ExtractExtensionPrefs(
   if (!extensions) {
     LOG(WARNING) << "Unable to deserialize json data: " << error_msg
                  << " in file " << path.value() << ".";
-    return new base::DictionaryValue;
+    return make_scoped_ptr(new base::DictionaryValue);
   }
 
   scoped_ptr<base::DictionaryValue> ext_dictionary =
       base::DictionaryValue::From(extensions.Pass());
   if (ext_dictionary) {
-    return ext_dictionary.release();
+    return ext_dictionary;
   }
 
-  LOG(WARNING) << "Expected a JSON dictionary in file "
-               << path.value() << ".";
-  return new base::DictionaryValue;
+  LOG(WARNING) << "Expected a JSON dictionary in file " << path.value()
+                 << ".";
+  return make_scoped_ptr(new base::DictionaryValue);
+
 }
 
 }  // namespace
@@ -265,8 +265,8 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
   }
 
   JSONFileValueDeserializer deserializer(json_file);
-  scoped_ptr<base::DictionaryValue> ext_prefs(
-      ExtractExtensionPrefs(&deserializer, json_file));
+  scoped_ptr<base::DictionaryValue> ext_prefs =
+      ExtractExtensionPrefs(&deserializer, json_file);
   if (ext_prefs)
     prefs->MergeDictionary(ext_prefs.get());
 }
@@ -303,8 +303,8 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
              << extension_candidate_path.LossyDisplayName();
 
     JSONFileValueDeserializer deserializer(extension_candidate_path);
-    scoped_ptr<base::DictionaryValue> ext_prefs(
-        ExtractExtensionPrefs(&deserializer, extension_candidate_path));
+    scoped_ptr<base::DictionaryValue> ext_prefs =
+        ExtractExtensionPrefs(&deserializer, extension_candidate_path);
     if (ext_prefs) {
       DVLOG(1) << "Adding extension with id: " << id;
       prefs->Set(id, ext_prefs.release());
@@ -319,7 +319,7 @@ ExternalTestingLoader::ExternalTestingLoader(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JSONStringValueDeserializer deserializer(json_data);
   base::FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
-  testing_prefs_.reset(ExtractExtensionPrefs(&deserializer, fake_json_path));
+  testing_prefs_ = ExtractExtensionPrefs(&deserializer, fake_json_path);
 }
 
 void ExternalTestingLoader::StartLoading() {
