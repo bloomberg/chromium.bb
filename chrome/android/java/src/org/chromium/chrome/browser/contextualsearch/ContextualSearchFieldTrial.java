@@ -12,9 +12,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.variations.VariationsAssociatedData;
 
-import java.util.Arrays;
-import java.util.Locale;
-
 /**
  * Provides Field Trial support for the Contextual Search application within Chrome for Android.
  */
@@ -22,11 +19,6 @@ public class ContextualSearchFieldTrial {
     private static final String FIELD_TRIAL_NAME = "ContextualSearch";
     private static final String ENABLED_PARAM = "enabled";
     private static final String ENABLED_VALUE = "true";
-
-    private static final String DISABLE_FOR_CJK = "disable_for_cjk";
-    private static final String DISABLE_FOR_CHINESE = "disable_for_chinese";
-    private static final String DISABLE_FOR_JAPANESE = "disable_for_japanese";
-    private static final String DISABLE_FOR_KOREAN = "disable_for_korean";
 
     static final String PROMO_ON_LIMITED_TAPS = "promo_on_limited_taps";
     static final String TAP_TRIGGERED_PROMO_LIMIT = "tap_triggered_promo_limit";
@@ -39,12 +31,6 @@ public class ContextualSearchFieldTrial {
     static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
     static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
     static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
-
-    private static final String CHINESE_LANGUAGE_CODE = "zh";
-    private static final String JAPANESE_LANGUAGE_CODE = "ja";
-    private static final String KOREAN_LANGUAGE_CODE = "ko";
-    private static final String[] CJK_LANGUAGE_CODES = {CHINESE_LANGUAGE_CODE,
-        JAPANESE_LANGUAGE_CODE, KOREAN_LANGUAGE_CODE};
 
     // The default navigation-detection-delay in milliseconds.
     private static final int DEFAULT_TAP_NAVIGATION_DETECTION_DELAY = 16;
@@ -102,37 +88,9 @@ public class ContextualSearchFieldTrial {
             return true;
         }
 
-        String languageCode = Locale.getDefault().getLanguage();
-        if (!isLanguageSupported(languageCode)) return false;
-
         if (ChromeVersionInfo.isLocalBuild()) return true;
 
         return getBooleanParam(ENABLED_PARAM);
-    }
-
-    /**
-     * @param languageCode The language code of the system.
-     * @return Whether the language is supported, given the language code.
-     */
-    static boolean isLanguageSupported(String languageCode) {
-        if (Arrays.asList(CJK_LANGUAGE_CODES).contains(languageCode)
-                && getBooleanParam(DISABLE_FOR_CJK)) {
-            return false;
-        }
-
-        if (languageCode.equals(CHINESE_LANGUAGE_CODE) && getBooleanParam(DISABLE_FOR_CHINESE)) {
-            return false;
-        }
-
-        if (languageCode.equals(JAPANESE_LANGUAGE_CODE) && getBooleanParam(DISABLE_FOR_JAPANESE)) {
-            return false;
-        }
-
-        if (languageCode.equals(KOREAN_LANGUAGE_CODE) && getBooleanParam(DISABLE_FOR_KOREAN)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
