@@ -495,9 +495,11 @@ void ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
 
 scoped_ptr<ServiceWorkerResponseReader>
 ServiceWorkerWriteToCacheJob::CreateCacheResponseReader() {
-  if (incumbent_response_id_ != kInvalidServiceWorkerResponseId)
-    return context_->storage()->CreateResponseReader(incumbent_response_id_);
-  return nullptr;
+  if (incumbent_response_id_ == kInvalidServiceWorkerResponseId ||
+      version_->skip_script_comparison()) {
+    return nullptr;
+  }
+  return context_->storage()->CreateResponseReader(incumbent_response_id_);
 }
 
 scoped_ptr<ServiceWorkerResponseWriter>

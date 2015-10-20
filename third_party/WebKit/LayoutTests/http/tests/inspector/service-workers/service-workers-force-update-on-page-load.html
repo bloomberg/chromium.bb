@@ -9,7 +9,7 @@ function loadIframe(resolve, reject, url)
 {
     var frame = document.createElement('iframe');
     frame.src = url;
-    frame.onload = function() { resolve(frame.contentDocument.body.textContent); };
+    frame.onload = resolve;
     document.body.appendChild(frame);
 }
 
@@ -49,7 +49,6 @@ function test()
             }
         }
     }
-    var lastTextContent = "";
     installNewWorkerDetector(scope);
     WebInspector.inspectorView.showPanel("sources")
         .then(function(){
@@ -59,15 +58,12 @@ function test()
             InspectorTest.addResult("The first ServiceWorker is activated.");
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope])
         })
-        .then(function(textContent) {
+        .then(function() {
             InspectorTest.addResult("The first frame loaded.");
-            lastTextContent = textContent;
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope]);
         })
-        .then(function(textContent) {
+        .then(function() {
             InspectorTest.addResult("The second frame loaded.");
-            InspectorTest.assertEquals(lastTextContent, textContent, "The content of the second frame must be same as the first one.");
-            lastTextContent = textContent;
             InspectorTest.addResult("Check \"Force update on page load\" check box");
             WebInspector.panels.sources.sidebarPanes.serviceWorkers.expand();
             for (var element of WebInspector.panels.sources.sidebarPanes.serviceWorkers._versionIdCheckBoxMap.values()) {
@@ -75,25 +71,20 @@ function test()
             }
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope]);
         })
-        .then(function(textContent) {
+        .then(function() {
             InspectorTest.addResult("The third frame loaded. The second worker must be activated before here.");
-            InspectorTest.assertTrue(lastTextContent != textContent, "The content of the third frame must be different from the second one.");
-            lastTextContent = textContent;
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope]);
         })
-        .then(function(textContent) {
+        .then(function() {
             InspectorTest.addResult("The fourth frame loaded.  The third worker must be activated before here.");
-            InspectorTest.assertTrue(lastTextContent != textContent, "The content of the fourth frame must be different from the third one.");
-            lastTextContent = textContent;
             InspectorTest.addResult("Uncheck \"Force update on page load\" check box");
             for (var element of WebInspector.panels.sources.sidebarPanes.serviceWorkers._versionIdCheckBoxMap.values()) {
                 element.click();
             }
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope]);
         })
-        .then(function(textContent) {
+        .then(function() {
             InspectorTest.addResult("The fifth frame loaded.");
-            InspectorTest.assertEquals(lastTextContent, textContent, "The content of the fifth frame must be same as the fourth one.");
             InspectorTest.deleteServiceWorkerRegistration(scope);
             InspectorTest.completeTest();
         })
