@@ -1834,37 +1834,36 @@ void FrameView::scrollToAnchor()
     if (!anchorNode)
         return;
 
-    if (!anchorNode->layoutObject())
-        return;
-
     // Scrolling is disabled during updateScrollbars (see isProgrammaticallyScrollable).
     // Bail now to avoid clearing m_scrollAnchor before we actually have a chance to scroll.
     if (m_inUpdateScrollbars)
         return;
 
-    LayoutRect rect;
-    if (anchorNode != m_frame->document()) {
-        rect = anchorNode->boundingBox();
-    } else if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
-        if (Element* documentElement = m_frame->document()->documentElement())
-            rect = documentElement->boundingBox();
+    if (anchorNode->layoutObject()) {
+        LayoutRect rect;
+        if (anchorNode != m_frame->document()) {
+            rect = anchorNode->boundingBox();
+        } else if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
+            if (Element* documentElement = m_frame->document()->documentElement())
+                rect = documentElement->boundingBox();
+        }
+
+        RefPtrWillBeRawPtr<Frame> boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
+
+        // FIXME: Handle RemoteFrames
+        if (boundaryFrame && boundaryFrame->isLocalFrame())
+            toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
+
+        // Scroll nested layers and frames to reveal the anchor.
+        // Align to the top and to the closest side (this matches other browsers).
+        anchorNode->layoutObject()->scrollRectToVisible(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
+
+        if (boundaryFrame && boundaryFrame->isLocalFrame())
+            toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
+
+        if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
+            cache->handleScrolledToAnchor(anchorNode.get());
     }
-
-    RefPtrWillBeRawPtr<Frame> boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
-
-    // FIXME: Handle RemoteFrames
-    if (boundaryFrame && boundaryFrame->isLocalFrame())
-        toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
-
-    // Scroll nested layers and frames to reveal the anchor.
-    // Align to the top and to the closest side (this matches other browsers).
-    anchorNode->layoutObject()->scrollRectToVisible(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
-
-    if (boundaryFrame && boundaryFrame->isLocalFrame())
-        toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);
-
-    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
-        cache->handleScrolledToAnchor(anchorNode.get());
 
     // The scroll anchor should only be maintained while the frame is still loading.
     // If the frame is done loading, clear the anchor now. Otherwise, restore it
