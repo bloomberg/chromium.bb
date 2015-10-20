@@ -11,11 +11,12 @@
 
 namespace mus {
 
-GpuState::GpuState()
+GpuState::GpuState(bool hardware_rendering_available)
     : control_thread_("gpu_command_buffer_control"),
       sync_point_manager_(new gpu::SyncPointManager(true)),
       share_group_(new gfx::GLShareGroup),
-      mailbox_manager_(new gpu::gles2::MailboxManagerImpl) {
+      mailbox_manager_(new gpu::gles2::MailboxManagerImpl),
+      hardware_rendering_available_(hardware_rendering_available) {
   // TODO(penghuang): investigate why gpu::CollectBasicGraphicsInfo() failed on
   // windows remote desktop.
   const gfx::GLImplementation impl = gfx::GetGLImplementation();

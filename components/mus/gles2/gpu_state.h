@@ -20,7 +20,7 @@ namespace mus {
 // they create can share resources with each other via mailboxes.
 class GpuState : public base::RefCounted<GpuState> {
  public:
-  GpuState();
+  explicit GpuState(bool hardware_rendering_available);
 
   // We run the CommandBufferImpl on the control_task_runner, which forwards
   // most method class to the CommandBufferDriver, which runs on the "driver",
@@ -45,6 +45,10 @@ class GpuState : public base::RefCounted<GpuState> {
     return gpu_info_;
   }
 
+  bool HardwareRenderingAvailable() const {
+    return hardware_rendering_available_;
+  }
+
  private:
   friend class base::RefCounted<GpuState>;
   ~GpuState();
@@ -54,6 +58,7 @@ class GpuState : public base::RefCounted<GpuState> {
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   gpu::GPUInfo gpu_info_;
+  bool hardware_rendering_available_;
 };
 
 }  // namespace mus

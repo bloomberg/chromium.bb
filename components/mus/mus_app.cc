@@ -59,13 +59,16 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
   }
 #endif
 
+  bool hardware_rendering_available = true;
 #if !defined(OS_ANDROID)
-  gfx::GLSurface::InitializeOneOff();
+  hardware_rendering_available = gfx::GLSurface::InitializeOneOff();
   event_source_ = ui::PlatformEventSource::CreateDefault();
 #endif
 
+  // TODO(rjkroege): It is possible that we might want to generalize the
+  // GpuState object.
   if (!gpu_state_.get())
-    gpu_state_ = new GpuState;
+    gpu_state_ = new GpuState(hardware_rendering_available);
   connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
 }
 
@@ -119,8 +122,7 @@ void MandolineUIServicesApp::Create(
 
 void MandolineUIServicesApp::Create(mojo::ApplicationConnection* connection,
                                     mojo::InterfaceRequest<Gpu> request) {
-  if (!gpu_state_.get())
-    gpu_state_ = new GpuState;
+  DCHECK(gpu_state_.get());
   new GpuImpl(request.Pass(), gpu_state_);
 }
 
