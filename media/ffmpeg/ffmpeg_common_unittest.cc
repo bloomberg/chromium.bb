@@ -2,11 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstring>
+
+#include "base/bind.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/media.h"
+#include "media/base/test_data_util.h"
+#include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_glue.h"
+#include "media/filters/in_memory_url_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -18,6 +26,97 @@ class FFmpegCommonTest : public testing::Test {
   }
   ~FFmpegCommonTest() override{};
 };
+
+uint8_t kExtraData[5] = {0x00, 0x01, 0x02, 0x03, 0x04};
+
+template <typename T>
+void TestConfigConvertExtraData(
+    AVStream* stream,
+    T* decoder_config,
+    const base::Callback<bool(const AVStream*, T*)>& converter_fn) {
+  // Should initially convert.
+  EXPECT_TRUE(converter_fn.Run(stream, decoder_config));
+
+  // Store orig to let FFmpeg free whatever it allocated.
+  AVCodecContext* codec_context = stream->codec;
+  uint8_t* orig_extradata = codec_context->extradata;
+  int orig_extradata_size = codec_context->extradata_size;
+
+  // Valid combination: extra_data = NULL && size = 0.
+  codec_context->extradata = NULL;
+  codec_context->extradata_size = 0;
+  EXPECT_TRUE(converter_fn.Run(stream, decoder_config));
+  EXPECT_EQ(static_cast<size_t>(codec_context->extradata_size),
+            decoder_config->extra_data().size());
+
+  // Valid combination: extra_data = non-NULL && size > 0.
+  codec_context->extradata = &kExtraData[0];
+  codec_context->extradata_size = arraysize(kExtraData);
+  EXPECT_TRUE(converter_fn.Run(stream, decoder_config));
+  EXPECT_EQ(static_cast<size_t>(codec_context->extradata_size),
+            decoder_config->extra_data().size());
+  EXPECT_EQ(0, memcmp(codec_context->extradata,
+                      &decoder_config->extra_data()[0],
+                      decoder_config->extra_data().size()));
+
+  // Invalid combination: extra_data = NULL && size != 0.
+  codec_context->extradata = NULL;
+  codec_context->extradata_size = 10;
+  EXPECT_FALSE(converter_fn.Run(stream, decoder_config));
+
+  // Invalid combination: extra_data = non-NULL && size = 0.
+  codec_context->extradata = &kExtraData[0];
+  codec_context->extradata_size = 0;
+  EXPECT_FALSE(converter_fn.Run(stream, decoder_config));
+
+  // Restore orig values for sane cleanup.
+  codec_context->extradata = orig_extradata;
+  codec_context->extradata_size = orig_extradata_size;
+}
+
+TEST_F(FFmpegCommonTest, AVStreamToDecoderConfig) {
+  // Open a file to get a real AVStreams from FFmpeg.
+  base::MemoryMappedFile file;
+  file.Initialize(GetTestDataFilePath("bear-320x240.webm"));
+  InMemoryUrlProtocol protocol(file.data(), file.length(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+  AVFormatContext* format_context = glue.format_context();
+
+  // Find the audio and video streams and test valid and invalid combinations
+  // for extradata and extradata_size.
+  bool found_audio = false;
+  bool found_video = false;
+  for (size_t i = 0;
+       i < format_context->nb_streams && (!found_audio || !found_video);
+       ++i) {
+    AVStream* stream = format_context->streams[i];
+    AVCodecContext* codec_context = stream->codec;
+    AVMediaType codec_type = codec_context->codec_type;
+
+    if (codec_type == AVMEDIA_TYPE_AUDIO) {
+      if (found_audio)
+        continue;
+      found_audio = true;
+      AudioDecoderConfig audio_config;
+      TestConfigConvertExtraData(stream, &audio_config,
+                                 base::Bind(&AVStreamToAudioDecoderConfig));
+    } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      if (found_video)
+        continue;
+      found_video = true;
+      VideoDecoderConfig video_config;
+      TestConfigConvertExtraData(stream, &video_config,
+                                 base::Bind(&AVStreamToVideoDecoderConfig));
+    } else {
+      // Only process audio/video.
+      continue;
+    }
+  }
+
+  ASSERT_TRUE(found_audio);
+  ASSERT_TRUE(found_video);
+}
 
 TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {
   AVCodecContext context = {0};
@@ -31,7 +130,8 @@ TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {
   context.sample_rate = 44100;
 
   AudioDecoderConfig decoder_config;
-  AVCodecContextToAudioDecoderConfig(&context, false, &decoder_config);
+  ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(&context, false,
+                                                 &decoder_config));
   EXPECT_EQ(48000, decoder_config.samples_per_second());
 }
 

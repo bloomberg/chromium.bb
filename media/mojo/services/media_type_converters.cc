@@ -419,10 +419,9 @@ media::interfaces::AudioDecoderConfigPtr TypeConverter<
   config->channel_layout =
       static_cast<media::interfaces::ChannelLayout>(input.channel_layout());
   config->samples_per_second = input.samples_per_second();
-  if (input.extra_data()) {
-    std::vector<uint8_t> data(input.extra_data(),
-                              input.extra_data() + input.extra_data_size());
-    config->extra_data.Swap(&data);
+  if (!input.extra_data().empty()) {
+    std::vector<uint8_t> extra_data = input.extra_data();
+    config->extra_data.Swap(&extra_data);
   }
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
   config->codec_delay = input.codec_delay();
@@ -440,10 +439,7 @@ TypeConverter<media::AudioDecoderConfig,
       static_cast<media::AudioCodec>(input->codec),
       static_cast<media::SampleFormat>(input->sample_format),
       static_cast<media::ChannelLayout>(input->channel_layout),
-      input->samples_per_second,
-      input->extra_data.size() ? &input->extra_data.front() : NULL,
-      input->extra_data.size(),
-      input->is_encrypted,
+      input->samples_per_second, input->extra_data, input->is_encrypted,
       base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
       input->codec_delay);
   return config;
@@ -465,11 +461,7 @@ media::interfaces::VideoDecoderConfigPtr TypeConverter<
   config->coded_size = Size::From(input.coded_size());
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
-  if (input.extra_data()) {
-    std::vector<uint8_t> data(input.extra_data(),
-                              input.extra_data() + input.extra_data_size());
-    config->extra_data.Swap(&data);
-  }
+  config->extra_data = mojo::Array<uint8>::From(input.extra_data());
   config->is_encrypted = input.is_encrypted();
   return config.Pass();
 }
@@ -486,9 +478,8 @@ TypeConverter<media::VideoDecoderConfig,
       static_cast<media::VideoPixelFormat>(input->format),
       static_cast<media::ColorSpace>(input->color_space),
       input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
-      input->natural_size.To<gfx::Size>(),
-      input->extra_data.size() ? &input->extra_data.front() : NULL,
-      input->extra_data.size(), input->is_encrypted);
+      input->natural_size.To<gfx::Size>(), input->extra_data,
+      input->is_encrypted);
   return config;
 }
 

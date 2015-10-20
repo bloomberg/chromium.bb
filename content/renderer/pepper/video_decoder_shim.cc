@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
+#include "media/base/media_util.h"
 #include "media/base/video_decoder.h"
 #include "media/blink/skcanvas_video_renderer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -882,8 +883,8 @@ bool VideoDecoderShim::Initialize(
       codec, profile, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_UNSPECIFIED,
       gfx::Size(32, 24),  // Small sizes that won't fail.
       gfx::Rect(32, 24), gfx::Size(32, 24),
-      NULL /* extra_data */,  // TODO(bbudge) Verify this isn't needed.
-      0 /* extra_data_size */, false /* decryption */);
+      // TODO(bbudge): Verify extra data isn't needed.
+      media::EmptyExtraData(), false /* decryption */);
 
   media_task_runner_->PostTask(
       FROM_HERE,

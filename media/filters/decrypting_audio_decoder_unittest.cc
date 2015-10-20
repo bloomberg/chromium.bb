@@ -12,6 +12,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/gmock_callback_support.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -118,8 +119,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
     config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                       CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true,
-                       base::TimeDelta(), 0);
+                       CHANNEL_LAYOUT_STEREO, kSampleRate, EmptyExtraData(),
+                       true, base::TimeDelta(), 0);
     InitializeAndExpectResult(config_, true);
   }
 
@@ -287,7 +288,8 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_Normal) {
 // Ensure that DecryptingAudioDecoder only accepts encrypted audio.
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, false);
+                            CHANNEL_LAYOUT_STEREO, kSampleRate,
+                            EmptyExtraData(), false);
 
   InitializeAndExpectResult(config, false);
 }
@@ -295,7 +297,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
 // Ensure decoder handles invalid audio configs without crashing.
 TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
   AudioDecoderConfig config(kUnknownAudioCodec, kUnknownSampleFormat,
-                            CHANNEL_LAYOUT_STEREO, 0, NULL, 0, true);
+                            CHANNEL_LAYOUT_STEREO, 0, EmptyExtraData(), true);
 
   InitializeAndExpectResult(config, false);
 }
@@ -307,14 +309,16 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
   ExpectDecryptorNotification(decryptor_.get(), true);
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
+                            CHANNEL_LAYOUT_STEREO, kSampleRate,
+                            EmptyExtraData(), true);
   InitializeAndExpectResult(config, false);
 }
 
 TEST_F(DecryptingAudioDecoderTest, Initialize_NullDecryptor) {
   ExpectDecryptorNotification(NULL, false);
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
-                            CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
+                            CHANNEL_LAYOUT_STEREO, kSampleRate,
+                            EmptyExtraData(), true);
   InitializeAndExpectResult(config, false);
 }
 
@@ -382,7 +386,8 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_ConfigChange) {
   // The new config is different from the initial config in bits-per-channel,
   // channel layout and samples_per_second.
   AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarS16,
-                                CHANNEL_LAYOUT_5_1, 88200, NULL, 0, true);
+                                CHANNEL_LAYOUT_5_1, 88200, EmptyExtraData(),
+                                true);
   EXPECT_NE(new_config.bits_per_channel(), config_.bits_per_channel());
   EXPECT_NE(new_config.channel_layout(), config_.channel_layout());
   EXPECT_NE(new_config.samples_per_second(), config_.samples_per_second());

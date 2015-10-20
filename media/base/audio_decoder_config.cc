@@ -24,30 +24,26 @@ AudioDecoderConfig::AudioDecoderConfig(AudioCodec codec,
                                        SampleFormat sample_format,
                                        ChannelLayout channel_layout,
                                        int samples_per_second,
-                                       const uint8* extra_data,
-                                       size_t extra_data_size,
+                                       const std::vector<uint8_t>& extra_data,
                                        bool is_encrypted) {
   Initialize(codec, sample_format, channel_layout, samples_per_second,
-             extra_data, extra_data_size, is_encrypted, base::TimeDelta(), 0);
+             extra_data, is_encrypted, base::TimeDelta(), 0);
 }
 
 void AudioDecoderConfig::Initialize(AudioCodec codec,
                                     SampleFormat sample_format,
                                     ChannelLayout channel_layout,
                                     int samples_per_second,
-                                    const uint8* extra_data,
-                                    size_t extra_data_size,
+                                    const std::vector<uint8_t>& extra_data,
                                     bool is_encrypted,
                                     base::TimeDelta seek_preroll,
                                     int codec_delay) {
-  CHECK((extra_data_size != 0) == (extra_data != NULL));
-
   codec_ = codec;
   channel_layout_ = channel_layout;
   samples_per_second_ = samples_per_second;
   sample_format_ = sample_format;
   bytes_per_channel_ = SampleFormatToBytesPerChannel(sample_format);
-  extra_data_.assign(extra_data, extra_data + extra_data_size);
+  extra_data_ = extra_data;
   is_encrypted_ = is_encrypted;
   seek_preroll_ = seek_preroll;
   codec_delay_ = codec_delay;
@@ -75,9 +71,7 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
           (bytes_per_channel() == config.bytes_per_channel()) &&
           (channel_layout() == config.channel_layout()) &&
           (samples_per_second() == config.samples_per_second()) &&
-          (extra_data_size() == config.extra_data_size()) &&
-          (!extra_data() || !memcmp(extra_data(), config.extra_data(),
-                                    extra_data_size())) &&
+          (extra_data() == config.extra_data()) &&
           (is_encrypted() == config.is_encrypted()) &&
           (sample_format() == config.sample_format()) &&
           (seek_preroll() == config.seek_preroll()) &&
@@ -94,7 +88,7 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
     << " bytes_per_frame: " << bytes_per_frame()
     << " seek_preroll: " << seek_preroll().InMilliseconds() << "ms"
     << " codec_delay: " << codec_delay()
-    << " has extra data? " << (extra_data() ? "true" : "false")
+    << " has extra data? " << (extra_data().empty() ? "false" : "true")
     << " encrypted? " << (is_encrypted() ? "true" : "false");
   return s.str();
 }

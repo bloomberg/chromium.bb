@@ -15,6 +15,7 @@
 #include "media/base/audio_buffer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 using ::testing::_;
@@ -127,8 +128,8 @@ static VideoDecoderConfig GetTestConfig(VideoCodec codec,
 
   return VideoDecoderConfig(codec, VIDEO_CODEC_PROFILE_UNKNOWN,
                             PIXEL_FORMAT_YV12, COLOR_SPACE_UNSPECIFIED,
-                            coded_size, visible_rect, natural_size, NULL, 0,
-                            is_encrypted);
+                            coded_size, visible_rect, natural_size,
+                            EmptyExtraData(), is_encrypted);
 }
 
 static const gfx::Size kNormalSize(320, 240);

@@ -15,6 +15,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/cast/sender/h264_vt_encoder.h"
 #include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/test/utility/default_config.h"
@@ -308,7 +309,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFramesAreDecodable) {
   VideoDecoderConfig config(kCodecH264, H264PROFILE_MAIN, frame_->format(),
                             COLOR_SPACE_UNSPECIFIED, frame_->coded_size(),
                             frame_->visible_rect(), frame_->natural_size(),
-                            nullptr, 0, false);
+                            EmptyExtraData(), false);
   scoped_refptr<EndToEndFrameChecker> checker(new EndToEndFrameChecker(config));
 
   VideoEncoder::FrameEncodedCallback cb =

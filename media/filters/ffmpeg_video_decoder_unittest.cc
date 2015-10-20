@@ -14,6 +14,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
@@ -215,16 +216,12 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Normal) {
   Initialize();
 }
 
-TEST_F(FFmpegVideoDecoderTest, Initialize_EncryptedConfig) {
-  InitializeWithConfigWithResult(TestVideoConfig::NormalEncrypted(), false);
-}
-
 TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open2() fails.
   VideoDecoderConfig config(kCodecTheora, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat, COLOR_SPACE_UNSPECIFIED,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, false);
+                            kVideoFormat, COLOR_SPACE_UNSPECIFIED, kCodedSize,
+                            kVisibleRect, kNaturalSize, EmptyExtraData(),
+                            false);
   InitializeWithConfigWithResult(config, false);
 }
 
