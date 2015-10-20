@@ -488,9 +488,12 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     for (const auto& trackIndex : flexibleSizedTracksIndex) {
         GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
 
-        LayoutUnit baseSize = std::max<LayoutUnit>(tracks[trackIndex].baseSize(), flexFraction * trackSize.maxTrackBreadth().flex());
-        tracks[trackIndex].setBaseSize(baseSize);
-        freeSpace -= baseSize;
+        LayoutUnit oldBaseSize = tracks[trackIndex].baseSize();
+        LayoutUnit baseSize = std::max<LayoutUnit>(oldBaseSize, flexFraction * trackSize.maxTrackBreadth().flex());
+        if (LayoutUnit increment = baseSize - oldBaseSize) {
+            tracks[trackIndex].setBaseSize(baseSize);
+            freeSpace -= increment;
+        }
     }
 
     // FIXME: Should ASSERT flexible tracks exhaust the freeSpace ? (see issue 739613002).
