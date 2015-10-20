@@ -1216,14 +1216,6 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
   return cookies;
 }
 
-CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_first_party(url::Origin(url));
-
-  return GetAllCookiesForURLWithOptions(url, options);
-}
-
 int CookieMonster::DeleteAll(bool sync_to_store) {
   base::AutoLock autolock(lock_);
 

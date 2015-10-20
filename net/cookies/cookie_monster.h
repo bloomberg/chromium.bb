@@ -473,8 +473,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   CookieList GetAllCookiesForURLWithOptions(const GURL& url,
                                             const CookieOptions& options);
 
-  CookieList GetAllCookiesForURL(const GURL& url);
-
   int DeleteAll(bool sync_to_store);
 
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
