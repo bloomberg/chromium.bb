@@ -53,6 +53,8 @@ class SpdyAltSvcWireFormatPeer {
 
 namespace {
 
+// Generate header field values, possibly with multiply defined parameters and
+// random case, and corresponding AlternativeService entries.
 void FuzzHeaderFieldValue(
     int i,
     std::string* header_field_value,
@@ -117,6 +119,8 @@ void FuzzHeaderFieldValue(
   }
 }
 
+// Generate AlternativeService entries and corresponding header field values in
+// canonical form, that is, what SerializeHeaderFieldValue() should output.
 void FuzzAlternativeService(int i,
                             SpdyAltSvcWireFormat::AlternativeService* altsvc,
                             std::string* expected_header_field_value) {
@@ -189,6 +193,22 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
     EXPECT_EQ(expected_altsvc.version, altsvc_vector[0].version);
     EXPECT_EQ(expected_altsvc.max_age, altsvc_vector[0].max_age);
     EXPECT_DOUBLE_EQ(expected_altsvc.probability, altsvc_vector[0].probability);
+
+    // Roundtrip test starting with |altsvc_vector|.
+    std::string reserialized_header_field_value =
+        SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector);
+    SpdyAltSvcWireFormat::AlternativeServiceVector roundtrip_altsvc_vector;
+    ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
+        reserialized_header_field_value, &roundtrip_altsvc_vector));
+    ASSERT_EQ(1u, roundtrip_altsvc_vector.size());
+    EXPECT_EQ(expected_altsvc.protocol_id,
+              roundtrip_altsvc_vector[0].protocol_id);
+    EXPECT_EQ(expected_altsvc.host, roundtrip_altsvc_vector[0].host);
+    EXPECT_EQ(expected_altsvc.port, roundtrip_altsvc_vector[0].port);
+    EXPECT_EQ(expected_altsvc.version, roundtrip_altsvc_vector[0].version);
+    EXPECT_EQ(expected_altsvc.max_age, roundtrip_altsvc_vector[0].max_age);
+    EXPECT_DOUBLE_EQ(expected_altsvc.probability,
+                     roundtrip_altsvc_vector[0].probability);
   }
 }
 
@@ -222,6 +242,28 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueMultiple) {
       EXPECT_DOUBLE_EQ(expected_altsvc_vector[j].probability,
                        altsvc_vector[j].probability);
     }
+
+    // Roundtrip test starting with |altsvc_vector|.
+    std::string reserialized_header_field_value =
+        SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector);
+    SpdyAltSvcWireFormat::AlternativeServiceVector roundtrip_altsvc_vector;
+    ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
+        reserialized_header_field_value, &roundtrip_altsvc_vector));
+    ASSERT_EQ(expected_altsvc_vector.size(), roundtrip_altsvc_vector.size());
+    for (unsigned int j = 0; j < roundtrip_altsvc_vector.size(); ++j) {
+      EXPECT_EQ(expected_altsvc_vector[j].protocol_id,
+                roundtrip_altsvc_vector[j].protocol_id);
+      EXPECT_EQ(expected_altsvc_vector[j].host,
+                roundtrip_altsvc_vector[j].host);
+      EXPECT_EQ(expected_altsvc_vector[j].port,
+                roundtrip_altsvc_vector[j].port);
+      EXPECT_EQ(expected_altsvc_vector[j].version,
+                roundtrip_altsvc_vector[j].version);
+      EXPECT_EQ(expected_altsvc_vector[j].max_age,
+                roundtrip_altsvc_vector[j].max_age);
+      EXPECT_DOUBLE_EQ(expected_altsvc_vector[j].probability,
+                       roundtrip_altsvc_vector[j].probability);
+    }
   }
 }
 
@@ -231,13 +273,29 @@ TEST(SpdyAltSvcWireFormatTest, SerializeEmptyHeaderFieldValue) {
             SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector));
 }
 
-// Test SerializeHeaderFieldValue() with and without hostname and each
+// Test ParseHeaderFieldValue() and SerializeHeaderFieldValue() on the same pair
+// of |expected_header_field_value| and |altsvc|, with and without hostname and
+// each
 // parameter.  Single alternative service at a time.
-TEST(SpdyAltSvcWireFormatTest, SerializeHeaderFieldValue) {
+TEST(SpdyAltSvcWireFormatTest, RoundTrip) {
   for (int i = 0; i < 1 << 4; ++i) {
     SpdyAltSvcWireFormat::AlternativeService altsvc;
     std::string expected_header_field_value;
     FuzzAlternativeService(i, &altsvc, &expected_header_field_value);
+
+    // Test ParseHeaderFieldValue().
+    SpdyAltSvcWireFormat::AlternativeServiceVector parsed_altsvc_vector;
+    ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
+        expected_header_field_value, &parsed_altsvc_vector));
+    ASSERT_EQ(1u, parsed_altsvc_vector.size());
+    EXPECT_EQ(altsvc.protocol_id, parsed_altsvc_vector[0].protocol_id);
+    EXPECT_EQ(altsvc.host, parsed_altsvc_vector[0].host);
+    EXPECT_EQ(altsvc.port, parsed_altsvc_vector[0].port);
+    EXPECT_EQ(altsvc.version, parsed_altsvc_vector[0].version);
+    EXPECT_EQ(altsvc.max_age, parsed_altsvc_vector[0].max_age);
+    EXPECT_DOUBLE_EQ(altsvc.probability, parsed_altsvc_vector[0].probability);
+
+    // Test SerializeHeaderFieldValue().
     SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
     altsvc_vector.push_back(altsvc);
     EXPECT_EQ(expected_header_field_value,
@@ -245,9 +303,11 @@ TEST(SpdyAltSvcWireFormatTest, SerializeHeaderFieldValue) {
   }
 }
 
-// Test SerializeHeaderFieldValue() with and without hostname and each
+// Test ParseHeaderFieldValue() and SerializeHeaderFieldValue() on the same pair
+// of |expected_header_field_value| and |altsvc|, with and without hostname and
+// each
 // parameter.  Multiple alternative services at a time.
-TEST(SpdyAltSvcWireFormatTest, SerializeHeaderFieldValueMultiple) {
+TEST(SpdyAltSvcWireFormatTest, RoundTripMultiple) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   std::string expected_header_field_value;
   for (int i = 0; i < 1 << 4; ++i) {
@@ -255,6 +315,26 @@ TEST(SpdyAltSvcWireFormatTest, SerializeHeaderFieldValueMultiple) {
     FuzzAlternativeService(i, &altsvc, &expected_header_field_value);
     altsvc_vector.push_back(altsvc);
   }
+
+  // Test ParseHeaderFieldValue().
+  SpdyAltSvcWireFormat::AlternativeServiceVector parsed_altsvc_vector;
+  ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
+      expected_header_field_value, &parsed_altsvc_vector));
+  ASSERT_EQ(altsvc_vector.size(), parsed_altsvc_vector.size());
+  SpdyAltSvcWireFormat::AlternativeServiceVector::iterator expected_it =
+      altsvc_vector.begin();
+  SpdyAltSvcWireFormat::AlternativeServiceVector::iterator parsed_it =
+      parsed_altsvc_vector.begin();
+  for (; expected_it != altsvc_vector.end(); ++expected_it, ++parsed_it) {
+    EXPECT_EQ(expected_it->protocol_id, parsed_it->protocol_id);
+    EXPECT_EQ(expected_it->host, parsed_it->host);
+    EXPECT_EQ(expected_it->port, parsed_it->port);
+    EXPECT_EQ(expected_it->version, parsed_it->version);
+    EXPECT_EQ(expected_it->max_age, parsed_it->max_age);
+    EXPECT_DOUBLE_EQ(expected_it->probability, parsed_it->probability);
+  }
+
+  // Test SerializeHeaderFieldValue().
   EXPECT_EQ(expected_header_field_value,
             SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector));
 }
