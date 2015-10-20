@@ -13,6 +13,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSStringValue.h"
+#include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePair.h"
@@ -164,6 +165,15 @@ public:
         return cssValuePool().createValue(m_calcValue->doubleValue(), unitType);
     }
 
+    bool consumeNumberRaw(double& result)
+    {
+        if (!m_calcValue)
+            return false;
+        m_sourceRange = m_range;
+        result = m_calcValue->doubleValue();
+        return true;
+    }
+
 private:
     CSSParserTokenRange& m_sourceRange;
     CSSParserTokenRange m_range;
@@ -195,6 +205,17 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePositiveInteger(CSSParse
     return consumeInteger(range, 1);
 }
 
+static bool consumeNumberRaw(CSSParserTokenRange& range, double& result)
+{
+    if (range.peek().type() == NumberToken) {
+        result = range.consumeIncludingWhitespace().numericValue();
+        return true;
+    }
+    CalcParser calcParser(range, ValueRangeAll);
+    return calcParser.consumeNumberRaw(result);
+}
+
+// TODO(timloh): Work out if this can just call consumeNumberRaw
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange& range, ValueRange valueRange)
 {
     const CSSParserToken& token = range.peek();
@@ -959,6 +980,108 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, 
     return zoom.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeSteps(CSSParserTokenRange& range)
+{
+    ASSERT(range.peek().functionId() == CSSValueSteps);
+    CSSParserTokenRange rangeCopy = range;
+    CSSParserTokenRange args = consumeFunction(rangeCopy);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> steps = consumePositiveInteger(args);
+    if (!steps)
+        return nullptr;
+
+    StepsTimingFunction::StepAtPosition position = StepsTimingFunction::End;
+    if (consumeCommaIncludingWhitespace(args)) {
+        switch (args.consumeIncludingWhitespace().id()) {
+        case CSSValueMiddle:
+            if (!RuntimeEnabledFeatures::webAnimationsAPIEnabled())
+                return nullptr;
+            position = StepsTimingFunction::Middle;
+            break;
+        case CSSValueStart:
+            position = StepsTimingFunction::Start;
+            break;
+        case CSSValueEnd:
+            position = StepsTimingFunction::End;
+            break;
+        default:
+            return nullptr;
+        }
+    }
+
+    if (!args.atEnd())
+        return nullptr;
+
+    range = rangeCopy;
+    return CSSStepsTimingFunctionValue::create(steps->getIntValue(), position);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCubicBezier(CSSParserTokenRange& range)
+{
+    ASSERT(range.peek().functionId() == CSSValueCubicBezier);
+    CSSParserTokenRange rangeCopy = range;
+    CSSParserTokenRange args = consumeFunction(rangeCopy);
+
+    double x1, y1, x2, y2;
+    if (consumeNumberRaw(args, x1)
+        && x1 >= 0 && x1 <= 1
+        && consumeCommaIncludingWhitespace(args)
+        && consumeNumberRaw(args, y1)
+        && consumeCommaIncludingWhitespace(args)
+        && consumeNumberRaw(args, x2)
+        && x2 >= 0 && x2 <= 1
+        && consumeCommaIncludingWhitespace(args)
+        && consumeNumberRaw(args, y2)
+        && args.atEnd()) {
+        range = rangeCopy;
+        return CSSCubicBezierTimingFunctionValue::create(x1, y1, x2, y2);
+    }
+
+    return nullptr;
+}
+
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationTimingFunction(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueEase || id == CSSValueLinear || id == CSSValueEaseIn
+        || id == CSSValueEaseOut || id == CSSValueEaseInOut || id == CSSValueStepStart
+        || id == CSSValueStepEnd || id == CSSValueStepMiddle)
+        return consumeIdent(range);
+
+    CSSValueID function = range.peek().functionId();
+    if (function == CSSValueSteps)
+        return consumeSteps(range);
+    if (function == CSSValueCubicBezier)
+        return consumeCubicBezier(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID property, CSSParserTokenRange& range)
+{
+    switch (property) {
+    case CSSPropertyAnimationTimingFunction:
+    case CSSPropertyTransitionTimingFunction:
+        return consumeAnimationTimingFunction(range);
+    default:
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSPropertyID property, CSSParserTokenRange& range)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSValue> value = consumeAnimationValue(property, range);
+        if (!value)
+            return nullptr;
+        list->append(value.release());
+    } while (consumeCommaIncludingWhitespace(range));
+    ASSERT(list->length());
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -1039,6 +1162,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeColumnSpan(m_range, m_context.mode());
     case CSSPropertyZoom:
         return consumeZoom(m_range, m_context);
+    case CSSPropertyAnimationTimingFunction:
+    case CSSPropertyTransitionTimingFunction:
+        return consumeAnimationPropertyList(propId, m_range);
     default:
         return nullptr;
     }
