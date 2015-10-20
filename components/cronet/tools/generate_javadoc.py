@@ -33,7 +33,7 @@ class CronetExtension(Extension):
 
 def GenerateJavadoc(options):
   output_dir = os.path.abspath(os.path.join(options.output_dir, 'javadoc'))
-  working_dir = os.path.join(options.input_dir, 'android/java')
+  working_dir = os.path.join(options.input_dir, 'android/api')
   overview_file = os.path.abspath(options.overview_file)
 
   build_utils.DeleteDirectory(output_dir)
