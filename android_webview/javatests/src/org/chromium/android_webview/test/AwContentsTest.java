@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -31,7 +30,6 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
@@ -54,7 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * AwContents tests.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();

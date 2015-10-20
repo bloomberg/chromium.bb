@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.Log;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
@@ -20,6 +21,7 @@ import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.InMemorySharedPreferences;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -36,8 +38,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A base class for android_webview tests.
+ * A base class for android_webview tests. WebView only runs on KitKat and later,
+ * so make sure no one attempts to run the tests on earlier OS releases.
  */
+@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwTestBase
         extends BaseActivityInstrumentationTestCase<AwTestRunnerActivity> {
     public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000);

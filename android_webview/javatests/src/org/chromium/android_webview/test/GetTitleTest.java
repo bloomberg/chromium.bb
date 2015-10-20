@@ -4,19 +4,16 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 /**
  * A test suite for ContentView.getTitle().
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class GetTitleTest extends AwTestBase {
     private static final String TITLE = "TITLE";
 

@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
@@ -15,7 +14,6 @@ import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * AwContents rendering / pixel tests.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsRenderTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;

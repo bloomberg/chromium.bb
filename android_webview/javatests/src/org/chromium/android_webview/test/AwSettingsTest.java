@@ -30,7 +30,6 @@ import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -51,7 +50,6 @@ import java.util.regex.Pattern;
  * settings applies either to each individual view or to all views of the
  * application
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwSettingsTest extends AwTestBase {
     private static final boolean ENABLED = true;
     private static final boolean DISABLED = false;

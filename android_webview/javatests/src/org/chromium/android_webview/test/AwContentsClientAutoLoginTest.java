@@ -4,14 +4,12 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedLoginRequestHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -20,7 +18,6 @@ import java.util.List;
 /**
  * Tests for the AwContentsClient.onReceivedLoginRequest callback.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientAutoLoginTest extends AwTestBase {
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 

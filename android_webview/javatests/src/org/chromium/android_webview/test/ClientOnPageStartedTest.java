@@ -4,18 +4,15 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 /**
  * Tests for the ContentViewClient.onPageStarted() method.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ClientOnPageStartedTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient;

@@ -4,18 +4,15 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 /**
  * This class tests AwQuotaManagerBridge runs without AwContents etc. It simulates
  * use case that user calls WebStorage getInstance() without WebView.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class StandaloneAwQuotaManagerBridgeTest extends AwTestBase {
     public void testStartup() throws Exception {
         // AwQuotaManager should run without any issue.

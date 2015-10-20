@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Base64;
 import android.view.View;
@@ -23,7 +22,6 @@ import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -41,7 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Visual state related tests.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class VisualStateTest extends AwTestBase {
     private static final String WAIT_FOR_JS_TEST_URL =
             "file:///android_asset/visual_state_waits_for_js_test.html";

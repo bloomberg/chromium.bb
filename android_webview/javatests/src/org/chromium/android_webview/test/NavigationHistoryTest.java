@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
@@ -12,7 +11,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -24,7 +22,6 @@ import java.util.concurrent.Callable;
 /**
  * Navigation history tests.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class NavigationHistoryTest extends AwTestBase {
 
     private static final String PAGE_1_PATH = "/page1.html";

@@ -4,18 +4,15 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 /**
  * AwContentsStatics tests.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsStaticsTest extends AwTestBase {
 
     private static class ClearClientCertCallbackHelper extends CallbackHelper

@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.os.Handler;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.JavascriptInterface;
@@ -20,7 +19,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.util.TestWebServer;
@@ -31,7 +29,6 @@ import java.util.concurrent.CountDownLatch;
 /**
  * The tests for content postMessage API.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
 public class PostMessageTest extends AwTestBase {
 

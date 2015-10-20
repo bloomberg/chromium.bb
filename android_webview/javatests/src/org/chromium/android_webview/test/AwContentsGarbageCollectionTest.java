@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -15,7 +14,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -27,7 +25,6 @@ import java.util.concurrent.Callable;
  * accidentally prevents AwContents from garbage collected, leading to leaks.
  * See crbug.com/544098 for why @DisableHardwareAccelerationForTest is needed.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsGarbageCollectionTest extends AwTestBase {
     // The system retains a strong ref to the last focused view (in InputMethodManager)
     // so allow for 1 'leaked' instance.

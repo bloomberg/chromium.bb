@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -14,7 +13,6 @@ import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -24,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the ContentViewClient.onReceivedHttpError() method.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
     private VerifyOnReceivedHttpErrorCallClient mContentsClient;

@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -17,7 +16,6 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -25,7 +23,6 @@ import java.util.concurrent.Callable;
 /**
  * Test for getHitTestResult, requestFocusNodeHref, and requestImageRef methods
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class WebKitHitTestTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestView;

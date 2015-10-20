@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
@@ -12,12 +11,10 @@ import android.view.View.MeasureSpec;
 
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 /**
  * Unittests for the AwLayoutSizer class.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwLayoutSizerTest extends InstrumentationTestCase {
     static class LayoutSizerDelegate implements AwLayoutSizer.Delegate {
         public int requestLayoutCallCount;

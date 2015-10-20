@@ -5,12 +5,10 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.RectF;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.external_video_surface.ExternalVideoSurfaceContainer;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -18,7 +16,6 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 /**
  * A test suite for ExternalVideoSurfaceContainerTest.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ExternalVideoSurfaceContainerTest extends AwTestBase {
 
     // Callback helper to track the position/size of the external surface.

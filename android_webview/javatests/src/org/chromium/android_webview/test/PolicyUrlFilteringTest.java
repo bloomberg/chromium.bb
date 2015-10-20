@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -16,7 +15,6 @@ import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.policy.CombinedPolicyProvider;
@@ -24,7 +22,6 @@ import org.chromium.policy.CombinedPolicyProvider;
 import java.util.ArrayList;
 
 /** Tests for the policy based URL filtering. */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class PolicyUrlFilteringTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

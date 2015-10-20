@@ -4,19 +4,16 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwWebContentsObserver;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 /**
  * Tests for the AwWebContentsObserver class.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwWebContentsObserverTest extends AwTestBase  {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;

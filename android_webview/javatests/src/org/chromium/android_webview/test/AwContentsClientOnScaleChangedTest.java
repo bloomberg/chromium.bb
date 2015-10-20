@@ -4,18 +4,15 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Tests for the WebViewClient.onScaleChanged.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientOnScaleChangedTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

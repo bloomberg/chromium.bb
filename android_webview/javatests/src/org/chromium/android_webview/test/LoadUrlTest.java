@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -16,7 +15,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.net.test.util.TestWebServer;
@@ -31,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test suite for loadUrl().
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class LoadUrlTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})

@@ -4,19 +4,16 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwWebContentsDelegate;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 /**
  * Tests for the ContentViewClient.addMessageToConsole() method.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ClientAddMessageToConsoleTest extends AwTestBase {
 
     // Line number at which the console message is logged in the page returned by the

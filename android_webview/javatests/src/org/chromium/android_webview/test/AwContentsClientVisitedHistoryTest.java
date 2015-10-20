@@ -4,21 +4,18 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 /**
  * Tests for AwContentsClient.getVisitedHistory and AwContents.doUpdateVisitedHistory callbacks.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientVisitedHistoryTest extends AwTestBase {
     private static class GetVisitedHistoryHelper extends CallbackHelper {
         private ValueCallback<String[]> mCallback;

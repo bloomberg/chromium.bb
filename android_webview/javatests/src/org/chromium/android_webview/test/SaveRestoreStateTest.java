@@ -4,14 +4,12 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.net.test.util.TestWebServer;
@@ -22,7 +20,6 @@ import java.util.concurrent.Callable;
  * Tests for the {@link android.webkit.WebView#saveState} and
  * {@link android.webkit.WebView#restoreState} APIs.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class SaveRestoreStateTest extends AwTestBase {
     private static class TestVars {
         public final TestAwContentsClient contentsClient;

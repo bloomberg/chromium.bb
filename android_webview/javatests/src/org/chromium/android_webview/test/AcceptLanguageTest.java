@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.apache.http.Header;
@@ -12,13 +11,11 @@ import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 /**
  * Tests for Accept Language implementation.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AcceptLanguageTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

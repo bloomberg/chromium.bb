@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.os.Message;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -13,7 +12,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import org.apache.http.util.EncodingUtils;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -23,7 +21,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests if resubmission of post data is handled properly.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
 
     private static class TestAwContentsClient

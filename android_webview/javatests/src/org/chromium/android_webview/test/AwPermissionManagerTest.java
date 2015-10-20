@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -13,7 +12,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -21,7 +19,6 @@ import java.util.concurrent.Callable;
 /**
  * Test AwPermissionManager.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwPermissionManagerTest extends AwTestBase {
 
     private static final String REQUEST_DUPLICATE = "<html> <script>"

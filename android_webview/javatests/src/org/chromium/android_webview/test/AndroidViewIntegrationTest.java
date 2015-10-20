@@ -5,7 +5,6 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.Color;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -17,7 +16,6 @@ import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -26,7 +24,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests for certain edge cases related to integrating with the Android view system.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AndroidViewIntegrationTest extends AwTestBase {
     private static final int CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS = 1000;
 

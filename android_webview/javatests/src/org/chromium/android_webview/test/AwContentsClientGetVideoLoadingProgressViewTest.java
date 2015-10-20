@@ -4,13 +4,11 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 
@@ -27,7 +25,6 @@ import java.util.concurrent.TimeoutException;
  * used to trigger switch occupies almost the whole WebView so the simulated click event
  * can't miss it.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
         implements View.OnAttachStateChangeListener {
     private static final String VIDEO_TEST_URL =

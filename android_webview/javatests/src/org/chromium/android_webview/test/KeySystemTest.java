@@ -4,14 +4,12 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.concurrent.Callable;
 
@@ -22,7 +20,6 @@ import java.util.concurrent.Callable;
  * Although, WebView requires Lollipop for the onPermissionRequest() API,
  * this test intercepts this path and thus can run on KitKat.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class KeySystemTest extends AwTestBase {
     /**
      * AwContentsClient subclass that allows permissions requests for the

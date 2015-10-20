@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.view.ViewGroup;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -32,7 +30,6 @@ import java.util.concurrent.TimeoutException;
  * we pick a div containing a video and custom html controls since this is a
  * very common use case.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientFullScreenTest extends AwTestBase {
     private static final String VIDEO_TEST_URL =
             "file:///android_asset/full_screen_video_test.html";

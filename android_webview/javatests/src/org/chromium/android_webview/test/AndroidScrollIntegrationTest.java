@@ -5,7 +5,6 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
@@ -17,7 +16,6 @@ import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.net.test.util.TestWebServer;
@@ -33,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Integration tests for synchronous scrolling.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
 public class AndroidScrollIntegrationTest extends AwTestBase {
     private TestWebServer mWebServer;

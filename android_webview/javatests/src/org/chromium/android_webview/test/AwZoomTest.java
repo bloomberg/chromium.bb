@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -15,7 +14,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -23,7 +21,6 @@ import java.util.concurrent.Callable;
 /**
  * A test suite for zooming-related methods and settings.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwZoomTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;

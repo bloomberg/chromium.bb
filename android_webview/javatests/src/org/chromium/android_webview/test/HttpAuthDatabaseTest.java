@@ -4,18 +4,15 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 /**
  * Test suite for HttpAuthDatabase.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class HttpAuthDatabaseTest extends AndroidTestCase {
 
     private static final String TEST_DATABASE = "http_auth_for_HttpAuthDatabaseTest.db";

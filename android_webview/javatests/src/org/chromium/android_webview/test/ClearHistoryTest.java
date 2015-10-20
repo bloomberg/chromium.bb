@@ -4,12 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -18,7 +16,6 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Tests for a wanted clearHistory method.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ClearHistoryTest extends AwTestBase {
 
     private static final String[] URLS = new String[3];

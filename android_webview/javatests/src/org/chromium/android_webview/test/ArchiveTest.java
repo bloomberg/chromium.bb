@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.ValueCallback;
 
@@ -14,7 +13,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 
 import java.io.File;
@@ -25,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Test suite for the WebView.saveWebArchive feature.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ArchiveTest extends AwTestBase {
 
     private static final long TEST_TIMEOUT = scaleTimeout(20000L);

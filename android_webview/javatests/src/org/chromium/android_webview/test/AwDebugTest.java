@@ -4,19 +4,16 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwDebug;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.io.File;
 
 /**
  * A test suite for AwDebug class.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwDebugTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})

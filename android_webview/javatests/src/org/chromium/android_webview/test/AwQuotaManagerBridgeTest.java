@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Pair;
 import android.webkit.ValueCallback;
@@ -14,7 +13,6 @@ import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -25,7 +23,6 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the AwQuotaManagerBridge.
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwQuotaManagerBridgeTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestView;
