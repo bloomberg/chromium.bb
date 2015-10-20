@@ -115,7 +115,7 @@ void LocalInputMonitorChromeos::Core::DidProcessEvent(
 
 void LocalInputMonitorChromeos::Core::HandleMouseMove(
     const ui::PlatformEvent& event) {
-  gfx::PointF mouse_position = ui::EventLocationFromNative(event);
+  auto mouse_position = gfx::PointF(ui::EventLocationFromNative(event));
   mouse_position = point_transformer_->FromScreenCoordinates(mouse_position);
 
   caller_task_runner_->PostTask(
