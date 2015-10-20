@@ -7,7 +7,7 @@
 <script>
 var lastCallbackId = 0;
 var callbacks = {};
-function postMassageAndWaitResult(frame) {
+function postMessageAndWaitResult(frame) {
   return new Promise(function(resolve) {
     var id = ++lastCallbackId;
     callbacks[id] = resolve;
@@ -29,7 +29,7 @@ promise_test(function(t) {
     return with_iframe(url)
       .then(function(f) {
           frame = f;
-          return postMassageAndWaitResult(f);
+          return postMessageAndWaitResult(f);
         })
       .then(function(result) {
           frame.remove();
@@ -44,7 +44,7 @@ promise_test(function(t) {
     return with_sandboxed_iframe(url, 'allow-scripts')
       .then(function(f) {
           frame = f;
-          return postMassageAndWaitResult(f);
+          return postMessageAndWaitResult(f);
         })
       .then(function(result) {
           frame.remove();
@@ -61,7 +61,7 @@ promise_test(function(t) {
     return with_sandboxed_iframe(url, 'allow-scripts allow-same-origin')
       .then(function(f) {
           frame = f;
-          return postMassageAndWaitResult(f);
+          return postMessageAndWaitResult(f);
         })
       .then(function(result) {
           frame.remove();
@@ -71,6 +71,38 @@ promise_test(function(t) {
   },
   'Accessing navigator.serviceWorker in sandboxed iframe with ' +
   'allow-same-origin flag should not throw.');
+
+promise_test(function(t) {
+    var url = 'resources/sandboxed-iframe-navigator-serviceworker-iframe.html';
+    var frame;
+    return new Promise(function(resolve) {
+          frame = document.createElement('iframe');
+          frame.sandbox = '';
+          frame.src = url;
+          frame.onload = resolve;
+          document.body.appendChild(frame);
+          // Switching the sandbox attribute during loading the iframe.
+          frame.sandbox = 'allow-scripts allow-same-origin';
+        })
+      .then(function() {
+          return postMessageAndWaitResult(frame)
+        })
+      .then(function(result) {
+          frame.remove();
+          // TODO(nhiroki): According to the HTML5 spec, dynamically changing
+          // the sandbox attribute does not have to immediately affect the
+          // restriction, so in this case, the frame would be expected to act as
+          // if it still doesn't have 'allow-scripts allow-same-origin' and to
+          // raise a security exception when 'serviceWorker' attribute is
+          // accessed.
+          // https://html.spec.whatwg.org/multipage/embedded-content.html#attr-iframe-sandbox
+          assert_equals(
+              result,
+              'InvalidStateError: Failed to get a ServiceWorkerRegistration: The document is in an invalid state.');
+          t.done();
+        });
+  }, 'Switching iframe sandbox attribute during loading the iframe should ' +
+     'not crash (http://crbug.com/532855)');
 
 </script>
 </body>

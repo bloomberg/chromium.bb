@@ -2193,11 +2193,15 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
   // At this point we should have non-null data source.
   DCHECK(frame->dataSource());
   if (!ChildThreadImpl::current())
-    return NULL;  // May be null in some tests.
+    return nullptr;  // May be null in some tests.
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(frame->dataSource()));
   DCHECK(provider);
+  if (!provider->context()) {
+    // The context can be null when the frame is sandboxed.
+    return nullptr;
+  }
   return new WebServiceWorkerProviderImpl(
       ChildThreadImpl::current()->thread_safe_sender(),
       provider->context());

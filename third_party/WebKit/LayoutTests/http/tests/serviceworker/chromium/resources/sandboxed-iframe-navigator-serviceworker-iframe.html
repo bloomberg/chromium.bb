@@ -7,6 +7,13 @@ window.onmessage = function (e) {
     window.top.postMessage({id: id, result:e.toString()}, '*');
     return;
   }
-  window.top.postMessage({id: id, result:'ok'}, '*');
+
+  window.navigator.serviceWorker.getRegistration()
+    .then(function() {
+        window.top.postMessage({id: id, result:'ok'}, '*');
+      })
+    .catch(function(e) {
+        window.top.postMessage({id: id, result:e.toString()}, '*');
+      });
 };
 </script>
