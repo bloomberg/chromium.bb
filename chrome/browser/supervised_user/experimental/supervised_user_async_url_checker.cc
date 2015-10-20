@@ -35,6 +35,7 @@ const char kDataContentType[] = "application/x-www-form-urlencoded";
 const char kDataFormat[] = "key=%s&urls=%s";
 
 const size_t kDefaultCacheSize = 1000;
+const size_t kDefaultCacheTimeoutSeconds = 3600;
 
 // Builds the POST data for SafeSearch API requests.
 std::string BuildRequestData(const std::string& api_key, const GURL& url) {
@@ -94,7 +95,7 @@ struct SupervisedUserAsyncURLChecker::Check {
   GURL url;
   scoped_ptr<net::URLFetcher> fetcher;
   std::vector<CheckCallback> callbacks;
-  base::Time start_time;
+  base::TimeTicks start_time;
 };
 
 SupervisedUserAsyncURLChecker::Check::Check(
@@ -104,33 +105,36 @@ SupervisedUserAsyncURLChecker::Check::Check(
     : url(url),
       fetcher(fetcher.Pass()),
       callbacks(1, callback),
-      start_time(base::Time::Now()) {
+      start_time(base::TimeTicks::Now()) {
 }
 
 SupervisedUserAsyncURLChecker::Check::~Check() {}
 
 SupervisedUserAsyncURLChecker::CheckResult::CheckResult(
-    SupervisedUserURLFilter::FilteringBehavior behavior, bool uncertain)
-    : behavior(behavior), uncertain(uncertain) {
-}
+    SupervisedUserURLFilter::FilteringBehavior behavior,
+    bool uncertain)
+    : behavior(behavior),
+      uncertain(uncertain),
+      timestamp(base::TimeTicks::Now()) {}
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
     URLRequestContextGetter* context)
-    : context_(context), cache_(kDefaultCacheSize) {
-}
+    : SupervisedUserAsyncURLChecker(context, kDefaultCacheSize) {}
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
     URLRequestContextGetter* context,
     size_t cache_size)
-    : context_(context), cache_(cache_size) {
-}
+    : context_(context),
+      cache_(cache_size),
+      cache_timeout_(
+          base::TimeDelta::FromSeconds(kDefaultCacheTimeoutSeconds)) {}
 
 SupervisedUserAsyncURLChecker::~SupervisedUserAsyncURLChecker() {}
 
 bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
                                              const CheckCallback& callback) {
-  // TODO(treib): Hack: For now, allow all Google URLs to save search QPS. If we
-  // ever remove this, we should find a way to allow at least the NTP.
+  // TODO(treib): Hack: For now, allow all Google URLs to save QPS. If we ever
+  // remove this, we should find a way to allow at least the NTP.
   if (google_util::IsGoogleDomainUrl(url,
                                      google_util::ALLOW_SUBDOMAIN,
                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
@@ -149,11 +153,17 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
   auto cache_it = cache_.Get(url);
   if (cache_it != cache_.end()) {
     const CheckResult& result = cache_it->second;
-    DVLOG(1) << "Cache hit! " << url.spec() << " is "
-             << (result.behavior == SupervisedUserURLFilter::BLOCK ? "NOT" : "")
-             << " safe; certain: " << !result.uncertain;
-    callback.Run(url, result.behavior, result.uncertain);
-    return true;
+    base::TimeDelta age = base::TimeTicks::Now() - result.timestamp;
+    if (age < cache_timeout_) {
+      DVLOG(1) << "Cache hit! " << url.spec() << " is "
+               << (result.behavior == SupervisedUserURLFilter::BLOCK ? "NOT"
+                                                                     : "")
+               << " safe; certain: " << !result.uncertain;
+      callback.Run(url, result.behavior, result.uncertain);
+      return true;
+    }
+    DVLOG(1) << "Outdated cache entry for " << url.spec() << ", purging";
+    cache_.Erase(cache_it);
   }
 
   // See if we already have a check in progress for this URL.
@@ -201,7 +211,7 @@ void SupervisedUserAsyncURLChecker::OnURLFetchComplete(
       is_porn ? SupervisedUserURLFilter::BLOCK : SupervisedUserURLFilter::ALLOW;
 
   UMA_HISTOGRAM_TIMES("ManagedUsers.SafeSitesDelay",
-                      base::Time::Now() - check->start_time);
+                      base::TimeTicks::Now() - check->start_time);
 
   cache_.Put(check->url, CheckResult(behavior, uncertain));
 

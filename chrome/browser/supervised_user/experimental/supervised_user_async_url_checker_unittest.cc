@@ -113,19 +113,19 @@ class SupervisedUserAsyncURLCheckerTest : public testing::Test {
 TEST_F(SupervisedUserAsyncURLCheckerTest, Simple) {
   {
     GURL url(GetNewURL());
-    EXPECT_FALSE(CheckURL(url));
+    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
     SendValidResponse(false);
   }
   {
     GURL url(GetNewURL());
-    EXPECT_FALSE(CheckURL(url));
+    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::BLOCK, false));
     SendValidResponse(true);
   }
   {
     GURL url(GetNewURL());
-    EXPECT_FALSE(CheckURL(url));
+    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, true));
     SendFailedResponse();
   }
@@ -136,7 +136,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
   {
     GURL url("http://example.com");
     GURL url_response("http://www.example.com");
-    EXPECT_FALSE(CheckURL(url));
+    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
     SendValidResponse(false);
   }
@@ -144,7 +144,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
   {
     GURL url("http://www.example2.com");
     GURL url_response("https://www.example2.com");
-    EXPECT_FALSE(CheckURL(url));
+    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
     SendValidResponse(false);
   }
@@ -152,7 +152,7 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Equivalence) {
   {
     GURL url("http://example3.com");
     GURL url_response("https://www.example3.com");
-    EXPECT_FALSE(CheckURL(url));
+    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
     SendValidResponse(false);
   }
@@ -166,25 +166,25 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Cache) {
   GURL url3(GetNewURL());
 
   // Populate the cache.
-  EXPECT_FALSE(CheckURL(url1));
+  ASSERT_FALSE(CheckURL(url1));
   EXPECT_CALL(*this, OnCheckDone(url1, SupervisedUserURLFilter::ALLOW, false));
   SendValidResponse(false);
-  EXPECT_FALSE(CheckURL(url2));
+  ASSERT_FALSE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
   SendValidResponse(false);
 
   // Now we should get results synchronously.
   EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
-  EXPECT_TRUE(CheckURL(url2));
+  ASSERT_TRUE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url1, SupervisedUserURLFilter::ALLOW, false));
-  EXPECT_TRUE(CheckURL(url1));
+  ASSERT_TRUE(CheckURL(url1));
 
   // Now |url2| is the LRU and should be evicted on the next check.
-  EXPECT_FALSE(CheckURL(url3));
+  ASSERT_FALSE(CheckURL(url3));
   EXPECT_CALL(*this, OnCheckDone(url3, SupervisedUserURLFilter::ALLOW, false));
   SendValidResponse(false);
 
-  EXPECT_FALSE(CheckURL(url2));
+  ASSERT_FALSE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url2, SupervisedUserURLFilter::ALLOW, false));
   SendValidResponse(false);
 }
@@ -192,10 +192,26 @@ TEST_F(SupervisedUserAsyncURLCheckerTest, Cache) {
 TEST_F(SupervisedUserAsyncURLCheckerTest, CoalesceRequestsToSameURL) {
   GURL url(GetNewURL());
   // Start two checks for the same URL.
-  EXPECT_FALSE(CheckURL(url));
-  EXPECT_FALSE(CheckURL(url));
+  ASSERT_FALSE(CheckURL(url));
+  ASSERT_FALSE(CheckURL(url));
   // A single response should answer both checks.
   EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false))
       .Times(2);
   SendValidResponse(false);
+}
+
+TEST_F(SupervisedUserAsyncURLCheckerTest, CacheTimeout) {
+  GURL url(GetNewURL());
+
+  checker_.SetCacheTimeoutForTesting(base::TimeDelta::FromSeconds(0));
+
+  ASSERT_FALSE(CheckURL(url));
+  EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::ALLOW, false));
+  SendValidResponse(false);
+
+  // Since the cache timeout is zero, the cache entry should be invalidated
+  // immediately.
+  ASSERT_FALSE(CheckURL(url));
+  EXPECT_CALL(*this, OnCheckDone(url, SupervisedUserURLFilter::BLOCK, false));
+  SendValidResponse(true);
 }
