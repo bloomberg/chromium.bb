@@ -112,6 +112,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
+  // CustomButton:
+  void StateChanged() override;
+
   // Fill |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
@@ -134,9 +137,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Image);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, FontList);
-
-  // CustomButton:
-  void StateChanged() override;
 
   // View:
   void ChildPreferredSizeChanged(View* child) override;
