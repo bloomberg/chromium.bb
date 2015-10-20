@@ -249,17 +249,18 @@ TEST(get_device_after_destroy)
 	struct wl_touch *wl_touch;
 
 	/* There's a race:
-	 *  1) compositor destroyes device
-	 *  2) client asks for the device, because it has not got
-	 *     new capabilities yet
-	 *  3) compositor gets request with new_id for destroyed device
+	 *  1) compositor destroys device
+	 *  2) client asks for the device, because it has not received
+	 *     the new capabilities yet
+	 *  3) compositor gets the request with a new_id for the
+	 *     destroyed device
 	 *  4) client uses the new_id
 	 *  5) client gets new capabilities, destroying the objects
 	 *
-	 * If compositor just bail out in step 3) and does not create
-	 * resource, then client gets error in step 4) - even though
-	 * it followed the protocol (it just didn't know about new
-	 * capabilities).
+	 * If the compositor just bails out in step 3) and does not
+	 * create the resource, then the client gets an error in step 4)
+	 * - even though it followed the protocol (it just didn't know
+	 * about new capabilities).
 	 *
 	 * This test simulates this situation
 	 */
