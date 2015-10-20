@@ -691,6 +691,14 @@ def set_read_only(path, read_only):
     fs.chmod(path, mode)
 
 
+def set_read_only_swallow(path, read_only):
+  """Returns if an OSError exception occured."""
+  try:
+    set_read_only(path, read_only)
+  except OSError as e:
+    return e
+
+
 def try_remove(filepath):
   """Removes a file without crashing even if it doesn't exist."""
   try:
@@ -754,16 +762,26 @@ def make_tree_read_only(root):
 
   This means no file can be created or deleted.
   """
+  err = None
   logging.debug('make_tree_read_only(%s)', root)
   for dirpath, dirnames, filenames in fs.walk(root, topdown=True):
     for filename in filenames:
-      set_read_only(os.path.join(dirpath, filename), True)
+      e = set_read_only_swallow(os.path.join(dirpath, filename), True)
+      if not err:
+        err = e
     if sys.platform != 'win32':
       # It must not be done on Windows.
       for dirname in dirnames:
-        set_read_only(os.path.join(dirpath, dirname), True)
+        e = set_read_only_swallow(os.path.join(dirpath, dirname), True)
+        if not err:
+          err = e
   if sys.platform != 'win32':
-    set_read_only(root, True)
+    e = set_read_only_swallow(root, True)
+    if not err:
+      err = e
+  if err:
+    # pylint: disable=raising-bad-type
+    raise err
 
 
 def make_tree_files_read_only(root):
@@ -816,15 +834,25 @@ def make_tree_deleteable(root):
   file node has its file permission modified.
   """
   logging.debug('make_tree_deleteable(%s)', root)
+  err = None
   if sys.platform != 'win32':
-    set_read_only(root, False)
+    e = set_read_only_swallow(root, False)
+    if not err:
+      err = e
   for dirpath, dirnames, filenames in fs.walk(root, topdown=True):
     if sys.platform == 'win32':
       for filename in filenames:
-        set_read_only(os.path.join(dirpath, filename), False)
+        e = set_read_only_swallow(os.path.join(dirpath, filename), False)
+        if not err:
+          err = e
     else:
       for dirname in dirnames:
-        set_read_only(os.path.join(dirpath, dirname), False)
+        e = set_read_only_swallow(os.path.join(dirpath, dirname), False)
+        if not err:
+          err = e
+  if err:
+    # pylint: disable=raising-bad-type
+    raise err
 
 
 def rmtree(root):
@@ -837,11 +865,14 @@ def rmtree(root):
     True on normal execution, False if berserk techniques (like killing
     processes) had to be used.
   """
-  # Do not assert here yet because this would break too much code.
-  assert sys.getdefaultencoding() == 'utf-8', sys.getdefaultencoding()
-  root = unicode(root)
-  make_tree_deleteable(root)
   logging.info('rmtree(%s)', root)
+  assert sys.getdefaultencoding() == 'utf-8', sys.getdefaultencoding()
+  # Do not assert here yet because this would break too much code.
+  root = unicode(root)
+  try:
+    make_tree_deleteable(root)
+  except OSError as e:
+    logging.warning('Swallowing make_tree_deleteable() error: %s', e)
 
   # First try the soft way: tries 3 times to delete and sleep a bit in between.
   # Retries help if test subprocesses outlive main process and try to actively
