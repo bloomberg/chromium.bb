@@ -127,13 +127,6 @@ namespace {
 // Wait this many seconds after an extensions becomes idle before updating it.
 const int kUpdateIdleDelay = 5;
 
-#if defined(ENABLE_SUPERVISED_USERS)
-// Callback for SupervisedUserService::AddExtensionUpdateRequest.
-void ExtensionUpdateRequestSent(const std::string& id, bool success) {
-  LOG_IF(WARNING, !success) << "Failed sending update request for " << id;
-}
-#endif
-
 }  // namespace
 
 // ExtensionService.
@@ -1649,12 +1642,13 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a permissions increase, send a request to the custodian if the
     // supervised user themselves can't re-enable the extension.
     if (extensions::util::IsExtensionSupervised(extension, profile_) &&
-        extensions::util::NeedCustodianApprovalForPermissionIncrease()) {
+        extensions::util::NeedCustodianApprovalForPermissionIncrease() &&
+        !ExtensionSyncService::Get(profile_)->HasPendingReenable(
+            extension->id(), *extension->version())) {
       SupervisedUserService* supervised_user_service =
           SupervisedUserServiceFactory::GetForProfile(profile_);
-      supervised_user_service->AddExtensionUpdateRequest(
-          extension->id(), *extension->version(),
-          base::Bind(ExtensionUpdateRequestSent, extension->id()));
+      supervised_user_service->AddExtensionUpdateRequest(extension->id(),
+                                                         *extension->version());
     }
 #endif
   }

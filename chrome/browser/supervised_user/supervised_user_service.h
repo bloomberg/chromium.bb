@@ -117,6 +117,16 @@ class SupervisedUserService : public KeyedService,
                                  const base::Version& version,
                                  const SuccessCallback& callback);
 
+  // Same as above, but without a callback, just logging errors on failure.
+  void AddExtensionUpdateRequest(const std::string& extension_id,
+                                 const base::Version& version);
+
+  // Get the string used to identify an extension update request. Public for
+  // testing.
+  static std::string GetExtensionUpdateRequestId(
+      const std::string& extension_id,
+      const base::Version& version);
+
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;
 

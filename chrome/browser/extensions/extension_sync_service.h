@@ -45,6 +45,13 @@ class ExtensionSyncService : public syncer::SyncableService,
   // all_urls_enabled).
   void SyncExtensionChangeIfNeeded(const extensions::Extension& extension);
 
+  // Returns whether the extension with the given |id| will be re-enabled once
+  // it is updated to the given |version|. This happens when we get a Sync
+  // update telling us to re-enable a newer version that what is currently
+  // installed.
+  bool HasPendingReenable(const std::string& id,
+                          const base::Version& version) const;
+
   // syncer::SyncableService implementation.
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,

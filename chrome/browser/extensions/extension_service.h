@@ -36,7 +36,6 @@
 #error "Extensions must be enabled"
 #endif
 
-class ExtensionSyncService;
 class GURL;
 class HostContentSettingsMap;
 class Profile;

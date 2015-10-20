@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
@@ -107,6 +108,11 @@ void CreateExtensionUpdateRequest(
     PermissionRequestCreator* creator,
     const SupervisedUserService::SuccessCallback& callback) {
   creator->CreateExtensionUpdateRequest(id, callback);
+}
+
+// Default callback for AddExtensionUpdateRequest.
+void ExtensionUpdateRequestSent(const std::string& id, bool success) {
+  VLOG_IF(1, !success) << "Failed sending update request for " << id;
 }
 
 base::FilePath GetBlacklistPath() {
@@ -246,10 +252,25 @@ void SupervisedUserService::AddExtensionUpdateRequest(
     const std::string& extension_id,
     const base::Version& version,
     const SuccessCallback& callback) {
-  std::string id = extension_id + ":" + version.GetString();
+  std::string id = GetExtensionUpdateRequestId(extension_id, version);
   AddPermissionRequestInternal(
-      base::Bind(CreateExtensionUpdateRequest, id),
-      callback, 0);
+      base::Bind(CreateExtensionUpdateRequest, id), callback, 0);
+}
+
+void SupervisedUserService::AddExtensionUpdateRequest(
+    const std::string& extension_id,
+    const base::Version& version) {
+  std::string id = GetExtensionUpdateRequestId(extension_id, version);
+  AddExtensionUpdateRequest(extension_id, version,
+                            base::Bind(ExtensionUpdateRequestSent, id));
+}
+
+// static
+std::string SupervisedUserService::GetExtensionUpdateRequestId(
+    const std::string& extension_id,
+    const base::Version& version) {
+  return base::StringPrintf("%s:%s", extension_id.c_str(),
+                            version.GetString().c_str());
 }
 
 std::string SupervisedUserService::GetCustodianEmailAddress() const {

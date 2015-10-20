@@ -31,6 +31,11 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
+
 using extensions::AppSorting;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -138,6 +143,17 @@ void ExtensionSyncService::SyncExtensionChangeIfNeeded(
     if (extension_service()->is_ready() && !flare_.is_null())
       flare_.Run(type);  // Tell sync to start ASAP.
   }
+}
+
+bool ExtensionSyncService::HasPendingReenable(
+    const std::string& id,
+    const base::Version& version) const {
+  auto it = pending_updates_.find(id);
+  if (it == pending_updates_.end())
+    return false;
+  const PendingUpdate& pending = it->second;
+  return pending.version.Equals(version) &&
+         pending.grant_permissions_and_reenable;
 }
 
 syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
@@ -339,6 +355,14 @@ void ExtensionSyncService::ApplySyncData(
           extension_service()->EnableExtension(id);
         else if (extension_sync_data.supports_disable_reasons())
           reenable_after_update = true;
+
+#if defined(ENABLE_SUPERVISED_USERS)
+        if (is_privilege_increase && version_compare_result > 0 &&
+            extensions::util::IsExtensionSupervised(extension, profile_)) {
+          SupervisedUserServiceFactory::GetForProfile(profile_)
+              ->AddExtensionUpdateRequest(id, *extension->version());
+        }
+#endif
       }
     } else {
       // The extension is not installed yet. Set it to enabled; we'll check for
