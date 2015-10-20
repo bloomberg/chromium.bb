@@ -29,7 +29,9 @@ class BackgroundSyncMetrics {
   };
 
   // Records the result of a single sync event firing.
-  static void RecordEventResult(SyncPeriodicity periodicity, bool result);
+  static void RecordEventResult(SyncPeriodicity periodicity,
+                                bool result,
+                                bool finished_in_foreground);
 
   // Records the result of running a batch of sync events, including the total
   // time spent, and the batch size.

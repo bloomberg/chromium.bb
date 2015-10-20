@@ -1142,8 +1142,15 @@ void BackgroundSyncManager::EventCompleteImpl(
 
   // The event ran to completion, we should count it, no matter what happens
   // from here.
-  BackgroundSyncMetrics::RecordEventResult(registration->options()->periodicity,
-                                           status_code == SERVICE_WORKER_OK);
+  ServiceWorkerRegistration* sw_registration =
+      service_worker_context_->GetLiveRegistration(service_worker_id);
+  if (sw_registration) {
+    bool foreground = service_worker_context_->HasWindowProviderHost(
+        sw_registration->pattern().GetOrigin());
+    BackgroundSyncMetrics::RecordEventResult(
+        registration->options()->periodicity, status_code == SERVICE_WORKER_OK,
+        foreground);
+  }
 
   if (registration->options()->periodicity == SYNC_ONE_SHOT) {
     if (status_code != SERVICE_WORKER_OK) {

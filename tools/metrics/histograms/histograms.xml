@@ -2654,12 +2654,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="BackgroundSync.Event.OneShotResult" enum="BooleanSuccess">
   <owner>iclelland@chromium.org</owner>
+  <obsolete>
+    As of 10/2015 this has been replaced by
+    BackgroundSync.Event.OneShotResultPattern.
+  </obsolete>
   <summary>Records whether a one-shot sync event succeeded or failed.</summary>
+</histogram>
+
+<histogram name="BackgroundSync.Event.OneShotResultPattern"
+    enum="BackgroundSyncResultPattern">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether a periodic sync event succeeded or failed and whether the
+    sync event finished in the foreground or background.
+  </summary>
+  <details>
+    A sync event finished in the foreground if the associated Service Worker
+    Registration has a client at the time that the event finished.
+  </details>
 </histogram>
 
 <histogram name="BackgroundSync.Event.PeriodicResult" enum="BooleanSuccess">
   <owner>iclelland@chromium.org</owner>
+  <obsolete>
+    As of 10/2015 this has been replaced by
+    BackgroundSync.Event.PeriodicResultPattern.
+  </obsolete>
   <summary>Records whether a periodic sync event succeeded or failed.</summary>
+</histogram>
+
+<histogram name="BackgroundSync.Event.PeriodicResultPattern"
+    enum="BackgroundSyncResultPattern">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether a one-shot sync event succeeded or failed and whether the
+    sync event finished in the foreground or background.
+  </summary>
+  <details>
+    A sync event finished in the foreground if the associated Service Worker
+    Registration has a client at the time that the event finished.
+  </details>
 </histogram>
 
 <histogram name="BackgroundSync.Event.Time" units="milliseconds">
@@ -53270,6 +53304,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Background client"/>
   <int value="3" label="Let run in background"/>
   <int value="4" label="Exit"/>
+</enum>
+
+<enum name="BackgroundSyncResultPattern" type="int">
+  <int value="0" label="Success Foreground"/>
+  <int value="1" label="Success Background"/>
+  <int value="2" label="Failed Foreground"/>
+  <int value="3" label="Failed Background"/>
 </enum>
 
 <enum name="BackgroundSyncStatus" type="int">

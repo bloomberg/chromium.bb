@@ -7,16 +7,46 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 
+namespace {
+
+// ResultPattern is used by Histograms, append new entries at the end.
+enum ResultPattern {
+  RESULT_PATTERN_SUCCESS_FOREGROUND = 0,
+  RESULT_PATTERN_SUCCESS_BACKGROUND,
+  RESULT_PATTERN_FAILED_FOREGROUND,
+  RESULT_PATTERN_FAILED_BACKGROUND,
+  RESULT_PATTERN_MAX = RESULT_PATTERN_FAILED_BACKGROUND
+};
+
+ResultPattern EventResultToResultPattern(bool success,
+                                         bool finished_in_foreground) {
+  if (success) {
+    return finished_in_foreground ? RESULT_PATTERN_SUCCESS_FOREGROUND
+                                  : RESULT_PATTERN_SUCCESS_BACKGROUND;
+  }
+  return finished_in_foreground ? RESULT_PATTERN_FAILED_FOREGROUND
+                                : RESULT_PATTERN_FAILED_BACKGROUND;
+}
+
+}  // namespace
+
 namespace content {
 
 void BackgroundSyncMetrics::RecordEventResult(SyncPeriodicity periodicity,
-                                              bool success) {
+                                              bool success,
+                                              bool finished_in_foreground) {
   switch (periodicity) {
     case SYNC_ONE_SHOT:
-      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.OneShotResult", success);
+      UMA_HISTOGRAM_ENUMERATION(
+          "BackgroundSync.Event.OneShotResultPattern",
+          EventResultToResultPattern(success, finished_in_foreground),
+          RESULT_PATTERN_MAX + 1);
       return;
     case SYNC_PERIODIC:
-      UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Event.PeriodicResult", success);
+      UMA_HISTOGRAM_ENUMERATION(
+          "BackgroundSync.Event.PeriodicResultPattern",
+          EventResultToResultPattern(success, finished_in_foreground),
+          RESULT_PATTERN_MAX + 1);
       return;
   }
   NOTREACHED();
