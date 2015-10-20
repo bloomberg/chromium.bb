@@ -114,8 +114,6 @@ public:
     void setSameOriginOnly(bool f) { m_sameOriginOnly = f; }
 
     void setMatchingUARules(bool matchingUARules) { m_matchingUARules = matchingUARules; }
-    void setScopeContainsLastMatchedElement(bool scopeContainsLastMatchedElement) { m_scopeContainsLastMatchedElement = scopeContainsLastMatchedElement; }
-    bool scopeContainsLastMatchedElement() const { return m_scopeContainsLastMatchedElement; }
     bool hasAnyMatchingRules(RuleSet*);
 
     const MatchResult& matchedResult() const;
@@ -157,7 +155,6 @@ private:
     bool m_canUseFastReject;
     bool m_sameOriginOnly;
     bool m_matchingUARules;
-    bool m_scopeContainsLastMatchedElement;
     bool m_includeEmptyRules;
 
     WillBeHeapVector<MatchedRule, 32> m_matchedRules;

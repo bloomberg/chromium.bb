@@ -123,8 +123,6 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
     SelectorChecker::SelectorCheckingContext selectorCheckingContext(&element, SelectorChecker::VisitedMatchDisabled);
     selectorCheckingContext.selector = &selector;
     selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : nullptr;
-    if (selectorCheckingContext.scope)
-        selectorCheckingContext.scopeContainsLastMatchedElement = true;
     return selectorChecker.match(selectorCheckingContext);
 }
 

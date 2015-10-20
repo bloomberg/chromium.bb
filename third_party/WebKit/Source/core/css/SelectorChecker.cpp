@@ -116,10 +116,10 @@ static Element* parentElement(const SelectorChecker::SelectorCheckingContext& co
 
 static bool scopeContainsLastMatchedElement(const SelectorChecker::SelectorCheckingContext& context)
 {
-    if (!context.scopeContainsLastMatchedElement)
+    // If this context isn't scoped, skip checking.
+    if (!context.scope)
         return true;
 
-    ASSERT(context.scope);
     if (context.scope->treeScope() == context.element->treeScope())
         return true;
 
@@ -1009,7 +1009,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
         {
             SelectorCheckingContext subContext(context);
             subContext.isSubSelector = true;
-            subContext.scopeContainsLastMatchedElement = false;
+            subContext.scope = nullptr;
             subContext.treatShadowHostAsNormalScope = false;
 
             for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
@@ -1087,7 +1087,6 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
                 maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
                 break;
             }
-            hostContext.scopeContainsLastMatchedElement = false;
             hostContext.treatShadowHostAsNormalScope = false;
             hostContext.scope = nullptr;
 

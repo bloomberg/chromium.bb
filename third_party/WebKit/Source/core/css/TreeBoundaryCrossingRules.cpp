@@ -69,9 +69,6 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
     // When comparing rules declared in inner treescopes, inner's rules win.
     CascadeOrder innerCascadeOrder = size();
 
-    ASSERT(!collector.scopeContainsLastMatchedElement());
-    collector.setScopeContainsLastMatchedElement(true);
-
     for (const auto& scopingNode : m_scopingNodes) {
         // Skip rule collection for element when tree boundary crossing rules of scopingNode's
         // scope can never apply to it.
@@ -85,8 +82,6 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
         ++innerCascadeOrder;
         --outerCascadeOrder;
     }
-
-    collector.setScopeContainsLastMatchedElement(false);
 }
 
 void TreeBoundaryCrossingRules::addScope(ContainerNode& scopingNode)

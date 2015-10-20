@@ -68,7 +68,6 @@ public:
             , hasScrollbarPseudo(false)
             , hasSelectionPseudo(false)
             , isUARule(false)
-            , scopeContainsLastMatchedElement(false)
             , treatShadowHostAsNormalScope(false)
         {
         }
@@ -87,7 +86,6 @@ public:
         bool hasScrollbarPseudo;
         bool hasSelectionPseudo;
         bool isUARule;
-        bool scopeContainsLastMatchedElement;
         bool treatShadowHostAsNormalScope;
     };
 

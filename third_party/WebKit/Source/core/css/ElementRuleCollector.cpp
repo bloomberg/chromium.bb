@@ -55,7 +55,6 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
     , m_canUseFastReject(m_selectorFilter.parentStackIsConsistent(context.parentNode()))
     , m_sameOriginOnly(false)
     , m_matchingUARules(false)
-    , m_scopeContainsLastMatchedElement(false)
     , m_includeEmptyRules(false)
 { }
 
@@ -143,7 +142,6 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
     checkerContext.scrollbar = m_pseudoStyleRequest.scrollbar;
     checkerContext.scrollbarPart = m_pseudoStyleRequest.scrollbarPart;
     checkerContext.isUARule = m_matchingUARules;
-    checkerContext.scopeContainsLastMatchedElement = m_scopeContainsLastMatchedElement;
 
     unsigned rejected = 0;
     unsigned fastRejected = 0;
