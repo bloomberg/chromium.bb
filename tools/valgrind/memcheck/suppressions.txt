@@ -3420,3 +3420,19 @@
    fun:_ZN5blink9ImageData6createERKNS_7IntSizeE
    fun:_ZNK5blink17HTMLCanvasElement11toImageDataENS_19SourceDrawingBufferE
 }
+{
+   bug_545259a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content21RenderProcessHostImpl4InitEv
+   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEPNS_20RenderFrameProxyHostE
+}
+{
+   bug_545259b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content26PushMessagingMessageFilterC1EiPNS_27ServiceWorkerContextWrapperE
+   fun:_ZN7content21RenderProcessHostImpl20CreateMessageFiltersEv
+   fun:_ZN7content21RenderProcessHostImpl4InitEv
+   fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEPNS_20RenderFrameProxyHostE
+}
