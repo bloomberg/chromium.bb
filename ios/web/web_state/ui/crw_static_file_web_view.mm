@@ -74,11 +74,8 @@ NSString* const kStaticFileUserAgent = @"UIWebViewForStaticFileContent";
   }
 
   // If a request originated from another file:/// page, the User-Agent
-  // will not be there. To be safe, check that the request is for image
+  // is not available. In this case, check that the request is for image
   // resources only.
-  // TODO(pkl): This current test to allow nil User-Agent and images to
-  // be loaded. A more air-tight implementation should inline images as
-  // "data" instead. See crbug.com/228603
   NSString* suffix = [[request URL] pathExtension];
   return [@[ @"png", @"jpg", @"jpeg" ] containsObject:[suffix lowercaseString]];
 }
