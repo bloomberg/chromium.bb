@@ -2336,12 +2336,18 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   }
 
   // Generate the uv-transform
-  if (!clip_region) {
-    draw_cache_.uv_xform_data.push_back(UVTransform(quad));
-  } else {
-    Float4 uv_transform = {{0.0f, 0.0f, 1.0f, 1.0f}};
-    draw_cache_.uv_xform_data.push_back(uv_transform);
+  Float4 uv_transform = {{0.0f, 0.0f, 1.0f, 1.0f}};
+  if (!clip_region)
+    uv_transform = UVTransform(quad);
+  if (sampler == SAMPLER_TYPE_2D_RECT) {
+    // Un-normalize the texture coordiantes for rectangle targets.
+    gfx::Size texture_size = lock.texture_size();
+    uv_transform.data[0] *= texture_size.width();
+    uv_transform.data[2] *= texture_size.width();
+    uv_transform.data[1] *= texture_size.height();
+    uv_transform.data[3] *= texture_size.height();
   }
+  draw_cache_.uv_xform_data.push_back(uv_transform);
 
   // Generate the vertex opacity
   const float opacity = quad->shared_quad_state->opacity;

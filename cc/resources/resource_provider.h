@@ -219,6 +219,7 @@ class CC_EXPORT ResourceProvider
 
     unsigned texture_id() const { return resource_->gl_id; }
     GLenum target() const { return resource_->target; }
+    const gfx::Size& texture_size() const { return resource_->size; }
 
    protected:
     ResourceProvider* resource_provider_;
