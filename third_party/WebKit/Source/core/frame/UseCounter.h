@@ -846,6 +846,16 @@ public:
         BlockableMixedContentInSubframeBlocked = 966,
         AddEventListenerThirdArgumentIsObject = 967,
         RemoveEventListenerThirdArgumentIsObject = 968,
+        CSSAtRuleCharset = 969,
+        CSSAtRuleFontFace = 970,
+        CSSAtRuleImport = 971,
+        CSSAtRuleKeyframes = 972,
+        CSSAtRuleMedia = 973,
+        CSSAtRuleNamespace = 974,
+        CSSAtRulePage = 975,
+        CSSAtRuleSupports = 976,
+        CSSAtRuleViewport = 977,
+        CSSAtRuleWebkitKeyframes = 978,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

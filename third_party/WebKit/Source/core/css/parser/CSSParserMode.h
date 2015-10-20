@@ -117,6 +117,8 @@ public:
 
     KURL completeURL(const String& url) const;
 
+    // This may return nullptr if counting is disabled.
+    // See comments on constructors.
     UseCounter* useCounter() const { return m_useCounter; }
 
     ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy() const { return m_shouldCheckContentSecurityPolicy; }

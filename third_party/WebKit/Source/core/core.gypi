@@ -1231,6 +1231,8 @@
             'css/invalidation/StyleInvalidator.h',
             'css/invalidation/StyleSheetInvalidationAnalysis.cpp',
             'css/invalidation/StyleSheetInvalidationAnalysis.h',
+            'css/parser/CSSAtRuleID.cpp',
+            'css/parser/CSSAtRuleID.h',
             'css/parser/CSSParser.cpp',
             'css/parser/CSSParser.h',
             'css/parser/CSSParserFastPaths.cpp',

@@ -60521,6 +60521,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="966" label="BlockableMixedContentInSubframeBlocked"/>
   <int value="967" label="AddEventListenerThirdArgumentIsObject"/>
   <int value="968" label="RemoveEventListenerThirdArgumentIsObject"/>
+  <int value="969" label="CSSAtRuleCharset"/>
+  <int value="970" label="CSSAtRuleFontFace"/>
+  <int value="971" label="CSSAtRuleImport"/>
+  <int value="972" label="CSSAtRuleKeyframes"/>
+  <int value="973" label="CSSAtRuleMedia"/>
+  <int value="974" label="CSSAtRuleNamespace"/>
+  <int value="975" label="CSSAtRulePage"/>
+  <int value="976" label="CSSAtRuleSupports"/>
+  <int value="977" label="CSSAtRuleViewport"/>
+  <int value="978" label="CSSAtRuleWebkitKeyframes"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
