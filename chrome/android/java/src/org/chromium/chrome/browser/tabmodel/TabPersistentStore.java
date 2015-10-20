@@ -226,22 +226,19 @@ public class TabPersistentStore extends TabPersister {
         mTabContentManager = cache;
     }
 
-    private void saveTabList() {
-        if (mSaveListTask == null || (mSaveListTask.cancel(false) && !mSaveListTask.mStateSaved)) {
-            try {
-                saveListToFile(serializeTabMetadata());
-            } catch (IOException e) {
-                logSaveException(e);
-            }
-        }
-    }
-
     public void saveState() {
         // Temporarily allowing disk access. TODO: Fix. See http://b/5518024
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             // The list of tabs should be saved first in case our activity is terminated early.
-            saveTabList();
+            // Explicitly toss out any existing SaveListTask because they only save the TabModel as
+            // it looked when the SaveListTask was first created.
+            if (mSaveListTask != null) mSaveListTask.cancel(true);
+            try {
+                saveListToFile(serializeTabMetadata());
+            } catch (IOException e) {
+                logSaveException(e);
+            }
 
             // Add current tabs to save because they did not get a save signal yet.
             Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
@@ -454,7 +451,7 @@ public class TabPersistentStore extends TabPersister {
         } else {
             Log.w(TAG, "Failed to restore TabState; creating Tab with last known URL.");
             Tab fallbackTab = mTabCreatorManager.getTabCreator(isIncognito).createNewTab(
-                    new LoadUrlParams(tabToRestore.url), TabModel.TabLaunchType.FROM_RESTORE, null);
+                    new LoadUrlParams(tabToRestore.url), TabModel.TabLaunchType.FROM_LINK, null);
             model.moveTab(fallbackTab.getId(), restoredIndex);
         }
 
@@ -762,9 +759,17 @@ public class TabPersistentStore extends TabPersister {
             mSaveTabTask = new SaveTabTask(tab);
             mSaveTabTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         } else {
-            mSaveListTask = new SaveListTask();
-            mSaveListTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            saveTabListAsynchronously();
         }
+    }
+
+    /**
+     * Kick off an AsyncTask to save the current list of Tabs.
+     */
+    public void saveTabListAsynchronously() {
+        if (mSaveListTask != null) mSaveListTask.cancel(true);
+        mSaveListTask = new SaveListTask();
+        mSaveListTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private class SaveTabTask extends AsyncTask<Void, Void, Void> {
@@ -803,7 +808,6 @@ public class TabPersistentStore extends TabPersister {
 
     private class SaveListTask extends AsyncTask<Void, Void, Void> {
         byte[] mListData;
-        boolean mStateSaved = false;
 
         @Override
         protected void onPreExecute() {
@@ -817,17 +821,16 @@ public class TabPersistentStore extends TabPersister {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (mListData == null) return null;
+            if (mListData == null || isCancelled()) return null;
             saveListToFile(mListData);
             mListData = null;
-            mStateSaved = true;
             return null;
         }
 
         @Override
         protected void onPostExecute(Void v) {
             if (mDestroyed || isCancelled()) return;
-            mSaveListTask = null;
+            if (mSaveListTask == this) mSaveListTask = null;
         }
     }
 
