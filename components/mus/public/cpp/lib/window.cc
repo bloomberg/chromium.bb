@@ -243,46 +243,6 @@ scoped_ptr<WindowSurface> Window::RequestSurface() {
       new WindowSurface(surface.PassInterface(), client_request.Pass()));
 }
 
-void Window::SetSharedProperty(const std::string& name,
-                               const std::vector<uint8_t>* value) {
-  std::vector<uint8_t> old_value;
-  std::vector<uint8_t>* old_value_ptr = nullptr;
-  auto it = properties_.find(name);
-  if (it != properties_.end()) {
-    old_value = it->second;
-    old_value_ptr = &old_value;
-
-    if (value && old_value == *value)
-      return;
-  } else if (!value) {
-    // This property isn't set in |properties_| and |value| is NULL, so there's
-    // no change.
-    return;
-  }
-
-  if (value) {
-    properties_[name] = *value;
-  } else if (it != properties_.end()) {
-    properties_.erase(it);
-  }
-
-  // TODO: add test coverage of this (450303).
-  if (connection_) {
-    mojo::Array<uint8_t> transport_value;
-    if (value) {
-      transport_value.resize(value->size());
-      if (value->size())
-        memcpy(&transport_value.front(), &(value->front()), value->size());
-    }
-    static_cast<WindowTreeClientImpl*>(connection_)
-        ->SetProperty(id_, name, transport_value.Pass());
-  }
-
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_,
-      OnWindowSharedPropertyChanged(this, name, old_value_ptr, value));
-}
-
 bool Window::IsDrawn() const {
   if (!visible_)
     return false;
@@ -481,6 +441,22 @@ Window::Window(WindowTreeConnection* connection, Id id)
       visible_(false),
       drawn_(false) {}
 
+void Window::SetSharedPropertyInternal(const std::string& name,
+                                       const std::vector<uint8_t>* value) {
+  LocalSetSharedProperty(name, value);
+  // TODO: add test coverage of this (450303).
+  if (connection_) {
+    mojo::Array<uint8_t> transport_value;
+    if (value) {
+      transport_value.resize(value->size());
+      if (value->size())
+        memcpy(&transport_value.front(), &(value->front()), value->size());
+    }
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->SetProperty(id_, name, transport_value.Pass());
+  }
+}
+
 int64 Window::SetLocalPropertyInternal(const void* key,
                                        const char* name,
                                        PropertyDeallocator deallocator,
@@ -588,6 +564,34 @@ void Window::LocalSetVisible(bool visible) {
                     OnWindowVisibilityChanging(this));
   visible_ = visible;
   NotifyWindowVisibilityChanged(this);
+}
+
+void Window::LocalSetSharedProperty(const std::string& name,
+                                    const std::vector<uint8_t>* value) {
+  std::vector<uint8_t> old_value;
+  std::vector<uint8_t>* old_value_ptr = nullptr;
+  auto it = properties_.find(name);
+  if (it != properties_.end()) {
+    old_value = it->second;
+    old_value_ptr = &old_value;
+
+    if (value && old_value == *value)
+      return;
+  } else if (!value) {
+    // This property isn't set in |properties_| and |value| is NULL, so there's
+    // no change.
+    return;
+  }
+
+  if (value) {
+    properties_[name] = *value;
+  } else if (it != properties_.end()) {
+    properties_.erase(it);
+  }
+
+  FOR_EACH_OBSERVER(
+      WindowObserver, observers_,
+      OnWindowSharedPropertyChanged(this, name, old_value_ptr, value));
 }
 
 void Window::NotifyWindowVisibilityChanged(Window* target) {

@@ -11,6 +11,37 @@
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+#include "ui/gfx/geometry/size.h"
+
+namespace mojo {
+
+template <>
+struct TypeConverter<const std::vector<uint8_t>, gfx::Size> {
+  static const std::vector<uint8_t> Convert(const gfx::Size& input) {
+    std::vector<uint8_t> vec(8);
+    vec[0] = (input.width() >> 24) & 0xFF;
+    vec[1] = (input.width() >> 16) & 0xFF;
+    vec[2] = (input.width() >> 8) & 0xFF;
+    vec[3] = input.width() & 0xFF;
+    vec[4] = (input.height() >> 24) & 0xFF;
+    vec[5] = (input.height() >> 16) & 0xFF;
+    vec[6] = (input.height() >> 8) & 0xFF;
+    vec[7] = input.height() & 0xFF;
+    return vec;
+  }
+};
+
+template <>
+struct TypeConverter < gfx::Size, const std::vector<uint8_t> > {
+  static gfx::Size Convert(const std::vector<uint8_t>& input) {
+    return gfx::Size(
+      input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3],
+      input[4] << 24 | input[5] << 16 | input[6] << 8 | input[7]);
+  }
+};
+
+}  // namespace mojo
 
 namespace mus {
 
@@ -759,10 +790,10 @@ class SharedPropertyChangeObserver : public WindowObserver {
   std::string VectorToString(const std::vector<uint8_t>* data) {
     if (!data)
       return "NULL";
-    std::string s;
-    for (char c : *data)
-      s += c;
-    return s;
+    gfx::Size size =
+        mojo::TypeConverter<gfx::Size, const std::vector<uint8_t>>::Convert(
+            *data);
+    return base::StringPrintf("%d,%d", size.width(), size.height());
   }
 
   Window* window_;
@@ -773,44 +804,46 @@ class SharedPropertyChangeObserver : public WindowObserver {
 
 }  // namespace
 
-TEST_F(WindowObserverTest, SetLocalProperty) {
+TEST_F(WindowObserverTest, SetSharedProperty) {
   TestWindow w1;
-  std::vector<uint8_t> one(1, '1');
+  gfx::Size size(100, 100);
 
   {
-    // Change wisibility from true to false and make sure we get notifications.
+    // Change visibility from true to false and make sure we get notifications.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty("one", &one);
+    w1.SetSharedProperty<gfx::Size>("size", &size);
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
     EXPECT_EQ(
-        "window=0,1 shared property changed key=one old_value=NULL new_value=1",
+        "window=0,1 shared property changed key=size old_value=NULL "
+        "new_value=100,100",
         changes[0]);
     EXPECT_EQ(1U, w1.shared_properties().size());
   }
   {
-    // Set visible to existing walue and werify no notifications.
+    // Set visible to existing value and verify no notifications.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty("one", &one);
+    w1.SetSharedProperty<gfx::Size>("size", &size);
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
     EXPECT_EQ(1U, w1.shared_properties().size());
   }
   {
-    // Set the walue to NULL to delete it.
-    // Change wisibility from true to false and make sure we get notifications.
+    // Set the value to null to delete it.
+    // Change visibility from true to false and make sure we get notifications.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty("one", NULL);
+    w1.SetSharedProperty<gfx::Size>("size", nullptr);
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
     EXPECT_EQ(
-        "window=0,1 shared property changed key=one old_value=1 new_value=NULL",
+        "window=0,1 shared property changed key=size old_value=100,100 "
+        "new_value=NULL",
         changes[0]);
     EXPECT_EQ(0U, w1.shared_properties().size());
   }
   {
     // Setting a null property to null shouldn't update us.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty("one", NULL);
+    w1.SetSharedProperty<gfx::Size>("size", nullptr);
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
     EXPECT_EQ(0U, w1.shared_properties().size());
   }

@@ -75,9 +75,17 @@ class Window {
   // Returns the set of string to bag of byte properties. These properties are
   // shared with the window manager.
   const SharedProperties& shared_properties() const { return properties_; }
-  // Sets a property. If |data| is null, this property is deleted.
-  void SetSharedProperty(const std::string& name,
-                         const std::vector<uint8_t>* data);
+
+  template <typename T>
+  void SetSharedProperty(const std::string& name, T* data) {
+    if (!data) {
+      SetSharedPropertyInternal(name, nullptr);
+    } else {
+      const std::vector<uint8_t> bytes =
+          mojo::TypeConverter<const std::vector<uint8_t>, T>::Convert(*data);
+      SetSharedPropertyInternal(name, &bytes);
+    }
+  }
 
   // Sets the |value| of the given window |property|. Setting to the default
   // value (e.g., NULL) removes the property. The caller is responsible for the
@@ -161,6 +169,10 @@ class Window {
 
   Window(WindowTreeConnection* connection, Id id);
 
+  // Applies a shared property change locally and forwards to the server. If
+  // |data| is null, this property is deleted.
+  void SetSharedPropertyInternal(const std::string& name,
+                                 const std::vector<uint8_t>* data);
   // Called by the public {Set,Get,Clear}Property functions.
   int64_t SetLocalPropertyInternal(const void* key,
                                    const char* name,
@@ -182,6 +194,8 @@ class Window {
                                const mojom::ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
   void LocalSetVisible(bool visible);
+  void LocalSetSharedProperty(const std::string& name,
+                              const std::vector<uint8_t>* data);
 
   // Methods implementing visibility change notifications. See WindowObserver
   // for more details.

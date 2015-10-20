@@ -39,6 +39,7 @@ test("mojo_view_manager_lib_unittests") {
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//third_party/mojo/src/mojo/edk/system",
+    "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
   ]
 

@@ -59,6 +59,10 @@ class WindowPrivate {
   }
   void LocalSetDrawn(bool drawn) { window_->LocalSetDrawn(drawn); }
   void LocalSetVisible(bool visible) { window_->LocalSetVisible(visible); }
+  void LocalSetSharedProperty(const std::string& name,
+                              const std::vector<uint8_t>* data){
+    window_->LocalSetSharedProperty(name, data);
+  }
 
  private:
   Window* window_;

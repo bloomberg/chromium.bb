@@ -420,8 +420,7 @@ void WindowTreeClientImpl::OnWindowSharedPropertyChanged(
       data = new_data.To<std::vector<uint8_t>>();
       data_ptr = &data;
     }
-
-    window->SetSharedProperty(name, data_ptr);
+    WindowPrivate(window).LocalSetSharedProperty(name, data_ptr);
   }
 }
 
