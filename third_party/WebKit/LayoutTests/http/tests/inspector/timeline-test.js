@@ -80,7 +80,7 @@ InspectorTest.timelineModel = function()
 
 InspectorTest.timelineFrameModel = function()
 {
-    return WebInspector.panels.timeline._frameModel();
+    return WebInspector.panels.timeline._frameModel;
 }
 
 InspectorTest.startTimeline = function(callback)
