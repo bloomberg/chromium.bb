@@ -17,7 +17,7 @@ const int64 kDefaultShortPollIntervalSeconds = 3600 * 8;
 const int64 kDefaultLongPollIntervalSeconds = 3600 * 12;
 
 // Maximum interval for exponential backoff.
-const int64 kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
+const int64 kMaxBackoffSeconds = 60 * 10;  // 10 minutes.
 
 // Backoff interval randomization factor.
 const int kBackoffRandomizationFactor = 2;
@@ -25,7 +25,7 @@ const int kBackoffRandomizationFactor = 2;
 // After a failure contacting sync servers, specifies how long to wait before
 // reattempting and entering exponential backoff if consecutive failures
 // occur.
-const int kInitialBackoffRetrySeconds = 60 * 5;  // 5 minutes.
+const int kInitialBackoffRetrySeconds = 30;  // 30 seconds.
 
 // A dangerously short retry value that would not actually protect servers from
 // DDoS if it were used as a seed for exponential backoff, although the client
