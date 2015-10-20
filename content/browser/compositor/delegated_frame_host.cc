@@ -557,6 +557,13 @@ void DelegatedFrameHost::WillDrawSurface(cc::SurfaceId id,
   AttemptFrameSubscriberCapture(damage_rect);
 }
 
+void DelegatedFrameHost::SetBeginFrameSource(
+    cc::SurfaceId surface_id,
+    cc::BeginFrameSource* begin_frame_source) {
+  // TODO(tansell): Hook this up.
+  NOTIMPLEMENTED();
+}
+
 void DelegatedFrameHost::EvictDelegatedFrame() {
   client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
   frame_provider_ = NULL;

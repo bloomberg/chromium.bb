@@ -45,6 +45,8 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(SurfaceId surface_id,
+                           BeginFrameSource* begin_frame_source) override;
 
  private:
   void SwapBuffersComplete(SurfaceDrawStatus drawn);

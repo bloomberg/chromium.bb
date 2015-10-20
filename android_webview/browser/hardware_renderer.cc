@@ -203,6 +203,13 @@ void HardwareRenderer::ReturnResources(
   shared_renderer_state_->InsertReturnedResourcesOnRT(resources);
 }
 
+void HardwareRenderer::SetBeginFrameSource(
+    cc::SurfaceId surface_id,
+    cc::BeginFrameSource* begin_frame_source) {
+  // TODO(tansell): Hook this up.
+  NOTIMPLEMENTED();
+}
+
 void HardwareRenderer::SetBackingFrameBufferObject(
     int framebuffer_binding_ext) {
   gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);

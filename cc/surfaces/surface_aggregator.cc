@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
@@ -40,17 +41,23 @@ void MoveMatchingRequests(
 
 }  // namespace
 
-SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
+SurfaceAggregator::SurfaceAggregator(SurfaceAggregatorClient* client,
+                                     SurfaceManager* manager,
                                      ResourceProvider* provider,
                                      bool aggregate_only_damaged)
-    : manager_(manager),
+    : client_(client),
+      manager_(manager),
       provider_(provider),
       next_render_pass_id_(1),
       aggregate_only_damaged_(aggregate_only_damaged) {
   DCHECK(manager_);
 }
 
-SurfaceAggregator::~SurfaceAggregator() {}
+SurfaceAggregator::~SurfaceAggregator() {
+  // Notify client of all surfaces being removed.
+  contained_surfaces_.clear();
+  ProcessAddedAndRemovedSurfaces();
+}
 
 // Create a clip rect for an aggregated quad from the original clip rect and
 // the clip rect from the surface it's on.
@@ -135,14 +142,18 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   }
 }
 
+gfx::Rect SurfaceAggregator::DamageRectForSurface(
+    const Surface* surface,
+    const RenderPass& source,
+    const gfx::Rect& full_rect) const {
+  auto it = previous_contained_surfaces_.find(surface->surface_id());
+  if (it == previous_contained_surfaces_.end())
+    return full_rect;
 
-gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
-                                                  const RenderPass& source,
-                                                  const gfx::Rect& full_rect) {
-  int previous_index = previous_contained_surfaces_[surface->surface_id()];
+  int previous_index = it->second;
   if (previous_index == surface->frame_index())
     return gfx::Rect();
-  else if (previous_index == surface->frame_index() - 1)
+  if (previous_index == surface->frame_index() - 1)
     return source.damage_rect;
   return full_rect;
 }
@@ -450,9 +461,10 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
   }
 }
 
-void SurfaceAggregator::RemoveUnreferencedChildren() {
+void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
   for (const auto& surface : previous_contained_surfaces_) {
     if (!contained_surfaces_.count(surface.first)) {
+      // Release resources of removed surface.
       SurfaceToResourceChildIdMap::iterator it =
           surface_id_to_resource_child_id_.find(surface.first);
       if (it != surface_id_to_resource_child_id_.end()) {
@@ -460,9 +472,21 @@ void SurfaceAggregator::RemoveUnreferencedChildren() {
         surface_id_to_resource_child_id_.erase(it);
       }
 
+      // Notify client of removed surface.
+      Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
+      if (surface_ptr) {
+        surface_ptr->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
+        client_->RemoveSurface(surface_ptr);
+      }
+    }
+  }
+
+  for (const auto& surface : contained_surfaces_) {
+    if (!previous_contained_surfaces_.count(surface.first)) {
+      // Notify client of added surface.
       Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
       if (surface_ptr)
-        surface_ptr->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
+        client_->AddSurface(surface_ptr);
     }
   }
 }
@@ -606,7 +630,7 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   dest_pass_list_->back()->damage_rect = root_damage_rect_;
 
   dest_pass_list_ = NULL;
-  RemoveUnreferencedChildren();
+  ProcessAddedAndRemovedSurfaces();
   contained_surfaces_.swap(previous_contained_surfaces_);
   contained_surfaces_.clear();
 

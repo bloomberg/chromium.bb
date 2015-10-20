@@ -55,6 +55,8 @@ void RunTests(SurfaceManager* manager, TestCase* tests, size_t test_count) {
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
+  void SetBeginFrameSource(SurfaceId surface_id,
+                           BeginFrameSource* begin_frame_source) override {}
 };
 
 void CreateSharedQuadState(RenderPass* pass,

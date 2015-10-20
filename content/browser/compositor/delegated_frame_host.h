@@ -117,6 +117,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface(cc::SurfaceId id, const gfx::Rect& damage_rect) override;
+  void SetBeginFrameSource(cc::SurfaceId surface_id,
+                           cc::BeginFrameSource* begin_frame_source) override;
 
   bool CanCopyToBitmap() const;
 

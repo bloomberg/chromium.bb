@@ -111,6 +111,13 @@ void ServerWindowSurface::ReturnResources(
       mojo::Array<mojom::ReturnedResourcePtr>::From(resources));
 }
 
+void ServerWindowSurface::SetBeginFrameSource(
+    cc::SurfaceId surface_id,
+    cc::BeginFrameSource* begin_frame_source) {
+  // TODO(tansell): Implement this.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace ws
 
 }  // namespace mus

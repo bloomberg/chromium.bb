@@ -24,6 +24,14 @@ namespace {
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
+  void SetBeginFrameSource(SurfaceId surface_id,
+                           BeginFrameSource* begin_frame_source) override {}
+};
+
+class EmptySurfaceAggregatorClient : public SurfaceAggregatorClient {
+ public:
+  void AddSurface(Surface* surface) override {}
+  void RemoveSurface(Surface* surface) override {}
 };
 
 class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
@@ -83,7 +91,9 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   factory_.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
                                  SurfaceFactory::DrawCallback());
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
+  EmptySurfaceAggregatorClient surface_aggregator_client;
+  SurfaceAggregator aggregator(&surface_aggregator_client, &manager_,
+                               resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
   factory_.Destroy(root_surface_id);
@@ -167,7 +177,9 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                                    SurfaceFactory::DrawCallback());
   }
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
+  EmptySurfaceAggregatorClient surface_aggregator_client;
+  SurfaceAggregator aggregator(&surface_aggregator_client, &manager_,
+                               resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
 
@@ -310,7 +322,9 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                    SurfaceFactory::DrawCallback());
   }
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
+  EmptySurfaceAggregatorClient surface_aggregator_client;
+  SurfaceAggregator aggregator(&surface_aggregator_client, &manager_,
+                               resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
 

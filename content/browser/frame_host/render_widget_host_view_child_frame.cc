@@ -461,6 +461,13 @@ void RenderWidgetHostViewChildFrame::ReturnResources(
             std::back_inserter(surface_returned_resources_));
 }
 
+void RenderWidgetHostViewChildFrame::SetBeginFrameSource(
+    cc::SurfaceId surface_id,
+    cc::BeginFrameSource* begin_frame_source) {
+  // TODO(tansell): Hook this up.
+  NOTIMPLEMENTED();
+}
+
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate) {

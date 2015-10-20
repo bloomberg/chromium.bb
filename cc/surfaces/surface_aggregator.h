@@ -25,11 +25,20 @@ class Surface;
 class SurfaceDrawQuad;
 class SurfaceManager;
 
+class CC_SURFACES_EXPORT SurfaceAggregatorClient {
+ public:
+  virtual ~SurfaceAggregatorClient() {}
+
+  virtual void AddSurface(Surface* surface) = 0;
+  virtual void RemoveSurface(Surface* surface) = 0;
+};
+
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
   typedef base::hash_map<SurfaceId, int> SurfaceIndexMap;
 
-  SurfaceAggregator(SurfaceManager* manager,
+  SurfaceAggregator(SurfaceAggregatorClient* client,
+                    SurfaceManager* manager,
                     ResourceProvider* provider,
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
@@ -79,13 +88,16 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // Remove Surfaces that were referenced before but aren't currently
   // referenced from the ResourceProvider.
-  void RemoveUnreferencedChildren();
+  // Also notifies SurfaceAggregatorClient of newly added and removed
+  // child surfaces.
+  void ProcessAddedAndRemovedSurfaces();
 
   int ChildIdForSurface(Surface* surface);
   gfx::Rect DamageRectForSurface(const Surface* surface,
                                  const RenderPass& source,
-                                 const gfx::Rect& full_rect);
+                                 const gfx::Rect& full_rect) const;
 
+  SurfaceAggregatorClient* client_;  // Outlives this class.
   SurfaceManager* manager_;
   ResourceProvider* provider_;
 

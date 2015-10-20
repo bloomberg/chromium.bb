@@ -26,9 +26,21 @@ using testing::AnyNumber;
 namespace cc {
 namespace {
 
-class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
+class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
+  FakeSurfaceFactoryClient() : begin_frame_source_(nullptr) {}
+
   void ReturnResources(const ReturnedResourceArray& resources) override {}
+
+  void SetBeginFrameSource(SurfaceId surface_id,
+                           BeginFrameSource* begin_frame_source) override {
+    begin_frame_source_ = begin_frame_source;
+  }
+
+  BeginFrameSource* begin_frame_source() { return begin_frame_source_; }
+
+ private:
+  BeginFrameSource* begin_frame_source_;
 };
 
 class TestSoftwareOutputDevice : public SoftwareOutputDevice {
@@ -42,7 +54,7 @@ class TestSoftwareOutputDevice : public SoftwareOutputDevice {
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
-      : factory_(&manager_, &empty_client_),
+      : factory_(&manager_, &surface_factory_client_),
         software_output_device_(nullptr),
         task_runner_(new base::NullTaskRunner) {}
 
@@ -73,7 +85,7 @@ class DisplayTest : public testing::Test {
   }
 
   SurfaceManager manager_;
-  EmptySurfaceFactoryClient empty_client_;
+  FakeSurfaceFactoryClient surface_factory_client_;
   SurfaceFactory factory_;
   TestSoftwareOutputDevice* software_output_device_;
   scoped_ptr<FakeOutputSurface> output_surface_;
@@ -103,7 +115,9 @@ class TestDisplayScheduler : public DisplayScheduler {
         damaged(false),
         display_resized_(false),
         has_new_root_surface(false),
-        swapped(false) {}
+        swapped(false) {
+    begin_frame_source_for_children_.reset(new FakeBeginFrameSource);
+  }
 
   ~TestDisplayScheduler() override {}
 
@@ -134,6 +148,29 @@ class TestDisplayScheduler : public DisplayScheduler {
 
 void CopyCallback(bool* called, scoped_ptr<CopyOutputResult> result) {
   *called = true;
+}
+
+// Verify Display responds to SurfaceAggregatorClient methods properly.
+TEST_F(DisplayTest, DisplayAsSurfaceAggregatorClient) {
+  SetUpContext(nullptr);
+  TestDisplayClient client;
+  RendererSettings settings;
+  Display display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
+                  settings);
+
+  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_,
+                                 task_runner_.get());
+  display.Initialize(output_surface_.Pass(), &scheduler);
+
+  SurfaceId surface_id(6);
+  factory_.Create(surface_id);
+  Surface* surface = manager_.GetSurfaceForId(surface_id);
+
+  EXPECT_EQ(nullptr, surface_factory_client_.begin_frame_source());
+  display.AddSurface(surface);
+  EXPECT_NE(nullptr, surface_factory_client_.begin_frame_source());
+  display.RemoveSurface(surface);
+  EXPECT_EQ(nullptr, surface_factory_client_.begin_frame_source());
 }
 
 // Check that frame is damaged and swapped only under correct conditions.

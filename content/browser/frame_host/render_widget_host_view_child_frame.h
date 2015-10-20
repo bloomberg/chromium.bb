@@ -154,6 +154,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(cc::SurfaceId surface_id,
+                           cc::BeginFrameSource* begin_frame_source) override;
 
   // Declared 'public' instead of 'protected' here to allow derived classes
   // to Bind() to it.

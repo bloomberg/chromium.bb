@@ -12,6 +12,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -20,12 +21,17 @@ namespace {
 
 class TestSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
-  TestSurfaceFactoryClient() {}
+  TestSurfaceFactoryClient() : begin_frame_source_(nullptr) {}
   ~TestSurfaceFactoryClient() override {}
 
   void ReturnResources(const ReturnedResourceArray& resources) override {
     returned_resources_.insert(
         returned_resources_.end(), resources.begin(), resources.end());
+  }
+
+  void SetBeginFrameSource(SurfaceId surface_id,
+                           BeginFrameSource* begin_frame_source) override {
+    begin_frame_source_ = begin_frame_source;
   }
 
   const ReturnedResourceArray& returned_resources() const {
@@ -34,21 +40,25 @@ class TestSurfaceFactoryClient : public SurfaceFactoryClient {
 
   void clear_returned_resources() { returned_resources_.clear(); }
 
+  BeginFrameSource* begin_frame_source() const { return begin_frame_source_; }
+
  private:
   ReturnedResourceArray returned_resources_;
+  BeginFrameSource* begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSurfaceFactoryClient);
 };
 
 class SurfaceFactoryTest : public testing::Test {
  public:
-  SurfaceFactoryTest() : factory_(&manager_, &client_), surface_id_(3) {
-    factory_.Create(surface_id_);
+  SurfaceFactoryTest()
+      : factory_(new SurfaceFactory(&manager_, &client_)), surface_id_(3) {
+    factory_->Create(surface_id_);
   }
 
   ~SurfaceFactoryTest() override {
     if (!surface_id_.is_null())
-      factory_.Destroy(surface_id_);
+      factory_->Destroy(surface_id_);
   }
 
   void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
@@ -62,8 +72,8 @@ class SurfaceFactoryTest : public testing::Test {
     }
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
-    factory_.SubmitCompositorFrame(surface_id_, frame.Pass(),
-                                   SurfaceFactory::DrawCallback());
+    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+                                    SurfaceFactory::DrawCallback());
   }
 
   void UnrefResources(ResourceId* ids_to_unref,
@@ -76,7 +86,7 @@ class SurfaceFactoryTest : public testing::Test {
       resource.count = counts_to_unref[i];
       unref_array.push_back(resource);
     }
-    factory_.UnrefResources(unref_array);
+    factory_->UnrefResources(unref_array);
   }
 
   void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
@@ -95,14 +105,14 @@ class SurfaceFactoryTest : public testing::Test {
 
   void RefCurrentFrameResources() {
     Surface* surface = manager_.GetSurfaceForId(surface_id_);
-    factory_.RefResources(
+    factory_->RefResources(
         surface->GetEligibleFrame()->delegated_frame_data->resource_list);
   }
 
  protected:
   SurfaceManager manager_;
   TestSurfaceFactoryClient client_;
-  SurfaceFactory factory_;
+  scoped_ptr<SurfaceFactory> factory_;
   SurfaceId surface_id_;
 };
 
@@ -374,17 +384,17 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
 
 TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
   SurfaceId surface_id(6);
-  factory_.Create(surface_id);
+  factory_->Create(surface_id);
   Surface* surface = manager_.GetSurfaceForId(surface_id);
   ASSERT_NE(nullptr, surface);
   EXPECT_EQ(2, surface->frame_index());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data.reset(new DelegatedFrameData);
 
-  factory_.SubmitCompositorFrame(surface_id, frame.Pass(),
-                                 SurfaceFactory::DrawCallback());
+  factory_->SubmitCompositorFrame(surface_id, frame.Pass(),
+                                  SurfaceFactory::DrawCallback());
   EXPECT_EQ(2, surface->frame_index());
-  factory_.Destroy(surface_id);
+  factory_->Destroy(surface_id);
 }
 
 void DrawCallback(uint32* execute_count,
@@ -397,7 +407,7 @@ void DrawCallback(uint32* execute_count,
 // Tests doing a DestroyAll before shutting down the factory;
 TEST_F(SurfaceFactoryTest, DestroyAll) {
   SurfaceId id(7);
-  factory_.Create(id);
+  factory_->Create(id);
 
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   TransferableResource resource;
@@ -409,25 +419,25 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
   uint32 execute_count = 0;
   SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
 
-  factory_.SubmitCompositorFrame(
+  factory_->SubmitCompositorFrame(
       id, frame.Pass(), base::Bind(&DrawCallback, &execute_count, &drawn));
 
   surface_id_ = SurfaceId();
-  factory_.DestroyAll();
+  factory_->DestroyAll();
   EXPECT_EQ(1u, execute_count);
   EXPECT_EQ(SurfaceDrawStatus::DRAW_SKIPPED, drawn);
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {
   SurfaceId id2(5);
-  factory_.Create(id2);
+  factory_->Create(id2);
 
   manager_.RegisterSurfaceIdNamespace(0);
 
   // Check that waiting before the sequence is satisfied works.
   manager_.GetSurfaceForId(id2)
       ->AddDestructionDependency(SurfaceSequence(0, 4));
-  factory_.Destroy(id2);
+  factory_->Destroy(id2);
 
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
@@ -435,16 +445,16 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   frame->metadata.satisfies_sequences.push_back(4);
   frame->delegated_frame_data = frame_data.Pass();
   DCHECK(manager_.GetSurfaceForId(id2));
-  factory_.SubmitCompositorFrame(surface_id_, frame.Pass(),
-                                 SurfaceFactory::DrawCallback());
+  factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+                                  SurfaceFactory::DrawCallback());
   DCHECK(!manager_.GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
-  factory_.Create(id2);
+  factory_->Create(id2);
   DCHECK(manager_.GetSurfaceForId(id2));
   manager_.GetSurfaceForId(id2)
       ->AddDestructionDependency(SurfaceSequence(0, 6));
-  factory_.Destroy(id2);
+  factory_->Destroy(id2);
   DCHECK(!manager_.GetSurfaceForId(id2));
 }
 
@@ -453,12 +463,12 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
 TEST_F(SurfaceFactoryTest, InvalidIdNamespace) {
   uint32_t id_namespace = 9u;
   SurfaceId id(5);
-  factory_.Create(id);
+  factory_->Create(id);
 
   manager_.RegisterSurfaceIdNamespace(id_namespace);
   manager_.GetSurfaceForId(id)
       ->AddDestructionDependency(SurfaceSequence(id_namespace, 4));
-  factory_.Destroy(id);
+  factory_->Destroy(id);
 
   // Verify the dependency has prevented the surface from getting destroyed.
   EXPECT_TRUE(manager_.GetSurfaceForId(id));
@@ -472,7 +482,7 @@ TEST_F(SurfaceFactoryTest, InvalidIdNamespace) {
 
 TEST_F(SurfaceFactoryTest, DestroyCycle) {
   SurfaceId id2(5);
-  factory_.Create(id2);
+  factory_->Create(id2);
 
   manager_.RegisterSurfaceIdNamespace(0);
 
@@ -487,10 +497,10 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     frame_data->render_pass_list.push_back(render_pass.Pass());
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
-    factory_.SubmitCompositorFrame(id2, frame.Pass(),
-                                   SurfaceFactory::DrawCallback());
+    factory_->SubmitCompositorFrame(id2, frame.Pass(),
+                                    SurfaceFactory::DrawCallback());
   }
-  factory_.Destroy(id2);
+  factory_->Destroy(id2);
 
   // Give surface_id_ a frame that references id2.
   {
@@ -500,10 +510,10 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
     frame_data->render_pass_list.push_back(render_pass.Pass());
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
-    factory_.SubmitCompositorFrame(surface_id_, frame.Pass(),
-                                   SurfaceFactory::DrawCallback());
+    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+                                    SurfaceFactory::DrawCallback());
   }
-  factory_.Destroy(surface_id_);
+  factory_->Destroy(surface_id_);
   EXPECT_TRUE(manager_.GetSurfaceForId(id2));
   // surface_id_ should be retained by reference from id2.
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id_));
@@ -534,8 +544,8 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
     frame_data->render_pass_list.push_back(render_pass.Pass());
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
-    factory_.SubmitCompositorFrame(surface_id_, frame.Pass(),
-                                   SurfaceFactory::DrawCallback());
+    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+                                    SurfaceFactory::DrawCallback());
   }
   void* source1 = &source1;
   void* source2 = &source2;
@@ -546,7 +556,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
       base::Bind(&CopyRequestTestCallback, &called1));
   request->set_source(source1);
 
-  factory_.RequestCopyOfSurface(surface_id_, request.Pass());
+  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
   EXPECT_FALSE(called1);
 
   bool called2 = false;
@@ -554,7 +564,7 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
       base::Bind(&CopyRequestTestCallback, &called2));
   request->set_source(source2);
 
-  factory_.RequestCopyOfSurface(surface_id_, request.Pass());
+  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
   // Callbacks have different sources so neither should be called.
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -564,17 +574,48 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
       base::Bind(&CopyRequestTestCallback, &called3));
   request->set_source(source1);
 
-  factory_.RequestCopyOfSurface(surface_id_, request.Pass());
+  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
   // Two callbacks are from source1, so the first should be called.
   EXPECT_TRUE(called1);
   EXPECT_FALSE(called2);
   EXPECT_FALSE(called3);
 
-  factory_.Destroy(surface_id_);
+  factory_->Destroy(surface_id_);
   surface_id_ = SurfaceId();
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called3);
+}
+
+// Verifies BFS is forwarded to the client.
+TEST_F(SurfaceFactoryTest, SetBeginFrameSource) {
+  FakeBeginFrameSource bfs1;
+  FakeBeginFrameSource bfs2;
+  EXPECT_EQ(nullptr, client_.begin_frame_source());
+  factory_->SetBeginFrameSource(surface_id_, &bfs1);
+  EXPECT_EQ(&bfs1, client_.begin_frame_source());
+  factory_->SetBeginFrameSource(surface_id_, &bfs2);
+  EXPECT_EQ(&bfs2, client_.begin_frame_source());
+  factory_->SetBeginFrameSource(surface_id_, nullptr);
+  EXPECT_EQ(nullptr, client_.begin_frame_source());
+}
+
+TEST_F(SurfaceFactoryTest, BeginFrameSourceRemovedOnFactoryDestruction) {
+  FakeBeginFrameSource bfs;
+  factory_->SetBeginFrameSource(surface_id_, &bfs);
+  EXPECT_EQ(&bfs, client_.begin_frame_source());
+
+  // Prevent the Surface from being destroyed when we destroy the factory.
+  manager_.RegisterSurfaceIdNamespace(0);
+  manager_.GetSurfaceForId(surface_id_)
+      ->AddDestructionDependency(SurfaceSequence(0, 4));
+
+  surface_id_ = SurfaceId();
+  factory_->DestroyAll();
+
+  EXPECT_EQ(&bfs, client_.begin_frame_source());
+  factory_.reset();
+  EXPECT_EQ(nullptr, client_.begin_frame_source());
 }
 
 }  // namespace

@@ -131,8 +131,8 @@ void Display::InitializeRenderer() {
   // overlays.
   bool output_partial_list = renderer_->Capabilities().using_partial_swap &&
                              !output_surface_->GetOverlayCandidateValidator();
-  aggregator_.reset(new SurfaceAggregator(manager_, resource_provider_.get(),
-                                          output_partial_list));
+  aggregator_.reset(new SurfaceAggregator(
+      this, manager_, resource_provider_.get(), output_partial_list));
 }
 
 void Display::DidLoseOutputSurface() {
@@ -148,6 +148,31 @@ void Display::UpdateRootSurfaceResourcesLocked() {
   bool root_surface_resources_locked = !surface || !surface->GetEligibleFrame();
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
+}
+
+void Display::AddSurface(Surface* surface) {
+  // Checking for the output_surface ensures Display::Initialize has been
+  // called and that scheduler_ won't change its value.
+  DCHECK(output_surface_);
+
+  // WebView's HardwareRenderer will never have a scheduler.
+  if (!scheduler_)
+    return;
+
+  surface->AddBeginFrameSource(scheduler_->begin_frame_source_for_children());
+}
+
+void Display::RemoveSurface(Surface* surface) {
+  // Checking for the output_surface ensures Display::Initialize has been
+  // called and that scheduler_ won't change its value.
+  DCHECK(output_surface_);
+
+  // WebView's HardwareRenderer will never have a scheduler.
+  if (!scheduler_)
+    return;
+
+  surface->RemoveBeginFrameSource(
+      scheduler_->begin_frame_source_for_children());
 }
 
 bool Display::DrawAndSwap() {

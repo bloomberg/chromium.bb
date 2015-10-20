@@ -93,6 +93,13 @@ void SurfaceDisplayOutputSurface::ReturnResources(
     client_->ReclaimResources(&ack);
 }
 
+void SurfaceDisplayOutputSurface::SetBeginFrameSource(
+    SurfaceId surface_id,
+    BeginFrameSource* begin_frame_source) {
+  // TODO(tansell): Hook this up.
+  NOTIMPLEMENTED();
+}
+
 void SurfaceDisplayOutputSurface::SwapBuffersComplete(SurfaceDrawStatus drawn) {
   if (client_ && !display_client_->output_surface_lost())
     client_->DidSwapBuffersComplete();

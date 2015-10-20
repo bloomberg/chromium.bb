@@ -24,6 +24,14 @@ namespace {
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
+  void SetBeginFrameSource(SurfaceId surface_id,
+                           BeginFrameSource* begin_frame_source) override {}
+};
+
+class EmptySurfaceAggregatorClient : public SurfaceAggregatorClient {
+ public:
+  void AddSurface(Surface* surface) override {}
+  void RemoveSurface(Surface* surface) override {}
 };
 
 class SurfaceAggregatorPerfTest : public testing::Test {
@@ -44,7 +52,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                bool optimize_damage,
                bool full_damage,
                const std::string& name) {
-    aggregator_.reset(new SurfaceAggregator(&manager_, resource_provider_.get(),
+    aggregator_.reset(new SurfaceAggregator(&surface_aggregator_client_,
+                                            &manager_, resource_provider_.get(),
                                             optimize_damage));
     for (int i = 1; i <= num_surfaces; i++) {
       factory_.Create(SurfaceId(i));
@@ -139,6 +148,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SurfaceAggregator> aggregator_;
+  EmptySurfaceAggregatorClient surface_aggregator_client_;
   LapTimer timer_;
 };
 

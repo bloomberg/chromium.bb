@@ -12,6 +12,9 @@
 
 namespace cc {
 
+class BeginFrameSource;
+struct SurfaceId;
+
 class CC_SURFACES_EXPORT SurfaceFactoryClient {
  public:
   virtual ~SurfaceFactoryClient() {}
@@ -20,6 +23,15 @@ class CC_SURFACES_EXPORT SurfaceFactoryClient {
 
   virtual void WillDrawSurface(SurfaceId surface_id,
                                const gfx::Rect& damage_rect) {}
+
+  // This allows the SurfaceFactory to tell it's client what BeginFrameSource
+  // to use for a given surface_id.
+  // If there are multiple active surface_ids, it is the client's
+  // responsibility to pick or distribute the correct BeginFrameSource.
+  // If surface_id is null, then all BeginFrameSources previously
+  // set by this function should be invalidated.
+  virtual void SetBeginFrameSource(SurfaceId surface_id,
+                                   BeginFrameSource* begin_frame_source) = 0;
 };
 
 }  // namespace cc

@@ -35,6 +35,9 @@ Surface::~Surface() {
   }
   if (!draw_callback_.is_null())
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
+
+  if (factory_)
+    factory_->SetBeginFrameSource(surface_id_, NULL);
 }
 
 void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
@@ -173,6 +176,34 @@ void Surface::SatisfyDestructionDependencies(
                                !valid_id_namespaces->count(seq.id_namespace));
                      }),
       destruction_dependencies_.end());
+}
+
+void Surface::AddBeginFrameSource(BeginFrameSource* begin_frame_source) {
+  DCHECK(base::STLIsSorted(begin_frame_sources_));
+  DCHECK(!ContainsValue(begin_frame_sources_, begin_frame_source))
+      << begin_frame_source;
+  begin_frame_sources_.insert(begin_frame_source);
+  UpdatePrimaryBeginFrameSource();
+}
+
+void Surface::RemoveBeginFrameSource(BeginFrameSource* begin_frame_source) {
+  size_t erase_count = begin_frame_sources_.erase(begin_frame_source);
+  DCHECK_EQ(1u, erase_count);
+  UpdatePrimaryBeginFrameSource();
+}
+
+void Surface::UpdatePrimaryBeginFrameSource() {
+  // Ensure the BeginFrameSources are sorted so our we make a stable decision
+  // regarding which source is primary.
+  // TODO(brianderson): Do something smarter based on coverage instead.
+  DCHECK(base::STLIsSorted(begin_frame_sources_));
+
+  BeginFrameSource* primary_source = nullptr;
+  if (!begin_frame_sources_.empty())
+    primary_source = *begin_frame_sources_.begin();
+
+  if (factory_)
+    factory_->SetBeginFrameSource(surface_id_, primary_source);
 }
 
 void Surface::ClearCopyRequests() {

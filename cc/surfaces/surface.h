@@ -6,6 +6,7 @@
 #define CC_SURFACES_SURFACE_H_
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
@@ -80,8 +81,12 @@ class CC_SURFACES_EXPORT Surface {
   bool destroyed() const { return destroyed_; }
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
 
+  void AddBeginFrameSource(BeginFrameSource* begin_frame_source);
+  void RemoveBeginFrameSource(BeginFrameSource* begin_frame_source);
+
  private:
   void ClearCopyRequests();
+  void UpdatePrimaryBeginFrameSource();
 
   SurfaceId surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
@@ -90,6 +95,10 @@ class CC_SURFACES_EXPORT Surface {
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
+
+  // This surface may have multiple BeginFrameSources if it is
+  // on multiple Displays.
+  std::set<BeginFrameSource*> begin_frame_sources_;
 
   std::vector<SurfaceId> referenced_surfaces_;
 

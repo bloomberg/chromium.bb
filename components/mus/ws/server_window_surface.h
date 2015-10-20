@@ -65,6 +65,8 @@ class ServerWindowSurface : public mojom::Surface,
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(cc::SurfaceId surface_id,
+                           cc::BeginFrameSource* begin_frame_source) override;
 
   // |window_| owns |this|.
   ServerWindow* const window_;

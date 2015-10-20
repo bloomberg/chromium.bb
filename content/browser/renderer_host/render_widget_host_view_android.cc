@@ -984,6 +984,13 @@ void RenderWidgetHostViewAndroid::ReturnResources(
     SendReturnedDelegatedResources(last_output_surface_id_);
 }
 
+void RenderWidgetHostViewAndroid::SetBeginFrameSource(
+    cc::SurfaceId surface_id,
+    cc::BeginFrameSource* begin_frame_source) {
+  // TODO(tansell): Hook this up.
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
   RemoveLayers();
   frame_provider_ = NULL;
