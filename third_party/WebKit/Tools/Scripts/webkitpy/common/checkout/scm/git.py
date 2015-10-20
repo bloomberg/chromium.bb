@@ -244,7 +244,7 @@ class Git(SCM):
         self._run_git(['checkout', '-q', '-b', name, self._remote_branch_ref()])
 
     def blame(self, path):
-        return self._run_git(['blame', path])
+        return self._run_git(['blame', '--show-email', path])
 
     # Git-specific methods:
     def _branch_ref_exists(self, branch_ref):
