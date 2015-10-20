@@ -7,7 +7,7 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/crash_service<(EXECUTABLE_SUFFIX)',
-          '../components/crash/content/tools/generate_breakpad_symbols.py',
+          '../../../components/crash/content/tools/generate_breakpad_symbols.py',
         ],
       },
     }],
@@ -17,7 +17,7 @@
       'variables': {
         'files': [
           # Chromium local path information for Telemetry's binary_manager.
-          '../tools/perf/chrome_telemetry_build/',
+          './',
         ],
       },
     }],

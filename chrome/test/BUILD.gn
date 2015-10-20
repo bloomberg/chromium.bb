@@ -254,19 +254,6 @@ source_set("test_support_ui") {
   }
 }
 
-group("telemetry_binary_deps") {
-  data_deps = []
-
-  data = [
-    "//tools/perf/chrome_telemetry_build/",
-  ]
-
-  if (is_win) {
-    data_deps += [ "//content/shell:crash_service" ]
-    data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
-  }
-}
-
 if (!is_android) {
   import("//third_party/protobuf/proto_library.gni")
 
@@ -647,24 +634,9 @@ if (!is_android) {
     ]
   }
 
-  group("telemetry_chrome_deps") {
-    data_deps = [
-      # TODO(kbr): this used to be "//chrome". Had to change this to
-      # chrome_initial temporarily to work around crbug.com/536192.
-      "//chrome:chrome_initial",
-      "//tools/telemetry:bitmaptools",
-    ]
-
-    if (is_linux) {
-      data_deps += [ "//tools/xdisplaycheck" ]
-    }
-  }
-
   group("telemetry_perf_unittests") {
     deps = [
-      "//tools/telemetry:telemetry_test_support",
-      ":telemetry_chrome_deps",
-      ":telemetry_binary_deps",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
     ]
 
     data = [
@@ -704,9 +676,7 @@ if (!is_android) {
 
   group("telemetry_gpu_test") {
     deps = [
-      "//tools/telemetry:telemetry_test_support",
-      ":telemetry_binary_deps",
-      ":telemetry_chrome_deps",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
     ]
 
     data = [
@@ -745,7 +715,6 @@ if (!is_android) {
   group("telemetry_gpu_unittests") {
     deps = [
       "//tools/telemetry:telemetry_test_support",
-      ":telemetry_binary_deps",
     ]
     data = [
       # TODO(kbr): refactor the telemetry dependencies more cleanly.
@@ -757,6 +726,9 @@ if (!is_android) {
 
       # For webgl_conformance_expectations_unittest
       "//third_party/webgl/src/sdk/tests/",
+
+      # For resolve the imports in content/test/gpu/run_gpu_test.py
+      "//tools/perf/chrome_telemetry_build/",
 
       # From telemetry_gpu_unittests.isolate
       "//testing/scripts/common.py",

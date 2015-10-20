@@ -1,0 +1,29 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("telemetry_chrome_test") {
+  deps = [
+    "//tools/telemetry:telemetry_test_support",
+  ]
+
+  data_deps = [
+    # TODO(kbr): this used to be "//chrome". Had to change this to
+    # chrome_initial temporarily to work around crbug.com/536192.
+    "//chrome:chrome_initial",
+    "//tools/telemetry:bitmaptools",
+  ]
+
+  data = [
+    "//tools/perf/chrome_telemetry_build/",
+  ]
+
+  if (is_win) {
+    data_deps += [ "//content/shell:crash_service" ]
+    data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
+  }
+
+  if (is_linux) {
+    data_deps += [ "//tools/xdisplaycheck" ]
+  }
+}

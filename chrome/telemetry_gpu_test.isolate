@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'includes': [
-    'telemetry_chrome_test.isolate',
+    '../tools/perf/chrome_telemetry_build/telemetry_chrome_test.isolate',
   ],
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'includes': [
-    'telemetry.isolate',
+    '../tools/telemetry/telemetry.isolate',
   ],
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
@@ -18,6 +18,8 @@
           '../testing/scripts/run_telemetry_as_googletest.py',
           # The following represent the actual tests.
           '../content/test/gpu/',
+          # For resolve the imports in content/test/gpu/run_gpu_test.py
+          '../tools/perf/chrome_telemetry_build/',
           # For webgl_conformance_expectations_unittest
           '../third_party/webgl/src/sdk/tests/',
         ],

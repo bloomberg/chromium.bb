@@ -5,8 +5,9 @@
   # This isolate describes dependencies needed to run Telemetry tests
   # that run in Chromium.
   'includes': [
-    'breakpad.isolate',
-    'chrome.isolate',
-    'telemetry.isolate',
+    '../../../chrome/breakpad.isolate',
+    '../../../chrome/chrome.isolate',
+    '../../telemetry/telemetry.isolate',
+    'telemetry_binary_manager.isolate',
   ],
 }
