@@ -211,8 +211,10 @@ void HpackEncoder::DecomposeRepresentation(const Representation& header_field,
   size_t end = 0;
   while (end != StringPiece::npos) {
     end = header_field.second.find('\0', pos);
-    out->push_back(std::make_pair(header_field.first,
-                                  header_field.second.substr(pos, end - pos)));
+    out->push_back(
+        std::make_pair(header_field.first,
+                       header_field.second.substr(
+                           pos, end == StringPiece::npos ? end : end - pos)));
     pos = end + 1;
   }
 }
