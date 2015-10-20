@@ -4,6 +4,7 @@
 
 #include "net/websockets/websocket_basic_handshake_stream.h"
 
+#include <stddef.h>
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -11,7 +12,6 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"

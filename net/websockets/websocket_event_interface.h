@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
+#include "base/macros.h"
 #include "net/base/net_export.h"
 
 class GURL;

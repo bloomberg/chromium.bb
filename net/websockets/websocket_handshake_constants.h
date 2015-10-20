@@ -12,7 +12,8 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_CONSTANTS_H_
 #define NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_CONSTANTS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "net/base/net_export.h"
 
 // This file plases constants inside the ::net::websockets namespace to avoid

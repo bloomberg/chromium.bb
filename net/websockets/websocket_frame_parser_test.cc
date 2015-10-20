@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_frame.h"

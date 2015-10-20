@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_stream.h"

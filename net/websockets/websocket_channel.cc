@@ -4,15 +4,14 @@
 
 #include "net/websockets/websocket_channel.h"
 
+#include <stddef.h>
 #include <limits.h>  // for INT_MAX
 
 #include <algorithm>
 #include <deque>
 
-#include "base/basictypes.h"  // for size_t
 #include "base/big_endian.h"
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

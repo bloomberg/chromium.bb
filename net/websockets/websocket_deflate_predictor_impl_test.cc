@@ -4,7 +4,6 @@
 
 #include "net/websockets/websocket_deflate_predictor_impl.h"
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "net/websockets/websocket_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"

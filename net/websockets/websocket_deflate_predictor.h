@@ -5,7 +5,8 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_H_
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/memory/scoped_vector.h"
 #include "net/base/net_export.h"
 

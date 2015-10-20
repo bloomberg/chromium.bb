@@ -8,13 +8,14 @@
 
 #include "net/websockets/websocket_basic_stream.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>  // for memcpy() and memset().
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/big_endian.h"
+#include "base/macros.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"

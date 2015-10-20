@@ -5,8 +5,8 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_IMPL_H_
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATE_PREDICTOR_IMPL_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include <stddef.h>
+
 #include "base/memory/scoped_vector.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_deflate_predictor.h"

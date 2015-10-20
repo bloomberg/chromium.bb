@@ -5,10 +5,11 @@
 #ifndef NET_WEBSOCKETS_WEBSOCKET_DEFLATER_H_
 #define NET_WEBSOCKETS_WEBSOCKET_DEFLATER_H_
 
+#include <stddef.h>
 #include <deque>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"

@@ -4,10 +4,10 @@
 
 #include "net/websockets/websocket_test_util.h"
 
+#include <stddef.h>
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -18,6 +18,7 @@
 namespace net {
 
 namespace {
+
 const uint64_t kA = (static_cast<uint64_t>(0x5851f42d) << 32) +
                     static_cast<uint64_t>(0x4c957f2d);
 const uint64_t kC = 12345;

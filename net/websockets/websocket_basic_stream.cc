@@ -4,13 +4,13 @@
 
 #include "net/websockets/websocket_basic_stream.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
 #include <limits>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
