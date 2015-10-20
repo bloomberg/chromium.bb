@@ -286,6 +286,8 @@ std::string HostToCustomHistogramSuffix(const std::string& host) {
     return ".plus";
   if (host == "inbox.google.com")
     return ".inbox";
+  if (host == "www.youtube.com")
+    return ".youtube";
   return std::string();
 }
 
