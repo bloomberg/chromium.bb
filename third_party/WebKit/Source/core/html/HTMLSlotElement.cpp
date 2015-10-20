@@ -43,7 +43,7 @@ PassRefPtrWillBeRawPtr<HTMLSlotElement> HTMLSlotElement::create(Document& docume
 }
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
-    : InsertionPoint(slotTag, document)
+    : HTMLElement(slotTag, document)
 {
 }
 
@@ -53,7 +53,7 @@ HTMLSlotElement::~HTMLSlotElement()
 
 DEFINE_TRACE(HTMLSlotElement)
 {
-    InsertionPoint::trace(visitor);
+    HTMLElement::trace(visitor);
 }
 
 }

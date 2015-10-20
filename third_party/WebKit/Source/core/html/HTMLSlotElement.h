@@ -32,11 +32,11 @@
 #define HTMLSlotElement_h
 
 #include "core/CoreExport.h"
-#include "core/dom/shadow/InsertionPoint.h"
+#include "core/html/HTMLElement.h"
 
 namespace blink {
 
-class CORE_EXPORT HTMLSlotElement final : public InsertionPoint {
+class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLSlotElement> create(Document&);
