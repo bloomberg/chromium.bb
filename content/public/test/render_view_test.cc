@@ -430,6 +430,7 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   gesture_event.data.tap.width = rect.width();
   gesture_event.data.tap.height = rect.height();
   gesture_event.type = WebInputEvent::GestureTap;
+  gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
       InputMsg_HandleInputEvent(0, &gesture_event, ui::LatencyInfo()));

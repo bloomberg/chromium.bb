@@ -33,6 +33,12 @@
 
 namespace blink {
 
+enum GestureSource {
+    GestureSourceUninitialized,
+    GestureSourceTouchpad,
+    GestureSourceTouchscreen
+};
+
 class CORE_EXPORT GestureEvent final : public MouseRelatedEvent {
 public:
     ~GestureEvent() override { }
@@ -49,6 +55,7 @@ public:
     float velocityY() const { return m_velocityY; }
     bool inertial() const { return m_inertial; }
 
+    GestureSource source() const { return m_source; }
     int resendingPluginId() const { return m_resendingPluginId; }
 
     PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
@@ -57,7 +64,7 @@ public:
 
 private:
     GestureEvent();
-    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double uiTimeStamp, int resendingPluginId);
+    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double uiTimeStamp, int resendingPluginId, GestureSource);
 
     float m_deltaX;
     float m_deltaY;
@@ -65,6 +72,7 @@ private:
     float m_velocityY;
     bool m_inertial;
 
+    GestureSource m_source;
     int m_resendingPluginId;
 };
 

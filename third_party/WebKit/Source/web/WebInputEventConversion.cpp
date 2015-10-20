@@ -254,6 +254,16 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_timestamp = e.timeStampSeconds;
     m_modifiers = e.modifiers;
+    switch (e.sourceDevice) {
+    case WebGestureDeviceTouchpad:
+        m_source = PlatformGestureSourceTouchpad;
+        break;
+    case WebGestureDeviceTouchscreen:
+        m_source = PlatformGestureSourceTouchscreen;
+        break;
+    case WebGestureDeviceUninitialized:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 // MakePlatformKeyboardEvent --------------------------------------------------
@@ -701,6 +711,17 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject,
     IntPoint localPoint = convertAbsoluteLocationForLayoutObject(event.absoluteLocation(), *layoutObject);
     x = localPoint.x();
     y = localPoint.y();
+
+    switch (event.source()) {
+    case GestureSourceTouchpad:
+        sourceDevice = WebGestureDeviceTouchpad;
+        break;
+    case GestureSourceTouchscreen:
+        sourceDevice = WebGestureDeviceTouchscreen;
+        break;
+    case GestureSourceUninitialized:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 } // namespace blink

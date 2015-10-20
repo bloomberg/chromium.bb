@@ -100,6 +100,13 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
     default:
       break;
   }
+  // TODO(wjmaclean): At some future point we may wish to consider adding a
+  // 'continuity check', requiring that all events between an initial tap-down
+  // and whatever terminates the sequence to have the same source device type,
+  // and that touchpad gestures are only found on ScrollEvents.
+  if (event.sourceDevice == blink::WebGestureDeviceUninitialized)
+    error_msg->append("Gesture event source is uninitialized.\n");
+
   return error_msg->empty();
 }
 

@@ -35,21 +35,29 @@
 
 namespace blink {
 
+enum PlatformGestureSource {
+    PlatformGestureSourceUninitialized,
+    PlatformGestureSourceTouchpad,
+    PlatformGestureSourceTouchscreen
+};
+
 class PlatformGestureEvent : public PlatformEvent {
 public:
     PlatformGestureEvent()
         : PlatformEvent(PlatformEvent::GestureScrollBegin)
+        , m_source(PlatformGestureSourceUninitialized)
     {
         memset(&m_data, 0, sizeof(m_data));
     }
 
     PlatformGestureEvent(Type type, const IntPoint& position,
         const IntPoint& globalPosition, const IntSize& area, double timestamp,
-        PlatformEvent::Modifiers modifiers)
+        PlatformEvent::Modifiers modifiers, PlatformGestureSource source)
         : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
         , m_area(area)
+        , m_source(source)
     {
         memset(&m_data, 0, sizeof(m_data));
     }
@@ -84,6 +92,8 @@ public:
     const IntPoint& globalPosition() const { return m_globalPosition; } // Screen coordinates.
 
     const IntSize& area() const { return m_area; }
+
+    PlatformGestureSource source() const { return m_source; }
 
     float deltaX() const
     {
@@ -188,6 +198,7 @@ protected:
     IntPoint m_position;
     IntPoint m_globalPosition;
     IntSize m_area;
+    PlatformGestureSource m_source;
 
     union {
         struct {

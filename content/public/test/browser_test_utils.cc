@@ -471,12 +471,14 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
 
   blink::WebGestureEvent scroll_begin;
   scroll_begin.type = blink::WebGestureEvent::GestureScrollBegin;
+  scroll_begin.sourceDevice = blink::WebGestureDeviceTouchpad;
   scroll_begin.x = point.x();
   scroll_begin.y = point.y();
   widget_host->ForwardGestureEvent(scroll_begin);
 
   blink::WebGestureEvent scroll_update;
   scroll_update.type = blink::WebGestureEvent::GestureScrollUpdate;
+  scroll_update.sourceDevice = blink::WebGestureDeviceTouchpad;
   scroll_update.x = point.x();
   scroll_update.y = point.y();
   scroll_update.data.scrollUpdate.deltaX = delta.x();
@@ -487,6 +489,7 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
 
   blink::WebGestureEvent scroll_end;
   scroll_end.type = blink::WebGestureEvent::GestureScrollEnd;
+  scroll_end.sourceDevice = blink::WebGestureDeviceTouchpad;
   scroll_end.x = point.x() + delta.x();
   scroll_end.y = point.y() + delta.y();
   widget_host->ForwardGestureEvent(scroll_end);
@@ -495,6 +498,7 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap;
   tap.type = blink::WebGestureEvent::GestureTap;
+  tap.sourceDevice = blink::WebGestureDeviceTouchpad;
   tap.x = point.x();
   tap.y = point.y();
   tap.modifiers = blink::WebInputEvent::ControlKey;
@@ -508,6 +512,7 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
                                 const gfx::Point& point) {
   blink::WebGestureEvent tap;
   tap.type = blink::WebGestureEvent::GestureTap;
+  tap.sourceDevice = blink::WebGestureDeviceTouchpad;
   tap.x = point.x();
   tap.y = point.y();
   tap.modifiers = modifiers;

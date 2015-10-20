@@ -355,6 +355,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
 
     WebGestureEvent event;
     event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
 
     // First, send an event that doesn't hit the plugin to verify that the
     // plugin doesn't receive it.

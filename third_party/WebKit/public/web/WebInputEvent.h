@@ -546,6 +546,7 @@ public:
         , y(0)
         , globalX(0)
         , globalY(0)
+        , sourceDevice(WebGestureDeviceUninitialized)
         , resendingPluginId(-1)
     {
         memset(&data, 0, sizeof(data));

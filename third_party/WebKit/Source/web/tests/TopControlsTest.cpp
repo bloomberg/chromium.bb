@@ -96,6 +96,7 @@ public:
     {
         WebGestureEvent event;
         event.type = type;
+        event.sourceDevice = WebGestureDeviceTouchscreen;
         event.x = 100;
         event.y = 100;
         if (type == WebInputEvent::GestureScrollUpdate) {

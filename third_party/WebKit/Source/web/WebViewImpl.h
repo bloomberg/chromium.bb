@@ -727,7 +727,7 @@ private:
     WebPoint m_positionOnFlingStart;
     WebPoint m_globalPositionOnFlingStart;
     int m_flingModifier;
-    bool m_flingSourceDevice;
+    WebGestureDevice m_flingSourceDevice;
     Vector<OwnPtr<LinkHighlightImpl>> m_linkHighlights;
     OwnPtr<WebCompositorAnimationTimeline> m_linkHighlightsTimeline;
     OwnPtrWillBePersistent<FullscreenController> m_fullscreenController;

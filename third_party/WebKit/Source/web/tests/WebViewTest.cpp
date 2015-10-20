@@ -1456,6 +1456,7 @@ static bool tapElementById(WebView* webView, WebInputEvent::Type type, const Web
 
     WebGestureEvent event;
     event.type = type;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = center.x();
     event.y = center.y();
 
@@ -1508,6 +1509,7 @@ TEST_F(WebViewTest, DetectContentAroundPosition)
     // Tapping elsewhere should cancel the scheduled intent.
     WebGestureEvent event;
     event.type = WebInputEvent::GestureTap;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
     webView->handleInputEvent(event);
     runPendingTasks();
     EXPECT_TRUE(client.pendingIntentsCancelled());
@@ -1522,6 +1524,7 @@ TEST_F(WebViewTest, ClientTapHandling)
     WebView* webView = m_webViewHelper.initializeAndLoad("about:blank", true, 0, &client);
     WebGestureEvent event;
     event.type = WebInputEvent::GestureTap;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = 3;
     event.y = 8;
     webView->handleInputEvent(event);
@@ -1547,6 +1550,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
     webView->setMainFrame(localFrame);
     WebGestureEvent event;
     event.type = WebInputEvent::GestureTap;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = 3;
     event.y = 8;
     EXPECT_FALSE(webView->handleInputEvent(event));
@@ -1640,6 +1644,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink)
 
     WebGestureEvent event;
     event.type = WebInputEvent::GestureShowPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = 20;
     event.y = 20;
 

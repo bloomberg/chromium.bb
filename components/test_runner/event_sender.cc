@@ -1663,6 +1663,10 @@ void EventSender::DumpFilenameBeingDragged() {
 void EventSender::GestureFlingCancel() {
   WebGestureEvent event;
   event.type = WebInputEvent::GestureFlingCancel;
+  // Generally it won't matter what device we use here, and since it might
+  // be cumbersome to expect all callers to specify a device, we'll just
+  // choose Touchpad here.
+  event.sourceDevice = blink::WebGestureDeviceTouchpad;
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)

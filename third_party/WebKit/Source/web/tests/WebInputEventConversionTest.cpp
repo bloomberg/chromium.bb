@@ -273,6 +273,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.x = 10;
         webGestureEvent.y = 12;
         webGestureEvent.globalX = 20;
@@ -302,6 +303,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureScrollEnd;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.x = 10;
         webGestureEvent.y = 12;
         webGestureEvent.globalX = 20;
@@ -318,6 +320,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTap;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.tap.width = 10;
         webGestureEvent.data.tap.height = 10;
 
@@ -329,6 +332,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTapUnconfirmed;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.tap.width = 10;
         webGestureEvent.data.tap.height = 10;
 
@@ -340,6 +344,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTapDown;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.tapDown.width = 10;
         webGestureEvent.data.tapDown.height = 10;
 
@@ -351,6 +356,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureShowPress;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.showPress.width = 10;
         webGestureEvent.data.showPress.height = 10;
 
@@ -362,6 +368,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureLongPress;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.longPress.width = 10;
         webGestureEvent.data.longPress.height = 10;
 
@@ -373,6 +380,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTwoFingerTap;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.twoFingerTap.firstFingerWidth = 10;
         webGestureEvent.data.twoFingerTap.firstFingerHeight = 10;
 
@@ -433,7 +441,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 12), IntPoint(20, 22), IntSize(25, 27), 0,
-            PlatformEvent::NoModifiers);
+            PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
         platformGestureEvent.setScrollGestureData(30, 32, 40, 42, true, true, -1 /* null plugin id */);
         // FIXME: GestureEvent does not preserve velocityX, velocityY,
         // or preventPropagation. It also fails to scale
@@ -453,6 +461,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityY);
         EXPECT_TRUE(webGestureBuilder.data.scrollUpdate.inertial);
         EXPECT_FALSE(webGestureBuilder.data.scrollUpdate.preventPropagation);
+        EXPECT_EQ(WebGestureDeviceTouchscreen,  webGestureBuilder.sourceDevice);
     }
 
     {
@@ -516,6 +525,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.x = 100;
         webGestureEvent.y = 110;
         webGestureEvent.globalX = 100;
@@ -535,6 +545,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTap;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.tap.width = 30;
         webGestureEvent.data.tap.height = 30;
 
@@ -546,6 +557,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTapUnconfirmed;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.tap.width = 30;
         webGestureEvent.data.tap.height = 30;
 
@@ -557,6 +569,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTapDown;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.tapDown.width = 30;
         webGestureEvent.data.tapDown.height = 30;
 
@@ -568,6 +581,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureShowPress;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.showPress.width = 30;
         webGestureEvent.data.showPress.height = 30;
 
@@ -579,6 +593,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureLongPress;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.longPress.width = 30;
         webGestureEvent.data.longPress.height = 30;
 
@@ -590,6 +605,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTwoFingerTap;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.data.twoFingerTap.firstFingerWidth = 30;
         webGestureEvent.data.twoFingerTap.firstFingerHeight = 30;
 
@@ -641,6 +657,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTap;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.x = 10;
         webGestureEvent.y = 10;
         webGestureEvent.globalX = 10;
@@ -724,6 +741,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         webGestureEvent.x = 10;
         webGestureEvent.y = 10;
         webGestureEvent.globalX = 10;

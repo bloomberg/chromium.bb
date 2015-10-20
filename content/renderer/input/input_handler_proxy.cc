@@ -499,9 +499,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     const WebGestureEvent& gesture_event) {
-  cc::InputHandler::ScrollStatus scroll_status;
-
-  if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad) {
+  cc::InputHandler::ScrollStatus scroll_status =
+      cc::InputHandler::SCROLL_ON_MAIN_THREAD;
+  switch (gesture_event.sourceDevice) {
+  case blink::WebGestureDeviceTouchpad:
     if (gesture_event.data.flingStart.targetViewport) {
       scroll_status = input_handler_->RootScrollBegin(
           cc::InputHandler::NON_BUBBLING_GESTURE);
@@ -510,11 +511,16 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
           gfx::Point(gesture_event.x, gesture_event.y),
           cc::InputHandler::NON_BUBBLING_GESTURE);
     }
-  } else {
+    break;
+  case blink::WebGestureDeviceTouchscreen:
     if (!gesture_scroll_on_impl_thread_)
       scroll_status = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
     else
       scroll_status = input_handler_->FlingScrollBegin();
+    break;
+  case blink::WebGestureDeviceUninitialized:
+    NOTREACHED();
+    return DID_NOT_HANDLE;
   }
 
 #ifndef NDEBUG
@@ -1017,6 +1023,9 @@ bool InputHandlerProxy::scrollBy(const WebFloatSize& increment,
       HandleOverscroll(fling_parameters_.point, scroll_result);
       did_scroll = scroll_result.did_scroll;
     } break;
+    case blink::WebGestureDeviceUninitialized:
+      NOTREACHED();
+      return false;
   }
 
   if (did_scroll) {

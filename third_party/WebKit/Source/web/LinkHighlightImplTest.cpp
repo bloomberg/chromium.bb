@@ -72,6 +72,7 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
 
     WebGestureEvent touchEvent;
     touchEvent.type = WebInputEvent::GestureShowPress;
+    touchEvent.sourceDevice = WebGestureDeviceTouchscreen;
 
     // The coordinates below are linked to absolute positions in the referenced .html file.
     touchEvent.x = 20;
@@ -142,6 +143,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
 
     WebGestureEvent touchEvent;
     touchEvent.type = WebInputEvent::GestureShowPress;
+    touchEvent.sourceDevice = WebGestureDeviceTouchscreen;
     touchEvent.x = 20;
     touchEvent.y = 20;
 

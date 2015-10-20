@@ -1613,7 +1613,7 @@ TEST_P(ParameterizedVisualViewportTest, SlowScrollAfterImplScroll)
         IntPoint(0, 0),
         IntPoint(0, 0),
         IntSize(5, 5),
-        0, PlatformEvent::NoModifiers);
+        0, PlatformEvent::NoModifiers, PlatformGestureSourceTouchpad);
     gsu.setScrollGestureData(-50, -60, 1, 1, false, false, -1 /* null plugin id */);
 
     frame()->eventHandler().handleGestureEvent(gsu);
@@ -1739,6 +1739,7 @@ TEST_P(ParameterizedVisualViewportTest, PinchZoomGestureScrollsVisualViewportOnl
 
     WebGestureEvent pinchUpdate;
     pinchUpdate.type = WebInputEvent::GesturePinchUpdate;
+    pinchUpdate.sourceDevice = WebGestureDeviceTouchpad;
     pinchUpdate.x = 100;
     pinchUpdate.y = 100;
     pinchUpdate.data.pinchUpdate.scale = 2;

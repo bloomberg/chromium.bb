@@ -1600,7 +1600,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
     ASSERT_NE(nullptr, element);
     EXPECT_EQ(String("oldValue"), element->innerText());
 
-    PlatformGestureEvent gestureEvent(PlatformEvent::Type::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, PlatformEvent::NoModifiers);
+    PlatformGestureEvent gestureEvent(PlatformEvent::Type::GestureTap, hitPoint, hitPoint, IntSize(0, 0), 0, PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
     webViewHelper.webViewImpl()->mainFrameImpl()->frame()->eventHandler().handleGestureEvent(gestureEvent);
     // when pressed, the button changes its own text to "updatedValue"
     EXPECT_EQ(String("updatedValue"), element->innerText());
@@ -4764,6 +4764,7 @@ static WebGestureEvent fatTap(int x, int y)
 {
     WebGestureEvent event;
     event.type = WebInputEvent::GestureTap;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = x;
     event.y = y;
     event.data.tap.width = 50;
@@ -7997,6 +7998,9 @@ protected:
     {
         WebGestureEvent event;
         event.type = type;
+        // TODO(wjmaclean): Make sure that touchpad device is only ever used for
+        // gesture scrolling event types.
+        event.sourceDevice = WebGestureDeviceTouchpad;
         event.x = 100;
         event.y = 100;
         if (type == WebInputEvent::GestureScrollUpdate) {

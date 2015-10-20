@@ -437,7 +437,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_recreatingGraphicsContext(false)
     , m_flingModifier(0)
-    , m_flingSourceDevice(false)
+    , m_flingSourceDevice(WebGestureDeviceUninitialized)
     , m_fullscreenController(FullscreenController::create(this))
     , m_showFPSCounter(false)
     , m_baseBackgroundColor(Color::white)
@@ -644,6 +644,7 @@ bool WebViewImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEve
 
 bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& velocity)
 {
+    ASSERT(m_flingSourceDevice != WebGestureDeviceUninitialized);
     if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
         WebMouseWheelEvent syntheticWheel;
         const float tickDivisor = WheelEvent::TickMultiplier;
@@ -703,6 +704,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         m_globalPositionOnFlingStart = WebPoint(event.globalX, event.globalY);
         m_flingModifier = event.modifiers;
         m_flingSourceDevice = event.sourceDevice;
+        ASSERT(m_flingSourceDevice != WebGestureDeviceUninitialized);
         OwnPtr<WebGestureCurve> flingCurve = adoptPtr(Platform::current()->createFlingAnimationCurve(event.sourceDevice, WebFloatPoint(event.data.flingStart.velocityX, event.data.flingStart.velocityY), WebSize()));
         ASSERT(flingCurve);
         m_gestureAnimation = WebActiveGestureAnimation::createAtAnimationStart(flingCurve.release(), this);
@@ -915,6 +917,8 @@ void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingPar
     OwnPtr<WebGestureCurve> curve = adoptPtr(Platform::current()->createFlingAnimationCurve(parameters.sourceDevice, WebFloatPoint(parameters.delta), parameters.cumulativeScroll));
     ASSERT(curve);
     m_gestureAnimation = WebActiveGestureAnimation::createWithTimeOffset(curve.release(), this, parameters.startTime);
+    ASSERT(parameters.sourceDevice != WebGestureDeviceUninitialized);
+    m_flingSourceDevice = parameters.sourceDevice;
     scheduleAnimation();
 }
 
@@ -922,6 +926,7 @@ bool WebViewImpl::endActiveFlingAnimation()
 {
     if (m_gestureAnimation) {
         m_gestureAnimation.clear();
+        m_flingSourceDevice = WebGestureDeviceUninitialized;
         if (m_layerTreeView)
             m_layerTreeView->didStopFlinging();
         return true;
@@ -1878,11 +1883,13 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
         if (m_gestureAnimation->animate(lastFrameTimeMonotonic))
             scheduleAnimation();
         else {
+            ASSERT(m_flingSourceDevice != WebGestureDeviceUninitialized);
+            WebGestureDevice lastFlingSourceDevice = m_flingSourceDevice;
             endActiveFlingAnimation();
 
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
-                IntSize(), 0, PlatformEvent::NoModifiers);
+                IntSize(), 0, PlatformEvent::NoModifiers, lastFlingSourceDevice == WebGestureDeviceTouchpad ? PlatformGestureSourceTouchpad : PlatformGestureSourceTouchscreen);
             endScrollEvent.setScrollGestureData(0, 0, 0, 0, true, false, -1 /* null plugin id */);
 
             mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
@@ -4075,6 +4082,8 @@ WebHitTestResult WebViewImpl::hitTestResultForTap(const WebPoint& tapPointWindow
     tapEvent.x = tapPointWindowPos.x;
     tapEvent.y = tapPointWindowPos.y;
     tapEvent.type = WebInputEvent::GestureTap;
+    // GestureTap is only ever from a touchscreen.
+    tapEvent.sourceDevice = WebGestureDeviceTouchscreen;
     tapEvent.data.tap.tapCount = 1;
     tapEvent.data.tap.width = tapArea.width;
     tapEvent.data.tap.height = tapArea.height;

@@ -38,6 +38,19 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     float velocityX = 0;
     float velocityY = 0;
     bool inertial = false;
+
+    GestureSource source = GestureSourceUninitialized;
+    switch (event.source()) {
+    case PlatformGestureSourceTouchpad:
+        source = GestureSourceTouchpad;
+        break;
+    case PlatformGestureSourceTouchscreen:
+        source = GestureSourceTouchscreen;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
     switch (event.type()) {
     case PlatformEvent::GestureScrollBegin:
         eventType = EventTypeNames::gesturescrollstart; break;
@@ -74,7 +87,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     default:
         return nullptr;
     }
-    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.modifiers(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId()));
+    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.modifiers(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId(), source));
 }
 
 const AtomicString& GestureEvent::interfaceName() const
@@ -96,17 +109,19 @@ GestureEvent::GestureEvent()
     , m_velocityX(0)
     , m_velocityY(0)
     , m_inertial(false)
+    , m_source(GestureSourceUninitialized)
     , m_resendingPluginId(-1)
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double timestamp, int resendingPluginId)
+GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double timestamp, int resendingPluginId, GestureSource source)
     : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_velocityX(velocityX)
     , m_velocityY(velocityY)
     , m_inertial(inertial)
+    , m_source(source)
     , m_resendingPluginId(resendingPluginId)
 {
     setPlatformTimeStamp(timestamp);

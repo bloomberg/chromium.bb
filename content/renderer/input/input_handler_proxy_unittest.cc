@@ -261,6 +261,9 @@ class InputHandlerProxyTest
     }
 
     mock_input_handler_.set_is_scrolling_root(synchronous_root_scroll_);
+
+    // Set a default device so tests don't always have to set this.
+    gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
   }
 
   ~InputHandlerProxyTest() {

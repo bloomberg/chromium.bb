@@ -29,6 +29,7 @@
 namespace blink {
 
 enum WebGestureDevice {
+    WebGestureDeviceUninitialized,
     WebGestureDeviceTouchpad,
     WebGestureDeviceTouchscreen,
 };
