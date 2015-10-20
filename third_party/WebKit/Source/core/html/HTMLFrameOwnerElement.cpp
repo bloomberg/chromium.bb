@@ -46,6 +46,15 @@ static WidgetToParentMap& widgetNewParentMap()
     return *map;
 }
 
+typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget>> WidgetSet;
+static WidgetSet& widgetsPendingTemporaryRemovalFromParent()
+{
+    // Widgets in this set will not leak because it will be cleared in
+    // HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperations.
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WidgetSet>, set, (adoptPtrWillBeNoop(new WidgetSet())));
+    return *set;
+}
+
 WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>& SubframeLoadingDisabler::disabledSubtreeRoots()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>>, nodes, (adoptPtrWillBeNoop(new WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>())));
@@ -78,6 +87,14 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperati
 #endif
         }
     }
+
+    WidgetSet set;
+    widgetsPendingTemporaryRemovalFromParent().swap(set);
+    for (const auto& widget : set) {
+        FrameView* currentParent = toFrameView(widget->parent());
+        if (currentParent)
+            currentParent->removeChild(widget.get());
+    }
 }
 
 HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope()
@@ -88,7 +105,18 @@ HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope()
     --s_updateSuspendCount;
 }
 
-static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
+// Unlike moveWidgetToParentSoon, this will not call dispose the Widget.
+void temporarilyRemoveWidgetFromParentSoon(Widget* widget)
+{
+    if (s_updateSuspendCount) {
+        widgetsPendingTemporaryRemovalFromParent().add(widget);
+    } else {
+        if (toFrameView(widget->parent()))
+            toFrameView(widget->parent())->removeChild(widget);
+    }
+}
+
+void moveWidgetToParentSoon(Widget* child, FrameView* parent)
 {
     if (!s_updateSuspendCount) {
         if (parent) {
@@ -255,6 +283,20 @@ void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->childrenChanged(layoutPart);
+}
+
+PassRefPtrWillBeRawPtr<Widget> HTMLFrameOwnerElement::releaseWidget()
+{
+    if (!m_widget)
+        return nullptr;
+    if (m_widget->parent())
+        temporarilyRemoveWidgetFromParentSoon(m_widget.get());
+    LayoutPart* layoutPart = toLayoutPart(layoutObject());
+    if (layoutPart) {
+        if (AXObjectCache* cache = document().existingAXObjectCache())
+            cache->childrenChanged(layoutPart);
+    }
+    return m_widget.release();
 }
 
 Widget* HTMLFrameOwnerElement::ownedWidget() const

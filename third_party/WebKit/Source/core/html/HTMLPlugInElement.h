@@ -137,6 +137,12 @@ private:
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
     void setPersistedPluginWidget(Widget*);
+    PassRefPtrWillBeRawPtr<Widget> releasePersistedPluginWidget();
+
+#if ENABLE(OILPAN)
+    bool unregisterAsRenderlessIfNeeded();
+    void registerAsRenderless(Widget*);
+#endif
 
     mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
     NPObject* m_NPObject;

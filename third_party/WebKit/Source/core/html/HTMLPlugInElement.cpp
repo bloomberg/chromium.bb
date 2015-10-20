@@ -112,20 +112,45 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
     if (m_persistedPluginWidget == widget)
         return;
 #if ENABLE(OILPAN)
-    if (m_persistedPluginWidget && m_persistedPluginWidget->isPluginView()) {
-        LocalFrame* frame = toPluginView(m_persistedPluginWidget.get())->pluginFrame();
-        ASSERT(frame);
-        frame->unregisterPluginElement(this);
-        if (!widget)
-            m_persistedPluginWidget->dispose();
-    }
-    if (widget && widget->isPluginView()) {
-        LocalFrame* frame = toPluginView(widget)->pluginFrame();
-        ASSERT(frame);
-        frame->registerPluginElement(this);
-    }
+    unregisterAsRenderlessIfNeeded();
+    registerAsRenderless(widget);
 #endif
     m_persistedPluginWidget = widget;
+}
+
+#if ENABLE(OILPAN)
+bool HTMLPlugInElement::unregisterAsRenderlessIfNeeded()
+{
+    if (!m_persistedPluginWidget || !m_persistedPluginWidget->isPluginView())
+        return false;
+
+    // If we are in a renderer-less state, keep the registration.
+    if (!layoutEmbeddedObject())
+        return false;
+
+    LocalFrame* frame = toPluginView(m_persistedPluginWidget.get())->pluginFrame();
+    ASSERT(frame);
+    frame->unregisterPluginElement(this);
+    return true;
+}
+
+void HTMLPlugInElement::registerAsRenderless(Widget* widget)
+{
+    if (!widget || !widget->isPluginView())
+        return;
+
+    LocalFrame* frame = toPluginView(widget)->pluginFrame();
+    ASSERT(frame);
+    frame->registerPluginElement(this);
+}
+#endif
+
+PassRefPtrWillBeRawPtr<Widget> HTMLPlugInElement::releasePersistedPluginWidget()
+{
+#if ENABLE(OILPAN)
+    unregisterAsRenderlessIfNeeded();
+#endif
+    return m_persistedPluginWidget.release();
 }
 
 bool HTMLPlugInElement::canProcessDrag() const
@@ -257,12 +282,14 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 
     // Only try to persist a plugin widget we actually own.
     Widget* plugin = ownedWidget();
-    if (plugin && context.performingReattach)
-        setPersistedPluginWidget(plugin);
+    if (plugin && context.performingReattach) {
+        setPersistedPluginWidget(releaseWidget().get());
+    } else {
+        // Clear the widget; will trigger disposal of it with Oilpan.
+        setWidget(nullptr);
+    }
 
     resetInstance();
-    // Clear the widget; will trigger disposal of it with Oilpan.
-    setWidget(nullptr);
 
     if (m_NPObject) {
         _NPN_ReleaseObject(m_NPObject);
@@ -524,25 +551,24 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
-    RefPtrWillBeRawPtr<Widget> widget = m_persistedPluginWidget;
-    if (!widget) {
+    if (m_persistedPluginWidget) {
+        setWidget(releasePersistedPluginWidget());
+    } else {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
         FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
-        widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+        RefPtrWillBeRawPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+        if (!widget) {
+            if (layoutObject && !layoutObject->showsUnavailablePluginIndicator())
+                layoutObject->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
+            return false;
+        }
+
+        if (layoutObject)
+            setWidget(widget);
+        else
+            setPersistedPluginWidget(widget.get());
     }
 
-    if (!widget) {
-        if (layoutObject && !layoutObject->showsUnavailablePluginIndicator())
-            layoutObject->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
-        return false;
-    }
-
-    if (layoutObject) {
-        setWidget(widget);
-        setPersistedPluginWidget(nullptr);
-    } else {
-        setPersistedPluginWidget(widget.get());
-    }
     document().setContainsPlugins();
     // TODO(esprehn): WebPluginContainerImpl::setWebLayer also schedules a compositing update, do we need both?
     setNeedsCompositingUpdate();

@@ -65,6 +65,7 @@ public:
     virtual void didLoadNonEmptyDocument() { }
 
     void setWidget(PassRefPtrWillBeRawPtr<Widget>);
+    PassRefPtrWillBeRawPtr<Widget> releaseWidget();
     Widget* ownedWidget() const;
 
     class UpdateSuspendScope {
