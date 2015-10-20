@@ -969,15 +969,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parsedValue = parseMotionRotation();
         break;
 
-    case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
     case CSSPropertyAnimationFillMode:
     case CSSPropertyAnimationName:
     case CSSPropertyAnimationPlayState:
     case CSSPropertyAnimationIterationCount:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionProperty:
         parsedValue = parseAnimationPropertyList(propId, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
         break;
@@ -1254,6 +1250,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitColumnGap:
     case CSSPropertyWebkitColumnSpan:
     case CSSPropertyZoom:
+    case CSSPropertyAnimationDelay:
+    case CSSPropertyTransitionDelay:
+    case CSSPropertyAnimationDuration:
+    case CSSPropertyTransitionDuration:
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         validPrimitive = false;

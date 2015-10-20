@@ -339,6 +339,25 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRang
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTime(CSSParserTokenRange& range, ValueRange valueRange)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() == DimensionToken) {
+        if (valueRange == ValueRangeNonNegative && token.numericValue() < 0)
+            return nullptr;
+        CSSPrimitiveValue::UnitType unit = token.unitType();
+        if (unit == CSSPrimitiveValue::UnitType::Milliseconds || unit == CSSPrimitiveValue::UnitType::Seconds)
+            return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
+        return nullptr;
+    }
+    CalcParser calcParser(range, valueRange);
+    if (const CSSCalcValue* calculation = calcParser.value()) {
+        if (calculation->category() == CalcTime)
+            return calcParser.consumeValue();
+    }
+    return nullptr;
+}
+
 static inline bool isCSSWideKeyword(const CSSValueID& id)
 {
     return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
@@ -1060,6 +1079,12 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationTimingFunction(CSSParser
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID property, CSSParserTokenRange& range)
 {
     switch (property) {
+    case CSSPropertyAnimationDelay:
+    case CSSPropertyTransitionDelay:
+        return consumeTime(range, ValueRangeAll);
+    case CSSPropertyAnimationDuration:
+    case CSSPropertyTransitionDuration:
+        return consumeTime(range, ValueRangeNonNegative);
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationTimingFunction(range);
@@ -1162,6 +1187,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeColumnSpan(m_range, m_context.mode());
     case CSSPropertyZoom:
         return consumeZoom(m_range, m_context);
+    case CSSPropertyAnimationDelay:
+    case CSSPropertyTransitionDelay:
+    case CSSPropertyAnimationDuration:
+    case CSSPropertyTransitionDuration:
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationPropertyList(propId, m_range);
