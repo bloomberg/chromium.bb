@@ -190,8 +190,10 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     const Decimal step = equalIgnoringCase(element().fastGetAttribute(stepAttr), "any") ? (stepRange.maximum() - stepRange.minimum()) / 100 : stepRange.step();
     const Decimal bigStep = std::max((stepRange.maximum() - stepRange.minimum()) / 10, step);
 
+    TextDirection dir = LTR;
     bool isVertical = false;
     if (element().layoutObject()) {
+        dir = computedTextDirection();
         ControlPart part = element().layoutObject()->style()->appearance();
         isVertical = part == SliderVerticalPart;
     }
@@ -202,9 +204,9 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     else if (key == "Down")
         newValue = current - step;
     else if (key == "Left")
-        newValue = isVertical ? current + step : current - step;
+        newValue = (isVertical || dir == RTL) ? current + step : current - step;
     else if (key == "Right")
-        newValue = isVertical ? current - step : current + step;
+        newValue = (isVertical || dir == RTL) ? current - step : current + step;
     else if (key == "PageUp")
         newValue = current + bigStep;
     else if (key == "PageDown")

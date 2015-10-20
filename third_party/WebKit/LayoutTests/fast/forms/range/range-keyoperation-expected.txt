@@ -33,6 +33,10 @@ PASS changeEventCounter is lastChangeEventCounter
 PASS input.value is "100"
 PASS changeEventCounter is lastChangeEventCounter
 
+RTL
+PASS input.value is "51"
+PASS input.value is "50"
+
 Tests for a vertical range
 Press the up arrow key:
 PASS input.value is "51"

@@ -94,6 +94,17 @@ sendKey(input, 'End');
 shouldBe('input.value', '"100"');
 shouldBe('changeEventCounter', 'lastChangeEventCounter');
 
+input.dir = 'rtl';
+input.value = '50';
+input.offsetLeft;
+debug('');
+debug('RTL');
+sendKey(input, 'Left');
+shouldBeEqualToString('input.value', '51');
+sendKey(input, 'Right');
+shouldBeEqualToString('input.value', '50');
+input.dir = 'ltr';
+
 debug('');
 input.setAttribute('style', '-webkit-appearance:slider-vertical; height: 40px;');
 input.offsetLeft; // force layout
