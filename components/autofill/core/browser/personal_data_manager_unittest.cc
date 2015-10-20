@@ -34,6 +34,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -182,11 +183,30 @@ class PersonalDataManagerTest : public testing::Test {
     ASSERT_EQ(1U, personal_data_->GetProfiles().size());
   }
 
-  void EnableAutofillProfileOrderByFrecencyFieldTrial() {
+  // Sets up the frecency field trial group and parameter. Enables the frecency
+  // suggestions ordering if |frecency_enabled| and sets up the suggestions
+  // limit parameter to |limit_param| if it's not empty.
+  void EnableAutofillProfileOrderByFrecencyFieldTrial(
+      const bool frecency_enabled,
+      const std::string& limit_param) {
+    // Clear the existing |field_trial_list_| and variation parameters.
+    field_trial_list_.reset(NULL);
     field_trial_list_.reset(
         new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
+    variations::testing::ClearAllVariationParams();
+
+    std::string group_name(frecency_enabled ? kFrecencyFieldTrialStateEnabled
+                                            : "Generic");
+
+    if (!limit_param.empty()) {
+      std::map<std::string, std::string> params;
+      params[kFrecencyFieldTrialLimitParam] = limit_param;
+      variations::AssociateVariationParams(kFrecencyFieldTrialName, group_name,
+                                           params);
+    }
+
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
-        "AutofillProfileOrderByFrecency", "Enabled");
+        kFrecencyFieldTrialName, group_name);
     field_trial_->group();
   }
 
@@ -3433,18 +3453,18 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_RankByMru) {
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
       std::vector<ServerFieldType>());
-  ASSERT_EQ(3, static_cast<int>(suggestions.size()));
+  ASSERT_EQ(3U, suggestions.size());
   EXPECT_EQ(suggestions[0].value, base::ASCIIToUTF16("Marion1_2"));
   EXPECT_EQ(suggestions[1].value, base::ASCIIToUTF16("Marion2_1"));
   EXPECT_EQ(suggestions[2].value, base::ASCIIToUTF16("Marion3_3"));
 
   // Verify the profiles are sorted by frecency when the flag is set.
-  EnableAutofillProfileOrderByFrecencyFieldTrial();
+  EnableAutofillProfileOrderByFrecencyFieldTrial(true, "");
 
   suggestions = personal_data_->GetProfileSuggestions(
       AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
       std::vector<ServerFieldType>());
-  ASSERT_EQ(3, static_cast<int>(suggestions.size()));
+  ASSERT_EQ(3U, suggestions.size());
   EXPECT_EQ(suggestions[0].value, base::ASCIIToUTF16("Marion2_1"));
   EXPECT_EQ(suggestions[1].value, base::ASCIIToUTF16("Marion1_2"));
   EXPECT_EQ(suggestions[2].value, base::ASCIIToUTF16("Marion3_3"));
@@ -3497,6 +3517,125 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile_StateAbbreviationToFull) {
   // Make sure that the new state format is saved.
   ASSERT_EQ(base::UTF8ToUTF16("California"),
             profiles2.front()->GetRawInfo(ADDRESS_HOME_STATE));
+}
+
+// Tests that GetProfileSuggestions returns all profiles suggestions by default
+// and only two if the appropriate field trial is set.
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
+  // Set up 3 different profiles.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile2);
+
+  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile3, "Marion3", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile3);
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Verify that all the profiles are suggested.
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::string16(), false,
+      std::vector<ServerFieldType>());
+  EXPECT_EQ(3U, suggestions.size());
+
+  // Verify that only two profiles are suggested.
+  EnableAutofillProfileOrderByFrecencyFieldTrial(false, "2");
+
+  suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::string16(), false,
+      std::vector<ServerFieldType>());
+  EXPECT_EQ(2U, suggestions.size());
+}
+
+// Tests that GetProfileSuggestions returns two profiles suggestions ordered by
+// frecency if the appropriate field trial group and parameter are set.
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_FrecencyAndSuggestionsLimit) {
+  // Set up the profiles. They are named with number suffixes X_Y so the X is
+  // the order in which they should be ordered by MRU and Y is the order in
+  // which they should be ranked by frecency.
+  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile3, "Marion3_3", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile3.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile3.set_use_count(5);
+  personal_data_->AddProfile(profile3);
+
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Marion2_1", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  profile1.set_use_count(10);
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marion1_2", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  profile2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  profile2.set_use_count(300);
+  personal_data_->AddProfile(profile2);
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Verify that only two profiles are suggested and ordered by frecency.
+  EnableAutofillProfileOrderByFrecencyFieldTrial(true, "2");
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::ASCIIToUTF16("Ma"), false,
+      std::vector<ServerFieldType>());
+  ASSERT_EQ(2U, suggestions.size());
+  EXPECT_EQ(suggestions[0].value, base::ASCIIToUTF16("Marion2_1"));
+  EXPECT_EQ(suggestions[1].value, base::ASCIIToUTF16("Marion1_2"));
+}
+
+// Tests that GetProfileSuggestions returns the right number of profile
+// suggestions when the limit to three field trial is set and there are less
+// than three profiles.
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_LimitIsLessThanProfileSuggestions) {
+  EnableAutofillProfileOrderByFrecencyFieldTrial(false, "3");
+
+  // Set up 2 different profiles.
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile2);
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(NAME_FIRST), base::string16(), false,
+      std::vector<ServerFieldType>());
+  EXPECT_EQ(2U, suggestions.size());
 }
 
 }  // namespace autofill

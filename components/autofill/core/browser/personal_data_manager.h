@@ -50,6 +50,10 @@ void SetCreditCards(int, std::vector<autofill::CreditCard>*);
 
 namespace autofill {
 
+extern const char kFrecencyFieldTrialName[];
+extern const char kFrecencyFieldTrialStateEnabled[];
+extern const char kFrecencyFieldTrialLimitParam[];
+
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // Autofill.

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/personal_data_manager.h"
 
+#include <algorithm>
+
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
 #include "base/metrics/field_trial.h"
@@ -29,6 +31,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/variations/variations_associated_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 
@@ -201,11 +204,16 @@ bool RankByMfu(const AutofillDataModel* a, const AutofillDataModel* b) {
 // Returns whether sorting autofill profile suggestions by frecency is enabled.
 bool IsAutofillProfileSortingByFrecencyEnabled() {
   const std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillProfileOrderByFrecency");
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
+      base::FieldTrialList::FindFullName(kFrecencyFieldTrialName);
+  return base::StartsWith(group_name, kFrecencyFieldTrialStateEnabled,
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
+
+const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
+const char kFrecencyFieldTrialStateEnabled[] = "Enabled";
+const char kFrecencyFieldTrialLimitParam[] = "limit";
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
     : database_(NULL),
@@ -872,6 +880,14 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   DCHECK_EQ(unique_suggestions.size(), labels.size());
   for (size_t i = 0; i < labels.size(); i++)
     unique_suggestions[i].label = labels[i];
+
+  // Get the profile suggestions limit value set for the current frecency field
+  // trial group or SIZE_MAX if no limit is defined.
+  std::string limit_str = variations::GetVariationParamValue(
+      kFrecencyFieldTrialName, kFrecencyFieldTrialLimitParam);
+  size_t limit = base::StringToSizeT(limit_str, &limit) ? limit : SIZE_MAX;
+
+  unique_suggestions.resize(std::min(unique_suggestions.size(), limit));
 
   return unique_suggestions;
 }

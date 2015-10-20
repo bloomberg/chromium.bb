@@ -11,7 +11,10 @@
     ],
     "AutofillProfileOrderByFrecency": [
         {
-            "group_name": "Enabled"
+            "group_name": "EnabledLimitTo3",
+            "params": {
+                "limit": "3"
+            }
         }
     ],
     "AutomaticTabDiscarding": [
