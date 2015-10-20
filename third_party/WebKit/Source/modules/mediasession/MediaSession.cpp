@@ -5,19 +5,53 @@
 #include "config.h"
 #include "modules/mediasession/MediaSession.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "modules/mediasession/MediaSessionError.h"
+
 namespace blink {
 
-MediaSession* MediaSession::create()
+MediaSession::MediaSession(PassOwnPtr<WebMediaSession> webMediaSession)
+    : m_webMediaSession(webMediaSession)
 {
-    return new MediaSession;
+    ASSERT(m_webMediaSession);
 }
 
-void MediaSession::activate()
+MediaSession* MediaSession::create(ExecutionContext* context, ExceptionState& exceptionState)
 {
+    Document* document = toDocument(context);
+    LocalFrame* frame = document->frame();
+    FrameLoaderClient* client = frame->loader().client();
+    OwnPtr<WebMediaSession> webMediaSession = client->createWebMediaSession();
+    if (!webMediaSession) {
+        exceptionState.throwDOMException(NotSupportedError, "Missing platform implementation.");
+        return nullptr;
+    }
+    return new MediaSession(webMediaSession.release());
 }
 
-void MediaSession::deactivate()
+ScriptPromise MediaSession::activate(ScriptState* scriptState)
 {
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    m_webMediaSession->activate(new CallbackPromiseAdapter<void, MediaSessionError>(resolver));
+    return promise;
+}
+
+ScriptPromise MediaSession::deactivate(ScriptState* scriptState)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    m_webMediaSession->deactivate(new CallbackPromiseAdapter<void, void>(resolver));
+    return promise;
 }
 
 } // namespace blink

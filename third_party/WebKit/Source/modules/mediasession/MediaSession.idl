@@ -6,9 +6,11 @@
 
 [
     Constructor(),
+    ConstructorCallWith=ExecutionContext,
+    RaisesException=Constructor,
     GarbageCollected,
     RuntimeEnabled=MediaSession,
 ] interface MediaSession {
-    void activate();
-    void deactivate();
+    [CallWith=ScriptState] Promise<void> activate();
+    [CallWith=ScriptState] Promise<void> deactivate();
 };

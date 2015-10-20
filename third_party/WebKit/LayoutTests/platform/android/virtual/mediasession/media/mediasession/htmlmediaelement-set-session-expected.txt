@@ -1,0 +1,5 @@
+ CONSOLE WARNING: line 9: dummy log entry to avoid an empty -expected.txt in virtual/
+ This is a testharness.js-based test.
+ PASS HTMLMediaElement set session 
+ Harness: the test ran to completion.
+
