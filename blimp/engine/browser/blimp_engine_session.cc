@@ -152,10 +152,6 @@ void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
   contents->GetRenderViewHost()->GetWidget()->Focus();
 }
 
-void BlimpEngineSession::DeactivateContents(content::WebContents* contents) {
-  contents->GetRenderViewHost()->GetWidget()->Blur();
-}
-
 void BlimpEngineSession::PlatformSetContents(
     scoped_ptr<content::WebContents> new_contents) {
   new_contents->SetDelegate(this);

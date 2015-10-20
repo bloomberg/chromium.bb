@@ -63,7 +63,6 @@ class BlimpEngineSession : public BlimpMessageReceiver,
                           bool last_unlocked_by_target) override;
   void CloseContents(content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
-  void DeactivateContents(content::WebContents* contents) override;
 
   // Sets up and owns |new_contents|.
   void PlatformSetContents(scoped_ptr<content::WebContents> new_contents);
