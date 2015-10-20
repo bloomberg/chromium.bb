@@ -78,11 +78,13 @@ class SiteEngagementHelper
     void Stop();
 
     // Returns whether the InputTracker has been started for a RenderViewHost.
-    bool is_active() const { return is_active_; }
+    bool IsActive() const;
 
     // Returns whether input tracking callbacks have been added to
     // RenderViewHost.
     bool is_tracking() const { return is_tracking_; }
+
+    content::RenderViewHost* host() const { return host_; }
 
     // Set the timer object for testing purposes.
     void SetPauseTimerForTesting(scoped_ptr<base::Timer> timer);
@@ -100,7 +102,6 @@ class SiteEngagementHelper
     content::RenderViewHost* host_;
     content::RenderWidgetHost::KeyPressEventCallback key_press_event_callback_;
     content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
-    bool is_active_;
     bool is_tracking_;
   };
 

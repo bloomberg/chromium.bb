@@ -27,7 +27,6 @@ SiteEngagementHelper::InputTracker::InputTracker(SiteEngagementHelper* helper)
     : helper_(helper),
       pause_timer_(new base::Timer(true, false)),
       host_(nullptr),
-      is_active_(false),
       is_tracking_(false) {
   key_press_event_callback_ =
       base::Bind(&SiteEngagementHelper::InputTracker::HandleKeyPressEvent,
@@ -71,11 +70,10 @@ bool SiteEngagementHelper::InputTracker::HandleMouseEvent(
 
 void SiteEngagementHelper::InputTracker::Start(content::RenderViewHost* host,
                                                base::TimeDelta initial_delay) {
-  DCHECK(!is_active_);
+  DCHECK(!host_);
   DCHECK(host);
   host_ = host;
   StartTimer(initial_delay);
-  is_active_ = true;
 }
 
 void SiteEngagementHelper::InputTracker::Pause() {
@@ -86,7 +84,7 @@ void SiteEngagementHelper::InputTracker::Pause() {
 void SiteEngagementHelper::InputTracker::SwitchRenderViewHost(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
-  DCHECK(is_tracking_);
+  DCHECK(host_);
   DCHECK(new_host);
 
   bool was_tracking = is_tracking_;
@@ -105,7 +103,10 @@ void SiteEngagementHelper::InputTracker::Stop() {
   pause_timer_->Stop();
   RemoveCallbacks();
   host_ = nullptr;
-  is_active_ = false;
+}
+
+bool SiteEngagementHelper::InputTracker::IsActive() const {
+  return host_ != nullptr;
 }
 
 void SiteEngagementHelper::InputTracker::SetPauseTimerForTesting(
@@ -194,7 +195,7 @@ void SiteEngagementHelper::RenderViewHostChanged(
     content::RenderViewHost* new_host) {
   // On changing the render view host, we need to re-register the callbacks
   // listening for user input.
-  if (input_tracker_.is_tracking()) {
+  if (input_tracker_.IsActive()) {
     input_tracker_.SwitchRenderViewHost(old_host, new_host);
   }
 }

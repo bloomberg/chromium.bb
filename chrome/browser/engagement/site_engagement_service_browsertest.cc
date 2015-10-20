@@ -58,6 +58,14 @@ class SiteEngagementServiceBrowserTest : public InProcessBrowserTest {
   bool IsTracking(SiteEngagementHelper* helper) {
     return helper->input_tracker_.is_tracking();
   }
+
+  bool IsActive(SiteEngagementHelper* helper) {
+    return helper->input_tracker_.IsActive();
+  }
+
+  content::RenderViewHost* InputTrackerHost(SiteEngagementHelper* helper) {
+    return helper->input_tracker_.host();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest,
@@ -412,12 +420,19 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest, SwitchRenderViewHost) {
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTracking(helper.get()));
 
-  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+  content::RenderViewHost* rvh1 = web_contents->GetRenderViewHost();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::RenderViewHost* rvh2 =
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost();
 
   // The timer should still be running after the RenderViewHost is changed.
-  helper->RenderViewHostChanged(rvh, rvh);
+  helper->RenderViewHostChanged(rvh1, rvh2);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_EQ(rvh2, InputTrackerHost(helper.get()));
 
   // Firing the timer should add the callbacks.
   input_tracker_timer->Fire();
@@ -426,21 +441,24 @@ IN_PROC_BROWSER_TEST_F(SiteEngagementServiceBrowserTest, SwitchRenderViewHost) {
 
   // The callbacks should be on readded another RVH change since the timer has
   // already fired.
-  helper->RenderViewHostChanged(rvh, rvh);
+  helper->RenderViewHostChanged(rvh2, rvh1);
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_EQ(rvh1, InputTrackerHost(helper.get()));
 
   // Ensure nothing bad happens with a destroyed RVH.
-  helper->RenderViewHostChanged(nullptr, rvh);
+  helper->RenderViewHostChanged(nullptr, rvh2);
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(IsTracking(helper.get()));
+  EXPECT_EQ(rvh2, InputTrackerHost(helper.get()));
 
   // Ensure nothing happens when RVH change happens for a hidden tab.
   helper->WasHidden();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTracking(helper.get()));
 
-  helper->RenderViewHostChanged(nullptr, rvh);
+  helper->RenderViewHostChanged(rvh2, rvh1);
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTracking(helper.get()));
+  EXPECT_EQ(nullptr, InputTrackerHost(helper.get()));
 }
