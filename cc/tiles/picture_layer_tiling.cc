@@ -531,8 +531,8 @@ gfx::Rect PictureLayerTiling::CoverageIterator::geometry_rect() const {
 }
 
 gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
-  gfx::PointF tex_origin =
-      tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_).origin();
+  auto tex_origin = gfx::PointF(
+      tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_).origin());
 
   // Convert from dest space => content space => texture space.
   gfx::RectF texture_rect(current_geometry_rect_);

@@ -69,24 +69,24 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
   // Hit testing for a point outside the layer should return a null pointer.
-  gfx::Point test_point(101, 101);
+  gfx::PointF test_point(101.f, 101.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(-1, -1);
+  test_point = gfx::PointF(-1.f, -1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the root layer.
-  test_point = gfx::Point(1, 1);
+  test_point = gfx::PointF(1.f, 1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -128,7 +128,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
 
   gfx::Size new_bounds(50, 50);
   host_impl->SetViewportSize(new_bounds);
-  gfx::Point test_point(51, 51);
+  gfx::PointF test_point(51.f, 51.f);
   host_impl->active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_EQ(
       gfx::RectF(gfx::SizeF(new_bounds)),
@@ -169,25 +169,25 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {
   ASSERT_EQ(2u, root_layer()->render_surface()->layer_list().size());
 
   // Hit testing for a point inside HUD, but outside root should return null
-  gfx::Point test_point(101, 101);
+  gfx::PointF test_point(101.f, 101.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(-1, -1);
+  test_point = gfx::PointF(-1.f, -1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the root layer, never the HUD
   // layer.
-  test_point = gfx::Point(1, 1);
+  test_point = gfx::PointF(1.f, 1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -225,37 +225,37 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   // Hit testing any point should not hit the layer. If the invertible matrix is
   // accidentally ignored and treated like an identity, then the hit testing
   // will incorrectly hit the layer when it shouldn't.
-  gfx::Point test_point(1, 1);
+  gfx::PointF test_point(1.f, 1.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(10, 10);
+  test_point = gfx::PointF(10.f, 10.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(10, 30);
+  test_point = gfx::PointF(10.f, 30.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(50, 50);
+  test_point = gfx::PointF(50.f, 50.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(67, 48);
+  test_point = gfx::PointF(67.f, 48.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(-1, -1);
+  test_point = gfx::PointF(-1.f, -1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
@@ -284,26 +284,26 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
   // Hit testing for a point outside the layer should return a null pointer.
-  gfx::Point test_point(49, 49);
+  gfx::PointF test_point(49.f, 49.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Even though the layer exists at (101, 101), it should not be visible there
   // since the root render surface would clamp it.
-  test_point = gfx::Point(101, 101);
+  test_point = gfx::PointF(101.f, 101.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the root layer.
-  test_point = gfx::Point(51, 51);
+  test_point = gfx::PointF(51.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -338,18 +338,18 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
   // Hit testing for points outside the layer.
   // These corners would have been inside the un-transformed layer, but they
   // should not hit the correctly transformed layer.
-  gfx::Point test_point(99, 99);
+  gfx::PointF test_point(99.f, 99.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(1, 1);
+  test_point = gfx::PointF(1.f, 1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the root layer.
-  test_point = gfx::Point(1, 50);
+  test_point = gfx::PointF(1.f, 50.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -357,12 +357,12 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
 
   // Hit testing the corners that would overlap the unclipped layer, but are
   // outside the clipped region.
-  test_point = gfx::Point(50, -1);
+  test_point = gfx::PointF(50.f, -1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_FALSE(result_layer);
 
-  test_point = gfx::Point(-1, 50);
+  test_point = gfx::PointF(-1.f, 50.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_FALSE(result_layer);
@@ -402,24 +402,24 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
   // Hit testing for points outside the layer.
   // These corners would have been inside the un-transformed layer, but they
   // should not hit the correctly transformed layer.
-  gfx::Point test_point(24, 24);
+  gfx::PointF test_point(24.f, 24.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(76, 76);
+  test_point = gfx::PointF(76.f, 76.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the root layer.
-  test_point = gfx::Point(26, 26);
+  test_point = gfx::PointF(26.f, 26.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(74, 74);
+  test_point = gfx::PointF(74.f, 74.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -472,26 +472,26 @@ TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
   // Hit testing for a point outside the layer should return a null pointer.
   // Despite the child layer being very large, it should be clipped to the root
   // layer's bounds.
-  gfx::Point test_point(24, 24);
+  gfx::PointF test_point(24.f, 24.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Even though the layer exists at (101, 101), it should not be visible there
   // since the clipping_layer would clamp it.
-  test_point = gfx::Point(76, 76);
+  test_point = gfx::PointF(76.f, 76.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the child layer.
-  test_point = gfx::Point(26, 26);
+  test_point = gfx::PointF(26.f, 26.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(456, result_layer->id());
 
-  test_point = gfx::Point(74, 74);
+  test_point = gfx::PointF(74.f, 74.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -573,13 +573,13 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
 
   // (11, 89) is close to the the bottom left corner within the clip, but it is
   // not inside the layer.
-  gfx::Point test_point(11, 89);
+  gfx::PointF test_point(11.f, 89.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Closer inwards from the bottom left will overlap the layer.
-  test_point = gfx::Point(25, 75);
+  test_point = gfx::PointF(25.f, 75.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -590,13 +590,13 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
   // blindly uses visible content rect without considering how parent may clip
   // the layer, then hit testing would accidentally think that the point
   // successfully hits the layer.
-  test_point = gfx::Point(4, 50);
+  test_point = gfx::PointF(4.f, 50.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // (11, 50) is inside the layer and within the clipped area.
-  test_point = gfx::Point(11, 50);
+  test_point = gfx::PointF(11.f, 50.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -604,14 +604,14 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
 
   // Around the middle, just to the right and up, would have hit the layer
   // except that that area should be clipped away by the parent.
-  test_point = gfx::Point(51, 49);
+  test_point = gfx::PointF(51.f, 49.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Around the middle, just to the left and down, should successfully hit the
   // layer.
-  test_point = gfx::Point(49, 51);
+  test_point = gfx::PointF(49.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -666,24 +666,24 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
   ASSERT_EQ(456, root_layer()->render_surface()->layer_list().at(0)->id());
 
   // Hit testing for a point outside the layer should return a null pointer.
-  gfx::Point test_point(69, 69);
+  gfx::PointF test_point(69.f, 69.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(91, 91);
+  test_point = gfx::PointF(91.f, 91.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_FALSE(result_layer);
 
   // Hit testing for a point inside should return the child layer.
-  test_point = gfx::Point(71, 71);
+  test_point = gfx::PointF(71.f, 71.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(456, result_layer->id());
 
-  test_point = gfx::Point(89, 89);
+  test_point = gfx::PointF(89.f, 89.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -766,7 +766,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   // Nothing overlaps the root_layer at (1, 1), so hit testing there should find
   // the root layer.
-  gfx::Point test_point = gfx::Point(1, 1);
+  gfx::PointF test_point = gfx::PointF(1.f, 1.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -774,14 +774,14 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   // At (15, 15), child1 and root are the only layers. child1 is expected to be
   // on top.
-  test_point = gfx::Point(15, 15);
+  test_point = gfx::PointF(15.f, 15.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(2, result_layer->id());
 
   // At (51, 20), child1 and child2 overlap. child2 is expected to be on top.
-  test_point = gfx::Point(51, 20);
+  test_point = gfx::PointF(51.f, 20.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -789,7 +789,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   // At (80, 51), child2 and grand_child1 overlap. child2 is expected to be on
   // top.
-  test_point = gfx::Point(80, 51);
+  test_point = gfx::PointF(80.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -797,7 +797,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   // At (51, 51), all layers overlap each other. child2 is expected to be on top
   // of all other layers.
-  test_point = gfx::Point(51, 51);
+  test_point = gfx::PointF(51.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -805,7 +805,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   // At (20, 51), child1 and grand_child1 overlap. grand_child1 is expected to
   // be on top.
-  test_point = gfx::Point(20, 51);
+  test_point = gfx::PointF(20.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -889,7 +889,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   // Nothing overlaps the root_layer at (1, 1), so hit testing there should find
   // the root layer.
-  gfx::Point test_point = gfx::Point(1, 1);
+  gfx::PointF test_point = gfx::PointF(1.f, 1.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -897,7 +897,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   // At (15, 15), child1 and root are the only layers. child1 is expected to be
   // on top.
-  test_point = gfx::Point(15, 15);
+  test_point = gfx::PointF(15.f, 15.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -905,7 +905,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   // At (51, 20), child1 and child2 overlap. child2 is expected to be on top.
   // (because 3 is transformed to the back).
-  test_point = gfx::Point(51, 20);
+  test_point = gfx::PointF(51.f, 20.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -913,7 +913,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   // 3 Would have been on top if it hadn't been transformed to the background.
   // Make sure that it isn't hit.
-  test_point = gfx::Point(80, 51);
+  test_point = gfx::PointF(80.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -921,7 +921,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   // 3 Would have been on top if it hadn't been transformed to the background.
   // Make sure that it isn't hit.
-  test_point = gfx::Point(51, 51);
+  test_point = gfx::PointF(51.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -929,7 +929,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   // At (20, 51), child1 and grand_child1 overlap. grand_child1 is expected to
   // be on top.
-  test_point = gfx::Point(20, 51);
+  test_point = gfx::PointF(20.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -977,7 +977,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
-  gfx::Point test_point = gfx::Point(12, 52);
+  gfx::PointF test_point(12.f, 52.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -1037,7 +1037,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
-  gfx::Point test_point = gfx::Point(12, 52);
+  gfx::PointF test_point(12.f, 52.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   // The |test_point| should have been clipped away by |child|, the scroll
@@ -1135,7 +1135,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
   // Nothing overlaps the root_layer at (1, 1), so hit testing there should find
   // the root layer.
-  gfx::Point test_point = gfx::Point(1, 1);
+  gfx::PointF test_point(1.f, 1.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -1143,14 +1143,14 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
   // At (15, 15), child1 and root are the only layers. child1 is expected to be
   // on top.
-  test_point = gfx::Point(15, 15);
+  test_point = gfx::PointF(15.f, 15.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(2, result_layer->id());
 
   // At (51, 20), child1 and child2 overlap. child2 is expected to be on top.
-  test_point = gfx::Point(51, 20);
+  test_point = gfx::PointF(51.f, 20.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -1158,7 +1158,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
   // At (80, 51), child2 and grand_child1 overlap. child2 is expected to be on
   // top.
-  test_point = gfx::Point(80, 51);
+  test_point = gfx::PointF(80.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -1166,7 +1166,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
   // At (51, 51), all layers overlap each other. child2 is expected to be on top
   // of all other layers.
-  test_point = gfx::Point(51, 51);
+  test_point = gfx::PointF(51.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -1174,7 +1174,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
   // At (20, 51), child1 and grand_child1 overlap. grand_child1 is expected to
   // be on top.
-  test_point = gfx::Point(20, 51);
+  test_point = gfx::PointF(20.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
@@ -1204,7 +1204,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
 
   // Hit checking for any point should return a null pointer for a layer without
   // any touch event handler regions.
-  gfx::Point test_point(11, 11);
+  gfx::PointF test_point(11.f, 11.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1213,13 +1213,13 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
   host_impl().active_tree()->root_layer()->SetTouchEventHandlerRegion(
       touch_handler_region);
   // Hit checking for a point outside the layer should return a null pointer.
-  test_point = gfx::Point(101, 101);
+  test_point = gfx::PointF(101.f, 101.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(-1, -1);
+  test_point = gfx::PointF(-1.f, -1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1227,13 +1227,13 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
 
   // Hit checking for a point inside the layer, but outside the touch handler
   // region should return a null pointer.
-  test_point = gfx::Point(1, 1);
+  test_point = gfx::PointF(1.f, 1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1241,14 +1241,14 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
 
   // Hit checking for a point inside the touch event handler region should
   // return the root layer.
-  test_point = gfx::Point(11, 11);
+  test_point = gfx::PointF(11.f, 11.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(59, 59);
+  test_point = gfx::PointF(59.f, 59.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1292,43 +1292,43 @@ TEST_F(LayerTreeImplTest,
   // layer. If the invertible matrix is accidentally ignored and treated like an
   // identity, then the hit testing will incorrectly hit the layer when it
   // shouldn't.
-  gfx::Point test_point(1, 1);
+  gfx::PointF test_point(1.f, 1.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(10, 10);
+  test_point = gfx::PointF(10.f, 10.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(10, 30);
+  test_point = gfx::PointF(10.f, 30.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(50, 50);
+  test_point = gfx::PointF(50.f, 50.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(67, 48);
+  test_point = gfx::PointF(67.f, 48.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(-1, -1);
+  test_point = gfx::PointF(-1.f, -1.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1361,7 +1361,7 @@ TEST_F(LayerTreeImplTest,
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
   // Hit checking for a point outside the layer should return a null pointer.
-  gfx::Point test_point(49, 49);
+  gfx::PointF test_point(49.f, 49.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1369,7 +1369,7 @@ TEST_F(LayerTreeImplTest,
 
   // Even though the layer has a touch handler region containing (101, 101), it
   // should not be visible there since the root render surface would clamp it.
-  test_point = gfx::Point(101, 101);
+  test_point = gfx::PointF(101.f, 101.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1377,7 +1377,7 @@ TEST_F(LayerTreeImplTest,
 
   // Hit checking for a point inside the layer, but outside the touch handler
   // region should return a null pointer.
-  test_point = gfx::Point(51, 51);
+  test_point = gfx::PointF(51.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1385,14 +1385,14 @@ TEST_F(LayerTreeImplTest,
 
   // Hit checking for a point inside the touch event handler region should
   // return the root layer.
-  test_point = gfx::Point(61, 61);
+  test_point = gfx::PointF(61.f, 61.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(99, 99);
+  test_point = gfx::PointF(99.f, 99.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1468,7 +1468,7 @@ TEST_F(LayerTreeImplTest,
 
   // Hit checking for a point inside the layer, but outside the touch handler
   // region should return a null pointer.
-  test_point = gfx::Point(26, 26);
+  test_point = gfx::PointF(26.f, 26.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1476,7 +1476,7 @@ TEST_F(LayerTreeImplTest,
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(34, 34);
+  test_point = gfx::PointF(34.f, 34.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1484,7 +1484,7 @@ TEST_F(LayerTreeImplTest,
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(65, 65);
+  test_point = gfx::PointF(65.f, 65.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1492,7 +1492,7 @@ TEST_F(LayerTreeImplTest,
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(74, 74);
+  test_point = gfx::PointF(74.f, 74.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1502,7 +1502,7 @@ TEST_F(LayerTreeImplTest,
 
   // Hit checking for a point inside the touch event handler region should
   // return the root layer.
-  test_point = gfx::Point(35, 35);
+  test_point = gfx::PointF(35.f, 35.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1511,7 +1511,7 @@ TEST_F(LayerTreeImplTest,
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(64, 64);
+  test_point = gfx::PointF(64.f, 64.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1594,7 +1594,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
   // Hit checking for a point outside the layer should return a null pointer.
   // Despite the child layer being very large, it should be clipped to the root
   // layer's bounds.
-  gfx::Point test_point(24, 24);
+  gfx::PointF test_point(24.f, 24.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1602,13 +1602,13 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
 
   // Hit checking for a point inside the layer, but outside the touch handler
   // region should return a null pointer.
-  test_point = gfx::Point(35, 35);
+  test_point = gfx::PointF(35.f, 35.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
 
-  test_point = gfx::Point(74, 74);
+  test_point = gfx::PointF(74.f, 74.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1616,14 +1616,14 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
 
   // Hit checking for a point inside the touch event handler region should
   // return the root layer.
-  test_point = gfx::Point(25, 25);
+  test_point = gfx::PointF(25.f, 25.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(456, result_layer->id());
 
-  test_point = gfx::Point(34, 34);
+  test_point = gfx::PointF(34.f, 34.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1678,7 +1678,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   ASSERT_EQ(123, root_layer()->render_surface()->layer_list().at(0)->id());
   ASSERT_EQ(1234, root_layer()->render_surface()->layer_list().at(1)->id());
 
-  gfx::Point test_point(35, 35);
+  gfx::PointF test_point(35.f, 35.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1698,14 +1698,14 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   // opaque to hit testing).
   EXPECT_TRUE(result_layer);
 
-  test_point = gfx::Point(35, 15);
+  test_point = gfx::PointF(35.f, 15.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(123, result_layer->id());
 
-  test_point = gfx::Point(35, 65);
+  test_point = gfx::PointF(35.f, 65.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -1809,13 +1809,13 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   LayerSelection input;
 
   input.start.type = SELECTION_BOUND_LEFT;
-  input.start.edge_top = gfx::PointF(10, 10);
-  input.start.edge_bottom = gfx::PointF(10, 20);
+  input.start.edge_top = gfx::Point(10, 10);
+  input.start.edge_bottom = gfx::Point(10, 20);
   input.start.layer_id = root_layer_id;
 
   input.end.type = SELECTION_BOUND_RIGHT;
-  input.end.edge_top = gfx::PointF(50, 10);
-  input.end.edge_bottom = gfx::PointF(50, 30);
+  input.end.edge_top = gfx::Point(50, 10);
+  input.end.edge_bottom = gfx::Point(50, 30);
   input.end.layer_id = root_layer_id;
 
   ViewportSelection output;
@@ -1829,12 +1829,12 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   host_impl().active_tree()->RegisterSelection(input);
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type);
-  EXPECT_EQ(input.start.edge_bottom, output.start.edge_bottom);
-  EXPECT_EQ(input.start.edge_top, output.start.edge_top);
+  EXPECT_EQ(gfx::PointF(input.start.edge_bottom), output.start.edge_bottom);
+  EXPECT_EQ(gfx::PointF(input.start.edge_top), output.start.edge_top);
   EXPECT_TRUE(output.start.visible);
   EXPECT_EQ(input.end.type, output.end.type);
-  EXPECT_EQ(input.end.edge_bottom, output.end.edge_bottom);
-  EXPECT_EQ(input.end.edge_top, output.end.edge_top);
+  EXPECT_EQ(gfx::PointF(input.end.edge_bottom), output.end.edge_bottom);
+  EXPECT_EQ(gfx::PointF(input.end.edge_top), output.end.edge_top);
   EXPECT_TRUE(output.end.visible);
   EXPECT_EQ(input.is_editable, output.is_editable);
   EXPECT_EQ(input.is_empty_text_form_control,
@@ -1843,8 +1843,8 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   // Insertion bounds should produce identical left and right bounds.
   LayerSelection insertion_input;
   insertion_input.start.type = SELECTION_BOUND_CENTER;
-  insertion_input.start.edge_top = gfx::PointF(15, 10);
-  insertion_input.start.edge_bottom = gfx::PointF(15, 30);
+  insertion_input.start.edge_top = gfx::Point(15, 10);
+  insertion_input.start.edge_bottom = gfx::Point(15, 30);
   insertion_input.start.layer_id = root_layer_id;
   insertion_input.is_editable = true;
   insertion_input.is_empty_text_form_control = true;
@@ -1852,8 +1852,9 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   host_impl().active_tree()->RegisterSelection(insertion_input);
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(insertion_input.start.type, output.start.type);
-  EXPECT_EQ(insertion_input.start.edge_bottom, output.start.edge_bottom);
-  EXPECT_EQ(insertion_input.start.edge_top, output.start.edge_top);
+  EXPECT_EQ(gfx::PointF(insertion_input.start.edge_bottom),
+            output.start.edge_bottom);
+  EXPECT_EQ(gfx::PointF(insertion_input.start.edge_top), output.start.edge_top);
   EXPECT_EQ(insertion_input.is_editable, output.is_editable);
   EXPECT_EQ(insertion_input.is_empty_text_form_control,
             output.is_empty_text_form_control);
@@ -1909,13 +1910,13 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
 
   LayerSelection input;
   input.start.type = SELECTION_BOUND_LEFT;
-  input.start.edge_top = gfx::PointF(25, 10);
-  input.start.edge_bottom = gfx::PointF(25, 30);
+  input.start.edge_top = gfx::Point(25, 10);
+  input.start.edge_bottom = gfx::Point(25, 30);
   input.start.layer_id = clipped_layer_id;
 
   input.end.type = SELECTION_BOUND_RIGHT;
-  input.end.edge_top = gfx::PointF(75, 10);
-  input.end.edge_bottom = gfx::PointF(75, 30);
+  input.end.edge_top = gfx::Point(75, 10);
+  input.end.edge_bottom = gfx::Point(75, 30);
   input.end.layer_id = clipped_layer_id;
   host_impl().active_tree()->RegisterSelection(input);
 
@@ -1923,16 +1924,16 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
   ViewportSelection output;
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type);
-  gfx::PointF expected_output_start_top = input.start.edge_top;
-  gfx::PointF expected_output_edge_botom = input.start.edge_bottom;
+  auto expected_output_start_top = gfx::PointF(input.start.edge_top);
+  auto expected_output_edge_botom = gfx::PointF(input.start.edge_bottom);
   expected_output_start_top.Offset(clipping_offset.x(), clipping_offset.y());
   expected_output_edge_botom.Offset(clipping_offset.x(), clipping_offset.y());
   EXPECT_EQ(expected_output_start_top, output.start.edge_top);
   EXPECT_EQ(expected_output_edge_botom, output.start.edge_bottom);
   EXPECT_TRUE(output.start.visible);
   EXPECT_EQ(input.end.type, output.end.type);
-  gfx::PointF expected_output_end_top = input.end.edge_top;
-  gfx::PointF expected_output_end_bottom = input.end.edge_bottom;
+  auto expected_output_end_top = gfx::PointF(input.end.edge_top);
+  auto expected_output_end_bottom = gfx::PointF(input.end.edge_bottom);
   expected_output_end_bottom.Offset(clipping_offset.x(), clipping_offset.y());
   expected_output_end_top.Offset(clipping_offset.x(), clipping_offset.y());
   EXPECT_EQ(expected_output_end_top, output.end.edge_top);
@@ -1940,21 +1941,21 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
   EXPECT_FALSE(output.end.visible);
 
   // Handles outside the viewport bounds should be marked invisible.
-  input.start.edge_top = gfx::PointF(-25, 0);
-  input.start.edge_bottom = gfx::PointF(-25, 20);
+  input.start.edge_top = gfx::Point(-25, 0);
+  input.start.edge_bottom = gfx::Point(-25, 20);
   host_impl().active_tree()->RegisterSelection(input);
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_FALSE(output.start.visible);
 
-  input.start.edge_top = gfx::PointF(0, -25);
-  input.start.edge_bottom = gfx::PointF(0, -5);
+  input.start.edge_top = gfx::Point(0, -25);
+  input.start.edge_bottom = gfx::Point(0, -5);
   host_impl().active_tree()->RegisterSelection(input);
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_FALSE(output.start.visible);
 
   // If the handle bottom is partially visible, the handle is marked visible.
-  input.start.edge_top = gfx::PointF(0, -20);
-  input.start.edge_bottom = gfx::PointF(0, 1);
+  input.start.edge_top = gfx::Point(0, -20);
+  input.start.edge_bottom = gfx::Point(0, 1);
   host_impl().active_tree()->RegisterSelection(input);
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_TRUE(output.start.visible);
@@ -2007,13 +2008,13 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
 
   LayerSelection input;
   input.start.type = SELECTION_BOUND_LEFT;
-  input.start.edge_top = gfx::PointF(10, 10);
-  input.start.edge_bottom = gfx::PointF(10, 30);
+  input.start.edge_top = gfx::Point(10, 10);
+  input.start.edge_bottom = gfx::Point(10, 30);
   input.start.layer_id = root_layer_id;
 
   input.end.type = SELECTION_BOUND_RIGHT;
-  input.end.edge_top = gfx::PointF(0, 0);
-  input.end.edge_bottom = gfx::PointF(0, 20);
+  input.end.edge_top = gfx::Point(0, 0);
+  input.end.edge_bottom = gfx::Point(0, 20);
   input.end.layer_id = sub_layer_id;
   host_impl().active_tree()->RegisterSelection(input);
 
@@ -2022,8 +2023,8 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   ViewportSelection output;
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type);
-  gfx::PointF expected_output_start_top = input.start.edge_top;
-  gfx::PointF expected_output_edge_bottom = input.start.edge_bottom;
+  auto expected_output_start_top = gfx::PointF(input.start.edge_top);
+  auto expected_output_edge_bottom = gfx::PointF(input.start.edge_bottom);
   expected_output_start_top.Scale(page_scale_factor);
   expected_output_edge_bottom.Scale(page_scale_factor);
   EXPECT_EQ(expected_output_start_top, output.start.edge_top);
@@ -2031,8 +2032,8 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   EXPECT_TRUE(output.start.visible);
   EXPECT_EQ(input.end.type, output.end.type);
 
-  gfx::PointF expected_output_end_top = input.end.edge_top;
-  gfx::PointF expected_output_end_bottom = input.end.edge_bottom;
+  auto expected_output_end_top = gfx::PointF(input.end.edge_top);
+  auto expected_output_end_bottom = gfx::PointF(input.end.edge_bottom);
   expected_output_end_top.Offset(sub_layer_offset.x(), sub_layer_offset.y());
   expected_output_end_bottom.Offset(sub_layer_offset.x(), sub_layer_offset.y());
   expected_output_end_top.Scale(page_scale_factor);
@@ -2085,13 +2086,13 @@ TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
   LayerSelection input;
 
   input.start.type = SELECTION_BOUND_LEFT;
-  input.start.edge_top = gfx::PointF(10, 10);
-  input.start.edge_bottom = gfx::PointF(10, 20);
+  input.start.edge_top = gfx::Point(10, 10);
+  input.start.edge_bottom = gfx::Point(10, 20);
   input.start.layer_id = grand_child_id;
 
   input.end.type = SELECTION_BOUND_RIGHT;
-  input.end.edge_top = gfx::PointF(50, 10);
-  input.end.edge_bottom = gfx::PointF(50, 30);
+  input.end.edge_top = gfx::Point(50, 10);
+  input.end.edge_bottom = gfx::Point(50, 30);
   input.end.layer_id = grand_child_id;
 
   host_impl().active_tree()->RegisterSelection(input);

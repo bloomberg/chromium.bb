@@ -122,7 +122,7 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
       SolidColorLayer::Create(layer_settings());
   layer->SetIsDrawable(true);
   layer->SetBounds(rect.size());
-  layer->SetPosition(rect.origin());
+  layer->SetPosition(gfx::PointF(rect.origin()));
   layer->SetBackgroundColor(color);
   return layer;
 }
@@ -180,7 +180,7 @@ scoped_refptr<TextureLayer> LayerTreePixelTest::CreateTextureLayer(
       TextureLayer::CreateForMailbox(layer_settings(), NULL);
   layer->SetIsDrawable(true);
   layer->SetBounds(rect.size());
-  layer->SetPosition(rect.origin());
+  layer->SetPosition(gfx::PointF(rect.origin()));
 
   TextureMailbox texture_mailbox;
   scoped_ptr<SingleReleaseCallback> release_callback;

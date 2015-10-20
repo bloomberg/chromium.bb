@@ -78,7 +78,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   parent->SetBounds(gfx::Size(50, 50));
   child->SetBounds(gfx::Size(40, 40));
 
-  parent->SetPosition(gfx::Point(25, 25));
+  parent->SetPosition(gfx::PointF(25.f, 25.f));
 
   child->SetHaveWheelEventHandlers(true);
   child->SetHaveScrollEventHandlers(true);

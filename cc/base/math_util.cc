@@ -779,6 +779,15 @@ void MathUtil::AddToTracedValue(const char* name,
 }
 
 void MathUtil::AddToTracedValue(const char* name,
+                                const gfx::Point& pt,
+                                base::trace_event::TracedValue* res) {
+  res->BeginArray(name);
+  res->AppendInteger(pt.x());
+  res->AppendInteger(pt.y());
+  res->EndArray();
+}
+
+void MathUtil::AddToTracedValue(const char* name,
                                 const gfx::PointF& pt,
                                 base::trace_event::TracedValue* res) {
   res->BeginArray(name);

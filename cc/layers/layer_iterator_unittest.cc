@@ -40,7 +40,7 @@ class TestLayerImpl : public LayerImpl {
         count_representing_contributing_surface_(-1),
         count_representing_itself_(-1) {
     SetBounds(gfx::Size(100, 100));
-    SetPosition(gfx::Point());
+    SetPosition(gfx::PointF());
     SetDrawsContent(true);
   }
 };

@@ -462,7 +462,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     root_scroll_layer_ =
         FakePictureLayer::Create(layer_settings(), &fake_content_layer_client_);
     root_scroll_layer_->SetBounds(gfx::Size(110, 110));
-    root_scroll_layer_->SetPosition(gfx::Point());
+    root_scroll_layer_->SetPosition(gfx::PointF());
     root_scroll_layer_->SetIsDrawable(true);
 
     CreateVirtualViewportLayers(root_layer.get(),
@@ -484,10 +484,10 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       // Scrolls on the child layer will happen at 5, 5. If they are treated
       // like device pixels, and device scale factor is 2, then they will
       // be considered at 2.5, 2.5 in logical pixels, and will miss this layer.
-      child_layer_->SetPosition(gfx::Point(5, 5));
+      child_layer_->SetPosition(gfx::PointF(5.f, 5.f));
     } else {
       // Adjust the child layer horizontally so that scrolls will never hit it.
-      child_layer_->SetPosition(gfx::Point(60, 5));
+      child_layer_->SetPosition(gfx::PointF(60.f, 5.f));
     }
 
     scoped_refptr<Layer> outer_container_layer =
@@ -1195,7 +1195,7 @@ class LayerTreeHostScrollTestLayerStructureChange
     scoped_refptr<PictureLayer> scroll_layer =
         PictureLayer::Create(layer_settings(), &fake_content_layer_client_);
     scroll_layer->SetBounds(gfx::Size(110, 110));
-    scroll_layer->SetPosition(gfx::Point(0, 0));
+    scroll_layer->SetPosition(gfx::PointF());
     scroll_layer->SetIsDrawable(true);
     scroll_layer->SetScrollClipLayerId(parent->id());
     scroll_layer->SetBounds(gfx::Size(parent->bounds().width() + 100,

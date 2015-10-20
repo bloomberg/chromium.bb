@@ -8,7 +8,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/input/selection.h"
 #include "cc/input/selection_bound_type.h"
-#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace cc {
 
@@ -18,8 +18,8 @@ struct CC_EXPORT LayerSelectionBound {
   ~LayerSelectionBound();
 
   SelectionBoundType type;
-  gfx::PointF edge_top;
-  gfx::PointF edge_bottom;
+  gfx::Point edge_top;
+  gfx::Point edge_bottom;
   int layer_id;
 };
 

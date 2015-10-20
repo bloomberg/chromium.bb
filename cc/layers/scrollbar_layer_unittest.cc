@@ -158,10 +158,9 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // When the scrollbar is not an overlay scrollbar, the scroll should be
   // responded to on the main thread as the compositor does not yet implement
   // scrollbar scrolling.
-  EXPECT_EQ(
-      InputHandler::SCROLL_ON_MAIN_THREAD,
-      scrollbar_layer_impl->TryScroll(gfx::Point(0, 0), InputHandler::GESTURE,
-                                      SCROLL_BLOCKS_ON_NONE));
+  EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD,
+            scrollbar_layer_impl->TryScroll(
+                gfx::PointF(), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE));
 
   // Create and attach an overlay scrollbar.
   scrollbar.reset(new FakeScrollbar(false, false, true));
@@ -174,10 +173,9 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
 
   // The user shouldn't be able to drag an overlay scrollbar and the scroll
   // may be handled in the compositor.
-  EXPECT_EQ(
-      InputHandler::SCROLL_IGNORED,
-      scrollbar_layer_impl->TryScroll(gfx::Point(0, 0), InputHandler::GESTURE,
-                                      SCROLL_BLOCKS_ON_NONE));
+  EXPECT_EQ(InputHandler::SCROLL_IGNORED,
+            scrollbar_layer_impl->TryScroll(
+                gfx::PointF(), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE));
 }
 
 TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
@@ -732,7 +730,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
 
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 15));
-  scrollbar_layer->SetPosition(scrollbar_location);
+  scrollbar_layer->SetPosition(gfx::PointF(scrollbar_location));
   layer_tree_root->SetBounds(gfx::Size(100, 200));
   content_layer->SetBounds(gfx::Size(100, 200));
   scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
@@ -875,7 +873,7 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
 
     scrollbar_layer->SetIsDrawable(true);
     scrollbar_layer->SetBounds(gfx::Size(100, 15));
-    scrollbar_layer->SetPosition(scrollbar_location);
+    scrollbar_layer->SetPosition(gfx::PointF(scrollbar_location));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
     scrollbar_layer->set_visible_layer_rect(
@@ -944,7 +942,7 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     layer_tree_host_->SetRootLayer(layer_tree_root);
 
     scrollbar_layer->SetBounds(scrollbar_rect.size());
-    scrollbar_layer->SetPosition(scrollbar_rect.origin());
+    scrollbar_layer->SetPosition(gfx::PointF(scrollbar_rect.origin()));
     scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
     scrollbar_layer->set_visible_layer_rect(scrollbar_rect);

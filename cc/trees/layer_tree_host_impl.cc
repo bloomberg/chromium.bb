@@ -495,8 +495,8 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   if (!scrolling_layer_impl)
     return false;
 
-  gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
 
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
@@ -524,8 +524,8 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
 
 bool LayerTreeHostImpl::HaveWheelEventHandlersAt(
     const gfx::Point& viewport_point) {
-  gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
 
   LayerImpl* layer_impl =
       active_tree_->FindLayerWithWheelHandlerThatIsHitByPoint(
@@ -551,8 +551,8 @@ static ScrollBlocksOn EffectiveScrollBlocksOn(LayerImpl* layer) {
 
 bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(
     const gfx::Point& viewport_point) {
-  gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
 
   // First check if scrolling at this point is required to block on any
   // touch event handlers.  Note that we must start at the innermost layer
@@ -2469,8 +2469,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   DCHECK(!CurrentlyScrollingLayer());
   ClearCurrentlyScrollingLayer();
 
-  gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
@@ -2627,6 +2627,8 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
   return consumed_scroll;
 }
 
+// TODO(danakj): Make this into two functions, one with delta, one with
+// viewport_point, no bool required.
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
                                               const gfx::Vector2dF& delta,
                                               const gfx::Point& viewport_point,
@@ -2638,8 +2640,10 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
   // screen (such as wheel events) represent a fixed amount of scrolling so we
   // can just apply them directly, but the page scale factor is applied to the
   // scroll delta.
-  if (is_direct_manipulation)
-    return ScrollLayerWithViewportSpaceDelta(layer_impl, viewport_point, delta);
+  if (is_direct_manipulation) {
+    return ScrollLayerWithViewportSpaceDelta(
+        layer_impl, gfx::PointF(viewport_point), delta);
+  }
   float scale_factor = active_tree()->current_page_scale_factor();
   return ScrollLayerWithLocalDelta(layer_impl, delta, scale_factor);
 }
@@ -2870,8 +2874,8 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
-  gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
+  gfx::PointF device_viewport_point = gfx::ScalePoint(
+      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
   HandleMouseOverScrollbar(layer_impl);

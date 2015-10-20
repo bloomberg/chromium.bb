@@ -3935,7 +3935,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(500, 500);
-  gfx::Point occluding_layer_position(310, 0);
+  gfx::PointF occluding_layer_position(310.f, 0.f);
 
   host_impl_.SetViewportSize(viewport_size);
 
@@ -3994,7 +3994,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   EXPECT_EQ(20, unoccluded_tile_count);
 
   // Full occlusion.
-  layer1->SetPosition(gfx::Point(0, 0));
+  layer1->SetPosition(gfx::PointF());
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -4024,7 +4024,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(500, 500);
-  gfx::Point occluding_layer_position(310, 0);
+  gfx::PointF occluding_layer_position(310.f, 0.f);
 
   host_impl_.SetViewportSize(viewport_size);
 
@@ -4099,7 +4099,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   }
 
   // Full occlusion.
-  layer1->SetPosition(gfx::PointF(0, 0));
+  layer1->SetPosition(gfx::PointF());
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -4141,7 +4141,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(500, 500);
-  gfx::Point occluding_layer_position(310, 0);
+  gfx::PointF occluding_layer_position(310.f, 0.f);
 
   scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
       FakeDisplayListRasterSource::CreateFilled(layer_bounds);
@@ -4213,7 +4213,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
 TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
-  gfx::Point occluding_layer_position(310, 0);
+  gfx::PointF occluding_layer_position(310.f, 0.f);
   gfx::Rect invalidation_rect(230, 230, 102, 102);
 
   scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
@@ -4303,8 +4303,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
-  gfx::Point pending_occluding_layer_position(310, 0);
-  gfx::Point active_occluding_layer_position(0, 310);
+  gfx::PointF pending_occluding_layer_position(310.f, 0.f);
+  gfx::PointF active_occluding_layer_position(0.f, 310.f);
   gfx::Rect invalidation_rect(230, 230, 152, 152);
 
   host_impl_.SetViewportSize(viewport_size);

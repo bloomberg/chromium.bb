@@ -751,7 +751,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnLayerTopology) {
     scoped_ptr<LayerImpl> scrollable_child_1 = CreateScrollableLayer(
         7, gfx::Size(10, 10), scrollable_child_clip_1.get());
     child1 = scrollable_child_1.get();
-    scrollable_child_1->SetPosition(gfx::Point(5, 5));
+    scrollable_child_1->SetPosition(gfx::PointF(5.f, 5.f));
     scrollable_child_1->SetHaveWheelEventHandlers(true);
     scrollable_child_1->SetHaveScrollEventHandlers(true);
     scrollable_child_clip_1->AddChild(scrollable_child_1.Pass());
@@ -766,7 +766,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnLayerTopology) {
     scoped_ptr<LayerImpl> scrollable_child_2 = CreateScrollableLayer(
         9, gfx::Size(10, 10), scrollable_child_clip_2.get());
     child2 = scrollable_child_2.get();
-    scrollable_child_2->SetPosition(gfx::Point(5, 20));
+    scrollable_child_2->SetPosition(gfx::PointF(5.f, 20.f));
     scrollable_child_2->SetHaveWheelEventHandlers(true);
     scrollable_child_2->SetHaveScrollEventHandlers(true);
     scrollable_child_clip_2->AddChild(scrollable_child_2.Pass());
@@ -1596,7 +1596,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   scoped_ptr<LayerImpl> scroll_child = CreateScrollableLayer(
       9, gfx::Size(10, 10), scroll_child_clip.get());
   child = scroll_child.get();
-  scroll_child->SetPosition(gfx::Point(20, 20));
+  scroll_child->SetPosition(gfx::PointF(20.f, 20.f));
   scroll_child_clip->AddChild(scroll_child.Pass());
 
   child_clip = scroll_child_clip.get();
@@ -5556,7 +5556,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   // Expect no gutter rects.
   void TestLayerCoversFullViewport() {
     gfx::Rect layer_rect(viewport_size_);
-    child_->SetPosition(layer_rect.origin());
+    child_->SetPosition(gfx::PointF(layer_rect.origin()));
     child_->SetBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
@@ -5576,7 +5576,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   // Expect fullscreen gutter rect.
   void TestEmptyLayer() {
     gfx::Rect layer_rect(0, 0, 0, 0);
-    child_->SetPosition(layer_rect.origin());
+    child_->SetPosition(gfx::PointF(layer_rect.origin()));
     child_->SetBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
@@ -5596,7 +5596,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   // Expect four surrounding gutter rects.
   void TestLayerInMiddleOfViewport() {
     gfx::Rect layer_rect(500, 500, 200, 200);
-    child_->SetPosition(layer_rect.origin());
+    child_->SetPosition(gfx::PointF(layer_rect.origin()));
     child_->SetBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
@@ -5617,7 +5617,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   void TestLayerIsLargerThanViewport() {
     gfx::Rect layer_rect(viewport_size_.width() + 10,
                          viewport_size_.height() + 10);
-    child_->SetPosition(layer_rect.origin());
+    child_->SetPosition(gfx::PointF(layer_rect.origin()));
     child_->SetBounds(layer_rect.size());
     child_->SetQuadRect(gfx::Rect(layer_rect.size()));
     child_->SetQuadVisibleRect(gfx::Rect(layer_rect.size()));
@@ -6164,7 +6164,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   gfx::Rect grand_child_rect(5, 5, 150, 150);
 
   root->SetHasRenderSurface(true);
-  root->SetPosition(root_rect.origin());
+  root->SetPosition(gfx::PointF(root_rect.origin()));
   root->SetBounds(root_rect.size());
   root->draw_properties().visible_layer_rect = root_rect;
   root->SetDrawsContent(false);
@@ -6177,7 +6177,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   child->SetDrawsContent(false);
   child->SetHasRenderSurface(true);
 
-  grand_child->SetPosition(grand_child_rect.origin());
+  grand_child->SetPosition(gfx::PointF(grand_child_rect.origin()));
   grand_child->SetBounds(grand_child_rect.size());
   grand_child->draw_properties().visible_layer_rect = grand_child_rect;
   grand_child->SetDrawsContent(true);
@@ -7240,8 +7240,8 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   EXPECT_EQ(ViewportSelectionBound(), selection_before.end);
 
   // Plumb the layer-local selection bounds.
-  gfx::PointF selection_top(5, 0);
-  gfx::PointF selection_bottom(5, 5);
+  gfx::Point selection_top(5, 0);
+  gfx::Point selection_bottom(5, 5);
   LayerSelection selection;
   selection.start.type = SELECTION_BOUND_CENTER;
   selection.start.layer_id = root_layer_id;
@@ -7265,8 +7265,8 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
       fake_output_surface->last_sent_frame().metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type);
   EXPECT_EQ(selection.end.type, selection_after.end.type);
-  EXPECT_EQ(selection_bottom, selection_after.start.edge_bottom);
-  EXPECT_EQ(selection_top, selection_after.start.edge_top);
+  EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom);
+  EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top);
   EXPECT_TRUE(selection_after.start.visible);
   EXPECT_TRUE(selection_after.start.visible);
 }

@@ -93,11 +93,11 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
   gfx::Point adjusted_anchor = anchor + pinch_anchor_adjustment_;
   float page_scale = active_tree->current_page_scale_factor();
   gfx::PointF previous_scale_anchor =
-      gfx::ScalePoint(adjusted_anchor, 1.f / page_scale);
+      gfx::ScalePoint(gfx::PointF(adjusted_anchor), 1.f / page_scale);
   active_tree->SetPageScaleOnActiveTree(page_scale * magnify_delta);
   page_scale = active_tree->current_page_scale_factor();
   gfx::PointF new_scale_anchor =
-      gfx::ScalePoint(adjusted_anchor, 1.f / page_scale);
+      gfx::ScalePoint(gfx::PointF(adjusted_anchor), 1.f / page_scale);
   gfx::Vector2dF move = previous_scale_anchor - new_scale_anchor;
 
   // Scale back to viewport space since that's the coordinate space ScrollBy

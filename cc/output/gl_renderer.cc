@@ -1878,10 +1878,10 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   // does, then vertices will match the texture mapping in the vertex buffer.
   // The method SetShaderQuadF() changes the order of vertices and so it's
   // not used here.
-  gfx::QuadF tile_quad(gfx::RectF(quad->visible_rect));
+  auto tile_quad = gfx::QuadF(gfx::RectF(quad->visible_rect));
   float width = quad->visible_rect.width();
   float height = quad->visible_rect.height();
-  gfx::PointF top_left = quad->visible_rect.origin();
+  auto top_left = gfx::PointF(quad->visible_rect.origin());
   if (clip_region) {
     tile_quad = *clip_region;
     float gl_uv[8] = {

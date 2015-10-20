@@ -375,7 +375,7 @@ class OcclusionTrackerTestRotatedChild : public OcclusionTrackerTest {
     layer_transform.Translate(-250.0, -250.0);
 
     TestContentLayerImpl* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(0, 0), gfx::Size(200, 200));
+        this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
         root, this->identity_matrix, gfx::PointF(), gfx::Size(100, 100), true);
     TestContentLayerImpl* layer = this->CreateDrawingLayer(
@@ -1476,7 +1476,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
       }
 
       LayerImpl* occluding_layer = this->CreateDrawingLayer(
-          parent, this->identity_matrix, occlusion_rect.origin(),
+          parent, this->identity_matrix, gfx::PointF(occlusion_rect.origin()),
           occlusion_rect.size(), true);
       this->CalcDrawEtc(parent);
 
@@ -2005,11 +2005,12 @@ class OcclusionTrackerTestCopyRequestDoesOcclude : public OcclusionTrackerTest {
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
     TestContentLayerImpl* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
+        this->identity_matrix, gfx::PointF(), gfx::Size(400, 400));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
-        root, this->identity_matrix, gfx::Point(), gfx::Size(400, 400), true);
-    LayerImpl* copy = this->CreateLayer(
-        parent, this->identity_matrix, gfx::Point(100, 0), gfx::Size(200, 400));
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(400, 400), true);
+    LayerImpl* copy =
+        this->CreateLayer(parent, this->identity_matrix, gfx::PointF(100, 0),
+                          gfx::Size(200, 400));
     this->AddCopyRequest(copy);
     LayerImpl* copy_child = this->CreateDrawingLayer(
         copy, this->identity_matrix, gfx::PointF(), gfx::Size(200, 400), true);
@@ -2054,13 +2055,14 @@ class OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
     TestContentLayerImpl* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
+        this->identity_matrix, gfx::PointF(), gfx::Size(400, 400));
     TestContentLayerImpl* parent = this->CreateDrawingLayer(
-        root, this->identity_matrix, gfx::Point(), gfx::Size(400, 400), true);
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(400, 400), true);
     LayerImpl* hide = this->CreateLayer(parent, this->identity_matrix,
-                                        gfx::Point(), gfx::Size());
-    LayerImpl* copy = this->CreateLayer(
-        hide, this->identity_matrix, gfx::Point(100, 0), gfx::Size(200, 400));
+                                        gfx::PointF(), gfx::Size());
+    LayerImpl* copy =
+        this->CreateLayer(hide, this->identity_matrix, gfx::PointF(100.f, 0.f),
+                          gfx::Size(200, 400));
     this->AddCopyRequest(copy);
     LayerImpl* copy_child = this->CreateDrawingLayer(
         copy, this->identity_matrix, gfx::PointF(), gfx::Size(200, 400), true);
@@ -2100,13 +2102,13 @@ class OcclusionTrackerTestOccludedLayer : public OcclusionTrackerTest {
     gfx::Transform translate;
     translate.Translate(10.0, 20.0);
     TestContentLayerImpl* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(200, 200));
-    LayerImpl* surface = this->CreateSurface(root, this->identity_matrix,
-                                             gfx::Point(), gfx::Size(200, 200));
+        this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
+    LayerImpl* surface = this->CreateSurface(
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
     LayerImpl* layer = this->CreateDrawingLayer(
-        surface, translate, gfx::Point(), gfx::Size(200, 200), false);
+        surface, translate, gfx::PointF(), gfx::Size(200, 200), false);
     TestContentLayerImpl* outside_layer = this->CreateDrawingLayer(
-        root, this->identity_matrix, gfx::Point(), gfx::Size(200, 200), false);
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(200, 200), false);
     this->CalcDrawEtc(root);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 200, 200));
@@ -2188,13 +2190,13 @@ class OcclusionTrackerTestUnoccludedLayerQuery : public OcclusionTrackerTest {
     gfx::Transform translate;
     translate.Translate(10.0, 20.0);
     TestContentLayerImpl* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(200, 200));
-    LayerImpl* surface = this->CreateSurface(root, this->identity_matrix,
-                                             gfx::Point(), gfx::Size(200, 200));
+        this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
+    LayerImpl* surface = this->CreateSurface(
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
     LayerImpl* layer = this->CreateDrawingLayer(
-        surface, translate, gfx::Point(), gfx::Size(200, 200), false);
+        surface, translate, gfx::PointF(), gfx::Size(200, 200), false);
     TestContentLayerImpl* outside_layer = this->CreateDrawingLayer(
-        root, this->identity_matrix, gfx::Point(), gfx::Size(200, 200), false);
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(200, 200), false);
     this->CalcDrawEtc(root);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 200, 200));
@@ -2351,14 +2353,14 @@ class OcclusionTrackerTestUnoccludedSurfaceQuery : public OcclusionTrackerTest {
     gfx::Transform translate;
     translate.Translate(10.0, 20.0);
     TestContentLayerImpl* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(200, 200));
-    LayerImpl* surface =
-        this->CreateSurface(root, translate, gfx::Point(), gfx::Size(200, 200));
+        this->identity_matrix, gfx::PointF(), gfx::Size(200, 200));
+    LayerImpl* surface = this->CreateSurface(root, translate, gfx::PointF(),
+                                             gfx::Size(200, 200));
     LayerImpl* layer =
-        this->CreateDrawingLayer(surface, this->identity_matrix, gfx::Point(),
+        this->CreateDrawingLayer(surface, this->identity_matrix, gfx::PointF(),
                                  gfx::Size(200, 200), false);
     TestContentLayerImpl* outside_layer = this->CreateDrawingLayer(
-        root, this->identity_matrix, gfx::Point(), gfx::Size(200, 200), false);
+        root, this->identity_matrix, gfx::PointF(), gfx::Size(200, 200), false);
     this->CalcDrawEtc(root);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 200, 200));

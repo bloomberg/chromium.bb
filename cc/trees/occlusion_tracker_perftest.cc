@@ -160,7 +160,7 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
     opaque_layer->SetDrawsContent(true);
     opaque_layer->SetBounds(
         gfx::Size(viewport_rect.width() / 2, viewport_rect.height() / 2));
-    opaque_layer->SetPosition(gfx::Point(i, i));
+    opaque_layer->SetPosition(gfx::PointF(i, i));
     active_tree()->root_layer()->AddChild(opaque_layer.Pass());
   }
 

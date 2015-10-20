@@ -456,7 +456,7 @@ class LayerTreeHostCopyRequestTestClippedOut
     root_->AddChild(parent_layer_);
 
     copy_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
-    copy_layer_->SetPosition(gfx::Point(15, 15));
+    copy_layer_->SetPosition(gfx::PointF(15.f, 15.f));
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
 

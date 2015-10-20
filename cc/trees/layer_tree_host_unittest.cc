@@ -915,7 +915,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     bool has_thumb = false;
     scrollbar_ = FakePaintedScrollbarLayer::Create(
         layer_settings(), paint_scrollbar, has_thumb, root_layer_->id());
-    scrollbar_->SetPosition(gfx::Point(0, 10));
+    scrollbar_->SetPosition(gfx::PointF(0.f, 10.f));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
     root_layer_->AddChild(scrollbar_);
@@ -1624,7 +1624,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     root_layer_->SetBounds(gfx::Size(30, 30));
 
     child_layer_->SetIsDrawable(true);
-    child_layer_->SetPosition(gfx::Point(2, 2));
+    child_layer_->SetPosition(gfx::PointF(2.f, 2.f));
     child_layer_->SetBounds(gfx::Size(10, 10));
 
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -1650,8 +1650,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
         impl->active_tree()->root_layer()->children()[0]);
 
     // Positions remain in layout pixels.
-    EXPECT_EQ(gfx::Point(0, 0), root->position());
-    EXPECT_EQ(gfx::Point(2, 2), child->position());
+    EXPECT_EQ(gfx::PointF(), root->position());
+    EXPECT_EQ(gfx::PointF(2.f, 2.f), child->position());
 
     // Compute all the layer transforms for the frame.
     LayerTreeHostImpl::FrameData frame_data;
@@ -3270,7 +3270,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
         EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
 
         grandchild1_->RemoveFromParent();
-        grandchild1_->SetPosition(gfx::Point(1, 1));
+        grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
 
         EXPECT_FALSE(root_->needs_push_properties());
         EXPECT_FALSE(root_->descendant_needs_push_properties());
@@ -3294,7 +3294,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
         EXPECT_FALSE(grandchild3_->needs_push_properties());
         EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
 
-        grandchild2_->SetPosition(gfx::Point(1, 1));
+        grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
         EXPECT_FALSE(root_->needs_push_properties());
         EXPECT_TRUE(root_->descendant_needs_push_properties());
@@ -3402,8 +3402,8 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
 
         // Change grandchildren while their parent is not in the tree.
         child_->RemoveFromParent();
-        grandchild1_->SetPosition(gfx::Point(1, 1));
-        grandchild2_->SetPosition(gfx::Point(1, 1));
+        grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
+        grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
         root_->AddChild(child_);
 
         EXPECT_FALSE(root_->needs_push_properties());
@@ -3468,9 +3468,9 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
         EXPECT_FALSE(grandchild3_->needs_push_properties());
         EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
 
-        child_->SetPosition(gfx::Point(1, 1));
-        grandchild1_->SetPosition(gfx::Point(1, 1));
-        grandchild2_->SetPosition(gfx::Point(1, 1));
+        child_->SetPosition(gfx::PointF(1.f, 1.f));
+        grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
+        grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
         EXPECT_FALSE(root_->needs_push_properties());
         EXPECT_TRUE(root_->descendant_needs_push_properties());
@@ -3532,9 +3532,9 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
         EXPECT_FALSE(grandchild3_->needs_push_properties());
         EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
 
-        grandchild1_->SetPosition(gfx::Point(1, 1));
-        grandchild2_->SetPosition(gfx::Point(1, 1));
-        child_->SetPosition(gfx::Point(1, 1));
+        grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
+        grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
+        child_->SetPosition(gfx::PointF(1.f, 1.f));
 
         EXPECT_FALSE(root_->needs_push_properties());
         EXPECT_TRUE(root_->descendant_needs_push_properties());
@@ -3724,17 +3724,17 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
     root_layer_ = Layer::Create(layer_settings());
-    root_layer_->SetPosition(gfx::Point());
+    root_layer_->SetPosition(gfx::PointF());
     root_layer_->SetBounds(gfx::Size(10, 10));
 
     parent_layer_ = SolidColorLayer::Create(layer_settings());
-    parent_layer_->SetPosition(gfx::Point());
+    parent_layer_->SetPosition(gfx::PointF());
     parent_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->SetIsDrawable(true);
     root_layer_->AddChild(parent_layer_);
 
     child_layer_ = SolidColorLayer::Create(layer_settings());
-    child_layer_->SetPosition(gfx::Point());
+    child_layer_->SetPosition(gfx::PointF());
     child_layer_->SetBounds(gfx::Size(10, 10));
     child_layer_->SetIsDrawable(true);
     parent_layer_->AddChild(child_layer_);
@@ -5781,18 +5781,20 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
 
-    gfx::Rect clipping_rect(20, 10, 10, 20);
-    clipping_layer->SetBounds(clipping_rect.size());
-    clipping_layer->SetPosition(clipping_rect.origin());
+    gfx::PointF clipping_origin(20.f, 10.f);
+    gfx::Size clipping_size(10, 20);
+    clipping_layer->SetBounds(clipping_size);
+    clipping_layer->SetPosition(clipping_origin);
     clipping_layer->SetMasksToBounds(true);
 
     gfx::Size layer_size(50, 50);
     content_layer->SetBounds(layer_size);
-    content_layer->SetPosition(gfx::Point() - clipping_rect.OffsetFromOrigin());
+    content_layer->SetPosition(gfx::PointF() -
+                               clipping_origin.OffsetFromOrigin());
 
     gfx::Size child_size(50, 50);
     content_child_layer->SetBounds(child_size);
-    content_child_layer->SetPosition(gfx::Point(20, 0));
+    content_child_layer->SetPosition(gfx::PointF(20.f, 0.f));
 
     gfx::Size mask_size(100, 100);
     mask_layer->SetBounds(mask_size);

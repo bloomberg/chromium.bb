@@ -269,6 +269,9 @@ class CC_EXPORT MathUtil {
                                const gfx::Rect& r,
                                base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
+                               const gfx::Point& q,
+                               base::trace_event::TracedValue* res);
+  static void AddToTracedValue(const char* name,
                                const gfx::PointF& q,
                                base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,

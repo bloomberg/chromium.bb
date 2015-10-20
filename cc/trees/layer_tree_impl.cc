@@ -1640,8 +1640,8 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
   if (!layer || layer_bound.type == SELECTION_BOUND_EMPTY)
     return viewport_bound;
 
-  gfx::PointF layer_top = layer_bound.edge_top;
-  gfx::PointF layer_bottom = layer_bound.edge_bottom;
+  auto layer_top = gfx::PointF(layer_bound.edge_top);
+  auto layer_bottom = gfx::PointF(layer_bound.edge_bottom);
   gfx::Transform screen_space_transform =
       LayerScreenSpaceTransform(layer, transform_tree, use_property_trees);
 
