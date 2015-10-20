@@ -362,6 +362,7 @@ wl_resource_get_destroy_listener(struct wl_resource *resource,
 	     resource = tmp,							\
 	     tmp = wl_resource_from_link(wl_resource_get_link(resource)->next))
 
+struct wl_shm_pool;
 struct wl_shm_buffer;
 
 void
@@ -387,6 +388,12 @@ wl_shm_buffer_get_width(struct wl_shm_buffer *buffer);
 
 int32_t
 wl_shm_buffer_get_height(struct wl_shm_buffer *buffer);
+
+struct wl_shm_pool *
+wl_shm_buffer_ref_pool(struct wl_shm_buffer *buffer);
+
+void
+wl_shm_pool_unref(struct wl_shm_pool *pool);
 
 int
 wl_display_init_shm(struct wl_display *display);

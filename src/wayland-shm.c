@@ -412,6 +412,48 @@ wl_shm_buffer_get_height(struct wl_shm_buffer *buffer)
 	return buffer->height;
 }
 
+/** Get a reference to a shm_buffer's shm_pool
+ *
+ * \param buffer The buffer object
+ *
+ * Returns a pointer to a buffer's shm_pool and increases the
+ * shm_pool refcount.
+ *
+ * The compositor must remember to call wl_shm_pool_unref when
+ * it no longer needs the reference to ensure proper destruction
+ * of the pool.
+ *
+ * \memberof wl_shm_buffer
+ * \sa wl_shm_pool_unref
+ */
+WL_EXPORT struct wl_shm_pool *
+wl_shm_buffer_ref_pool(struct wl_shm_buffer *buffer)
+{
+	assert(buffer->pool->refcount);
+
+	buffer->pool->refcount++;
+	return buffer->pool;
+}
+
+/** Unreference a shm_pool
+ *
+ * \param buffer The pool object
+ *
+ * Drops a reference to a wl_shm_pool object.
+ *
+ * This is only necessary if the compositor has explicitly
+ * taken a reference with wl_shm_buffer_ref_pool(), otherwise
+ * the pool will be automatically destroyed when appropriate.
+ *
+ * \memberof wl_shm_pool
+ * \sa wl_shm_buffer_ref_pool
+ */
+WL_EXPORT void
+wl_shm_pool_unref(struct wl_shm_pool *pool)
+{
+	shm_pool_unref(pool);
+}
+
 static void
 reraise_sigbus(void)
 {
