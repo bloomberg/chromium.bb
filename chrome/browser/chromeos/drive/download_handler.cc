@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -27,6 +28,11 @@ namespace {
 
 // Key for base::SupportsUserData::Data.
 const char kDrivePathKey[] = "DrivePath";
+
+// Mime types that we better not trust. If the file was downloade with these
+// mime types, while uploading to Drive we ignore it at guess by our own logic.
+const char* kGenericMimeTypes[] = {"text/html", "text/plain",
+                                   "application/octet-stream"};
 
 // User Data stored in DownloadItem for drive path.
 class DriveUserData : public base::SupportsUserData::Data {
@@ -106,6 +112,17 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
   DownloadHistory* download_history = download_service->GetDownloadHistory();
 
   return download_history && download_history->WasRestoredFromHistory(download);
+}
+
+// Returns an empty string |mime_type| was too generic that can be a result of
+// 'default' fallback choice on the HTTP server. In such a case, we ignore the
+// type so that our logic can guess by its own while uploading to Drive.
+std::string FilterOutGenericMimeType(const std::string& mime_type) {
+  for (size_t i = 0; i < arraysize(kGenericMimeTypes); ++i) {
+    if (base::LowerCaseEqualsASCII(mime_type, kGenericMimeTypes[i]))
+      return std::string();
+  }
+  return mime_type;
 }
 
 }  // namespace
@@ -301,16 +318,13 @@ void DownloadHandler::UploadDownloadItem(DownloadManager* manager,
   DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
   base::FilePath* cache_file_path = new base::FilePath;
   WriteOnCacheFileAndReply(
-      file_system_,
-      util::ExtractDrivePath(GetTargetPath(download)),
-      download->GetMimeType(),
+      file_system_, util::ExtractDrivePath(GetTargetPath(download)),
+      FilterOutGenericMimeType(download->GetMimeType()),
       base::Bind(&MoveDownloadedFile, download->GetTargetFilePath(),
                  cache_file_path),
       base::Bind(&DownloadHandler::SetCacheFilePath,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 static_cast<void*>(manager),
-                 download->GetId(),
-                 base::Owned(cache_file_path)));
+                 weak_ptr_factory_.GetWeakPtr(), static_cast<void*>(manager),
+                 download->GetId(), base::Owned(cache_file_path)));
 }
 
 void DownloadHandler::SetCacheFilePath(void* manager_id,
