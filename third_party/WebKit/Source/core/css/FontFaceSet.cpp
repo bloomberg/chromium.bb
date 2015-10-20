@@ -267,10 +267,8 @@ PassRefPtrWillBeRawPtr<FontFaceSet> FontFaceSet::addForBinding(ScriptState*, Fon
     }
     if (m_nonCSSConnectedFaces.contains(fontFace))
         return this;
-    if (isCSSConnectedFontFace(fontFace)) {
-        exceptionState.throwDOMException(InvalidModificationError, "Cannot add a CSS-connected FontFace.");
+    if (isCSSConnectedFontFace(fontFace))
         return this;
-    }
     CSSFontSelector* fontSelector = document()->styleEngine().fontSelector();
     m_nonCSSConnectedFaces.add(fontFace);
     fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
@@ -313,8 +311,6 @@ bool FontFaceSet::deleteForBinding(ScriptState*, FontFace* fontFace, ExceptionSt
         fontSelector->fontFaceInvalidated();
         return true;
     }
-    if (isCSSConnectedFontFace(fontFace))
-        exceptionState.throwDOMException(InvalidModificationError, "Cannot delete a CSS-connected FontFace.");
     return false;
 }
 

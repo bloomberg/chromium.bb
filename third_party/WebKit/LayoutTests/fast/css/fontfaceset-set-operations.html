@@ -79,8 +79,11 @@ function runTests() {
     shouldBeFalse('document.fonts.has(nonCssConnectedFace)');
     shouldThrow('document.fonts.has("Font1")', '"TypeError: Failed to execute \'has\' on \'FontFaceSet\': The argument is not a FontFace."');
 
-    shouldThrow('document.fonts.add(faces[0])', '"InvalidModificationError: Failed to execute \'add\' on \'FontFaceSet\': Cannot add a CSS-connected FontFace."');
-    shouldThrow('document.fonts.delete(faces[0])', '"InvalidModificationError: Failed to execute \'delete\' on \'FontFaceSet\': Cannot delete a CSS-connected FontFace."');
+    shouldNotThrow('document.fonts.add(faces[0])');
+    shouldBe('document.fonts.size', '3');
+
+    shouldBeFalse('document.fonts.delete(faces[0])');
+    shouldBe('document.fonts.size', '3');
 
     document.fonts.add(nonCssConnectedFace);
     shouldBe('document.fonts.size', '4');

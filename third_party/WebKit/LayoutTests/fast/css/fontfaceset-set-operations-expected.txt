@@ -45,8 +45,10 @@ PASS document.fonts.has(faces[1]) is true
 PASS document.fonts.has(faces[2]) is true
 PASS document.fonts.has(nonCssConnectedFace) is false
 PASS document.fonts.has("Font1") threw exception TypeError: Failed to execute 'has' on 'FontFaceSet': The argument is not a FontFace..
-PASS document.fonts.add(faces[0]) threw exception InvalidModificationError: Failed to execute 'add' on 'FontFaceSet': Cannot add a CSS-connected FontFace..
-PASS document.fonts.delete(faces[0]) threw exception InvalidModificationError: Failed to execute 'delete' on 'FontFaceSet': Cannot delete a CSS-connected FontFace..
+PASS document.fonts.add(faces[0]) did not throw exception.
+PASS document.fonts.size is 3
+PASS document.fonts.delete(faces[0]) is false
+PASS document.fonts.size is 3
 PASS document.fonts.size is 4
 PASS document.fonts.has(nonCssConnectedFace) is true
 PASS document.fonts.size is 4
