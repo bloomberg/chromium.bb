@@ -20,20 +20,22 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
+#include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/libyuv/include/libyuv/video_common.h"
 
 namespace content {
 
 namespace {
 
-// This function copies |frame| to a new YV12 media::VideoFrame.
-// TODO: Consider using libyuv for better performance. see http://crbug/541728
-scoped_refptr<media::VideoFrame> CopyFrameToYV12(
+// This function copies |frame| to a new I420 media::VideoFrame.
+scoped_refptr<media::VideoFrame> CopyFrameToI420(
     const scoped_refptr<media::VideoFrame>& frame,
     media::SkCanvasVideoRenderer* video_renderer) {
   const scoped_refptr<media::VideoFrame> new_frame =
       media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12,
                                      frame->coded_size(), frame->visible_rect(),
                                      frame->natural_size(), frame->timestamp());
+  const gfx::Size& size = frame->coded_size();
 
   if (frame->HasTextures()) {
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
@@ -56,18 +58,32 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
       // GPU Process crashed.
       bitmap.eraseColor(SK_ColorTRANSPARENT);
     }
-    media::CopyRGBToVideoFrame(reinterpret_cast<uint8*>(bitmap.getPixels()),
-                               bitmap.rowBytes(), frame->visible_rect(),
-                               new_frame.get());
+    libyuv::ARGBToI420(reinterpret_cast<uint8*>(bitmap.getPixels()),
+                       bitmap.rowBytes(),
+                       new_frame->data(media::VideoFrame::kYPlane),
+                       new_frame->stride(media::VideoFrame::kYPlane),
+                       new_frame->data(media::VideoFrame::kUPlane),
+                       new_frame->stride(media::VideoFrame::kUPlane),
+                       new_frame->data(media::VideoFrame::kVPlane),
+                       new_frame->stride(media::VideoFrame::kVPlane),
+                       size.width(), size.height());
   } else {
     DCHECK(frame->IsMappable());
     DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
            frame->format() == media::PIXEL_FORMAT_I420);
-    const size_t num_planes = media::VideoFrame::NumPlanes(frame->format());
-    for (size_t i = 0; i < num_planes; ++i) {
-      media::CopyPlane(i, frame->data(i), frame->stride(i), frame->rows(i),
-                       new_frame.get());
-    }
+    libyuv::I420Copy(frame->data(media::VideoFrame::kYPlane),
+                     frame->stride(media::VideoFrame::kYPlane),
+                     frame->data(media::VideoFrame::kUPlane),
+                     frame->stride(media::VideoFrame::kUPlane),
+                     frame->data(media::VideoFrame::kVPlane),
+                     frame->stride(media::VideoFrame::kVPlane),
+                     new_frame->data(media::VideoFrame::kYPlane),
+                     new_frame->stride(media::VideoFrame::kYPlane),
+                     new_frame->data(media::VideoFrame::kUPlane),
+                     new_frame->stride(media::VideoFrame::kUPlane),
+                     new_frame->data(media::VideoFrame::kVPlane),
+                     new_frame->stride(media::VideoFrame::kVPlane),
+                     size.width(), size.height());
   }
   return new_frame;
 }
@@ -295,7 +311,7 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy(
   // The original frame must not be referenced when the player is paused since
   // there might be a finite number of available buffers. E.g, video that
   // originates from a video camera.
-  current_frame_ = CopyFrameToYV12(current_frame_, renderer);
+  current_frame_ = CopyFrameToI420(current_frame_, renderer);
 }
 
 bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(

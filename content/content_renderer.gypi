@@ -32,6 +32,7 @@
     '../third_party/icu/icu.gyp:icui18n',
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/libjingle/libjingle.gyp:libjingle',
+    '../third_party/libyuv/libyuv.gyp:libyuv',
     '../third_party/mojo/mojo_edk.gyp:mojo_js_lib',
     '../third_party/npapi/npapi.gyp:npapi',
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
@@ -824,7 +825,6 @@
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
         '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-        '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:audio_device',
         '../third_party/webrtc/modules/modules.gyp:audio_processing',
         '../third_party/webrtc/p2p/p2p.gyp:libstunprober',
@@ -874,7 +874,6 @@
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
-        '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
     }],
     ['enable_pepper_cdms != 1', {

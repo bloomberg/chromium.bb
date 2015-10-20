@@ -54,6 +54,7 @@ source_set("renderer") {
     "//storage/common",
     "//third_party/icu",
     "//third_party/libjingle",
+    "//third_party/libyuv",
     "//third_party/mojo/src/mojo/edk/js",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/js",
@@ -148,7 +149,6 @@ source_set("renderer") {
             "//content")
     deps += [
       "//crypto",
-      "//third_party/libyuv",
       "//third_party/webrtc/modules/audio_device",
       "//third_party/webrtc/modules/audio_processing",
       "//third_party/libjingle:libjingle_webrtc",
@@ -172,7 +172,6 @@ source_set("renderer") {
       "//ppapi/proxy",
       "//ppapi/shared_impl",
       "//third_party/libvpx_new",
-      "//third_party/libyuv",
     ]
   }
 
