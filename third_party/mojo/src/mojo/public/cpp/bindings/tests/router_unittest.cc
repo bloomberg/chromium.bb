@@ -301,11 +301,18 @@ TEST_F(RouterTest, LazyResponses) {
 }
 
 // Tests that if the receiving application destroys the responder_ without
-// sending a response, then we close the Pipe as a way of signalling an
-// error condition to the caller.
+// sending a response, then we trigger connection error at both sides. Moreover,
+// both sides still appear to have a valid message pipe handle bound.
 TEST_F(RouterTest, MissingResponses) {
   internal::Router router0(handle0_.Pass(), internal::FilterChain());
+  bool error_handler_called0 = false;
+  router0.set_connection_error_handler(
+      [&error_handler_called0]() { error_handler_called0 = true; });
+
   internal::Router router1(handle1_.Pass(), internal::FilterChain());
+  bool error_handler_called1 = false;
+  router1.set_connection_error_handler(
+      [&error_handler_called1]() { error_handler_called1 = true; });
 
   LazyResponseGenerator generator;
   router1.set_incoming_receiver(&generator);
@@ -321,24 +328,23 @@ TEST_F(RouterTest, MissingResponses) {
   EXPECT_TRUE(message_queue.IsEmpty());
 
   // Destroy the responder MessagerReceiver but don't send any response.
-  // This should close the pipe.
   generator.CompleteWithoutResponse();
   PumpMessages();
 
   // Check that no response was received.
   EXPECT_TRUE(message_queue.IsEmpty());
 
-  // There is no direct way to test whether or not the pipe has been closed.
-  // The only thing we can do is try to send a second message on the pipe
-  // and observe that an error occurs.
-  Message request2;
-  AllocRequestMessage(1, "hello again", &request2);
-  router0.AcceptWithResponder(&request2,
-                              new MessageAccumulator(&message_queue));
-  PumpMessages();
+  // Connection error handler is called at both sides.
+  EXPECT_TRUE(error_handler_called0);
+  EXPECT_TRUE(error_handler_called1);
 
-  // Make sure there was an error.
+  // The error flag is set at both sides.
   EXPECT_TRUE(router0.encountered_error());
+  EXPECT_TRUE(router1.encountered_error());
+
+  // The message pipe handle is valid at both sides.
+  EXPECT_TRUE(router0.is_valid());
+  EXPECT_TRUE(router1.is_valid());
 }
 
 TEST_F(RouterTest, LateResponse) {

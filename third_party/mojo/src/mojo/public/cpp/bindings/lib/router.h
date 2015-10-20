@@ -50,6 +50,9 @@ class Router : public MessageReceiverWithResponder {
     return connector_.is_valid();
   }
 
+  // Please note that this method shouldn't be called unless it results from an
+  // explicit request of the user of bindings (e.g., the user sets an
+  // InterfacePtr to null or closes a Binding).
   void CloseMessagePipe() {
     MOJO_DCHECK(thread_checker_.CalledOnValidThread());
     connector_.CloseMessagePipe();
@@ -58,6 +61,11 @@ class Router : public MessageReceiverWithResponder {
   ScopedMessagePipeHandle PassMessagePipe() {
     MOJO_DCHECK(thread_checker_.CalledOnValidThread());
     return connector_.PassMessagePipe();
+  }
+
+  void RaiseError() {
+    MOJO_DCHECK(thread_checker_.CalledOnValidThread());
+    connector_.RaiseError();
   }
 
   // MessageReceiver implementation:

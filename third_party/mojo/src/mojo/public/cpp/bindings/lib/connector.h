@@ -55,13 +55,27 @@ class Connector : public MessageReceiver {
   // waiting to read from the pipe.
   bool encountered_error() const { return error_; }
 
-  // Closes the pipe, triggering the error state. Connector is put into a
-  // quiescent state.
+  // Closes the pipe. The connector is put into a quiescent state.
+  //
+  // Please note that this method shouldn't be called unless it results from an
+  // explicit request of the user of bindings (e.g., the user sets an
+  // InterfacePtr to null or closes a Binding).
   void CloseMessagePipe();
 
-  // Releases the pipe, not triggering the error state. Connector is put into
-  // a quiescent state.
+  // Releases the pipe. Connector is put into a quiescent state.
   ScopedMessagePipeHandle PassMessagePipe();
+
+  // Enters the error state. The upper layer may do this for unrecoverable
+  // issues such as invalid messages are received. If a connection error handler
+  // has been set, it will be called asynchronously.
+  //
+  // It is a no-op if the connector is already in the error state or there isn't
+  // a bound message pipe. Otherwise, it closes the message pipe, which notifies
+  // the other end and also prevents potential danger (say, the caller raises
+  // an error because it believes the other end is malicious). In order to
+  // appear to the user that the connector still binds to a message pipe, it
+  // creates a new message pipe, closes one end and binds to the other.
+  void RaiseError();
 
   // Is the connector bound to a MessagePipe handle?
   bool is_valid() const { return message_pipe_.is_valid(); }
@@ -92,7 +106,11 @@ class Connector : public MessageReceiver {
   // |this| can be destroyed during message dispatch.
   void ReadAllAvailableMessages();
 
-  void NotifyError();
+  // If |force_pipe_reset| is true, this method replaces the existing
+  // |message_pipe_| with a dummy message pipe handle (whose peer is closed).
+  // If |force_async_handler| is true, |connection_error_handler_| is called
+  // asynchronously.
+  void HandleError(bool force_pipe_reset, bool force_async_handler);
 
   // Cancels any calls made to |waiter_|.
   void CancelWait();

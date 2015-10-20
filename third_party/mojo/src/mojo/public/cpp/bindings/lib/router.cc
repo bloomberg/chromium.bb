@@ -21,11 +21,10 @@ class ResponderThunk : public MessageReceiverWithStatus {
       // but did not send a response.
       Router* router = router_.value();
       if (router) {
-        // We close the pipe here as a way of signaling to the calling
-        // application that an error condition occurred. Without this the
-        // calling application would have no way of knowing it should stop
-        // waiting for a response.
-        router->CloseMessagePipe();
+        // We raise an error to signal the calling application that an error
+        // condition occurred. Without this the calling application would have
+        // no way of knowing it should stop waiting for a response.
+        router->RaiseError();
       }
     }
   }
@@ -124,17 +123,15 @@ void Router::EnableTestingMode() {
 bool Router::HandleIncomingMessage(Message* message) {
   MOJO_DCHECK(thread_checker_.CalledOnValidThread());
   if (message->has_flag(kMessageExpectsResponse)) {
-    if (incoming_receiver_) {
-      MessageReceiverWithStatus* responder = new ResponderThunk(weak_self_);
-      bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
-      if (!ok)
-        delete responder;
-      return ok;
-    }
+    if (!incoming_receiver_)
+      return false;
 
-    // If we receive a request expecting a response when the client is not
-    // listening, then we have no choice but to tear down the pipe.
-    connector_.CloseMessagePipe();
+    MessageReceiverWithStatus* responder = new ResponderThunk(weak_self_);
+    bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
+    if (!ok)
+      delete responder;
+    return ok;
+
   } else if (message->has_flag(kMessageIsResponse)) {
     uint64_t request_id = message->request_id();
     ResponderMap::iterator it = responders_.find(request_id);
@@ -148,12 +145,11 @@ bool Router::HandleIncomingMessage(Message* message) {
     delete responder;
     return ok;
   } else {
-    if (incoming_receiver_)
-      return incoming_receiver_->Accept(message);
-    // OK to drop message on the floor.
-  }
+    if (!incoming_receiver_)
+      return false;
 
-  return false;
+    return incoming_receiver_->Accept(message);
+  }
 }
 
 // ----------------------------------------------------------------------------

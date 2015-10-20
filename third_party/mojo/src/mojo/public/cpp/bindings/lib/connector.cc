@@ -44,6 +44,10 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
   return message_pipe_.Pass();
 }
 
+void Connector::RaiseError() {
+  HandleError(true, true);
+}
+
 bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
   if (error_)
     return false;
@@ -52,10 +56,12 @@ bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
 
   MojoResult rv =
       Wait(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE, deadline, nullptr);
-  if (rv == MOJO_RESULT_SHOULD_WAIT)
+  if (rv == MOJO_RESULT_SHOULD_WAIT || rv == MOJO_RESULT_DEADLINE_EXCEEDED)
     return false;
   if (rv != MOJO_RESULT_OK) {
-    NotifyError();
+    // Users that call WaitForIncomingMessage() should expect their code to be
+    // re-entered, so we call the error handler synchronously.
+    HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION, false);
     return false;
   }
   mojo_ignore_result(ReadSingleMessage(&rv));
@@ -141,7 +147,7 @@ void Connector::OnHandleReady(MojoResult result) {
   MOJO_CHECK(async_wait_id_ != 0);
   async_wait_id_ = 0;
   if (result != MOJO_RESULT_OK) {
-    NotifyError();
+    HandleError(result != MOJO_RESULT_FAILED_PRECONDITION, false);
     return;
   }
   ReadAllAvailableMessages();
@@ -181,9 +187,13 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
   if (rv == MOJO_RESULT_SHOULD_WAIT)
     return true;
 
-  if (rv != MOJO_RESULT_OK ||
-      (enforce_errors_from_incoming_receiver_ && !receiver_result)) {
-    NotifyError();
+  if (rv != MOJO_RESULT_OK) {
+    HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION, false);
+    return false;
+  }
+
+  if (enforce_errors_from_incoming_receiver_ && !receiver_result) {
+    HandleError(true, false);
     return false;
   }
   return true;
@@ -212,10 +222,37 @@ void Connector::CancelWait() {
   async_wait_id_ = 0;
 }
 
-void Connector::NotifyError() {
-  error_ = true;
-  CloseMessagePipe();
-  connection_error_handler_.Run();
+void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
+  if (error_ || !message_pipe_.is_valid())
+    return;
+
+  if (!force_pipe_reset && force_async_handler)
+    force_pipe_reset = true;
+
+  if (paused_) {
+    // If the user has paused receiving messages, we shouldn't call the error
+    // handler right away. We need to wait until the user starts receiving
+    // messages again.
+    force_async_handler = true;
+  }
+
+  if (force_pipe_reset) {
+    CloseMessagePipe();
+    MessagePipe dummy_pipe;
+    message_pipe_ = dummy_pipe.handle0.Pass();
+  } else {
+    CancelWait();
+  }
+
+  if (force_async_handler) {
+    // |dummy_pipe.handle1| has been destructed. Reading the pipe will
+    // eventually cause a read error on |message_pipe_| and set error state.
+    if (!paused_)
+      WaitToReadMore();
+  } else {
+    error_ = true;
+    connection_error_handler_.Run();
+  }
 }
 
 }  // namespace internal

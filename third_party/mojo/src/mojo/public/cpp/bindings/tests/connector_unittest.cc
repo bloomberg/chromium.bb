@@ -41,7 +41,7 @@ class ConnectorDeletingMessageAccumulator : public MessageAccumulator {
 
   bool Accept(Message* message) override {
     delete *connector_;
-    *connector_ = 0;
+    *connector_ = nullptr;
     return MessageAccumulator::Accept(message);
   }
 
@@ -388,6 +388,55 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
   }
 
   ASSERT_EQ(2, accumulator.number_of_calls());
+}
+
+TEST_F(ConnectorTest, RaiseError) {
+  internal::Connector connector0(handle0_.Pass());
+  bool error_handler_called0 = false;
+  connector0.set_connection_error_handler(
+      [&error_handler_called0]() { error_handler_called0 = true; });
+
+  internal::Connector connector1(handle1_.Pass());
+  bool error_handler_called1 = false;
+  connector1.set_connection_error_handler(
+      [&error_handler_called1]() { error_handler_called1 = true; });
+
+  const char kText[] = "hello world";
+
+  Message message;
+  AllocMessage(kText, &message);
+
+  connector0.Accept(&message);
+  connector0.RaiseError();
+
+  MessageAccumulator accumulator;
+  connector1.set_incoming_receiver(&accumulator);
+
+  PumpMessages();
+
+  // Messages sent prior to RaiseError() still arrive at the other end.
+  ASSERT_FALSE(accumulator.IsEmpty());
+
+  Message message_received;
+  accumulator.Pop(&message_received);
+
+  EXPECT_EQ(
+      std::string(kText),
+      std::string(reinterpret_cast<const char*>(message_received.payload())));
+
+  PumpMessages();
+
+  // Connection error handler is called at both sides.
+  EXPECT_TRUE(error_handler_called0);
+  EXPECT_TRUE(error_handler_called1);
+
+  // The error flag is set at both sides.
+  EXPECT_TRUE(connector0.encountered_error());
+  EXPECT_TRUE(connector1.encountered_error());
+
+  // The message pipe handle is valid at both sides.
+  EXPECT_TRUE(connector0.is_valid());
+  EXPECT_TRUE(connector1.is_valid());
 }
 
 }  // namespace
