@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,7 +24,9 @@
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/message_port_types.h"
 
 namespace print_dialog_cloud {
 
@@ -50,30 +53,32 @@ class PrintDataSetter : public content::WebContentsObserver {
     header.append(";base64,");
     base64_data.insert(0, header);
 
-    InitPrintFunction(base::StringValue(base64_data),
-                      base::StringValue(print_job_title));
+    base::DictionaryValue message_data;
+    message_data.SetString("type", "dataUrl");
+    message_data.SetString("title", print_job_title);
+    message_data.SetString("content", base64_data);
+    std::string json_data;
+    base::JSONWriter::Write(message_data, &json_data);
+    message_data_ = L"cp-dialog-set-print-document::";
+    message_data_.append(base::UTF8ToUTF16(json_data));
   }
 
  private:
   // Overridden from content::WebContentsObserver:
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override {
-    if (cloud_devices::IsCloudPrintURL(web_contents()->GetURL()))
-      return; // Disabled because of crbug.com/542821.
+    GURL url = web_contents()->GetURL();
+    if (cloud_devices::IsCloudPrintURL(url)) {
+      base::string16 origin = base::UTF8ToUTF16(url.GetOrigin().spec());
+      content::MessagePortProvider::PostMessageToFrame(
+          web_contents(), origin, origin, message_data_,
+          std::vector<content::TransferredMessagePort>());
+    }
   }
 
   void WebContentsDestroyed() override { delete this; }
 
-  void InitPrintFunction(const base::Value& arg1, const base::Value& arg2) {
-    std::vector<const base::Value*> args;
-    args.push_back(&arg1);
-    args.push_back(&arg2);
-    print_function_ =
-        content::WebUI::GetJavascriptCall("printApp._printDataUrl", args);
-  }
-
-  base::string16 print_function_;
-
+  base::string16 message_data_;
   DISALLOW_COPY_AND_ASSIGN(PrintDataSetter);
 };
 
