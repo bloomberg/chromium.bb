@@ -175,19 +175,6 @@ else:
         fcntl.fcntl(conn, fcntl.F_SETFL, flags)
 
 
-def _calc_timeout(timeout, last_yield):
-  """Returns the timeout to be used on the next recv_any() in yield_any().
-
-  It depends on both timeout. It returns None if no timeout is used. Otherwise
-  it returns a value >= 0.001. It's not 0 because it's effectively polling, on
-  linux it can peg a single core, so adding 1ms sleep does a tremendous
-  difference.
-  """
-  return (
-      None if timeout is None
-      else max(timeout() - (time.time() - last_yield), 0))
-
-
 class TimeoutExpired(Exception):
   """Compatible with python3 subprocess."""
   def __init__(self, cmd, timeout, output=None, stderr=None):
@@ -273,8 +260,11 @@ class Popen(subprocess.Popen):
       process.
     """
     if not timeout:
-      stdout, stderr = super(Popen, self).communicate(input=input)
-    else:
+      return super(Popen, self).communicate(input=input)
+
+    assert isinstance(timeout, (int, float)), timeout
+
+    if self.stdin or self.stdout or self.stderr:
       stdout = '' if self.stdout else None
       stderr = '' if self.stderr else None
       t = None
@@ -291,18 +281,24 @@ class Popen(subprocess.Popen):
         t = threading.Thread(name='Popen.communicate', target=write)
         t.daemon = True
         t.start()
-      start = time.time()
-      def remaining():
-        return max(time.time() + timeout - start, 0)
+
       try:
-        for pipe, data in self.yield_any(timeout=remaining):
-          if pipe is None:
-            raise TimeoutExpired(self.args, timeout, stdout, stderr)
-          assert pipe in ('stdout', 'stderr'), pipe
-          if pipe == 'stdout':
-            stdout += data
-          else:
-            stderr += data
+        if self.stdout or self.stderr:
+          start = time.time()
+          end = start + timeout
+          def remaining():
+            return max(end - time.time(), 0)
+          for pipe, data in self.yield_any(timeout=remaining):
+            if pipe is None:
+              raise TimeoutExpired(self.args, timeout, stdout, stderr)
+            assert pipe in ('stdout', 'stderr'), pipe
+            if pipe == 'stdout':
+              stdout += data
+            else:
+              stderr += data
+        else:
+          # Only stdin is piped.
+          self.wait(timeout=timeout)
       finally:
         if t:
           try:
@@ -310,6 +306,10 @@ class Popen(subprocess.Popen):
           except IOError:
             pass
           t.join()
+    else:
+      # No pipe. The user wanted to use wait().
+      self.wait(timeout=timeout)
+      return None, None
 
     # Indirectly initialize self.end.
     self.wait()
@@ -325,6 +325,7 @@ class Popen(subprocess.Popen):
     if timeout is None:
       ret = super(Popen, self).wait()
     else:
+      assert isinstance(timeout, (int, float)), timeout
       if subprocess.mswindows:
         WAIT_TIMEOUT = 258
         if self.returncode is None:
@@ -373,6 +374,10 @@ class Popen(subprocess.Popen):
 
     Unlike wait(), does not raise TimeoutExpired.
 
+    Warning: the process may still be alive after the iteration if:
+    - a timeout is provided.
+    - the process closes all its pipes then hangs for more than timeout seconds.
+
     Yields:
       (pipename, data) where pipename is either 'stdout', 'stderr' or None in
       case of timeout or when the child process closed one of the pipe(s) and
@@ -384,6 +389,7 @@ class Popen(subprocess.Popen):
           data is available within |timeout| seconds. It resets itself after
           each yield. Can be a callable function.
     """
+    assert self.stdout or self.stderr
     if timeout is not None:
       # timeout=0 effectively means that the pipe is continuously polled.
       if isinstance(timeout, (int, float)):
@@ -393,19 +399,25 @@ class Popen(subprocess.Popen):
       else:
         assert callable(timeout), timeout
 
+    if maxsize is not None and not callable(maxsize):
+      assert isinstance(maxsize, (int, float)), maxsize
+
     last_yield = time.time()
     while self.poll() is None:
-      ms = maxsize
-      if callable(maxsize):
-        ms = maxsize()
+      to = (None if timeout is None
+            else max(timeout() - (time.time() - last_yield), 0))
       t, data = self.recv_any(
-          maxsize=ms, timeout=_calc_timeout(timeout, last_yield))
-      if data or timeout is not None:
+          maxsize=maxsize() if callable(maxsize) else maxsize, timeout=to)
+      if data or to is 0:
         yield t, data
         last_yield = time.time()
 
     # Indirectly initialize self.end.
-    self.wait()
+    try:
+      self.wait(None if timeout is None else timeout())
+    except TimeoutExpired:
+      # It's up to the caller to handle this case.
+      pass
 
     # Read all remaining output in the pipes.
     # There is 3 cases:
