@@ -10,7 +10,7 @@
 
 namespace blink {
 
-DOMTimerCoordinator::DOMTimerCoordinator(WebTaskRunner* timerTaskRunner)
+DOMTimerCoordinator::DOMTimerCoordinator(PassOwnPtr<WebTaskRunner> timerTaskRunner)
     : m_circularSequentialID(0)
     , m_timerNestingLevel(0)
     , m_timerTaskRunner(timerTaskRunner)
@@ -74,6 +74,11 @@ int DOMTimerCoordinator::nextID()
         if (!m_timers.contains(m_circularSequentialID))
             return m_circularSequentialID;
     }
+}
+
+void DOMTimerCoordinator::setTimerTaskRunner(PassOwnPtr<WebTaskRunner> timerTaskRunner)
+{
+    m_timerTaskRunner = timerTaskRunner;
 }
 
 } // namespace blink

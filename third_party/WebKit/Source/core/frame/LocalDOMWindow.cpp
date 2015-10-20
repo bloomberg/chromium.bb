@@ -149,6 +149,11 @@ public:
         SuspendableTimer::trace(visitor);
     }
 
+    WebTaskRunner* timerTaskRunner() override
+    {
+        return m_window->document()->timerTaskRunner();
+    }
+
 private:
     void fired() override
     {

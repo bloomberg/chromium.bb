@@ -45,6 +45,11 @@ public:
     // TODO(alexclarke): Remove this when possible.
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>, double delayMs);
+
+    PassOwnPtr<WebTaskRunner> adoptClone()
+    {
+        return adoptPtr(clone());
+    }
 #endif
 };
 

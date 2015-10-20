@@ -441,7 +441,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_timeline(AnimationTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
-    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner())
+    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone())
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
@@ -452,7 +452,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
 
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
-        m_timers.setTimerTaskRunner(m_frame->frameScheduler()->timerTaskRunner());
+        m_timers.setTimerTaskRunner(m_frame->frameScheduler()->timerTaskRunner()->adoptClone());
         FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
     } else if (m_importsController) {
         m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
@@ -2229,7 +2229,8 @@ void Document::detach(const AttachContext& context)
     if (m_importsController)
         HTMLImportsController::removeFrom(*this);
 
-    m_timers.setTimerTaskRunner(Platform::current()->currentThread()->scheduler()->timerTaskRunner());
+    m_timers.setTimerTaskRunner(
+        Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone());
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
@@ -5745,6 +5746,11 @@ WebTaskRunner* Document::loadingTaskRunner() const
     if (frame())
         return frame()->frameScheduler()->loadingTaskRunner();
     return Platform::current()->currentThread()->scheduler()->loadingTaskRunner();
+}
+
+WebTaskRunner* Document::timerTaskRunner() const
+{
+    return m_timers.timerTaskRunner();
 }
 
 DEFINE_TRACE(Document)

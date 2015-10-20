@@ -200,6 +200,11 @@ double DOMTimer::alignedFireTime(double fireTime) const
     return fireTime;
 }
 
+WebTaskRunner* DOMTimer::timerTaskRunner()
+{
+    return executionContext()->timers()->timerTaskRunner();
+}
+
 DEFINE_TRACE(DOMTimer)
 {
     visitor->trace(m_action);

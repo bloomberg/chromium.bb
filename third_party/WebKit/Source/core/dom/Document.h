@@ -1051,6 +1051,7 @@ public:
     static WeakDocumentSet& liveDocumentSet();
 
     WebTaskRunner* loadingTaskRunner() const;
+    WebTaskRunner* timerTaskRunner() const;
 
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
