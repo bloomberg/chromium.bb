@@ -1117,6 +1117,10 @@ public class ToolbarPhone extends ToolbarLayout
         super.draw(canvas);
         if (shouldClip) {
             canvas.restore();
+
+            // Post an invalidate when the clip rect becomes null to ensure another draw pass occurs
+            // and the full toolbar is drawn again.
+            if (mClipRect == null) postInvalidate();
         }
     }
 
