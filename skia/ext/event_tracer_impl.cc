@@ -70,5 +70,6 @@ void
 void InitSkiaEventTracer() {
   // Initialize the binding to Skia's tracing events. Skia will
   // take ownership of and clean up the memory allocated here.
-  SkEventTracer::SetInstance(new skia::SkChromiumEventTracer());
+  if (!SkEventTracer::GetInstance())
+    SkEventTracer::SetInstance(new skia::SkChromiumEventTracer());
 }

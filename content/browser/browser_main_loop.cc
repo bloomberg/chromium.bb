@@ -69,6 +69,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ipc/mojo/scoped_ipc_support.h"
+#include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "sql/sql_memory_dump_provider.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -664,6 +665,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
 
   // Enable memory-infra dump providers.
+  InitSkiaEventTracer();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       HostSharedBitmapManager::current());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
