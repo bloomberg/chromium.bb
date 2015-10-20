@@ -45,8 +45,6 @@ from pylib.perf import test_options as perf_test_options
 from pylib.perf import test_runner as perf_test_runner
 from pylib.results import json_results
 from pylib.results import report_results
-from pylib.uiautomator import setup as uiautomator_setup
-from pylib.uiautomator import test_options as uiautomator_test_options
 
 
 def AddCommonOptions(parser):
@@ -434,45 +432,6 @@ def AddUIAutomatorTestOptions(parser):
   AddDeviceOptions(parser)
 
 
-def ProcessUIAutomatorOptions(args):
-  """Processes UIAutomator options/arguments.
-
-  Args:
-    args: argparse.Namespace object.
-
-  Returns:
-    A UIAutomatorOptions named tuple which contains all options relevant to
-    uiautomator tests.
-  """
-
-  ProcessJavaTestOptions(args)
-
-  if os.path.exists(args.test_jar):
-    # The dexed JAR is fully qualified, assume the info JAR lives along side.
-    args.uiautomator_jar = args.test_jar
-  else:
-    args.uiautomator_jar = os.path.join(
-        constants.GetOutDirectory(),
-        constants.SDK_BUILD_JAVALIB_DIR,
-        '%s.dex.jar' % args.test_jar)
-  args.uiautomator_info_jar = (
-      args.uiautomator_jar[:args.uiautomator_jar.find('.dex.jar')] +
-      '_java.jar')
-
-  return uiautomator_test_options.UIAutomatorOptions(
-      args.tool,
-      args.annotations,
-      args.exclude_annotations,
-      args.test_filter,
-      args.test_data,
-      args.save_perf_json,
-      args.screenshot_failures,
-      args.uiautomator_jar,
-      args.uiautomator_info_jar,
-      args.package,
-      args.set_asserts)
-
-
 def AddJUnitTestOptions(parser):
   """Adds junit test options to |parser|."""
 
@@ -753,29 +712,6 @@ def _RunInstrumentationTests(args, devices):
   return exit_code
 
 
-def _RunUIAutomatorTests(args, devices):
-  """Subcommand of RunTestsCommands which runs uiautomator tests."""
-  uiautomator_options = ProcessUIAutomatorOptions(args)
-
-  runner_factory, tests = uiautomator_setup.Setup(uiautomator_options, devices)
-
-  results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, devices, shard=True, test_timeout=None,
-      num_retries=args.num_retries)
-
-  report_results.LogFull(
-      results=results,
-      test_type='UIAutomator',
-      test_package=os.path.basename(args.test_jar),
-      annotation=args.annotations,
-      flakiness_server=args.flakiness_dashboard_server)
-
-  if args.json_results_file:
-    json_results.GenerateJsonResultsFile([results], args.json_results_file)
-
-  return exit_code
-
-
 def _RunJUnitTests(args):
   """Subcommand of RunTestsCommand which runs junit tests."""
   runner_factory, tests = junit_setup.Setup(args)
@@ -940,8 +876,6 @@ def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
     return _RunLinkerTests(args, get_devices())
   elif command == 'instrumentation':
     return _RunInstrumentationTests(args, get_devices())
-  elif command == 'uiautomator':
-    return _RunUIAutomatorTests(args, get_devices())
   elif command == 'junit':
     return _RunJUnitTests(args)
   elif command == 'monkey':
@@ -1008,9 +942,6 @@ VALID_COMMANDS = {
     'instrumentation': CommandConfigTuple(
         AddInstrumentationTestOptions,
         'InstrumentationTestCase-based Java tests'),
-    'uiautomator': CommandConfigTuple(
-        AddUIAutomatorTestOptions,
-        "Tests that run via Android's uiautomator command"),
     'junit': CommandConfigTuple(
         AddJUnitTestOptions,
         'JUnit4-based Java tests'),

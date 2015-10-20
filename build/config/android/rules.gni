@@ -2035,13 +2035,3 @@ template("proto_java_library") {
     ]
   }
 }
-
-# TODO(GYP): implement this.
-template("uiautomator_test") {
-  set_sources_assignment_filter([])
-  forward_variables_from(invoker, [ "testonly" ])
-  assert(target_name != "")
-  assert(invoker.deps != [] || true)
-  group(target_name) {
-  }
-}

@@ -246,24 +246,6 @@ junit_binary("chrome_junit_tests") {
   ]
 }
 
-# GYP: //chrome/chrome_tests.gypi:chrome_uiautomator_tests_java
-android_library("chrome_uiautomator_tests_java") {
-  testonly = true
-  DEPRECATED_java_in_dir = "uiautomator_tests/src"
-  deps = [
-    "//base:base_java_test_support",
-    "//third_party/android_tools:uiautomator_java",
-  ]
-}
-
-# GYP: //chrome/chrome_tests.gypi:chrome_uiautomator_tests
-uiautomator_test("chrome_uiautomator_tests") {
-  testonly = true
-  deps = [
-    ":chrome_uiautomator_tests_java",
-  ]
-}
-
 # GYP: //chrome/chrome_android.gypi:chrome_version_java
 chrome_version_java_dir = "$root_gen_dir/templates/chrome_version_java"
 chrome_version_java_file = "$chrome_version_java_dir/org/chromium/chrome/browser/ChromeVersionConstants.java"

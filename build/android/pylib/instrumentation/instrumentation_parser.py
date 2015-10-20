@@ -38,7 +38,7 @@ class InstrumentationParser(object):
 
     Args:
       stream: a sequence of lines as produced by the raw output of an
-        instrumentation test (e.g. by |am instrument -r| or |uiautomator|).
+        instrumentation test (e.g. by |am instrument -r|).
     """
     self._stream = stream
     self._code = None

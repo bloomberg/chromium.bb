@@ -3132,28 +3132,6 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
-          # GN: //chrome/android:uiautomator_tests_java
-          'target_name': 'chrome_uiautomator_tests_java',
-          'type': 'none',
-          'variables': {
-            'java_in_dir': 'android/uiautomator_tests',
-          },
-          'dependencies': [
-            '../base/base.gyp:base_java_test_support',
-            '../third_party/android_tools/android_tools.gyp:uiautomator_jar',
-          ],
-          'includes': [ '../build/java.gypi' ],
-        },
-        {
-          # GN: //chrome/android:uiautomator_tests
-          'target_name': 'chrome_uiautomator_tests',
-          'type': 'none',
-          'dependencies': [
-            'chrome_uiautomator_tests_java',
-          ],
-          'includes': [ '../build/uiautomator_test.gypi' ],
-        },
-        {
           # GN: //chrome/test/android:chrome_java_test_support
           'target_name': 'chrome_java_test_support',
           'type': 'none',

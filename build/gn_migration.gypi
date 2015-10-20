@@ -775,7 +775,6 @@
             '../chrome/android/chrome_apk.gyp:chrome_sync_shell_apk',
             '../chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk',
             '../chrome/chrome.gyp:chrome_junit_tests',
-            '../chrome/chrome.gyp:chrome_uiautomator_tests',
             '../chrome/chrome.gyp:unit_tests',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../remoting/remoting.gyp:remoting_apk',

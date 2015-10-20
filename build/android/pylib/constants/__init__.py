@@ -200,7 +200,7 @@ PYTHON_UNIT_TEST_SUITES = {
 LOCAL_MACHINE_TESTS = ['junit', 'python']
 VALID_ENVIRONMENTS = ['local', 'remote_device']
 VALID_TEST_TYPES = ['gtest', 'instrumentation', 'junit', 'linker', 'monkey',
-                    'perf', 'python', 'uiautomator', 'uirobot']
+                    'perf', 'python', 'uirobot']
 VALID_DEVICE_TYPES = ['Android', 'iOS']
 
 

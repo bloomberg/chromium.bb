@@ -876,7 +876,6 @@
                 '../chrome/android/chrome_apk.gyp:chrome_public_test_apk',
                 '../chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk',
                 '../chrome/chrome.gyp:chrome_junit_tests',
-                '../chrome/chrome.gyp:chrome_uiautomator_tests',
                 '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
                 '../chrome/chrome.gyp:unit_tests_apk',
                 '../third_party/custom_tabs_client/custom_tabs_client.gyp:custom_tabs_client_example_apk',
