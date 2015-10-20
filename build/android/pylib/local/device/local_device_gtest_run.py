@@ -300,7 +300,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     timeout = (self._test_instance.shard_timeout
                * self.GetTool(device).GetTimeoutScale())
     output = self._delegate.Run(
-        test, device, timeout=timeout, retries=0)
+        test, device, flags=self._test_instance.test_arguments,
+        timeout=timeout, retries=0)
     for s in self._servers[str(device)]:
       s.Reset()
     if self._test_instance.app_files:

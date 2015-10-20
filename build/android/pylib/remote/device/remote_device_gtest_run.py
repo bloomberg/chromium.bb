@@ -53,9 +53,18 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
       if gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT not in env_vars:
         env_vars[gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT] = int(
             self._test_instance.shard_timeout * 1e9)
+
+      flags = []
+
       filter_string = self._test_instance._GenerateDisabledFilterString(None)
       if filter_string:
-        flag_file.write('_ --gtest_filter=%s' % filter_string)
+        flags.append('--gtest_filter=%s' % filter_string)
+
+      if self._test_instance.test_arguments:
+        flags.append(self._test_instance.test_arguments)
+
+      if flags:
+        flag_file.write('_ ' + ' '.join(flags))
         flag_file.flush()
         env_vars[_EXTRA_COMMAND_LINE_FILE] = os.path.basename(flag_file.name)
         self._test_instance._data_deps.append(
