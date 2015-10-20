@@ -20,6 +20,10 @@ public:
     void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 
+    static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
+    static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);
+    static InterpolationComponentValue maybeConvertCSSValue(const CSSValue&);
+
 private:
     float effectiveZoom(const ComputedStyle&) const;
 

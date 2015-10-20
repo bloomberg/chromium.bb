@@ -32,6 +32,7 @@
 #define CSSToLengthConversionData_h
 
 #include "core/CoreExport.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -106,6 +107,8 @@ public:
     {
         return CSSToLengthConversionData(m_style, m_fontSizes, m_viewportSize, newZoom);
     }
+
+    double zoomedComputedPixels(double value, CSSPrimitiveValue::UnitType) const;
 
 private:
     const ComputedStyle* m_style;

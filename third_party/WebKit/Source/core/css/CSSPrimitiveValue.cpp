@@ -430,75 +430,9 @@ template<> double CSSPrimitiveValue::computeLength(const CSSToLengthConversionDa
 
 double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& conversionData) const
 {
-    // The logic in this function is duplicated in MediaValues::computeLength
-    // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make
-    // CSSPrimitiveValue::computeLengthDouble more generic (to solve both cases) without hurting performance.
     if (type() == UnitType::Calc)
         return m_value.calc->computeLengthPx(conversionData);
-
-    double factor;
-
-    switch (type()) {
-    case UnitType::Ems:
-    case UnitType::QuirkyEms:
-        factor = conversionData.emFontSize();
-        break;
-    case UnitType::Exs:
-        factor = conversionData.exFontSize();
-        break;
-    case UnitType::Rems:
-        factor = conversionData.remFontSize();
-        break;
-    case UnitType::Chs:
-        factor = conversionData.chFontSize();
-        break;
-    case UnitType::Pixels:
-        factor = 1.0;
-        break;
-    case UnitType::Centimeters:
-        factor = cssPixelsPerCentimeter;
-        break;
-    case UnitType::Millimeters:
-        factor = cssPixelsPerMillimeter;
-        break;
-    case UnitType::Inches:
-        factor = cssPixelsPerInch;
-        break;
-    case UnitType::Points:
-        factor = cssPixelsPerPoint;
-        break;
-    case UnitType::Picas:
-        factor = cssPixelsPerPica;
-        break;
-    case UnitType::ViewportWidth:
-        factor = conversionData.viewportWidthPercent();
-        break;
-    case UnitType::ViewportHeight:
-        factor = conversionData.viewportHeightPercent();
-        break;
-    case UnitType::ViewportMin:
-        factor = conversionData.viewportMinPercent();
-        break;
-    case UnitType::ViewportMax:
-        factor = conversionData.viewportMaxPercent();
-        break;
-    case UnitType::CalcPercentageWithLength:
-    case UnitType::CalcPercentageWithNumber:
-        ASSERT_NOT_REACHED();
-        return -1.0;
-    default:
-        ASSERT_NOT_REACHED();
-        return -1.0;
-    }
-
-    // We do not apply the zoom factor when we are computing the value of the font-size property. The zooming
-    // for font sizes is much more complicated, since we have to worry about enforcing the minimum font size preference
-    // as well as enforcing the implicit "smart minimum."
-    double result = getDoubleValue() * factor;
-    if (isFontRelativeLength())
-        return result;
-
-    return result * conversionData.zoom();
+    return conversionData.zoomedComputedPixels(getDoubleValue(), type());
 }
 
 void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, CSSLengthTypeArray& lengthTypeArray, double multiplier) const

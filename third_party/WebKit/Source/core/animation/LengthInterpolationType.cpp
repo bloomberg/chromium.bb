@@ -62,6 +62,13 @@ float LengthInterpolationType::effectiveZoom(const ComputedStyle& style) const
     return LengthPropertyFunctions::isZoomedLength(m_property) ? style.effectiveZoom() : 1;
 }
 
+PassOwnPtr<InterpolableValue> LengthInterpolationType::createInterpolablePixels(double pixels)
+{
+    OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
+    interpolableList->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixels));
+    return interpolableList.release();
+}
+
 PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const Length& length, float zoom) const
 {
     if (!length.isSpecified())
@@ -73,6 +80,32 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const
     values->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));
 
     return InterpolationValue::create(*this, values.release(), LengthNonInterpolableValue::create(length.hasPercent()));
+}
+
+InterpolationComponentValue LengthInterpolationType::maybeConvertCSSValue(const CSSValue& value)
+{
+    if (!value.isPrimitiveValue())
+        return nullptr;
+
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+
+    CSSLengthArray valueArray;
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
+        valueArray.append(0);
+    bool hasPercentage = false;
+
+    if (!primitiveValue.isLength() && !primitiveValue.isPercentage() && !primitiveValue.isCalculatedPercentageWithLength())
+        return nullptr;
+    CSSLengthTypeArray hasType;
+    hasType.ensureSize(CSSPrimitiveValue::LengthUnitTypeCount);
+    primitiveValue.accumulateLengthArray(valueArray, hasType);
+    hasPercentage = hasType.get(CSSPrimitiveValue::UnitTypePercentage);
+
+    OwnPtr<InterpolableList> values = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
+        values->set(i, InterpolableNumber::create(valueArray.at(i)));
+
+    return InterpolationComponentValue(values.release(), LengthNonInterpolableValue::create(hasPercentage));
 }
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
@@ -124,38 +157,20 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(cons
     return maybeConvertLength(inheritedLength, effectiveZoom(*state->parentStyle()));
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers& conversionCheckers) const
 {
-    if (!value.isPrimitiveValue())
-        return nullptr;
-
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-
-    CSSLengthArray valueArray;
-    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
-        valueArray.append(0);
-    bool hasPercentage = false;
-
-    if (primitiveValue.isValueID()) {
-        CSSValueID valueID = primitiveValue.getValueID();
+    if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
+        CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
         double pixels;
         if (!LengthPropertyFunctions::getPixelsForKeyword(m_property, valueID, pixels))
             return nullptr;
-        valueArray[CSSPrimitiveValue::UnitTypePixels] = pixels;
-    } else {
-        if (!primitiveValue.isLength() && !primitiveValue.isPercentage() && !primitiveValue.isCalculatedPercentageWithLength())
-            return nullptr;
-        CSSLengthTypeArray hasType;
-        hasType.ensureSize(CSSPrimitiveValue::LengthUnitTypeCount);
-        primitiveValue.accumulateLengthArray(valueArray, hasType);
-        hasPercentage = hasType.get(CSSPrimitiveValue::UnitTypePercentage);
+        return InterpolationValue::create(*this, createInterpolablePixels(pixels));
     }
 
-    OwnPtr<InterpolableList> values = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
-    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
-        values->set(i, InterpolableNumber::create(valueArray.at(i)));
-
-    return InterpolationValue::create(*this, values.release(), LengthNonInterpolableValue::create(hasPercentage));
+    InterpolationComponentValue component = maybeConvertCSSValue(value);
+    if (!component)
+        return nullptr;
+    return InterpolationValue::create(*this, component);
 }
 
 PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
@@ -198,18 +213,40 @@ static double clampToRange(double x, ValueRange range)
     return (range == ValueRangeNonNegative && x < 0) ? 0 : x;
 }
 
-static Length createLength(const InterpolableList& values, bool hasPercentage, ValueRange range, double zoom)
+static Length createLength(double pixels, double percentage, bool hasPercentage, ValueRange range)
 {
-    ASSERT(isPixelsOrPercentOnly(values));
-    double pixels = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePixels))->value() * zoom;
-    double percentage = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePercentage))->value();
     ASSERT(hasPercentage || percentage == 0);
-
     if (pixels && hasPercentage)
         return Length(CalculationValue::create(PixelsAndPercent(pixels, percentage), range));
     if (hasPercentage)
         return Length(clampToRange(percentage, range), Percent);
     return Length(CSSPrimitiveValue::clampToCSSLengthRange(clampToRange(pixels, range)), Fixed);
+}
+
+static Length resolveInterpolablePixelsOrPercentageLength(const InterpolableList& values, bool hasPercentage, ValueRange range, double zoom)
+{
+    ASSERT(isPixelsOrPercentOnly(values));
+    double pixels = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePixels))->value() * zoom;
+    double percentage = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePercentage))->value();
+    return createLength(pixels, percentage, hasPercentage, range);
+}
+
+Length LengthInterpolationType::resolveInterpolableLength(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, const CSSToLengthConversionData& conversionData, ValueRange range)
+{
+    const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
+    bool hasPercentage = LengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
+    double pixels = 0;
+    double percentage = 0;
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
+        double value = toInterpolableNumber(*interpolableList.get(i)).value();
+        if (i == CSSPrimitiveValue::UnitTypePercentage) {
+            percentage = value;
+        } else {
+            CSSPrimitiveValue::UnitType type = CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(i));
+            pixels += conversionData.zoomedComputedPixels(value, type);
+        }
+    }
+    return createLength(pixels, percentage, hasPercentage, range);
 }
 
 static CSSPrimitiveValue::UnitType toUnitType(int lengthUnitType)
@@ -260,7 +297,7 @@ void LengthInterpolationType::apply(const InterpolableValue& interpolableValue, 
     const InterpolableList& values = toInterpolableList(interpolableValue);
     bool hasPercentage = LengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
     if (isPixelsOrPercentOnly(values)) {
-        Length length = createLength(values, hasPercentage, m_valueRange, effectiveZoom(*state.style()));
+        Length length = resolveInterpolablePixelsOrPercentageLength(values, hasPercentage, m_valueRange, effectiveZoom(*state.style()));
         if (LengthPropertyFunctions::setLength(m_property, *state.style(), length)) {
 #if ENABLE(ASSERT)
             // Assert that setting the length on ComputedStyle directly is identical to the AnimatableValue code path.

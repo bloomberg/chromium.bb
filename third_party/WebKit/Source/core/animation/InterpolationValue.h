@@ -16,10 +16,19 @@ class InterpolationType;
 struct InterpolationComponentValue {
     ALLOW_ONLY_INLINE_ALLOCATION();
 
-    InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    explicit InterpolationComponentValue(PassOwnPtr<InterpolableValue> interpolableValue = nullptr, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : interpolableValue(interpolableValue)
         , nonInterpolableValue(nonInterpolableValue)
     { }
+
+    InterpolationComponentValue(const void* null) { ASSERT(null == 0); }
+
+    InterpolationComponentValue(InterpolationComponentValue&& other)
+        : interpolableValue(other.interpolableValue.release())
+        , nonInterpolableValue(other.nonInterpolableValue.release())
+    { }
+
+    operator bool() const { return interpolableValue; }
 
     OwnPtr<InterpolableValue> interpolableValue;
     RefPtr<NonInterpolableValue> nonInterpolableValue;
@@ -27,6 +36,10 @@ struct InterpolationComponentValue {
 
 class InterpolationValue {
 public:
+    static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, InterpolationComponentValue& component)
+    {
+        return adoptPtr(new InterpolationValue(type, component.interpolableValue.release(), component.nonInterpolableValue.release()));
+    }
     static PassOwnPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
         return adoptPtr(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
@@ -42,7 +55,6 @@ public:
     const NonInterpolableValue* nonInterpolableValue() const { return m_component.nonInterpolableValue.get(); }
 
     InterpolationComponentValue& mutableComponent() { return m_component; }
-
 
 private:
     InterpolationValue(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/css/CSSToLengthConversionData.h"
 
+#include "core/css/CSSHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/style/ComputedStyle.h"
 
@@ -112,6 +113,64 @@ float CSSToLengthConversionData::remFontSize() const
 {
     m_style->setHasRemUnits();
     return m_fontSizes.rem();
+}
+
+double CSSToLengthConversionData::zoomedComputedPixels(double value, CSSPrimitiveValue::UnitType type) const
+{
+    // The logic in this function is duplicated in MediaValues::computeLength()
+    // because MediaValues::computeLength() needs nearly identical logic, but we haven't found a way to make
+    // zoomedComputedPixels() more generic (to solve both cases) without hurting performance.
+    switch (type) {
+    case CSSPrimitiveValue::UnitType::Pixels:
+        return value * zoom();
+
+    case CSSPrimitiveValue::UnitType::Centimeters:
+        return value * cssPixelsPerCentimeter * zoom();
+
+    case CSSPrimitiveValue::UnitType::Millimeters:
+        return value * cssPixelsPerMillimeter * zoom();
+
+    case CSSPrimitiveValue::UnitType::Inches:
+        return value * cssPixelsPerInch * zoom();
+
+    case CSSPrimitiveValue::UnitType::Points:
+        return value * cssPixelsPerPoint * zoom();
+
+    case CSSPrimitiveValue::UnitType::Picas:
+        return value * cssPixelsPerPica * zoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+        return value * viewportWidthPercent() * zoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+        return value * viewportHeightPercent() * zoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+        return value * viewportMinPercent() * zoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportMax:
+        return value * viewportMaxPercent() * zoom();
+
+    // We do not apply the zoom factor when we are computing the value of the font-size property. The zooming
+    // for font sizes is much more complicated, since we have to worry about enforcing the minimum font size preference
+    // as well as enforcing the implicit "smart minimum."
+    case CSSPrimitiveValue::UnitType::Ems:
+    case CSSPrimitiveValue::UnitType::QuirkyEms:
+        return value * emFontSize();
+
+    case CSSPrimitiveValue::UnitType::Exs:
+        return value * exFontSize();
+
+    case CSSPrimitiveValue::UnitType::Rems:
+        return value * remFontSize();
+
+    case CSSPrimitiveValue::UnitType::Chs:
+        return value * chFontSize();
+
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
 }
 
 } // namespace blink

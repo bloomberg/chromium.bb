@@ -155,11 +155,11 @@ int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) const
 
 bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result)
 {
-    // The logic in this function is duplicated from CSSPrimitiveValue::computeLengthDouble
-    // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make
-    // CSSPrimitiveValue::computeLengthDouble more generic (to solve both cases) without hurting performance.
+    // The logic in this function is duplicated from CSSToLengthConversionData::zoomedComputedPixels()
+    // because MediaValues::computeLength() needs nearly identical logic, but we haven't found a way to make
+    // CSSToLengthConversionData::zoomedComputedPixels() more generic (to solve both cases) without hurting performance.
 
-    // FIXME - Unite the logic here with CSSPrimitiveValue in a performant way.
+    // FIXME - Unite the logic here with CSSToLengthConversionData in a performant way.
     double factor = 0;
     switch (type) {
     case CSSPrimitiveValue::UnitType::Ems:
