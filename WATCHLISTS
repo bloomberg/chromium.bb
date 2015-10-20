@@ -260,6 +260,10 @@
                   'content/common/input/|'\
                   'content/renderer/input/',
     },
+    'content_loader': {
+      'filepath': 'content/browser/loader|'\
+                  'content/child/*loader',
+    },
     'content_renderer': {
       'filepath': 'content/renderer/',
     },
@@ -1291,6 +1295,7 @@
                 'darin-cc@chromium.org' ],
     'content_bluetooth': ['scheib+watch@chromium.org'],
     'content_input': ['jdduke+watch@chromium.org'],
+    'content_loader': ['loading-reviews@chromium.org'],
     'content_renderer': [ 'mkwst+moarreviews-renderer@chromium.org',
                           'mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
@@ -1395,8 +1400,7 @@
     'overview_mode': ['tdanderson+overview@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org'],
     'page_load_metrics' : ['csharrison+watch@chromium.org',
-    			   'bmcquade+watch@chromium.org',
-			   'kinuko+watch@chromium.org'],
+                           'loading-reviews+metrics@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'password_manager': ['mkwst+watchlist-passwords@chromium.org',
@@ -1548,12 +1552,12 @@
     'blink_fetch': [ 'japhet@chromium.org',
                      'gavinp+loader@chromium.org',
                      'tyoshino+watch@chromium.org',
-                     'kinuko+watch@chromium.org' ],
+                     'loading-reviews+fetch@chromium.org' ],
     'blink_layers': [ 'blink-layers+watch@chromium.org' ],
     'blink_loader': [ 'japhet@chromium.org',
                       'gavinp+loader@chromium.org',
                       'tyoshino+watch@chromium.org',
-                      'kinuko+watch@chromium.org' ],
+                      'loading-reviews@chromium.org' ],
     'blink_owners': [ 'abarth@chromium.org'],
     'blink_platform_graphics': [ 'schenney@chromium.org',
                                  'danakj@chromium.org',
