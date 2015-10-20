@@ -117,7 +117,7 @@ gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
 
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
-  contents_rect.Inset(GetLayoutInsets(OMNIBOX_DROPDOWN_TEXT));
+  contents_rect.Inset(GetLayoutInsets(OMNIBOX_DROPDOWN));
   contents_rect.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0, 0);
 
   // In the non-material dropdown, the colored/clickable regions within the
@@ -422,7 +422,7 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
   return popup_height + views::NonClientFrameView::kClientEdgeThickness +
-      GetLayoutInsets(OMNIBOX_DROPDOWN_TEXT).height() +
+      GetLayoutInsets(OMNIBOX_DROPDOWN).height() +
       bottom_shadow_->height() -
       GetLayoutConstant(OMNIBOX_DROPDOWN_BORDER_INTERIOR);
 }

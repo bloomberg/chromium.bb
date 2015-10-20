@@ -90,6 +90,10 @@ enum LayoutInset {
   // tabstrip on the right, and the toolbar on the bottom.
   AVATAR_ICON,
 
+  // The padding above the top row and below the bottom row in the omnibox
+  // dropdown.
+  OMNIBOX_DROPDOWN,
+
   // In an omnibox dropdown row, the minimum distance between the icon and the
   // row edge.
   OMNIBOX_DROPDOWN_ICON,

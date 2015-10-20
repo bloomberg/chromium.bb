@@ -359,8 +359,8 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
       &contents_max_width,
       &description_max_width);
 
-  int after_contents_x =
-      DrawRenderText(match, contents, true, canvas, x, y, contents_max_width);
+  int after_contents_x = DrawRenderText(match, contents, CONTENTS, canvas,
+                                        x, y, contents_max_width);
 
   if (description_max_width != 0) {
     if (match.answer) {
@@ -376,11 +376,11 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
              GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
       }
     } else {
-      x = DrawRenderText(match, separator_rendertext_.get(), false, canvas,
+      x = DrawRenderText(match, separator_rendertext_.get(), SEPARATOR, canvas,
                          after_contents_x, y, separator_width_);
     }
 
-    DrawRenderText(match, description, false, canvas, x, y,
+    DrawRenderText(match, description, DESCRIPTION, canvas, x, y,
                    description_max_width);
   }
 }
@@ -388,7 +388,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
 int OmniboxResultView::DrawRenderText(
     const AutocompleteMatch& match,
     gfx::RenderText* render_text,
-    bool contents,
+    RenderTextType render_text_type,
     gfx::Canvas* canvas,
     int x,
     int y,
@@ -400,8 +400,8 @@ int OmniboxResultView::DrawRenderText(
 
   // Infinite suggestions should appear with the leading ellipses vertically
   // stacked.
-  if (contents &&
-      (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)) {
+  if (render_text_type == CONTENTS &&
+      match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     // When the directionality of suggestion doesn't match the UI, we try to
     // vertically stack the ellipsis by restricting the end edge (right_x).
     const bool is_ui_rtl = base::i18n::IsRTL();
@@ -456,9 +456,11 @@ int OmniboxResultView::DrawRenderText(
   }
 
   // Set the display rect to trigger eliding.
+  const int height = (render_text_type == DESCRIPTION && match.answer) ?
+      GetAnswerLineHeight() : GetContentLineHeight();
   render_text->SetDisplayRect(
       gfx::Rect(mirroring_context_->mirrored_left_coord(x, right_x), y,
-                right_x - x, GetContentLineHeight()));
+                right_x - x, height));
   render_text->Draw(canvas);
   return right_x;
 }

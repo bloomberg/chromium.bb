@@ -83,6 +83,13 @@ class OmniboxResultView : public views::View,
   void SetAnswerImage(const gfx::ImageSkia& image);
 
  protected:
+  enum RenderTextType {
+    CONTENTS = 0,
+    SEPARATOR,
+    DESCRIPTION,
+    NUM_TYPES
+  };
+
   // Paints the given |match| using the RenderText instances |contents| and
   // |description| at offset |x| in the bounds of this view.
   virtual void PaintMatch(const AutocompleteMatch& match,
@@ -92,14 +99,14 @@ class OmniboxResultView : public views::View,
                           int x) const;
 
   // Draws given |render_text| on |canvas| at given location (|x|, |y|).
-  // |contents| indicates whether the |render_text| is for the match contents
-  // (rather than the separator or the description).  Additional properties from
-  // |match| are used to render Infinite suggestions correctly.  If |max_width|
-  // is a non-negative number, the text will be elided to fit within
-  // |max_width|.  Returns the x position to the right of the string.
+  // |contents| indicates if the |render_text| is for the match contents,
+  // separator, or description.  Additional properties from |match| are used to
+  // render Infinite suggestions correctly.  If |max_width| is a non-negative
+  // number, the text will be elided to fit within |max_width|.  Returns the x
+  // position to the right of the string.
   int DrawRenderText(const AutocompleteMatch& match,
                      gfx::RenderText* render_text,
-                     bool contents,
+                     RenderTextType render_text_type,
                      gfx::Canvas* canvas,
                      int x,
                      int y,

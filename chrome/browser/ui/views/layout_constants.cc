@@ -95,7 +95,8 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int kAvatarRightPadding[] = {-6, 4, 4};
   const int kAvatarBottomPadding[] = {2, 4, 4};
   const int kOmniboxDropdownIconPadding[] = {2, 4, 8};
-  const int kOmniboxDropdownTextPadding[] = {3, 4, 8};
+  const int kOmniboxDropdownPadding[] = {3, 4, 4};
+  const int kOmniboxDropdownTextPadding[] = {3, 3, 3};
   const int kTabBottomPadding[] = {2, 2, 2};
   const int kTabLeftPadding[] = {20, 20, 20};
   const int kTabRightPadding[] = {20, 20, 20};
@@ -111,6 +112,10 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case AVATAR_ICON: {
       return gfx::Insets(0, kAvatarLeftPadding[mode],
                          kAvatarBottomPadding[mode], kAvatarRightPadding[mode]);
+    }
+    case OMNIBOX_DROPDOWN: {
+      const int padding = kOmniboxDropdownPadding[mode];
+      return gfx::Insets(padding, 0, padding, 0);
     }
     case OMNIBOX_DROPDOWN_ICON: {
       const int padding = kOmniboxDropdownIconPadding[mode];
