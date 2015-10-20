@@ -117,10 +117,16 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
 void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
-    const GURL& origin) const {
+    const GURL& origin,
+    bool by_user) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RecordAction(
-      base::UserMetricsAction("Notifications.Persistent.Closed"));
+  if (by_user) {
+    content::RecordAction(base::UserMetricsAction(
+        "Notifications.Persistent.ClosedByUser"));
+  } else {
+    content::RecordAction(base::UserMetricsAction(
+        "Notifications.Persistent.ClosedProgrammatically"));
+  }
 
   PlatformNotificationContext* context =
       BrowserContext::GetStoragePartitionForSite(browser_context, origin)

@@ -82,7 +82,8 @@ bool NotificationUIManagerAndroid::OnNotificationClosed(
     jobject java_object,
     jlong persistent_notification_id,
     jstring java_origin,
-    jstring java_tag) {
+    jstring java_tag,
+    jboolean by_user) {
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   std::string tag = ConvertJavaStringToUTF8(env, java_tag);
 
@@ -95,7 +96,8 @@ bool NotificationUIManagerAndroid::OnNotificationClosed(
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClose(
       ProfileManager::GetLastUsedProfile(),
       persistent_notification_id,
-      origin);
+      origin,
+      by_user);
 
   return true;
 }

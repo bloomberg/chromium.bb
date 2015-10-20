@@ -54,7 +54,8 @@ class PlatformNotificationServiceImpl
   void OnPersistentNotificationClose(
       content::BrowserContext* browser_context,
       int64_t persistent_notification_id,
-      const GURL& origin) const;
+      const GURL& origin,
+      bool by_user) const;
 
   // Returns the Notification UI Manager through which notifications can be
   // displayed to the user. Can be overridden for testing.

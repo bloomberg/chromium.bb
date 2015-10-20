@@ -42,7 +42,8 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
                             jobject java_object,
                             jlong persistent_notification_id,
                             jstring java_origin,
-                            jstring java_tag);
+                            jstring java_tag,
+                            jboolean by_user);
 
   // NotificationUIManager implementation.
   void Add(const Notification& notification, Profile* profile) override;

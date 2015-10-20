@@ -178,7 +178,11 @@ public class NotificationUIManager {
             return sInstance.onNotificationClicked(persistentNotificationId, origin, tag,
                                                    actionIndex);
         } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
-            return sInstance.onNotificationClosed(persistentNotificationId, origin, tag);
+            // Notification deleteIntent is executed only "when the notification is explicitly
+            // dismissed by the user, either with the 'Clear All' button or by swiping it away
+            // individually" (though a third-party NotificationListenerService may also trigger it).
+            return sInstance.onNotificationClosed(persistentNotificationId, origin, tag,
+                                                  true /* byUser */);
         }
 
         Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
@@ -569,18 +573,18 @@ public class NotificationUIManager {
 
     /**
      * Calls NotificationUIManagerAndroid::OnNotificationClosed in native code to indicate that
-     * the notification with the given parameters has been closed. This could be the result of
-     * user interaction or an action initiated by the framework.
+     * the notification with the given parameters has been closed.
      *
      * @param persistentNotificationId The persistent id of the notification.
      * @param origin The origin of the notification.
      * @param tag The tag of the notification. May be NULL.
+     * @param byUser Whether the notification was closed by a user gesture.
      * @return Whether the manager could handle the close event.
      */
     private boolean onNotificationClosed(long persistentNotificationId, String origin,
-                                         String tag) {
+                                         String tag, boolean byUser) {
         return nativeOnNotificationClosed(mNativeNotificationManager, persistentNotificationId,
-                                          origin, tag);
+                                          origin, tag, byUser);
     }
 
     private static native void nativeInitializeNotificationUIManager();
@@ -588,5 +592,5 @@ public class NotificationUIManager {
     private native boolean nativeOnNotificationClicked(long nativeNotificationUIManagerAndroid,
             long persistentNotificationId, String origin, String tag, int actionIndex);
     private native boolean nativeOnNotificationClosed(long nativeNotificationUIManagerAndroid,
-            long persistentNotificationId, String origin, String tag);
+            long persistentNotificationId, String origin, String tag, boolean byUser);
 }

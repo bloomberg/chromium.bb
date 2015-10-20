@@ -8670,9 +8670,28 @@ should be able to be added at any place in this file.
 <action name="Notifications.Persistent.Closed">
   <owner>peter@chromium.org</owner>
   <description>
+    Recorded when a persistent notification gets closed, either programmatically
+    or by the user.
+  </description>
+  <obsolete>
+    Deprecated 10/2015. Replaced by Notifications.Persistent.ClosedByUser and
+    Notifications.Persistent.ClosedProgrammatically.
+  </obsolete>
+</action>
+
+<action name="Notifications.Persistent.ClosedByUser">
+  <owner>peter@chromium.org</owner>
+  <description>
     Recorded when a persistent notification gets closed by the user. This does
     not always mean that the user didn't click on the notification: both could
     be counted if the website doesn't close the notification on click.
+  </description>
+</action>
+
+<action name="Notifications.Persistent.ClosedProgrammatically">
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when a persistent notification gets closed programmatically.
   </description>
 </action>
 
