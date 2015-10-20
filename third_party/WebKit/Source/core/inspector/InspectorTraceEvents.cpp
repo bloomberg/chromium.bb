@@ -50,7 +50,7 @@ void setCallStack(TracedValue* value)
     static const unsigned char* traceCategoryEnabled = 0;
     WTF_ANNOTATE_BENIGN_RACE(&traceCategoryEnabled, "trace_event category");
     if (!traceCategoryEnabled)
-        traceCategoryEnabled = TRACE_EVENT_API_GET_CATEGORY_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"));
+        traceCategoryEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"));
     if (!*traceCategoryEnabled)
         return;
     RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);

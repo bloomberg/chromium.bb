@@ -48,7 +48,7 @@ static const unsigned char* s_tracingEnabled = nullptr;
 
 void InvalidationSet::cacheTracingFlag()
 {
-    s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
+    s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
 }
 
 InvalidationSet::InvalidationSet()
