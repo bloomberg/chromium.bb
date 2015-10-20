@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
@@ -54,7 +55,6 @@ class WebLayer;
 class WebMouseEvent;
 struct WebCompositionUnderline;
 struct WebScreenInfo;
-
 }
 
 namespace cc {
@@ -71,7 +71,6 @@ class BrowserAccessibilityManager;
 class InputRouter;
 class MockRenderWidgetHost;
 class RenderWidgetHostDelegate;
-class RenderWidgetHostViewBase;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
@@ -112,11 +111,16 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     hung_renderer_delay_ = delay;
   }
 
+  base::TimeDelta hung_renderer_delay() { return hung_renderer_delay_; }
+
   void set_new_content_rendering_delay_for_testing(
       const base::TimeDelta& delay) {
     new_content_rendering_delay_ = delay;
   }
 
+  base::TimeDelta new_content_rendering_delay() {
+    return new_content_rendering_delay_;
+  }
   // RenderWidgetHost implementation.
   void UpdateTextDirection(blink::WebTextDirection direction) override;
   void NotifyTextDirection() override;
@@ -137,7 +141,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
   RenderProcessHost* GetProcess() const override;
   int GetRoutingID() const override;
-  RenderWidgetHostView* GetView() const override;
+  RenderWidgetHostViewBase* GetView() const override;
   bool IsLoading() const override;
   bool IsRenderView() const override;
   void ResizeRectChanged(const gfx::Rect& new_rect) override;
@@ -468,6 +472,30 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     renderer_initialized_ = renderer_initialized;
   }
 
+  // Indicates if the render widget host should track the render widget's size
+  // as opposed to visa versa.
+  void SetAutoResize(bool enable,
+                     const gfx::Size& min_size,
+                     const gfx::Size& max_size);
+
+  // Fills in the |resize_params| struct.
+  // Returns |false| if the update is redundant, |true| otherwise.
+  bool GetResizeParams(ViewMsg_Resize_Params* resize_params);
+
+  // Sets the |resize_params| that were sent to the renderer bundled with the
+  // request to create a new RenderWidget.
+  void SetInitialRenderSizeParams(const ViewMsg_Resize_Params& resize_params);
+
+  // Expose increment/decrement of the in-flight event count, so
+  // RenderViewHostImpl can account for in-flight beforeunload/unload events.
+  int increment_in_flight_event_count() { return ++in_flight_event_count_; }
+  int decrement_in_flight_event_count() {
+    DCHECK_GT(in_flight_event_count_, 0);
+    return --in_flight_event_count_;
+  }
+
+  bool renderer_initialized() const { return renderer_initialized_; }
+
  protected:
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
@@ -519,30 +547,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   virtual blink::WebDisplayMode GetDisplayMode() const;
 
-  // Indicates if the render widget host should track the render widget's size
-  // as opposed to visa versa.
-  void SetAutoResize(bool enable,
-                     const gfx::Size& min_size,
-                     const gfx::Size& max_size);
-
-  // Fills in the |resize_params| struct.
-  // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetResizeParams(ViewMsg_Resize_Params* resize_params);
-
-  // Sets the |resize_params| that were sent to the renderer bundled with the
-  // request to create a new RenderWidget.
-  void SetInitialRenderSizeParams(const ViewMsg_Resize_Params& resize_params);
-
-  // Expose increment/decrement of the in-flight event count, so
-  // RenderViewHostImpl can account for in-flight beforeunload/unload events.
-  int increment_in_flight_event_count() { return ++in_flight_event_count_; }
-  int decrement_in_flight_event_count() {
-    DCHECK_GT(in_flight_event_count_, 0);
-    return --in_flight_event_count_;
-  }
-
-  bool renderer_initialized() const { return renderer_initialized_; }
-
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
@@ -555,13 +559,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // TODO(ccameron): Fix this.
   // http://crbug.com/404828
   base::WeakPtr<RenderWidgetHostViewBase> view_weak_;
-
-  // This value indicates how long to wait before we consider a renderer hung.
-  base::TimeDelta hung_renderer_delay_;
-
-  // This value indicates how long to wait for a new compositor frame from a
-  // renderer process before clearing any previously displayed content.
-  base::TimeDelta new_content_rendering_delay_;
 
  private:
   friend class MockRenderWidgetHost;
@@ -838,6 +835,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_;
+
+  // This value indicates how long to wait before we consider a renderer hung.
+  base::TimeDelta hung_renderer_delay_;
+
+  // This value indicates how long to wait for a new compositor frame from a
+  // renderer process before clearing any previously displayed content.
+  base::TimeDelta new_content_rendering_delay_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

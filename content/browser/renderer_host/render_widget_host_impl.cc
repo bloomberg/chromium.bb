@@ -171,10 +171,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            int32_t routing_id,
                                            bool hidden)
     : view_(NULL),
-      hung_renderer_delay_(
-          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
-      new_content_rendering_delay_(
-          base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       renderer_initialized_(false),
       delegate_(delegate),
       process_(process),
@@ -203,6 +199,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
+      hung_renderer_delay_(
+          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
+      new_content_rendering_delay_(
+          base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -338,7 +338,7 @@ int RenderWidgetHostImpl::GetRoutingID() const {
   return routing_id_;
 }
 
-RenderWidgetHostView* RenderWidgetHostImpl::GetView() const {
+RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
   return view_;
 }
 

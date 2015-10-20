@@ -290,7 +290,7 @@ GURL RenderFrameHostImpl::GetLastCommittedURL() {
 }
 
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
-  RenderWidgetHostView* view = render_view_host_->GetView();
+  RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (!view)
     return NULL;
   return view->GetNativeView();
@@ -396,7 +396,7 @@ blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
   if (IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart) {
-    return render_view_host_->input_router()->SendInput(
+    return render_view_host_->GetWidget()->input_router()->SendInput(
         make_scoped_ptr(message));
   }
 
@@ -544,14 +544,14 @@ void RenderFrameHostImpl::AccessibilitySetValue(
 }
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
-  RenderWidgetHostView* view = render_view_host_->GetView();
+  RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->HasFocus();
   return false;
 }
 
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
-  RenderWidgetHostView* view = render_view_host_->GetView();
+  RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->GetViewBounds();
   return gfx::Rect();
@@ -560,7 +560,7 @@ gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
 gfx::Point RenderFrameHostImpl::AccessibilityOriginInScreen(
     const gfx::Rect& bounds) const {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      render_view_host_->GetWidget()->GetView());
   if (view)
     return view->AccessibilityOriginInScreen(bounds);
   return gfx::Point();
@@ -597,7 +597,7 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
 gfx::AcceleratedWidget
     RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      render_view_host_->GetWidget()->GetView());
   if (view)
     return view->AccessibilityGetAcceleratedWidget();
   return gfx::kNullAcceleratedWidget;
@@ -606,7 +606,7 @@ gfx::AcceleratedWidget
 gfx::NativeViewAccessible
     RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      render_view_host_->GetWidget()->GetView());
   if (view)
     return view->AccessibilityGetNativeViewAccessible();
   return NULL;
@@ -955,11 +955,10 @@ RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
   if (render_widget_host_)
     return render_widget_host_;
 
-  // TODO(kenrb): When RenderViewHost no longer inherits RenderWidgetHost,
-  // we can remove this fallback. Currently it is only used for the main
-  // frame.
+  // TODO(kenrb): Remove this fallback and have the top-level frame have a
+  // widget host just like all the other frames.
   if (!GetParent())
-    return static_cast<RenderWidgetHostImpl*>(render_view_host_);
+    return render_view_host_->GetWidget();
 
   return nullptr;
 }
@@ -972,7 +971,7 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
     frame = static_cast<RenderFrameHostImpl*>(frame->GetParent());
   }
 
-  return render_view_host_->GetView();
+  return render_view_host_->GetWidget()->GetView();
 }
 
 int RenderFrameHostImpl::GetEnabledBindings() {
@@ -1111,8 +1110,8 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   }
   // Resets beforeunload waiting state.
   is_waiting_for_beforeunload_ack_ = false;
-  render_view_host_->decrement_in_flight_event_count();
-  render_view_host_->StopHangMonitorTimeout();
+  render_view_host_->GetWidget()->decrement_in_flight_event_count();
+  render_view_host_->GetWidget()->StopHangMonitorTimeout();
   send_before_unload_start_time_ = base::TimeTicks();
 
   // PlzNavigate: if the ACK is for a navigation, send it to the Navigator to
@@ -1259,7 +1258,7 @@ void RenderFrameHostImpl::OnRunJavaScriptMessage(
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.
   GetProcess()->SetIgnoreInputEvents(true);
-  render_view_host_->StopHangMonitorTimeout();
+  render_view_host_->GetWidget()->StopHangMonitorTimeout();
   delegate_->RunJavaScriptMessage(this, message, default_prompt,
                                   frame_url, type, reply_msg);
 }
@@ -1272,7 +1271,7 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   // While a JS beforeunload dialog is showing, tabs in the same process
   // shouldn't process input events.
   GetProcess()->SetIgnoreInputEvents(true);
-  render_view_host_->StopHangMonitorTimeout();
+  render_view_host_->GetWidget()->StopHangMonitorTimeout();
   delegate_->RunBeforeUnloadConfirm(this, message, is_reload, reply_msg);
 }
 
@@ -1389,10 +1388,12 @@ void RenderFrameHostImpl::OnDispatchLoad() {
 
 RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
   return static_cast<RenderWidgetHostViewBase*>(
-      frame_tree_node_->IsMainFrame() ? render_view_host_->GetView()
-                                      : frame_tree_node_->frame_tree()
-                                            ->GetMainFrame()
-                                            ->render_view_host_->GetView());
+      frame_tree_node_->IsMainFrame()
+          ? render_view_host_->GetWidget()->GetView()
+          : frame_tree_node_->frame_tree()
+                ->GetMainFrame()
+                ->render_view_host_->GetWidget()
+                ->GetView());
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
@@ -1475,7 +1476,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
     return;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      render_view_host_->GetWidget()->GetView());
   if (view && RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
     AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
     if (accessibility_mode & AccessibilityModeFlagPlatform) {
@@ -1528,7 +1529,7 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 
   // The previous call might change the fullscreen state. We need to make sure
   // the renderer is aware of that, which is done via the resize message.
-  render_view_host_->WasResized();
+  render_view_host_->GetWidget()->WasResized();
 }
 
 void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
@@ -1671,8 +1672,8 @@ void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
       rfh_state_ == STATE_SWAPPED_OUT) {
     if (is_waiting_for_beforeunload_ack_) {
       is_waiting_for_beforeunload_ack_ = false;
-      render_view_host_->decrement_in_flight_event_count();
-      render_view_host_->StopHangMonitorTimeout();
+      render_view_host_->GetWidget()->decrement_in_flight_event_count();
+      render_view_host_->GetWidget()->StopHangMonitorTimeout();
     }
     send_before_unload_start_time_ = base::TimeTicks();
     render_view_host_->is_waiting_for_close_ack_ = false;
@@ -1796,8 +1797,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
     unload_ack_is_for_navigation_ = for_navigation;
     // Increment the in-flight event count, to ensure that input events won't
     // cancel the timeout timer.
-    render_view_host_->increment_in_flight_event_count();
-    render_view_host_->StartHangMonitorTimeout(
+    render_view_host_->GetWidget()->increment_in_flight_event_count();
+    render_view_host_->GetWidget()->StartHangMonitorTimeout(
         TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
     send_before_unload_start_time_ = base::TimeTicks::Now();
     Send(new FrameMsg_BeforeUnload(routing_id_));
@@ -1845,10 +1846,10 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // leave the current page. In this case, use the regular timeout value used
   // during the (before)unload handling.
   if (is_waiting) {
-    render_view_host_->StartHangMonitorTimeout(
+    render_view_host_->GetWidget()->StartHangMonitorTimeout(
         success
             ? TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS)
-            : render_view_host_->hung_renderer_delay_);
+            : render_view_host_->GetWidget()->hung_renderer_delay());
   }
 
   FrameHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
@@ -2062,7 +2063,7 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
 void RenderFrameHostImpl::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
+      render_view_host_->GetWidget()->GetView());
   if (view)
     view->SetParentNativeViewAccessible(accessible_parent);
 }
