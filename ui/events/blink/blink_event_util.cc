@@ -201,8 +201,19 @@ int EventFlagsToWebEventModifiers(int flags) {
   if (flags & EF_ALT_DOWN)
     modifiers |= blink::WebInputEvent::AltKey;
   if (flags & EF_COMMAND_DOWN)
+#if defined(OS_WIN)
+    // Evaluate whether OSKey should be set for other platforms.
+    // Since this value was never set on Windows before as the meta
+    // key; we don't break backwards compatiblity exposing it as the
+    // true OS key. However this is not the case for Linux; see
+    // http://crbug.com/539979
+    modifiers |= blink::WebInputEvent::OSKey;
+#else
     modifiers |= blink::WebInputEvent::MetaKey;
+#endif
 
+  if (flags & EF_ALTGR_DOWN)
+    modifiers |= blink::WebInputEvent::AltGrKey;
   if (flags & EF_LEFT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::LeftButtonDown;
   if (flags & EF_MIDDLE_MOUSE_BUTTON)
@@ -215,6 +226,10 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::IsAutoRepeat;
   if (flags & ui::EF_TOUCH_ACCESSIBILITY)
     modifiers |= blink::WebInputEvent::IsTouchAccessibility;
+  if (flags & ui::EF_NUM_LOCK_DOWN)
+    modifiers |= blink::WebInputEvent::NumLockOn;
+  if (flags & ui::EF_SCROLL_LOCK_DOWN)
+    modifiers |= blink::WebInputEvent::ScrollLockOn;
 
   return modifiers;
 }

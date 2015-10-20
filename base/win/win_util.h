@@ -61,20 +61,6 @@ BASE_EXPORT void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics);
 // Returns the string representing the current user sid.
 BASE_EXPORT bool GetUserSidString(std::wstring* user_sid);
 
-// Returns true if the shift key is currently pressed.
-BASE_EXPORT bool IsShiftPressed();
-
-// Returns true if the ctrl key is currently pressed.
-BASE_EXPORT bool IsCtrlPressed();
-
-// Returns true if the alt key is currently pressed.
-BASE_EXPORT bool IsAltPressed();
-
-// Returns true if the altgr key is currently pressed.
-// Windows does not have specific key code and modifier bit and Alt+Ctrl key is
-// used as AltGr key in Windows.
-BASE_EXPORT bool IsAltGrPressed();
-
 // Returns false if user account control (UAC) has been disabled with the
 // EnableLUA registry flag. Returns true if user account control is enabled.
 // NOTE: The EnableLUA registry flag, which is ignored on Windows XP

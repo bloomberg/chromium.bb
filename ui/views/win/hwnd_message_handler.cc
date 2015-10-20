@@ -13,7 +13,6 @@
 #include "base/debug/alias.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_gdi_object.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/view_prop.h"
@@ -25,6 +24,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/icon_util.h"
@@ -2021,9 +2021,9 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
   // key and released it, so we should focus the menu bar.
   if ((notification_code & sc_mask) == SC_KEYMENU && point.x() == 0) {
     int modifiers = ui::EF_NONE;
-    if (base::win::IsShiftPressed())
+    if (ui::win::IsShiftPressed())
       modifiers |= ui::EF_SHIFT_DOWN;
-    if (base::win::IsCtrlPressed())
+    if (ui::win::IsCtrlPressed())
       modifiers |= ui::EF_CONTROL_DOWN;
     // Retrieve the status of shift and control keys to prevent consuming
     // shift+alt keys, which are used by Windows to change input languages.
@@ -2330,8 +2330,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
         // doing this undesirable thing, but that means we need to roll the
         // sys-command handling ourselves.
         // Combine |w_param| with common key state message flags.
-        w_param |= base::win::IsCtrlPressed() ? MK_CONTROL : 0;
-        w_param |= base::win::IsShiftPressed() ? MK_SHIFT : 0;
+        w_param |= ui::win::IsCtrlPressed() ? MK_CONTROL : 0;
+        w_param |= ui::win::IsShiftPressed() ? MK_SHIFT : 0;
       }
     }
   } else if (message == WM_NCRBUTTONDOWN &&

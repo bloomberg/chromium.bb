@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "base/win/win_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -104,10 +104,7 @@ bool IsScrollEvent(const base::NativeEvent& native_event) {
 // Returns a mask corresponding to the set of pressed modifier keys.
 // Checks the current global state and the state sent by client mouse messages.
 int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
-  int flags = 0;
-  flags |= base::win::IsAltPressed() ? EF_ALT_DOWN : EF_NONE;
-  flags |= base::win::IsShiftPressed() ? EF_SHIFT_DOWN : EF_NONE;
-  flags |= base::win::IsCtrlPressed() ? EF_CONTROL_DOWN : EF_NONE;
+  int flags = GetModifiersFromKeyState();
 
   // Check key messages for the extended key flag.
   if (IsKeyEvent(native_event))
@@ -367,14 +364,22 @@ int GetModifiersFromACCEL(const ACCEL& accel) {
 
 int GetModifiersFromKeyState() {
   int modifiers = EF_NONE;
-  if (base::win::IsShiftPressed())
+  if (ui::win::IsShiftPressed())
     modifiers |= EF_SHIFT_DOWN;
-  if (base::win::IsCtrlPressed())
+  if (ui::win::IsCtrlPressed())
     modifiers |= EF_CONTROL_DOWN;
-  if (base::win::IsAltPressed())
+  if (ui::win::IsAltPressed())
     modifiers |= EF_ALT_DOWN;
-  if (base::win::IsAltGrPressed())
+  if (ui::win::IsAltGrPressed())
     modifiers |= EF_ALTGR_DOWN;
+  if (ui::win::IsWindowsKeyPressed())
+    modifiers |= EF_COMMAND_DOWN;
+  if (ui::win::IsCapsLockOn())
+    modifiers |= EF_CAPS_LOCK_DOWN;
+  if (ui::win::IsNumLockOn())
+    modifiers |= EF_NUM_LOCK_DOWN;
+  if (ui::win::IsScrollLockOn())
+    modifiers |= EF_SCROLL_LOCK_DOWN;
   return modifiers;
 }
 

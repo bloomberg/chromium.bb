@@ -290,23 +290,6 @@ bool GetUserSidString(std::wstring* user_sid) {
   return true;
 }
 
-bool IsShiftPressed() {
-  return (::GetKeyState(VK_SHIFT) & 0x8000) == 0x8000;
-}
-
-bool IsCtrlPressed() {
-  return (::GetKeyState(VK_CONTROL) & 0x8000) == 0x8000;
-}
-
-bool IsAltPressed() {
-  return (::GetKeyState(VK_MENU) & 0x8000) == 0x8000;
-}
-
-bool IsAltGrPressed() {
-  return (::GetKeyState(VK_MENU) & 0x8000) == 0x8000 &&
-      (::GetKeyState(VK_CONTROL) & 0x8000) == 0x8000;
-}
-
 bool UserAccountControlIsEnabled() {
   // This can be slow if Windows ends up going to disk.  Should watch this key
   // for changes and only read it once, preferably on the file thread.

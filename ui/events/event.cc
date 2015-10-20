@@ -878,9 +878,6 @@ void KeyEvent::NormalizeFlags() {
     case VKEY_MENU:
       mask = EF_ALT_DOWN;
       break;
-    case VKEY_CAPITAL:
-      mask = EF_CAPS_LOCK_DOWN;
-      break;
     default:
       return;
   }

@@ -13,7 +13,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "ui/events/win/system_event_state_lookup.h"
 #endif
 
 namespace views {
@@ -208,7 +208,7 @@ bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
 #if defined(OS_WIN)
   // This is only needed on Windows.
   if (!show_mnemonics)
-    show_mnemonics = base::win::IsAltPressed();
+    show_mnemonics = ui::win::IsAltPressed();
 #endif
   return show_mnemonics;
 }

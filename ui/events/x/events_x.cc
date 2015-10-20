@@ -149,6 +149,8 @@ int GetEventFlagsFromXState(unsigned int state) {
     flags |= ui::EF_ALT_DOWN;
   if (state & LockMask)
     flags |= ui::EF_CAPS_LOCK_DOWN;
+  if (state & Mod2Mask)
+    flags |= ui::EF_NUM_LOCK_DOWN;
   if (state & Mod3Mask)
     flags |= ui::EF_MOD3_DOWN;
   if (state & Mod4Mask)

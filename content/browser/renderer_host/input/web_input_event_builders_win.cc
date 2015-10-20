@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+#include "ui/events/blink/blink_event_util.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/win/dpi.h"
 
 using blink::WebInputEvent;
@@ -17,15 +19,6 @@ namespace content {
 
 static const unsigned long kDefaultScrollLinesPerWheelDelta = 3;
 static const unsigned long kDefaultScrollCharsPerWheelDelta = 1;
-
-// Loads the state for toggle keys into the event.
-static void SetToggleKeyState(WebInputEvent* event) {
-  // Low bit set from GetKeyState indicates "toggled".
-  if (::GetKeyState(VK_NUMLOCK) & 1)
-    event->modifiers |= WebInputEvent::NumLockOn;
-  if (::GetKeyState(VK_CAPITAL) & 1)
-    event->modifiers |= WebInputEvent::CapsLockOn;
-}
 
 WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
                                                 UINT message,
@@ -71,12 +64,8 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
   }
   result.setKeyIdentifierFromWindowsKeyCode();
 
-  if (::GetKeyState(VK_SHIFT) & 0x8000)
-    result.modifiers |= WebInputEvent::ShiftKey;
-  if (::GetKeyState(VK_CONTROL) & 0x8000)
-    result.modifiers |= WebInputEvent::ControlKey;
-  if (::GetKeyState(VK_MENU) & 0x8000)
-    result.modifiers |= WebInputEvent::AltKey;
+  result.modifiers =
+      ui::EventFlagsToWebEventModifiers(ui::GetModifiersFromKeyState());
   // NOTE: There doesn't seem to be a way to query the mouse button state in
   // this case.
 
@@ -86,7 +75,6 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
   if ((result.type == WebInputEvent::RawKeyDown) && (lparam & 0x40000000))
     result.modifiers |= WebInputEvent::IsAutoRepeat;
 
-  SetToggleKeyState(&result);
   return result;
 }
 
@@ -219,13 +207,12 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
   result.clickCount = g_last_click_count;
 
   // set modifiers:
-
+  result.modifiers =
+      ui::EventFlagsToWebEventModifiers(ui::GetModifiersFromKeyState());
   if (wparam & MK_CONTROL)
     result.modifiers |= WebInputEvent::ControlKey;
   if (wparam & MK_SHIFT)
     result.modifiers |= WebInputEvent::ShiftKey;
-  if (::GetKeyState(VK_MENU) & 0x8000)
-    result.modifiers |= WebInputEvent::AltKey;
   if (wparam & MK_LBUTTON)
     result.modifiers |= WebInputEvent::LeftButtonDown;
   if (wparam & MK_MBUTTON)
@@ -233,7 +220,6 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
   if (wparam & MK_RBUTTON)
     result.modifiers |= WebInputEvent::RightButtonDown;
 
-  SetToggleKeyState(&result);
   return result;
 }
 
@@ -253,8 +239,6 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
   result.button = WebMouseEvent::ButtonNone;
 
   // Get key state, coordinates, and wheel delta from event.
-  typedef SHORT (WINAPI *GetKeyStateFunction)(int key);
-  GetKeyStateFunction get_key_state_func;
   UINT key_state;
   float wheel_delta;
   bool horizontal_scroll = false;
@@ -262,11 +246,10 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
     // Synthesize mousewheel event from a scroll event.  This is needed to
     // simulate middle mouse scrolling in some laptops.  Use GetAsyncKeyState
     // for key state since we are synthesizing the input event.
-    get_key_state_func = GetAsyncKeyState;
     key_state = 0;
-    if (get_key_state_func(VK_SHIFT) & 0x8000)
+    if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
       key_state |= MK_SHIFT;
-    if (get_key_state_func(VK_CONTROL) & 0x8000)
+    if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
       key_state |= MK_CONTROL;
     // NOTE: There doesn't seem to be a way to query the mouse button state
     // in this case.
@@ -300,7 +283,6 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
       horizontal_scroll = true;
   } else {
     // Non-synthesized event; we can just read data off the event.
-    get_key_state_func = ::GetKeyState;
     key_state = GET_KEYSTATE_WPARAM(wparam);
 
     result.globalX = static_cast<short>(LOWORD(lparam));
@@ -316,20 +298,18 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
     horizontal_scroll = true;
 
   // Set modifiers based on key state.
+  result.modifiers =
+      ui::EventFlagsToWebEventModifiers(ui::GetModifiersFromKeyState());
   if (key_state & MK_SHIFT)
     result.modifiers |= WebInputEvent::ShiftKey;
   if (key_state & MK_CONTROL)
     result.modifiers |= WebInputEvent::ControlKey;
-  if (get_key_state_func(VK_MENU) & 0x8000)
-    result.modifiers |= WebInputEvent::AltKey;
   if (key_state & MK_LBUTTON)
     result.modifiers |= WebInputEvent::LeftButtonDown;
   if (key_state & MK_MBUTTON)
     result.modifiers |= WebInputEvent::MiddleButtonDown;
   if (key_state & MK_RBUTTON)
     result.modifiers |= WebInputEvent::RightButtonDown;
-
-  SetToggleKeyState(&result);
 
   // Set coordinates by translating event coordinates from screen to client.
   POINT client_point = { result.globalX, result.globalY };

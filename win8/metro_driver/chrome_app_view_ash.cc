@@ -16,13 +16,13 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/metro.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
@@ -284,11 +284,11 @@ void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
 // Helper to return the state of the shift/control/alt keys.
 uint32 GetKeyboardEventFlags() {
   uint32 flags = 0;
-  if (base::win::IsShiftPressed())
+  if (ui::win::IsShiftPressed())
     flags |= ui::EF_SHIFT_DOWN;
-  if (base::win::IsCtrlPressed())
+  if (ui::win::IsCtrlPressed())
     flags |= ui::EF_CONTROL_DOWN;
-  if (base::win::IsAltPressed())
+  if (ui::win::IsAltPressed())
     flags |= ui::EF_ALT_DOWN;
   return flags;
 }

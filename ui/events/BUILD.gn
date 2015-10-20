@@ -115,6 +115,8 @@ component("events") {
     "null_event_targeter.cc",
     "null_event_targeter.h",
     "win/events_win.cc",
+    "win/system_event_state_lookup.cc",
+    "win/system_event_state_lookup.h",
   ]
 
   defines = [ "EVENTS_IMPLEMENTATION" ]

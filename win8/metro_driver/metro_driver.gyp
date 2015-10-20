@@ -53,6 +53,7 @@
             '../../crypto/crypto.gyp:crypto',
             '../../ipc/ipc.gyp:ipc',
             '../../sandbox/sandbox.gyp:sandbox',
+            '../../ui/events/events.gyp:events',
             '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../../ui/gfx/gfx.gyp:gfx',
             '../../ui/gfx/gfx.gyp:gfx_geometry',

@@ -148,6 +148,8 @@
         'null_event_targeter.h',
         'ozone/events_ozone.cc',
         'win/events_win.cc',
+        'win/system_event_state_lookup.cc',
+        'win/system_event_state_lookup.h',
         'x/events_x.cc',
       ],
       'conditions': [

@@ -23,6 +23,7 @@ unsigned int XEventState(int flags) {
       ((flags & ui::EF_SHIFT_DOWN) ? ShiftMask : 0) |
       ((flags & ui::EF_CONTROL_DOWN) ? ControlMask : 0) |
       ((flags & ui::EF_ALT_DOWN) ? Mod1Mask : 0) |
+      ((flags & ui::EF_NUM_LOCK_DOWN) ? Mod2Mask : 0) |
       ((flags & ui::EF_CAPS_LOCK_DOWN) ? LockMask : 0) |
       ((flags & ui::EF_ALTGR_DOWN) ? Mod5Mask : 0) |
       ((flags & ui::EF_COMMAND_DOWN) ? Mod4Mask : 0) |
