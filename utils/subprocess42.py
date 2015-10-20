@@ -322,19 +322,18 @@ class Popen(subprocess.Popen):
     - TimeoutExpired when more than timeout seconds were spent waiting for the
       process.
     """
+    assert timeout is None or isinstance(timeout, (int, float)), timeout
     if timeout is None:
-      ret = super(Popen, self).wait()
-    else:
-      assert isinstance(timeout, (int, float)), timeout
+      super(Popen, self).wait()
+    elif self.returncode is None:
       if subprocess.mswindows:
         WAIT_TIMEOUT = 258
-        if self.returncode is None:
-          result = subprocess._subprocess.WaitForSingleObject(
-              self._handle, int(timeout * 1000))
-          if result == WAIT_TIMEOUT:
-            raise TimeoutExpired(self.args, timeout)
-          self.returncode = subprocess._subprocess.GetExitCodeProcess(
-              self._handle)
+        result = subprocess._subprocess.WaitForSingleObject(
+            self._handle, int(timeout * 1000))
+        if result == WAIT_TIMEOUT:
+          raise TimeoutExpired(self.args, timeout)
+        self.returncode = subprocess._subprocess.GetExitCodeProcess(
+            self._handle)
       else:
         # If you think the following code is horrible, it's because it is
         # inspired by python3's stdlib.
@@ -350,6 +349,7 @@ class Popen(subprocess.Popen):
             pid = self.pid
             sts = 0
           if pid == self.pid:
+            # This sets self.returncode.
             self._handle_exitstatus(sts)
             break
           remaining = end - time.time()
@@ -357,11 +357,11 @@ class Popen(subprocess.Popen):
             raise TimeoutExpired(self.args, timeout)
           delay = min(delay * 2, remaining, .05)
           time.sleep(delay)
-      ret = self.returncode
+
     if not self.end:
       # communicate() uses wait() internally.
       self.end = time.time()
-    return ret
+    return self.returncode
 
   def poll(self):
     ret = super(Popen, self).poll()
@@ -373,10 +373,6 @@ class Popen(subprocess.Popen):
     """Yields output until the process terminates.
 
     Unlike wait(), does not raise TimeoutExpired.
-
-    Warning: the process may still be alive after the iteration if:
-    - a timeout is provided.
-    - the process closes all its pipes then hangs for more than timeout seconds.
 
     Yields:
       (pipename, data) where pipename is either 'stdout', 'stderr' or None in
@@ -411,13 +407,6 @@ class Popen(subprocess.Popen):
       if data or to is 0:
         yield t, data
         last_yield = time.time()
-
-    # Indirectly initialize self.end.
-    try:
-      self.wait(None if timeout is None else timeout())
-    except TimeoutExpired:
-      # It's up to the caller to handle this case.
-      pass
 
     # Read all remaining output in the pipes.
     # There is 3 cases:

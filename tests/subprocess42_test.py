@@ -583,6 +583,23 @@ class Subprocess42Test(unittest.TestCase):
           continue
         raise
 
+  def test_yield_any_returncode(self):
+    proc = subprocess42.Popen(
+        [sys.executable, '-c', 'import sys;sys.stdout.write("yo");sys.exit(1)'],
+        stdout=subprocess42.PIPE)
+    for p, d in proc.yield_any():
+      self.assertEqual('stdout', p)
+      self.assertEqual('yo', d)
+    # There was a bug where the second call to wait() would overwrite
+    # proc.returncode with 0 when timeout is not None.
+    self.assertEqual(1, proc.wait())
+    self.assertEqual(1, proc.wait(timeout=0))
+    self.assertEqual(1, proc.poll())
+    self.assertEqual(1, proc.returncode)
+    # On Windows, the clock resolution is 15ms so Popen.duration() will likely
+    # be 0.
+    self.assertLessEqual(0, proc.duration())
+
   def test_detached(self):
     is_win = (sys.platform == 'win32')
     cmd = [sys.executable, '-c', SCRIPT]
