@@ -19,8 +19,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -29,7 +31,6 @@
 
 namespace chromeos {
 
-const char DemoAppLauncher::kDemoUserName[] = "demouser@demo.app.local";
 const char DemoAppLauncher::kDemoAppId[] = "klimoghijjogocdbaikffefjfcfheiel";
 const base::FilePath::CharType kDefaultDemoAppPath[] =
     FILE_PATH_LITERAL("/usr/share/chromeos-assets/demo_app");
@@ -49,14 +50,14 @@ DemoAppLauncher::~DemoAppLauncher() {
 void DemoAppLauncher::StartDemoAppLaunch() {
   DVLOG(1) << "Launching demo app...";
   // user_id = DemoAppUserId, force_emphemeral = true, delegate = this.
-  kiosk_profile_loader_.reset(
-      new KioskProfileLoader(kDemoUserName, true, this));
+  kiosk_profile_loader_.reset(new KioskProfileLoader(
+      login::DemoAccountId().GetUserEmail(), true, this));
   kiosk_profile_loader_->Start();
 }
 
 // static
 bool DemoAppLauncher::IsDemoAppSession(const std::string& user_id) {
-  return user_id == kDemoUserName;
+  return user_id == login::DemoAccountId().GetUserEmail();
 }
 
 // static

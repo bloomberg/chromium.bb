@@ -55,6 +55,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
@@ -798,15 +799,16 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(const std::string& app_id) {
 
 void ChromeUserManagerImpl::DemoAccountLoggedIn() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  active_user_ =
-      user_manager::User::CreateKioskAppUser(DemoAppLauncher::kDemoUserName);
+  active_user_ = user_manager::User::CreateKioskAppUser(
+      login::DemoAccountId().GetUserEmail());
   active_user_->SetStubImage(
       user_manager::UserImage(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_PROFILE_PICTURE_LOADING)),
       user_manager::User::USER_IMAGE_INVALID,
       false);
-  WallpaperManager::Get()->SetUserWallpaperNow(DemoAppLauncher::kDemoUserName);
+  WallpaperManager::Get()->SetUserWallpaperNow(
+      login::DemoAccountId().GetUserEmail());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(::switches::kForceAppMode);

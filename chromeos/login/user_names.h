@@ -9,31 +9,41 @@
 
 #include "chromeos/chromeos_export.h"
 
+class AccountId;
+
 namespace chromeos {
 
 namespace login {
 
 // Username for stub login when not running on ChromeOS.
-CHROMEOS_EXPORT extern const char* kStubUser;
+CHROMEOS_EXPORT extern const char kStubUser[];
 
 // Username for the login screen. It is only used to identify login screen
 // tries to set default wallpaper. It is not a real user.
-CHROMEOS_EXPORT extern const char* kSignInUser;
+CHROMEOS_EXPORT extern const char kSignInUser[];
 
 // Magic e-mail addresses are bad. They exist here because some code already
 // depends on them and it is hard to figure out what. Any user types added in
 // the future should be identified by a new |UserType|, not a new magic e-mail
 // address.
 // Username for Guest session user.
-CHROMEOS_EXPORT extern const char* kGuestUserName;
+CHROMEOS_EXPORT extern const char kGuestUserName[];
 
 // Domain that is used for all supervised users.
-CHROMEOS_EXPORT extern const char* kSupervisedUserDomain;
+CHROMEOS_EXPORT extern const char kSupervisedUserDomain[];
 
 // Canonicalizes a GAIA user ID, accounting for the legacy guest mode user ID
 // which does trips up gaia::CanonicalizeEmail() because it does not contain an
 // @ symbol.
 CHROMEOS_EXPORT std::string CanonicalizeUserID(const std::string& user_id);
+
+CHROMEOS_EXPORT const AccountId& StubAccountId();
+
+CHROMEOS_EXPORT const AccountId& SignInAccountId();
+
+CHROMEOS_EXPORT const AccountId& GuestAccountId();
+
+CHROMEOS_EXPORT const AccountId& DemoAccountId();
 
 }  // namespace login
 

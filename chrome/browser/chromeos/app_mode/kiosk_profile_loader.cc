@@ -21,6 +21,7 @@
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -158,7 +159,7 @@ void KioskProfileLoader::OnAuthSuccess(const UserContext& user_context) {
   // user as a demo user.
   UserContext context = user_context;
   if (context.GetUserID() == chromeos::login::kGuestUserName)
-    context.SetUserID(DemoAppLauncher::kDemoUserName);
+    context.SetUserID(login::DemoAccountId().GetUserEmail());
   UserSessionManager::GetInstance()->StartSession(
       context, UserSessionManager::PRIMARY_USER_SESSION,
       false,  // has_auth_cookies

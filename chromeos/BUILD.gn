@@ -29,6 +29,7 @@ component("chromeos") {
     "//components/policy/proto",
     "//components/onc",
     "//components/proxy_config",
+    "//components/signin/core/account_id",
     "//crypto",
     "//crypto:platform",
     "//google_apis",

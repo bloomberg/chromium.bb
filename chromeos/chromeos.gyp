@@ -550,6 +550,7 @@
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:proxy_config',
+        '../components/components.gyp:signin_core_account_id',
         '../crypto/crypto.gyp:crypto',
         '../dbus/dbus.gyp:dbus',
         '../google_apis/google_apis.gyp:google_apis',

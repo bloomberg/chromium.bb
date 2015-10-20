@@ -29,7 +29,6 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   static bool IsDemoAppSession(const std::string& user_id);
   static void SetDemoAppPathForTesting(const base::FilePath& path);
 
-  static const char kDemoUserName[];
   static const char kDemoAppId[];
 
  private:
