@@ -149,6 +149,9 @@ void OriginIdentifierValueMap::SetValue(
   DCHECK(primary_pattern.IsValid());
   DCHECK(secondary_pattern.IsValid());
   DCHECK(value);
+  // TODO(raymes): Remove this after we track down the cause of
+  // crbug.com/531548.
+  CHECK_NE(CONTENT_SETTINGS_TYPE_DEFAULT, content_type);
   EntryMapKey key(content_type, resource_identifier);
   PatternPair patterns(primary_pattern, secondary_pattern);
   // This will create the entry and the linked_ptr if needed.
@@ -162,10 +165,12 @@ void OriginIdentifierValueMap::DeleteValue(
       const ResourceIdentifier& resource_identifier) {
   EntryMapKey key(content_type, resource_identifier);
   PatternPair patterns(primary_pattern, secondary_pattern);
-  entries_[key].erase(patterns);
-  if (entries_[key].empty()) {
-    entries_.erase(key);
-  }
+  EntryMap::iterator it = entries_.find(key);
+  if (it == entries_.end())
+    return;
+  it->second.erase(patterns);
+  if (it->second.empty())
+    entries_.erase(it);
 }
 
 void OriginIdentifierValueMap::DeleteValues(
