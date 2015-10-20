@@ -29,6 +29,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
+#include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
 #include "extensions/renderer/dispatcher.h"
@@ -109,9 +110,9 @@ void ChromeRenderViewTest::SetUp() {
 void ChromeRenderViewTest::TearDown() {
   base::RunLoop().RunUntilIdle();
 #if defined(ENABLE_EXTENSIONS)
-  ChromeContentRendererClient* client =
-      static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
-  client->GetExtensionDispatcherForTest()->OnRenderProcessShutdown();
+  ChromeExtensionsRendererClient* ext_client =
+      ChromeExtensionsRendererClient::GetInstance();
+  ext_client->GetExtensionDispatcherForTest()->OnRenderProcessShutdown();
 #endif
 
 #if defined(LEAK_SANITIZER)
@@ -137,8 +138,11 @@ ChromeRenderViewTest::CreateContentRendererClient() {
 #if defined(ENABLE_EXTENSIONS)
   extension_dispatcher_delegate_.reset(
       new ChromeExtensionsDispatcherDelegate());
-  client->SetExtensionDispatcherForTest(
-      new extensions::Dispatcher(extension_dispatcher_delegate_.get()));
+  ChromeExtensionsRendererClient* ext_client =
+      ChromeExtensionsRendererClient::GetInstance();
+  ext_client->SetExtensionDispatcherForTest(
+      make_scoped_ptr(
+          new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
 #endif
 #if defined(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());

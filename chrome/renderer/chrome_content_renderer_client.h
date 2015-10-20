@@ -18,7 +18,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "v8/include/v8.h"
 
-class ChromeExtensionsDispatcherDelegate;
 class ChromeRenderProcessObserver;
 #if defined(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
@@ -43,10 +42,6 @@ class PrescientNetworkingDispatcher;
 namespace extensions {
 class Dispatcher;
 class Extension;
-class ExtensionSet;
-class ExtensionsGuestViewContainerDispatcher;
-class RendererPermissionsPolicyDelegate;
-class ResourceRequestPolicy;
 }
 
 namespace prerender {
@@ -161,12 +156,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       v8::Local<v8::Context> context,
       const GURL& url) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
-#if defined(ENABLE_EXTENSIONS)
-  // Takes ownership.
-  void SetExtensionDispatcherForTest(
-      extensions::Dispatcher* extension_dispatcher);
-  extensions::Dispatcher* GetExtensionDispatcherForTest();
-#endif
 
 #if defined(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.
@@ -187,26 +176,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const GURL& url, const std::set<std::string>& whitelist);
 #endif
 
-  static bool WasWebRequestUsedBySomeExtensions();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest,
                            ShouldSuppressErrorPage);
-
-#if defined(ENABLE_EXTENSIONS)
-  // Gets extension by the given origin, regardless of whether the extension
-  // is active in the current process.
-  const extensions::Extension* GetExtensionByOrigin(
-      const blink::WebSecurityOrigin& origin) const;
-
-  // Returns true if the frame is navigating to an URL either into or out of an
-  // extension app's extent.
-  bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
-                               const GURL& new_url,
-                               bool is_extension_url,
-                               bool is_initial_navigation);
-#endif
 
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
@@ -224,22 +197,11 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;
 
-// TODO(thestig): Extract into a separate file if possible. Cleanup
-// ENABLE_EXTENSIONS ifdefs in the .cc file as well.
-#if defined(ENABLE_EXTENSIONS)
-  scoped_ptr<ChromeExtensionsDispatcherDelegate> extension_dispatcher_delegate_;
-  scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
-  scoped_ptr<extensions::RendererPermissionsPolicyDelegate>
-      permissions_policy_delegate_;
-  scoped_ptr<extensions::ExtensionsGuestViewContainerDispatcher>
-      guest_view_container_dispatcher_;
-  scoped_ptr<extensions::ResourceRequestPolicy> resource_request_policy_;
-#endif
-
   scoped_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
   scoped_ptr<password_manager::CredentialManagerClient>
       credential_manager_client_;
+
 #if defined(ENABLE_SPELLCHECK)
   scoped_ptr<SpellCheck> spellcheck_;
 #endif

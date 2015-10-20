@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
 #include "content/public/common/content_constants.h"
@@ -35,6 +34,11 @@
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
+#include "extensions/renderer/dispatcher.h"
+#endif
 
 using blink::WebDataSource;
 using blink::WebFrame;
@@ -599,6 +603,15 @@ void DumpHistograms(const WebPerformance& performance,
   }
 }
 
+bool WasWebRequestUsedBySomeExtensions() {
+#if defined(ENABLE_EXTENSIONS)
+  return ChromeExtensionsRendererClient::GetInstance()->extension_dispatcher()
+      ->WasWebRequestUsedBySomeExtensions();
+#else
+  return false;
+#endif
+}
+
 // These histograms are based on the timing information collected in
 // DocumentState. They should be transitioned to equivalents based on the
 // Navigation Timing records (see DumpPerformanceTiming()) or dropped if not
@@ -796,8 +809,7 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
                   begin_to_finish_all_loads);
   }
 
-  const bool use_webrequest_histogram =
-      ChromeContentRendererClient::WasWebRequestUsedBySomeExtensions();
+  const bool use_webrequest_histogram = WasWebRequestUsedBySomeExtensions();
   if (use_webrequest_histogram) {
     switch (load_type) {
       case DocumentState::NORMAL_LOAD:
