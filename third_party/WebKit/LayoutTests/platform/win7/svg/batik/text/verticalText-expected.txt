@@ -4,10 +4,10 @@ layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 448x498
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGPath {path} at (14,0) size 317x46 [transform={m=((0.15,0.00)(0.00,0.15)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 0 1000 100 C 1100 200 1200 300 1300 200 C 1400 100 1500 0 1600 100 C 1700 200 1800 300 1900 200 C 2000 100 2100 0 2200 100"]
-    LayoutSVGContainer {g} at (20,25) size 410x470
-      LayoutSVGText {text} at (167,25) size 116x18 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 116x18
-          chunk 1 (middle anchor) text run 1 at (167.21,40.00) startOffset 0 endOffset 18 width 115.57: "Vertical Text Test"
+    LayoutSVGContainer {g} at (20,26) size 410x469
+      LayoutSVGText {text} at (164,26) size 122x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 121x17
+          chunk 1 (middle anchor) text run 1 at (164.98,40.00) startOffset 0 endOffset 18 width 120.05: "Vertical Text Test"
       LayoutSVGPath {line} at (20,74) size 410x2 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=20.00] [y1=75.00] [x2=430.00] [y2=75.00]
       LayoutSVGContainer {g} at (48,73) size 354x377 [opacity=0.50]
         LayoutSVGEllipse {circle} at (48,73) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [cx=50.00] [cy=75.00] [r=2.00]

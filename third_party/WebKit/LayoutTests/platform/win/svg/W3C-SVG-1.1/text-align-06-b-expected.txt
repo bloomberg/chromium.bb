@@ -6,60 +6,60 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (0,4) size 480x44 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 480x44
           chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 31 width 479.86: "Test 'baseline-shift' (vertic.)"
-      LayoutSVGContainer {g} at (81,60) size 294x297
-        LayoutSVGContainer {g} at (81,60) size 294x297 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
-          LayoutSVGText {text} at (-9,0) size 25x165 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 17x66
+      LayoutSVGContainer {g} at (73,60) size 310x297
+        LayoutSVGContainer {g} at (73,60) size 310x297 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
+          LayoutSVGText {text} at (-17,0) size 41x165 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 33x66
               chunk 1 (vertical) text run 1 at (-10.50,0.00) startOffset 0 endOffset 1 height 33.00: "t"
               chunk 1 (vertical) text run 2 at (-10.50,33.00) startOffset 1 endOffset 2 height 33.00: "e"
-            LayoutSVGTSpan {tspan} at (0,0) size 33x17
-              LayoutSVGInlineText {#text} at (7,66) size 17x33
+            LayoutSVGTSpan {tspan} at (0,0) size 33x33
+              LayoutSVGInlineText {#text} at (7,66) size 33x33
                 chunk 1 (vertical) text run 1 at (-3.50,66.00) startOffset 0 endOffset 1 height 33.00: "7"
-            LayoutSVGInlineText {#text} at (0,99) size 15x66
+            LayoutSVGInlineText {#text} at (0,99) size 33x66
               chunk 1 (vertical) text run 1 at (-10.50,99.00) startOffset 0 endOffset 1 height 33.00: "x"
               chunk 1 (vertical) text run 2 at (-10.50,132.00) startOffset 1 endOffset 2 height 33.00: "t"
-          LayoutSVGText {text} at (45,0) size 44x264 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (26,0) size 17x66
+          LayoutSVGText {text} at (42,0) size 55x264 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (21,0) size 33x66
               chunk 1 (vertical) text run 1 at (69.50,0.00) startOffset 0 endOffset 1 height 33.00: "t"
               chunk 1 (vertical) text run 2 at (69.50,33.00) startOffset 1 endOffset 2 height 33.00: "e"
-            LayoutSVGTSpan {tspan} at (0,0) size 132x27
-              LayoutSVGInlineText {#text} at (0,66) size 27x132
+            LayoutSVGTSpan {tspan} at (0,0) size 132x33
+              LayoutSVGInlineText {#text} at (0,66) size 33x132
                 chunk 1 (vertical) text run 1 at (48.50,66.00) startOffset 0 endOffset 1 height 33.00: "-"
                 chunk 1 (vertical) text run 2 at (48.50,99.00) startOffset 1 endOffset 2 height 33.00: "7"
                 chunk 1 (vertical) text run 3 at (48.50,132.00) startOffset 2 endOffset 3 height 33.00: "0"
                 chunk 1 (vertical) text run 4 at (48.50,165.00) startOffset 3 endOffset 4 height 33.00: "%"
-            LayoutSVGInlineText {#text} at (26,198) size 15x66
+            LayoutSVGInlineText {#text} at (21,198) size 33x66
               chunk 1 (vertical) text run 1 at (69.50,198.00) startOffset 0 endOffset 1 height 33.00: "x"
               chunk 1 (vertical) text run 2 at (69.50,231.00) startOffset 1 endOffset 2 height 33.00: "t"
-          LayoutSVGText {text} at (155,0) size 34x231 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (16,0) size 17x66
+          LayoutSVGText {text} at (147,0) size 50x231 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (16,0) size 33x66
               chunk 1 (vertical) text run 1 at (169.50,0.00) startOffset 0 endOffset 1 height 33.00: "t"
               chunk 1 (vertical) text run 2 at (169.50,33.00) startOffset 1 endOffset 2 height 33.00: "e"
-            LayoutSVGTSpan {tspan} at (0,0) size 99x17
-              LayoutSVGInlineText {#text} at (0,66) size 17x99
+            LayoutSVGTSpan {tspan} at (0,0) size 99x33
+              LayoutSVGInlineText {#text} at (0,66) size 33x99
                 chunk 1 (vertical) text run 1 at (153.00,66.00) startOffset 0 endOffset 1 height 33.00: "s"
                 chunk 1 (vertical) text run 2 at (153.00,99.00) startOffset 1 endOffset 2 height 33.00: "u"
                 chunk 1 (vertical) text run 3 at (153.00,132.00) startOffset 2 endOffset 3 height 33.00: "b"
-            LayoutSVGTSpan {tspan} at (0,0) size 34x15
-              LayoutSVGInlineText {#text} at (17,165) size 15x33
+            LayoutSVGTSpan {tspan} at (0,0) size 34x33
+              LayoutSVGInlineText {#text} at (16,165) size 33x33
                 chunk 1 (vertical) text run 1 at (169.50,165.00) startOffset 0 endOffset 1 height 33.00: "x"
-            LayoutSVGInlineText {#text} at (20,198) size 9x33
+            LayoutSVGInlineText {#text} at (16,198) size 33x33
               chunk 1 (vertical) text run 1 at (169.50,198.00) startOffset 0 endOffset 1 height 33.00: "t"
-          LayoutSVGText {text} at (251,0) size 34x297 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 17x66
+          LayoutSVGText {text} at (243,0) size 50x297 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 33x66
               chunk 1 (vertical) text run 1 at (249.50,0.00) startOffset 0 endOffset 1 height 33.00: "t"
               chunk 1 (vertical) text run 2 at (249.50,33.00) startOffset 1 endOffset 2 height 33.00: "e"
-            LayoutSVGTSpan {tspan} at (0,0) size 166x17
-              LayoutSVGInlineText {#text} at (16,66) size 17x165
+            LayoutSVGTSpan {tspan} at (0,0) size 166x33
+              LayoutSVGInlineText {#text} at (16,66) size 33x165
                 chunk 1 (vertical) text run 1 at (266.00,66.00) startOffset 0 endOffset 1 height 33.00: "s"
                 chunk 1 (vertical) text run 2 at (266.00,99.00) startOffset 1 endOffset 2 height 33.00: "u"
                 chunk 1 (vertical) text run 3 at (266.00,132.00) startOffset 2 endOffset 3 height 33.00: "p"
                 chunk 1 (vertical) text run 4 at (266.00,165.00) startOffset 3 endOffset 4 height 33.00: "e"
                 chunk 1 (vertical) text run 5 at (266.00,198.00) startOffset 4 endOffset 5 height 33.00: "r"
-            LayoutSVGTSpan {tspan} at (0,0) size 34x15
-              LayoutSVGInlineText {#text} at (0,231) size 15x33
+            LayoutSVGTSpan {tspan} at (0,0) size 33x33
+              LayoutSVGInlineText {#text} at (0,231) size 33x33
                 chunk 1 (vertical) text run 1 at (249.50,231.00) startOffset 0 endOffset 1 height 33.00: "x"
-            LayoutSVGInlineText {#text} at (4,264) size 9x33
+            LayoutSVGInlineText {#text} at (0,264) size 33x33
               chunk 1 (vertical) text run 1 at (249.50,264.00) startOffset 0 endOffset 1 height 33.00: "t"
     LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 264x45

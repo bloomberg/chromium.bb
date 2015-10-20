@@ -233,15 +233,6 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
-crbug.com/543397 svg/W3C-SVG-1.1/text-align-05-b.svg [ NeedsRebaseline ]
-crbug.com/543397 svg/W3C-SVG-1.1/text-align-06-b.svg [ NeedsRebaseline ]
-crbug.com/543397 [ Android Linux Mac XP Win7 ] svg/W3C-SVG-1.1/text-intro-03-b.svg [ NeedsRebaseline ]
-crbug.com/543397 svg/batik/text/textGlyphOrientationHorizontal.svg [ NeedsRebaseline ]
-crbug.com/543397 [ Android Linux Mac XP Win7 ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
-crbug.com/543397 svg/batik/text/verticalTextOnPath.svg [ NeedsRebaseline ]
-crbug.com/543397 svg/text/text-selection-align-05-b.svg [ NeedsRebaseline ]
-crbug.com/543397 svg/text/text-selection-align-06-b.svg [ NeedsRebaseline ]
-
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
