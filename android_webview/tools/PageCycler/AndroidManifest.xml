@@ -25,7 +25,7 @@
             android:exported="true"/>
     </application>
 
-    <instrumentation android:name="org.chromium.base.test.BaseInstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.webview_shell.WebViewShellTestRunner"
         android:targetPackage="org.chromium.webview_shell"
         android:label="Page cycler for org.chromium.webview_shell" />
 </manifest>

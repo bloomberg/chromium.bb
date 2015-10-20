@@ -12,6 +12,9 @@
         'resource_dir': 'tools/WebViewShell/res',
         'android_manifest_path': 'tools/WebViewShell/AndroidManifest.xml', # for lint
       },
+      'dependencies': [
+        '../testing/android/on_device_instrumentation.gyp:reporter_java',
+      ],
       'includes': [
         '../build/java_apk.gypi',
       ],

@@ -12,6 +12,7 @@ import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
 import org.chromium.webview_shell.WebViewLayoutTestActivity;
+import org.chromium.webview_shell.WebViewShellTestRunner;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,8 +66,8 @@ public class WebViewLayoutTest
     }
 
     @Override
-    public WebViewLayoutTestRunner getInstrumentation() {
-        return (WebViewLayoutTestRunner) super.getInstrumentation();
+    public WebViewShellTestRunner getInstrumentation() {
+        return (WebViewShellTestRunner) super.getInstrumentation();
     }
 
     @MediumTest
