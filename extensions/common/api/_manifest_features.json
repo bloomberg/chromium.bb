@@ -173,7 +173,7 @@
     ]
   },
   "kiosk_only": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": [
       "platform_app"
     ]
