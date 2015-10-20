@@ -32,6 +32,7 @@
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "core/page/PageVisibilityState.h"
+#include "platform/MemoryPurgeController.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
@@ -56,7 +57,6 @@ class EditorClient;
 class FocusController;
 class Frame;
 class FrameHost;
-class MemoryPurgeController;
 class PluginData;
 class PointerLockController;
 class ScrollingCoordinator;
@@ -69,7 +69,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(LocalFrame*);
 
-class CORE_EXPORT Page final : public NoBaseWillBeGarbageCollectedFinalized<Page>, public WillBeHeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate {
+class CORE_EXPORT Page final : public NoBaseWillBeGarbageCollectedFinalized<Page>, public WillBeHeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Page);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Page);
     WTF_MAKE_NONCOPYABLE(Page);
@@ -202,6 +202,8 @@ public:
     static void networkStateChanged(bool online);
 
     MemoryPurgeController& memoryPurgeController();
+
+    void purgeMemory(MemoryPurgeMode, DeviceKind) override;
 
     DECLARE_TRACE();
     void willBeDestroyed();
