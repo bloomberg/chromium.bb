@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/startup_controller.h"
+#include "components/sync_driver/startup_controller.h"
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_driver_switches.h"

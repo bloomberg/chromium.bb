@@ -91,6 +91,8 @@ source_set("sync_driver") {
     "shared_change_processor_ref.h",
     "signin_manager_wrapper.cc",
     "signin_manager_wrapper.h",
+    "startup_controller.cc",
+    "startup_controller.h",
     "sync_api_component_factory.h",
     "sync_client.cc",
     "sync_client.h",

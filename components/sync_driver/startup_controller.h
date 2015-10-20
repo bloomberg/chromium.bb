@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_STARTUP_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_STARTUP_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -129,4 +129,4 @@ class StartupController {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_STARTUP_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_

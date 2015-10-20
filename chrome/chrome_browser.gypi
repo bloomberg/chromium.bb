@@ -2901,8 +2901,6 @@
       'browser/sync/sessions/session_data_type_controller.h',
       'browser/sync/sessions/sessions_sync_manager.cc',
       'browser/sync/sessions/sessions_sync_manager.h',
-      'browser/sync/startup_controller.cc',
-      'browser/sync/startup_controller.h',
       'browser/sync/supervised_user_signin_manager_wrapper.cc',
       'browser/sync/supervised_user_signin_manager_wrapper.h',
       'browser/sync/sync_startup_tracker.cc',

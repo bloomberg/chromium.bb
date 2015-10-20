@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/startup_controller.h"
+#include "components/sync_driver/startup_controller.h"
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
