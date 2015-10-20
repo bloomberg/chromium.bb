@@ -99,8 +99,7 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleByKeyframe) {
   gfx::Canvas canvas(gfx::Size(20, 10), 1.0f, true);
   canvas.FillRect(gfx::Rect(20, 10), SK_ColorBLACK);
   canvas.FillRect(gfx::Rect(10, 10), SK_ColorWHITE);
-  SkBitmap interesting_bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap interesting_bitmap = skia::ReadPixels(canvas.sk_canvas());
 
   // Don't throttle for a boring frame.
   throttler()->OnImageFlush(&boring_bitmap);

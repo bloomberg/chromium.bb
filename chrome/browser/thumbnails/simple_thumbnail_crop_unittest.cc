@@ -26,8 +26,7 @@ typedef testing::Test SimpleThumbnailCropTest;
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TallerThanWide) {
   // The input bitmap is vertically long.
   gfx::Canvas canvas(gfx::Size(40, 90), 1.0f, true);
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
 
   // The desired size is square.
   thumbnails::ClipResult clip_result = thumbnails::CLIP_RESULT_NOT_CLIPPED;
@@ -43,8 +42,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TallerThanWide) {
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
   gfx::Canvas canvas(gfx::Size(70, 40), 1.0f, true);
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
 
   // The desired size is square.
   thumbnails::ClipResult clip_result = thumbnails::CLIP_RESULT_NOT_CLIPPED;
@@ -60,8 +58,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_WiderThanTall) {
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TooWiderThanTall) {
   // The input bitmap is horizontally very long.
   gfx::Canvas canvas(gfx::Size(90, 40), 1.0f, true);
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
 
   // The desired size is square.
   thumbnails::ClipResult clip_result = thumbnails::CLIP_RESULT_NOT_CLIPPED;
@@ -77,8 +74,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TooWiderThanTall) {
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NotClipped) {
   // The input bitmap is square.
   gfx::Canvas canvas(gfx::Size(40, 40), 1.0f, true);
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
 
   // The desired size is square.
   thumbnails::ClipResult clip_result = thumbnails::CLIP_RESULT_NOT_CLIPPED;
@@ -94,8 +90,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NotClipped) {
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NonSquareOutput) {
   // The input bitmap is square.
   gfx::Canvas canvas(gfx::Size(40, 40), 1.0f, true);
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
 
   // The desired size is horizontally long.
   thumbnails::ClipResult clip_result = thumbnails::CLIP_RESULT_NOT_CLIPPED;

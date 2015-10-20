@@ -127,8 +127,7 @@ TEST(ColorUtils, CalculateBoringScore_SingleColor) {
   // Fill all pixels in black.
   canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
 
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
   // The thumbnail should deserve the highest boring score.
   EXPECT_DOUBLE_EQ(1.0, CalculateBoringScore(bitmap));
 }
@@ -143,8 +142,7 @@ TEST(ColorUtils, CalculateBoringScore_TwoColors) {
   canvas.FillRect(gfx::Rect(0, 0, kSize.width() / 2, kSize.height()),
                   SK_ColorWHITE);
 
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
   ASSERT_EQ(kSize.width(), bitmap.width());
   ASSERT_EQ(kSize.height(), bitmap.height());
   // The thumbnail should be less boring because two colors are used.

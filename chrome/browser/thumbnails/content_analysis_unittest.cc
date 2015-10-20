@@ -84,8 +84,7 @@ TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnImpulse) {
   canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetRGB(10, 10, 10));
   canvas.FillRect(gfx::Rect(400, 300, 1, 1), SkColorSetRGB(255, 255, 255));
 
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
 
   SkBitmap reduced_color;
   reduced_color.allocPixels(SkImageInfo::MakeA8(source.width(),
@@ -128,8 +127,7 @@ TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnFrame) {
   canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(draw_rect, SkColorSetRGB(255, 255, 255));
 
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
 
   SkBitmap reduced_color;
   reduced_color.allocPixels(SkImageInfo::MakeA8(source.width(),
@@ -167,8 +165,7 @@ TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
   canvas.FillRect(image_rect, SkColorSetRGB(0, 0, 0));
   canvas.DrawRect(draw_rect, SkColorSetRGB(255, 255, 255));
 
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
   SkBitmap reduced_color;
   reduced_color.allocPixels(SkImageInfo::MakeA8(source.width(),
                                                 source.height()));
@@ -231,8 +228,7 @@ TEST_F(ThumbnailContentAnalysisTest,
   canvas.DrawRect(gfx::Rect(300, 250, 99, 100), SkColorSetRGB(255, 255, 255));
   canvas.DrawRect(gfx::Rect(401, 250, 99, 100), SkColorSetRGB(255, 255, 255));
 
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
   SkBitmap reduced_color;
   reduced_color.allocPixels(SkImageInfo::MakeA8(source.width(),
                                                 source.height()));
@@ -573,8 +569,7 @@ TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
   std::fill_n(columns.begin() + 300, 100, true);
   std::fill_n(columns.begin() + 500, 100, true);
 
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
   SkBitmap result = ComputeDecimatedImage(source, rows, columns);
   EXPECT_FALSE(result.empty());
   EXPECT_EQ(300, result.width());
@@ -686,8 +681,7 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
     canvas.DrawRect(pict_rect, SkColorSetRGB(0, 0, 0));
   }
 
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
 
   SkBitmap result = CreateRetargetedThumbnailImage(
       source, gfx::Size(424, 264), 2.5);

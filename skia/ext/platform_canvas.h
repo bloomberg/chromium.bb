@@ -116,6 +116,13 @@ SK_API size_t PlatformCanvasStrideForWidth(unsigned width);
 // by the next call to save() or restore().
 SK_API SkBaseDevice* GetTopDevice(const SkCanvas& canvas);
 
+// Copies pixels from the SkCanvas into an SkBitmap, fetching pixels from
+// GPU memory if necessary.
+//
+// The bitmap will remain empty if we can't allocate enough memory for a copy
+// of the pixels.
+SK_API SkBitmap ReadPixels(SkCanvas* canvas);
+
 // Returns true if native platform routines can be used to draw on the
 // given canvas. If this function returns false, BeginPlatformPaint will
 // return NULL PlatformSurface.

@@ -342,8 +342,7 @@ TEST_F(ColorAnalysisTest, ComputeColorCovarianceWithCanvas) {
   canvas.FillRect(gfx::Rect(150, 0, 50, 200), SkColorSetRGB(0, 100, 100));
   canvas.FillRect(gfx::Rect(200, 0, 50, 200), SkColorSetRGB(0, 0, 100));
 
-  SkBitmap bitmap =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap bitmap = skia::ReadPixels(canvas.sk_canvas());
   gfx::Matrix3F covariance = ComputeColorCovariance(bitmap);
 
   gfx::Matrix3F expected_covariance = gfx::Matrix3F::Zeros();
@@ -401,8 +400,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionBlackAndWhite) {
   // The image consists of vertical non-overlapping stripes 150 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 150, 200), SkColorSetRGB(0, 0, 0));
   canvas.FillRect(gfx::Rect(150, 0, 150, 200), SkColorSetRGB(255, 255, 255));
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
   SkBitmap result;
   result.allocPixels(SkImageInfo::MakeA8(300, 200));
 
@@ -439,8 +437,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionMultiColor) {
   canvas.FillRect(gfx::Rect(0, 0, 100, 200), SkColorSetRGB(100, 0, 0));
   canvas.FillRect(gfx::Rect(100, 0, 100, 200), SkColorSetRGB(0, 255, 0));
   canvas.FillRect(gfx::Rect(200, 0, 100, 200), SkColorSetRGB(0, 0, 128));
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
   SkBitmap result;
   result.allocPixels(SkImageInfo::MakeA8(300, 200));
 
@@ -482,8 +479,7 @@ TEST_F(ColorAnalysisTest, ComputePrincipalComponentImage) {
   canvas.FillRect(gfx::Rect(0, 0, 100, 200), SkColorSetRGB(10, 10, 10));
   canvas.FillRect(gfx::Rect(100, 0, 100, 200), SkColorSetRGB(100, 100, 100));
   canvas.FillRect(gfx::Rect(200, 0, 100, 200), SkColorSetRGB(255, 255, 255));
-  SkBitmap source =
-      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  SkBitmap source = skia::ReadPixels(canvas.sk_canvas());
   SkBitmap result;
   result.allocPixels(SkImageInfo::MakeA8(300, 200));
 

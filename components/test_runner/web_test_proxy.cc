@@ -600,8 +600,7 @@ void WebTestProxyBase::CapturePixelsForPrinting(
   web_frame->printEnd();
 
   DrawSelectionRect(canvas.get());
-  SkBaseDevice* device = skia::GetTopDevice(*canvas);
-  const SkBitmap& bitmap = device->accessBitmap(false);
+  const SkBitmap bitmap = skia::ReadPixels(canvas.get());
   callback.Run(bitmap);
 }
 

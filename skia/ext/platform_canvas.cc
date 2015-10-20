@@ -13,6 +13,13 @@ SkBaseDevice* GetTopDevice(const SkCanvas& canvas) {
   return canvas.getTopDevice(true);
 }
 
+SkBitmap ReadPixels(SkCanvas* canvas) {
+  SkBitmap bitmap;
+  bitmap.setInfo(canvas->imageInfo());
+  canvas->readPixels(&bitmap, 0, 0);
+  return bitmap;
+}
+
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
   PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
   return platform_device && platform_device->SupportsPlatformPaint();

@@ -42,8 +42,7 @@ bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
 bool VerifyRect(const PlatformCanvas& canvas,
                 uint32_t canvas_color, uint32_t rect_color,
                 int x, int y, int w, int h) {
-  SkBaseDevice* device = skia::GetTopDevice(canvas);
-  const SkBitmap& bitmap = device->accessBitmap(false);
+  const SkBitmap bitmap = skia::ReadPixels(const_cast<PlatformCanvas*>(&canvas));
   SkAutoLockPixels lock(bitmap);
 
   for (int cur_y = 0; cur_y < bitmap.height(); cur_y++) {
