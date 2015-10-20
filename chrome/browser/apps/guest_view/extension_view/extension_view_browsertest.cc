@@ -104,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
 }
 
 // Tests that verify that <extensionview> can call the load function.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, LoadAPICall) {
+// Flaky under MemorySanitizer: https://crbug.com/545656
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, DISABLED_LoadAPICall) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   const extensions::Extension* skeleton_app_two =
