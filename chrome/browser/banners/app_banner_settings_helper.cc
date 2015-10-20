@@ -78,18 +78,16 @@ scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
-    return scoped_ptr<base::DictionaryValue>();
-
-  scoped_ptr<base::Value> value = settings->GetWebsiteSetting(
-      origin_url, origin_url, CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-      NULL);
-  if (!value.get())
     return make_scoped_ptr(new base::DictionaryValue());
 
-  if (!value->IsType(base::Value::TYPE_DICTIONARY))
+  scoped_ptr<base::DictionaryValue> dict =
+      base::DictionaryValue::From(settings->GetWebsiteSetting(
+          origin_url, origin_url, CONTENT_SETTINGS_TYPE_APP_BANNER,
+          std::string(), NULL));
+  if (!dict)
     return make_scoped_ptr(new base::DictionaryValue());
 
-  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+  return dict;
 }
 
 base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
