@@ -79,10 +79,6 @@
   '../third_party/skia/src/utils/SkParsePath.cpp',
   '../third_party/skia/src/utils/SkSHA1.cpp',
 
-  # We don't currently need to change thread affinity, so leave out this complexity for now.
-  "../third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp",
-  "../third_party/skia/src/utils/SkThreadUtils_pthread_linux.cpp",
-
 #windows
   '../third_party/skia/src/utils/win/SkAutoCoInitialize.cpp',
   '../third_party/skia/src/utils/win/SkIStream.cpp',
@@ -143,11 +139,10 @@
       'sources!': [
         # Keeping _win.cpp
         "../third_party/skia/src/utils/SkThreadUtils_pthread.cpp",
-        "../third_party/skia/src/utils/SkThreadUtils_pthread_other.cpp",
       ],
     },{
       'sources!': [
-        # Keeping _pthread.cpp and _pthread_other.cpp
+        # Keeping _pthread.cpp
         "../third_party/skia/src/utils/SkThreadUtils_win.cpp",
       ],
     }],
