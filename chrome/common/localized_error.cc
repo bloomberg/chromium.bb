@@ -639,10 +639,11 @@ void LocalizedError::GetStrings(int error_code,
           IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS));
   error_strings->Set("summary", summary);
 
-  if (options.details_resource_id != kErrorPagesNoDetails) {
-    error_strings->SetString(
-        "errorDetails", l10n_util::GetStringUTF16(options.details_resource_id));
-  }
+  error_strings->SetString(
+      "errorDetails",
+      options.details_resource_id != kErrorPagesNoDetails
+          ? l10n_util::GetStringUTF16(options.details_resource_id)
+          : base::string16());
 
   base::string16 error_string;
   if (error_domain == net::kErrorDomain) {
