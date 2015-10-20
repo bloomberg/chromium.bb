@@ -475,18 +475,18 @@ void LayoutBlockFlow::determineLogicalLeftPositionForChild(LayoutBox& child)
     LayoutUnit childMarginStart = marginStartForChild(child);
     LayoutUnit newPosition = startPosition + childMarginStart;
 
-    LayoutUnit positionToAvoidFloats;
-    if (child.avoidsFloats() && containsFloats())
-        positionToAvoidFloats = startOffsetForLine(logicalTopForChild(child), false, logicalHeightForChild(child));
+    if (child.avoidsFloats() && containsFloats()) {
+        LayoutUnit positionToAvoidFloats = startOffsetForLine(logicalTopForChild(child), false, logicalHeightForChild(child));
 
-    // If the child has an offset from the content edge to avoid floats then use that, otherwise let any negative
-    // margin pull it back over the content edge or any positive margin push it out.
-    // If the child is being centred then the margin calculated to do that has factored in any offset required to
-    // avoid floats, so use it if necessary.
-    if (style()->textAlign() == WEBKIT_CENTER || child.style()->marginStartUsing(style()).isAuto())
-        newPosition = std::max(newPosition, positionToAvoidFloats + childMarginStart);
-    else if (positionToAvoidFloats > initialStartPosition)
-        newPosition = std::max(newPosition, positionToAvoidFloats);
+        // If the child has an offset from the content edge to avoid floats then use that, otherwise let any negative
+        // margin pull it back over the content edge or any positive margin push it out.
+        // If the child is being centred then the margin calculated to do that has factored in any offset required to
+        // avoid floats, so use it if necessary.
+        if (style()->textAlign() == WEBKIT_CENTER || child.style()->marginStartUsing(style()).isAuto())
+            newPosition = std::max(newPosition, positionToAvoidFloats + childMarginStart);
+        else if (positionToAvoidFloats > initialStartPosition)
+            newPosition = std::max(newPosition, positionToAvoidFloats);
+    }
 
     setLogicalLeftForChild(child, style()->isLeftToRightDirection() ? newPosition : totalAvailableLogicalWidth - newPosition - logicalWidthForChild(child));
 }
