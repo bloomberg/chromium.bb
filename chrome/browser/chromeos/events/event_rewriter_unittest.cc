@@ -224,14 +224,14 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_COMMAND_DOWN,
         ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x01>::Character}},
+        ui::DomKey::Constant<'a'>::Character}},
 
       // VKEY_A, Alt+Win modifier.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
         ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x01>::Character}},
+        ui::DomKey::Constant<'a'>::Character}},
 
       // VKEY_LWIN (left Windows key), Alt modifier.
       {ui::ET_KEY_PRESSED,
@@ -513,7 +513,7 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
        {ui::VKEY_END, ui::DomCode::NUMPAD1, ui::EF_COMMAND_DOWN,
         ui::DomKey::END},
        {ui::VKEY_NUMPAD1, ui::DomCode::NUMPAD1, ui::EF_CONTROL_DOWN,
-        ui::DomKey::UNIDENTIFIED}},
+        ui::DomKey::Constant<'1'>::Character}},
 
       // XK_KP_1 (= NumPad 1 with Num Lock), Win modifier.
       // The result should also be "Num Pad 1 with Control + Num Lock
@@ -522,7 +522,7 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
        {ui::VKEY_NUMPAD1, ui::DomCode::NUMPAD1, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'1'>::Character},
        {ui::VKEY_NUMPAD1, ui::DomCode::NUMPAD1, ui::EF_CONTROL_DOWN,
-        ui::DomKey::UNIDENTIFIED}}};
+        ui::DomKey::Constant<'1'>::Character}}};
 
   for (const auto& test : tests) {
     CheckKeyTestCase(&rewriter, test);
@@ -725,7 +725,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_ALT_DOWN,
         ui::DomKey::Constant<'a'>::Character},
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x01>::Character}},
+        ui::DomKey::Constant<'a'>::Character}},
   };
 
   for (const auto& test : tests) {
@@ -803,7 +803,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
             ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'B'>::Character},
        {ui::VKEY_B, ui::DomCode::KEY_B, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x02>::Character}},
+        ui::DomKey::Constant<'B'>::Character}},
   };
 
   for (const auto& test : sa_tests) {
@@ -873,19 +873,19 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
        {ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT, ui::EF_CONTROL_DOWN,
         ui::DomKey::CONTROL}},
       // Press Shift+comma. Verify that only the flags are changed.
-      // The X11 portion of the test addresses crbug.com/390263 by verifying
-      // that the X keycode remains that for ',<' and not for 105-key '<>'.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_OEM_COMMA, ui::DomCode::COMMA,
         ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_OEM_COMMA, ui::DomCode::COMMA,
-        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, ui::DomKey::UNIDENTIFIED}},
+        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'<'>::Character}},
       // Press Shift+9. Verify that only the flags are changed.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
         ui::DomKey::UNIDENTIFIED},
        {ui::VKEY_9, ui::DomCode::DIGIT9,
-        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, ui::DomKey::UNIDENTIFIED}},
+        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+        ui::DomKey::Constant<'('>::Character}},
   };
 
   for (const auto& test : a2c_tests) {
@@ -1117,7 +1117,7 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
   // Check that Control is applied to a subsequent key press.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN,
-                                      ui::DomKey::Constant<0x01>::Character),
+                                      ui::DomKey::Constant<'a'>::Character),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::KEY_A, ui::EF_NONE,
                                       ui::DomKey::Constant<'a'>::Character));
@@ -1165,7 +1165,7 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
   // Check that Control is applied to a subsequent key press.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN,
-                                      ui::DomKey::Constant<0x01>::Character),
+                                      ui::DomKey::Constant<'a'>::Character),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::KEY_A, ui::EF_NONE,
                                       ui::DomKey::Constant<'a'>::Character));
@@ -1268,7 +1268,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_MOD3_DOWN,
         ui::DomKey::Constant<'a'>::Character},
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x01>::Character}},
+        ui::DomKey::Constant<'a'>::Character}},
 
       // Press Control+CapsLock+a. Confirm that Mod3Mask is rewritten to
       // ControlMask
@@ -1276,7 +1276,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN | ui::EF_MOD3_DOWN,
         ui::DomKey::Constant<'a'>::Character},
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x01>::Character}},
+        ui::DomKey::Constant<'a'>::Character}},
 
       // Press Alt+CapsLock+a. Confirm that Mod3Mask is rewritten to
       // ControlMask.
@@ -1284,7 +1284,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_ALT_DOWN | ui::EF_MOD3_DOWN,
         ui::DomKey::Constant<'a'>::Character},
        {ui::VKEY_A, ui::DomCode::KEY_A, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
-        ui::DomKey::Constant<0x01>::Character}},
+        ui::DomKey::Constant<'a'>::Character}},
   };
 
   for (const auto& test : tests) {

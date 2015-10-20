@@ -449,6 +449,7 @@
         }],
         ['use_xkbcommon==1', {
           'sources': [
+            'ozone/layout/keyboard_layout_engine_unittest.cc',
             'ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc',
           ]
         }],

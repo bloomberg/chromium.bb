@@ -55,8 +55,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngine {
   // character) and the corresponding (non-located) KeyboardCode from the given
   // physical state (ui::DomCode and ui::EventFlags), OR if it can determine
   // that there is no meaning in the current layout (e.g. the key is unbound).
-  // In the latter case, the function sets *dom_key to UNIDENTIFIED, *character
-  // to 0, and *key_code to VKEY_UNKNOWN.
+  // In the latter case, the function sets *dom_key to UNIDENTIFIED and
+  // *key_code to VKEY_UNKNOWN.
   //
   // Returns false if it cannot determine the meaning (and cannot determine
   // that there is none); in this case it does not set any of the output

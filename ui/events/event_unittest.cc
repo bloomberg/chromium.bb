@@ -226,7 +226,8 @@ TEST(EventTest, KeyEvent) {
     { VKEY_NUMPAD9, EF_CONTROL_DOWN, '\0' },
     { VKEY_NUMPAD9, EF_SHIFT_DOWN, '9' },
 
-    { VKEY_TAB, EF_CONTROL_DOWN, '\0' },
+    { VKEY_TAB, EF_NONE, '\t' },
+    { VKEY_TAB, EF_CONTROL_DOWN, '\t' },
     { VKEY_TAB, EF_SHIFT_DOWN, '\t' },
 
     { VKEY_MULTIPLY, EF_CONTROL_DOWN, '\0' },

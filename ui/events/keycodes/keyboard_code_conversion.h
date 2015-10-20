@@ -91,6 +91,12 @@ EVENTS_BASE_EXPORT DomCode UsLayoutKeyboardCodeToDomCode(KeyboardCode key_code);
 // (e.g. VKEY_LSHIFT).
 EVENTS_BASE_EXPORT KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code);
 
+// Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|,
+// assuming a base US English layout. The returned VKEY is non-located
+// (e.g. VKEY_SHIFT).
+EVENTS_BASE_EXPORT KeyboardCode
+DomCodeToUsLayoutNonLocatedKeyboardCode(DomCode dom_code);
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_H_

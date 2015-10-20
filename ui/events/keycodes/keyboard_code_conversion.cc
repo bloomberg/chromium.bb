@@ -20,13 +20,6 @@ bool IsRightSideDomCode(DomCode code) {
          (code == DomCode::ALT_RIGHT) || (code == DomCode::OS_RIGHT);
 }
 
-bool IsModifierDomCode(DomCode code) {
-  return (code == DomCode::CONTROL_LEFT) || (code == DomCode::CONTROL_RIGHT) ||
-         (code == DomCode::SHIFT_LEFT) || (code == DomCode::SHIFT_RIGHT) ||
-         (code == DomCode::ALT_LEFT) || (code == DomCode::ALT_RIGHT) ||
-         (code == DomCode::OS_LEFT) || (code == DomCode::OS_RIGHT);
-}
-
 }  // anonymous namespace
 
 base::char16 DomCodeToUsLayoutCharacter(DomCode dom_code, int flags) {
@@ -43,31 +36,18 @@ bool DomCodeToUsLayoutDomKey(DomCode dom_code,
                              int flags,
                              DomKey* out_dom_key,
                              KeyboardCode* out_key_code) {
-  if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
-    if (DomCodeToControlCharacter(dom_code, flags, out_dom_key, out_key_code)) {
-      return true;
-    }
-    if (!IsModifierDomCode(dom_code)) {
-      *out_dom_key = DomKey::UNIDENTIFIED;
-      *out_key_code = LocatedToNonLocatedKeyboardCode(
-          DomCodeToUsLayoutKeyboardCode(dom_code));
-      return true;
-    }
-  } else {
-    for (const auto& it : kPrintableCodeMap) {
-      if (it.dom_code == dom_code) {
-        int state = ((flags & EF_SHIFT_DOWN) == EF_SHIFT_DOWN);
-        base::char16 ch = it.character[state];
-        if ((flags & EF_CAPS_LOCK_DOWN) == EF_CAPS_LOCK_DOWN) {
-          ch |= 0x20;
-          if ((ch >= 'a') && (ch <= 'z'))
-            ch = it.character[state ^ 1];
-        }
-        *out_dom_key = DomKey::FromCharacter(ch);
-        *out_key_code = LocatedToNonLocatedKeyboardCode(
-            DomCodeToUsLayoutKeyboardCode(dom_code));
-        return true;
+  for (const auto& it : kPrintableCodeMap) {
+    if (it.dom_code == dom_code) {
+      int state = ((flags & EF_SHIFT_DOWN) == EF_SHIFT_DOWN);
+      base::char16 ch = it.character[state];
+      if ((flags & EF_CAPS_LOCK_DOWN) == EF_CAPS_LOCK_DOWN) {
+        ch |= 0x20;
+        if ((ch >= 'a') && (ch <= 'z'))
+          ch = it.character[state ^ 1];
       }
+      *out_dom_key = DomKey::FromCharacter(ch);
+      *out_key_code = DomCodeToUsLayoutNonLocatedKeyboardCode(dom_code);
+      return true;
     }
   }
   for (const auto& it : kNonPrintableCodeMap) {
@@ -76,12 +56,6 @@ bool DomCodeToUsLayoutDomKey(DomCode dom_code,
       *out_key_code = NonPrintableDomKeyToKeyboardCode(it.dom_key);
       return true;
     }
-  }
-  if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
-    *out_dom_key = DomKey::UNIDENTIFIED;
-    *out_key_code = LocatedToNonLocatedKeyboardCode(
-        DomCodeToUsLayoutKeyboardCode(dom_code));
-    return true;
   }
   return false;
 }
@@ -274,6 +248,11 @@ KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code) {
     return found->key_code;
 
   return VKEY_UNKNOWN;
+}
+
+KeyboardCode DomCodeToUsLayoutNonLocatedKeyboardCode(DomCode dom_code) {
+  return LocatedToNonLocatedKeyboardCode(
+      DomCodeToUsLayoutKeyboardCode(dom_code));
 }
 
 }  // namespace ui

@@ -812,6 +812,19 @@ base::char16 KeyEvent::GetCharacter() const {
     DomKey::Base utf32_character = key_.ToCharacter();
     base::char16 ucs2_character = static_cast<base::char16>(utf32_character);
     DCHECK(static_cast<DomKey::Base>(ucs2_character) == utf32_character);
+    if (flags() & EF_CONTROL_DOWN) {
+      // For a control character, key_ contains the corresponding printable
+      // character. To preserve existing behaviour for now, return the control
+      // character here; this will likely change -- see e.g. crbug.com/471488.
+      if (ucs2_character >= 0x40 && ucs2_character <= 0x7A)
+        return ucs2_character & 0x1F;
+      if (ucs2_character == '\r')
+        return '\n';
+      // Transitionally, if key_ contains another control character, return it.
+      if (ucs2_character >= 0 && ucs2_character <= 0x1F)
+        return ucs2_character;
+      return 0;
+    }
     return ucs2_character;
   }
   return 0;
