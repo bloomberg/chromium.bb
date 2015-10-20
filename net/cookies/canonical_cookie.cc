@@ -391,11 +391,12 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
   if (!IsOnPath(url.path()))
     return false;
 
-  // Include first-party-only cookies iff |options| tells us to include all of
-  // them, or if a first-party URL is set and its origin matches the origin of
-  // |url|.
+  // Include first-party-only cookies if:
+  //
+  // * |options| tells us to include all of them
+  // * a first-party origin is set, and they matches the origin of |url|
   if (IsFirstPartyOnly() && !options.include_first_party_only() &&
-      options.first_party_url().GetOrigin() != url.GetOrigin()) {
+      !options.first_party().IsSameOriginWith(url::Origin(url))) {
     return false;
   }
 

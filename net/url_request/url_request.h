@@ -263,6 +263,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   //          a security check, an attacker might try to get around this check
   //          by starting from some page that redirects to the
   //          host-to-be-attacked.
+  //
+  // TODO(mkwst): Convert this to a 'url::Origin'. Several callsites are using
+  // this value as a proxy for the "top-level frame URL", which is simply
+  // incorrect and fragile. We don't need the full URL for any //net checks,
+  // so we should drop the pieces we don't need.
   const GURL& first_party_for_cookies() const {
     return first_party_for_cookies_;
   }

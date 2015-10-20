@@ -65,6 +65,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "url/origin.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -1218,7 +1219,7 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
 CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   CookieOptions options;
   options.set_include_httponly();
-  options.set_first_party_url(url);
+  options.set_first_party(url::Origin(url));
 
   return GetAllCookiesForURLWithOptions(url, options);
 }

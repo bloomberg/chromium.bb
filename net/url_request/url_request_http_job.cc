@@ -51,6 +51,7 @@
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
+#include "url/origin.h"
 
 static const char kAvailDictionaryHeader[] = "Avail-Dictionary";
 
@@ -662,7 +663,7 @@ void URLRequestHttpJob::DoLoadCookies() {
   // first-party cookies: https://crbug.com/459154
   if (network_delegate() &&
       network_delegate()->AreExperimentalCookieFeaturesEnabled())
-    options.set_first_party_url(request_->first_party_for_cookies());
+    options.set_first_party(url::Origin(request_->first_party_for_cookies()));
   else
     options.set_include_first_party_only();
 
