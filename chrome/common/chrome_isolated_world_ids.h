@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_CHROME_ISOLATED_WORLD_IDS_H_
 #define CHROME_COMMON_CHROME_ISOLATED_WORLD_IDS_H_
 
+#include "build/build_config.h"
 #include "content/public/common/isolated_world_ids.h"
 
 namespace chrome {
