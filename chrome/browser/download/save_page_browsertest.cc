@@ -69,10 +69,9 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
       const history::DownloadRow&)> PersistedFilter;
 
   DownloadPersistedObserver(Profile* profile, const PersistedFilter& filter)
-    : profile_(profile),
-      filter_(filter),
-      waiting_(false),
-      persisted_(false) {
+      : profile_(profile),
+        filter_(filter),
+        persisted_(false) {
     DownloadServiceFactory::GetForBrowserContext(profile_)->
       GetDownloadHistory()->AddObserver(this);
   }
@@ -87,23 +86,24 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
   bool WaitForPersisted() {
     if (persisted_)
       return true;
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
+    base::RunLoop run_loop;
+    quit_waiting_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+    quit_waiting_callback_ = base::Closure();
     return persisted_;
   }
 
   void OnDownloadStored(DownloadItem* item,
                         const history::DownloadRow& info) override {
     persisted_ = persisted_ || filter_.Run(item, info);
-    if (persisted_ && waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+    if (persisted_ && !quit_waiting_callback_.is_null())
+      quit_waiting_callback_.Run();
   }
 
  private:
   Profile* profile_;
   PersistedFilter filter_;
-  bool waiting_;
+  base::Closure quit_waiting_callback_;
   bool persisted_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPersistedObserver);
@@ -115,17 +115,16 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
   DownloadRemovedObserver(Profile* profile, int32 download_id)
       : DownloadPersistedObserver(profile, PersistedFilter()),
         removed_(false),
-        waiting_(false),
-        download_id_(download_id) {
-  }
+        download_id_(download_id) {}
   ~DownloadRemovedObserver() override {}
 
   bool WaitForRemoved() {
     if (removed_)
       return true;
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
+    base::RunLoop run_loop;
+    quit_waiting_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+    quit_waiting_callback_ = base::Closure();
     return removed_;
   }
 
@@ -134,13 +133,13 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
 
   void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) override {
     removed_ = ids.find(download_id_) != ids.end();
-    if (removed_ && waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+    if (removed_ && !quit_waiting_callback_.is_null())
+      quit_waiting_callback_.Run();
   }
 
  private:
   bool removed_;
-  bool waiting_;
+  base::Closure quit_waiting_callback_;
   int32 download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRemovedObserver);
@@ -192,7 +191,7 @@ static const char kAppendedExtension[] = ".html";
 class DownloadItemCreatedObserver : public DownloadManager::Observer {
  public:
   explicit DownloadItemCreatedObserver(DownloadManager* manager)
-      : waiting_(false), manager_(manager) {
+      : manager_(manager) {
     manager->AddObserver(this);
   }
 
@@ -214,9 +213,10 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
     }
 
     if (items_seen_.empty()) {
-      waiting_ = true;
-      content::RunMessageLoop();
-      waiting_ = false;
+      base::RunLoop run_loop;
+      quit_waiting_callback_ = run_loop.QuitClosure();
+      run_loop.Run();
+      quit_waiting_callback_ = base::Closure();
     }
 
     *items_seen = items_seen_;
@@ -230,18 +230,18 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
     DCHECK_EQ(manager, manager_);
     items_seen_.push_back(item);
 
-    if (waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+    if (!quit_waiting_callback_.is_null())
+      quit_waiting_callback_.Run();
   }
 
   void ManagerGoingDown(DownloadManager* manager) override {
     manager_->RemoveObserver(this);
     manager_ = NULL;
-    if (waiting_)
-      base::MessageLoopForUI::current()->QuitWhenIdle();
+    if (!quit_waiting_callback_.is_null())
+      quit_waiting_callback_.Run();
   }
 
-  bool waiting_;
+  base::Closure quit_waiting_callback_;
   DownloadManager* manager_;
   std::vector<DownloadItem*> items_seen_;
 
