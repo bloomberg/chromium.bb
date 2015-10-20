@@ -1594,7 +1594,4 @@ crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-default
 
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
 
-crbug.com/404597 [ Android ] fast/inline-block/overflow-clip.html [ NeedsRebaseline ]
-crbug.com/404597 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
-
 crbug.com/545551 [ Win10 ] svg/custom/repaint-shadow.svg [ Failure ]
