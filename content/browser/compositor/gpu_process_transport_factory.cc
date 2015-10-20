@@ -230,7 +230,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     int num_attempts) {
   if (!compositor)
     return;
-  PerCompositorData* data = per_compositor_data_[compositor.get()];
+
+  // The widget might have been released in the meantime.
+  PerCompositorDataMap::iterator it =
+      per_compositor_data_.find(compositor.get());
+  if (it == per_compositor_data_.end())
+    return;
+
+  PerCompositorData* data = it->second;
   DCHECK(data);
 
   if (num_attempts > kNumRetriesBeforeSoftwareFallback) {
