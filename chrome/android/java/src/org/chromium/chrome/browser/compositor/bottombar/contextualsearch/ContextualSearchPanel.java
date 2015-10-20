@@ -126,17 +126,20 @@ public class ContextualSearchPanel extends OverlayPanel
      */
     public class PanelProgressObserver extends OverlayContentProgressObserver {
 
+        @Override
         public void onProgressBarStarted() {
             setProgressBarCompletion(0);
             setProgressBarVisible(true);
             requestUpdate();
         }
 
+        @Override
         public void onProgressBarUpdated(int progress) {
             setProgressBarCompletion(progress);
             requestUpdate();
         }
 
+        @Override
         public void onProgressBarFinished() {
             // Hides the Progress Bar after a delay to make sure it is rendered for at least
             // a few frames, otherwise its completion won't be visually noticeable.

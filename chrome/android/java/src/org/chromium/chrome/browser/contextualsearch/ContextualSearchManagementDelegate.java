@@ -66,7 +66,8 @@ public interface ContextualSearchManagementDelegate {
     boolean isRunningInCompatibilityMode();
 
     /**
-     * Opens the resolved search URL in a new tab.
+     * Opens the resolved search URL in a new tab. It is used when Contextual Search is in
+     * compatibility mode.
      */
     void openResolvedSearchUrlInNewTab();
 

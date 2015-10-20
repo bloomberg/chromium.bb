@@ -1000,21 +1000,14 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void openResolvedSearchUrlInNewTab() {
-        if (mSearchRequest != null && mSearchRequest.getSearchUrl() != null) {
-            openUrlInNewTab(mSearchRequest.getSearchUrl());
+        if (mSearchRequest != null && mSearchRequest.getSearchUrlForPromotion() != null) {
+            TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
+            tabModelSelector.openNewTab(
+                    new LoadUrlParams(mSearchRequest.getSearchUrlForPromotion()),
+                    TabLaunchType.FROM_LINK,
+                    tabModelSelector.getCurrentTab(),
+                    tabModelSelector.isIncognitoSelected());
         }
-    }
-
-    /**
-     * Convenience method for opening a specific |url| in a new Tab.
-     */
-    private void openUrlInNewTab(String url) {
-        TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
-        tabModelSelector.openNewTab(
-                new LoadUrlParams(url),
-                TabLaunchType.FROM_LINK,
-                tabModelSelector.getCurrentTab(),
-                tabModelSelector.isIncognitoSelected());
     }
 
     @Override
