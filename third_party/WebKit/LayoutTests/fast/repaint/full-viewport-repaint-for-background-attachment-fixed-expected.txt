@@ -6,11 +6,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 1000, 785, 600],
         [0, 0, 785, 5000]
       ],
       "paintInvalidationClients": [
-        "##ALL##",
         "LayoutView #document"
       ]
     }

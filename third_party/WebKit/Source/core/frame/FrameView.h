@@ -189,16 +189,18 @@ public:
     WebDisplayMode displayMode() { return m_displayMode; }
     void setDisplayMode(WebDisplayMode);
 
-    void addSlowRepaintObject();
-    void removeSlowRepaintObject();
-    bool hasSlowRepaintObjects() const { return m_slowRepaintObjectCount; }
-
     // Fixed-position objects.
     typedef HashSet<LayoutObject*> ViewportConstrainedObjectSet;
     void addViewportConstrainedObject(LayoutObject*);
     void removeViewportConstrainedObject(LayoutObject*);
     const ViewportConstrainedObjectSet* viewportConstrainedObjects() const { return m_viewportConstrainedObjects.get(); }
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
+
+    // Objects with background-attachment:fixed.
+    void addBackgroundAttachmentFixedObject(LayoutObject*);
+    void removeBackgroundAttachmentFixedObject(LayoutObject*);
+    bool hasBackgroundAttachmentFixedObjects() const { return m_backgroundAttachmentFixedObjects.size(); }
+    void invalidateBackgroundAttachmentFixedObjects();
 
     void handleLoadCompleted();
 
@@ -757,7 +759,6 @@ private:
     bool m_doFullPaintInvalidation;
 
     bool m_canHaveScrollbars;
-    unsigned m_slowRepaintObjectCount;
 
     bool m_hasPendingLayout;
     LayoutSubtreeRootList m_layoutSubtreeRootList;
@@ -802,6 +803,7 @@ private:
     OwnPtrWillBeMember<ScrollableAreaSet> m_animatingScrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
+    ViewportConstrainedObjectSet m_backgroundAttachmentFixedObjects;
     OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;
 
     IntSize m_inputEventsOffsetForEmulation;

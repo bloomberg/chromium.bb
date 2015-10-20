@@ -254,7 +254,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     if (LayoutMultiColumnSpannerPlaceholder* placeholder = this->spannerPlaceholder())
         placeholder->layoutObjectInFlowThreadStyleDidChange(oldStyle);
 
-    updateSlowRepaintStatusAfterStyleChange();
+    updateBackgroundAttachmentFixedStatusAfterStyleChange();
 
     if (oldStyle) {
         LayoutFlowThread* flowThread = flowThreadContainingBlock();
@@ -263,7 +263,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     }
 }
 
-void LayoutBox::updateSlowRepaintStatusAfterStyleChange()
+void LayoutBox::updateBackgroundAttachmentFixedStatusAfterStyleChange()
 {
     if (!frameView())
         return;
@@ -277,15 +277,15 @@ void LayoutBox::updateSlowRepaintStatusAfterStyleChange()
         return;
 
     // An object needs to be repainted on frame scroll when it has background-attachment:fixed.
-    // LayoutObject is responsible for painting root background, thus the root element (and the
+    // LayoutView is responsible for painting root background, thus the root element (and the
     // body element if html element has no background) skips painting backgrounds.
-    bool isSlowRepaintObject = !isDocumentElement() && !backgroundStolenForBeingBody() && styleRef().hasFixedBackgroundImage();
+    bool isBackgroundAttachmentFixedObject = !isDocumentElement() && !backgroundStolenForBeingBody() && styleRef().hasFixedBackgroundImage();
     if (isLayoutView() && view()->compositor()->supportsFixedRootBackgroundCompositing()) {
         if (styleRef().hasEntirelyFixedBackground())
-            isSlowRepaintObject = false;
+            isBackgroundAttachmentFixedObject = false;
     }
 
-    setIsSlowRepaintObject(isSlowRepaintObject);
+    setIsBackgroundAttachmentFixedObject(isBackgroundAttachmentFixedObject);
 }
 
 void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const ComputedStyle& style, const ComputedStyle* oldStyle)

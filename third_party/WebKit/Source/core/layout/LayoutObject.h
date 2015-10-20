@@ -1419,7 +1419,7 @@ protected:
     // parts which are invalidated separately (e.g. scrollbars).
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const;
 
-    void setIsSlowRepaintObject(bool);
+    void setIsBackgroundAttachmentFixedObject(bool);
 
     void clearSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(false); }
     void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
@@ -1585,7 +1585,7 @@ private:
             , m_containsInlineWithOutlineAndContinuation(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_lastBoxDecorationBackgroundObscured(false)
-            , m_isSlowRepaintObject(false)
+            , m_isBackgroundAttachmentFixedObject(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
@@ -1707,7 +1707,7 @@ private:
         // For slimming-paint.
         ADD_BOOLEAN_BITFIELD(lastBoxDecorationBackgroundObscured, LastBoxDecorationBackgroundObscured);
 
-        ADD_BOOLEAN_BITFIELD(isSlowRepaintObject, IsSlowRepaintObject);
+        ADD_BOOLEAN_BITFIELD(isBackgroundAttachmentFixedObject, IsBackgroundAttachmentFixedObject);
 
     private:
         // This is the cached 'position' value of this object

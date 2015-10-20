@@ -115,7 +115,6 @@ FrameView::FrameView(LocalFrame* frame)
     : m_frame(frame)
     , m_displayMode(WebDisplayModeBrowser)
     , m_canHaveScrollbars(true)
-    , m_slowRepaintObjectCount(0)
     , m_hasPendingLayout(false)
     , m_inSynchronousPostLayout(false)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
@@ -1214,22 +1213,22 @@ bool FrameView::contentsInCompositedLayer() const
     return layoutView && layoutView->compositingState() == PaintsIntoOwnBacking;
 }
 
-void FrameView::addSlowRepaintObject()
+void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object)
 {
-    if (!m_slowRepaintObjectCount++) {
-        if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->frameViewHasSlowRepaintObjectsDidChange(this);
-    }
+    ASSERT(!m_backgroundAttachmentFixedObjects.contains(object));
+
+    m_backgroundAttachmentFixedObjects.add(object);
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(this);
 }
 
-void FrameView::removeSlowRepaintObject()
+void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object)
 {
-    ASSERT(m_slowRepaintObjectCount > 0);
-    m_slowRepaintObjectCount--;
-    if (!m_slowRepaintObjectCount) {
-        if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-            scrollingCoordinator->frameViewHasSlowRepaintObjectsDidChange(this);
-    }
+    ASSERT(m_backgroundAttachmentFixedObjects.contains(object));
+
+    m_backgroundAttachmentFixedObjects.remove(object);
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        scrollingCoordinator->frameViewHasBackgroundAttachmentFixedObjectsDidChange(this);
 }
 
 void FrameView::addViewportConstrainedObject(LayoutObject* object)
@@ -1298,6 +1297,12 @@ void FrameView::scrollContentsIfNeededRecursive()
     });
 }
 
+void FrameView::invalidateBackgroundAttachmentFixedObjects()
+{
+    for (const auto& layoutObject : m_backgroundAttachmentFixedObjects)
+        layoutObject->setShouldDoFullPaintInvalidation();
+}
+
 bool FrameView::invalidateViewportConstrainedObjects()
 {
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
@@ -1331,8 +1336,10 @@ bool FrameView::invalidateViewportConstrainedObjects()
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
 {
-    if (!contentsInCompositedLayer() || hasSlowRepaintObjects())
+    if (!contentsInCompositedLayer())
         return false;
+
+    invalidateBackgroundAttachmentFixedObjects();
 
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
         InspectorInstrumentation::didUpdateLayout(m_frame.get());

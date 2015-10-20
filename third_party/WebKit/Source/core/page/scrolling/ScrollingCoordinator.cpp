@@ -903,7 +903,7 @@ void ScrollingCoordinator::computeTouchEventTargetRects(LayerHitTestRects& rects
     accumulateDocumentTouchEventTargetRects(rects, document);
 }
 
-void ScrollingCoordinator::frameViewHasSlowRepaintObjectsDidChange(FrameView* frameView)
+void ScrollingCoordinator::frameViewHasBackgroundAttachmentFixedObjectsDidChange(FrameView* frameView)
 {
     ASSERT(isMainThread());
     ASSERT(m_page);
@@ -1029,8 +1029,8 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
     if (!frameView)
         return reasons;
 
-    if (frameView->hasSlowRepaintObjects())
-        reasons |= HasSlowRepaintObjects;
+    if (frameView->hasBackgroundAttachmentFixedObjects())
+        reasons |= HasBackgroundAttachmentFixedObjects;
     FrameView::ScrollingReasons scrollingReasons = frameView->scrollingReasons();
     const bool mayBeScrolledByInput = (scrollingReasons == FrameView::Scrollable);
     const bool mayBeScrolledByScript = mayBeScrolledByInput || (scrollingReasons ==
@@ -1051,8 +1051,8 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 {
     StringBuilder stringBuilder;
 
-    if (reasons & ScrollingCoordinator::HasSlowRepaintObjects)
-        stringBuilder.appendLiteral("Has slow repaint objects, ");
+    if (reasons & ScrollingCoordinator::HasBackgroundAttachmentFixedObjects)
+        stringBuilder.appendLiteral("Has background-attachment:fixed, ");
     if (reasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
         stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
     if (reasons & ScrollingCoordinator::ThreadedScrollingDisabled)

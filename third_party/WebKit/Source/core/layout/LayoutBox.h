@@ -952,7 +952,7 @@ private:
     // Returns true if the box intersects the viewport visible to the user.
     bool intersectsVisibleViewport();
 
-    void updateSlowRepaintStatusAfterStyleChange();
+    void updateBackgroundAttachmentFixedStatusAfterStyleChange();
 
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
     LayoutRect m_frameRect;

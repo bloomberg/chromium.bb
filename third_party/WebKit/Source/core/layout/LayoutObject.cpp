@@ -2542,7 +2542,7 @@ void LayoutObject::willBeDestroyed()
     }
 
     if (frameView())
-        setIsSlowRepaintObject(false);
+        setIsBackgroundAttachmentFixedObject(false);
 }
 
 void LayoutObject::insertedIntoTree()
@@ -3446,16 +3446,16 @@ void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendants(const
     }
 }
 
-void LayoutObject::setIsSlowRepaintObject(bool isSlowRepaintObject)
+void LayoutObject::setIsBackgroundAttachmentFixedObject(bool isBackgroundAttachmentFixedObject)
 {
     ASSERT(frameView());
-    if (m_bitfields.isSlowRepaintObject() == isSlowRepaintObject)
+    if (m_bitfields.isBackgroundAttachmentFixedObject() == isBackgroundAttachmentFixedObject)
         return;
-    m_bitfields.setIsSlowRepaintObject(isSlowRepaintObject);
-    if (isSlowRepaintObject)
-        frameView()->addSlowRepaintObject();
+    m_bitfields.setIsBackgroundAttachmentFixedObject(isBackgroundAttachmentFixedObject);
+    if (isBackgroundAttachmentFixedObject)
+        frameView()->addBackgroundAttachmentFixedObject(this);
     else
-        frameView()->removeSlowRepaintObject();
+        frameView()->removeBackgroundAttachmentFixedObject(this);
 }
 
 } // namespace blink

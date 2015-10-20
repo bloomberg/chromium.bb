@@ -78,7 +78,7 @@ public:
     void scrollableAreasDidChange();
 
     // Should be called whenever the slow repaint objects counter changes between zero and one.
-    void frameViewHasSlowRepaintObjectsDidChange(FrameView*);
+    void frameViewHasBackgroundAttachmentFixedObjectsDidChange(FrameView*);
 
     // Should be called whenever the set of fixed objects changes.
     void frameViewFixedObjectsDidChange(FrameView*);
@@ -92,7 +92,7 @@ public:
 #endif
 
     enum MainThreadScrollingReasonFlags {
-        HasSlowRepaintObjects = 1 << 0,
+        HasBackgroundAttachmentFixedObjects = 1 << 0,
         HasNonLayerViewportConstrainedObjects = 1 << 1,
         ThreadedScrollingDisabled = 1 << 2
     };
