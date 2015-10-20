@@ -10,4 +10,4 @@ Frame: '<!--framePath //<!--frame0-->-->'
 --------
 Frame: '<!--framePath //<!--frame1-->-->'
 --------
-'window.frameElement' access threw: 'SecurityError: Failed to read the 'frame' property from 'Window': Blocked a frame with origin "http://127.0.0.1:8080" from accessing a cross-origin frame.'.
+'window.frameElement' access threw: 'SecurityError: Failed to read the 'frameElement' property from 'Window': Blocked a frame with origin "http://127.0.0.1:8080" from accessing a cross-origin frame.'.

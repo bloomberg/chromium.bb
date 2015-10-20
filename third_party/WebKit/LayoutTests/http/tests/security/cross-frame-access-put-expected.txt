@@ -93,7 +93,7 @@ ALERT: PASS: window.devicePixelRatio should be '1' and is.
 ALERT: PASS: window.document should be '[object HTMLDocument]' and is.
 ALERT: PASS: window.embeds should be 'undefined' and is.
 ALERT: PASS: window.event should be 'undefined' and is.
-ALERT: PASS: 'window.frameElement' threw 'SecurityError: Failed to read the 'frame' property from 'Window': Blocked a frame with origin "http://localhost:8000" from accessing a cross-origin frame.'.
+ALERT: PASS: 'window.frameElement' threw 'SecurityError: Failed to read the 'frameElement' property from 'Window': Blocked a frame with origin "http://localhost:8000" from accessing a cross-origin frame.'.
 ALERT: PASS: window.frames should be '[object Window]' and is.
 ALERT: PASS: window.history should be '[object History]' and is.
 ALERT: PASS: window.images should be 'undefined' and is.
