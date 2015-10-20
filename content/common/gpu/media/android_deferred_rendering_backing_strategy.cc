@@ -110,7 +110,7 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
   }
 
   texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
-                                 image.get(), gpu::gles2::Texture::UNBOUND);
+                                 image.get());
 }
 
 void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(

@@ -16,10 +16,10 @@ namespace gfx {
 
 class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
  public:
-  GLImageRefCountedMemory(const Size& size, unsigned internalformat);
+  GLImageRefCountedMemory(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(base::RefCountedMemory* ref_counted_memory,
-                  BufferFormat format);
+                  gfx::BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;

@@ -15,21 +15,24 @@ class SurfaceTexture;
 
 class GL_EXPORT GLImageSurfaceTexture : public GLImage {
  public:
-  explicit GLImageSurfaceTexture(const Size& size);
+  explicit GLImageSurfaceTexture(const gfx::Size& size);
 
   bool Initialize(SurfaceTexture* surface_texture);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  Size GetSize() override;
+  gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
-  bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
                        const Point& offset,
                        const Rect& rect) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+  void WillUseTexImage() override {}
+  void DidUseTexImage() override {}
+  void WillModifyTexImage() override {}
+  void DidModifyTexImage() override {}
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             OverlayTransform transform,
                             const Rect& bounds_rect,
@@ -43,7 +46,7 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
 
  private:
   scoped_refptr<SurfaceTexture> surface_texture_;
-  const Size size_;
+  const gfx::Size size_;
   GLint texture_id_;
   base::ThreadChecker thread_checker_;
 

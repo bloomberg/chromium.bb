@@ -45,9 +45,8 @@ bool StreamTexture::Create(
     texture_manager->SetLevelInfo(texture, GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
                                   size.width(), size.height(), 1, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, gfx::Rect(size));
-    texture_manager->SetLevelImage(texture, GL_TEXTURE_EXTERNAL_OES, 0,
-                                   gl_image.get(),
-                                   gpu::gles2::Texture::UNBOUND);
+    texture_manager->SetLevelImage(
+        texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get());
     return true;
   }
 
@@ -64,7 +63,6 @@ StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
       owner_stub_(owner_stub),
       route_id_(route_id),
       has_listener_(false),
-      texture_id_(texture_id),
       weak_factory_(this) {
   owner_stub->AddDestructionObserver(this);
   memset(current_matrix_, 0, sizeof(current_matrix_));
@@ -94,11 +92,9 @@ void StreamTexture::Destroy(bool have_context) {
   NOTREACHED();
 }
 
-bool StreamTexture::CopyTexImage(unsigned target) {
-  DCHECK_EQ(target, static_cast<unsigned>(GL_TEXTURE_EXTERNAL_OES));
-
+void StreamTexture::WillUseTexImage() {
   if (!owner_stub_ || !surface_texture_.get())
-    return true;
+    return;
 
   if (has_pending_frame_) {
     scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
@@ -132,18 +128,6 @@ bool StreamTexture::CopyTexImage(unsigned target) {
                         ? active_unit.bound_texture_external_oes->service_id()
                         : 0);
     }
-
-    TextureManager* texture_manager =
-        owner_stub_->decoder()->GetContextGroup()->texture_manager();
-    gpu::gles2::Texture* texture =
-        texture_manager->GetTextureForServiceId(texture_id_);
-    if (texture) {
-      // By setting image state to UNBOUND instead of COPIED we ensure that
-      // CopyTexImage() is called each time the surface texture is used for
-      // drawing.
-      texture->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
-                             gpu::gles2::Texture::UNBOUND);
-    }
   }
 
   if (has_listener_ && has_valid_frame_) {
@@ -160,8 +144,6 @@ bool StreamTexture::CopyTexImage(unsigned target) {
           new GpuStreamTextureMsg_MatrixChanged(route_id_, params));
     }
   }
-
-  return true;
 }
 
 void StreamTexture::OnFrameAvailable() {

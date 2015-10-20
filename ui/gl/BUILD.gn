@@ -356,7 +356,6 @@ test("gl_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
-    "//ui/gfx/geometry",
   ]
 
   data_deps = [

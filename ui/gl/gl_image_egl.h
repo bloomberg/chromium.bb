@@ -13,21 +13,24 @@ namespace gfx {
 
 class GL_EXPORT GLImageEGL : public GLImage {
  public:
-  explicit GLImageEGL(const Size& size);
+  explicit GLImageEGL(const gfx::Size& size);
 
   bool Initialize(EGLenum target, EGLClientBuffer buffer, const EGLint* attrs);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  Size GetSize() override;
+  gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
-  bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
                        const Point& offset,
                        const Rect& rect) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+  void WillUseTexImage() override {}
+  void DidUseTexImage() override {}
+  void WillModifyTexImage() override {}
+  void DidModifyTexImage() override {}
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             OverlayTransform transform,
                             const Rect& bounds_rect,
@@ -37,7 +40,7 @@ class GL_EXPORT GLImageEGL : public GLImage {
   ~GLImageEGL() override;
 
   EGLImageKHR egl_image_;
-  const Size size_;
+  const gfx::Size size_;
   base::ThreadChecker thread_checker_;
 
  private:

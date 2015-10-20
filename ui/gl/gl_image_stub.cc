@@ -12,17 +12,11 @@ GLImageStub::GLImageStub() {}
 
 GLImageStub::~GLImageStub() {}
 
-Size GLImageStub::GetSize() {
-  return Size(1, 1);
-}
+gfx::Size GLImageStub::GetSize() { return gfx::Size(1, 1); }
 
 unsigned GLImageStub::GetInternalFormat() { return GL_RGBA; }
 
 bool GLImageStub::BindTexImage(unsigned target) { return true; }
-
-bool GLImageStub::CopyTexImage(unsigned target) {
-  return true;
-}
 
 bool GLImageStub::CopyTexSubImage(unsigned target,
                                   const Point& offset,
@@ -30,7 +24,7 @@ bool GLImageStub::CopyTexSubImage(unsigned target,
   return true;
 }
 
-bool GLImageStub::ScheduleOverlayPlane(AcceleratedWidget widget,
+bool GLImageStub::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                        int z_order,
                                        OverlayTransform transform,
                                        const Rect& bounds_rect,

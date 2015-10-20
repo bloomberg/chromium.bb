@@ -639,6 +639,49 @@ class ScopedResolvedFrameBufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFrameBufferBinder);
 };
 
+class ScopedModifyPixels {
+ public:
+  explicit ScopedModifyPixels(TextureRef* ref);
+  ~ScopedModifyPixels();
+
+ private:
+  TextureRef* ref_;
+};
+
+ScopedModifyPixels::ScopedModifyPixels(TextureRef* ref) : ref_(ref) {
+  if (ref_)
+    ref_->texture()->OnWillModifyPixels();
+}
+
+ScopedModifyPixels::~ScopedModifyPixels() {
+  if (ref_)
+    ref_->texture()->OnDidModifyPixels();
+}
+
+class ScopedRenderTo {
+ public:
+  explicit ScopedRenderTo(Framebuffer* framebuffer)
+      : ScopedRenderTo(framebuffer, 0) {}
+  ScopedRenderTo(Framebuffer* framebuffer, GLenum attachment);
+  ~ScopedRenderTo();
+
+ private:
+  const Framebuffer* framebuffer_;
+  GLenum attachment_;
+};
+
+ScopedRenderTo::ScopedRenderTo(Framebuffer* framebuffer, GLenum attachment)
+    : framebuffer_(framebuffer),
+      attachment_(attachment) {
+  if (framebuffer_)
+    framebuffer_->OnWillRenderTo(attachment_);
+}
+
+ScopedRenderTo::~ScopedRenderTo() {
+  if (framebuffer_)
+    framebuffer_->OnDidRenderTo(attachment_);
+}
+
 // Encapsulates an OpenGL texture.
 class BackTexture {
  public:
@@ -791,7 +834,9 @@ void GLES2Decoder::EndDecoding() {}
 
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
-class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
+class GLES2DecoderImpl : public GLES2Decoder,
+                         public FramebufferManager::TextureDetachObserver,
+                         public ErrorStateClient {
  public:
   explicit GLES2DecoderImpl(ContextGroup* group);
   ~GLES2DecoderImpl() override;
@@ -919,6 +964,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool BoundFramebufferHasStencilAttachment();
 
   error::ContextLostReason GetContextLostReason() override;
+
+  // Overridden from FramebufferManager::TextureDetachObserver:
+  void OnTextureRefDetachedFromFramebuffer(TextureRef* texture) override;
 
   // Overriden from ErrorStateClient.
   void OnContextLostError() override;
@@ -1921,13 +1969,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       const char* function_name, GLuint max_vertex_accessed, bool* simulated);
   void RestoreStateForAttrib(GLuint attrib, bool restore_array_binding);
 
-  // Copies the image to the texture currently bound to |textarget|. The image
-  // state of |texture| is updated to reflect the new state.
-  void DoCopyTexImage(Texture* texture, GLenum textarget, gfx::GLImage* image);
-
-  // This will call DoCopyTexImage if texture has an image but that image is
-  // not bound or copied to the texture.
-  void DoCopyTexImageIfNeeded(Texture* texture, GLenum textarget);
+  // If an image is bound to texture, this will call Will/DidUseTexImage
+  // if needed.
+  void DoWillUseTexImageIfNeeded(Texture* texture, GLenum textarget);
+  void DoDidUseTexImageIfNeeded(Texture* texture, GLenum textarget);
 
   // Returns false if textures were replaced.
   bool PrepareTexturesForRender();
@@ -3247,6 +3292,8 @@ bool GLES2DecoderImpl::Initialize(
       return false;
   }
 
+  framebuffer_manager()->AddObserver(this);
+
   return true;
 }
 
@@ -4346,6 +4393,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   }
 
   if (group_.get()) {
+    framebuffer_manager()->RemoveObserver(this);
     group_->Destroy(this, have_context);
     group_ = NULL;
   }
@@ -5189,6 +5237,7 @@ void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
     translated_attachments[i] = attachment;
   }
 
+  ScopedRenderTo do_render(framebuffer);
   if (feature_info_->gl_version_info().is_es3) {
     glInvalidateFramebuffer(
         target, numAttachments, translated_attachments.get());
@@ -5966,6 +6015,7 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
     ApplyDirtyState();
     // TODO(zmo): Filter out INTEGER/SIGNED INTEGER images to avoid
     // undefined results.
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
     if (workarounds().gl_clear_broken) {
       ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
                                          GetErrorState());
@@ -5999,6 +6049,7 @@ void GLES2DecoderImpl::DoClearBufferiv(
           GL_INVALID_ENUM, "glClearBufferiv", "invalid buffer");
       return;
   }
+  GLenum attachment = 0;
   if (buffer == GL_COLOR) {
     if (drawbuffer < 0 ||
         drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
@@ -6012,6 +6063,7 @@ void GLES2DecoderImpl::DoClearBufferiv(
       // To avoid undefined results, return without calling the gl function.
       return;
     }
+    attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer);
   } else {
     DCHECK(buffer == GL_STENCIL);
     if (drawbuffer != 0) {
@@ -6022,9 +6074,14 @@ void GLES2DecoderImpl::DoClearBufferiv(
     if (!BoundFramebufferHasStencilAttachment()) {
       return;
     }
+    attachment = GL_STENCIL_ATTACHMENT;
   }
   MarkDrawBufferAsCleared(buffer, drawbuffer);
-  glClearBufferiv(buffer, drawbuffer, value);
+  {
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get(),
+                             attachment);
+    glClearBufferiv(buffer, drawbuffer, value);
+  }
 }
 
 void GLES2DecoderImpl::DoClearBufferuiv(
@@ -6054,7 +6111,12 @@ void GLES2DecoderImpl::DoClearBufferuiv(
     return;
   }
   MarkDrawBufferAsCleared(buffer, drawbuffer);
-  glClearBufferuiv(buffer, drawbuffer, value);
+  GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer);
+  {
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get(),
+                             attachment);
+    glClearBufferuiv(buffer, drawbuffer, value);
+  }
 }
 
 void GLES2DecoderImpl::DoClearBufferfv(
@@ -6072,6 +6134,7 @@ void GLES2DecoderImpl::DoClearBufferfv(
           GL_INVALID_ENUM, "glClearBufferfv", "invalid buffer");
       return;
   }
+  GLenum attachment = 0;
   if (buffer == GL_COLOR) {
     if (drawbuffer < 0 ||
         drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
@@ -6085,6 +6148,7 @@ void GLES2DecoderImpl::DoClearBufferfv(
       // To avoid undefined results, return without calling the gl function.
       return;
     }
+    attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer);
   } else {
     DCHECK(buffer == GL_DEPTH);
     if (drawbuffer != 0) {
@@ -6095,9 +6159,14 @@ void GLES2DecoderImpl::DoClearBufferfv(
     if (!BoundFramebufferHasDepthAttachment()) {
       return;
     }
+    attachment = GL_DEPTH_ATTACHMENT;
   }
   MarkDrawBufferAsCleared(buffer, drawbuffer);
-  glClearBufferfv(buffer, drawbuffer, value);
+  {
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get(),
+                             attachment);
+    glClearBufferfv(buffer, drawbuffer, value);
+  }
 }
 
 void GLES2DecoderImpl::DoClearBufferfi(
@@ -6125,7 +6194,15 @@ void GLES2DecoderImpl::DoClearBufferfi(
   }
   MarkDrawBufferAsCleared(GL_DEPTH, drawbuffer);
   MarkDrawBufferAsCleared(GL_STENCIL, drawbuffer);
-  glClearBufferfi(buffer, drawbuffer, depth, stencil);
+  {
+    ScopedRenderTo do_render_depth(
+        framebuffer_state_.bound_draw_framebuffer.get(),
+        GL_DEPTH_ATTACHMENT);
+    ScopedRenderTo do_render_stencil(
+        framebuffer_state_.bound_draw_framebuffer.get(),
+        GL_STENCIL_ATTACHMENT);
+    glClearBufferfi(buffer, drawbuffer, depth, stencil);
+  }
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
@@ -6336,7 +6413,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
   }
 
   if (texture_ref)
-    DoCopyTexImageIfNeeded(texture_ref->texture(), textarget);
+    DoWillUseTexImageIfNeeded(texture_ref->texture(), textarget);
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(name);
   if (0 == samples) {
@@ -6358,6 +6435,9 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
   if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
   }
+
+  if (texture_ref)
+    DoDidUseTexImageIfNeeded(texture_ref->texture(), textarget);
 
   OnFboChanged();
 }
@@ -6498,6 +6578,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   }
 
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+  ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
   BlitFramebufferHelper(
       srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
@@ -7557,29 +7638,33 @@ void GLES2DecoderImpl::PerformanceWarning(
                      std::string("PERFORMANCE WARNING: ") + msg);
 }
 
-void GLES2DecoderImpl::DoCopyTexImage(Texture* texture,
-                                      GLenum textarget,
-                                      gfx::GLImage* image) {
-  // Note: We update the state to COPIED prior to calling CopyTexImage()
-  // as that allows the GLImage implemenatation to set it back to UNBOUND
-  // and ensure that CopyTexImage() is called each time the texture is
-  // used.
-  texture->SetLevelImage(textarget, 0, image, Texture::COPIED);
-  bool rv = image->CopyTexImage(textarget);
-  DCHECK(rv) << "Both BindTexImage() and CopyTexImage() failed";
-}
-
-void GLES2DecoderImpl::DoCopyTexImageIfNeeded(Texture* texture,
-                                              GLenum textarget) {
+void GLES2DecoderImpl::DoWillUseTexImageIfNeeded(
+    Texture* texture, GLenum textarget) {
   // Image is already in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
-    Texture::ImageState image_state;
-    gfx::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
-    if (image && image_state == Texture::UNBOUND) {
+    gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
+    if (image) {
       ScopedGLErrorSuppressor suppressor(
-          "GLES2DecoderImpl::DoCopyTexImageIfNeeded", GetErrorState());
+          "GLES2DecoderImpl::DoWillUseTexImageIfNeeded",
+          GetErrorState());
       glBindTexture(textarget, texture->service_id());
-      DoCopyTexImage(texture, textarget, image);
+      image->WillUseTexImage();
+      RestoreCurrentTextureBindings(&state_, textarget);
+    }
+  }
+}
+
+void GLES2DecoderImpl::DoDidUseTexImageIfNeeded(
+    Texture* texture, GLenum textarget) {
+  // Image is still in use if texture is attached to a framebuffer.
+  if (texture && !texture->IsAttachedToFramebuffer()) {
+    gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
+    if (image) {
+      ScopedGLErrorSuppressor suppressor(
+          "GLES2DecoderImpl::DoDidUseTexImageIfNeeded",
+          GetErrorState());
+      glBindTexture(textarget, texture->service_id());
+      image->DidUseTexImage();
       RestoreCurrentTextureBindings(&state_, textarget);
     }
   }
@@ -7627,16 +7712,13 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
 
         if (textarget != GL_TEXTURE_CUBE_MAP) {
           Texture* texture = texture_ref->texture();
-          Texture::ImageState image_state;
-          gfx::GLImage* image =
-              texture->GetLevelImage(textarget, 0, &image_state);
-          if (image && image_state == Texture::UNBOUND &&
-              !texture->IsAttachedToFramebuffer()) {
+          gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
+          if (image && !texture->IsAttachedToFramebuffer()) {
             ScopedGLErrorSuppressor suppressor(
                 "GLES2DecoderImpl::PrepareTexturesForRender", GetErrorState());
             textures_set = true;
             glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-            DoCopyTexImage(texture, textarget, image);
+            image->WillUseTexImage();
             continue;
           }
         }
@@ -7670,6 +7752,19 @@ void GLES2DecoderImpl::RestoreStateForTextures() {
           glBindTexture(texture_unit.bind_target,
                         texture_ref ? texture_ref->service_id() : 0);
           continue;
+        }
+
+        if (texture_unit.bind_target != GL_TEXTURE_CUBE_MAP) {
+          Texture* texture = texture_ref->texture();
+          gfx::GLImage* image =
+              texture->GetLevelImage(texture_unit.bind_target, 0);
+          if (image && !texture->IsAttachedToFramebuffer()) {
+            ScopedGLErrorSuppressor suppressor(
+                "GLES2DecoderImpl::RestoreStateForTextures", GetErrorState());
+            glActiveTexture(GL_TEXTURE0 + texture_unit_index);
+            image->DidUseTexImage();
+            continue;
+          }
         }
       }
     }
@@ -8026,6 +8121,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
         primcount)) {
       bool textures_set = !PrepareTexturesForRender();
       ApplyDirtyState();
+      ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
       if (!instanced) {
         glDrawArrays(mode, first, count);
       } else {
@@ -8162,6 +8258,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
         indices = element_array_buffer->GetRange(offset, 0);
       }
 
+      ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
       if (!instanced) {
         glDrawElements(mode, count, type, indices);
       } else {
@@ -9392,10 +9489,9 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
                        "unknown texture");
     return error::kNoError;
   }
-  Texture::ImageState image_state;
   gfx::GLImage* image =
-      ref->texture()->GetLevelImage(ref->texture()->target(), 0, &image_state);
-  if (!image || image_state != Texture::BOUND) {
+      ref->texture()->GetLevelImage(ref->texture()->target(), 0);
+  if (!image) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
                        "glScheduleOverlayPlaneCHROMIUM",
                        "unsupported texture format");
@@ -10999,6 +11095,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // some part was clipped so clear the rect.
     scoped_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
+    ScopedModifyPixels modify(texture_ref);
     glTexImage2D(target, level, internal_format, width, height, border,
                  format, type, zero.get());
     if (copyHeight > 0 && copyWidth > 0) {
@@ -11011,6 +11108,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                           copyWidth, copyHeight);
     }
   } else {
+    ScopedModifyPixels modify(texture_ref);
     glCopyTexImage2D(target, level, internal_format,
                      copyX, copyY, copyWidth, copyHeight, border);
   }
@@ -11137,6 +11235,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     }
     scoped_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
+    ScopedModifyPixels modify(texture_ref);
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height,
         format, type, zero.get());
@@ -11147,6 +11246,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     GLint dy = copyY - y;
     GLint destX = xoffset + dx;
     GLint destY = yoffset + dy;
+    ScopedModifyPixels modify(texture_ref);
     glCopyTexSubImage2D(target, level,
                         destX, destY, copyX, copyY,
                         copyWidth, copyHeight);
@@ -13129,16 +13229,20 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
                                        true);
   }
 
-  // Try using GLImage::CopyTexImage when possible.
+  ScopedModifyPixels modify(dest_texture_ref);
+
+  // Try using GLImage::CopyTexSubImage when possible.
   bool unpack_premultiply_alpha_change =
       (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
   if (image && !unpack_flip_y && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
-    if (image->CopyTexImage(GL_TEXTURE_2D))
+    if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(0, 0),
+                               gfx::Rect(0, 0, source_width, source_height))) {
       return;
+    }
   }
 
-  DoCopyTexImageIfNeeded(source_texture, source_texture->target());
+  DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
 
   // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
   // before presenting.
@@ -13161,6 +13265,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         unpack_premultiply_alpha == GL_TRUE,
         unpack_unmultiply_alpha == GL_TRUE);
   }
+
+  DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }
 
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
@@ -13293,6 +13399,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
                                        true);
   }
 
+  ScopedModifyPixels modify(dest_texture_ref);
+
   // Try using GLImage::CopyTexSubImage when possible.
   bool unpack_premultiply_alpha_change =
       (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
@@ -13305,7 +13413,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     }
   }
 
-  DoCopyTexImageIfNeeded(source_texture, source_texture->target());
+  DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
 
   // TODO(hkuang): get the StreamTexture transform matrix in GPU process.
   // crbug.com/226218.
@@ -13317,6 +13425,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
       unpack_flip_y == GL_TRUE,
       unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE);
+
+  DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }
 
 void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
@@ -13402,6 +13512,8 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
   ScopedTextureBinder binder(
       &state_, dest_texture->service_id(), GL_TEXTURE_2D);
 
+  ScopedModifyPixels modify(dest_texture_ref);
+
   // Try using GLImage::CopyTexImage when possible.
   if (image) {
     GLenum dest_type = 0;
@@ -13447,15 +13559,17 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
                                          true);
     }
 
-    if (image->CopyTexImage(GL_TEXTURE_2D))
+    if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(0, 0),
+                               gfx::Rect(0, 0, source_width, source_height))) {
       return;
+    }
   }
 
   TRACE_EVENT0(
       "gpu",
       "GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM, fallback");
 
-  DoCopyTexImageIfNeeded(source_texture, source_texture->target());
+  DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
 
   // As a fallback, copy into a non-compressed GL_RGBA texture.
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCompressedCopyTextureCHROMIUM");
@@ -13487,6 +13601,8 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
         source_internal_format, dest_texture->service_id(), GL_RGBA,
         source_width, source_height, false, false, false);
   }
+
+  DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }
 
 void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
@@ -13635,18 +13751,21 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
   ScopedTextureBinder binder(
       &state_, dest_texture->service_id(), GL_TEXTURE_2D);
 
+  ScopedModifyPixels modify(dest_texture_ref);
+
   // Try using GLImage::CopyTexSubImage when possible.
-  if (image &&
-      image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
-                             gfx::Rect(x, y, width, height))) {
-    return;
+  if (image) {
+    if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
+                               gfx::Rect(x, y, width, height))) {
+      return;
+    }
   }
 
   TRACE_EVENT0(
       "gpu",
       "GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM, fallback");
 
-  DoCopyTexImageIfNeeded(source_texture, source_texture->target());
+  DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
 
   // As a fallback, copy into a non-compressed GL_RGBA texture.
   if (dest_internal_format != GL_RGBA) {
@@ -13699,6 +13818,8 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
       source_internal_format, dest_texture->service_id(), GL_RGBA,
       xoffset, yoffset, x, y, width, height, dest_width, dest_height,
       source_width, source_height, false, false, false);
+
+  DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }
 
 void GLES2DecoderImpl::DoTexStorage2DEXT(
@@ -14111,32 +14232,31 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
     return;
   }
 
-  gfx::GLImage* image = image_manager()->LookupImage(image_id);
-  if (!image) {
+  gfx::GLImage* gl_image = image_manager()->LookupImage(image_id);
+  if (!gl_image) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glBindTexImage2DCHROMIUM", "no image found with the given ID");
     return;
   }
 
-  Texture::ImageState image_state = Texture::UNBOUND;
-
   {
     ScopedGLErrorSuppressor suppressor(
         "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM", GetErrorState());
-
-    // Note: We fallback to using CopyTexImage() before the texture is used
-    // when BindTexImage() fails.
-    if (image->BindTexImage(target))
-      image_state = Texture::BOUND;
+    if (!gl_image->BindTexImage(target)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION,
+          "glBindTexImage2DCHROMIUM", "fail to bind image with the given ID");
+      return;
+    }
   }
 
-  gfx::Size size = image->GetSize();
-  GLenum internalformat = image->GetInternalFormat();
+  gfx::Size size = gl_image->GetSize();
   texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, internalformat, size.width(), size.height(), 1, 0,
-      internalformat, GL_UNSIGNED_BYTE, gfx::Rect(size));
-  texture_manager()->SetLevelImage(texture_ref, target, 0, image, image_state);
+      texture_ref, target, 0, gl_image->GetInternalFormat(), size.width(),
+      size.height(), 1, 0, gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE,
+      gfx::Rect(size));
+  texture_manager()->SetLevelImage(texture_ref, target, 0, gl_image);
 }
 
 void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
@@ -14154,31 +14274,27 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
     return;
   }
 
-  gfx::GLImage* image = image_manager()->LookupImage(image_id);
-  if (!image) {
+  gfx::GLImage* gl_image = image_manager()->LookupImage(image_id);
+  if (!gl_image) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glReleaseTexImage2DCHROMIUM", "no image found with the given ID");
     return;
   }
 
-  Texture::ImageState image_state;
-
   // Do nothing when image is not currently bound.
-  if (texture_ref->texture()->GetLevelImage(target, 0, &image_state) != image)
+  if (texture_ref->texture()->GetLevelImage(target, 0) != gl_image)
     return;
 
-  if (image_state == Texture::BOUND) {
+  {
     ScopedGLErrorSuppressor suppressor(
         "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM", GetErrorState());
-
-    image->ReleaseTexImage(target);
-    texture_manager()->SetLevelInfo(texture_ref, target, 0, GL_RGBA, 0, 0, 1, 0,
-                                    GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
+    gl_image->ReleaseTexImage(target);
   }
 
-  texture_manager()->SetLevelImage(texture_ref, target, 0, nullptr,
-                                   Texture::UNBOUND);
+  texture_manager()->SetLevelInfo(
+      texture_ref, target, 0, gl_image->GetInternalFormat(), 0, 0, 1, 0,
+      gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE, gfx::Rect());
 }
 
 error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(
@@ -14531,6 +14647,12 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     return error::kLostContext;
   }
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::OnTextureRefDetachedFromFramebuffer(
+    TextureRef* texture_ref) {
+  Texture* texture = texture_ref->texture();
+  DoDidUseTexImageIfNeeded(texture, texture->target());
 }
 
 // Note that GL_LOST_CONTEXT is specific to GLES.

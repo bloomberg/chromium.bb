@@ -341,10 +341,8 @@ void GpuVideoDecodeAccelerator::BindImage(uint32 client_texture_id,
   gpu::gles2::TextureManager* texture_manager =
       command_decoder->GetContextGroup()->texture_manager();
   gpu::gles2::TextureRef* ref = texture_manager->GetTexture(client_texture_id);
-  if (ref) {
-    texture_manager->SetLevelImage(ref, texture_target, 0, image.get(),
-                                   gpu::gles2::Texture::BOUND);
-  }
+  if (ref)
+    texture_manager->SetLevelImage(ref, texture_target, 0, image.get());
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>

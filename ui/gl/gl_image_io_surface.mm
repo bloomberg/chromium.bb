@@ -8,9 +8,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/mac/foundation_util.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 
@@ -21,7 +18,7 @@
 namespace gfx {
 namespace {
 
-using WidgetToLayerMap = std::map<AcceleratedWidget, CALayer*>;
+typedef std::map<gfx::AcceleratedWidget,CALayer*> WidgetToLayerMap;
 base::LazyInstance<WidgetToLayerMap> g_widget_to_layer_map;
 
 bool ValidInternalFormat(unsigned internalformat) {
@@ -141,7 +138,8 @@ GLenum DataType(BufferFormat format) {
 
 }  // namespace
 
-GLImageIOSurface::GLImageIOSurface(const Size& size, unsigned internalformat)
+GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
+                                   unsigned internalformat)
     : size_(size),
       internalformat_(internalformat),
       format_(BufferFormat::RGBA_8888) {}
@@ -152,7 +150,7 @@ GLImageIOSurface::~GLImageIOSurface() {
 }
 
 bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
-                                  GenericSharedMemoryId io_surface_id,
+                                  gfx::GenericSharedMemoryId io_surface_id,
                                   BufferFormat format) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!io_surface_);
@@ -178,9 +176,7 @@ void GLImageIOSurface::Destroy(bool have_context) {
   io_surface_.reset();
 }
 
-Size GLImageIOSurface::GetSize() {
-  return size_;
-}
+gfx::Size GLImageIOSurface::GetSize() { return size_; }
 
 unsigned GLImageIOSurface::GetInternalFormat() { return internalformat_; }
 
@@ -209,17 +205,13 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
   return true;
 }
 
-bool GLImageIOSurface::CopyTexImage(unsigned target) {
-  return false;
-}
-
 bool GLImageIOSurface::CopyTexSubImage(unsigned target,
                                        const Point& offset,
                                        const Rect& rect) {
   return false;
 }
 
-bool GLImageIOSurface::ScheduleOverlayPlane(AcceleratedWidget widget,
+bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                             int z_order,
                                             OverlayTransform transform,
                                             const Rect& bounds_rect,
@@ -241,8 +233,8 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   static_cast<uint64_t>(size_bytes));
 
-  auto guid =
-      GetGenericSharedMemoryGUIDForTracing(process_tracing_id, io_surface_id_);
+  auto guid = gfx::GetGenericSharedMemoryGUIDForTracing(process_tracing_id,
+                                                        io_surface_id_);
   pmd->CreateSharedGlobalAllocatorDump(guid);
   pmd->AddOwnershipEdge(dump->guid(), guid);
 }
@@ -252,8 +244,8 @@ base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {
 }
 
 // static
-void GLImageIOSurface::SetLayerForWidget(AcceleratedWidget widget,
-                                         CALayer* layer) {
+void GLImageIOSurface::SetLayerForWidget(
+    gfx::AcceleratedWidget widget, CALayer* layer) {
   if (layer)
     g_widget_to_layer_map.Pointer()->insert(std::make_pair(widget, layer));
   else

@@ -6,15 +6,13 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/process_memory_dump.h"
 
 namespace gfx {
 
-GLImageRefCountedMemory::GLImageRefCountedMemory(const Size& size,
+GLImageRefCountedMemory::GLImageRefCountedMemory(const gfx::Size& size,
                                                  unsigned internalformat)
-    : GLImageMemory(size, internalformat) {}
+    : GLImageMemory(size, internalformat) {
+}
 
 GLImageRefCountedMemory::~GLImageRefCountedMemory() {
   DCHECK(!ref_counted_memory_.get());
@@ -22,7 +20,7 @@ GLImageRefCountedMemory::~GLImageRefCountedMemory() {
 
 bool GLImageRefCountedMemory::Initialize(
     base::RefCountedMemory* ref_counted_memory,
-    BufferFormat format) {
+    gfx::BufferFormat format) {
   if (!GLImageMemory::Initialize(ref_counted_memory->front(), format))
     return false;
 
@@ -33,7 +31,7 @@ bool GLImageRefCountedMemory::Initialize(
 
 void GLImageRefCountedMemory::Destroy(bool have_context) {
   GLImageMemory::Destroy(have_context);
-  ref_counted_memory_ = nullptr;
+  ref_counted_memory_ = NULL;
 }
 
 void GLImageRefCountedMemory::OnMemoryDump(
@@ -54,6 +52,9 @@ void GLImageRefCountedMemory::OnMemoryDump(
   pmd->AddSuballocation(dump->guid(),
                         base::trace_event::MemoryDumpManager::GetInstance()
                             ->system_allocator_pool_name());
+
+  // Also dump the base class's texture memory.
+  GLImageMemory::OnMemoryDump(pmd, process_tracing_id, dump_name);
 }
 
 }  // namespace gfx
