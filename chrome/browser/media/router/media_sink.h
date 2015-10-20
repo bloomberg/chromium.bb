@@ -17,6 +17,7 @@ class MediaSink {
   enum IconType {
     CAST,
     CAST_AUDIO,
+    CAST_AUDIO_GROUP,
     GENERIC,
     HANGOUT
   };

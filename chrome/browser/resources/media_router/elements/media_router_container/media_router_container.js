@@ -407,10 +407,11 @@ Polymer({
   computeSinkIcon_: function(sink) {
     switch (sink.iconType) {
       case media_router.SinkIconType.CAST:
-        // TODO(apacible): Update icon after UX discussion.
         return 'hardware:tv';
       case media_router.SinkIconType.CAST_AUDIO:
         return 'hardware:speaker';
+      case media_router.SinkIconType.CAST_AUDIO_GROUP:
+        return 'hardware:speaker-group';
       case media_router.SinkIconType.GENERIC:
         return 'hardware:tv';
       case media_router.SinkIconType.HANGOUT:

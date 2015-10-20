@@ -17,6 +17,9 @@ media_router::MediaSink::IconType SinkIconTypeFromMojo(
       return media_router::MediaSink::CAST;
     case media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO:
       return media_router::MediaSink::CAST_AUDIO;
+    case media_router::interfaces::MediaSink::
+        IconType::ICON_TYPE_CAST_AUDIO_GROUP:
+      return media_router::MediaSink::CAST_AUDIO_GROUP;
     case media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT:
       return media_router::MediaSink::HANGOUT;
     case media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC:
@@ -35,6 +38,10 @@ media_router::interfaces::MediaSink::IconType SinkIconTypeToMojo(
     case media_router::MediaSink::CAST_AUDIO:
       return
           media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO;
+    case media_router::MediaSink::CAST_AUDIO_GROUP:
+      return
+          media_router::interfaces::MediaSink::
+              IconType::ICON_TYPE_CAST_AUDIO_GROUP;
     case media_router::MediaSink::HANGOUT:
       return media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT;
     case media_router::MediaSink::GENERIC:

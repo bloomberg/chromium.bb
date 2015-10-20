@@ -38,6 +38,10 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSinkIconType) {
   EXPECT_EQ(media_router::MediaSink::CAST_AUDIO,
       mojo::SinkIconTypeFromMojo(
           media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO));
+  EXPECT_EQ(media_router::MediaSink::CAST_AUDIO_GROUP,
+      mojo::SinkIconTypeFromMojo(
+          media_router::interfaces::MediaSink::
+              IconType::ICON_TYPE_CAST_AUDIO_GROUP));
   EXPECT_EQ(media_router::MediaSink::GENERIC,
       mojo::SinkIconTypeFromMojo(
           media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC));
@@ -50,6 +54,9 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSinkIconType) {
       mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST));
   EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO,
       mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST_AUDIO));
+  EXPECT_EQ(media_router::interfaces::MediaSink::
+      IconType::ICON_TYPE_CAST_AUDIO_GROUP,
+      mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST_AUDIO_GROUP));
   EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC,
       mojo::SinkIconTypeToMojo(media_router::MediaSink::GENERIC));
   EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT,
