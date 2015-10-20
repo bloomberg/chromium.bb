@@ -119,13 +119,13 @@ static_library("sel") {
   if (current_cpu == "arm") {
     sources += [
       "arch/arm/nacl_app.c",
-      "arch/arm/nacl_switch_to_app_arm.c",
-      "arch/arm/sel_rt.c",
-      "arch/arm/nacl_tls.c",
-      "arch/arm/sel_ldr_arm.c",
-      "arch/arm/sel_addrspace_arm.c",
       "arch/arm/nacl_switch.S",
+      "arch/arm/nacl_switch_to_app_arm.c",
       "arch/arm/nacl_syscall.S",
+      "arch/arm/nacl_tls.c",
+      "arch/arm/sel_addrspace_arm.c",
+      "arch/arm/sel_ldr_arm.c",
+      "arch/arm/sel_rt.c",
       "arch/arm/tramp_arm.S",
       "linux/nacl_signal_arm.c",
     ]
@@ -216,6 +216,28 @@ static_library("sel") {
       "//native_client/src/trusted/service_runtime/arch/x86_64:service_runtime_x86_64",
     ]
   }
+
+  if (current_os == "mac") {
+    deps += [ ":nacl_exc" ]
+    sources += [ "$target_gen_dir/nacl_exc_server.c" ]
+  }
+}
+
+if (current_os == "mac") {
+  import("//build/config/mac/mac_sdk.gni")
+
+  action("nacl_exc") {
+    script = "osx/run_mig.py"
+    sources = [
+      mac_sdk_path + "/usr/include/mach/exc.defs",
+    ]
+    outputs = [
+      "$target_gen_dir/nacl_exc.h",
+      "$target_gen_dir/nacl_exc_server.c",
+    ]
+    args = rebase_path(sources, root_build_dir) +
+           rebase_path(outputs, root_build_dir)
+  }
 }
 
 executable("sel_ldr") {
@@ -225,11 +247,13 @@ executable("sel_ldr") {
   deps = [
     "//native_client/src/trusted/service_runtime:sel_main",
   ]
-  if (is_posix) {
+  if (is_linux) {
     libs = [ "rt" ]
     ldflags = [ "-pie" ]
   }
   if (is_linux) {
-    data_deps = [ "linux:bootstrap" ]
+    data_deps = [
+      "linux:bootstrap",
+    ]
   }
 }
