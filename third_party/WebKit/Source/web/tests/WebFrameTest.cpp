@@ -7078,14 +7078,26 @@ namespace {
 
 class SwapMainFrameWhenTitleChangesWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
-    SwapMainFrameWhenTitleChangesWebFrameClient() {}
-    ~SwapMainFrameWhenTitleChangesWebFrameClient() override {}
+    SwapMainFrameWhenTitleChangesWebFrameClient()
+        : m_remoteFrame(nullptr)
+    {
+    }
+
+    ~SwapMainFrameWhenTitleChangesWebFrameClient() override
+    {
+        if (m_remoteFrame)
+            m_remoteFrame->close();
+    }
 
     void didReceiveTitle(WebLocalFrame* frame, const WebString&, WebTextDirection) override
     {
-        if (!frame->parent())
-            frame->swap(WebRemoteFrame::create(WebTreeScopeType::Document, nullptr));
+        if (!frame->parent()) {
+            m_remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+            frame->swap(m_remoteFrame);
+        }
     }
+private:
+    WebRemoteFrame* m_remoteFrame;
 };
 
 } // anonymous namespace
