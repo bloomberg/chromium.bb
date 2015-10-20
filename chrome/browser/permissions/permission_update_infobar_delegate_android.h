@@ -29,6 +29,8 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The necessary runtime permissions are generated based on the list of
   // ContentSettingsTypes passed in. Returns the infobar if it was successfully
   // added.
+  //
+  // The |callback| will not be triggered if this is deleted.
   static infobars::InfoBar* Create(
       content::WebContents* web_contents,
       const std::vector<ContentSettingsType>& content_settings_types,
@@ -36,6 +38,8 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Creates an infobar to resolve conflicts in Android runtime permissions.
   // Returns the infobar if it was successfully added.
+  //
+  // The |callback| will not be triggered if this is deleted.
   static infobars::InfoBar* Create(
       content::WebContents* web_contents,
       const std::vector<std::string>& android_permissions,

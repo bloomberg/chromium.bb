@@ -144,9 +144,6 @@ PermissionUpdateInfoBarDelegate::PermissionUpdateInfoBarDelegate(
 PermissionUpdateInfoBarDelegate::~PermissionUpdateInfoBarDelegate() {
   Java_PermissionUpdateInfoBarDelegate_onNativeDestroyed(
       base::android::AttachCurrentThread(), java_delegate_.obj());
-
-  if (!callback_.is_null())
-    callback_.Run(false);
 }
 
 int PermissionUpdateInfoBarDelegate::GetIconId() const {

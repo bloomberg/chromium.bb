@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.VSyncMonitor;
@@ -99,6 +100,8 @@ public class WindowAndroid {
     // On KitKat and higher, a class that monitors the touch exploration state.
     private TouchExplorationMonitor mTouchExplorationMonitor;
 
+    private AndroidPermissionDelegate mPermissionDelegate;
+
     /**
      * An interface to notify listeners of changes in the soft keyboard's visibility.
      */
@@ -140,6 +143,14 @@ public class WindowAndroid {
         mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
         mAccessibilityManager = (AccessibilityManager)
                 context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+    }
+
+    /**
+     * Set the delegate that will handle android permissions requests.
+     */
+    @VisibleForTesting
+    public void setAndroidPermissionDelegate(AndroidPermissionDelegate delegate) {
+        mPermissionDelegate = delegate;
     }
 
     /**
@@ -223,7 +234,9 @@ public class WindowAndroid {
      * @return Whether access to the permission is granted.
      */
     @CalledByNative
-    public boolean hasPermission(String permission) {
+    public final boolean hasPermission(String permission) {
+        if (mPermissionDelegate != null) return mPermissionDelegate.hasPermission(permission);
+
         return mApplicationContext.checkPermission(permission, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }
@@ -241,7 +254,11 @@ public class WindowAndroid {
      * @return Whether the requesting the permission is allowed.
      */
     @CalledByNative
-    public boolean canRequestPermission(String permission) {
+    public final boolean canRequestPermission(String permission) {
+        if (mPermissionDelegate != null) {
+            return mPermissionDelegate.canRequestPermission(permission);
+        }
+
         Log.w(TAG, "Cannot determine the request permission state as the context "
                 + "is not an Activity");
         assert false : "Failed to determine the request permission state using a WindowAndroid "
@@ -255,7 +272,11 @@ public class WindowAndroid {
      * @param permission The permission name.
      * @return Whether the permission is revoked by policy and the user has no ability to change it.
      */
-    public boolean isPermissionRevokedByPolicy(String permission) {
+    public final boolean isPermissionRevokedByPolicy(String permission) {
+        if (mPermissionDelegate != null) {
+            return mPermissionDelegate.isPermissionRevokedByPolicy(permission);
+        }
+
         Log.w(TAG, "Cannot determine the policy permission state as the context "
                 + "is not an Activity");
         assert false : "Failed to determine the policy permission state using a WindowAndroid "
@@ -268,7 +289,12 @@ public class WindowAndroid {
      * @param permissions The list of permissions to request access to.
      * @param callback The callback to be notified whether the permissions were granted.
      */
-    public void requestPermissions(String[] permissions, PermissionCallback callback) {
+    public final void requestPermissions(String[] permissions, PermissionCallback callback) {
+        if (mPermissionDelegate != null) {
+            mPermissionDelegate.requestPermissions(permissions, callback);
+            return;
+        }
+
         Log.w(TAG, "Cannot request permissions as the context is not an Activity");
         assert false : "Failed to request permissions using a WindowAndroid without an Activity";
     }
