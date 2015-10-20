@@ -182,6 +182,13 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
       base::Bind(&ReleaseOriginalFrame, black_frame_));
 
   wrapped_black_frame->set_timestamp(reference_frame->timestamp());
+  base::TimeTicks reference_time;
+  if (reference_frame->metadata()->GetTimeTicks(
+          media::VideoFrameMetadata::REFERENCE_TIME, &reference_time)) {
+    wrapped_black_frame->metadata()->SetTimeTicks(
+        media::VideoFrameMetadata::REFERENCE_TIME, reference_time);
+  }
+
   return wrapped_black_frame;
 }
 

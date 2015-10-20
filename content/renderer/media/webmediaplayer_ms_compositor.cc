@@ -159,7 +159,10 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
   }
 
   // This is a signal frame saying that the stream is stopped.
-  if (current_frame_ && frame->timestamp().is_zero()) {
+  bool end_of_stream = false;
+  if (frame->metadata()->GetBoolean(media::VideoFrameMetadata::END_OF_STREAM,
+                                    &end_of_stream) &&
+      end_of_stream) {
     rendering_frame_buffer_.reset();
     SetCurrentFrame(frame);
     return;

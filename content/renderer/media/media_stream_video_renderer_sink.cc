@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 
@@ -138,6 +139,10 @@ void MediaStreamVideoRendererSink::RenderSignalingFrame() {
   // originates from a video camera.
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateBlackFrame(frame_size_);
+  video_frame->metadata()->SetBoolean(media::VideoFrameMetadata::END_OF_STREAM,
+                                      true);
+  video_frame->metadata()->SetTimeTicks(
+      media::VideoFrameMetadata::REFERENCE_TIME, base::TimeTicks::Now());
   OnVideoFrame(video_frame, base::TimeTicks());
 }
 
