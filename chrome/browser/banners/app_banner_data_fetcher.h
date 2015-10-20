@@ -136,6 +136,7 @@ class AppBannerDataFetcher
 
  private:
   // Callbacks for data retrieval.
+  void OnDidHasManifest(bool has_manifest);
   void OnDidGetManifest(const content::Manifest& manifest);
   void OnDidCheckHasServiceWorker(bool has_service_worker);
   void OnAppIconFetched(const SkBitmap& bitmap);

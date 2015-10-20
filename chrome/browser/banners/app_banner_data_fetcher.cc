@@ -100,8 +100,8 @@ void AppBannerDataFetcher::Start(const GURL& validated_url,
   transition_type_ = transition_type;
   validated_url_ = validated_url;
   referrer_.erase();
-  web_contents->GetManifest(
-      base::Bind(&AppBannerDataFetcher::OnDidGetManifest, this));
+  web_contents->HasManifest(
+      base::Bind(&AppBannerDataFetcher::OnDidHasManifest, this));
 }
 
 void AppBannerDataFetcher::Cancel() {
@@ -240,6 +240,21 @@ void AppBannerDataFetcher::RecordDidShowBanner(const std::string& event_name) {
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           event_name,
                                           web_contents->GetURL());
+}
+
+void AppBannerDataFetcher::OnDidHasManifest(bool has_manifest) {
+  content::WebContents* web_contents = GetWebContents();
+
+  if (!CheckFetcherIsStillAlive(web_contents) || !has_manifest) {
+    if (!has_manifest)
+      OutputDeveloperNotShownMessage(web_contents, kNoManifest);
+
+    Cancel();
+    return;
+  }
+
+  web_contents->GetManifest(
+      base::Bind(&AppBannerDataFetcher::OnDidGetManifest, this));
 }
 
 void AppBannerDataFetcher::OnDidGetManifest(

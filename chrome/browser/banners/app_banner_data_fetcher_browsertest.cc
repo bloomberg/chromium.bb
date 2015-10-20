@@ -317,6 +317,11 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, NoManifest) {
                 ui::PAGE_TRANSITION_TYPED, 1, false);
 }
 
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, MissingManifest) {
+  RunBannerTest("/banners/manifest_bad_link.html",
+                ui::PAGE_TRANSITION_TYPED, 1, false);
+}
+
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerDirect) {
   RunBannerTest("/banners/cancel_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
                 false);

@@ -16,6 +16,7 @@ namespace banners {
 // Error message strings used to notify developers via the console.
 extern const char kRendererRequestCancel[];
 extern const char kManifestEmpty[];
+extern const char kNoManifest[];
 extern const char kCannotDetermineBestIcon[];
 extern const char kNoMatchingServiceWorker[];
 extern const char kNoIconAvailable[];

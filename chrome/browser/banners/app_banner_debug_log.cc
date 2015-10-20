@@ -13,7 +13,9 @@ namespace banners {
 
 const char kRendererRequestCancel[] =
     "renderer has requested the banner prompt be cancelled";
-const char kManifestEmpty[] = "manifest is empty or missing";
+const char kManifestEmpty[] =
+    "manifest could not be fetched, is empty, or could not be parsed";
+const char kNoManifest[] = "site has no manifest <link> URL";
 const char kCannotDetermineBestIcon[] =
     "could not determine the best icon to use";
 const char kNoMatchingServiceWorker[] =
