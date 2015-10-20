@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
+  /* Code which is embedded inside of the webview. See below for details.
+  /** @const */ var INJECTED_WEBVIEW_SCRIPT = String.raw`
+                      (function() {
+                         <include src="../keyboard/keyboard_utils.js">
+                         keyboard.initializeKeyboardFlow();
+                       })();`;
+
   /** @const */ var STEP_SIGNIN = 'signin';
   /** @const */ var STEP_WORKING = 'working';
   /** @const */ var STEP_ATTRIBUTE_PROMPT = 'attribute-prompt';
@@ -178,6 +185,19 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * URL.
      */
     onBeforeShow: function(data) {
+      if (Oobe.getInstance().forceKeyboardFlow) {
+        // We run the tab remapping logic inside of the webview so that the
+        // simulated tab events will use the webview tab-stops. Simulated tab
+        // events created from the webui treat the entire webview as one tab
+        // stop. Real tab events do not do this. See crbug.com/543865.
+        $('oauth-enroll-auth-view').addContentScripts([{
+          name: 'injectedTabHandler',
+          matches: ['http://*/*', 'https://*/*'],
+          js: { code: INJECTED_WEBVIEW_SCRIPT },
+          run_at: 'document_start'
+        }]);
+      }
+
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ENROLLMENT;
       $('progress-dots').hidden = true;
       var gaiaParams = {};

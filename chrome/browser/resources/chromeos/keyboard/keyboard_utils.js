@@ -38,6 +38,19 @@ keyboard.onKeyDown_ = function(event) {
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
 
+  // This file also gets embedded inside of the CfM/hotrod enrollment webview.
+  // Events will bubble down into the webview, which means that the event
+  // handler from the webui will steal the events meant for the webview. So we
+  // have to disable the webui handler if the active element is the webview.
+  //
+  // $ is defined differently depending on how this file gets executed; we have
+  // to use document.getElementById to get consistent behavior.
+  //
+  // See crbug.com/543865.
+  if (document.activeElement ===
+      document.getElementById('oauth-enroll-auth-view'))
+    return;
+
   var needsUpDownKeys = event.target.classList.contains('needs-up-down-keys');
 
   if (event.keyIdentifier == 'Left' ||
