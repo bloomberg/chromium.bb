@@ -969,14 +969,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parsedValue = parseMotionRotation();
         break;
 
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyTransitionProperty:
-        parsedValue = parseAnimationPropertyList(propId, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
-        break;
-
     case CSSPropertyJustifyContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseContentDistributionOverflowPosition();
@@ -1251,11 +1243,16 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyZoom:
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
+    case CSSPropertyAnimationDirection:
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
+    case CSSPropertyAnimationFillMode:
+    case CSSPropertyAnimationIterationCount:
     case CSSPropertyAnimationName:
+    case CSSPropertyAnimationPlayState:
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
+    case CSSPropertyTransitionProperty:
         validPrimitive = false;
         break;
 

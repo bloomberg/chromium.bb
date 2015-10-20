@@ -999,6 +999,37 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, 
     return zoom.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationDirection(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNormal || id == CSSValueAlternate || id == CSSValueReverse || id == CSSValueAlternateReverse)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationFillMode(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNone || id == CSSValueForwards || id == CSSValueBackwards || id == CSSValueBoth)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationIterationCount(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueInfinite)
+        return consumeIdent(range);
+    return consumeNumber(range, ValueRangeNonNegative);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationPlayState(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueRunning || id == CSSValuePaused)
+        return consumeIdent(range);
+    return nullptr;
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationName(CSSParserTokenRange& range, const CSSParserContext& context, bool allowQuotedName)
 {
     if (range.peek().id() == CSSValueNone)
@@ -1015,6 +1046,25 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationName(CSSParserTokenRange
         return CSSCustomIdentValue::create(token.value());
     }
 
+    return consumeCustomIdent(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeTransitionProperty(CSSParserTokenRange& range)
+{
+    const CSSParserToken& token = range.peek();
+    if (token.type() != IdentToken)
+        return nullptr;
+    // TODO(timloh): This should check isCSSWideKeyword
+    if (token.id() == CSSValueInitial || token.id() == CSSValueInherit)
+        return nullptr;
+    if (token.id() == CSSValueNone)
+        return consumeIdent(range);
+
+    if (CSSPropertyID property = token.parseAsUnresolvedCSSPropertyID()) {
+        ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
+        range.consumeIncludingWhitespace();
+        return cssValuePool().createIdentifierValue(property);
+    }
     return consumeCustomIdent(range);
 }
 
@@ -1101,11 +1151,21 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID prop
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
         return consumeTime(range, ValueRangeAll);
+    case CSSPropertyAnimationDirection:
+        return consumeAnimationDirection(range);
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
         return consumeTime(range, ValueRangeNonNegative);
+    case CSSPropertyAnimationFillMode:
+        return consumeAnimationFillMode(range);
+    case CSSPropertyAnimationIterationCount:
+        return consumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
         return consumeAnimationName(range, context, useLegacyParsing);
+    case CSSPropertyAnimationPlayState:
+        return consumeAnimationPlayState(range);
+    case CSSPropertyTransitionProperty:
+        return consumeTransitionProperty(range);
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationTimingFunction(range);
@@ -1113,6 +1173,18 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID prop
         ASSERT_NOT_REACHED();
         return nullptr;
     }
+}
+
+static bool isValidAnimationPropertyList(CSSPropertyID property, const CSSValueList& valueList)
+{
+    if (property != CSSPropertyTransitionProperty || valueList.length() < 2)
+        return true;
+    for (auto& value : valueList) {
+        if (value->isPrimitiveValue() && toCSSPrimitiveValue(*value).isValueID()
+            && toCSSPrimitiveValue(*value).getValueID() == CSSValueNone)
+            return false;
+    }
+    return true;
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSPropertyID property, CSSParserTokenRange& range, const CSSParserContext& context, bool useLegacyParsing)
@@ -1124,6 +1196,8 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSProp
             return nullptr;
         list->append(value.release());
     } while (consumeCommaIncludingWhitespace(range));
+    if (!isValidAnimationPropertyList(property, *list))
+        return nullptr;
     ASSERT(list->length());
     return list.release();
 }
@@ -1211,9 +1285,14 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeZoom(m_range, m_context);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
+    case CSSPropertyAnimationDirection:
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
+    case CSSPropertyAnimationFillMode:
+    case CSSPropertyAnimationIterationCount:
     case CSSPropertyAnimationName:
+    case CSSPropertyAnimationPlayState:
+    case CSSPropertyTransitionProperty:
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationPropertyList(property, m_range, m_context, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
