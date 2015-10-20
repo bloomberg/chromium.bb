@@ -147,7 +147,7 @@ public:
     void insertCommentOnDocument(AtomicHTMLToken*);
     void insertCommentOnHTMLHtmlElement(AtomicHTMLToken*);
     void insertHTMLElement(AtomicHTMLToken*);
-    void insertSelfClosingHTMLElement(AtomicHTMLToken*);
+    void insertSelfClosingHTMLElementDestroyingToken(AtomicHTMLToken*);
     void insertFormattingElement(AtomicHTMLToken*);
     void insertHTMLHeadElement(AtomicHTMLToken*);
     void insertHTMLBodyElement(AtomicHTMLToken*);

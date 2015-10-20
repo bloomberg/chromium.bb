@@ -624,7 +624,7 @@ void HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken* token)
     m_openElements.push(HTMLStackItem::create(element.release(), token));
 }
 
-void HTMLConstructionSite::insertSelfClosingHTMLElement(AtomicHTMLToken* token)
+void HTMLConstructionSite::insertSelfClosingHTMLElementDestroyingToken(AtomicHTMLToken* token)
 {
     ASSERT(token->type() == HTMLToken::StartTag);
     // Normally HTMLElementStack is responsible for calling finishParsingChildren,
