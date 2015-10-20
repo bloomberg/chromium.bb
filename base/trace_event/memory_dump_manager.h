@@ -104,6 +104,11 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     return kSystemAllocatorPoolName;
   };
 
+  // When set to true, calling |RegisterMemoryDumpProvider| is a no-op.
+  void set_dumper_registrations_ignored_for_testing(bool ignored) {
+    dumper_registrations_ignored_for_testing_ = ignored;
+  }
+
  private:
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -224,8 +229,8 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // expected to be valid only when tracing is enabled.
   uint64 tracing_process_id_;
 
-  // Skips the auto-registration of the core dumpers during Initialize().
-  bool skip_core_dumpers_auto_registration_for_testing_;
+  // When true, calling |RegisterMemoryDumpProvider| is a no-op.
+  bool dumper_registrations_ignored_for_testing_;
 
   // Whether new memory dump providers should be told to enable heap profiling.
   bool heap_profiling_enabled_;
