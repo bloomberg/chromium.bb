@@ -59,6 +59,7 @@ protected:
     bool supportsReadOnly() const override;
     void handleFocusEvent(Element* oldFocusedNode, WebFocusType) final;
     void handleBlurEvent() final;
+    String sanitizeValue(const String&) const override;
     void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
     void updateView() override;
 
@@ -82,7 +83,6 @@ private:
     void forwardEvent(Event*) final;
     bool shouldSubmitImplicitly(Event*) final;
     LayoutObject* createLayoutObject(const ComputedStyle&) const override;
-    String sanitizeValue(const String&) const override;
     bool shouldRespectListAttribute() override;
     void listAttributeTargetChanged() override;
     void updatePlaceholderText() final;

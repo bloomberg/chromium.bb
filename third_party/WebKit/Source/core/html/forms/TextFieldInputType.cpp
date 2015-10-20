@@ -492,11 +492,7 @@ void TextFieldInputType::subtreeHasChanged()
     bool wasChanged = element().wasChangedSinceLastFormControlChangeEvent();
     element().setChangedSinceLastFormControlChangeEvent(true);
 
-    // We don't need to call sanitizeUserInputValue() function here because
-    // HTMLInputElement::handleBeforeTextInsertedEvent() has already called
-    // sanitizeUserInputValue().
-    // sanitizeValue() is needed because IME input doesn't dispatch BeforeTextInsertedEvent.
-    element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerEditorValue())));
+    element().setValueFromRenderer(sanitizeUserInputValue(convertFromVisibleValue(element().innerEditorValue())));
     element().updatePlaceholderVisibility();
     element().pseudoStateChanged(CSSSelector::PseudoValid);
     element().pseudoStateChanged(CSSSelector::PseudoInvalid);

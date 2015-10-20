@@ -46,6 +46,8 @@ private:
     bool typeMismatchFor(const String&) const override;
     bool typeMismatch() const override;
     String typeMismatchText() const override;
+    String sanitizeValue(const String&) const override;
+    String sanitizeUserInputValue(const String&) const override;
 };
 
 } // namespace blink

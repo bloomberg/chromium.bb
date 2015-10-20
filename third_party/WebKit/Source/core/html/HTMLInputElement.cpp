@@ -1142,7 +1142,7 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     m_suggestedValue = String();
 
     // Renderer and our event handler are responsible for sanitizing values.
-    ASSERT(value == sanitizeValue(value) || sanitizeValue(value).isEmpty());
+    ASSERT(value == m_inputType->sanitizeUserInputValue(value) || m_inputType->sanitizeUserInputValue(value).isEmpty());
 
     m_valueIfDirty = value;
     m_needsToUpdateViewValue = false;

@@ -33,6 +33,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -66,6 +67,17 @@ bool URLInputType::typeMismatch() const
 String URLInputType::typeMismatchText() const
 {
     return locale().queryString(WebLocalizedString::ValidationTypeMismatchForURL);
+}
+
+String URLInputType::sanitizeValue(const String& proposedValue) const
+{
+    return BaseTextInputType::sanitizeValue(stripLeadingAndTrailingHTMLSpaces(proposedValue));
+}
+
+String URLInputType::sanitizeUserInputValue(const String& proposedValue) const
+{
+    // Do not call URLInputType::sanitizeValue.
+    return BaseTextInputType::sanitizeValue(proposedValue);
 }
 
 } // namespace blink

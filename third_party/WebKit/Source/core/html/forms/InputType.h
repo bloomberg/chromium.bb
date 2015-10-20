@@ -136,6 +136,7 @@ public:
     // Returing the null string means "use the default value."
     // This function must be called only by HTMLInputElement::sanitizeValue().
     virtual String sanitizeValue(const String&) const;
+    virtual String sanitizeUserInputValue(const String&) const;
     virtual void warnIfValueIsInvalid(const String&) const;
     void warnIfValueIsInvalidAndElementIsVisible(const String&) const;
 

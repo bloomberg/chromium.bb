@@ -598,6 +598,11 @@ String InputType::sanitizeValue(const String& proposedValue) const
     return proposedValue;
 }
 
+String InputType::sanitizeUserInputValue(const String& proposedValue) const
+{
+    return sanitizeValue(proposedValue);
+}
+
 void InputType::warnIfValueIsInvalidAndElementIsVisible(const String& value) const
 {
     // Don't warn if the value is set in Modernizr.
