@@ -206,8 +206,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Skip('deqp/data/gles3/shaders/arrays.html',
         ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/constant_expressions.html',
-        ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
@@ -222,3 +220,68 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['linux', 'amd'], bug=483282)
+
+    # Conflicting expectations to test that the
+    # "Expectations Have No collisions" unittest works.
+    # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
+
+    # Conflict when all conditions match
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug', 'opengl'])
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug', 'opengl'])
+
+    # Conflict when all conditions match (and different sets)
+    # self.Fail(page_name,
+    #     ['linux', 'win', ('nvidia', 0x1), 'debug', 'opengl'])
+    # self.Fail(page_name,
+    #     ['linux', 'mac', ('nvidia', 0x1), 'amd', 'debug', 'opengl'])
+
+    # Conflict with one aspect not specified
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug', 'opengl'])
+
+    # Conflict with one aspect not specified (in both conditions)
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+
+    # Conflict even if the GPU is specified in a device ID
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+    # self.Fail(page_name,
+    #     ['linux', 'nvidia', 'debug'])
+
+    # Test there are no conflicts between two different devices
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x2), 'debug'])
+
+    # Test there are no conflicts between two devices with different vendors
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+    # self.Fail(page_name,
+    #     ['linux', ('amd', 0x1), 'debug'])
+
+    # Conflicts if there is a device and nothing specified for the other's
+    # GPU vendors
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug'])
+    # self.Fail(page_name,
+    #     ['linux', 'debug'])
+
+    # Test no conflicts happen when only one aspect differs
+    # self.Fail(page_name,
+    #     ['linux', ('nvidia', 0x1), 'debug', 'opengl'])
+    # self.Fail(page_name,
+    #     ['win', ('nvidia', 0x1), 'debug', 'opengl'])
+
+    # Conflicts if between a generic os condition and a specific version
+    # self.Fail(page_name,
+    #     ['xp', ('nvidia', 0x1), 'debug', 'opengl'])
+    # self.Fail(page_name,
+    #     ['win', ('nvidia', 0x1), 'debug', 'opengl'])
