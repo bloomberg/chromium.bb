@@ -31,7 +31,8 @@ def _PushExtraSuiteDataDeps(device, test_apk):
   Args:
     test_apk: The test suite basename for which to return file paths.
   """
-  if test_apk in ['ChromeTest', 'ContentShellTest']:
+  if test_apk in ['ChromeTest', 'ContentShellTest',
+                  'CronetTestInstrumentation']:
     test_files = 'net/data/ssl/certificates'
     host_device_file_tuple = [
         (os.path.join(constants.DIR_SOURCE_ROOT, test_files),

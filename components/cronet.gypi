@@ -321,6 +321,7 @@
           'sources': [
             'cronet/android/test/src/org/chromium/net/CronetTestUtil.java',
             'cronet/android/test/src/org/chromium/net/MockUrlRequestJobFactory.java',
+            'cronet/android/test/src/org/chromium/net/MockCertVerifier.java',
             'cronet/android/test/src/org/chromium/net/NativeTestServer.java',
             'cronet/android/test/src/org/chromium/net/NetworkChangeNotifierUtil.java',
             'cronet/android/test/src/org/chromium/net/QuicTestServer.java',
@@ -337,6 +338,8 @@
           'type': 'shared_library',
           'sources': [
             'cronet/android/test/cronet_test_jni.cc',
+            'cronet/android/test/mock_cert_verifier.cc',
+            'cronet/android/test/mock_cert_verifier.h',
             'cronet/android/test/mock_url_request_job_factory.cc',
             'cronet/android/test/mock_url_request_job_factory.h',
             'cronet/android/test/native_test_server.cc',
@@ -361,9 +364,6 @@
             '../base/base.gyp:base_i18n',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
-          ],
-          'defines': [
-            'CRONET_TEST=1',
           ],
           'conditions': [
             ['enable_data_reduction_proxy_support==1',

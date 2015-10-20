@@ -4,13 +4,34 @@
 
 #include "components/cronet/url_request_context_config.h"
 
+#include "base/basictypes.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "net/cert/cert_verifier.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/url_request/url_request_context_builder.h"
 
 namespace cronet {
+
+namespace {
+
+// Using a reference to scoped_ptr is unavoidable because of the semantics of
+// RegisterCustomField.
+// TODO(xunjieli): Remove this once crbug.com/544976 is fixed.
+bool GetMockCertVerifierFromString(
+    const base::StringPiece& mock_cert_verifier_string,
+    scoped_ptr<net::CertVerifier>* result) {
+  int64 val;
+  bool success = base::StringToInt64(mock_cert_verifier_string, &val);
+  *result = make_scoped_ptr(reinterpret_cast<net::CertVerifier*>(val));
+  return success;
+}
+
+}  // namespace
 
 #define DEFINE_CONTEXT_CONFIG(x) const char REQUEST_CONTEXT_CONFIG_##x[] = #x;
 #include "components/cronet/url_request_context_config_list.h"
@@ -35,8 +56,7 @@ void URLRequestContextConfig::QuicHint::RegisterJSONConverter(
       &URLRequestContextConfig::QuicHint::alternate_port);
 }
 
-URLRequestContextConfig::URLRequestContextConfig() {
-}
+URLRequestContextConfig::URLRequestContextConfig() {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {
 }
@@ -79,11 +99,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   context_builder->set_quic_connection_options(
       net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
   context_builder->set_sdch_enabled(enable_sdch);
-#if defined(CRONET_TEST)
-  // Enable insecure quic only if Cronet is built for testing.
-  // TODO(xunjieli): Remove once crbug.com/514629 is fixed.
-  context_builder->set_enable_insecure_quic(true);
-#endif
+  if (mock_cert_verifier)
+    context_builder->SetCertVerifier(mock_cert_verifier.Pass());
   // TODO(mef): Use |config| to set cookies.
 }
 
@@ -123,6 +140,12 @@ void URLRequestContextConfig::RegisterJSONConverter(
   converter->RegisterStringField(
       REQUEST_CONTEXT_CONFIG_DATA_REDUCTION_PROXY_KEY,
       &URLRequestContextConfig::data_reduction_proxy_key);
+
+  // For Testing.
+  converter->RegisterCustomField<scoped_ptr<net::CertVerifier>>(
+      REQUEST_CONTEXT_CONFIG_MOCK_CERT_VERIFIER,
+      &URLRequestContextConfig::mock_cert_verifier,
+      &GetMockCertVerifierFromString);
 }
 
 }  // namespace cronet

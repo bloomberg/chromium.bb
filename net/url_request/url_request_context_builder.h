@@ -201,6 +201,8 @@ class NET_EXPORT URLRequestContextBuilder {
     backoff_enabled_ = backoff_enabled;
   }
 
+  void SetCertVerifier(scoped_ptr<CertVerifier> cert_verifier);
+
   void SetInterceptors(
       ScopedVector<URLRequestInterceptor> url_request_interceptors);
 
@@ -273,6 +275,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_refptr<CookieStore> cookie_store_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   std::vector<SchemeFactory> extra_http_auth_handlers_;
+  scoped_ptr<CertVerifier> cert_verifier_;
   ScopedVector<URLRequestInterceptor> url_request_interceptors_;
   scoped_ptr<HttpServerProperties> http_server_properties_;
 

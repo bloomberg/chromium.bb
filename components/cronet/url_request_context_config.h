@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 
 namespace net {
+class CertVerifier;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -81,6 +82,9 @@ struct URLRequestContextConfig {
   std::string data_reduction_primary_proxy;
   std::string data_reduction_fallback_proxy;
   std::string data_reduction_secure_proxy_check_url;
+
+  // Certificate verifier for testing.
+  scoped_ptr<net::CertVerifier> mock_cert_verifier;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);

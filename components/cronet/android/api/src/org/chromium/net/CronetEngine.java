@@ -313,6 +313,14 @@ public abstract class CronetEngine {
         }
 
         /**
+         * Sets a native MockCertVerifier for testing.
+         */
+        Builder setMockCertVerifierForTesting(long mockCertVerifier) {
+            return putString(
+                    CronetEngineBuilderList.MOCK_CERT_VERIFIER, String.valueOf(mockCertVerifier));
+        }
+
+        /**
          * Get JSON string representation of the builder.
          */
         @Override

@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "components/cronet/android/cronet_library_loader.h"
+#include "mock_cert_verifier.h"
 #include "mock_url_request_job_factory.h"
 #include "native_test_server.h"
 #include "network_change_notifier_util.h"
@@ -18,6 +19,7 @@
 namespace {
 
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
+    {"MockCertVerifier", cronet::RegisterMockCertVerifier},
     {"MockUrlRequestJobFactory", cronet::RegisterMockUrlRequestJobFactory},
     {"NativeTestServer", cronet::RegisterNativeTestServer},
     {"NetworkChangeNotifierUtil", cronet::RegisterNetworkChangeNotifierUtil},

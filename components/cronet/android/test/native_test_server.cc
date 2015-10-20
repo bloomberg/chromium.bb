@@ -40,6 +40,11 @@ const char kEchoAllHeadersPath[] = "/echo_all_headers";
 const char kEchoMethodPath[] = "/echo_method";
 const char kRedirectToEchoBodyPath[] = "/redirect_to_echo_body";
 const char kFakeSdchDomain[] = "fake.sdch.domain";
+// Host used in QuicTestServer. This must match the certificate used
+// (quic_test.example.com.crt and quic_test.example.com.key.pkcs8), and
+// the file served (
+// components/cronet/android/test/assets/test/quic_data/simple.txt).
+const char kFakeQuicDomain[] = "test.example.com";
 // Path that advertises the dictionary passed in query params if client
 // supports Sdch encoding. E.g. /sdch/index?q=LeQxM80O will make the server
 // responds with "Get-Dictionary: /sdch/dict/LeQxM80O".
@@ -190,6 +195,7 @@ void RegisterHostResolverProcHelper(
   scoped_refptr<net::RuleBasedHostResolverProc> proc =
       new net::RuleBasedHostResolverProc(NULL);
   proc->AddRule(kFakeSdchDomain, "127.0.0.1");
+  proc->AddRule(kFakeQuicDomain, "127.0.0.1");
   resolver->set_proc_params_for_test(
       net::HostResolverImpl::ProcTaskParams(proc.get(), 1u));
   JNIEnv* env = base::android::AttachCurrentThread();

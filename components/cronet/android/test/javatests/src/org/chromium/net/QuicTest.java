@@ -22,6 +22,7 @@ import java.util.HashMap;
  */
 public class QuicTest extends CronetTestBase {
     private static final String TAG = "cr.QuicTest";
+    private static final String[] CERTS_USED = {"quic_test.example.com.crt"};
     private CronetTestActivity mActivity;
 
     @Override
@@ -30,11 +31,13 @@ public class QuicTest extends CronetTestBase {
         // Load library first, since we need the Quic test server's URL.
         System.loadLibrary("cronet_tests");
         QuicTestServer.startQuicTestServer(getInstrumentation().getTargetContext());
+
         CronetEngine.Builder builder = new CronetEngine.Builder(mActivity);
         builder.enableQUIC(true);
         builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
         builder.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
+        builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
 
         String[] commandLineArgs = {CronetTestActivity.CONFIG_KEY, builder.toString(),
                 CronetTestActivity.CACHE_KEY, CronetTestActivity.CACHE_DISK_NO_HTTP};
@@ -50,6 +53,10 @@ public class QuicTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testQuicLoadUrl_LegacyAPI() throws Exception {
+        long urlRequestContextAdapter = ((ChromiumUrlRequestFactory) mActivity.mRequestFactory)
+                                                .getRequestContext()
+                                                .getUrlRequestContextAdapter();
+        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, true);
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
 
         HashMap<String, String> headers = new HashMap<String, String>();
@@ -73,6 +80,10 @@ public class QuicTest extends CronetTestBase {
     @LargeTest
     @Feature({"Cronet"})
     public void testQuicLoadUrl() throws Exception {
+        long urlRequestContextAdapter =
+                ((CronetUrlRequestContext) mActivity.mCronetEngine).getUrlRequestContextAdapter();
+        NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, false);
+
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         TestUrlRequestListener listener = new TestUrlRequestListener();
 
@@ -116,7 +127,11 @@ public class QuicTest extends CronetTestBase {
         builder.setStoragePath(mActivity.getTestStorage());
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         builder.enableQUIC(true);
+        builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
         CronetEngine newEngine = new CronetUrlRequestContext(builder);
+        long newUrlRequestContextAdapter =
+                ((CronetUrlRequestContext) newEngine).getUrlRequestContextAdapter();
+        NativeTestServer.registerHostResolverProc(newUrlRequestContextAdapter, false);
         TestUrlRequestListener listener2 = new TestUrlRequestListener();
         requestBuilder =
                 new UrlRequest.Builder(quicURL, listener2, listener2.getExecutor(), newEngine);

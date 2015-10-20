@@ -242,6 +242,11 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
   http_network_session_params_.enable_quic = quic_enabled;
 }
 
+void URLRequestContextBuilder::SetCertVerifier(
+    scoped_ptr<CertVerifier> cert_verifier) {
+  cert_verifier_ = cert_verifier.Pass();
+}
+
 void URLRequestContextBuilder::SetInterceptors(
     ScopedVector<URLRequestInterceptor> url_request_interceptors) {
   url_request_interceptors_ = url_request_interceptors.Pass();
@@ -352,7 +357,11 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   }
 
-  storage->set_cert_verifier(CertVerifier::CreateDefault());
+  if (cert_verifier_) {
+    storage->set_cert_verifier(cert_verifier_.Pass());
+  } else {
+    storage->set_cert_verifier(CertVerifier::CreateDefault());
+  }
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(
