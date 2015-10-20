@@ -51571,6 +51571,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.BandwidthLimitedResolutionInPercent" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of sent frames that are limited in resolution due to bandwidth
+    for a sent video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.BandwidthLimitedResolutionsDisabled"
+    units="disabled resolutions">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    For frames that are limited in resolution due to bandwidth, the average
+    number of disabled resolutions is recorded for a sent video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.BitrateReceivedInKbps" units="kbps">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -51812,6 +51830,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of sent RTCP PLI packets per minute for a received video stream.
     Recorded when a stream is removed. The total number of packets is divided by
     the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.QualityLimitedResolutionDownscales"
+    units="downscales">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    For frames that are downscaled in resolution due to quality, the average
+    number of downscales is recorded for a sent video stream. Recorded when a
+    stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.QualityLimitedResolutionInPercent" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of sent frames that are downscaled in resolution due to quality
+    for a sent video stream. Recorded when a stream is removed.
   </summary>
 </histogram>
 
