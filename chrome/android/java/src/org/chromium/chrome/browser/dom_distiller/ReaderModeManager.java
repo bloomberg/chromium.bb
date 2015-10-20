@@ -171,16 +171,6 @@ public class ReaderModeManager extends EmptyTabObserver
 
     // ReaderModePanelHost:
 
-    // TODO(aruslan): use the one in ChromeSwitches once it's rolled.
-    private static final String ENABLE_READER_MODE_BUTTON_ANIMATION =
-            "enable-dom-distiller-button-animation";
-
-    @Override
-    public boolean allowReaderModeButtonAnimation() {
-        return CommandLine.getInstance().hasSwitch(
-                ENABLE_READER_MODE_BUTTON_ANIMATION);
-    }
-
     @Override
     public int getReaderModeHeaderBackgroundColor() {
         return mHeaderBackgroundColor;

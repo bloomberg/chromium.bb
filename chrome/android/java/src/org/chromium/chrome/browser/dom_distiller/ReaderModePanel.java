@@ -9,8 +9,10 @@ import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Ani
 import android.content.Context;
 import android.os.SystemClock;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
@@ -56,11 +58,6 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
      * Panel's host interface.
      */
     public interface ReaderModePanelHost {
-        /**
-         * @return Whether the reader mode button should be animated.
-         */
-        boolean allowReaderModeButtonAnimation();
-
         /**
          * @return Reader mode header background color.
          */
@@ -199,7 +196,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
             }
         });
 
-        mAllowAnimatedButton = mReaderModeHost.allowReaderModeButtonAnimation();
+        mAllowAnimatedButton = CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_READER_MODE_BUTTON_ANIMATION);
 
         mLayoutWidth = 0.0f;
         mLayoutHeight = 0.0f;
