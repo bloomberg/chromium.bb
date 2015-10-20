@@ -7,33 +7,28 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.Build;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
  * AwContents garbage collection tests. Most apps relies on WebView being
  * garbage collected to release memory. These tests ensure that nothing
  * accidentally prevents AwContents from garbage collected, leading to leaks.
+ * See crbug.com/544098 for why @DisableHardwareAccelerationForTest is needed.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsGarbageCollectionTest extends AwTestBase {
-    private static final String TAG = "AwGcTest";
-
     // The system retains a strong ref to the last focused view (in InputMethodManager)
     // so allow for 1 'leaked' instance.
     private static final int MAX_IDLE_INSTANCES = 1;
@@ -90,13 +85,10 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         }
     }
 
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("v=2")
-    // Enabled to obtain debug logging. Feel free to disable after first failure.
-    // See https://crbug.com/544098
     public void testCreateAndGcOneTime() throws Throwable {
-        Log.d(TAG, "testCreateAndGcOneTime start");
         gcAndCheckAllAwContentsDestroyed();
 
         TestAwContentsClient client = new TestAwContentsClient();
@@ -105,21 +97,15 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             containerViews[i] = createAwTestContainerViewOnMainSync(client);
             loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
         }
-        Log.d(TAG, "testCreateAndGcOneTime create views done");
 
         containerViews = null;
         removeAllViews();
-        Log.d(TAG, "testCreateAndGcOneTime remove views done");
         gcAndCheckAllAwContentsDestroyed();
-        Log.d(TAG, "testCreateAndGcOneTime end");
     }
 
-    /*
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    Bug: https://crbug.com/544098
-    */
-    @FlakyTest
     public void testReferenceFromClient() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
@@ -135,12 +121,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    /*
+    @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    Bug: https://crbug.com/544098
-    */
-    @FlakyTest
     public void testReferenceFromContext() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
@@ -192,31 +175,15 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
     }
 
     private void removeAllViews() throws Throwable {
-        Log.d(TAG, "removeAllViews instrumentation thread");
-        dumpAllThreadStacks();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "removeAllViews UI thread");
                 getActivity().removeAllViews();
             }
         });
-        Log.d(TAG, "removeAllViews instrumentation thread done");
-    }
-
-    private void dumpAllThreadStacks() {
-        Log.d(TAG, "_________________________");
-        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
-            Log.d(TAG, "Thread name: " + entry.getKey().getName());
-            for (StackTraceElement stack : entry.getValue()) {
-                Log.d(TAG, "  " + stack);
-            }
-        }
-        Log.d(TAG, "_________________________");
     }
 
     private void gcAndCheckAllAwContentsDestroyed() throws InterruptedException {
-        Log.d(TAG, "Cause GC");
         Runtime.getRuntime().gc();
 
         Criteria criteria = new Criteria() {
@@ -227,7 +194,6 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
                         @Override
                         public Boolean call() {
                             int count = AwContents.getNativeInstanceCount();
-                            Log.d(TAG, "NativeInstanceCount = " + count);
                             return count <= MAX_IDLE_INSTANCES;
                         }
                     });
@@ -246,7 +212,6 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             if (CriteriaHelper.pollForCriteria(criteria, timeoutBetweenGcMs, CHECK_INTERVAL)) {
                 break;
             } else {
-                Log.d(TAG, "Cause GC");
                 Runtime.getRuntime().gc();
             }
         }
