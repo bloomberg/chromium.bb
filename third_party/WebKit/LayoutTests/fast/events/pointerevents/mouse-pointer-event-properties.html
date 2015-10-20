@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<script src="../../../resources/js-test.js"></script>
+<script src="../resources/input-modifiers.js"></script>
+<style>
+div {
+  margin: 10px;
+  padding: 50px;
+  float: left;
+}
+#console {
+  padding: 0px;
+  float: none;
+}
+</style>
+
+<div id="target" style="background-color:red">
+</div>
+
+<div id="console"></div>
+
+<script>
+description("Verifies that pointer event parameters are correct when fired for mouse events.");
+
+// TODO(mustaq): Grow the list as we add support for more PEs
+var testEventList = ["mouseenter", "mouseleave", "mouseover", "mouseout",
+                   "pointerenter", "pointerleave", "pointerover", "pointerout"];
+var lastPointerEvent = null;
+
+var numericAttributes = [
+    "clientX",
+    "clientY",
+    "layerX",
+    "layerY",
+    "movementX",
+    "movementY",
+    "offsetX",
+    "offsetY",
+    "pageX",
+    "pageY",
+    "screenX",
+    "screenY",
+    "x",
+    "y",
+    "button",
+    "buttons",
+];
+
+function init() {
+  var targetDiv = document.getElementById("target");
+
+  testEventList.forEach(function(eventName) {
+
+    targetDiv.addEventListener(eventName, function(event) {
+
+      debug("Received " + event.type);
+
+      if (event.type.startsWith("pointer"))
+        lastPointerEvent = event;
+      else {
+        shouldBeNonNull("lastPointerEvent");
+
+        shouldBeEqualToString("lastPointerEvent.type", event.type.replace("mouse", "pointer"));
+        if (lastPointerEvent.type=="pointerenter" || lastPointerEvent.type=="pointerleave") {
+          shouldBeFalse("lastPointerEvent.bubbles");
+          shouldBeFalse("lastPointerEvent.cancelable");
+        } else {
+          shouldBeTrue("lastPointerEvent.bubbles");
+          shouldBeTrue("lastPointerEvent.cancelable");
+        }
+
+        shouldBeEqualToNumber("lastPointerEvent.pointerId", 0);
+        shouldBeEqualToString("lastPointerEvent.pointerType", "mouse");
+        shouldBeTrue("lastPointerEvent.isPrimary");
+
+        numericAttributes.forEach(function(attribute) {
+          shouldBeEqualToNumber("lastPointerEvent." + attribute, eval("event." + attribute));
+        });
+
+        forEachModifier(function(attr, modifierName) {
+          var getModifierStateStr = ".getModifierState('" + modifierName + "');"
+          if (eval("event" + getModifierStateStr))
+            shouldBeTrue("lastPointerEvent" + getModifierStateStr);
+          else
+            shouldBeFalse("lastPointerEvent" + getModifierStateStr);
+        });
+
+        lastPointerEvent = null;
+      }
+    });
+
+  });
+}
+
+function runTests() {
+  var rect = document.getElementById("target").getBoundingClientRect();
+  eventSender.mouseMoveTo(rect.left + 5, rect.top + 5);
+  eventSender.mouseMoveTo(rect.left - 5, rect.top - 5);
+
+  //TODO(mustaq): add tests for buttons & modifierStates when doing pointerdown/up.
+}
+
+init();
+if (window.eventSender)
+  runTests();
+else
+  debug("This test requires eventSender");
+
+</script>

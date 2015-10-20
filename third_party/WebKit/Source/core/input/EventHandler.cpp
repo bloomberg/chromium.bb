@@ -1542,13 +1542,28 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
         sendMouseEventsForNodeTransition(lastNodeUnderMouse.get(), m_nodeUnderMouse.get(), mouseEvent);
 }
 
-void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* enteredNode, const PlatformMouseEvent& mouseEvent)
+bool EventHandler::dispatchPointerEventForMouseEvent(Node* target, const AtomicString& eventType,
+    const PlatformMouseEvent& mouseEvent, Node* relatedTarget)
+{
+    if (!RuntimeEnabledFeatures::pointerEventEnabled())
+        return false;
+
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(eventType, true,
+        mouseEvent, relatedTarget, m_frame->document()->domWindow());
+    target->dispatchEvent(pointerEvent.get());
+    return pointerEvent->defaultPrevented() || pointerEvent->defaultHandled();
+}
+
+void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* enteredNode,
+    const PlatformMouseEvent& mouseEvent)
 {
     ASSERT(exitedNode != enteredNode);
 
-    // First, dispatch mouseout event (which bubbles to ancestors)
-    if (isNodeInDocument(exitedNode))
+    // Dispatch pointerout/mouseout events
+    if (isNodeInDocument(exitedNode)) {
+        dispatchPointerEventForMouseEvent(exitedNode, EventTypeNames::pointerout, mouseEvent, enteredNode);
         exitedNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseout, 0, enteredNode);
+    }
 
     // A note on mouseenter and mouseleave: These are non-bubbling events, and they are dispatched if there
     // is a capturing event handler on an ancestor or a normal event handler on the element itself. This special
@@ -1564,7 +1579,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     //
     // TODO(mustaq): Confirm spec conformance, double-check with other browsers.
 
-    // Create lists of all exited/entered ancestors.
+    // Create lists of all exited/entered ancestors, locate the common ancestor & capturing listeners.
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> exitedAncestors;
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
     if (isNodeInDocument(exitedNode)) {
@@ -1583,7 +1598,6 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     size_t numExitedAncestors = exitedAncestors.size();
     size_t numEnteredAncestors = enteredAncestors.size();
 
-    // Locate the common ancestor in the two lists. Start with the assumption that it's off both the lists.
     size_t exitedAncestorIndex = numExitedAncestors;
     size_t enteredAncestorIndex = numEnteredAncestors;
     for (size_t j = 0; j < numExitedAncestors; j++) {
@@ -1598,33 +1612,46 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
             break;
     }
 
-    // Determine if there is a capturing mouseleave listener in an ancestor.
     bool exitedNodeHasCapturingAncestor = false;
     for (size_t j = 0; j < numExitedAncestors; j++) {
-        if (exitedAncestors[j]->hasCapturingEventListeners(EventTypeNames::mouseleave))
+        if (exitedAncestors[j]->hasCapturingEventListeners(EventTypeNames::mouseleave)
+            || (RuntimeEnabledFeatures::pointerEventEnabled()
+            && exitedAncestors[j]->hasCapturingEventListeners(EventTypeNames::pointerleave)))
             exitedNodeHasCapturingAncestor = true;
     }
 
-    // Send mouseleave events to appropriate exited ancestors, in child-to-parent order.
+    // Dispatch pointerleave/mouseleave events, in child-to-parent order.
     for (size_t j = 0; j < exitedAncestorIndex; j++) {
+        if (exitedNodeHasCapturingAncestor || exitedAncestors[j]->hasEventListeners(EventTypeNames::pointerleave)) {
+            dispatchPointerEventForMouseEvent(exitedAncestors[j].get(), EventTypeNames::pointerleave, mouseEvent,
+                enteredNode);
+        }
         if (exitedNodeHasCapturingAncestor || exitedAncestors[j]->hasEventListeners(EventTypeNames::mouseleave))
             exitedAncestors[j]->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseleave, 0, enteredNode);
     }
 
-    // Dispatch mouseover event (which bubbles to ancestors) after the mouseleave events are sent.
-    if (isNodeInDocument(enteredNode))
+    // Dispatch pointerover/mouseover.
+    if (isNodeInDocument(enteredNode)) {
+        dispatchPointerEventForMouseEvent(enteredNode, EventTypeNames::pointerover, mouseEvent, exitedNode);
         enteredNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, exitedNode);
+    }
 
-    // Determine if there is a capturing mouseenter listener in an ancestor. This must be done /after/ dispatching the
-    // mouseleave events because the handler for mouseleave might set a capturing mouseenter handler.
+    // Defer locating capturing pointeenter/mouseenter listener until /after/ dispatching the leave events because
+    // the leave handlers might set a capturing enter handler.
     bool enteredNodeHasCapturingAncestor = false;
     for (size_t i = 0; i < numEnteredAncestors; i++) {
-        if (enteredAncestors[i]->hasCapturingEventListeners(EventTypeNames::mouseenter))
+        if (enteredAncestors[i]->hasCapturingEventListeners(EventTypeNames::mouseenter)
+            || (RuntimeEnabledFeatures::pointerEventEnabled()
+            && enteredAncestors[i]->hasCapturingEventListeners(EventTypeNames::pointerenter)))
             enteredNodeHasCapturingAncestor = true;
     }
 
-    // Send mouseenter events to appropriate entered ancestors, in parent-to-child order.
+    // Dispatch pointerenter/mouseenter events, in parent-to-child order.
     for (size_t i = enteredAncestorIndex; i > 0; i--) {
+        if (enteredNodeHasCapturingAncestor || enteredAncestors[i-1]->hasEventListeners(EventTypeNames::pointerenter)) {
+            dispatchPointerEventForMouseEvent(enteredAncestors[i-1].get(), EventTypeNames::pointerenter, mouseEvent,
+                exitedNode);
+        }
         if (enteredNodeHasCapturingAncestor || enteredAncestors[i-1]->hasEventListeners(EventTypeNames::mouseenter))
             enteredAncestors[i-1]->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseenter, 0, exitedNode);
     }
@@ -3545,23 +3572,6 @@ static const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint
     }
 }
 
-// TODO(mustaq): Move to WebPointerProperties?
-static const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerType type)
-{
-    switch (type) {
-    case WebPointerProperties::PointerType::Unknown:
-        return "";
-    case WebPointerProperties::PointerType::Touch:
-        return "touch";
-    case WebPointerProperties::PointerType::Pen:
-        return "pen";
-    case WebPointerProperties::PointerType::Mouse:
-        return "mouse";
-    }
-    ASSERT_NOT_REACHED();
-    return "";
-}
-
 HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType)
 {
     HitTestResult result(HitTestRequest(hitType), point);
@@ -3583,50 +3593,27 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
     // Iterate through the touch points, sending PointerEvents to the targets as required.
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
-        const PlatformTouchPoint& point = touchInfo.point;
-        const unsigned& pointerId = point.id();
-        const PlatformTouchPoint::State pointState = point.state();
+        const PlatformTouchPoint& touchPoint = touchInfo.point;
+        const unsigned& pointerId = touchPoint.id();
+        const PlatformTouchPoint::State pointState = touchPoint.state();
 
         if (pointState == PlatformTouchPoint::TouchStationary || !touchInfo.knownTarget)
             continue;
 
         bool pointerReleasedOrCancelled = pointState == PlatformTouchPoint::TouchReleased
             || pointState == PlatformTouchPoint::TouchCancelled;
-        const WebPointerProperties::PointerType pointerType = point.pointerProperties().pointerType;
-        const String& pointerTypeStr = pointerTypeNameForWebPointPointerType(point.pointerProperties().pointerType);
+        const WebPointerProperties::PointerType pointerType = touchPoint.pointerProperties().pointerType;
 
         if (pointState == PlatformTouchPoint::TouchPressed)
             m_pointerIdManager.add(pointerType, pointerId);
 
-        const AtomicString& eventName = pointerEventNameForTouchPointState(pointState);
+        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(
+            pointerEventNameForTouchPointState(pointState),
+            m_pointerIdManager.isPrimary(pointerType, pointerId),
+            touchPoint, event.modifiers(),
+            touchInfo.adjustedRadius.width(), touchInfo.adjustedRadius.height(),
+            touchInfo.adjustedPagePoint.x(), touchInfo.adjustedPagePoint.y());
 
-        bool isEnterOrLeave = false;
-
-        PointerEventInit pointerEventInit;
-        pointerEventInit.setPointerId(pointerId);
-        pointerEventInit.setWidth(touchInfo.adjustedRadius.width());
-        pointerEventInit.setHeight(touchInfo.adjustedRadius.height());
-        pointerEventInit.setPressure(point.force());
-        pointerEventInit.setTiltX(point.pointerProperties().tiltX);
-        pointerEventInit.setTiltY(point.pointerProperties().tiltY);
-        pointerEventInit.setPointerType(pointerTypeStr);
-        pointerEventInit.setIsPrimary(m_pointerIdManager.isPrimary(pointerType, pointerId));
-        pointerEventInit.setScreenX(point.screenPos().x());
-        pointerEventInit.setScreenY(point.screenPos().y());
-        pointerEventInit.setClientX(touchInfo.adjustedPagePoint.x());
-        pointerEventInit.setClientY(touchInfo.adjustedPagePoint.y());
-        pointerEventInit.setButton(0);
-        pointerEventInit.setButtons(pointerReleasedOrCancelled ? 0 : 1);
-
-        pointerEventInit.setCtrlKey(event.ctrlKey());
-        pointerEventInit.setShiftKey(event.shiftKey());
-        pointerEventInit.setAltKey(event.altKey());
-        pointerEventInit.setMetaKey(event.metaKey());
-
-        pointerEventInit.setBubbles(!isEnterOrLeave);
-        pointerEventInit.setCancelable(!isEnterOrLeave && pointState != PlatformTouchPoint::TouchCancelled);
-
-        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(eventName, pointerEventInit);
         touchInfo.touchTarget->dispatchEvent(pointerEvent.get());
         touchInfo.consumed = pointerEvent->defaultPrevented() || pointerEvent->defaultHandled();
 

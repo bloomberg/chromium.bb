@@ -1,0 +1,25 @@
+CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
+CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
+CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
+CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
+Verifies that pointer event parameters are correct when fired for mouse events.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Received mouseover
+FAIL lastPointerEvent should be non-null. Was null
+FAIL lastPointerEvent.type should be pointerover. Threw exception TypeError: Cannot read property 'type' of null
+Received mouseenter
+FAIL lastPointerEvent should be non-null. Was null
+FAIL lastPointerEvent.type should be pointerenter. Threw exception TypeError: Cannot read property 'type' of null
+Received mouseout
+FAIL lastPointerEvent should be non-null. Was null
+FAIL lastPointerEvent.type should be pointerout. Threw exception TypeError: Cannot read property 'type' of null
+Received mouseleave
+FAIL lastPointerEvent should be non-null. Was null
+FAIL lastPointerEvent.type should be pointerleave. Threw exception TypeError: Cannot read property 'type' of null
+FAIL successfullyParsed should be true. Was false.
+
+TEST COMPLETE
+

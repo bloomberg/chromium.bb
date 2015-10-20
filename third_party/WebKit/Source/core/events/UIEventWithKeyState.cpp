@@ -63,6 +63,32 @@ void UIEventWithKeyState::didCreateEventInIsolatedWorld(bool ctrlKey, bool shift
     s_newTabModifierSetFromIsolatedWorld |= newTabModifierSet;
 }
 
+void UIEventWithKeyState::setFromPlatformModifiers(EventModifierInit& initializer, const PlatformEvent::Modifiers modifiers)
+{
+    if (modifiers & PlatformEvent::CtrlKey)
+        initializer.setCtrlKey(true);
+    if (modifiers & PlatformEvent::ShiftKey)
+        initializer.setShiftKey(true);
+    if (modifiers & PlatformEvent::AltKey)
+        initializer.setAltKey(true);
+    if (modifiers & PlatformEvent::MetaKey)
+        initializer.setMetaKey(true);
+    if (modifiers & PlatformEvent::AltGrKey)
+        initializer.setModifierAltGraph(true);
+    if (modifiers & PlatformEvent::OSKey)
+        initializer.setModifierOS(true);
+    if (modifiers & PlatformEvent::FnKey)
+        initializer.setModifierFn(true);
+    if (modifiers & PlatformEvent::CapsLockOn)
+        initializer.setModifierCapsLock(true);
+    if (modifiers & PlatformEvent::ScrollLockOn)
+        initializer.setModifierScrollLock(true);
+    if (modifiers & PlatformEvent::NumLockOn)
+        initializer.setModifierNumLock(true);
+    if (modifiers & PlatformEvent::SymbolKey)
+        initializer.setModifierSymbol(true);
+}
+
 bool UIEventWithKeyState::getModifierState(const String& keyIdentifier) const
 {
     struct Identifier {

@@ -282,7 +282,10 @@ private:
 
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
 
-    /* Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another. */
+    // Returns true when the sent PE has defaultPrevented or defaultHandled set.
+    bool dispatchPointerEventForMouseEvent(Node* target, const AtomicString& eventType, const PlatformMouseEvent&, Node* relatedTarget);
+
+    // Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another.
     void sendMouseEventsForNodeTransition(Node*, Node*, const PlatformMouseEvent&);
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);

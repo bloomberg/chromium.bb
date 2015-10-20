@@ -42,6 +42,7 @@ public:
         return adoptRefWillBeNoop(new MouseEvent);
     }
 
+    // TODO(mustaq): Should replace most/all of these params with a MouseEventInit.
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY, PlatformEvent::Modifiers,

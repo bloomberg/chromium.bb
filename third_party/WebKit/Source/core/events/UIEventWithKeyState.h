@@ -43,6 +43,8 @@ public:
     static void clearNewTabModifierSetFromIsolatedWorld() { s_newTabModifierSetFromIsolatedWorld = false; }
     static void didCreateEventInIsolatedWorld(bool ctrlKey, bool shiftKey, bool altKey, bool metaKey);
 
+    static void setFromPlatformModifiers(EventModifierInit&, const PlatformEvent::Modifiers);
+
     bool getModifierState(const String& keyIdentifier) const;
 
     PlatformEvent::Modifiers modifiers() const { return static_cast<PlatformEvent::Modifiers>(m_modifiers); }
