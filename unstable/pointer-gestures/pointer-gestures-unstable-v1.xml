@@ -1,5 +1,5 @@
 <protocol name="pointer_gestures_unstable_v1">
-  <interface name="_wl_pointer_gestures" version="1">
+  <interface name="zwl_pointer_gestures1" version="1">
     <description summary="touchpad gestures">
       A global interface to provide semantic touchpad gestures for a given
       pointer.
@@ -8,24 +8,22 @@
       All gestures follow a three-stage cycle: begin, update, end and
       are identified by a unique id.
 
-      Warning! The protocol described in this file is experimental. Each
-      version of this protocol should be considered incompatible with any
-      other version, and a client binding to a version different to the one
-      advertised will be terminated. Once the protocol is declared stable,
-      compatibility is guaranteed, the '_' prefix will be removed from the
-      name and the version will be reset to 1.
+      Warning! The protocol described in this file is experimental and
+      backward incompatible changes may be made. Backward compatible changes
+      may be added together with the corresponding interface version bump.
+      Backward incompatible changes are done by bumping the version number in
+      the protocol and interface names and resetting the interface version.
+      Once the protocol is to be declared stable, the 'z' prefix and the
+      version number in the protocol and interface names are removed and the
+      interface version number is reset.
     </description>
-
-    <enum name="error">
-      <entry name="version_mismatch" value="0"/>
-    </enum>
 
     <request name="get_swipe_gesture">
       <description summary="get swipe gesture">
 	Create a swipe gesture object. See the
 	wl_pointer_gesture_swipe interface for details.
       </description>
-      <arg name="id" type="new_id" interface="_wl_pointer_gesture_swipe"/>
+      <arg name="id" type="new_id" interface="zwl_pointer_gesture_swipe1"/>
       <arg name="pointer" type="object" interface="wl_pointer"/>
     </request>
 
@@ -34,12 +32,12 @@
 	Create a pinch gesture object. See the
 	wl_pointer_gesture_pinch interface for details.
       </description>
-      <arg name="id" type="new_id" interface="_wl_pointer_gesture_pinch"/>
+      <arg name="id" type="new_id" interface="zwl_pointer_gesture_pinch1"/>
       <arg name="pointer" type="object" interface="wl_pointer"/>
     </request>
   </interface>
 
-  <interface name="_wl_pointer_gesture_swipe" version="1">
+  <interface name="zwl_pointer_gesture_swipe1" version="1">
     <description summary="a swipe gesture object">
       A swipe gesture object notifies a client about a multi-finger swipe
       gesture detected on an indirect input device such as a touchpad.
@@ -102,7 +100,7 @@
     </event>
   </interface>
 
-  <interface name="_wl_pointer_gesture_pinch" version="1">
+  <interface name="zwl_pointer_gesture_pinch1" version="1">
     <description summary="a pinch gesture object">
       A pinch gesture object notifies a client about a multi-finger pinch
       gesture detected on an indirect input device such as a touchpad.
