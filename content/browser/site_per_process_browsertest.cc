@@ -3558,8 +3558,9 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
 
 // Verify that we receive a mouse cursor update message when we mouse over
 // a text field contained in an out-of-process iframe.
+// Fails under TSan.  http://crbug.com/545237
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       CursorUpdateFromReceivedFromCrossSiteIframe) {
+                       DISABLED_CursorUpdateFromReceivedFromCrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
