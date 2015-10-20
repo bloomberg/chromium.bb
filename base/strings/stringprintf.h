@@ -13,14 +13,6 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 
-#ifdef COMPILER_MSVC
-// For _Printf_format_string_.
-#include <sal.h>
-#else
-// For nacl builds when sal.h is not available.
-#define _Printf_format_string_
-#endif
-
 namespace base {
 
 // Return a C++ string given printf-like input.

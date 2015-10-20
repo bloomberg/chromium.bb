@@ -36,9 +36,14 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arguments)
 
 // We separate the declaration from the implementation of this inline
 // function just so the PRINTF_FORMAT works.
-inline int snprintf(char* buffer, size_t size, const char* format, ...)
-    PRINTF_FORMAT(3, 4);
-inline int snprintf(char* buffer, size_t size, const char* format, ...) {
+inline int snprintf(char* buffer,
+                    size_t size,
+                    _Printf_format_string_ const char* format,
+                    ...) PRINTF_FORMAT(3, 4);
+inline int snprintf(char* buffer,
+                    size_t size,
+                    _Printf_format_string_ const char* format,
+                    ...) {
   va_list arguments;
   va_start(arguments, format);
   int result = vsnprintf(buffer, size, format, arguments);
