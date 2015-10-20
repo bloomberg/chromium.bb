@@ -84,13 +84,6 @@
             }
             parsePath(pathString);
         }
-        // Empty-ish paths
-        parsePath("");
-        parsePath(" ");
-        parsePath("M");
-        parsePath("M" + String.fromCharCode(0));
-        // Edge case paths:
-        parsePath("M1,1Z0");
     }
     fuzz();
 

@@ -21,12 +21,13 @@
 #ifndef SVGPathStringSource_h
 #define SVGPathStringSource_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGPathSource.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class SVGPathStringSource final : public SVGPathSource {
+class CORE_EXPORT SVGPathStringSource final : public SVGPathSource {
 public:
     explicit SVGPathStringSource(const String&);
 

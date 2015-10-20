@@ -20,11 +20,12 @@
 #ifndef SVGPathSource_h
 #define SVGPathSource_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 
-class SVGPathSource {
+class CORE_EXPORT SVGPathSource {
     WTF_MAKE_NONCOPYABLE(SVGPathSource);
     STACK_ALLOCATED();
 public:

@@ -32,7 +32,7 @@ SVGPathStringSource::SVGPathStringSource(const String& string)
     , m_seenError(false)
     , m_previousCommand(PathSegUnknown)
 {
-    ASSERT(!string.isEmpty());
+    ASSERT(!string.isNull());
 
     if (m_is8BitSource) {
         m_current.m_character8 = string.characters8();
