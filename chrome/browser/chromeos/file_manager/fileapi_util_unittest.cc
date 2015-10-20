@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/mount_test_util.cc"
+#include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
