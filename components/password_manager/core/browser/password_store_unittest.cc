@@ -559,10 +559,13 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   expected_results.push_back(new PasswordForm(*all_credentials[2]));
   expected_results.push_back(new PasswordForm(*all_credentials[3]));
   expected_results.push_back(new PasswordForm(*all_credentials[5]));
+
   for (PasswordForm* result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm &&
         !IsValidAndroidFacetURI(result->signon_realm))
       result->is_public_suffix_match = true;
+    if (IsValidAndroidFacetURI(result->signon_realm))
+      result->is_affiliation_based_match = true;
   }
 
   std::vector<std::string> affiliated_android_realms;

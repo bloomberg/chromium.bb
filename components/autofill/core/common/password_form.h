@@ -263,11 +263,12 @@ struct PasswordForm {
   // TODO(vabr): Remove |is_alive| once http://crbug.com/486931 is fixed.
   bool is_alive;  // Set on construction, reset on destruction.
 
-  // if true this match was found using public suffix matching.
+  // If true, this match was found using public suffix matching.
   bool is_public_suffix_match;
 
-  // if true this form is affiliated with Android credentials.
-  bool is_affiliated;
+  // If true, this is a credential saved through an Android application, and
+  // found using affiliation-based match.
+  bool is_affiliation_based_match;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.

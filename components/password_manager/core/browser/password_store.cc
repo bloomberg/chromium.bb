@@ -407,6 +407,8 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
     android_form.signon_realm = realm;
     ScopedVector<PasswordForm> more_results(
         FillMatchingLogins(android_form, DISALLOW_PROMPT));
+    for (PasswordForm* form : more_results)
+      form->is_affiliation_based_match = true;
     ScopedVector<PasswordForm>::iterator it_first_federated = std::partition(
         more_results.begin(), more_results.end(),
         [](PasswordForm* form) { return form->federation_url.is_empty(); });

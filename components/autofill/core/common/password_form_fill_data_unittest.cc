@@ -171,4 +171,87 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ(iter->second.realm, public_suffix_match.signon_realm);
 }
 
+// Tests that the InitPasswordFormFillData behaves correctly when there is a
+// preferred match that was found using affiliation based matching, an
+// additional result that also used affiliation based matching, and a third
+// result that was found without using affiliation based matching.
+TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
+  // Create the current form on the page.
+  PasswordForm form_on_page;
+  form_on_page.origin = GURL("https://foo.com/");
+  form_on_page.action = GURL("https://foo.com/login");
+  form_on_page.username_element = ASCIIToUTF16("username");
+  form_on_page.username_value = ASCIIToUTF16("test@gmail.com");
+  form_on_page.password_element = ASCIIToUTF16("password");
+  form_on_page.password_value = ASCIIToUTF16("test");
+  form_on_page.submit_element = ASCIIToUTF16("");
+  form_on_page.signon_realm = "https://foo.com/";
+  form_on_page.ssl_valid = true;
+  form_on_page.preferred = false;
+  form_on_page.scheme = PasswordForm::SCHEME_HTML;
+
+  // Create a match from the database that matches using affiliation.
+  PasswordForm preferred_match;
+  preferred_match.origin = GURL("android://hash@foo.com/");
+  preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
+  preferred_match.password_value = ASCIIToUTF16("test");
+  preferred_match.signon_realm = "android://hash@foo.com/";
+  preferred_match.is_affiliation_based_match = true;
+  preferred_match.ssl_valid = true;
+  preferred_match.preferred = true;
+
+  // Create a match that matches exactly, so |is_affiliation_based_match| has a
+  // default value false.
+  scoped_ptr<PasswordForm> scoped_exact_match(new PasswordForm);
+  PasswordForm& exact_match = *scoped_exact_match;
+  exact_match.origin = GURL("https://foo.com/");
+  exact_match.action = GURL("https://foo.com/login");
+  exact_match.username_element = ASCIIToUTF16("username");
+  exact_match.username_value = ASCIIToUTF16("test1@gmail.com");
+  exact_match.password_element = ASCIIToUTF16("password");
+  exact_match.password_value = ASCIIToUTF16("test");
+  exact_match.submit_element = ASCIIToUTF16("");
+  exact_match.signon_realm = "https://foo.com/";
+  exact_match.ssl_valid = true;
+  exact_match.preferred = false;
+  exact_match.scheme = PasswordForm::SCHEME_HTML;
+
+  // Create a match that was matched using public suffix, so
+  // |is_public_suffix_match| == true.
+  scoped_ptr<PasswordForm> scoped_affiliated_match(new PasswordForm);
+  PasswordForm& affiliated_match = *scoped_affiliated_match;
+  affiliated_match.origin = GURL("android://hash@foo1.com/");
+  affiliated_match.username_value = ASCIIToUTF16("test2@gmail.com");
+  affiliated_match.password_value = ASCIIToUTF16("test");
+  affiliated_match.is_affiliation_based_match = true;
+  affiliated_match.signon_realm = "https://foo1.com/";
+  affiliated_match.ssl_valid = true;
+  affiliated_match.preferred = false;
+  affiliated_match.scheme = PasswordForm::SCHEME_HTML;
+
+  // Add one exact match and one affiliation based match.
+  PasswordFormMap matches;
+  matches.insert(exact_match.username_value, scoped_exact_match.Pass());
+  matches.insert(affiliated_match.username_value,
+                 scoped_affiliated_match.Pass());
+
+  PasswordFormFillData result;
+  InitPasswordFormFillData(form_on_page, matches, &preferred_match, false,
+                           false, &result);
+  EXPECT_FALSE(result.wait_for_username);
+  // The preferred realm should match the signon realm from the
+  // preferred match so the user can see where the result came from.
+  EXPECT_EQ(preferred_match.signon_realm, result.preferred_realm);
+
+  // The realm of the exact match should be empty.
+  PasswordFormFillData::LoginCollection::const_iterator iter =
+      result.additional_logins.find(exact_match.username_value);
+  EXPECT_EQ(std::string(), iter->second.realm);
+
+  // The realm of the affiliation based match should be set to the original
+  // signon realm so the user can see where the result came from.
+  iter = result.additional_logins.find(affiliated_match.username_value);
+  EXPECT_EQ(iter->second.realm, affiliated_match.signon_realm);
+}
+
 }  // namespace autofill

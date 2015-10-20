@@ -1276,4 +1276,30 @@ TEST_F(PasswordManagerTest, UpdateFormManagers) {
   manager()->UpdateFormManagers();
 }
 
+TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
+  PasswordForm form(MakeSimpleForm());
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+
+  PasswordForm android_form;
+  android_form.origin = GURL("android://hash@google.com");
+  android_form.signon_realm = "android://hash@google.com";
+  android_form.username_value = ASCIIToUTF16("google");
+  android_form.password_value = ASCIIToUTF16("password");
+  android_form.is_affiliation_based_match = true;
+
+  autofill::PasswordFormFillData form_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillOnce(WithArg<2>(InvokeConsumer(android_form)));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  observed.clear();
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_EQ(android_form.username_value, form_data.username_field.value);
+  EXPECT_EQ(android_form.password_value, form_data.password_field.value);
+  EXPECT_FALSE(form_data.wait_for_username);
+  EXPECT_EQ(android_form.signon_realm, form_data.preferred_realm);
+}
+
 }  // namespace password_manager

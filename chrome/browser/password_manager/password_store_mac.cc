@@ -1187,7 +1187,7 @@ ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
     // http://crbug.com/340112
     if (form.scheme != db_form->scheme)
       continue;  // Forms with different schemes never match.
-    if (db_form->is_public_suffix_match)
+    if (db_form->is_public_suffix_match || db_form->is_affiliation_based_match)
       realm_set.insert(db_form->signon_realm);
   }
   ScopedVector<autofill::PasswordForm> keychain_forms;
