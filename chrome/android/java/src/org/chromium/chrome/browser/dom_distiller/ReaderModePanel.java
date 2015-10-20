@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
+import org.chromium.chrome.browser.compositor.scene_layer.ReaderModeSceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeButtonView.ReaderModeButtonViewDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -26,6 +28,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.resources.ResourceManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -174,12 +177,17 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     private final ReaderModePanelHost mReaderModeHost;
 
     /**
+     * The SceneLayer responsible for drawing the panel.
+     */
+    private ReaderModeSceneLayer mSceneLayer;
+
+    /**
      * Non-animated button support.
      */
     private boolean mAllowAnimatedButton;
     private ReaderModeButtonView mReaderModeButtonView;
 
-    public ReaderModePanel(ReaderModePanelHost readerModeHost) {
+    public ReaderModePanel(ReaderModePanelHost readerModeHost, Context context) {
         mReaderModeHost = readerModeHost;
 
         // Make sure all WebContents are destroyed when a tab is closed: crbug.com/496653
@@ -199,6 +207,26 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
 
         mSlidingT = -1.0f;
         mX = 0.0f;
+
+        float dpToPx = context.getResources().getDisplayMetrics().density;
+        mSceneLayer = new ReaderModeSceneLayer(dpToPx);
+    }
+
+    /**
+     * Get this panel's SceneLayer.
+     * NOTE(mdjones): This overrides a method in OverlayPanel once the refactor is complete.
+     */
+    public SceneLayer getSceneLayer() {
+        return mSceneLayer;
+    }
+
+    /**
+     * Update this panel's SceneLayer.
+     * NOTE(mdjones): This overrides a method in OverlayPanel once the refactor is complete.
+     * @param resourceManager Resource manager for static resources.
+     */
+    public void updateSceneLayer(ResourceManager resourceManager) {
+        mSceneLayer.update(this, resourceManager);
     }
 
     /**

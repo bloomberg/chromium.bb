@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.scene_layer.ReaderModeSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.StaticTabSceneLayer;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel;
@@ -60,7 +59,6 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
     private StaticTabSceneLayer mSceneLayer;
 
     // TODO(aruslan): look into moving this to an overlay/it's own layout.
-    private ReaderModeSceneLayer mReaderModeSceneLayer;
     private ReaderModePanel mReaderModePanel;
 
     /**
@@ -78,9 +76,6 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
         mUnstallRunnable = new UnstallRunnable();
         mUnstalling = false;
         mSceneLayer = new StaticTabSceneLayer(R.id.control_container);
-
-        float dpToPx = context.getResources().getDisplayMetrics().density;
-        mReaderModeSceneLayer = new ReaderModeSceneLayer(dpToPx);
     }
 
     /**
@@ -302,8 +297,6 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
         LayoutTab layoutTab = tabs[0];
         final float dpToPx = getContext().getResources().getDisplayMetrics().density;
 
-        mReaderModeSceneLayer.update(mReaderModePanel, resourceManager);
-
         mSceneLayer.update(dpToPx, contentViewport, layerTitleCache, tabContentManager,
                 fullscreenManager, layoutTab);
 
@@ -312,7 +305,8 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
         if (mSearchPanel.isShowing()) {
             overlayLayer = super.getSceneLayer();
         } else if (mReaderModePanel != null && mReaderModePanel.isShowing()) {
-            overlayLayer = mReaderModeSceneLayer;
+            mReaderModePanel.updateSceneLayer(resourceManager);
+            overlayLayer = mReaderModePanel.getSceneLayer();
         }
         mSceneLayer.setContentSceneLayer(overlayLayer);
 

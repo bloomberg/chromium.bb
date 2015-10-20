@@ -91,7 +91,7 @@ public class ReaderModeManager extends EmptyTabObserver
     public ReaderModeManager(Tab tab, Context context) {
         mTab = tab;
         mTab.addObserver(this);
-        mReaderModePanel = isEnabled(context) ? new ReaderModePanel(this) : null;
+        mReaderModePanel = isEnabled(context) ? new ReaderModePanel(this, context) : null;
         mHeaderBackgroundColor = context != null
                 ? ApiCompatibilityUtils.getColor(
                         context.getResources(), R.color.reader_mode_header_bg)
