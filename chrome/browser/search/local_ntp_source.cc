@@ -18,6 +18,9 @@
 #include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,6 +29,7 @@
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "net/url_request/url_request.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -40,24 +44,26 @@ namespace {
 const int kLocalResource = -1;
 
 const char kConfigDataFilename[] = "config.js";
+const char kThemeCSSFilename[] = "theme.css";
 
 const struct Resource{
   const char* filename;
   int identifier;
   const char* mime_type;
 } kResources[] = {
-  { "local-ntp.html", IDR_LOCAL_NTP_HTML, "text/html" },
-  { "local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript" },
-  { kConfigDataFilename, kLocalResource, "application/javascript" },
-  { "local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css" },
-  { "images/close_2.png", IDR_CLOSE_2, "image/png" },
-  { "images/close_2_hover.png", IDR_CLOSE_2_H, "image/png" },
-  { "images/close_2_active.png", IDR_CLOSE_2_P, "image/png" },
-  { "images/close_2_white.png", IDR_CLOSE_2_MASK, "image/png" },
-  { "images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png" },
-  { "images/close_4_button.png", IDR_CLOSE_4_BUTTON, "image/png" },
-  { "images/google_logo.png", IDR_LOCAL_NTP_IMAGES_LOGO_PNG, "image/png" },
-  { "images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png" },
+    {"local-ntp.html", IDR_LOCAL_NTP_HTML, "text/html"},
+    {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},
+    {kConfigDataFilename, kLocalResource, "application/javascript"},
+    {kThemeCSSFilename, kLocalResource, "text/css"},
+    {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
+    {"images/close_2.png", IDR_CLOSE_2, "image/png"},
+    {"images/close_2_hover.png", IDR_CLOSE_2_H, "image/png"},
+    {"images/close_2_active.png", IDR_CLOSE_2_P, "image/png"},
+    {"images/close_2_white.png", IDR_CLOSE_2_MASK, "image/png"},
+    {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
+    {"images/close_4_button.png", IDR_CLOSE_4_BUTTON, "image/png"},
+    {"images/google_logo.png", IDR_LOCAL_NTP_IMAGES_LOGO_PNG, "image/png"},
+    {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
 };
 
 // Strips any query parameters from the specified path.
@@ -157,6 +163,17 @@ std::string GetConfigData(Profile* profile) {
   return config_data_js;
 }
 
+std::string GetThemeCSS(Profile* profile) {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  SkColor background_color =
+      theme_service->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+
+  return base::StringPrintf("body { background-color: #%02X%02X%02X; }",
+                            SkColorGetR(background_color),
+                            SkColorGetG(background_color),
+                            SkColorGetB(background_color));
+}
+
 std::string GetLocalNtpPath() {
   return std::string(chrome::kChromeSearchScheme) + "://" +
          std::string(chrome::kChromeSearchLocalNtpHost) + "/";
@@ -183,6 +200,11 @@ void LocalNtpSource::StartDataRequest(
   if (stripped_path == kConfigDataFilename) {
     std::string config_data_js = GetConfigData(profile_);
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
+    return;
+  }
+  if (stripped_path == kThemeCSSFilename) {
+    std::string theme_css = GetThemeCSS(profile_);
+    callback.Run(base::RefCountedString::TakeString(&theme_css));
     return;
   }
 

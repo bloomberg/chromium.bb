@@ -6,7 +6,6 @@
  * body tag. */
 body {
   background-attachment: fixed !important;
-  background-color: white;
   cursor: default;
   font-family: arial, sans-serif;
   font-size: small;
