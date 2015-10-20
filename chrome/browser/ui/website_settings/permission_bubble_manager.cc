@@ -68,7 +68,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      require_user_gesture_(false),
 #if !defined(OS_ANDROID)  // No bubbles in android tests.
       view_factory_(base::Bind(&PermissionBubbleView::Create)),
 #endif
@@ -140,8 +139,7 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
     queued_frame_requests_.push_back(request);
   }
 
-  if (!require_user_gesture_ || request->HasUserGesture())
-    ScheduleShowBubble();
+  ScheduleShowBubble();
 }
 
 void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
@@ -230,10 +228,6 @@ gfx::NativeWindow PermissionBubbleManager::GetBubbleWindow() {
   if (view_)
     return view_->GetNativeWindow();
   return nullptr;
-}
-
-void PermissionBubbleManager::RequireUserGesture(bool required) {
-  require_user_gesture_ = required;
 }
 
 void PermissionBubbleManager::DidNavigateMainFrame(

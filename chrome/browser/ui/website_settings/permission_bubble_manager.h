@@ -82,12 +82,6 @@ class PermissionBubbleManager
   // TODO(hcarmona): Remove this as part of the bubble API work.
   gfx::NativeWindow GetBubbleWindow();
 
-  // Controls whether incoming permission requests require user gestures.
-  // If |required| is false, requests will be displayed as soon as they come in.
-  // If |required| is true, requests will be silently queued until a request
-  // comes in with a user gesture.
-  void RequireUserGesture(bool required);
-
   // For observing the status of the permission bubble manager.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -158,10 +152,6 @@ class PermissionBubbleManager
   void NotifyBubbleAdded();
 
   void DoAutoResponseForTesting();
-
-  // Whether to delay displaying the bubble until a request with a user gesture.
-  // False by default, unless RequireUserGesture(bool) changes the value.
-  bool require_user_gesture_;
 
   // Factory to be used to create views when needed.
   PermissionBubbleView::Factory view_factory_;
