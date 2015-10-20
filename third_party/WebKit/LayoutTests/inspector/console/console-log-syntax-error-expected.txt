@@ -1,5 +1,5 @@
-CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token )
+CONSOLE ERROR: line 3: Uncaught SyntaxError: Unexpected token )
 Tests that syntax errors are logged into console and doesn't cause browser crash.
 
-error: TypeError: InspectorTest.dumpConsoleMessagesIgnoreStackFrames is not a function
+Uncaught SyntaxError: Unexpected token ):3:17
 

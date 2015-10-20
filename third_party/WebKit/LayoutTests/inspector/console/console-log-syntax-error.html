@@ -6,8 +6,12 @@
 <script>
 function test()
 {
-    InspectorTest.dumpConsoleMessagesIgnoreStackFrames();
+    InspectorTest.dumpConsoleMessages(undefined, undefined, simpleFormatter);
     InspectorTest.completeTest();
+    function simpleFormatter(element, message)
+    {
+    	return message.messageText + ":" + message.line + ":" + message.column;
+    }
 }
 </script>
 </head>
