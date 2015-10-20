@@ -25,26 +25,26 @@ TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
   EXPECT_EQ(1u, session2->references);
   EXPECT_EQ(1u, session3->references);
 
-  EXPECT_EQ(nullptr, cache.Lookup("key1"));
-  EXPECT_EQ(nullptr, cache.Lookup("key2"));
+  EXPECT_EQ(nullptr, cache.Lookup("key1").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key2").get());
   EXPECT_EQ(0u, cache.size());
 
   cache.Insert("key1", session1.get());
-  EXPECT_EQ(session1.get(), cache.Lookup("key1"));
-  EXPECT_EQ(nullptr, cache.Lookup("key2"));
+  EXPECT_EQ(session1.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key2").get());
   EXPECT_EQ(1u, cache.size());
 
   cache.Insert("key2", session2.get());
-  EXPECT_EQ(session1.get(), cache.Lookup("key1"));
-  EXPECT_EQ(session2.get(), cache.Lookup("key2"));
+  EXPECT_EQ(session1.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(session2.get(), cache.Lookup("key2").get());
   EXPECT_EQ(2u, cache.size());
 
   EXPECT_EQ(2u, session1->references);
   EXPECT_EQ(2u, session2->references);
 
   cache.Insert("key1", session3.get());
-  EXPECT_EQ(session3.get(), cache.Lookup("key1"));
-  EXPECT_EQ(session2.get(), cache.Lookup("key2"));
+  EXPECT_EQ(session3.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(session2.get(), cache.Lookup("key2").get());
   EXPECT_EQ(2u, cache.size());
 
   EXPECT_EQ(1u, session1->references);
@@ -52,9 +52,9 @@ TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
   EXPECT_EQ(2u, session3->references);
 
   cache.Flush();
-  EXPECT_EQ(nullptr, cache.Lookup("key1"));
-  EXPECT_EQ(nullptr, cache.Lookup("key2"));
-  EXPECT_EQ(nullptr, cache.Lookup("key3"));
+  EXPECT_EQ(nullptr, cache.Lookup("key1").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key2").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key3").get());
   EXPECT_EQ(0u, cache.size());
 
   EXPECT_EQ(1u, session1->references);
@@ -71,27 +71,27 @@ TEST(SSLClientSessionCacheOpenSSLTest, DoubleInsert) {
   ScopedSSL_SESSION session(SSL_SESSION_new());
   EXPECT_EQ(1u, session->references);
 
-  EXPECT_EQ(nullptr, cache.Lookup("key1"));
-  EXPECT_EQ(nullptr, cache.Lookup("key2"));
+  EXPECT_EQ(nullptr, cache.Lookup("key1").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key2").get());
   EXPECT_EQ(0u, cache.size());
 
   cache.Insert("key1", session.get());
-  EXPECT_EQ(session.get(), cache.Lookup("key1"));
-  EXPECT_EQ(nullptr, cache.Lookup("key2"));
+  EXPECT_EQ(session.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key2").get());
   EXPECT_EQ(1u, cache.size());
 
   EXPECT_EQ(2u, session->references);
 
   cache.Insert("key2", session.get());
-  EXPECT_EQ(session.get(), cache.Lookup("key1"));
-  EXPECT_EQ(session.get(), cache.Lookup("key2"));
+  EXPECT_EQ(session.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(session.get(), cache.Lookup("key2").get());
   EXPECT_EQ(2u, cache.size());
 
   EXPECT_EQ(3u, session->references);
 
   cache.Flush();
-  EXPECT_EQ(nullptr, cache.Lookup("key1"));
-  EXPECT_EQ(nullptr, cache.Lookup("key2"));
+  EXPECT_EQ(nullptr, cache.Lookup("key1").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key2").get());
   EXPECT_EQ(0u, cache.size());
 
   EXPECT_EQ(1u, session->references);
@@ -112,26 +112,26 @@ TEST(SSLClientSessionCacheOpenSSLTest, MaxEntries) {
   cache.Insert("key1", session1.get());
   cache.Insert("key2", session2.get());
   cache.Insert("key3", session3.get());
-  EXPECT_EQ(session1.get(), cache.Lookup("key1"));
-  EXPECT_EQ(session2.get(), cache.Lookup("key2"));
-  EXPECT_EQ(session3.get(), cache.Lookup("key3"));
+  EXPECT_EQ(session1.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(session2.get(), cache.Lookup("key2").get());
+  EXPECT_EQ(session3.get(), cache.Lookup("key3").get());
   EXPECT_EQ(3u, cache.size());
 
   // On insertion of a fourth, the first is removed.
   cache.Insert("key4", session4.get());
-  EXPECT_EQ(nullptr, cache.Lookup("key1"));
-  EXPECT_EQ(session4.get(), cache.Lookup("key4"));
-  EXPECT_EQ(session3.get(), cache.Lookup("key3"));
-  EXPECT_EQ(session2.get(), cache.Lookup("key2"));
+  EXPECT_EQ(nullptr, cache.Lookup("key1").get());
+  EXPECT_EQ(session4.get(), cache.Lookup("key4").get());
+  EXPECT_EQ(session3.get(), cache.Lookup("key3").get());
+  EXPECT_EQ(session2.get(), cache.Lookup("key2").get());
   EXPECT_EQ(3u, cache.size());
 
   // Despite being newest, the next to be removed is session4 as it was accessed
   // least. recently.
   cache.Insert("key1", session1.get());
-  EXPECT_EQ(session1.get(), cache.Lookup("key1"));
-  EXPECT_EQ(session2.get(), cache.Lookup("key2"));
-  EXPECT_EQ(session3.get(), cache.Lookup("key3"));
-  EXPECT_EQ(nullptr, cache.Lookup("key4"));
+  EXPECT_EQ(session1.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(session2.get(), cache.Lookup("key2").get());
+  EXPECT_EQ(session3.get(), cache.Lookup("key3").get());
+  EXPECT_EQ(nullptr, cache.Lookup("key4").get());
   EXPECT_EQ(3u, cache.size());
 }
 
@@ -174,7 +174,7 @@ TEST(SSLClientSessionCacheOpenSSLTest, Expiration) {
   // Perform one more lookup. This will expire all sessions but the last one.
   cache.Lookup("key");
   EXPECT_EQ(1u, cache.size());
-  EXPECT_EQ(session.get(), cache.Lookup("key"));
+  EXPECT_EQ(session.get(), cache.Lookup("key").get());
   for (size_t i = 0; i < kNumEntries - 1; i++) {
     SCOPED_TRACE(i);
     EXPECT_EQ(nullptr, cache.Lookup(base::SizeTToString(i)));
@@ -199,7 +199,7 @@ TEST(SSLClientSessionCacheOpenSSLTest, LookupExpirationCheck) {
   // Insert an entry into the session cache.
   ScopedSSL_SESSION session(SSL_SESSION_new());
   cache.Insert("key", session.get());
-  EXPECT_EQ(session.get(), cache.Lookup("key"));
+  EXPECT_EQ(session.get(), cache.Lookup("key").get());
   EXPECT_EQ(1u, cache.size());
 
   // Expire the session.
@@ -209,17 +209,17 @@ TEST(SSLClientSessionCacheOpenSSLTest, LookupExpirationCheck) {
   EXPECT_EQ(1u, cache.size());
 
   // But it will not be returned on lookup and gets pruned at that point.
-  EXPECT_EQ(nullptr, cache.Lookup("key"));
+  EXPECT_EQ(nullptr, cache.Lookup("key").get());
   EXPECT_EQ(0u, cache.size());
 
   // Sessions also are treated as expired if the clock rewinds.
   cache.Insert("key", session.get());
-  EXPECT_EQ(session.get(), cache.Lookup("key"));
+  EXPECT_EQ(session.get(), cache.Lookup("key").get());
   EXPECT_EQ(1u, cache.size());
 
   clock->Advance(-kTimeout * 2);
 
-  EXPECT_EQ(nullptr, cache.Lookup("key"));
+  EXPECT_EQ(nullptr, cache.Lookup("key").get());
   EXPECT_EQ(0u, cache.size());
 }
 

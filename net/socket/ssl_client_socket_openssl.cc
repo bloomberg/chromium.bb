@@ -822,9 +822,10 @@ int SSLClientSocketOpenSSL::Init() {
     return ERR_UNEXPECTED;
   }
 
-  SSL_SESSION* session = context->session_cache()->Lookup(GetSessionCacheKey());
-  if (session != nullptr)
-    SSL_set_session(ssl_, session);
+  ScopedSSL_SESSION session =
+      context->session_cache()->Lookup(GetSessionCacheKey());
+  if (session)
+    SSL_set_session(ssl_, session.get());
 
   send_buffer_ = new GrowableIOBuffer();
   send_buffer_->SetCapacity(KDefaultOpenSSLBufferSize);

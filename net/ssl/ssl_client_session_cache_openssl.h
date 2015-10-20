@@ -41,10 +41,8 @@ class NET_EXPORT SSLClientSessionCacheOpenSSL {
   size_t size() const;
 
   // Returns the session associated with |cache_key| and moves it to the front
-  // of the MRU list. Returns null if there is none. The caller is responsible
-  // for taking a reference to the pointer if the cache is destroyed or a call
-  // to Insert is made.
-  SSL_SESSION* Lookup(const std::string& cache_key);
+  // of the MRU list. Returns nullptr if there is none.
+  ScopedSSL_SESSION Lookup(const std::string& cache_key);
 
   // Inserts |session| into the cache at |cache_key|. If there is an existing
   // one, it is released. Every |expiration_check_count| calls, the cache is

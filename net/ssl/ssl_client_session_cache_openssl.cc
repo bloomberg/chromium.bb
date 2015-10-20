@@ -26,7 +26,7 @@ size_t SSLClientSessionCacheOpenSSL::size() const {
   return cache_.size();
 }
 
-SSL_SESSION* SSLClientSessionCacheOpenSSL::Lookup(
+ScopedSSL_SESSION SSLClientSessionCacheOpenSSL::Lookup(
     const std::string& cache_key) {
   base::AutoLock lock(lock_);
 
@@ -44,7 +44,7 @@ SSL_SESSION* SSLClientSessionCacheOpenSSL::Lookup(
     cache_.Erase(iter);
     return nullptr;
   }
-  return iter->second->session.get();
+  return ScopedSSL_SESSION(SSL_SESSION_up_ref(iter->second->session.get()));
 }
 
 void SSLClientSessionCacheOpenSSL::Insert(const std::string& cache_key,
