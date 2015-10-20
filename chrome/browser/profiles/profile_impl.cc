@@ -44,7 +44,6 @@
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -91,6 +90,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "components/url_formatter/url_fixer.h"
@@ -542,7 +542,9 @@ void ProfileImpl::DoFinalInit() {
 
   PrefService* local_state = g_browser_process->local_state();
   ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(local_state));
+      ssl_config::SSLConfigServiceManager::CreateDefaultManager(
+          local_state,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
 #if defined(ENABLE_BACKGROUND)
   // Initialize the BackgroundModeManager - this has to be done here before

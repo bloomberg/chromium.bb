@@ -1246,15 +1246,6 @@ const char kProfileInfoCache[] = "profile.info_cache";
 const char kProfileResetPromptMementosInLocalState[] =
     "profile.reset_prompt_mementos";
 
-// Prefs for SSLConfigServicePref.
-const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
-const char kCertRevocationCheckingRequiredLocalAnchors[] =
-    "ssl.rev_checking.required_for_local_anchors";
-const char kSSLVersionMin[] = "ssl.version_min";
-const char kSSLVersionMax[] = "ssl.version_max";
-const char kSSLVersionFallbackMin[] = "ssl.version_fallback_min";
-const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
-
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.
 #if defined(OS_ANDROID)

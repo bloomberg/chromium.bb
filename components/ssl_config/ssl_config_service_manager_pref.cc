@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/net/ssl_config_service_manager.h"
+#include "components/ssl_config/ssl_config_service_manager.h"
 
 #include <algorithm>
 #include <string>
@@ -14,16 +14,17 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
+#include "base/single_thread_task_runner.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/ssl_config/ssl_config_prefs.h"
+#include "components/ssl_config/ssl_config_switches.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
 
-using content::BrowserThread;
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace {
 
@@ -54,8 +55,7 @@ std::vector<uint16> ParseCipherSuites(
        it != cipher_strings.end(); ++it) {
     uint16 cipher_suite = 0;
     if (!net::ParseSSLCipherString(*it, &cipher_suite)) {
-      LOG(ERROR) << "Ignoring unrecognized or unparsable cipher suite: "
-                 << *it;
+      LOG(ERROR) << "Ignoring unrecognized or unparsable cipher suite: " << *it;
       continue;
     }
     cipher_suites.push_back(cipher_suite);
@@ -88,7 +88,8 @@ uint16 SSLProtocolVersionFromString(const std::string& version_str) {
 // change.
 class SSLConfigServicePref : public net::SSLConfigService {
  public:
-  SSLConfigServicePref() {}
+  explicit SSLConfigServicePref(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // Store SSL config settings in |config|. Must only be called from IO thread.
   void GetSSLConfig(net::SSLConfig* config) override;
@@ -106,16 +107,21 @@ class SSLConfigServicePref : public net::SSLConfigService {
   // Cached value of prefs, should only be accessed from IO thread.
   net::SSLConfig cached_config_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServicePref);
 };
 
+SSLConfigServicePref::SSLConfigServicePref(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    : io_task_runner_(io_task_runner) {}
+
 void SSLConfigServicePref::GetSSLConfig(net::SSLConfig* config) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   *config = cached_config_;
 }
 
-void SSLConfigServicePref::SetNewSSLConfig(
-    const net::SSLConfig& new_config) {
+void SSLConfigServicePref::SetNewSSLConfig(const net::SSLConfig& new_config) {
   net::SSLConfig orig_config = cached_config_;
   cached_config_ = new_config;
   ProcessConfigUpdate(orig_config, new_config);
@@ -125,10 +131,11 @@ void SSLConfigServicePref::SetNewSSLConfig(
 //  SSLConfigServiceManagerPref
 
 // The manager for holding and updating an SSLConfigServicePref instance.
-class SSLConfigServiceManagerPref
-    : public SSLConfigServiceManager {
+class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
  public:
-  explicit SSLConfigServiceManagerPref(PrefService* local_state);
+  SSLConfigServiceManagerPref(
+      PrefService* local_state,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~SSLConfigServiceManagerPref() override {}
 
   // Register local_state SSL preferences.
@@ -139,8 +146,7 @@ class SSLConfigServiceManagerPref
  private:
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
-  void OnPreferenceChanged(PrefService* prefs,
-                           const std::string& pref_name);
+  void OnPreferenceChanged(PrefService* prefs, const std::string& pref_name);
 
   // Store SSL config settings in |config|, directly from the preferences. Must
   // only be called from UI thread.
@@ -164,35 +170,37 @@ class SSLConfigServiceManagerPref
 
   scoped_refptr<SSLConfigServicePref> ssl_config_service_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerPref);
 };
 
 SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
-    PrefService* local_state)
-    : ssl_config_service_(new SSLConfigServicePref()) {
+    PrefService* local_state,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    : ssl_config_service_(new SSLConfigServicePref(io_task_runner)),
+      io_task_runner_(io_task_runner) {
   DCHECK(local_state);
 
-  PrefChangeRegistrar::NamedChangeCallback local_state_callback = base::Bind(
-      &SSLConfigServiceManagerPref::OnPreferenceChanged,
-      base::Unretained(this),
-      local_state);
+  PrefChangeRegistrar::NamedChangeCallback local_state_callback =
+      base::Bind(&SSLConfigServiceManagerPref::OnPreferenceChanged,
+                 base::Unretained(this), local_state);
 
-  rev_checking_enabled_.Init(
-      prefs::kCertRevocationCheckingEnabled, local_state, local_state_callback);
+  rev_checking_enabled_.Init(ssl_config::prefs::kCertRevocationCheckingEnabled,
+                             local_state, local_state_callback);
   rev_checking_required_local_anchors_.Init(
-      prefs::kCertRevocationCheckingRequiredLocalAnchors,
-      local_state,
-      local_state_callback);
-  ssl_version_min_.Init(
-      prefs::kSSLVersionMin, local_state, local_state_callback);
-  ssl_version_max_.Init(
-      prefs::kSSLVersionMax, local_state, local_state_callback);
-  ssl_version_fallback_min_.Init(
-      prefs::kSSLVersionFallbackMin, local_state, local_state_callback);
+      ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
+      local_state, local_state_callback);
+  ssl_version_min_.Init(ssl_config::prefs::kSSLVersionMin, local_state,
+                        local_state_callback);
+  ssl_version_max_.Init(ssl_config::prefs::kSSLVersionMax, local_state,
+                        local_state_callback);
+  ssl_version_fallback_min_.Init(ssl_config::prefs::kSSLVersionFallbackMin,
+                                 local_state, local_state_callback);
 
   local_state_change_registrar_.Init(local_state);
-  local_state_change_registrar_.Add(
-      prefs::kCipherSuiteBlacklist, local_state_callback);
+  local_state_change_registrar_.Add(ssl_config::prefs::kCipherSuiteBlacklist,
+                                    local_state_callback);
 
   OnDisabledCipherSuitesChange(local_state);
 
@@ -204,15 +212,19 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 // static
 void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   net::SSLConfig default_config;
-  registry->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
-                                default_config.rev_checking_enabled);
   registry->RegisterBooleanPref(
-      prefs::kCertRevocationCheckingRequiredLocalAnchors,
+      ssl_config::prefs::kCertRevocationCheckingEnabled,
+      default_config.rev_checking_enabled);
+  registry->RegisterBooleanPref(
+      ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_config.rev_checking_required_local_anchors);
-  registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
-  registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
-  registry->RegisterStringPref(prefs::kSSLVersionFallbackMin, std::string());
-  registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
+  registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMin,
+                               std::string());
+  registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
+                               std::string());
+  registry->RegisterStringPref(ssl_config::prefs::kSSLVersionFallbackMin,
+                               std::string());
+  registry->RegisterListPref(ssl_config::prefs::kCipherSuiteBlacklist);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -222,9 +234,8 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
 void SSLConfigServiceManagerPref::OnPreferenceChanged(
     PrefService* prefs,
     const std::string& pref_name_in) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(prefs);
-  if (pref_name_in == prefs::kCipherSuiteBlacklist)
+  if (pref_name_in == ssl_config::prefs::kCipherSuiteBlacklist)
     OnDisabledCipherSuitesChange(prefs);
 
   net::SSLConfig new_config;
@@ -232,13 +243,9 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
 
   // Post a task to |io_loop| with the new configuration, so it can
   // update |cached_config_|.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &SSLConfigServicePref::SetNewSSLConfig,
-          ssl_config_service_.get(),
-          new_config));
+  io_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&SSLConfigServicePref::SetNewSSLConfig,
+                                       ssl_config_service_.get(), new_config));
 }
 
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
@@ -277,20 +284,23 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
     PrefService* local_state) {
   const base::ListValue* value =
-      local_state->GetList(prefs::kCipherSuiteBlacklist);
+      local_state->GetList(ssl_config::prefs::kCipherSuiteBlacklist);
   disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManager
 
+namespace ssl_config {
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
-    PrefService* local_state) {
-  return new SSLConfigServiceManagerPref(local_state);
+    PrefService* local_state,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+  return new SSLConfigServiceManagerPref(local_state, io_task_runner);
 }
 
 // static
 void SSLConfigServiceManager::RegisterPrefs(PrefRegistrySimple* registry) {
   SSLConfigServiceManagerPref::RegisterPrefs(registry);
 }
+}  // namespace ssl_config

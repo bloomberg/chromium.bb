@@ -632,6 +632,9 @@
       'signin/ios/browser/account_consistency_service_unittest.mm',
       'signin/ios/browser/profile_oauth2_token_service_ios_delegate_unittest.mm',
     ],
+    'ssl_config_unittest_sources': [
+      'ssl_config/ssl_config_service_manager_pref_unittest.cc',
+    ],
     'storage_monitor_unittest_sources': [
       'storage_monitor/image_capture_device_manager_unittest.mm',
       'storage_monitor/media_storage_util_unittest.cc',
@@ -870,6 +873,7 @@
         '<@(search_unittest_sources)',
         '<@(sessions_unittest_sources)',
         '<@(signin_unittest_sources)',
+        '<@(ssl_config_unittest_sources)',
         '<@(suggestions_unittest_sources)',
         '<@(sync_driver_unittest_sources)',
         '<@(sync_sessions_unittest_sources)',
@@ -994,6 +998,7 @@
         'components.gyp:sessions_test_support',
         'components.gyp:signin_core_browser',
         'components.gyp:signin_core_browser_test_support',
+        'components.gyp:ssl_config',
         'components.gyp:suggestions',
         'components.gyp:sync_driver_test_support',
         'components.gyp:sync_sessions',

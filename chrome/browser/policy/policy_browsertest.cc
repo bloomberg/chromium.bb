@@ -107,6 +107,7 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/ssl_config/ssl_config_prefs.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/variations/service/variations_service.h"
@@ -2726,7 +2727,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
 
   const std::string new_value("tls1.2");
   const std::string default_value(
-      prefs->GetString(prefs::kSSLVersionFallbackMin));
+      prefs->GetString(ssl_config::prefs::kSSLVersionFallbackMin));
 
   EXPECT_NE(default_value, new_value);
   EXPECT_NE(net::SSL_PROTOCOL_VERSION_TLS1_2,

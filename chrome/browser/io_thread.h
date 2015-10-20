@@ -19,8 +19,8 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
@@ -496,7 +496,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.
-  scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
+  scoped_ptr<ssl_config::SSLConfigServiceManager> ssl_config_service_manager_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.

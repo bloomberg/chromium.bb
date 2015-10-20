@@ -410,14 +410,6 @@ extern const char kWebRTCMultipleRoutesEnabled[];
 extern const char kWebRTCNonProxiedUdpEnabled[];
 #endif
 
-// Local state prefs. Please add Profile prefs above instead.
-extern const char kCertRevocationCheckingEnabled[];
-extern const char kCertRevocationCheckingRequiredLocalAnchors[];
-extern const char kSSLVersionMin[];
-extern const char kSSLVersionMax[];
-extern const char kSSLVersionFallbackMin[];
-extern const char kCipherSuiteBlacklist[];
-
 extern const char kGLVendorString[];
 extern const char kGLRendererString[];
 extern const char kGLVersionString[];

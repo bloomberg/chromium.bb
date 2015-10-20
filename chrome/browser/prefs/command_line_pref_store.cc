@@ -19,6 +19,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/ssl_config/ssl_config_prefs.h"
+#include "components/ssl_config/ssl_config_switches.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -32,9 +34,10 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { data_reduction_proxy::switches::kDataReductionProxy,
           data_reduction_proxy::prefs::kDataReductionProxy },
       { switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist },
-      { switches::kSSLVersionMin, prefs::kSSLVersionMin },
-      { switches::kSSLVersionMax, prefs::kSSLVersionMax },
-      { switches::kSSLVersionFallbackMin, prefs::kSSLVersionFallbackMin },
+      { switches::kSSLVersionMin, ssl_config::prefs::kSSLVersionMin },
+      { switches::kSSLVersionMax, ssl_config::prefs::kSSLVersionMax },
+      { switches::kSSLVersionFallbackMin,
+          ssl_config::prefs::kSSLVersionFallbackMin },
 #if defined(OS_ANDROID)
       { switches::kAuthAndroidNegotiateAccountType,
           prefs::kAuthAndroidNegotiateAccountType },
@@ -187,7 +190,7 @@ void CommandLinePrefStore::ApplySSLSwitches() {
     list_value->AppendStrings(base::SplitString(
         command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
-    SetValue(prefs::kCipherSuiteBlacklist, list_value.Pass(),
+    SetValue(ssl_config::prefs::kCipherSuiteBlacklist, list_value.Pass(),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }

@@ -299,6 +299,7 @@ source_set("browser") {
       "//components/resources",
       "//components/safe_json",
       "//components/sessions",
+      "//components/ssl_config",
       "//components/storage_monitor",
       "//components/syncable_prefs",
       "//components/translate/content/browser",

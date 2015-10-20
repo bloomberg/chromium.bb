@@ -90,6 +90,7 @@ include_rules = [
   "+components/session_manager",
   "+components/sessions",
   "+components/signin",
+  "+components/ssl_config",
   "+components/ssl_errors",
   "+components/startup_metric_utils",
   "+components/storage_monitor",

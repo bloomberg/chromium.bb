@@ -25,7 +25,6 @@ class NetPrefObserver;
 class PrefService;
 
 class ShortcutsBackend;
-class SSLConfigServiceManager;
 class TrackedPreferenceValidationDelegate;
 
 #if defined(OS_CHROMEOS)
@@ -53,6 +52,10 @@ namespace policy {
 class CloudPolicyManager;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
+}
+
+namespace ssl_config {
+class SSLConfigServiceManager;
 }
 
 namespace syncable_prefs {
@@ -236,7 +239,7 @@ class ProfileImpl : public Profile {
       extension_special_storage_policy_;
 #endif
   scoped_ptr<NetPrefObserver> net_pref_observer_;
-  scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
+  scoped_ptr<ssl_config::SSLConfigServiceManager> ssl_config_service_manager_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;
 
   // Exit type the last time the profile was opened. This is set only once from

@@ -30,6 +30,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/ssl_config/ssl_config_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/variations/pref_names.h"
 #include "policy/policy_constants.h"
@@ -219,10 +220,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSigninAllowed,
     base::Value::TYPE_BOOLEAN },
   { key::kEnableOnlineRevocationChecks,
-    prefs::kCertRevocationCheckingEnabled,
+    ssl_config::prefs::kCertRevocationCheckingEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kRequireOnlineRevocationChecksForLocalAnchors,
-    prefs::kCertRevocationCheckingRequiredLocalAnchors,
+    ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
     base::Value::TYPE_BOOLEAN },
   { key::kAuthSchemes,
     prefs::kAuthSchemes,
@@ -370,7 +371,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kForceEphemeralProfiles,
     base::Value::TYPE_BOOLEAN },
   { key::kSSLVersionFallbackMin,
-    prefs::kSSLVersionFallbackMin,
+    ssl_config::prefs::kSSLVersionFallbackMin,
     base::Value::TYPE_STRING },
 
 #if !defined(OS_MACOSX) && !defined(OS_IOS)

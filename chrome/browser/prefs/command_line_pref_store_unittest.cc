@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/ssl_config/ssl_config_prefs.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
@@ -45,7 +46,7 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
   void VerifySSLCipherSuites(const char* const* ciphers,
                              size_t cipher_count) {
     const base::Value* value = NULL;
-    ASSERT_TRUE(GetValue(prefs::kCipherSuiteBlacklist, &value));
+    ASSERT_TRUE(GetValue(ssl_config::prefs::kCipherSuiteBlacklist, &value));
     ASSERT_EQ(base::Value::TYPE_LIST, value->GetType());
     const base::ListValue* list_value =
         static_cast<const base::ListValue*>(value);

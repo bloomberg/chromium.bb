@@ -2113,6 +2113,7 @@
         '../components/components.gyp:dom_distiller_content_renderer',
         '../components/components.gyp:dom_distiller_test_support',
         '../components/components.gyp:guest_view_test_support',
+        '../components/components.gyp:ssl_config',
         '../components/components.gyp:translate_core_common',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',

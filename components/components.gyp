@@ -76,6 +76,7 @@
     'security_interstitials.gypi',
     'sessions.gypi',
     'signin.gypi',
+    'ssl_config.gypi',
     'ssl_errors.gypi',
     'startup_metric_utils.gypi',
     'suggestions.gypi',
