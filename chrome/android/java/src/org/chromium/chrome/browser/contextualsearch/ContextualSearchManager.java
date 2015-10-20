@@ -127,6 +127,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     // text, and make sure that all states are cleared when starting a new contextual search to
     // avoid having the values in a funky state.
     private ContextualSearchRequest mSearchRequest;
+    private ContextualSearchRequest mLastSearchRequestLoaded;
 
     // The native manager associated with this object.
     private long mNativeContextualSearchManagerPtr;
@@ -743,6 +744,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     private void loadSearchUrl() {
         mLoadedSearchUrlTimeMs = System.currentTimeMillis();
+        mLastSearchRequestLoaded = mSearchRequest;
         mSearchPanelDelegate.loadUrlInPanel(mSearchRequest.getSearchUrl());
         mDidStartLoadingResolvedSearchRequest = true;
 
@@ -912,8 +914,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * Removes the last resolved search URL from the Chrome history.
      */
     private void removeLastSearchVisit() {
-        if (mSearchRequest != null) {
-            mSearchPanelDelegate.removeLastHistoryEntry(mSearchRequest.getSearchUrl(),
+        if (mLastSearchRequestLoaded != null) {
+            // TODO(pedrosimonetti): Consider having this feature builtin into OverlayPanelContent.
+            mSearchPanelDelegate.removeLastHistoryEntry(mLastSearchRequestLoaded.getSearchUrl(),
                     mLoadedSearchUrlTimeMs);
         }
     }
