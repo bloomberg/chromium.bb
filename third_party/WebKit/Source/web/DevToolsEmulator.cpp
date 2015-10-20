@@ -237,13 +237,13 @@ void DevToolsEmulator::enableMobileEmulation()
     m_emulateMobileEnabled = true;
     m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+    m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
     m_webViewImpl->enableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
     m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(true);
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(true);
-    m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
     m_webViewImpl->page()->settings().setPluginsEnabled(false);
     m_webViewImpl->page()->settings().setAvailablePointerTypes(PointerTypeCoarse);
     m_webViewImpl->page()->settings().setPrimaryPointerType(PointerTypeCoarse);

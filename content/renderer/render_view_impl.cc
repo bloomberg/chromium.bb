@@ -1051,12 +1051,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // TODO(bokan): Remove once Blink side is gone.
   settings->setInvertViewportScrollOrder(true);
 
-  settings->setViewportEnabled(prefs.viewport_enabled);
-  settings->setLoadWithOverviewMode(prefs.initialize_at_minimum_page_scale);
-  settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
-  settings->setMainFrameResizesAreOrientationChanges(
-      prefs.main_frame_resizes_are_orientation_changes);
-
   settings->setSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->setSpatialNavigationEnabled(prefs.spatial_navigation_enabled);
@@ -1116,6 +1110,12 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAutoplayExperimentMode(
       blink::WebString::fromUTF8(prefs.autoplay_experiment_mode));
 #endif
+
+  settings->setViewportEnabled(prefs.viewport_enabled);
+  settings->setLoadWithOverviewMode(prefs.initialize_at_minimum_page_scale);
+  settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
+  settings->setMainFrameResizesAreOrientationChanges(
+      prefs.main_frame_resizes_are_orientation_changes);
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
   WebNetworkStateNotifier::setWebConnection(

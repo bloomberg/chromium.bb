@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<script>
+
+function sendValueToTest(value) {
+  window.domAutomationController.setAutomationId(0);
+  window.domAutomationController.send(value);
+}
+
+var resourcesNumber = -1;
+window.onload = function () {
+    resourcesNumber = window.performance.getEntriesByType("resource").length;
+};
+
+function getResourceNumber() {
+    setInterval(function() {
+        if (resourcesNumber != -1) {
+            sendValueToTest(resourcesNumber);
+        }
+    }, 300);
+}
+</script>
+
+<picture>
+    <source media="(min-width: 980px)" srcset="200.png">
+    <img src="400.png">
+</picture>
+
+</html>

@@ -245,6 +245,7 @@
       'browser/renderer_host/render_process_host_browsertest.cc',
       'browser/renderer_host/render_view_host_browsertest.cc',
       'browser/renderer_host/render_widget_host_view_browsertest.cc',
+      'browser/resource_loading_browsertest.cc',
       'browser/screen_orientation/screen_orientation_browsertest.cc',
       'browser/security_exploit_browsertest.cc',
       'browser/service_worker/service_worker_browsertest.cc',
