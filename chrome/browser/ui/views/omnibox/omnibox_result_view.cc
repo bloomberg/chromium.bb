@@ -30,11 +30,14 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/gfx/vector_icons_public.h"
 
 using ui::NativeTheme;
 
@@ -569,10 +572,16 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
   if (!image.IsEmpty())
     return image.AsImageSkia();
 
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::VectorIconId icon_id = model_->IsStarredMatch(match_) ?
+        gfx::VectorIconId::OMNIBOX_STAR :
+        AutocompleteMatch::TypeToVectorIcon(match_.type);
+    return gfx::CreateVectorIcon(icon_id, 16, gfx::kChromeIconGrey);
+  }
+
   int icon = model_->IsStarredMatch(match_) ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
-  if (GetState() == SELECTED &&
-      !ui::MaterialDesignController::IsModeMaterial()) {
+  if (GetState() == SELECTED) {
     switch (icon) {
       case IDR_OMNIBOX_CALCULATOR:
         icon = IDR_OMNIBOX_CALCULATOR_SELECTED;

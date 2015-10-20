@@ -17,6 +17,7 @@
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_vector_icons',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
         'crash_core_common',  # TODO(mpearson): remove once 464926 is fixed.
