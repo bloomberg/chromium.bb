@@ -999,6 +999,25 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, 
     return zoom.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationName(CSSParserTokenRange& range, const CSSParserContext& context, bool allowQuotedName)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    if (allowQuotedName && range.peek().type() == StringToken) {
+        // Legacy support for strings in prefixed animations.
+        if (context.useCounter())
+            context.useCounter()->count(UseCounter::QuotedAnimationName);
+
+        const CSSParserToken& token = range.consumeIncludingWhitespace();
+        if (token.valueEqualsIgnoringCase("none"))
+            return cssValuePool().createIdentifierValue(CSSValueNone);
+        return CSSCustomIdentValue::create(token.value());
+    }
+
+    return consumeCustomIdent(range);
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeSteps(CSSParserTokenRange& range)
 {
     ASSERT(range.peek().functionId() == CSSValueSteps);
@@ -1076,7 +1095,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationTimingFunction(CSSParser
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID property, CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID property, CSSParserTokenRange& range, const CSSParserContext& context, bool useLegacyParsing)
 {
     switch (property) {
     case CSSPropertyAnimationDelay:
@@ -1085,6 +1104,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID prop
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
         return consumeTime(range, ValueRangeNonNegative);
+    case CSSPropertyAnimationName:
+        return consumeAnimationName(range, context, useLegacyParsing);
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationTimingFunction(range);
@@ -1094,11 +1115,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID prop
     }
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSPropertyID property, CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSPropertyID property, CSSParserTokenRange& range, const CSSParserContext& context, bool useLegacyParsing)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     do {
-        RefPtrWillBeRawPtr<CSSValue> value = consumeAnimationValue(property, range);
+        RefPtrWillBeRawPtr<CSSValue> value = consumeAnimationValue(property, range, context, useLegacyParsing);
         if (!value)
             return nullptr;
         list->append(value.release());
@@ -1107,10 +1128,11 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSProp
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
+    CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
     m_range.consumeWhitespace();
-    switch (propId) {
+    switch (property) {
     case CSSPropertyWillChange:
         return consumeWillChange(m_range);
     case CSSPropertyPage:
@@ -1145,7 +1167,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:
-        return consumeCounter(m_range, m_context.mode(), propId == CSSPropertyCounterIncrement ? 1 : 0);
+        return consumeCounter(m_range, m_context.mode(), property == CSSPropertyCounterIncrement ? 1 : 0);
     case CSSPropertySize:
         return consumeSize(m_range, m_context.mode());
     case CSSPropertyTextIndent:
@@ -1191,9 +1213,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTransitionDelay:
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
+    case CSSPropertyAnimationName:
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
-        return consumeAnimationPropertyList(propId, m_range);
+        return consumeAnimationPropertyList(property, m_range, m_context, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
     default:
         return nullptr;
     }

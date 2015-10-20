@@ -971,7 +971,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     case CSSPropertyAnimationDirection:
     case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationName:
     case CSSPropertyAnimationPlayState:
     case CSSPropertyAnimationIterationCount:
     case CSSPropertyTransitionProperty:
@@ -1254,6 +1253,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyTransitionDelay:
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
+    case CSSPropertyAnimationName:
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         validPrimitive = false;
