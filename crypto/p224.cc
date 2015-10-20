@@ -123,15 +123,6 @@ typedef uint64 LargeFieldElement[15];
 // ReduceLarge converts a LargeFieldElement to a FieldElement.
 //
 // in[i] < 2**62
-
-// GCC 4.9 incorrectly vectorizes the first coefficient elimination loop, so
-// disable that optimization via pragma. Don't use the pragma under Clang, since
-// clang doesn't understand it.
-// TODO(wez): Remove this when crbug.com/439566 is fixed.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC optimize("no-tree-vectorize")
-#endif
-
 void ReduceLarge(FieldElement* out, LargeFieldElement* inptr) {
   LargeFieldElement& in(*inptr);
 
@@ -172,12 +163,6 @@ void ReduceLarge(FieldElement* out, LargeFieldElement* inptr) {
   // out[1..4] < 2**29
   // out[5..7] < 2**28
 }
-
-// TODO(wez): Remove this when crbug.com/439566 is fixed.
-#if defined(__GNUC__) && !defined(__clang__)
-// Reenable "tree-vectorize" optimization if it got disabled for ReduceLarge.
-#pragma GCC reset_options
-#endif
 
 // Mul computes *out = a*b
 //
