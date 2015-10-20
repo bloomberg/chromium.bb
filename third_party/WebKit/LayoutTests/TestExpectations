@@ -1592,3 +1592,9 @@ crbug.com/541601 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-default
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
 
 crbug.com/545551 [ Win10 ] svg/custom/repaint-shadow.svg [ Failure ]
+
+crbug.com/404597 [ Yosemite ] fast/dynamic/text-combine.html [ NeedsRebaseline ]
+crbug.com/404597 [ Yosemite ] fast/css/text-overflow-input.html [ NeedsRebaseline ]
+crbug.com/404597 [ Yosemite ] fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
+crbug.com/404597 [ Yosemite ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/404597 [ Win10 ] svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ NeedsRebaseline ]
