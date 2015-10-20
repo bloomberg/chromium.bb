@@ -10,14 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "components/sync_driver/glue/ui_model_worker.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::UIModelWorker;
 using syncer::SyncerError;
-using content::BrowserThread;
 
 class UIModelWorkerVisitor {
  public:
@@ -28,7 +27,6 @@ class UIModelWorkerVisitor {
   virtual ~UIModelWorkerVisitor() { }
 
   virtual syncer::SyncerError DoWork() {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     was_run_->Signal();
     if (quit_loop_when_run_)
       base::MessageLoop::current()->QuitWhenIdle();
@@ -65,11 +63,7 @@ class SyncUIModelWorkerTest : public testing::Test {
 
   void SetUp() override {
     faux_syncer_thread_.Start();
-    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
-                                                    &faux_ui_loop_));
-    bmw_ = new UIModelWorker(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        nullptr);
+    bmw_ = new UIModelWorker(base::ThreadTaskRunnerHandle::Get(), nullptr);
     syncer_.reset(new Syncer(bmw_.get()));
   }
 
@@ -79,7 +73,6 @@ class SyncUIModelWorkerTest : public testing::Test {
   base::Thread* syncer_thread() { return &faux_syncer_thread_; }
  private:
   base::MessageLoop faux_ui_loop_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
   scoped_refptr<UIModelWorker> bmw_;

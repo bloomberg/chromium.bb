@@ -593,8 +593,8 @@
       'scheduler/renderer/renderer_scheduler_impl_unittest.cc',
       'scheduler/renderer/task_cost_estimator_unittest.cc',
       'scheduler/renderer/user_model_unittest.cc',
-      'scheduler/renderer/webthread_impl_for_renderer_scheduler_unittest.cc',
       'scheduler/renderer/web_frame_host_scheduler_impl_unittest.cc',
+      'scheduler/renderer/webthread_impl_for_renderer_scheduler_unittest.cc',
     ],
     'search_unittest_sources': [
       'search/search_android_unittest.cc',
@@ -656,7 +656,9 @@
       'sync_driver/device_info_data_type_controller_unittest.cc',
       'sync_driver/device_info_sync_service_unittest.cc',
       'sync_driver/favicon_cache_unittest.cc',
+      'sync_driver/frontend_data_type_controller_unittest.cc',
       'sync_driver/generic_change_processor_unittest.cc',
+      'sync_driver/glue/ui_model_worker_unittest.cc',
       'sync_driver/model_association_manager_unittest.cc',
       'sync_driver/non_blocking_data_type_controller_unittest.cc',
       'sync_driver/non_ui_data_type_controller_unittest.cc',
@@ -679,8 +681,8 @@
       'syncable_prefs/pref_service_syncable_unittest.cc',
     ],
     'tracing_unittest_sources': [
-      'tracing/trace_config_file_unittest.cc',
       'tracing/graphics_memory_dump_provider_android_unittest.cc',
+      'tracing/trace_config_file_unittest.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
