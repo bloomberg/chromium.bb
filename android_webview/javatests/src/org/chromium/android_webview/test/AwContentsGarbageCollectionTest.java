@@ -22,6 +22,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -191,12 +192,27 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
     }
 
     private void removeAllViews() throws Throwable {
+        Log.d(TAG, "removeAllViews instrumentation thread");
+        dumpAllThreadStacks();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "removeAllViews UI thread");
                 getActivity().removeAllViews();
             }
         });
+        Log.d(TAG, "removeAllViews instrumentation thread done");
+    }
+
+    private void dumpAllThreadStacks() {
+        Log.d(TAG, "_________________________");
+        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+            Log.d(TAG, "Thread name: " + entry.getKey().getName());
+            for (StackTraceElement stack : entry.getValue()) {
+                Log.d(TAG, "  " + stack);
+            }
+        }
+        Log.d(TAG, "_________________________");
     }
 
     private void gcAndCheckAllAwContentsDestroyed() throws InterruptedException {
