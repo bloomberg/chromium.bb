@@ -184,8 +184,6 @@ flex-wrap
 float type_name=EFloat, name_for_methods=Floating
 flood-color interpolable, svg, converter=convertColor
 flood-opacity interpolable, svg, converter=convertNumberOrPercentage
-glyph-orientation-horizontal inherited, svg, converter=convertGlyphOrientation
-glyph-orientation-vertical inherited, svg, custom_value
 grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSize
 grid-auto-flow runtime_flag=CSSGridLayout, converter=convertGridAutoFlow
 grid-auto-rows runtime_flag=CSSGridLayout, converter=convertGridTrackSize

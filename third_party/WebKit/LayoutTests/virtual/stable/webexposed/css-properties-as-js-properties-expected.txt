@@ -113,8 +113,6 @@ fontVariantLigatures
 fontWeight
 getPropertyPriority
 getPropertyValue
-glyphOrientationHorizontal
-glyphOrientationVertical
 height
 imageRendering
 isolation

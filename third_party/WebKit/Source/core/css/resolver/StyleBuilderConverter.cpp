@@ -318,23 +318,6 @@ FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigat
     return FontDescription::VariantLigatures();
 }
 
-EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverState&, const CSSValue& value)
-{
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue.typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Degrees)
-        return GO_0DEG;
-
-    float angle = fabsf(fmodf(primitiveValue.getFloatValue(), 360.0f));
-
-    if (angle <= 45.0f || angle > 315.0f)
-        return GO_0DEG;
-    if (angle > 45.0f && angle <= 135.0f)
-        return GO_90DEG;
-    if (angle > 135.0f && angle <= 225.0f)
-        return GO_180DEG;
-    return GO_270DEG;
-}
-
 StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(StyleResolverState&, const CSSValue& value)
 {
     StyleSelfAlignmentData alignmentData = ComputedStyle::initialSelfAlignment();

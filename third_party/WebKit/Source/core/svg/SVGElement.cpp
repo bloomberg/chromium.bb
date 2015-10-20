@@ -322,8 +322,6 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
             &font_styleAttr,
             &font_variantAttr,
             &font_weightAttr,
-            &glyph_orientation_horizontalAttr,
-            &glyph_orientation_verticalAttr,
             &image_renderingAttr,
             &letter_spacingAttr,
             &lighting_colorAttr,

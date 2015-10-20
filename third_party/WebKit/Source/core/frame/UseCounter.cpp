@@ -420,8 +420,8 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyAlignmentBaseline: return 386;
     case CSSPropertyBaselineShift: return 387;
     case CSSPropertyDominantBaseline: return 388;
-    case CSSPropertyGlyphOrientationHorizontal: return 389;
-    case CSSPropertyGlyphOrientationVertical: return 390;
+    // CSSPropertyGlyphOrientationHorizontal has been removed, was return 389;
+    // CSSPropertyGlyphOrientationVertical has been removed, was return 390;
     // CSSPropertyKerning has been removed, was return 391;
     case CSSPropertyTextAnchor: return 392;
     case CSSPropertyVectorEffect: return 393;

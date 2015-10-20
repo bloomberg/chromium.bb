@@ -1149,22 +1149,6 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForBorderRadiusShorthand(const 
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> glyphOrientationToCSSPrimitiveValue(EGlyphOrientation orientation)
-{
-    switch (orientation) {
-    case GO_0DEG:
-        return CSSPrimitiveValue::create(0.0f, CSSPrimitiveValue::UnitType::Degrees);
-    case GO_90DEG:
-        return CSSPrimitiveValue::create(90.0f, CSSPrimitiveValue::UnitType::Degrees);
-    case GO_180DEG:
-        return CSSPrimitiveValue::create(180.0f, CSSPrimitiveValue::UnitType::Degrees);
-    case GO_270DEG:
-        return CSSPrimitiveValue::create(270.0f, CSSPrimitiveValue::UnitType::Degrees);
-    default:
-        return nullptr;
-    }
-}
-
 static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(const SVGDashArray& dashes, const ComputedStyle& style)
 {
     if (dashes.isEmpty())
@@ -2618,15 +2602,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     }
     case CSSPropertyBufferedRendering:
         return CSSPrimitiveValue::create(svgStyle.bufferedRendering());
-    case CSSPropertyGlyphOrientationHorizontal:
-        return glyphOrientationToCSSPrimitiveValue(svgStyle.glyphOrientationHorizontal());
-    case CSSPropertyGlyphOrientationVertical: {
-        if (RefPtrWillBeRawPtr<CSSPrimitiveValue> value = glyphOrientationToCSSPrimitiveValue(svgStyle.glyphOrientationVertical()))
-            return value.release();
-        if (svgStyle.glyphOrientationVertical() == GO_AUTO)
-            return CSSPrimitiveValue::createIdentifier(CSSValueAuto);
-        return nullptr;
-    }
     case CSSPropertyPaintOrder:
         return paintOrderToCSSValueList(svgStyle);
     case CSSPropertyVectorEffect:

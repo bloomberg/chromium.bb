@@ -154,8 +154,6 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
 
     // All text related properties influence layout.
     if (svg_inherited_flags._textAnchor != other->svg_inherited_flags._textAnchor
-        || svg_inherited_flags._glyphOrientationHorizontal != other->svg_inherited_flags._glyphOrientationHorizontal
-        || svg_inherited_flags._glyphOrientationVertical != other->svg_inherited_flags._glyphOrientationVertical
         || svg_inherited_flags.dominantBaseline != other->svg_inherited_flags.dominantBaseline
         || svg_noninherited_flags.f._alignmentBaseline != other->svg_noninherited_flags.f._alignmentBaseline
         || svg_noninherited_flags.f._baselineShift != other->svg_noninherited_flags.f._baselineShift)

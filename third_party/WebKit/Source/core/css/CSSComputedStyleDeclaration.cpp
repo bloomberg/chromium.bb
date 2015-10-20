@@ -324,8 +324,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyDominantBaseline,
     CSSPropertyTextAnchor,
     CSSPropertyWritingMode,
-    CSSPropertyGlyphOrientationHorizontal,
-    CSSPropertyGlyphOrientationVertical,
     CSSPropertyVectorEffect,
     CSSPropertyPaintOrder,
     CSSPropertyCx,

@@ -6256,21 +6256,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
      * correctly and allows optimization in applyRule(..)
      */
 
-    case CSSPropertyGlyphOrientationVertical: // auto | <angle> | inherit
-        if (id == CSSValueAuto) {
-            validPrimitive = true;
-            break;
-        }
-    /* fallthrough intentional */
-    case CSSPropertyGlyphOrientationHorizontal: // <angle> (restricted to _deg_ per SVG 1.1 spec) | inherit
-        if (value->unit() == CSSPrimitiveValue::UnitType::Degrees || value->unit() == CSSPrimitiveValue::UnitType::Number) {
-            parsedValue = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::UnitType::Degrees);
-
-            if (parsedValue)
-                m_valueList->next();
-        }
-        break;
-
     case CSSPropertyFill: // <paint> | inherit
     case CSSPropertyStroke: // <paint> | inherit
         {

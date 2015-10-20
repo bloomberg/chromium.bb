@@ -206,14 +206,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolverState& s
     state.style()->setDirection(toCSSPrimitiveValue(value)->convertTo<TextDirection>());
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
-{
-    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)
-        state.style()->accessSVGStyle().setGlyphOrientationVertical(GO_AUTO);
-    else
-        state.style()->accessSVGStyle().setGlyphOrientationVertical(StyleBuilderConverter::convertGlyphOrientation(state, *value));
-}
-
 void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(StyleResolverState& state)
 {
     state.style()->setNamedGridArea(ComputedStyle::initialNamedGridArea());
