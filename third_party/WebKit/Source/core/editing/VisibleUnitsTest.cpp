@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/editing/VisibleUnits.h"
 
+#include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLTextFormControlElement.h"
@@ -82,6 +83,39 @@ TEST_F(VisibleUnitsTest, characterAfter)
 
     EXPECT_EQ(0, characterAfter(createVisiblePositionInDOMTree(*two->firstChild(), 2)));
     EXPECT_EQ('1', characterAfter(createVisiblePositionInComposedTree(*two->firstChild(), 2)));
+}
+
+TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement)
+{
+    const char* bodyContent = "<html><div id=one contenteditable>1</div><span id=two contenteditable=false>22</span><span id=three contenteditable=false>333</span><span id=four contenteditable=false>333</span></html>";
+    setBodyContent(bodyContent);
+
+    RefPtrWillBeRawPtr<Node> one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Node> two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Node> three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Node> four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> html = document().createElement("html", ASSERT_NO_EXCEPTION);
+    // Move two, three and four into second html element.
+    html->appendChild(two.get());
+    html->appendChild(three.get());
+    html->appendChild(four.get());
+    one->appendChild(html.get());
+    updateLayoutAndStyleForPainting();
+
+    EXPECT_EQ(Position(), canonicalPositionOf(Position(document().documentElement(), 0)));
+
+    EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one.get(), 0)));
+    EXPECT_EQ(Position(one->firstChild(), 1), canonicalPositionOf(Position(one.get(), 1)));
+
+    EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one->firstChild(), 0)));
+    EXPECT_EQ(Position(one->firstChild(), 1), canonicalPositionOf(Position(one->firstChild(), 1)));
+
+    EXPECT_EQ(Position(html.get(), 0), canonicalPositionOf(Position(html.get(), 0)));
+    EXPECT_EQ(Position(html.get(), 1), canonicalPositionOf(Position(html.get(), 1)));
+    EXPECT_EQ(Position(html.get(), 2), canonicalPositionOf(Position(html.get(), 2)));
+
+    EXPECT_EQ(Position(two->firstChild(), 0), canonicalPositionOf(Position(two.get(), 0)));
+    EXPECT_EQ(Position(two->firstChild(), 2), canonicalPositionOf(Position(two.get(), 1)));
 }
 
 TEST_F(VisibleUnitsTest, characterBefore)
@@ -541,6 +575,39 @@ TEST_F(VisibleUnitsTest, isStartOfParagraph)
 
     EXPECT_FALSE(isStartOfParagraph(createVisiblePositionInDOMTree(*three, 0)));
     EXPECT_TRUE(isStartOfParagraph(createVisiblePositionInComposedTree(*three, 0)));
+}
+
+TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement)
+{
+    const char* bodyContent = "<html><div id=one contenteditable>1</div><span id=two contenteditable=false>22</span><span id=three contenteditable=false>333</span><span id=four contenteditable=false>333</span></html>";
+    setBodyContent(bodyContent);
+
+    RefPtrWillBeRawPtr<Node> one = document().querySelector("#one", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Node> two = document().querySelector("#two", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Node> three = document().querySelector("#three", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Node> four = document().querySelector("#four", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> html = document().createElement("html", ASSERT_NO_EXCEPTION);
+    // Move two, three and four into second html element.
+    html->appendChild(two.get());
+    html->appendChild(three.get());
+    html->appendChild(four.get());
+    one->appendChild(html.get());
+    updateLayoutAndStyleForPainting();
+
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(document().documentElement(), 0)));
+
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(one.get(), 0)));
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(one.get(), 1)));
+
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(one->firstChild(), 0)));
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(one->firstChild(), 1)));
+
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html.get(), 0)));
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html.get(), 1)));
+    EXPECT_TRUE(isVisuallyEquivalentCandidate(Position(html.get(), 2)));
+
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two.get(), 0)));
+    EXPECT_FALSE(isVisuallyEquivalentCandidate(Position(two.get(), 1)));
 }
 
 TEST_F(VisibleUnitsTest, leftPositionOf)

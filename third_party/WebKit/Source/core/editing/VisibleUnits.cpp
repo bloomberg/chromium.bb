@@ -120,7 +120,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     // The new position must be in the same editable element. Enforce that
     // first. Unless the descent is from a non-editable html element to an
     // editable body.
-    if (isHTMLHtmlElement(node) && !node->hasEditableStyle() && node->document().body() && node->document().body()->hasEditableStyle())
+    if (node && node->document().documentElement() == node && !node->hasEditableStyle() && node->document().body() && node->document().body()->hasEditableStyle())
         return next.isNotNull() ? next : prev;
 
     Element* editingRoot = editableRootForPosition(position);
@@ -128,7 +128,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     // If the html element is editable, descending into its body will look like
     // a descent from non-editable to editable content since
     // |rootEditableElementOf()| always stops at the body.
-    if (isHTMLHtmlElement(editingRoot) || position.anchorNode()->isDocumentNode())
+    if ((editingRoot && editingRoot->document().documentElement() == editingRoot) || position.anchorNode()->isDocumentNode())
         return next.isNotNull() ? next : prev;
 
     bool prevIsInSameEditableElement = prevNode && editableRootForPosition(prev) == editingRoot;
@@ -2691,7 +2691,7 @@ static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strate
         return parent->layoutObject() && parent->layoutObject()->isSelectable();
     }
 
-    if (isHTMLHtmlElement(*anchorNode))
+    if (anchorNode->document().documentElement() == anchorNode)
         return false;
 
     if (!layoutObject->isSelectable())
