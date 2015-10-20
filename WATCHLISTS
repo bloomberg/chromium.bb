@@ -622,6 +622,9 @@
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin',
     },
+    'policy_definitions': {
+      'filepath': 'components/policy/resources/policy_templates.json',
+    },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
                   'ui/webui/resources/polymer_resources.grdp',
@@ -1413,6 +1416,7 @@
     'permissions': ['mlamouri+watch-permissions@chromium.org',
                     'kcarattini+watch@chromium.org'],
     'plugin': ['jam@chromium.org'],
+    'policy_definitions': ['tnagel+watch@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
     'predictors': ['shishir+watch@chromium.org'],
