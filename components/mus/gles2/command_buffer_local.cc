@@ -5,6 +5,7 @@
 #include "components/mus/gles2/command_buffer_local.h"
 
 #include "base/bind.h"
+#include "base/memory/shared_memory.h"
 #include "components/mus/gles2/command_buffer_local_client.h"
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
@@ -19,7 +20,7 @@
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image_memory.h"
+#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
 
 namespace mus {
@@ -135,12 +136,12 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
   MojoGpuMemoryBufferImpl* gpu_memory_buffer =
       MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
 
-  scoped_refptr<gfx::GLImageMemory> image(new gfx::GLImageMemory(
+  gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
+  scoped_refptr<gfx::GLImageSharedMemory> image(new gfx::GLImageSharedMemory(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       internalformat));
-  if (!image->Initialize(
-          static_cast<const unsigned char*>(gpu_memory_buffer->GetMemory()),
-          gpu_memory_buffer->GetFormat())) {
+  if (!image->Initialize(base::SharedMemory::DuplicateHandle(handle.handle),
+                         handle.id, gpu_memory_buffer->GetFormat())) {
     return -1;
   }
 

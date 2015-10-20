@@ -392,8 +392,8 @@ Texture::LevelInfo::LevelInfo()
       border(0),
       format(0),
       type(0),
-      estimated_size(0) {
-}
+      image_state(UNBOUND),
+      estimated_size(0) {}
 
 Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
     : cleared_rect(rhs.cleared_rect),
@@ -407,8 +407,8 @@ Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
       format(rhs.format),
       type(rhs.type),
       image(rhs.image),
-      estimated_size(rhs.estimated_size) {
-}
+      image_state(rhs.image_state),
+      estimated_size(rhs.estimated_size) {}
 
 Texture::LevelInfo::~LevelInfo() {
 }
@@ -832,6 +832,7 @@ void Texture::SetLevelInfo(const FeatureInfo* feature_info,
   info.format = format;
   info.type = type;
   info.image = 0;
+  info.image_state = UNBOUND;
 
   UpdateMipCleared(&info, width, height, cleared_rect);
 
@@ -1237,11 +1238,10 @@ bool Texture::ClearLevel(
   return true;
 }
 
-void Texture::SetLevelImage(
-    const FeatureInfo* feature_info,
-    GLenum target,
-    GLint level,
-    gfx::GLImage* image) {
+void Texture::SetLevelImage(GLenum target,
+                            GLint level,
+                            gfx::GLImage* image,
+                            ImageState state) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK_LT(static_cast<size_t>(face_index),
@@ -1253,15 +1253,14 @@ void Texture::SetLevelImage(
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
   info.image = image;
+  info.image_state = state;
   UpdateCanRenderCondition();
   UpdateHasImages();
-
-  // TODO(ericrk): Images may have complex sizing not accounted for by
-  // |estimated_size_|, we should add logic here to update |estimated_size_|
-  // based on the new GLImage. crbug.com/526298
 }
 
-gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
+gfx::GLImage* Texture::GetLevelImage(GLint target,
+                                     GLint level,
+                                     ImageState* state) const {
   if (target != GL_TEXTURE_2D && target != GL_TEXTURE_EXTERNAL_OES &&
       target != GL_TEXTURE_RECTANGLE_ARB) {
     return NULL;
@@ -1272,22 +1271,16 @@ gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
       static_cast<size_t>(level) < face_infos_[face_index].level_infos.size()) {
     const LevelInfo& info = face_infos_[face_index].level_infos[level];
     if (info.target != 0) {
+      if (state)
+        *state = info.image_state;
       return info.image.get();
     }
   }
   return NULL;
 }
 
-void Texture::OnWillModifyPixels() {
-  gfx::GLImage* image = GetLevelImage(target(), 0);
-  if (image)
-    image->WillModifyTexImage();
-}
-
-void Texture::OnDidModifyPixels() {
-  gfx::GLImage* image = GetLevelImage(target(), 0);
-  if (image)
-    image->DidModifyTexImage();
+gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
+  return GetLevelImage(target, level, nullptr);
 }
 
 void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
@@ -1302,14 +1295,18 @@ void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
       if (!level_infos[level_index].estimated_size)
         continue;
 
+      // If a level has a GLImage, ask the GLImage to dump itself.
       if (level_infos[level_index].image) {
-        // If a level is backed by a GLImage, ask the GLImage to dump itself.
         level_infos[level_index].image->OnMemoryDump(
             pmd, client_tracing_id,
             base::StringPrintf("%s/face_%d/level_%d", dump_name.c_str(),
                                face_index, level_index));
-      } else {
-        // If a level is not backed by a GLImage, create a simple dump.
+      }
+
+      // If a level does not have a GLImage bound to it, then dump the
+      // texture allocation also as the storage is not provided by the
+      // GLImage in that case.
+      if (level_infos[level_index].image_state != BOUND) {
         base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
             base::StringPrintf("%s/face_%d/level_%d", dump_name.c_str(),
                                face_index, level_index));
@@ -1725,13 +1722,13 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
   }
 }
 
-void TextureManager::SetLevelImage(
-    TextureRef* ref,
-    GLenum target,
-    GLint level,
-    gfx::GLImage* image) {
+void TextureManager::SetLevelImage(TextureRef* ref,
+                                   GLenum target,
+                                   GLint level,
+                                   gfx::GLImage* image,
+                                   Texture::ImageState state) {
   DCHECK(ref);
-  ref->texture()->SetLevelImage(feature_info_.get(), target, level, image);
+  ref->texture()->SetLevelImage(target, level, image, state);
 }
 
 size_t TextureManager::GetSignatureSize() const {

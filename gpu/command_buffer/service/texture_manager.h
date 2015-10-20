@@ -39,6 +39,22 @@ class TextureRef;
 // jointly owned by possibly multiple TextureRef.
 class GPU_EXPORT Texture {
  public:
+  enum ImageState {
+    // If an image is associated with the texture and image state is UNBOUND,
+    // then sampling out of the texture or using it as a target for drawing
+    // will not read/write from/to the image.
+    UNBOUND,
+    // If image state is BOUND, then sampling from the texture will return the
+    // contents of the image and using it as a target will modify the image.
+    BOUND,
+    // Image state is set to COPIED if the contents of the image has been
+    // copied to the texture. Sampling from the texture will be equivalent
+    // to sampling out the image (assuming image has not been changed since
+    // it was copied). Using the texture as a target for drawing will only
+    // modify the texture and not the image.
+    COPIED
+  };
+
   explicit Texture(GLuint service_id);
 
   GLenum min_filter() const {
@@ -133,8 +149,17 @@ class GPU_EXPORT Texture {
   bool GetLevelType(
       GLint target, GLint level, GLenum* type, GLenum* internal_format) const;
 
-  // Get the image bound to a particular level. Returns NULL if level
+  // Set the image for a particular level.
+  void SetLevelImage(GLenum target,
+                     GLint level,
+                     gfx::GLImage* image,
+                     ImageState state);
+
+  // Get the image associated with a particular level. Returns NULL if level
   // does not exist.
+  gfx::GLImage* GetLevelImage(GLint target,
+                              GLint level,
+                              ImageState* state) const;
   gfx::GLImage* GetLevelImage(GLint target, GLint level) const;
 
   bool HasImages() const {
@@ -193,9 +218,6 @@ class GPU_EXPORT Texture {
   // Initialize TEXTURE_MAX_ANISOTROPY to 1 if we haven't done so yet.
   void InitTextureMaxAnisotropyIfNeeded(GLenum target);
 
-  void OnWillModifyPixels();
-  void OnDidModifyPixels();
-
   void DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
                        uint64_t client_tracing_id,
                        const std::string& dump_name) const;
@@ -242,6 +264,7 @@ class GPU_EXPORT Texture {
     GLenum format;
     GLenum type;
     scoped_refptr<gfx::GLImage> image;
+    ImageState image_state;
     uint32 estimated_size;
   };
 
@@ -361,13 +384,6 @@ class GPU_EXPORT Texture {
 
   // Update info about this texture.
   void Update(const FeatureInfo* feature_info);
-
-  // Set the image for a particular level.
-  void SetLevelImage(
-      const FeatureInfo* feature_info,
-      GLenum target,
-      GLint level,
-      gfx::GLImage* image);
 
   // Appends a signature for the given level.
   void AddToSignature(
@@ -790,11 +806,11 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     return memory_type_tracker_->GetMemRepresented();
   }
 
-  void SetLevelImage(
-      TextureRef* ref,
-      GLenum target,
-      GLint level,
-      gfx::GLImage* image);
+  void SetLevelImage(TextureRef* ref,
+                     GLenum target,
+                     GLint level,
+                     gfx::GLImage* image,
+                     Texture::ImageState state);
 
   size_t GetSignatureSize() const;
 

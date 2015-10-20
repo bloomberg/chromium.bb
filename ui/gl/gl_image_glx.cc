@@ -13,7 +13,6 @@ extern "C" {
 #include "ui/gl/gl_surface_glx.h"
 
 namespace gfx {
-
 namespace {
 
 bool ValidFormat(unsigned internalformat) {
@@ -62,7 +61,7 @@ unsigned PixmapDepth(unsigned internalformat) {
   }
 }
 
-bool ActualPixmapGeometry(XID pixmap, gfx::Size* size, unsigned* depth) {
+bool ActualPixmapGeometry(XID pixmap, Size* size, unsigned* depth) {
   XID root_return;
   int x_return;
   int y_return;
@@ -70,19 +69,13 @@ bool ActualPixmapGeometry(XID pixmap, gfx::Size* size, unsigned* depth) {
   unsigned height_return;
   unsigned border_width_return;
   unsigned depth_return;
-  if (!XGetGeometry(gfx::GetXDisplay(),
-                    pixmap,
-                    &root_return,
-                    &x_return,
-                    &y_return,
-                    &width_return,
-                    &height_return,
-                    &border_width_return,
+  if (!XGetGeometry(GetXDisplay(), pixmap, &root_return, &x_return, &y_return,
+                    &width_return, &height_return, &border_width_return,
                     &depth_return))
     return false;
 
   if (size)
-    *size = gfx::Size(width_return, height_return);
+    *size = Size(width_return, height_return);
   if (depth)
     *depth = depth_return;
   return true;
@@ -96,19 +89,18 @@ unsigned ActualPixmapDepth(XID pixmap) {
   return depth;
 }
 
-gfx::Size ActualPixmapSize(XID pixmap) {
-  gfx::Size size;
+Size ActualPixmapSize(XID pixmap) {
+  Size size;
   if (!ActualPixmapGeometry(pixmap, &size, NULL))
-    return gfx::Size();
+    return Size();
 
   return size;
 }
 
-}  // namespace anonymous
+}  // namespace
 
-GLImageGLX::GLImageGLX(const gfx::Size& size, unsigned internalformat)
-    : glx_pixmap_(0), size_(size), internalformat_(internalformat) {
-}
+GLImageGLX::GLImageGLX(const Size& size, unsigned internalformat)
+    : glx_pixmap_(0), size_(size), internalformat_(internalformat) {}
 
 GLImageGLX::~GLImageGLX() {
   DCHECK_EQ(0u, glx_pixmap_);
@@ -134,8 +126,8 @@ bool GLImageGLX::Initialize(XID pixmap) {
       BindToTextureFormat(internalformat_), GL_TRUE,
       0};
   int num_elements = 0;
-  gfx::XScopedPtr<GLXFBConfig> config(
-      glXChooseFBConfig(gfx::GetXDisplay(), DefaultScreen(gfx::GetXDisplay()),
+  XScopedPtr<GLXFBConfig> config(
+      glXChooseFBConfig(GetXDisplay(), DefaultScreen(GetXDisplay()),
                         config_attribs, &num_elements));
   if (!config.get()) {
     DVLOG(0) << "glXChooseFBConfig failed.";
@@ -149,8 +141,8 @@ bool GLImageGLX::Initialize(XID pixmap) {
   int pixmap_attribs[] = {GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT,
                           GLX_TEXTURE_FORMAT_EXT,
                           TextureFormat(internalformat_), 0};
-  glx_pixmap_ = glXCreatePixmap(
-      gfx::GetXDisplay(), *config.get(), pixmap, pixmap_attribs);
+  glx_pixmap_ =
+      glXCreatePixmap(GetXDisplay(), *config.get(), pixmap, pixmap_attribs);
   if (!glx_pixmap_) {
     DVLOG(0) << "glXCreatePixmap failed.";
     return false;
@@ -161,12 +153,14 @@ bool GLImageGLX::Initialize(XID pixmap) {
 
 void GLImageGLX::Destroy(bool have_context) {
   if (glx_pixmap_) {
-    glXDestroyGLXPixmap(gfx::GetXDisplay(), glx_pixmap_);
+    glXDestroyGLXPixmap(GetXDisplay(), glx_pixmap_);
     glx_pixmap_ = 0;
   }
 }
 
-gfx::Size GLImageGLX::GetSize() { return size_; }
+Size GLImageGLX::GetSize() {
+  return size_;
+}
 
 unsigned GLImageGLX::GetInternalFormat() { return internalformat_; }
 
@@ -178,7 +172,7 @@ bool GLImageGLX::BindTexImage(unsigned target) {
   if (target != GL_TEXTURE_2D)
     return false;
 
-  glXBindTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT, 0);
+  glXBindTexImageEXT(GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT, 0);
   return true;
 }
 
@@ -186,7 +180,11 @@ void GLImageGLX::ReleaseTexImage(unsigned target) {
   DCHECK_NE(0u, glx_pixmap_);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), target);
 
-  glXReleaseTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT);
+  glXReleaseTexImageEXT(GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT);
+}
+
+bool GLImageGLX::CopyTexImage(unsigned target) {
+  return false;
 }
 
 bool GLImageGLX::CopyTexSubImage(unsigned target,
@@ -195,7 +193,7 @@ bool GLImageGLX::CopyTexSubImage(unsigned target,
   return false;
 }
 
-bool GLImageGLX::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+bool GLImageGLX::ScheduleOverlayPlane(AcceleratedWidget widget,
                                       int z_order,
                                       OverlayTransform transform,
                                       const Rect& bounds_rect,
