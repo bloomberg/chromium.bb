@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_TIMING_FUNCTION_H_
 #define CC_ANIMATION_TIMING_FUNCTION_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
