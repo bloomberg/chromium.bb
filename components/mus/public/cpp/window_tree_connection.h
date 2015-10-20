@@ -47,8 +47,8 @@ class WindowTreeConnection {
   // is focused.
   virtual Window* GetFocusedWindow() = 0;
 
-  // Creates and returns a new Window (which is owned by the ViewManager). Views
-  // are initially hidden, use SetVisible(true) to show.
+  // Creates and returns a new Window (which is owned by the window server).
+  // Windows are initially hidden, use SetVisible(true) to show.
   virtual Window* NewWindow() = 0;
 
   // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.

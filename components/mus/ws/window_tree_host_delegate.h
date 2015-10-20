@@ -13,8 +13,7 @@ class WindowTreeImpl;
 
 // A WindowTreeHostDelegate interface is implemented by an object that
 // has the WindowTreeImpl that is associated with the WindowTreeHostImpl that
-// holds
-// a pointer to this object. Typically, a WindowTreeHostDelegate will also
+// holds a pointer to this object. Typically, a WindowTreeHostDelegate will also
 // manage the lifetime of the WindowTreeHostImpl and will delete the object when
 // it get informed of when the Display of the root is closed.
 class WindowTreeHostDelegate {

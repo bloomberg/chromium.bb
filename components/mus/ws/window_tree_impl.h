@@ -33,9 +33,8 @@ class WindowTreeHostImpl;
 
 // An instance of WindowTreeImpl is created for every WindowTree request.
 // WindowTreeImpl tracks all the state and windows created by a client.
-// WindowTreeImpl
-// coordinates with ConnectionManager to update the client (and internal state)
-// as necessary.
+// WindowTreeImpl coordinates with ConnectionManager to update the client (and
+// internal state) as necessary.
 class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
  public:
   WindowTreeImpl(ConnectionManager* connection_manager,
@@ -136,21 +135,17 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                         mojom::OrderDirection direction) const;
 
   // Deletes a window owned by this connection. Returns true on success.
-  // |source|
-  // is the connection that originated the change.
+  // |source| is the connection that originated the change.
   bool DeleteWindowImpl(WindowTreeImpl* source, ServerWindow* window);
 
   // If |window| is known (in |known_windows_|) does nothing. Otherwise adds
-  // |window|
-  // to |windows|, marks |window| as known and recurses.
+  // |window| to |windows|, marks |window| as known and recurses.
   void GetUnknownWindowsFrom(const ServerWindow* window,
                              std::vector<const ServerWindow*>* windows);
 
   // Removes |window| and all its descendants from |known_windows_|. This does
-  // not
-  // recurse through windows that were created by this connection. All windows
-  // owned
-  // by this connection are added to |local_windows|.
+  // not recurse through windows that were created by this connection. All
+  // windows owned by this connection are added to |local_windows|.
   void RemoveFromKnown(const ServerWindow* window,
                        std::vector<ServerWindow*>* local_windows);
 
@@ -165,8 +160,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   mojom::WindowDataPtr WindowToWindowData(const ServerWindow* window);
 
   // Implementation of GetWindowTree(). Adds |window| to |windows| and recurses
-  // if
-  // CanDescendIntoWindowForWindowTree() returns true.
+  // if CanDescendIntoWindowForWindowTree() returns true.
   void GetWindowTreeImpl(const ServerWindow* window,
                          std::vector<const ServerWindow*>* windows) const;
 

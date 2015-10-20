@@ -48,8 +48,7 @@ inline Id WindowIdToTransportId(const WindowId& id) {
 }
 
 // Returns a WindowId that is reserved to indicate no window. That is, no window
-// will
-// ever be created with this id.
+// will ever be created with this id.
 inline WindowId InvalidWindowId() {
   return WindowId(kInvalidConnectionId, 0);
 }

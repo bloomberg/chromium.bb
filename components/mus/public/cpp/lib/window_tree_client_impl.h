@@ -35,9 +35,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void DestroyWindow(Id window_id);
 
   // These methods take TransportIds. For windows owned by the current
-  // connection,
-  // the connection id high word can be zero. In all cases, the TransportId 0x1
-  // refers to the root window.
+  // connection, the connection id high word can be zero. In all cases, the
+  // TransportId 0x1 refers to the root window.
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
 

@@ -17,16 +17,14 @@ class ServerWindow;
 class ServerWindowDrawnTracker;
 
 // Tracks a focused window. Focus is moved to another window when the drawn
-// state
-// of the focused window changes and the delegate is notified.
+// state of the focused window changes and the delegate is notified.
 class FocusController : public ServerWindowDrawnTrackerObserver {
  public:
   explicit FocusController(FocusControllerDelegate* delegate);
   ~FocusController() override;
 
   // Sets the focused window. Does nothing if |window| is currently focused.
-  // This
-  // does not notify the delegate.
+  // This does not notify the delegate.
   void SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 

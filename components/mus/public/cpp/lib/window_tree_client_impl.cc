@@ -165,8 +165,7 @@ void WindowTreeClientImpl::SetClientArea(Id window_id,
 
 void WindowTreeClientImpl::SetFocus(Id window_id) {
   // In order for us to get here we had to have exposed a window, which implies
-  // we
-  // got a connection.
+  // we got a connection.
   DCHECK(tree_);
   tree_->SetFocus(window_id);
 }
@@ -365,8 +364,7 @@ void WindowTreeClientImpl::OnWindowHierarchyChanged(
   BuildWindowTree(this, windows, initial_parent);
 
   // If the window was not known, then BuildWindowTree() will have created it
-  // and
-  // parented the window.
+  // and parented the window.
   if (!was_window_known)
     return;
 

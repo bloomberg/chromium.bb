@@ -36,8 +36,7 @@ class ServerWindowObserver;
 // ServerWindows do not own their children. If you delete a window that has
 // children the children are implicitly removed. Similarly if a window has a
 // parent and the window is deleted the deleted window is implicitly removed
-// from
-// the parent.
+// from the parent.
 class ServerWindow {
  public:
   ServerWindow(ServerWindowDelegate* delegate, const WindowId& id);

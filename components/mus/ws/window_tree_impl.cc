@@ -482,8 +482,7 @@ void WindowTreeImpl::GetWindowTreeImpl(
 void WindowTreeImpl::NotifyDrawnStateChanged(const ServerWindow* window,
                                              bool new_drawn_value) {
   // Even though we don't know about window, it may be an ancestor of our root,
-  // in
-  // which case the change may effect our roots drawn state.
+  // in which case the change may effect our roots drawn state.
   if (!root_.get())
     return;
 
