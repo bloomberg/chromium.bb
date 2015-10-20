@@ -208,12 +208,12 @@ bool IsZeroCopyUploadEnabled() {
 #endif
 }
 
-bool IsPersistentGpuMemoryBufferEnabled() {
-  // Zero copy currently doesn't take advantage of persistent buffers.
+bool IsPartialRasterEnabled() {
+  // Zero copy currently doesn't take advantage of partial raster.
   if (IsZeroCopyUploadEnabled())
     return false;
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kEnablePersistentGpuMemoryBuffer);
+  return command_line.HasSwitch(switches::kEnablePartialRaster);
 }
 
 bool IsGpuRasterizationEnabled() {

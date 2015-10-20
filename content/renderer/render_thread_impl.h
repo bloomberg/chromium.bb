@@ -193,7 +193,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsLcdTextEnabled() override;
   bool IsDistanceFieldTextEnabled() override;
   bool IsZeroCopyEnabled() override;
-  bool IsPersistentGpuMemoryBufferEnabled() override;
+  bool IsPartialRasterEnabled() override;
   bool IsElasticOverscrollEnabled() override;
   std::vector<unsigned> GetImageTextureTargets() override;
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -626,7 +626,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
   bool is_one_copy_enabled_;
-  bool is_persistent_gpu_memory_buffer_enabled_;
+  bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
   std::vector<unsigned> use_image_texture_targets_;
   bool are_image_decode_tasks_enabled_;

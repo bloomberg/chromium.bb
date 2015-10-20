@@ -140,10 +140,14 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   settings.renderer_settings.use_rgba_4444_textures =
       command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
 
-  // Use PERSISTENT_MAP memory buffers to support partial tile raster for
-  // software raster into GpuMemoryBuffers.
-  gfx::BufferUsage usage = gfx::BufferUsage::PERSISTENT_MAP;
-  settings.use_persistent_map_for_gpu_memory_buffers = true;
+  // UI compositor always uses partial raster if not using zero-copy. Zero copy
+  // doesn't currently support partial raster.
+  settings.use_partial_raster = !settings.use_zero_copy;
+
+  // Use PERSISTENT_MAP memory buffers to support partial tile raster if needed.
+  gfx::BufferUsage usage = settings.use_partial_raster
+                               ? gfx::BufferUsage::PERSISTENT_MAP
+                               : gfx::BufferUsage::MAP;
 
   for (size_t format = 0;
       format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {

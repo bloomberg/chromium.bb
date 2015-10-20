@@ -174,12 +174,12 @@ scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     int max_copy_texture_chromium_size,
-    bool use_persistent_gpu_memory_buffers,
+    bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
     bool use_rgba_4444_texture_format) {
   return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
       task_runner, task_graph_runner, resource_provider,
-      max_copy_texture_chromium_size, use_persistent_gpu_memory_buffers,
+      max_copy_texture_chromium_size, use_partial_raster,
       max_staging_buffer_usage_in_bytes, use_rgba_4444_texture_format));
 }
 
@@ -188,7 +188,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     TaskGraphRunner* task_graph_runner,
     ResourceProvider* resource_provider,
     int max_copy_texture_chromium_size,
-    bool use_persistent_gpu_memory_buffers,
+    bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
     bool use_rgba_4444_texture_format)
     : task_runner_(task_runner),
@@ -200,7 +200,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
               ? std::min(kMaxBytesPerCopyOperation,
                          max_copy_texture_chromium_size)
               : kMaxBytesPerCopyOperation),
-      use_persistent_gpu_memory_buffers_(use_persistent_gpu_memory_buffers),
+      use_partial_raster_(use_partial_raster),
       bytes_scheduled_since_last_flush_(0),
       max_staging_buffer_usage_in_bytes_(max_staging_buffer_usage_in_bytes),
       use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
@@ -383,22 +383,22 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
   {
     base::AutoUnlock unlock(lock_);
 
-    // Allocate GpuMemoryBuffer if necessary.
+    // Allocate GpuMemoryBuffer if necessary. If using partial raster, we
+    // must allocate a buffer with BufferUsage PERSISTENT_MAP.
     if (!staging_buffer->gpu_memory_buffer) {
       staging_buffer->gpu_memory_buffer =
           resource_provider_->gpu_memory_buffer_manager()
-              ->AllocateGpuMemoryBuffer(staging_buffer->size,
-                                        BufferFormat(resource->format()),
-                                        use_persistent_gpu_memory_buffers_
-                                            ? gfx::BufferUsage::PERSISTENT_MAP
-                                            : gfx::BufferUsage::MAP);
+              ->AllocateGpuMemoryBuffer(
+                  staging_buffer->size, BufferFormat(resource->format()),
+                  use_partial_raster_ ? gfx::BufferUsage::PERSISTENT_MAP
+                                      : gfx::BufferUsage::MAP);
       DCHECK_EQ(gfx::NumberOfPlanesForBufferFormat(
                     staging_buffer->gpu_memory_buffer->GetFormat()),
                 1u);
     }
 
     gfx::Rect playback_rect = raster_full_rect;
-    if (use_persistent_gpu_memory_buffers_ && previous_content_id) {
+    if (use_partial_raster_ && previous_content_id) {
       // Reduce playback rect to dirty region if the content id of the staging
       // buffer matches the prevous content id.
       if (previous_content_id == staging_buffer->content_id)
@@ -637,7 +637,7 @@ OneCopyTileTaskWorkerPool::AcquireStagingBuffer(const Resource* resource,
 
   // Find a staging buffer that allows us to perform partial raster when
   // using persistent GpuMemoryBuffers.
-  if (use_persistent_gpu_memory_buffers_ && previous_content_id) {
+  if (use_partial_raster_ && previous_content_id) {
     StagingBufferDeque::iterator it =
         std::find_if(free_buffers_.begin(), free_buffers_.end(),
                      [previous_content_id](const StagingBuffer* buffer) {

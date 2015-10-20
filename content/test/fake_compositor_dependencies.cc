@@ -42,7 +42,7 @@ bool FakeCompositorDependencies::IsZeroCopyEnabled() {
   return true;
 }
 
-bool FakeCompositorDependencies::IsPersistentGpuMemoryBufferEnabled() {
+bool FakeCompositorDependencies::IsPartialRasterEnabled() {
   return false;
 }
 

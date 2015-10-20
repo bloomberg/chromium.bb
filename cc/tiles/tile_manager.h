@@ -107,7 +107,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
 
   static scoped_ptr<TileManager> Create(TileManagerClient* client,
                                         base::SequencedTaskRunner* task_runner,
-                                        size_t scheduled_raster_task_limit);
+                                        size_t scheduled_raster_task_limit,
+                                        bool use_partial_raster);
   ~TileManager() override;
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
@@ -205,7 +206,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
  protected:
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-              size_t scheduled_raster_task_limit);
+              size_t scheduled_raster_task_limit,
+              bool use_partial_raster);
 
   void FreeResourcesForReleasedTiles();
   void CleanUpReleasedTiles();
@@ -291,6 +293,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   TileTaskRunner* tile_task_runner_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;
+  const bool use_partial_raster_;
 
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
   TileMap tiles_;

@@ -21,9 +21,8 @@ CONTENT_EXPORT bool IsPropertyTreeVerificationEnabled();
 // Only one of one-copy and zero-copy can be enabled at a time.
 CONTENT_EXPORT bool IsZeroCopyUploadEnabled();
 
-// Returns true if a persistent GpuMemoryBuffer can be used and is on (via
-// flags, or platform default).
-CONTENT_EXPORT bool IsPersistentGpuMemoryBufferEnabled();
+// Returns true if a partial raster is on (via flags).
+CONTENT_EXPORT bool IsPartialRasterEnabled();
 
 // Returns true if gpu rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsGpuRasterizationEnabled();

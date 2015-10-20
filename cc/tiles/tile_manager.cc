@@ -187,20 +187,23 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     base::SequencedTaskRunner* task_runner,
-    size_t scheduled_raster_task_limit) {
-  return make_scoped_ptr(
-      new TileManager(client, task_runner, scheduled_raster_task_limit));
+    size_t scheduled_raster_task_limit,
+    bool use_partial_raster) {
+  return make_scoped_ptr(new TileManager(
+      client, task_runner, scheduled_raster_task_limit, use_partial_raster));
 }
 
 TileManager::TileManager(
     TileManagerClient* client,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    size_t scheduled_raster_task_limit)
+    size_t scheduled_raster_task_limit,
+    bool use_partial_raster)
     : client_(client),
       task_runner_(task_runner),
       resource_pool_(nullptr),
       tile_task_runner_(nullptr),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
+      use_partial_raster_(use_partial_raster),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       did_oom_on_last_assign_(false),
@@ -659,7 +662,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   Tile* tile = prioritized_tile.tile();
   uint64_t resource_content_id = 0;
   Resource* resource = nullptr;
-  if (tile->invalidated_id()) {
+  if (use_partial_raster_ && tile->invalidated_id()) {
     // TODO(danakj): For resources that are in use, we should still grab them
     // and copy from them instead of rastering everything. crbug.com/492754
     resource =

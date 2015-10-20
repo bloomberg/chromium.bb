@@ -186,7 +186,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                               GetTaskRunner(),
                               is_synchronous_single_threaded_
                                   ? std::numeric_limits<size_t>::max()
-                                  : settings.scheduled_raster_task_limit)),
+                                  : settings.scheduled_raster_task_limit,
+                              settings.use_partial_raster)),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
       fps_counter_(FrameRateCounter::Create(proxy_->HasImplThread())),
@@ -2169,8 +2170,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
       GetTaskRunner(), task_graph_runner, context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
-      settings_.use_persistent_map_for_gpu_memory_buffers,
-      settings_.max_staging_buffer_usage_in_bytes,
+      settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
       settings_.renderer_settings.use_rgba_4444_textures);
 }
 

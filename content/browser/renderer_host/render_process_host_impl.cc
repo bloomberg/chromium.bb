@@ -1138,13 +1138,16 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   if (IsZeroCopyUploadEnabled())
     command_line->AppendSwitch(switches::kEnableZeroCopy);
-  if (IsPersistentGpuMemoryBufferEnabled())
-    command_line->AppendSwitch(switches::kEnablePersistentGpuMemoryBuffer);
+  if (IsPartialRasterEnabled())
+    command_line->AppendSwitch(switches::kEnablePartialRaster);
 
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
-  gfx::BufferUsage buffer_usage = IsPersistentGpuMemoryBufferEnabled()
+  // Persistent buffers may come at a performance hit (not all platform specific
+  // buffers support it), so only enable them if partial raster is enabled and
+  // we are actually going to use them.
+  gfx::BufferUsage buffer_usage = IsPartialRasterEnabled()
                                       ? gfx::BufferUsage::PERSISTENT_MAP
                                       : gfx::BufferUsage::MAP;
   std::vector<unsigned> image_targets(

@@ -48,7 +48,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       ContextProvider* context_provider,
       ResourceProvider* resource_provider,
       int max_copy_texture_chromium_size,
-      bool use_persistent_gpu_memory_buffers,
+      bool use_partial_raster,
       int max_staging_buffer_usage_in_bytes,
       bool use_rgba_4444_texture_format);
 
@@ -91,7 +91,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
                             TaskGraphRunner* task_graph_runner,
                             ResourceProvider* resource_provider,
                             int max_copy_texture_chromium_size,
-                            bool use_persistent_gpu_memory_buffers,
+                            bool use_partial_raster,
                             int max_staging_buffer_usage_in_bytes,
                             bool use_rgba_4444_texture_format);
 
@@ -139,7 +139,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   TileTaskRunnerClient* client_;
   ResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
-  const bool use_persistent_gpu_memory_buffers_;
+  const bool use_partial_raster_;
   TaskSetCollection tasks_pending_;
   scoped_refptr<TileTask> task_set_finished_tasks_[kNumberOfTaskSets];
 

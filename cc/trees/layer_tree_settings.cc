@@ -56,7 +56,7 @@ LayerTreeSettings::LayerTreeSettings()
       max_memory_for_prepaint_percentage(100),
       strict_layer_property_change_checking(false),
       use_zero_copy(false),
-      use_persistent_map_for_gpu_memory_buffers(false),
+      use_partial_raster(false),
       enable_elastic_overscroll(false),
       use_image_texture_targets(
           static_cast<size_t>(gfx::BufferFormat::LAST) + 1,

@@ -72,7 +72,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t max_memory_for_prepaint_percentage;
   bool strict_layer_property_change_checking;
   bool use_zero_copy;
-  bool use_persistent_map_for_gpu_memory_buffers;
+  bool use_partial_raster;
   bool enable_elastic_overscroll;
   // An array of image texture targets for each GpuMemoryBuffer format.
   std::vector<unsigned> use_image_texture_targets;

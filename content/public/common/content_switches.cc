@@ -200,10 +200,6 @@ const char kDisablePepper3d[]               = "disable-pepper-3d";
 // Disables the Permissions API.
 const char kDisablePermissionsAPI[]         = "disable-permissions-api";
 
-// Disables the use of persistent GPU memory buffers for partial raster.
-const char kDisablePersistentGpuMemoryBuffer[] =
-    "disable-persistent-gpu-memory-buffer";
-
 // Disables compositor-accelerated touch-screen pinch gestures.
 const char kDisablePinch[]                  = "disable-pinch";
 
@@ -373,9 +369,9 @@ const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
-// Enables the use of persistent GPU memory buffers for partial raster.
-const char kEnablePersistentGpuMemoryBuffer[] =
-    "enable-persistent-gpu-memory-buffer";
+// Enables partial raster. Enabling this switch also enables the use of
+// persistent gpu memory buffers.
+const char kEnablePartialRaster[] = "enable-partial-raster";
 
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";

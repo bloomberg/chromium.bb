@@ -21,8 +21,10 @@ namespace {
 enum RasterMode {
   PARTIAL_ONE_COPY,
   FULL_ONE_COPY,
-  GPU,
-  BITMAP,
+  PARTIAL_GPU,
+  FULL_GPU,
+  PARTIAL_BITMAP,
+  FULL_BITMAP,
 };
 
 class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
@@ -32,18 +34,27 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
     switch (raster_mode_) {
       case PARTIAL_ONE_COPY:
         settings->use_zero_copy = false;
-        settings->use_persistent_map_for_gpu_memory_buffers = true;
+        settings->use_partial_raster = true;
         break;
       case FULL_ONE_COPY:
         settings->use_zero_copy = false;
-        settings->use_persistent_map_for_gpu_memory_buffers = false;
+        settings->use_partial_raster = false;
         break;
-      case BITMAP:
-        // This is done via context creation. No settings to change here!
+      case PARTIAL_BITMAP:
+        settings->use_partial_raster = true;
         break;
-      case GPU:
+      case FULL_BITMAP:
+        settings->use_partial_raster = false;
+        break;
+      case PARTIAL_GPU:
         settings->gpu_rasterization_enabled = true;
         settings->gpu_rasterization_forced = true;
+        settings->use_partial_raster = true;
+        break;
+      case FULL_GPU:
+        settings->gpu_rasterization_enabled = true;
+        settings->gpu_rasterization_forced = true;
+        settings->use_partial_raster = false;
         break;
     }
   }
@@ -69,10 +80,12 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
     switch (mode) {
       case PARTIAL_ONE_COPY:
       case FULL_ONE_COPY:
-      case GPU:
+      case PARTIAL_GPU:
+      case FULL_GPU:
         test_type = PIXEL_TEST_GL;
         break;
-      case BITMAP:
+      case PARTIAL_BITMAP:
+      case FULL_BITMAP:
         test_type = PIXEL_TEST_SOFTWARE;
     }
 
@@ -201,15 +214,29 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
        PartialRaster_SingleThread_Software) {
   RunRasterPixelTest(
-      false, BITMAP, picture_layer_,
+      false, PARTIAL_BITMAP, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       FulllRaster_SingleThread_Software) {
+  RunRasterPixelTest(
+      false, FULL_BITMAP, picture_layer_,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
        PartialRaster_SingleThread_GpuRaster) {
   RunRasterPixelTest(
-      false, GPU, picture_layer_,
+      false, PARTIAL_GPU, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       FullRaster_SingleThread_GpuRaster) {
+  RunRasterPixelTest(
+      false, FULL_GPU, picture_layer_,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
 }  // namespace
