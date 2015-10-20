@@ -46,8 +46,6 @@
       'child/appcache/web_application_cache_host_impl.cc',
       'child/appcache/web_application_cache_host_impl.h',
       'child/assert_matching_enums.cc',
-      'child/background_sync/background_sync_provider_thread_proxy.cc',
-      'child/background_sync/background_sync_provider_thread_proxy.h',
       'child/background_sync/background_sync_provider.cc',
       'child/background_sync/background_sync_provider.h',
       'child/background_sync/background_sync_type_converters.cc',

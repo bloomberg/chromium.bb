@@ -39,7 +39,6 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/background_sync/background_sync_provider.h"
-#include "content/child/background_sync/background_sync_provider_thread_proxy.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
@@ -460,8 +459,8 @@ void BlinkPlatformImpl::InternalInit() {
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
     permission_client_.reset(new PermissionDispatcher(
         ChildThreadImpl::current()->service_registry()));
-    sync_provider_.reset(new BackgroundSyncProvider(
-        ChildThreadImpl::current()->service_registry()));
+    main_thread_sync_provider_.reset(
+        new BackgroundSyncProvider(main_thread_task_runner_.get()));
   }
 }
 
@@ -1215,14 +1214,11 @@ blink::WebPermissionClient* BlinkPlatformImpl::permissionClient() {
 }
 
 blink::WebSyncProvider* BlinkPlatformImpl::backgroundSyncProvider() {
-  if (!sync_provider_.get())
-    return nullptr;
-
   if (IsMainThread())
-    return sync_provider_.get();
+    return main_thread_sync_provider_.get();
 
-  return BackgroundSyncProviderThreadProxy::GetThreadInstance(
-      main_thread_task_runner_.get(), sync_provider_.get());
+  return BackgroundSyncProvider::GetOrCreateThreadSpecificInstance(
+      main_thread_task_runner_.get());
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {

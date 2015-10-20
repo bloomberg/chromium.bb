@@ -52,6 +52,39 @@ this.onmessage = function(event) {
       })
       .catch(sendSyncErrorToClients);
   }
+
+  if (event.data['action'] === 'registerOneShot') {
+    var tag = event.data['tag'];
+    registration.sync.register({'tag': tag})
+      .then(function (syncRegistration) {
+        sendMessageToClients('register', 'ok - ' + tag + ' registered in SW');
+      })
+      .catch(sendSyncErrorToClients);
+  }
+
+  if (event.data['action'] === 'getRegistrationOneShot') {
+    var tag = event.data['tag'];
+    registration.sync.getRegistration(tag)
+      .then(function(syncRegistration) {
+        if (!syncRegistration) {
+          sendMessageToClients('register', 'error - ' + tag + ' not found');
+          return;
+        }
+        sendMessageToClients('register', 'ok - ' + tag + ' found');
+      })
+      .catch(sendSyncErrorToClients);
+  }
+
+  if (event.data['action'] === 'getRegistrationsOneShot') {
+    registration.sync.getRegistrations()
+      .then(function(syncRegistrations) {
+        var tags = syncRegistrations.map(function(syncRegistration) {
+          return syncRegistration.tag;
+        });
+        sendMessageToClients('register', 'ok - ' + tags.toString());
+      })
+      .catch(sendSyncErrorToClients);
+  }
 }
 
 this.onsync = function(event) {

@@ -59,7 +59,8 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
-  return host->client_type() == blink::WebServiceWorkerClientTypeWindow &&
+  return host->provider_type() ==
+             ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WINDOW &&
          host->document_url().GetOrigin() == origin;
 }
 

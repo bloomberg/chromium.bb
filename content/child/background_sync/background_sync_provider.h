@@ -8,24 +8,38 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/child/worker_task_runner.h"
 #include "content/common/background_sync_service.mojom.h"
+#include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace content {
 
-class ServiceRegistry;
-
 // The BackgroundSyncProvider is called by the SyncManager and SyncRegistration
 // objects (and their Periodic counterparts) and communicates with the
-// BackgroundSyncManager object in the browser process. This class is
-// instantiated on the main thread by BlinkPlatformImpl, and its methods can be
-// called directly from the main thread.
-class BackgroundSyncProvider : public blink::WebSyncProvider {
+// BackgroundSyncManager object in the browser process. Each thread will have
+// its own instance (e.g. main thread, worker threads), instantiated as needed
+// by BlinkPlatformImpl.  Each instance of the provider creates a new mojo
+// connection to a new BackgroundSyncManagerImpl, which then talks to the
+// BackgroundSyncManager object.
+class BackgroundSyncProvider : public blink::WebSyncProvider,
+                               public WorkerThread::Observer {
  public:
-  explicit BackgroundSyncProvider(ServiceRegistry* service_registry);
+  // Constructor made public to allow BlinkPlatformImpl to own a copy for the
+  // main thread. Everyone else should use GetOrCreateThreadSpecificInstance().
+  explicit BackgroundSyncProvider(
+      const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
   ~BackgroundSyncProvider() override;
+
+  // Returns thread-specific instance (if exists).  Otherwise, a new instance
+  // will be created for the thread, except when called for a worker thread that
+  // has already been stopped.
+  static BackgroundSyncProvider* GetOrCreateThreadSpecificInstance(
+      base::SingleThreadTaskRunner* main_thread_task_runner);
 
   // blink::WebSyncProvider implementation
   void registerBackgroundSync(
@@ -61,6 +75,9 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
       const BackgroundSyncService::DuplicateRegistrationHandleCallback&
           callback);
 
+  // WorkerThread::Observer implementation.
+  void WillStopCurrentWorkerThread() override;
+
  private:
   // Callback handlers
   void RegisterCallback(
@@ -90,8 +107,8 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
   // Helper method that returns an initialized BackgroundSyncServicePtr.
   BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
 
-  ServiceRegistry* service_registry_;
   BackgroundSyncServicePtr background_sync_service_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncProvider);
 };

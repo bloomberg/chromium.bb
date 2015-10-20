@@ -4,7 +4,7 @@
 
 #include "content/renderer/background_sync/background_sync_client_impl.h"
 
-#include "content/child/background_sync/background_sync_provider_thread_proxy.h"
+#include "content/child/background_sync/background_sync_provider.h"
 #include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -38,9 +38,8 @@ void BackgroundSyncClientImpl::Sync(int64_t handle_id,
   // it.
   // TODO(jkarlin): Change the WebSyncPlatform to support
   // DuplicateRegistrationHandle and then this cast can go.
-  BackgroundSyncProviderThreadProxy* provider =
-      static_cast<BackgroundSyncProviderThreadProxy*>(
-          blink::Platform::current()->backgroundSyncProvider());
+  BackgroundSyncProvider* provider = static_cast<BackgroundSyncProvider*>(
+      blink::Platform::current()->backgroundSyncProvider());
   DCHECK(provider);
 
   // TODO(jkarlin): Find a way to claim the handle safely without requiring a

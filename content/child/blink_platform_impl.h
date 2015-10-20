@@ -209,7 +209,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
   scoped_ptr<PermissionDispatcher> permission_client_;
-  scoped_ptr<BackgroundSyncProvider> sync_provider_;
+  scoped_ptr<BackgroundSyncProvider> main_thread_sync_provider_;
 };
 
 }  // namespace content

@@ -43,6 +43,15 @@ function registerOneShot(tag) {
     .catch(sendErrorToTest);
 }
 
+function registerOneShotFromServiceWorker(tag) {
+  navigator.serviceWorker.ready
+    .then(function(swRegistration) {
+      swRegistration.active.postMessage({action: 'registerOneShot', tag: tag});
+      sendResultToTest('ok - ' + tag + ' register sent to SW');
+    })
+    .catch(sendErrorToTest);
+}
+
 function unregisterOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {
@@ -97,6 +106,16 @@ function getRegistrationOneShot(tag) {
     .catch(sendErrorToTest);
 }
 
+function getRegistrationOneShotFromServiceWorker(tag) {
+  navigator.serviceWorker.ready
+    .then(function(swRegistration) {
+      swRegistration.active.postMessage(
+          {action: 'getRegistrationOneShot', tag: tag});
+      sendResultToTest('ok - getRegistration sent to SW');
+    })
+    .catch(sendErrorToTest);
+}
+
 function getRegistrationsOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {
@@ -107,6 +126,15 @@ function getRegistrationsOneShot(tag) {
         return syncRegistration.tag;
       });
       sendResultToTest('ok - ' + tags.toString());
+    })
+    .catch(sendErrorToTest);
+}
+
+function getRegistrationsOneShotFromServiceWorker() {
+  navigator.serviceWorker.ready
+    .then(function(swRegistration) {
+      swRegistration.active.postMessage({action: 'getRegistrationsOneShot'});
+      sendResultToTest('ok - getRegistrations sent to SW');
     })
     .catch(sendErrorToTest);
 }
@@ -203,6 +231,6 @@ ResultQueue.prototype.popImmediately = function() {
 
 navigator.serviceWorker.addEventListener('message', function(event) {
   var message = event.data;
-  if (message.type == 'sync')
+  if (message.type == 'sync' || message.type === 'register')
     resultQueue.push(message.data);
 }, false);
