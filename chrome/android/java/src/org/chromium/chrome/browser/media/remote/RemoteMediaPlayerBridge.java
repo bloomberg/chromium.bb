@@ -202,6 +202,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     @CalledByNative
     private void requestRemotePlayback() {
         if (mDebug) Log.i(TAG, "requestRemotePlayback");
+        if (mRouteController == null) return;
         // Clear out the state
         mPauseRequested = false;
         mSeekRequested = false;
@@ -221,6 +222,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     @CalledByNative
     private void setNativePlayer() {
         if (mDebug) Log.i(TAG, "setNativePlayer");
+        if (mRouteController == null) return;
         mRouteController.setMediaStateListener(mMediaStateListener);
         mActive = true;
     }
@@ -228,17 +230,15 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     @CalledByNative
     private void onPlayerCreated() {
         if (mDebug) Log.i(TAG, "onPlayerCreated");
-        if (mRouteController != null) {
-            mRouteController.addMediaStateListener(mMediaStateListener);
-        }
+        if (mRouteController == null) return;
+        mRouteController.addMediaStateListener(mMediaStateListener);
     }
 
     @CalledByNative
     private void onPlayerDestroyed() {
         if (mDebug) Log.i(TAG, "onPlayerDestroyed");
-        if (mRouteController != null) {
-            mRouteController.removeMediaStateListener(mMediaStateListener);
-        }
+        if (mRouteController == null) return;
+        mRouteController.removeMediaStateListener(mMediaStateListener);
     }
 
     /**
@@ -250,24 +250,28 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
      */
     @CalledByNative
     private void setPosterBitmap(Bitmap bitmap) {
+        if (mRouteController == null) return;
         mPosterBitmap = bitmap;
     }
 
     @Override
     @CalledByNative
     protected boolean isPlaying() {
+        if (mRouteController == null) return false;
         return mRouteController.isPlaying();
     }
 
     @Override
     @CalledByNative
     protected int getCurrentPosition() {
+        if (mRouteController == null) return 0;
         return mRouteController.getPosition();
     }
 
     @Override
     @CalledByNative
     protected int getDuration() {
+        if (mRouteController == null) return 0;
         return mRouteController.getDuration();
     }
 
@@ -276,7 +280,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     protected void release() {
         // Remove the state change listeners. Release does mean that Chrome is no longer interested
         // in events from the media player.
-        mRouteController.setMediaStateListener(null);
+        if (mRouteController != null) mRouteController.setMediaStateListener(null);
         mActive = false;
     }
 
@@ -289,14 +293,14 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     @CalledByNative
     protected void start() throws IllegalStateException {
         mPauseRequested = false;
-        if (mRouteController.isBeingCast()) mRouteController.resume();
+        if (mRouteController != null && mRouteController.isBeingCast()) mRouteController.resume();
     }
 
     @Override
     @CalledByNative
     protected void pause() throws IllegalStateException {
         mPauseRequested = true;
-        if (mRouteController.isBeingCast()) mRouteController.pause();
+        if (mRouteController != null && mRouteController.isBeingCast()) mRouteController.pause();
     }
 
     @Override
@@ -304,7 +308,9 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     protected void seekTo(int msec) throws IllegalStateException {
         mSeekRequested = true;
         mSeekLocation = msec;
-        if (mRouteController.isBeingCast()) mRouteController.seekTo(msec);
+        if (mRouteController != null && mRouteController.isBeingCast()) {
+            mRouteController.seekTo(msec);
+        }
     }
 
     @Override
