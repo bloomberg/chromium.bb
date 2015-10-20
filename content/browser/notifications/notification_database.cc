@@ -54,7 +54,12 @@ NotificationDatabase::Status LevelDBStatusToStatus(
     return NotificationDatabase::STATUS_ERROR_NOT_FOUND;
   else if (status.IsCorruption())
     return NotificationDatabase::STATUS_ERROR_CORRUPTED;
+  else if (status.IsIOError())
+    return NotificationDatabase::STATUS_IO_ERROR;
+  else if (status.IsNotSupportedError())
+    return NotificationDatabase::STATUS_NOT_SUPPORTED;
 
+  // TODO(cmumford): Once leveldb 1.19 is released add IsInvalidArgument().
   return NotificationDatabase::STATUS_ERROR_FAILED;
 }
 
