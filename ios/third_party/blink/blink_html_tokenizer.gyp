@@ -4,6 +4,7 @@
 {
   'targets': [
     {
+      # GN version: //ios/third_party/blink:html_tokenizer
       'target_name': 'blink_html_tokenizer',
       'type': 'static_library',
       'dependencies': [
