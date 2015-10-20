@@ -23,9 +23,10 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
 
     public HttpUrlConnectionUrlRequestFactory(Context context, CronetEngine.Builder config) {
         mContext = context;
-        String userAgent = config.userAgent();
+        String userAgent = config.getUserAgent();
         if (userAgent.isEmpty()) {
-            userAgent = UserAgent.from(mContext);
+            // Cannot use config.getDefaultUserAgent() as config.mContext may be null.
+            userAgent = new CronetEngine.Builder(mContext).getDefaultUserAgent();
         }
         mDefaultUserAgent = userAgent;
     }

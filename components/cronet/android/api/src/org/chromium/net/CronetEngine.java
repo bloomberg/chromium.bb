@@ -61,14 +61,24 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Overrides the user-agent header for all requests.
+         * Constructs a User-Agent string including Cronet version, and
+         * application name and version.
+         *
+         * @return User-Agent string.
+         */
+        public String getDefaultUserAgent() {
+            return UserAgent.from(mContext);
+        }
+
+        /**
+         * Overrides the User-Agent header for all requests.
          * @return the builder to facilitate chaining.
          */
         public Builder setUserAgent(String userAgent) {
             return putString(CronetEngineBuilderList.USER_AGENT, userAgent);
         }
 
-        String userAgent() {
+        String getUserAgent() {
             return mConfig.optString(CronetEngineBuilderList.USER_AGENT);
         }
 
@@ -596,24 +606,24 @@ public abstract class CronetEngine {
      * @deprecated Use {@link CronetEngine.Builder}.
      */
     @Deprecated
-    public static CronetEngine createContext(Builder config) {
+    public static CronetEngine createContext(Builder builder) {
         CronetEngine cronetEngine = null;
-        if (config.userAgent().isEmpty()) {
-            config.setUserAgent(UserAgent.from(config.getContext()));
+        if (builder.getUserAgent().isEmpty()) {
+            builder.setUserAgent(builder.getDefaultUserAgent());
         }
-        if (!config.legacyMode()) {
-            cronetEngine = createCronetEngine(config);
+        if (!builder.legacyMode()) {
+            cronetEngine = createCronetEngine(builder);
         }
         if (cronetEngine == null) {
             // TODO(mef): Fallback to stub implementation. Once stub
             // implementation is available merge with createCronetFactory.
-            cronetEngine = createCronetEngine(config);
+            cronetEngine = createCronetEngine(builder);
         }
         Log.i(TAG, "Using network stack: " + cronetEngine.getVersionString());
         return cronetEngine;
     }
 
-    private static CronetEngine createCronetEngine(Builder config) {
+    private static CronetEngine createCronetEngine(Builder builder) {
         CronetEngine cronetEngine = null;
         try {
             Class<? extends CronetEngine> engineClass =
@@ -622,7 +632,7 @@ public abstract class CronetEngine {
                             .asSubclass(CronetEngine.class);
             Constructor<? extends CronetEngine> constructor =
                     engineClass.getConstructor(Builder.class);
-            CronetEngine possibleEngine = constructor.newInstance(config);
+            CronetEngine possibleEngine = constructor.newInstance(builder);
             if (possibleEngine.isEnabled()) {
                 cronetEngine = possibleEngine;
             }
