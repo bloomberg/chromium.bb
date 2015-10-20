@@ -42,8 +42,13 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLOptionElement> createForJSConstructor(Document&, const String& data, const AtomicString& value,
         bool defaultSelected, bool selected, ExceptionState&);
 
+    // TOOD(tkent): Remove or rename |text()|, and rename |textForBinding| to
+    // |text|.
     String text() const;
-    void setText(const String&, ExceptionState&);
+
+    // |text| IDL attribute implementations.
+    String textForBinding() const;
+    void setTextForBinding(const String&, ExceptionState&);
 
     int index() const;
 

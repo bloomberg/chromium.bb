@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Option with non-empty label. assert_equals: expected "text" but got "label"
-PASS Option with empty label. 
-Harness: the test ran to completion.
-

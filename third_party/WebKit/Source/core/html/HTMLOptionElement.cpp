@@ -135,7 +135,12 @@ String HTMLOptionElement::text() const
     return text.stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
 }
 
-void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionState)
+String HTMLOptionElement::textForBinding() const
+{
+    return collectOptionInnerText().stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
+}
+
+void HTMLOptionElement::setTextForBinding(const String &text, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
 
