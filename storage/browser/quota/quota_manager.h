@@ -275,6 +275,8 @@ class STORAGE_EXPORT QuotaManager
 
   static const int kEvictionIntervalInMilliSeconds;
 
+  static const char kTimeBetweenRepeatedOriginEvictionsHistogram[];
+
   // These are kept non-const so that test code can change the value.
   // TODO(kinuko): Make this a real const value and add a proper way to set
   // the quota for syncable storage. (http://crbug.com/155488)
@@ -371,9 +373,17 @@ class STORAGE_EXPORT QuotaManager
   void DumpQuotaTable(const DumpQuotaTableCallback& callback);
   void DumpOriginInfoTable(const DumpOriginInfoTableCallback& callback);
 
+  void DeleteOriginDataInternal(const GURL& origin,
+                                StorageType type,
+                                int quota_client_mask,
+                                bool is_eviction,
+                                const StatusCallback& callback);
+
   // Methods for eviction logic.
   void StartEviction();
-  void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
+  void DeleteOriginFromDatabase(const GURL& origin,
+                                StorageType type,
+                                bool is_eviction);
 
   void DidOriginDataEvicted(QuotaStatusCode status);
 

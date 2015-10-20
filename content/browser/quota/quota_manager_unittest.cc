@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/mock_special_storage_policy.h"
@@ -291,7 +292,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type) {
-    quota_manager_->DeleteOriginFromDatabase(origin, type);
+    quota_manager_->DeleteOriginFromDatabase(origin, type, false);
   }
 
   void GetEvictionOrigin(StorageType type) {
@@ -1356,6 +1357,51 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   GetHostUsage("foo.com", kPerm);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
+}
+
+TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
+  const GURL kOrigin = GURL("http://foo.com");
+  static const MockOriginData kData[] = {
+      {"http://foo.com/", kTemp, 1},
+  };
+
+  base::HistogramTester histograms;
+  MockStorageClient* client =
+      CreateClient(kData, arraysize(kData), QuotaClient::kFileSystem);
+  RegisterClient(client);
+
+  GetGlobalUsage(kTemp);
+  base::RunLoop().RunUntilIdle();
+
+  EvictOriginData(GURL("http://foo.com/"), kTemp);
+  base::RunLoop().RunUntilIdle();
+
+  // First eviction has no 'last' time to compare to.
+  histograms.ExpectTotalCount(
+      QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 0);
+
+  client->AddOriginAndNotify(GURL("http://foo.com"), kTemp, 100);
+
+  GetGlobalUsage(kTemp);
+  base::RunLoop().RunUntilIdle();
+
+  EvictOriginData(GURL("http://foo.com/"), kTemp);
+  base::RunLoop().RunUntilIdle();
+
+  // Second eviction should log a histogram sample.
+  histograms.ExpectTotalCount(
+      QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 1);
+
+  client->AddOriginAndNotify(GURL("http://foo.com"), kTemp, 100);
+
+  GetGlobalUsage(kTemp);
+  base::RunLoop().RunUntilIdle();
+
+  DeleteOriginFromDatabase(GURL("http://foo.com"), kTemp);
+
+  // Deletion from non-eviction source should not log a histogram sample.
+  histograms.ExpectTotalCount(
+      QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 1);
 }
 
 TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {

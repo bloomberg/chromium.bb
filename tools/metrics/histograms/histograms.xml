@@ -36666,6 +36666,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of skipped eviction rounds in an hour.</summary>
 </histogram>
 
+<histogram name="Quota.TimeBetweenRepeatedOriginEvictions">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    Time since an origin was last chosen to be evicted from the storage,
+    recorded each time the origin is evicted (except for the first eviction).
+  </summary>
+</histogram>
+
 <histogram name="Quota.TimeDeltaOfEvictionRounds">
   <owner>tzik@chromium.org</owner>
   <summary>Time between two consecutive active eviction rounds.</summary>

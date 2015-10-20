@@ -58,6 +58,14 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
                                  StorageType type,
                                  base::Time last_modified_time);
 
+  bool GetOriginLastEvictionTime(const GURL& origin,
+                                 StorageType type,
+                                 base::Time* last_eviction_time);
+  bool SetOriginLastEvictionTime(const GURL& origin,
+                                 StorageType type,
+                                 base::Time last_eviction_time);
+  bool DeleteOriginLastEvictionTime(const GURL& origin, StorageType type);
+
   // Register initial |origins| info |type| to the database.
   // This method is assumed to be called only after the installation or
   // the database schema reset.
