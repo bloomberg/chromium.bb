@@ -14466,6 +14466,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Hardware.Serial.NewMinusOldDeviceListSize">
+  <owner>charliea@chromium.org</owner>
+  <summary>
+    On Windows and Mac, we're implementing new methods to enumerate serial
+    devices that provide us more information about the actual devices. This
+    metric measures the difference between the number of devices that the new
+    and old enumeration methods find. Once this metric gives us confidence that
+    the new and old methods are at parity, we can cut out the old method
+    altogether.
+  </summary>
+</histogram>
+
 <histogram name="HIDDetection.OOBEDevicesDetectedOnContinuePressed"
     enum="HIDContinueScenarioType">
   <owner>merkulova@chromium.org</owner>
