@@ -350,14 +350,14 @@ layer at (0,0) size 785x5955 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {CODE} at (0,0) size 49x16
           LayoutText {#text} at (153,2) size 49x16
             text run at (153,2) width 49: "height"
-        LayoutText {#text} at (201,0) size 171x17
-          text run at (201,0) width 171: " on table rows. A value of "
+        LayoutText {#text} at (201,0) size 170x17
+          text run at (201,0) width 170: " on table rows. A value of "
         LayoutInline {CODE} at (0,0) size 33x16
-          LayoutText {#text} at (371,2) size 33x16
-            text run at (371,2) width 33: "auto"
-        LayoutText {#text} at (403,0) size 761x53
-          text run at (403,0) width 324: " requires the minimum height needed by the cells. "
-          text run at (726,0) width 26: "In a"
+          LayoutText {#text} at (370,2) size 33x16
+            text run at (370,2) width 33: "auto"
+        LayoutText {#text} at (402,0) size 761x53
+          text run at (402,0) width 325: " requires the minimum height needed by the cells. "
+          text run at (726,0) width 25: "In a"
           text run at (0,18) width 761: "simple case, this is just the height of the tallest cell (excluding the increased padding, of course, since with the padding"
           text run at (0,36) width 202: "the cells have the same height):"
       LayoutTable {TABLE} at (0,1826.44) size 113x44

@@ -10,12 +10,10 @@
         [295, 102, 15, 400],
         [18, 164, 269, 338],
         [18, 146, 269, 356],
+        [18, 128, 269, 36],
         [18, 128, 269, 18],
+        [18, 128, 257, 36],
         [18, 128, 84, 18],
-        [18, 110, 269, 392],
-        [17, 128, 270, 36],
-        [17, 128, 258, 36],
-        [17, 110, 270, 392],
         [10, 102, 285, 400]
       ],
       "paintInvalidationClients": [
@@ -29,7 +27,6 @@
         "VerticalScrollbar",
         "LayoutIFrame (positioned) IFRAME id='iframe'",
         "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='to-be-changed'",
         "LayoutText #text",
         "InlineTextBox 'After change'",

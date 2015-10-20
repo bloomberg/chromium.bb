@@ -50,10 +50,10 @@ layer at (0,0) size 800x566
             text run at (125,105) width 75 RTL: "\x{5D9}\x{5D5}\x{5D3}\x{5E2} \x{5D1}\x{5E2}\x{5E6}\x{5DE} "
             text run at (176,137) width 24: "vvv"
         LayoutBlockFlow {P} at (6,200) size 200x32
-          LayoutInline {SPAN} at (0,0) size 163x20 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            LayoutText {#text} at (67,7) size 88x18
-              text run at (67,7) width 88: "Some fill text"
-            LayoutBlockFlow {IMG} at (47.91,0) size 20x32
+          LayoutInline {SPAN} at (0,0) size 162x20 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+            LayoutText {#text} at (68,7) size 87x18
+              text run at (68,7) width 87: "Some fill text"
+            LayoutBlockFlow {IMG} at (48.78,0) size 20x32
 layer at (15,138) size 20x20 clip at (16,139) size 18x18
   LayoutBlockFlow {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
@@ -69,8 +69,8 @@ layer at (157,392) size 20x20 clip at (158,393) size 18x18
     LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (159,394) size 0x0
   LayoutBlockFlow {DIV} at (2,2) size 0x0
-layer at (62,505) size 20x20 clip at (63,506) size 18x18
+layer at (63,505) size 20x20 clip at (64,506) size 18x18
   LayoutBlockFlow {DIV} at (0,1) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
-layer at (64,507) size 0x0
+layer at (65,507) size 0x0
   LayoutBlockFlow {DIV} at (2,2) size 0x0

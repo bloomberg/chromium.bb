@@ -20,9 +20,9 @@ layer at (0,0) size 800x600
             text run at (405,0) width 202: " Text underlined on mouse over"
         LayoutText {#text} at (606,0) size 102x18
           text run at (606,0) width 102: ". This tests that "
-        LayoutInline {CODE} at (0,0) size 56x15
-          LayoutText {#text} at (707,2) size 56x15
-            text run at (707,2) width 56: "*:hover"
+        LayoutInline {CODE} at (0,0) size 55x15
+          LayoutText {#text} at (707,2) size 55x15
+            text run at (707,2) width 55: "*:hover"
         LayoutText {#text} at (0,18) size 261x18
           text run at (0,18) width 261: "does not match anything in quirks mode."
 caret: position 1 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body

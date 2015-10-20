@@ -629,20 +629,20 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (11,1) width 175: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,246) size 765x226 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (351,6) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (137,4) size 267x18
-              text run at (137,4) width 267: "Normal fixed width div inside normal div"
+            LayoutText {#text} at (138,4) size 266x18
+              text run at (138,4) width 266: "Normal fixed width div inside normal div"
           LayoutBlockFlow {DIV} at (351,32) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (4,4) size 245x18
-              text run at (4,4) width 245: "Left fixed width div inside normal div"
+            LayoutText {#text} at (4,4) size 244x18
+              text run at (4,4) width 244: "Left fixed width div inside normal div"
           LayoutBlockFlow {DIV} at (351,58) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (73,4) size 262x18
-              text run at (73,4) width 262: "Center fixed width div inside normal div"
+            LayoutText {#text} at (74,4) size 260x18
+              text run at (74,4) width 260: "Center fixed width div inside normal div"
           LayoutBlockFlow {DIV} at (351,84) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (150,4) size 254x18
-              text run at (150,4) width 254: "Right fixed width div inside normal div"
+            LayoutText {#text} at (151,4) size 253x18
+              text run at (151,4) width 253: "Right fixed width div inside normal div"
           LayoutBlockFlow {CENTER} at (351,110) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (68,4) size 272x18
-              text run at (68,4) width 272: "Center tag (fixed width) inside normal div"
+            LayoutText {#text} at (69,4) size 270x18
+              text run at (69,4) width 270: "Center tag (fixed width) inside normal div"
           LayoutTable {TABLE} at (359,136) size 400x28 [border: (2px solid #0000FF)]
             LayoutTableSection {TBODY} at (2,2) size 396x24
               LayoutTableRow {TR} at (0,2) size 396x20
@@ -703,17 +703,17 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (11,1) width 175: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,698) size 765x226 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (6,6) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (4,4) size 284x18
-              text run at (4,4) width 284: "Normal fixed width div inside align=left div"
+            LayoutText {#text} at (4,4) size 283x18
+              text run at (4,4) width 283: "Normal fixed width div inside align=left div"
           LayoutBlockFlow {DIV} at (6,32) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (4,4) size 262x18
-              text run at (4,4) width 262: "Left fixed width div inside align=left div"
+            LayoutText {#text} at (4,4) size 261x18
+              text run at (4,4) width 261: "Left fixed width div inside align=left div"
           LayoutBlockFlow {DIV} at (6,58) size 408x26 [border: (2px solid #0000FF)]
             LayoutText {#text} at (65,4) size 278x18
               text run at (65,4) width 278: "Center fixed width div inside align=left div"
           LayoutBlockFlow {DIV} at (6,84) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (133,4) size 271x18
-              text run at (133,4) width 271: "Right fixed width div inside align=left div"
+            LayoutText {#text} at (134,4) size 270x18
+              text run at (134,4) width 270: "Right fixed width div inside align=left div"
           LayoutBlockFlow {CENTER} at (6,110) size 408x26 [border: (2px solid #0000FF)]
             LayoutText {#text} at (60,4) size 288x18
               text run at (60,4) width 288: "Center tag (fixed width) inside align=left div"
@@ -780,14 +780,14 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutText {#text} at (53,4) size 302x18
               text run at (53,4) width 302: "Normal fixed width div inside align=center div"
           LayoutBlockFlow {DIV} at (178.50,32) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (4,4) size 280x18
-              text run at (4,4) width 280: "Left fixed width div inside align=center div"
+            LayoutText {#text} at (4,4) size 279x18
+              text run at (4,4) width 279: "Left fixed width div inside align=center div"
           LayoutBlockFlow {DIV} at (178.50,58) size 408x26 [border: (2px solid #0000FF)]
             LayoutText {#text} at (56,4) size 296x18
               text run at (56,4) width 296: "Center fixed width div inside align=center div"
           LayoutBlockFlow {DIV} at (178.50,84) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (115,4) size 289x18
-              text run at (115,4) width 289: "Right fixed width div inside align=center div"
+            LayoutText {#text} at (116,4) size 288x18
+              text run at (116,4) width 288: "Right fixed width div inside align=center div"
           LayoutBlockFlow {CENTER} at (178.50,110) size 408x26 [border: (2px solid #0000FF)]
             LayoutText {#text} at (51,4) size 306x18
               text run at (51,4) width 306: "Center tag (fixed width) inside align=center div"
@@ -851,20 +851,20 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (11,1) width 175: "Center table (fixed margins"
         LayoutBlockFlow {DIV} at (2,1602) size 765x226 [border: (4px solid #800080)]
           LayoutBlockFlow {DIV} at (351,6) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (111,4) size 293x18
-              text run at (111,4) width 293: "Normal fixed width div inside align=right div"
+            LayoutText {#text} at (112,4) size 292x18
+              text run at (112,4) width 292: "Normal fixed width div inside align=right div"
           LayoutBlockFlow {DIV} at (351,32) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (4,4) size 271x18
-              text run at (4,4) width 271: "Left fixed width div inside align=right div"
+            LayoutText {#text} at (4,4) size 270x18
+              text run at (4,4) width 270: "Left fixed width div inside align=right div"
           LayoutBlockFlow {DIV} at (351,58) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (60,4) size 288x18
-              text run at (60,4) width 288: "Center fixed width div inside align=right div"
+            LayoutText {#text} at (61,4) size 286x18
+              text run at (61,4) width 286: "Center fixed width div inside align=right div"
           LayoutBlockFlow {DIV} at (351,84) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (124,4) size 280x18
-              text run at (124,4) width 280: "Right fixed width div inside align=right div"
+            LayoutText {#text} at (125,4) size 279x18
+              text run at (125,4) width 279: "Right fixed width div inside align=right div"
           LayoutBlockFlow {CENTER} at (351,110) size 408x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (55,4) size 298x18
-              text run at (55,4) width 298: "Center tag (fixed width) inside align=right div"
+            LayoutText {#text} at (56,4) size 296x18
+              text run at (56,4) width 296: "Center tag (fixed width) inside align=right div"
           LayoutTable {TABLE} at (359,136) size 400x28 [border: (2px solid #0000FF)]
             LayoutTableSection {TBODY} at (2,2) size 396x24
               LayoutTableRow {TR} at (0,2) size 396x20

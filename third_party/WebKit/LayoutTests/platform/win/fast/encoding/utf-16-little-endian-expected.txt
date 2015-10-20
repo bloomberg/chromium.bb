@@ -334,7 +334,7 @@ layer at (0,0) size 800x1128 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (89,19) width 76: "Flight 123 "
                   text run at (164,19) width 121: "Booking Code:Y "
                   text run at (284,19) width 223: "Date: Tuesday, March 25, 2003"
-                LayoutBR {BR} at (506,33) size 1x0
+                LayoutBR {BR} at (507,33) size 0x0
                 LayoutText {#text} at (1,37) size 392x17
                   text run at (1,37) width 392: "From: San Francisco Intl Arpt, San Francisco CA - U.S."
                 LayoutBR {BR} at (392,51) size 1x0

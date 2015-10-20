@@ -6,10 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [324, 37, 278, 20],
-        [324, 37, 278, 19],
-        [162, 37, 279, 20],
-        [162, 37, 279, 19]
+        [324, 37, 277, 20],
+        [324, 37, 277, 19],
+        [162, 37, 278, 20],
+        [162, 37, 278, 19]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (floating) SPAN",

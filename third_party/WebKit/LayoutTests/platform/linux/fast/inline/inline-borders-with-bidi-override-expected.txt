@@ -66,7 +66,7 @@ layer at (14,498) size 755x85
   LayoutInline (relative positioned) {SPAN} at (0,0) size 755x85 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
     LayoutText {#text} at (2,38) size 755x83
       text run at (2,38) width 351 RTL override: "laboris nisi ut aliquip ex ea commodo consequat. Duis aute"
-      text run at (13,70) width 22 RTL override: "non"
+      text run at (13,70) width 23 RTL override: "non"
       text run at (35,70) width 543 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
       text run at (578,70) width 179 RTL override: "irure dolor in reprehenderit in "
       text run at (343,102) width 414 RTL override: "proident, sunt in culpa qui officia deserunt mollit anim id est laborum. "

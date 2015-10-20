@@ -10,9 +10,12 @@
         [114, 84, 38, 48],
         [37, 132, 37, 18],
         [37, 132, 37, 18],
-        [7, 132, 193, 71],
+        [8, 132, 192, 71],
+        [8, 78, 200, 200],
+        [8, 16, 784, 262],
         [7, 114, 201, 89],
-        [7, 84, 201, 119]
+        [7, 78, 201, 200],
+        [7, 16, 785, 262]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'convallis,\n'",
@@ -28,6 +31,7 @@
         "RootInlineBox",
         "InlineTextBox 'ut urna blandit convallis.'",
         "RootInlineBox",
+        "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV",
         "LayoutInline SPAN id='t'",
         "InlineFlowBox",

@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
         LayoutInline {A} at (0,0) size 61x17 [color=#0000EE]
           LayoutText {#text} at (48,0) size 61x17
             text run at (48,0) width 61: "bug 7157"
-        LayoutText {#text} at (108,0) size 673x17
-          text run at (108,0) width 673: ": An asterisk in a CSS property name breaks CSS handling (Many layout problems at letras.terra.com.br)"
+        LayoutText {#text} at (108,0) size 672x17
+          text run at (108,0) width 672: ": An asterisk in a CSS property name breaks CSS handling (Many layout problems at letras.terra.com.br)"
       LayoutBlockFlow {P} at (0,34) size 784x18 [color=#008000]
         LayoutText {#text} at (0,0) size 168x17
           text run at (0,0) width 168: "Should be green on white."

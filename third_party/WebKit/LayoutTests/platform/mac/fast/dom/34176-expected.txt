@@ -250,12 +250,12 @@ layer at (0,0) size 785x1458 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 21x18
                 LayoutBlockFlow {IMG} at (660.55,0) size 20x24
         LayoutBlockFlow {DIV} at (0,137) size 769x18
-          LayoutText {#text} at (637,0) size 62x18
-            text run at (637,0) width 62: "This is a "
-          LayoutInline {SPAN} at (0,0) size 71x18
-            LayoutInline {A} at (0,0) size 71x18 [color=#551A8B]
-              LayoutText {#text} at (698,0) size 34x18
-                text run at (698,0) width 34: "Test "
+          LayoutText {#text} at (638,0) size 62x18
+            text run at (638,0) width 62: "This is a "
+          LayoutInline {SPAN} at (0,0) size 70x18
+            LayoutInline {A} at (0,0) size 70x18 [color=#551A8B]
+              LayoutText {#text} at (699,0) size 33x18
+                text run at (699,0) width 33: "Test "
               LayoutInline {SPAN} at (0,0) size 38x18
                 LayoutText {#text} at (731,0) size 38x18
                   text run at (731,0) width 38: "again"

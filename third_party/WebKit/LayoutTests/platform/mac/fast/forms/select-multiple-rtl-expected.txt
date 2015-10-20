@@ -13,17 +13,17 @@ layer at (0,0) size 800x121
 layer at (592,26) size 200x87 clip at (604,27) size 187x85
   LayoutListBox {SELECT} at (584,-0.13) size 200x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (12,1) size 187x14.19
-      LayoutText {#text} at (155,0) size 30x13
-        text run at (155,0) width 30: "Test 1"
+      LayoutText {#text} at (154,0) size 31x13
+        text run at (154,0) width 31: "Test 1"
     LayoutBlockFlow {OPTION} at (12,15.19) size 187x14.19
-      LayoutText {#text} at (155,0) size 30x13
-        text run at (155,0) width 30: "Test 2"
+      LayoutText {#text} at (154,0) size 31x13
+        text run at (154,0) width 31: "Test 2"
     LayoutBlockFlow {OPTION} at (12,29.38) size 187x14.19
-      LayoutText {#text} at (155,0) size 30x13
-        text run at (155,0) width 30: "Test 3"
+      LayoutText {#text} at (154,0) size 31x13
+        text run at (154,0) width 31: "Test 3"
     LayoutBlockFlow {OPTION} at (12,43.56) size 187x14.19
-      LayoutText {#text} at (155,0) size 30x13
-        text run at (155,0) width 30: "Test 4"
+      LayoutText {#text} at (154,0) size 31x13
+        text run at (154,0) width 31: "Test 4"
     LayoutBlockFlow {OPTION} at (12,57.75) size 187x14.19
-      LayoutText {#text} at (155,0) size 30x13
-        text run at (155,0) width 30: "Test 5"
+      LayoutText {#text} at (154,0) size 31x13
+        text run at (154,0) width 31: "Test 5"

@@ -7,8 +7,8 @@ layer at (0,0) size 800x120
         LayoutText {#text} at (0,0) size 489x19
           text run at (0,0) width 489: "Test passes if there are two pairs of black and blue 'Filler Text' instances on page."
       LayoutBlockFlow {DIV} at (0,36) size 784x30
-        LayoutText {#text} at (682,0) size 102x29
-          text run at (682,0) width 102: "Filler Text"
+        LayoutText {#text} at (683,0) size 101x29
+          text run at (683,0) width 101: "Filler Text"
       LayoutBlockFlow {DIV} at (0,66) size 784x30
-        LayoutText {#text} at (682,0) size 102x29
-          text run at (682,0) width 102: "Filler Text"
+        LayoutText {#text} at (683,0) size 101x29
+          text run at (683,0) width 101: "Filler Text"

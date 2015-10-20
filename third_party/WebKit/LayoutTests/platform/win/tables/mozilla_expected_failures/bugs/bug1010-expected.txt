@@ -74,10 +74,10 @@ layer at (0,0) size 800x600
                       text run at (0,0) width 281: "Another large HTML doc, with colored text"
                 LayoutListItem {LI} at (40,216) size 624x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-                  LayoutInline {A} at (0,0) size 477x17 [color=#0000EE]
-                    LayoutText {#text} at (0,0) size 477x17
+                  LayoutInline {A} at (0,0) size 478x17 [color=#0000EE]
+                    LayoutText {#text} at (0,0) size 478x17
                       text run at (0,0) width 335: "A relatively large (150k) document with an average "
-                      text run at (334,0) width 143: "mix of HTML content"
+                      text run at (334,0) width 144: "mix of HTML content"
             LayoutTableCell {TD} at (672,54) size 53x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 34x17
                 text run at (2,2) width 34: "foo 1"

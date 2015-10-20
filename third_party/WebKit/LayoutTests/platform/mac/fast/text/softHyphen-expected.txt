@@ -1,148 +1,148 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 995
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1008
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x995 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x995
-    LayoutBlockFlow {BODY} at (8,16) size 769x963
+layer at (0,0) size 785x1008 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1008
+    LayoutBlockFlow {BODY} at (8,16) size 769x976
       LayoutBlockFlow {P} at (0,0) size 769x18
         LayoutText {#text} at (0,0) size 438x18
           text run at (0,0) width 438: "In all of the following, there should not be a hyphen before \x{201C}lorem\x{201D}."
-      LayoutBlockFlow {P} at (0,34) size 769x18
-        LayoutText {#text} at (0,0) size 20x18
-          text run at (0,0) width 20: "Do"
+      LayoutBlockFlow {P} at (0,34) size 769x19
+        LayoutText {#text} at (0,1) size 20x18
+          text run at (0,1) width 20: "Do"
         LayoutBlockFlow (floating) {SPAN} at (755.44,0) size 13.56x20 [border: (1px solid #FF0000)]
           LayoutText {#text} at (1,1) size 12x18
             text run at (1,1) width 12: "X"
-        LayoutText {#text} at (19,0) size 81x18
-          text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,68) size 769x18
+        LayoutText {#text} at (19,1) size 81x18
+          text run at (19,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,69) size 769x18
         LayoutBlockFlow (floating) {SPAN} at (755.44,0) size 13.56x20 [border: (1px solid #FF0000)]
           LayoutText {#text} at (1,1) size 12x18
             text run at (1,1) width 12: "X"
         LayoutText {#text} at (0,0) size 81x18
           text run at (0,0) width 81: "lorem ipsum"
-      LayoutBlockFlow {P} at (0,102) size 769x20
+      LayoutBlockFlow {P} at (0,103) size 769x20
         LayoutText {#text} at (0,1) size 20x18
           text run at (0,1) width 20: "Do"
         LayoutText {#text} at (33,1) size 81x18
           text run at (33,1) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,138) size 769x18
+      LayoutBlockFlow {P} at (0,139) size 769x19
+        LayoutText {#text} at (0,1) size 20x18
+          text run at (0,1) width 20: "Do"
+        LayoutText {#text} at (19,1) size 81x18
+          text run at (19,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow (anonymous) at (0,174) size 769x18
         LayoutText {#text} at (0,0) size 20x18
           text run at (0,0) width 20: "Do"
-        LayoutText {#text} at (19,0) size 81x18
-          text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow (anonymous) at (0,172) size 769x18
-        LayoutText {#text} at (0,0) size 20x18
-          text run at (0,0) width 20: "Do"
-      LayoutBlockFlow {P} at (0,206) size 769x18
+      LayoutBlockFlow {P} at (0,208) size 769x18
         LayoutText {#text} at (0,0) size 81x18
           text run at (0,0) width 81: "lorem ipsum"
-      LayoutBlockFlow {P} at (0,240) size 769x36
+      LayoutBlockFlow {P} at (0,242) size 769x36
         LayoutText {#text} at (0,0) size 20x18
           text run at (0,0) width 20: "Do"
         LayoutBR {BR} at (19,14) size 1x0
         LayoutText {#text} at (0,18) size 81x18
           text run at (0,18) width 81: "lorem ipsum"
-      LayoutBlockFlow {P} at (0,292) size 769x18
-        LayoutText {#text} at (0,0) size 20x18
-          text run at (0,0) width 20: "Do"
+      LayoutBlockFlow {P} at (0,294) size 769x19
+        LayoutText {#text} at (0,1) size 20x18
+          text run at (0,1) width 20: "Do"
         LayoutInline {SPAN} at (0,0) size 38x18
-          LayoutText {#text} at (19,0) size 38x18
-            text run at (19,0) width 38: "\x{AD}lorem"
-        LayoutText {#text} at (56,0) size 44x18
-          text run at (56,0) width 44: " ipsum"
-      LayoutBlockFlow {P} at (0,326) size 769x18
-        LayoutText {#text} at (0,0) size 12x18
-          text run at (0,0) width 12: "D"
+          LayoutText {#text} at (19,1) size 38x18
+            text run at (19,1) width 38: "\x{AD}lorem"
+        LayoutText {#text} at (56,1) size 44x18
+          text run at (56,1) width 44: " ipsum"
+      LayoutBlockFlow {P} at (0,329) size 769x19
+        LayoutText {#text} at (0,1) size 12x18
+          text run at (0,1) width 12: "D"
         LayoutInline {SPAN} at (0,0) size 9x18
-          LayoutText {#text} at (11,0) size 9x18
-            text run at (11,0) width 9: "o"
-        LayoutText {#text} at (19,0) size 81x18
-          text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,360) size 769x18
-        LayoutText {#text} at (0,0) size 24x18
-          text run at (0,0) width 24: "Do "
+          LayoutText {#text} at (11,1) size 9x18
+            text run at (11,1) width 9: "o"
+        LayoutText {#text} at (19,1) size 81x18
+          text run at (19,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,364) size 769x19
+        LayoutText {#text} at (0,1) size 24x18
+          text run at (0,1) width 24: "Do "
         LayoutInline {SPAN} at (0,0) size 38x18
-          LayoutText {#text} at (23,0) size 38x18
-            text run at (23,0) width 38: "\x{AD}lorem"
-        LayoutText {#text} at (60,0) size 44x18
-          text run at (60,0) width 44: " ipsum"
-      LayoutBlockFlow {P} at (0,394) size 769x18
-        LayoutText {#text} at (0,0) size 12x18
-          text run at (0,0) width 12: "D"
+          LayoutText {#text} at (23,1) size 38x18
+            text run at (23,1) width 38: "\x{AD}lorem"
+        LayoutText {#text} at (60,1) size 44x18
+          text run at (60,1) width 44: " ipsum"
+      LayoutBlockFlow {P} at (0,399) size 769x19
+        LayoutText {#text} at (0,1) size 12x18
+          text run at (0,1) width 12: "D"
         LayoutInline {SPAN} at (0,0) size 13x18
-          LayoutText {#text} at (11,0) size 13x18
-            text run at (11,0) width 13: "o "
-        LayoutText {#text} at (23,0) size 81x18
-          text run at (23,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,428) size 769x18
-        LayoutText {#text} at (0,0) size 24x18
-          text run at (0,0) width 24: "Do "
+          LayoutText {#text} at (11,1) size 13x18
+            text run at (11,1) width 13: "o "
+        LayoutText {#text} at (23,1) size 81x18
+          text run at (23,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,434) size 769x19
+        LayoutText {#text} at (0,1) size 24x18
+          text run at (0,1) width 24: "Do "
         LayoutInline {SPAN} at (0,0) size 38x18
-          LayoutText {#text} at (23,0) size 38x18
-            text run at (23,0) width 38: "\x{AD}lorem"
-        LayoutText {#text} at (60,0) size 44x18
-          text run at (60,0) width 44: " ipsum"
-      LayoutBlockFlow {P} at (0,462) size 769x18
-        LayoutText {#text} at (0,0) size 12x18
-          text run at (0,0) width 12: "D"
+          LayoutText {#text} at (23,1) size 38x18
+            text run at (23,1) width 38: "\x{AD}lorem"
+        LayoutText {#text} at (60,1) size 44x18
+          text run at (60,1) width 44: " ipsum"
+      LayoutBlockFlow {P} at (0,469) size 769x19
+        LayoutText {#text} at (0,1) size 12x18
+          text run at (0,1) width 12: "D"
         LayoutInline {SPAN} at (0,0) size 13x18
-          LayoutText {#text} at (11,0) size 13x18
-            text run at (11,0) width 13: "o "
-        LayoutText {#text} at (23,0) size 81x18
-          text run at (23,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,496) size 769x18
-        LayoutText {#text} at (0,0) size 65x18
-          text run at (0,0) width 65: "Do \x{AD} lorem"
-      LayoutBlockFlow {P} at (0,530) size 769x18
-        LayoutText {#text} at (0,0) size 61x18
-          text run at (0,0) width 61: "Do\x{AD} \x{AD}lorem"
-      LayoutBlockFlow {P} at (0,564) size 769x19
+          LayoutText {#text} at (11,1) size 13x18
+            text run at (11,1) width 13: "o "
+        LayoutText {#text} at (23,1) size 81x18
+          text run at (23,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,504) size 769x19
+        LayoutText {#text} at (0,1) size 65x18
+          text run at (0,1) width 65: "Do \x{AD} lorem"
+      LayoutBlockFlow {P} at (0,539) size 769x19
+        LayoutText {#text} at (0,1) size 61x18
+          text run at (0,1) width 61: "Do\x{AD} \x{AD}lorem"
+      LayoutBlockFlow {P} at (0,574) size 769x19
         LayoutText {#text} at (0,1) size 61x18
           text run at (0,1) width 24: "Do "
           text run at (23,1) width 38: "\x{AD}lorem"
-      LayoutBlockFlow {P} at (0,599) size 769x18
+      LayoutBlockFlow {P} at (0,609) size 769x18
         LayoutText {#text} at (0,0) size 61x18
           text run at (0,0) width 24: "Do\x{AD} "
           text run at (23,0) width 38: "lorem"
-      LayoutBlockFlow {P} at (0,633) size 769x19
+      LayoutBlockFlow {P} at (0,643) size 769x19
         LayoutText {#text} at (0,1) size 65x18
           text run at (0,1) width 28: "Do \x{AD} "
           text run at (27,1) width 38: "lorem"
-      LayoutBlockFlow {P} at (0,668) size 769x19
+      LayoutBlockFlow {P} at (0,678) size 769x19
         LayoutText {#text} at (0,1) size 65x18
           text run at (0,1) width 24: "Do "
           text run at (23,1) width 42: "\x{AD} lorem"
-      LayoutBlockFlow {P} at (0,703) size 769x18
-        LayoutText {#text} at (0,0) size 20x18
-          text run at (0,0) width 20: "Do"
+      LayoutBlockFlow {P} at (0,713) size 769x19
+        LayoutText {#text} at (0,1) size 20x18
+          text run at (0,1) width 20: "Do"
         LayoutInline {SPAN} at (0,0) size 1x18
-        LayoutText {#text} at (19,0) size 81x18
-          text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,737) size 769x18
+        LayoutText {#text} at (19,1) size 81x18
+          text run at (19,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,748) size 769x18
         LayoutText {#text} at (0,0) size 100x18
           text run at (0,0) width 100: "Do\x{AD}\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,771) size 769x18
+      LayoutBlockFlow {P} at (0,782) size 769x19
         LayoutInline {SPAN} at (0,0) size 20x18
-          LayoutText {#text} at (0,0) size 20x18
-            text run at (0,0) width 20: "Do\x{AD}"
-        LayoutText {#text} at (19,0) size 81x18
-          text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,805) size 769x18
-        LayoutText {#text} at (0,0) size 20x18
-          text run at (0,0) width 20: "Do\x{AD}"
+          LayoutText {#text} at (0,1) size 20x18
+            text run at (0,1) width 20: "Do\x{AD}"
+        LayoutText {#text} at (19,1) size 81x18
+          text run at (19,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,817) size 769x19
+        LayoutText {#text} at (0,1) size 20x18
+          text run at (0,1) width 20: "Do\x{AD}"
         LayoutInline {SPAN} at (0,0) size 81x18
-          LayoutText {#text} at (19,0) size 81x18
-            text run at (19,0) width 81: "\x{AD}lorem ipsum"
-      LayoutBlockFlow {P} at (0,839) size 769x18
+          LayoutText {#text} at (19,1) size 81x18
+            text run at (19,1) width 81: "\x{AD}lorem ipsum"
+      LayoutBlockFlow {P} at (0,852) size 769x18
         LayoutInline {SPAN} at (0,0) size 20x18
           LayoutText {#text} at (0,0) size 20x18
             text run at (0,0) width 20: "Do\x{AD}\x{AD}"
         LayoutText {#text} at (19,0) size 81x18
           text run at (19,0) width 81: "lorem ipsum"
-      LayoutBlockFlow {P} at (0,873) size 769x18
+      LayoutBlockFlow {P} at (0,886) size 769x18
         LayoutText {#text} at (0,0) size 251x18
           text run at (0,0) width 251: "The following pair should be the same:"
-      LayoutBlockFlow {P} at (0,907) size 769x20
+      LayoutBlockFlow {P} at (0,920) size 769x20
         LayoutText {#text} at (0,1) size 16x18
           text run at (0,1) width 16: "W"
         LayoutBlockFlow {SPAN} at (15.09,0) size 13.56x20 [border: (1px solid #FF0000)]
@@ -150,7 +150,7 @@ layer at (0,0) size 785x995 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (1,1) width 12: "X"
         LayoutText {#text} at (28,1) size 13x18
           text run at (28,1) width 13: "Y"
-      LayoutBlockFlow {P} at (0,943) size 769x20
+      LayoutBlockFlow {P} at (0,956) size 769x20
         LayoutText {#text} at (0,1) size 16x18
           text run at (0,1) width 16: "W"
         LayoutBlockFlow {SPAN} at (15.09,0) size 13.56x20 [border: (1px solid #FF0000)]
@@ -158,11 +158,11 @@ layer at (0,0) size 785x995 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (1,1) width 12: "X"
         LayoutText {#text} at (28,1) size 13x18
           text run at (28,1) width 13: "Y"
-layer at (28,118) size 13x20
+layer at (28,119) size 13x20
   LayoutBlockFlow (relative positioned) {SPAN} at (19.55,0) size 13.56x20 [border: (1px solid #FF0000)]
     LayoutText {#text} at (1,1) size 12x18
       text run at (1,1) width 12: "X"
-layer at (771,154) size 14x20
-  LayoutBlockFlow (positioned) {SPAN} at (771.44,154) size 13.56x20 [border: (1px solid #FF0000)]
+layer at (771,155) size 14x20
+  LayoutBlockFlow (positioned) {SPAN} at (771.44,155) size 13.56x20 [border: (1px solid #FF0000)]
     LayoutText {#text} at (1,1) size 12x18
       text run at (1,1) width 12: "X"

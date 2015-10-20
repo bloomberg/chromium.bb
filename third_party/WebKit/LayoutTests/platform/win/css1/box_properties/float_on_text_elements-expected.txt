@@ -162,7 +162,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (0,0) width 423: "This paragraph is inside a DIV which is floated left. The"
               text run at (0,18) width 422: "background of the DIV element is blue and its width is 75%. This"
               text run at (0,36) width 407: "text should all be inside the blue rectangle. The blue DIV "
-              text run at (406,36) width 171: "element has another DIV"
+              text run at (406,36) width 170: "element has another DIV"
               text run at (0,54) width 224: "element as a child. It has a yellow "
               text run at (223,54) width 354: "background color and is floated to the right. Since it is"
               text run at (0,72) width 12: "a "

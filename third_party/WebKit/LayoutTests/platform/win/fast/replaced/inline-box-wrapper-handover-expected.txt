@@ -25,9 +25,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 44: "Box 1:"
       LayoutBlockFlow {DIV} at (0,122) size 67x80 [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (6,6) size 40x20 [bgcolor=#0000FF]
-        LayoutText {#text} at (6,32) size 15x17
-          text run at (6,32) width 15: "A "
-        LayoutBlockFlow {DIV} at (20.67,26) size 35x20 [bgcolor=#FF0000]
+        LayoutText {#text} at (6,32) size 16x17
+          text run at (6,32) width 16: "A "
+        LayoutBlockFlow {DIV} at (21.55,26) size 35x20 [bgcolor=#FF0000]
         LayoutText {#text} at (6,56) size 15x17
           text run at (6,56) width 15: "B "
         LayoutBlockFlow {DIV} at (20.67,50) size 20x20 [bgcolor=#008000]
@@ -39,9 +39,9 @@ layer at (0,0) size 800x600
           text run at (0,18) width 44: "Box 2:"
       LayoutBlockFlow {DIV} at (0,238) size 67x80 [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (6,6) size 40x20 [bgcolor=#0000FF]
-        LayoutText {#text} at (6,32) size 15x17
-          text run at (6,32) width 15: "A "
-        LayoutBlockFlow {DIV} at (20.67,26) size 35x20 [bgcolor=#FF0000]
+        LayoutText {#text} at (6,32) size 16x17
+          text run at (6,32) width 16: "A "
+        LayoutBlockFlow {DIV} at (21.55,26) size 35x20 [bgcolor=#FF0000]
         LayoutText {#text} at (6,56) size 15x17
           text run at (6,56) width 15: "B "
         LayoutBlockFlow {DIV} at (20.67,50) size 20x20 [bgcolor=#008000]

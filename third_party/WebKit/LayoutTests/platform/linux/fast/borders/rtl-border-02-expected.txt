@@ -30,7 +30,7 @@ layer at (0,0) size 785x688 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (359,38) width 351 RTL override: "laboris nisi ut aliquip ex ea commodo consequat. Duis aute"
               text run at (0,70) width 22 RTL override: "non"
               text run at (22,70) width 543 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
-              text run at (565,70) width 179 RTL override: "irure dolor in reprehenderit in "
+              text run at (564,70) width 180 RTL override: "irure dolor in reprehenderit in "
               text run at (45,102) width 533 RTL override: "proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor "
           LayoutText {#text} at (577,102) size 701x51
             text run at (577,102) width 124: "sit amet, consectetur"
@@ -55,7 +55,7 @@ layer at (0,0) size 785x688 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 744x85 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (47,38) size 744x83
               text run at (47,38) width 351 RTL override: "laboris nisi ut aliquip ex ea commodo consequat. Duis aute"
-              text run at (13,70) width 22 RTL override: "non"
+              text run at (13,70) width 23 RTL override: "non"
               text run at (35,70) width 543 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat "
               text run at (578,70) width 179 RTL override: "irure dolor in reprehenderit in "
               text run at (179,102) width 533 RTL override: "proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor "
