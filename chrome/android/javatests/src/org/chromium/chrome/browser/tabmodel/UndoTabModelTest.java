@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.CommandLine;
@@ -397,8 +396,6 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
-     * Flaky on instrumentation-nakasi-clankium. See http://crbug.com/417720.
-     *
      * Test undo with two tabs with the following actions/expected states:
      *     Action                     Model List         Close List        Comprehensive List
      * 1.  Initial State              [ 0 1s ]           -                 [ 0 1s ]
@@ -428,9 +425,8 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * 25. CommitAllClose             -                  -                 -
      *
      * @throws InterruptedException
-     * @MediumTest
      */
-    @FlakyTest
+    @MediumTest
     public void testTwoTabs() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
