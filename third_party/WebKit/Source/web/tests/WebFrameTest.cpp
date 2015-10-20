@@ -4154,7 +4154,10 @@ TEST_P(ParameterizedWebFrameTest, SelectRange)
     frame->executeCommand(WebString::fromUTF8("Unselect"));
     EXPECT_EQ("", selectionAsString(frame));
     frame->selectRange(topLeft(startWebRect), bottomRightMinusOne(endWebRect));
-    EXPECT_EQ("Some test text for testing.", selectionAsString(frame));
+    // On some devices, the above bottomRightMinusOne() causes the ending '.' not selected.
+    std::string selectionString = selectionAsString(frame);
+    EXPECT_TRUE(selectionString == "Some test text for testing."
+        || selectionString == "Some test text for testing");
 
     initializeTextSelectionWebView(m_baseURL + "select_range_scroll.html", &webViewHelper);
     frame = webViewHelper.webView()->mainFrame();
@@ -4164,7 +4167,7 @@ TEST_P(ParameterizedWebFrameTest, SelectRange)
     EXPECT_EQ("", selectionAsString(frame));
     frame->selectRange(topLeft(startWebRect), bottomRightMinusOne(endWebRect));
     // On some devices, the above bottomRightMinusOne() causes the ending '.' not selected.
-    std::string selectionString = selectionAsString(frame);
+    selectionString = selectionAsString(frame);
     EXPECT_TRUE(selectionString == "Some offscreen test text for testing."
         || selectionString == "Some offscreen test text for testing");
 }
