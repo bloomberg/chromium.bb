@@ -16,16 +16,12 @@
 
 namespace media {
 
-// Sweep at 600 deg/sec.
-static const float kPacmanAngularVelocity = 600;
-// Beep every 500 ms.
-static const base::TimeDelta kBeepInterval =
-    base::TimeDelta::FromMilliseconds(500);
+static const int kFakeCaptureBeepCycle = 10;  // Visual beep every 0.5s.
 
 void DrawPacman(bool use_argb,
                 uint8_t* const data,
-                base::TimeDelta elapsed_time,
-                float frame_rate,
+                int frame_count,
+                int frame_interval,
                 const gfx::Size& frame_size) {
   // |kN32_SkColorType| stands for the appropriiate RGBA/BGRA format.
   const SkColorType colorspace =
@@ -49,8 +45,7 @@ void DrawPacman(bool use_argb,
   paint.setColor(SK_ColorGREEN);
 
   // Draw a sweeping circle to show an animation.
-  const float end_angle =
-      fmod(kPacmanAngularVelocity * elapsed_time.InSecondsF(), 361);
+  const int end_angle = (3 * kFakeCaptureBeepCycle * frame_count % 361);
   const int radius = std::min(frame_size.width(), frame_size.height()) / 4;
   const SkRect rect = SkRect::MakeXYWH(frame_size.width() / 2 - radius,
                                        frame_size.height() / 2 - radius,
@@ -58,11 +53,11 @@ void DrawPacman(bool use_argb,
   canvas.drawArc(rect, 0, end_angle, true, paint);
 
   // Draw current time.
-  const int milliseconds = elapsed_time.InMilliseconds() % 1000;
-  const int seconds = elapsed_time.InSeconds() % 60;
-  const int minutes = elapsed_time.InMinutes() % 60;
-  const int hours = elapsed_time.InHours();
-  const int frame_count = elapsed_time.InMilliseconds() * frame_rate / 1000;
+  const int elapsed_ms = frame_interval * frame_count;
+  const int milliseconds = elapsed_ms % 1000;
+  const int seconds = (elapsed_ms / 1000) % 60;
+  const int minutes = (elapsed_ms / 1000 / 60) % 60;
+  const int hours = (elapsed_ms / 1000 / 60 / 60) % 60;
 
   const std::string time_string =
       base::StringPrintf("%d:%02d:%02d:%03d %d", hours, minutes, seconds,
@@ -72,11 +67,10 @@ void DrawPacman(bool use_argb,
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
-                                               BufferPlanarity planarity,
-                                               float fake_capture_rate)
+                                               BufferPlanarity planarity)
     : buffer_ownership_(buffer_ownership),
       planarity_(planarity),
-      fake_capture_rate_(fake_capture_rate),
+      frame_count_(0),
       weak_factory_(this) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
@@ -93,7 +87,7 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   // Incoming |params| can be none of the supported formats, so we get the
   // closest thing rounded up. TODO(mcasas): Use the |params|, if they belong to
   // the supported ones, when http://crbug.com/309554 is verified.
-  capture_format_.frame_rate = fake_capture_rate_;
+  capture_format_.frame_rate = 30.0;
   if (params.requested_format.frame_size.width() > 1280)
     capture_format_.frame_size.SetSize(1920, 1080);
   else if (params.requested_format.frame_size.width() > 640)
@@ -124,9 +118,6 @@ void FakeVideoCaptureDevice::AllocateAndStart(
         PIXEL_FORMAT_I420, capture_format_.frame_size)]);
   }
 
-  beep_time_ = base::TimeDelta();
-  elapsed_time_ = base::TimeDelta();
-
   if (buffer_ownership_ == BufferOwnership::CLIENT_BUFFERS)
     BeepAndScheduleNextCapture(
         base::TimeTicks::Now(),
@@ -150,8 +141,8 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
   const size_t frame_size = capture_format_.ImageAllocationSize();
   memset(fake_frame_.get(), 0, frame_size);
 
-  DrawPacman(false /* use_argb */, fake_frame_.get(), elapsed_time_,
-             fake_capture_rate_, capture_format_.frame_size);
+  DrawPacman(false /* use_argb */, fake_frame_.get(), frame_count_,
+             kFakeCapturePeriodMs, capture_format_.frame_size);
 
   // Give the captured frame to the client.
   if (planarity_ == BufferPlanarity::PACKED) {
@@ -190,8 +181,8 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     // Since SkBitmap expects a packed&continuous memory region for I420, we
     // need to use |fake_frame_| to draw onto.
     memset(fake_frame_.get(), 0, capture_format_.ImageAllocationSize());
-    DrawPacman(false /* use_argb */, fake_frame_.get(), elapsed_time_,
-               fake_capture_rate_, capture_format_.frame_size);
+    DrawPacman(false /* use_argb */, fake_frame_.get(), frame_count_,
+               kFakeCapturePeriodMs, capture_format_.frame_size);
 
     // Copy data from |fake_frame_| into the reserved planes of GpuMemoryBuffer.
     size_t offset = 0;
@@ -208,8 +199,8 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_ARGB);
     uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
     memset(data_ptr, 0, capture_buffer->mapped_size());
-    DrawPacman(true /* use_argb */, data_ptr, elapsed_time_, fake_capture_rate_,
-               capture_format_.frame_size);
+    DrawPacman(true /* use_argb */, data_ptr, frame_count_,
+               kFakeCapturePeriodMs, capture_format_.frame_size);
   }
 
   // Give the captured frame to the client.
@@ -225,19 +216,14 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
 void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(
     base::TimeTicks expected_execution_time,
     const base::Callback<void(base::TimeTicks)>& next_capture) {
-  const base::TimeDelta frame_interval =
-      base::TimeDelta::FromMicroseconds(1e6 / fake_capture_rate_);
-  beep_time_ += frame_interval;
-  elapsed_time_ += frame_interval;
-
-  // Generate a synchronized beep twice per second.
-  if (beep_time_ >= kBeepInterval) {
+  // Generate a synchronized beep sound every so many frames.
+  if (frame_count_++ % kFakeCaptureBeepCycle == 0)
     FakeAudioInputStream::BeepOnce();
-    beep_time_ -= kBeepInterval;
-  }
 
   // Reschedule next CaptureTask.
   const base::TimeTicks current_time = base::TimeTicks::Now();
+  const base::TimeDelta frame_interval =
+      base::TimeDelta::FromMilliseconds(kFakeCapturePeriodMs);
   // Don't accumulate any debt if we are lagging behind - just post the next
   // frame immediately and continue as normal.
   const base::TimeTicks next_execution_time =

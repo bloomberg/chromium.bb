@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
-#include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -130,12 +128,15 @@ class DeviceEnumerationListener
 
 }  // namespace
 
-class FakeVideoCaptureDeviceBase : public ::testing::Test {
+class FakeVideoCaptureDeviceTest
+    : public testing::TestWithParam<::testing::tuple<
+          FakeVideoCaptureDevice::BufferOwnership,
+          FakeVideoCaptureDevice::BufferPlanarity>> {
  protected:
-  FakeVideoCaptureDeviceBase()
+  FakeVideoCaptureDeviceTest()
       : loop_(new base::MessageLoop()),
         client_(new MockClient(
-            base::Bind(&FakeVideoCaptureDeviceBase::OnFrameCaptured,
+            base::Bind(&FakeVideoCaptureDeviceTest::OnFrameCaptured,
                        base::Unretained(this)))),
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {
     device_enumeration_listener_ = new DeviceEnumerationListener();
@@ -176,42 +177,23 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
   const scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
-class FakeVideoCaptureDeviceTest
-    : public FakeVideoCaptureDeviceBase,
-      public ::testing::WithParamInterface<
-          ::testing::tuple<FakeVideoCaptureDevice::BufferOwnership,
-                           FakeVideoCaptureDevice::BufferPlanarity,
-                           float>> {};
-
-struct CommandLineTestData {
-  // Command line argument
-  std::string argument;
-  // Expected values
-  float fps;
-};
-
-class FakeVideoCaptureDeviceCommandLineTest
-    : public FakeVideoCaptureDeviceBase,
-      public ::testing::WithParamInterface<CommandLineTestData> {};
-
 TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   const scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
   ASSERT_FALSE(names->empty());
 
   scoped_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
-      testing::get<0>(GetParam()), testing::get<1>(GetParam()),
-      testing::get<2>(GetParam())));
+      testing::get<0>(GetParam()), testing::get<1>(GetParam())));
   ASSERT_TRUE(device);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
-  capture_params.requested_format.frame_rate = testing::get<2>(GetParam());
+  capture_params.requested_format.frame_rate = 30;
   device->AllocateAndStart(capture_params, client_.Pass());
 
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
   EXPECT_EQ(last_format().frame_size.height(), 480);
-  EXPECT_EQ(last_format().frame_rate, testing::get<2>(GetParam()));
+  EXPECT_EQ(last_format().frame_rate, 30.0);
   device->StopAndDeAllocate();
 }
 
@@ -221,8 +203,7 @@ INSTANTIATE_TEST_CASE_P(
     Combine(Values(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
                    FakeVideoCaptureDevice::BufferOwnership::CLIENT_BUFFERS),
             Values(FakeVideoCaptureDevice::BufferPlanarity::PACKED,
-                   FakeVideoCaptureDevice::BufferPlanarity::TRIPLANAR),
-            Values(20, 29.97, 30, 50, 60)));
+                   FakeVideoCaptureDevice::BufferPlanarity::TRIPLANAR)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
@@ -252,34 +233,4 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   }
 }
 
-TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kUseFakeDeviceForMediaStream, GetParam().argument);
-  const scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
-  ASSERT_FALSE(names->empty());
-
-  for (const auto& names_iterator : *names) {
-    scoped_ptr<VideoCaptureDevice> device =
-        video_capture_device_factory_->Create(names_iterator);
-    ASSERT_TRUE(device);
-
-    VideoCaptureParams capture_params;
-    capture_params.requested_format.frame_size.SetSize(1280, 720);
-    capture_params.requested_format.frame_rate = GetParam().fps;
-    device->AllocateAndStart(capture_params, client_.Pass());
-
-    WaitForCapturedFrame();
-    EXPECT_EQ(last_format().frame_size.width(), 1280);
-    EXPECT_EQ(last_format().frame_size.height(), 720);
-    EXPECT_EQ(last_format().frame_rate, GetParam().fps);
-    device->StopAndDeAllocate();
-  }
-}
-
-INSTANTIATE_TEST_CASE_P(,
-                        FakeVideoCaptureDeviceCommandLineTest,
-                        Values(CommandLineTestData{"fps=-1", 5},
-                               CommandLineTestData{"fps=29.97", 29.97},
-                               CommandLineTestData{"fps=60", 60},
-                               CommandLineTestData{"fps=1000", 60}));
 };  // namespace media

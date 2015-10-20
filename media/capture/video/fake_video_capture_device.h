@@ -32,11 +32,10 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
     TRIPLANAR,
   };
 
+  static int FakeCapturePeriodMs() { return kFakeCapturePeriodMs; }
+
   FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
                          BufferPlanarity planarity);
-  FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
-                         BufferPlanarity planarity,
-                         float fake_capture_rate);
   ~FakeVideoCaptureDevice() override;
 
   // VideoCaptureDevice implementation.
@@ -45,6 +44,8 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   void StopAndDeAllocate() override;
 
  private:
+  static const int kFakeCapturePeriodMs = 50;
+
   void CaptureUsingOwnBuffers(base::TimeTicks expected_execution_time);
   void CaptureUsingClientBuffers(base::TimeTicks expected_execution_time);
   void BeepAndScheduleNextCapture(
@@ -57,16 +58,11 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
 
   const BufferOwnership buffer_ownership_;
   const BufferPlanarity planarity_;
-  // Frame rate of the fake video device.
-  const float fake_capture_rate_;
 
   scoped_ptr<VideoCaptureDevice::Client> client_;
   // |fake_frame_| is used for capturing on Own Buffers.
   scoped_ptr<uint8[]> fake_frame_;
-  // Time when the next beep occurs.
-  base::TimeDelta beep_time_;
-  // Time since the fake video started rendering frames.
-  base::TimeDelta elapsed_time_;
+  int frame_count_;
   VideoCaptureFormat capture_format_;
 
   // FakeVideoCaptureDevice post tasks to itself for frame construction and

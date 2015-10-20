@@ -7,7 +7,6 @@
 #ifndef MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 #define MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 
-#include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
 namespace media {
@@ -37,12 +36,7 @@ class MEDIA_EXPORT FakeVideoCaptureDeviceFactory
   }
 
  private:
-  void parse_command_line();
-
   int number_of_devices_;
-  FakeVideoCaptureDevice::BufferOwnership fake_vcd_ownership_;
-  FakeVideoCaptureDevice::BufferPlanarity fake_vcd_planarity_;
-  float frame_rate_;
 };
 
 }  // namespace media
