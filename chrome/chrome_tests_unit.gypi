@@ -964,6 +964,7 @@
      ],
     'chrome_unit_tests_mobile_safe_browsing_sources': [
       'browser/safe_browsing/safe_browsing_api_handler_unittest.cc',
+      'browser/safe_browsing/remote_database_manager_unittest.cc',
      ],
     'chrome_unit_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',

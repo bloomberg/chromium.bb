@@ -310,6 +310,16 @@ bool LocalSafeBrowsingDatabaseManager::IsSupported() const {
   return true;
 }
 
+bool LocalSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
+  return false;
+}
+
+bool LocalSafeBrowsingDatabaseManager::CanCheckResourceType(
+    content::ResourceType resource_type) const {
+  // We check all types since most checks are fast.
+  return true;
+}
+
 bool LocalSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIs(url::kHttpScheme) ||

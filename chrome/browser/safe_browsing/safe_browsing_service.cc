@@ -35,7 +35,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -94,13 +93,6 @@ base::FilePath CookieFilePath() {
       SafeBrowsingService::GetBaseFilename().value() + kCookiesFile);
 }
 
-#if defined(SAFE_BROWSING_DB_REMOTE)
-// Android field trial
-const char kAndroidFieldExperiment[] = "SafeBrowsingAndroid";
-const char kAndroidFieldParam[] = "enabled";
-const char kAndroidCheckAllTypesParam[] = "check_all_resource_types";
-const char kAndroidFieldParamEnabledValue[] = "true";
-#endif  // defined(SAFE_BROWSING_DB_REMOTE)
 }  // namespace
 
 class SafeBrowsingURLRequestContextGetter
@@ -204,23 +196,7 @@ SafeBrowsingService::SafeBrowsingService()
     : protocol_manager_(NULL),
       ping_manager_(NULL),
       enabled_(false),
-      enabled_by_prefs_(false) {
-#if defined(SAFE_BROWSING_DB_REMOTE)
-  const std::string enabled_param = variations::GetVariationParamValue(
-      kAndroidFieldExperiment, kAndroidFieldParam);
-  is_android_field_trial_enabled_ =
-      (enabled_param == kAndroidFieldParamEnabledValue);
-
-  const std::string check_all_types_param = variations::GetVariationParamValue(
-      kAndroidFieldExperiment, kAndroidCheckAllTypesParam);
-  if (check_all_types_param == kAndroidFieldParamEnabledValue) {
-    resource_types_to_check_ = CHECK_ALL_RESOURCE_TYPES;
-  } else {
-    // Default
-    resource_types_to_check_ = CHECK_ONLY_DANGEROUS_TYPES;
-  }
-#endif  // defined(SAFE_BROWSING_DB_REMOTE)
-}
+      enabled_by_prefs_(false) {}
 
 SafeBrowsingService::~SafeBrowsingService() {
   // We should have already been shut down. If we're still enabled, then the

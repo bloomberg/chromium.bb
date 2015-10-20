@@ -16,6 +16,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
 // Interface to either the locally-managed or a remotely-managed database.
@@ -43,9 +44,18 @@ class SafeBrowsingDatabaseManager
         const std::set<std::string>& threats) {}
   };
 
+
   // Returns true if URL-checking is supported on this build+device.
   // If false, calls to CheckBrowseUrl may dcheck-fail.
   virtual bool IsSupported() const = 0;
+
+  // Returns true if checks are never done synchronously, and therefore
+  // always have some latency.
+  virtual bool ChecksAreAlwaysAsync() const = 0;
+
+  // Returns true if this resource type should be checked.
+  virtual bool CanCheckResourceType(
+      content::ResourceType resource_type) const = 0;
 
   // Returns true if the url's scheme can be checked.
   virtual bool CanCheckUrl(const GURL& url) const = 0;

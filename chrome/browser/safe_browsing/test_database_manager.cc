@@ -15,6 +15,17 @@ bool TestSafeBrowsingDatabaseManager::IsSupported() const {
   return false;
 }
 
+bool TestSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool TestSafeBrowsingDatabaseManager::CanCheckResourceType(
+    content::ResourceType resource_type) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool TestSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   NOTIMPLEMENTED();
   return false;

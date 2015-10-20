@@ -86,17 +86,9 @@ class SafeBrowsingResourceThrottle
                               const std::string& metadata) override;
 
  protected:
-  enum DeferAtStartSetting {
-    DEFER_AT_START,
-    DONT_DEFER_AT_START
-  };
-
-  SafeBrowsingResourceThrottle(
-      const net::URLRequest* request,
-      content::ResourceType resource_type,
-      SafeBrowsingService* sb_service,
-      DeferAtStartSetting defer_setting,
-      SafeBrowsingService::ResourceTypesToCheck types_to_check);
+  SafeBrowsingResourceThrottle(const net::URLRequest* request,
+                               content::ResourceType resource_type,
+                               SafeBrowsingService* sb_service);
 
  private:
   // Describes what phase of the check a throttle is in.
@@ -155,13 +147,6 @@ class SafeBrowsingResourceThrottle
   void EndNetLogEvent(net::NetLog::EventType type,
                       const char* name,
                       const char* value);
-
-  // True if we want to block the starting of requests until they're
-  // deemed safe.  Otherwise we let the resource partially load.
-  const bool defer_at_start_;
-
-  // Check all types, or just the dangerous ones?
-  const SafeBrowsingService::ResourceTypesToCheck resource_types_to_check_;
 
   State state_;
   DeferState defer_state_;

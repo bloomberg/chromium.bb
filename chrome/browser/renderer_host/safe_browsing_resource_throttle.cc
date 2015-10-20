@@ -29,23 +29,6 @@ namespace {
 // aborted, and the URL will be treated as if it were safe.
 const int kCheckUrlTimeoutMs = 5000;
 
-// Return true for resource types that are very unlikely to produce a successful
-// malware or phishing page without the main frame also being bad.  This is a
-// latency / safety trade-off, used only on mobile.  We're conservative here,
-// keeping this list small and leaving off uncommon types since they won't save
-// us much on aggregate latency.
-bool IsResourceTypeMostlySafe(content::ResourceType resource_type) {
-  switch (resource_type) {
-    case content::RESOURCE_TYPE_STYLESHEET:
-    case content::RESOURCE_TYPE_IMAGE:
-    case content::RESOURCE_TYPE_FONT_RESOURCE:
-    case content::RESOURCE_TYPE_FAVICON:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void RecordHistogramResourceTypeSafe(content::ResourceType resource_type) {
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes.Safe", resource_type,
                             content::RESOURCE_TYPE_LAST_TYPE);
@@ -89,35 +72,17 @@ SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
     net::URLRequest* request,
     content::ResourceType resource_type,
     SafeBrowsingService* sb_service) {
-#if defined(SAFE_BROWSING_DB_LOCAL)
-  // Throttle consults a local database before starting the resource request.
-  return new SafeBrowsingResourceThrottle(
-      request, resource_type, sb_service, DEFER_AT_START,
-      SafeBrowsingService::CHECK_ALL_RESOURCE_TYPES);
-#elif defined(SAFE_BROWSING_DB_REMOTE)
-  if (!sb_service->IsAndroidFieldTrialEnabled() ||
-      !sb_service->database_manager()->IsSupported()) {
-    return nullptr;
+  if (sb_service->database_manager()->IsSupported()) {
+    return new SafeBrowsingResourceThrottle(request, resource_type, sb_service);
   }
-
-  // Throttle consults a remote database before processing the response.
-  return new SafeBrowsingResourceThrottle(
-      request, resource_type, sb_service, DONT_DEFER_AT_START,
-      sb_service->GetResourceTypesToCheck());
-#else
-#error "Incompatible compile flags for safe_browsing_resource_throttle"
-#endif
+  return nullptr;
 }
 
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
-    SafeBrowsingService* sb_service,
-    DeferAtStartSetting defer_setting,
-    SafeBrowsingService::ResourceTypesToCheck resource_types_to_check)
-    : defer_at_start_(defer_setting == DEFER_AT_START),
-      resource_types_to_check_(resource_types_to_check),
-      state_(STATE_NONE),
+    SafeBrowsingService* sb_service)
+    : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       threat_type_(SB_THREAT_TYPE_SAFE),
       database_manager_(sb_service->database_manager()),
@@ -166,7 +131,10 @@ void SafeBrowsingResourceThrottle::WillStartRequest(bool* defer) {
   if (CheckUrl(request_->url()))
     return;
 
-  if (!defer_at_start_)
+  // We let the check run in parallel with resource load only if this
+  // db_manager only supports asynchronous checks, like on mobile.
+  // Otherwise, we defer now.
+  if (database_manager_->ChecksAreAlwaysAsync())
     return;
 
   // If the URL couldn't be verified synchronously, defer starting the
@@ -180,7 +148,8 @@ void SafeBrowsingResourceThrottle::WillStartRequest(bool* defer) {
 
 void SafeBrowsingResourceThrottle::WillProcessResponse(bool* defer) {
   CHECK_EQ(defer_state_, DEFERRED_NONE);
-  if (defer_at_start_)
+  // TODO(nparker): Maybe remove this check, since it should have no effect.
+  if (!database_manager_->ChecksAreAlwaysAsync())
     return;
 
   if (state_ == STATE_CHECKING_URL ||
@@ -346,11 +315,9 @@ void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
 
 bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
   CHECK_EQ(state_, STATE_NONE);
-  // To reduce aggregate latency on mobile, skip checking resources that
-  // can't do much harm.
-  if (resource_types_to_check_ ==
-          SafeBrowsingService::CHECK_ONLY_DANGEROUS_TYPES &&
-      IsResourceTypeMostlySafe(resource_type_)) {
+  // To reduce aggregate latency on mobile, check only the most dangerous
+  // resource types.
+  if (!database_manager_->CanCheckResourceType(resource_type_)) {
     UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes.Skipped", resource_type_,
                               content::RESOURCE_TYPE_LAST_TYPE);
     return true;

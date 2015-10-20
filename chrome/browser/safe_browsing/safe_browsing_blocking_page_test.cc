@@ -102,6 +102,14 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
     badurls[url.spec()] = threat_type;
   }
 
+  // These are called when checking URLs, so we implement them.
+  bool IsSupported() const override { return true; }
+  bool ChecksAreAlwaysAsync() const override { return false; }
+  bool CanCheckResourceType(
+      content::ResourceType /* resource_type */) const override {
+    return true;
+  }
+
   // Called during startup, so must not check-fail.
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override {
