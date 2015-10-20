@@ -4,7 +4,7 @@ createSVGTestCase();
 // Setup test document
 var path = createSVGElement("path");
 path.setAttribute("id", "path");
-path.setAttribute("d", "M -30 -30 q 30 0 30 30 t -30 30 z");
+path.setAttribute("d", "M -30 -30 q 30 0 30 30 t -30 30 Z");
 path.setAttribute("fill", "green");
 path.setAttribute("onclick", "executeTest()");
 path.setAttribute("transform", "translate(50, 50)");
@@ -12,7 +12,7 @@ path.setAttribute("transform", "translate(50, 50)");
 var animate = createSVGElement("animate");
 animate.setAttribute("id", "animation");
 animate.setAttribute("attributeName", "d");
-animate.setAttribute("from", "M -30 -30 q 30 0 30 30 t -30 30 z");
+animate.setAttribute("from", "M -30 -30 q 30 0 30 30 t -30 30 Z");
 animate.setAttribute("to", "M -30 -30 Q 30 -30 30 0 T -30 30 Z");
 animate.setAttribute("begin", "click");
 animate.setAttribute("dur", "4s");
@@ -20,89 +20,21 @@ path.appendChild(animate);
 rootSVGElement.appendChild(path);
 
 // Setup animation test
-function checkBaseVal() {
-    shouldBe("path.pathSegList.numberOfItems", "4");
-    shouldBeEqualToString("path.pathSegList.getItem(0).pathSegTypeAsLetter", "M");
-    shouldBe("path.pathSegList.getItem(0).x", "-30");
-    shouldBe("path.pathSegList.getItem(0).y", "-30");
-    shouldBeEqualToString("path.pathSegList.getItem(1).pathSegTypeAsLetter", "q");
-    shouldBe("path.pathSegList.getItem(1).x", "30");
-    shouldBe("path.pathSegList.getItem(1).y", "30");
-    shouldBe("path.pathSegList.getItem(1).x1", "30");
-    shouldBe("path.pathSegList.getItem(1).y1", "0");
-    shouldBeEqualToString("path.pathSegList.getItem(2).pathSegTypeAsLetter", "t");
-    shouldBe("path.pathSegList.getItem(2).x", "-30");
-    shouldBe("path.pathSegList.getItem(2).y", "30");
-    shouldBeEqualToString("path.pathSegList.getItem(3).pathSegTypeAsLetter", "Z");
-}
-
 function sample1() {
     // Check initial/end conditions
-    shouldBe("path.animatedPathSegList.numberOfItems", "4");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(0).pathSegTypeAsLetter", "M");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).y", "-30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(1).pathSegTypeAsLetter", "q");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x", "30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y", "30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x1", "30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y1", "0");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(2).pathSegTypeAsLetter", "t");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).y", "30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(3).pathSegTypeAsLetter", "Z");
-    checkBaseVal();
+    shouldBeEqualToString("path.getAttribute('d')", "M -30 -30 q 30 0 30 30 t -30 30 Z");
 }
 
 function sample2() {
-    shouldBe("path.animatedPathSegList.numberOfItems", "4");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(0).pathSegTypeAsLetter", "M");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).y", "-30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(1).pathSegTypeAsLetter", "q");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x", "37.5");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y", "30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x1", "37.5");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y1", "0");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(2).pathSegTypeAsLetter", "t");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).x", "-37.5");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).y", "30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(3).pathSegTypeAsLetter", "Z");
-    checkBaseVal();
+    shouldBeEqualToString("path.getAttribute('d')", "M -30 -30 q 37.5 0 37.5 30 t -37.5 30 Z");
 }
 
 function sample3() {
-    shouldBe("path.animatedPathSegList.numberOfItems", "4");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(0).pathSegTypeAsLetter", "M");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).y", "-30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(1).pathSegTypeAsLetter", "Q");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x", "22.5");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y", "0");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x1", "22.5");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y1", "-30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(2).pathSegTypeAsLetter", "T");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).y", "30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(3).pathSegTypeAsLetter", "Z");
-    checkBaseVal();
+    shouldBeEqualToString("path.getAttribute('d')", "M -30 -30 Q 22.5 -30 22.5 0 T -30 30 Z");
 }
 
 function sample4() {
-    shouldBe("path.animatedPathSegList.numberOfItems", "4");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(0).pathSegTypeAsLetter", "M");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(0).y", "-30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(1).pathSegTypeAsLetter", "Q");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x", "30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y", "0");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).x1", "30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(1).y1", "-30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(2).pathSegTypeAsLetter", "T");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).x", "-30");
-    shouldBeCloseEnough("path.animatedPathSegList.getItem(2).y", "30");
-    shouldBeEqualToString("path.animatedPathSegList.getItem(3).pathSegTypeAsLetter", "Z");
-    checkBaseVal();
+    shouldBeEqualToString("path.getAttribute('d')", "M -30 -30 Q 29.9925 -30 29.9925 0 T -30 30 Z");
 }
 
 function executeTest() {
