@@ -648,9 +648,15 @@
       'name': 'RemoteAccess',
       'type': 'group',
       'caption': '''Configure remote access options''',
-      'desc': '''Configure remote access options in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Configure remote access options in Chrome Remote Desktop host.
 
-      These features are ignored unless the Remote Access web application is installed.''',
+      Chrome Remote Desktop host is a native service that runs on the target
+      machine that a user can connect to using Chrome Remote Desktop
+      application.  The native service is packaged and executed separately from
+      the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser.
+
+      These policies are ignored unless the
+      Chrome Remote Desktop host is installed.''',
       'policies': [
         {
           'name': 'RemoteAccessClientFirewallTraversal',
