@@ -381,14 +381,19 @@ def ProcessInstrumentationOptions(args):
   if not args.host_driven_root:
     args.run_python_tests = False
 
-  args.test_apk_path = os.path.join(
-      constants.GetOutDirectory(),
-      constants.SDK_BUILD_APKS_DIR,
-      '%s.apk' % args.test_apk)
+  if os.path.exists(args.test_apk):
+    args.test_apk_path = args.test_apk
+    args.test_apk, _ = os.path.splitext(os.path.basename(args.test_apk))
+  else:
+    args.test_apk_path = os.path.join(
+        constants.GetOutDirectory(),
+        constants.SDK_BUILD_APKS_DIR,
+        '%s.apk' % args.test_apk)
+
   args.test_apk_jar_path = os.path.join(
       constants.GetOutDirectory(),
       constants.SDK_BUILD_TEST_JAVALIB_DIR,
-      '%s.jar' %  args.test_apk)
+      '%s.jar' % args.test_apk)
   args.test_support_apk_path = '%sSupport%s' % (
       os.path.splitext(args.test_apk_path))
 
