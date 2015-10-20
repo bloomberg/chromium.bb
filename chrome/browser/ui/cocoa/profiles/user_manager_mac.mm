@@ -365,15 +365,17 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 }
 
 - (void)showReauthDialogWithProfile:(Profile*)profile email:(std::string)email {
-  reauth_window_controller_.reset(
-      [[ReauthDialogWindowController alloc]
-          initWithProfile:profile
-                    email:email
-              webContents:webContents_.get()]);
+  if (!reauth_window_controller_) {
+    reauth_window_controller_.reset(
+        [[ReauthDialogWindowController alloc]
+            initWithProfile:profile
+                      email:email
+                webContents:webContents_.get()]);
+  }
 }
 
 - (void)closeReauthDialog {
-  [reauth_window_controller_ close];
+  reauth_window_controller_.reset();
 }
 
 @end
