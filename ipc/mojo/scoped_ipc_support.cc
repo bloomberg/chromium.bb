@@ -31,10 +31,7 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
   ~IPCSupportInitializer() override { DCHECK(!observer_); }
 
   void Init(scoped_refptr<base::TaskRunner> io_thread_task_runner);
-  void ShutDown();
-
-  // Forces the initializer to shut down even if scopers are still holding it.
-  void ForceShutdown();
+  void ShutDown(bool force);
 
  private:
   // This watches for destruction of the MessageLoop that IPCSupportInitializer
@@ -52,7 +49,7 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
    private:
     // base::MessageLoop::DestructionObserver:
     void WillDestroyCurrentMessageLoop() override {
-      initializer_->ForceShutdown();
+      initializer_->ShutDown(true);
     }
 
     IPCSupportInitializer* initializer_;
@@ -112,24 +109,16 @@ void IPCSupportInitializer::Init(
   }
 }
 
-void IPCSupportInitializer::ShutDown() {
-  {
-    base::AutoLock locker(lock_);
-    if (shutting_down_ || was_shut_down_)
-      return;
-    DCHECK(init_count_ > 0);
-    if (init_count_ > 1) {
-      init_count_--;
-      return;
-    }
-  }
-  ForceShutdown();
-}
-
-void IPCSupportInitializer::ForceShutdown() {
+void IPCSupportInitializer::ShutDown(bool force) {
   base::AutoLock locker(lock_);
   if (shutting_down_ || was_shut_down_)
     return;
+  DCHECK(init_count_ > 0);
+  if (init_count_ > 1 && !force) {
+    init_count_--;
+    return;
+  }
+
   shutting_down_ = true;
   if (base::MessageLoop::current() &&
       base::MessageLoop::current()->task_runner() == io_thread_task_runner_) {
@@ -173,7 +162,7 @@ ScopedIPCSupport::ScopedIPCSupport(
 }
 
 ScopedIPCSupport::~ScopedIPCSupport() {
-  ipc_support_initializer.Get().ShutDown();
+  ipc_support_initializer.Get().ShutDown(false);
 }
 
 }  // namespace IPC
