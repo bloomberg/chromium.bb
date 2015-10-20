@@ -36,14 +36,23 @@ function startWorkerAndRunTest()
 
 function startSecondWorker(onActionComplete)
 {
-    worker2 = new Worker("resources/worker.js");
-    worker2.postMessage("");
+    // Make sure there is at least one trace event recorded for the first worker.
+    worker1.onmessage = gotResponseFromFirstWorker;
+    worker1.postMessage("");
     makeDOMEvent();
-    worker2.onmessage = function(event)
+
+    function gotResponseFromFirstWorker()
     {
-        worker2.onmessage = null;
-        makeDOMEvent();
-        onActionComplete();
+        worker1.onmessage = null;
+
+        worker2 = new Worker("resources/worker.js");
+        worker2.postMessage("");
+        worker2.onmessage = function(event)
+        {
+            worker2.onmessage = null;
+            makeDOMEvent();
+            onActionComplete();
+        }
     }
 }
 
@@ -56,8 +65,12 @@ function test()
     {
         var mainThread = { name: "Main Thread", events: InspectorTest.tracingTimelineModel()._mainThreadEvents };
         processThread(new Set(["startSecondWorker", "worker2.onmessage"]), mainThread);
-        var workers = InspectorTest.tracingTimelineModel()._virtualThreads.filter(function(thread) { return thread.isWorker(); });
-        workers.forEach(processThread.bind(null, new Set(["onmessage"])));
+        InspectorTest.tracingTimelineModel()._virtualThreads.forEach(function(thread)
+        {
+            if (!thread.isWorker())
+                return;
+            processThread(new Set(["onmessage"]), thread);
+        });
         InspectorTest.completeTest();
     }
 

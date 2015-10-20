@@ -6,6 +6,8 @@ JSFrame: 211.000 / 0.226 c
 JSFrame: 219.875 / 8.155 a
 JSFrame: 219.875 / 8.155 b
 JSFrame: 219.875 / 0.125 c
+JSFrame: 220.000 / 7.713 a
+JSFrame: 220.000 / 7.713 b
 InvalidateLayout: 220.000 / 7.000 
 InvalidateLayout: 221.000 / 3.000 
 JSFrame: 227.125 / 0.905 e
@@ -13,10 +15,15 @@ JSFrame: 227.125 / 0.905 g
 JSFrame: 230.000 / 0.833 f
 JSFrame: 230.000 / 0.833 l
 JSFrame: 230.000 / 0.833 a
+JSFrame: 230.010 / 0.808 f
+JSFrame: 230.010 / 0.808 l
+JSFrame: 230.010 / 0.808 a
 Layout: 230.010 / 0.100 
 FunctionCall: 250.000 / 10.000 
 JSFrame: 251.000 / 1.513 x
 JSFrame: 251.000 / 1.513 y
+JSFrame: 251.000 / 1.482 x
+JSFrame: 251.000 / 1.482 y
 FunctionCall: 251.000 / 1.000 
 JSFrame: 251.000 / 0.200 z
 JSFrame: 251.000 / 0.200 w
@@ -31,20 +38,27 @@ JSFrame: 253.100 / 0.100 recursive_b
 Top-Down Chart: 0.000  40.000
   Function Call: 29.059  40.000
     a: 0.000  8.380
-      b: 7.125  8.380
+      b: 0.316  8.380
         c: 0.351  0.351
-        e: 0.000  0.905
-          g: 0.905  0.905
+        a: 0.000  7.713
+          b: 6.809  7.713
+            e: 0.000  0.905
+              g: 0.905  0.905
     f: 0.000  0.833
       l: 0.000  0.833
-        a: 0.733  0.833
-          Layout: 0.100  0.100
+        a: 0.025  0.833
+          f: 0.000  0.808
+            l: 0.000  0.808
+              a: 0.708  0.808
+                Layout: 0.100  0.100
     x: 0.000  1.513
-      y: 0.513  1.513
-        Function Call: 0.600  1.000
-          z: 0.000  0.200
-            w: 0.200  0.200
-          w: 0.200  0.200
+      y: 0.032  1.513
+        x: 0.000  1.482
+          y: 0.482  1.482
+            Function Call: 0.600  1.000
+              z: 0.000  0.200
+                w: 0.200  0.200
+              w: 0.200  0.200
     recursive_a: 0.101  0.215
       recursive_b: 0.102  0.114
         recursive_a: 0.004  0.012
@@ -53,15 +67,27 @@ Bottom-Up Chart: 40.000  40.000
   Function Call: 29.659  40.000
     y: 0.600  1.000
       x: 0.600  1.000
-        Function Call: 0.600  1.000
+        y: 0.600  1.000
+          x: 0.600  1.000
+            Function Call: 0.600  1.000
   a: 0.733  9.213
     Function Call: 0.000  8.380
+    b: 0.000  7.713
+      a: 0.000  7.713
+        Function Call: 0.000  7.713
     l: 0.733  0.833
       f: 0.733  0.833
-        Function Call: 0.733  0.833
+        Function Call: 0.025  0.833
+        a: 0.708  0.808
+          l: 0.708  0.808
+            f: 0.708  0.808
+              Function Call: 0.708  0.808
   b: 7.125  8.380
     a: 7.125  8.380
-      Function Call: 7.125  8.380
+      Function Call: 0.316  8.380
+      b: 6.809  7.713
+        a: 6.809  7.713
+          Function Call: 6.809  7.713
   c: 0.351  0.351
     b: 0.351  0.351
       a: 0.351  0.351
@@ -70,25 +96,37 @@ Bottom-Up Chart: 40.000  40.000
     e: 0.905  0.905
       b: 0.905  0.905
         a: 0.905  0.905
-          Function Call: 0.905  0.905
+          b: 0.905  0.905
+            a: 0.905  0.905
+              Function Call: 0.905  0.905
   Layout: 0.100  0.100
     a: 0.100  0.100
       l: 0.100  0.100
         f: 0.100  0.100
-          Function Call: 0.100  0.100
+          a: 0.100  0.100
+            l: 0.100  0.100
+              f: 0.100  0.100
+                Function Call: 0.100  0.100
   y: 0.513  1.513
     x: 0.513  1.513
-      Function Call: 0.513  1.513
+      Function Call: 0.032  1.513
+      y: 0.482  1.482
+        x: 0.482  1.482
+          Function Call: 0.482  1.482
   w: 0.400  0.400
     z: 0.200  0.200
       Function Call: 0.200  0.200
         y: 0.200  0.200
           x: 0.200  0.200
-            Function Call: 0.200  0.200
+            y: 0.200  0.200
+              x: 0.200  0.200
+                Function Call: 0.200  0.200
     Function Call: 0.200  0.200
       y: 0.200  0.200
         x: 0.200  0.200
-          Function Call: 0.200  0.200
+          y: 0.200  0.200
+            x: 0.200  0.200
+              Function Call: 0.200  0.200
   recursive_a: 0.105  0.215
     Function Call: 0.101  0.215
     recursive_b: 0.004  0.012
