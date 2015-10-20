@@ -1022,7 +1022,6 @@ def GetConfig():
   chrome_try = config_lib.BuildConfig(
       build_type=constants.CHROME_PFQ_TYPE,
       chrome_rev=constants.CHROME_REV_TOT,
-      use_lkgm=True,
       important=False,
       manifest_version=False,
   )
@@ -1052,7 +1051,6 @@ def GetConfig():
           'perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
           timeout=90 * 60, critical=True, num=1)],
       use_chrome_lkgm=True,
-      use_lkgm=False,
       useflags=append_useflags(['-cros-debug']),
   )
 

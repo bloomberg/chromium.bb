@@ -226,7 +226,6 @@
             "unittests": false,
             "uprev": false,
             "use_chrome_lkgm": true,
-            "use_lkgm": false,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
@@ -283,7 +282,6 @@
             "manifest_version": false,
             "overlays": "both",
             "uprev": false,
-            "use_lkgm": true,
             "useflags": [
                 "chrome_internal"
             ],
@@ -331,7 +329,6 @@
             "manifest_version": false,
             "overlays": "public",
             "uprev": false,
-            "use_lkgm": true,
             "vm_tests": [
                 "smoke_suite",
                 "pfq_suite"
@@ -1074,7 +1071,6 @@
             "overlays": "public",
             "profile": "asan",
             "uprev": false,
-            "use_lkgm": true,
             "vm_tests": [
                 "smoke_suite"
             ],
