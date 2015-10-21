@@ -128,16 +128,6 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
   }
 }
 
-// Extract FormData from the form element and return whether the operation was
-// successful.
-bool ExtractFormDataOnSave(const WebFormElement& form_element, FormData* data) {
-  return WebFormElementToFormData(
-      form_element, WebFormControlElement(),
-      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
-                                          form_util::EXTRACT_OPTION_TEXT),
-      data, NULL);
-}
-
 }  // namespace
 
 AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
@@ -238,7 +228,7 @@ void AutofillAgent::DidFinishDocumentLoad() {
 
 void AutofillAgent::WillSendSubmitEvent(const WebFormElement& form) {
   FormData form_data;
-  if (!ExtractFormDataOnSave(form, &form_data))
+  if (!form_util::ExtractFormData(form, &form_data))
     return;
 
   // The WillSendSubmitEvent function is called when there is a submit handler
@@ -257,7 +247,7 @@ void AutofillAgent::WillSendSubmitEvent(const WebFormElement& form) {
 
 void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
   FormData form_data;
-  if (!ExtractFormDataOnSave(form, &form_data))
+  if (!form_util::ExtractFormData(form, &form_data))
     return;
 
   // If WillSubmitForm message had not been sent for this form, send it.
@@ -625,17 +615,9 @@ void AutofillAgent::OnSamePageNavigationCompleted() {
 
   // Assume form submission only if the form is now gone, either invisible or
   // removed from the DOM.
-  blink::WebVector<blink::WebFormElement> forms;
-  render_frame()->GetWebFrame()->document().forms(forms);
-  for (size_t i = 0; i < forms.size(); ++i) {
-    const blink::WebFormElement& form = forms[i];
-    if (form_util::GetCanonicalActionForForm(last_interacted_form_) ==
-            form_util::GetCanonicalActionForForm(form) &&
-        form_util::IsWebNodeVisible(form)) {
-      // Found our candidate form, and it is still visible.
-      return;
-    }
-  }
+  if (form_util::IsFormVisible(last_interacted_form_))
+    return;
+
   // Could not find a visible form equal to our saved form, assume submission.
   WillSendSubmitEvent(last_interacted_form_);
   WillSubmitForm(last_interacted_form_);

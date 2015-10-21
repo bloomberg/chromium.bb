@@ -101,8 +101,8 @@ void SimulateOnFillForm(content::MockRenderThread* render_thread,
 
   FormData data;
   data.name = base::ASCIIToUTF16("name");
-  data.origin = GURL("origin");
-  data.action = GURL("blade.php");
+  data.origin = GURL("http://example.com/");
+  data.action = GURL("http://example.com/blade.php");
   data.is_form_tag = true;  // Default value.
 
   FormFieldData field_data;
@@ -163,7 +163,111 @@ TEST_F(FormAutocompleteTest, SubmitEventPrevented) {
 TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible) {
   // Load a form.
   LoadHTML(
-      "<html><form id='myForm' action='blade.php'>"
+      "<html><form id='myForm' action='http://example.com/blade.php'>"
+      "<input name='fname' id='fname' value='Bob'/>"
+      "<input name='lname' value='Deckard'/><input type=submit></form></html>");
+
+  // Simulate user input so that the form is "remembered".
+  WebDocument document = GetMainFrame()->document();
+  WebElement element = document.getElementById(WebString::fromUTF8("fname"));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement fname_element = element.to<WebInputElement>();
+  SimulateUserInputChangeForElement(&fname_element, std::string("Rick"));
+
+  // Simulate removing the form just before the ajax request completes.
+  ExecuteJavaScriptForTests(
+      "var element = document.getElementById('myForm');"
+      "element.parentNode.removeChild(element);");
+
+  // Simulate an Ajax request completing.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
+  ProcessPendingMessages();
+
+  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+                                 true /* expect_submitted_message */);
+}
+
+// Tests that completing an Ajax request and having the form with a specific
+// action disappear will trigger submission from Autofill's point of view, even
+// if there is another form with the same data but different action on the page.
+TEST_F(FormAutocompleteTest,
+       AjaxSucceeded_NoLongerVisible_DifferentActionsSameData) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm' action='http://example.com/blade.php'>"
+      "<input name='fname' id='fname' value='Bob'/>"
+      "<input name='lname' value='Deckard'/><input type=submit></form>"
+      "<form id='myForm2' action='http://example.com/runner.php'>"
+      "<input name='fname' id='fname2' value='Bob'/>"
+      "<input name='lname' value='Deckard'/><input type=submit></form></html>");
+
+  // Simulate user input so that the form is "remembered".
+  WebDocument document = GetMainFrame()->document();
+  WebElement element = document.getElementById(WebString::fromUTF8("fname"));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement fname_element = element.to<WebInputElement>();
+  SimulateUserInputChangeForElement(&fname_element, std::string("Rick"));
+
+  // Simulate removing the form just before the ajax request completes.
+  ExecuteJavaScriptForTests(
+      "var element = document.getElementById('myForm');"
+      "element.parentNode.removeChild(element);");
+
+  // Simulate an Ajax request completing.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
+  ProcessPendingMessages();
+
+  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+                                 true /* expect_submitted_message */);
+}
+
+// Tests that completing an Ajax request and having the form with no action
+// specified disappear will trigger submission from Autofill's point of view,
+// even if there is still another form with no action in the page. It will
+// compare field data within the forms.
+// TODO(kolos) Re-enable when the implementation of IsFormVisible is on-par
+// for these platforms.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#define MAYBE_NoLongerVisibleBothNoActions DISABLED_NoLongerVisibleBothNoActions
+#else
+#define MAYBE_NoLongerVisibleBothNoActions NoLongerVisibleBothNoActions
+#endif
+TEST_F(FormAutocompleteTest, MAYBE_NoLongerVisibleBothNoActions) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm'>"
+      "<input name='fname' id='fname' value='Bob'/>"
+      "<input name='lname' value='Deckard'/><input type=submit></form>"
+      "<form id='myForm2'>"
+      "<input name='fname' id='fname2' value='John'/>"
+      "<input name='lname' value='Doe'/><input type=submit></form></html>");
+
+  // Simulate user input so that the form is "remembered".
+  WebDocument document = GetMainFrame()->document();
+  WebElement element = document.getElementById(WebString::fromUTF8("fname"));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement fname_element = element.to<WebInputElement>();
+  SimulateUserInputChangeForElement(&fname_element, std::string("Rick"));
+
+  // Simulate removing the form just before the ajax request completes.
+  ExecuteJavaScriptForTests(
+      "var element = document.getElementById('myForm');"
+      "element.parentNode.removeChild(element);");
+
+  // Simulate an Ajax request completing.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->ajaxSucceeded();
+  ProcessPendingMessages();
+
+  VerifyReceivedRendererMessages(render_thread_.get(), "Rick", "Deckard",
+                                 true /* expect_submitted_message */);
+}
+
+// Tests that completing an Ajax request and having the form with no action
+// specified disappear will trigger submission from Autofill's point of view.
+TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible_NoAction) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm'>"
       "<input name='fname' id='fname' value='Bob'/>"
       "<input name='lname' value='Deckard'/><input type=submit></form></html>");
 
@@ -192,7 +296,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoLongerVisible) {
 TEST_F(FormAutocompleteTest, AjaxSucceeded_StillVisible) {
   // Load a form.
   LoadHTML(
-      "<html><form id='myForm' action='blade.php'>"
+      "<html><form id='myForm' action='http://example.com/blade.php'>"
       "<input name='fname' id='fname' value='Bob'/>"
       "<input name='lname' value='Deckard'/><input type=submit></form></html>");
 
@@ -217,7 +321,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_StillVisible) {
 TEST_F(FormAutocompleteTest, AjaxSucceeded_NoFormInteractionInvisible) {
   // Load a form.
   LoadHTML(
-      "<html><form id='myForm' action='blade.php'>"
+      "<html><form id='myForm' action='http://example.com/blade.php'>"
       "<input name='fname' id='fname' value='Bob'/>"
       "<input name='lname' value='Deckard'/><input type=submit></form></html>");
 
@@ -241,7 +345,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_NoFormInteractionInvisible) {
 TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormIsInvisible) {
   // Load a form.
   LoadHTML(
-      "<html><form id='myForm' action='blade.php'>"
+      "<html><form id='myForm' action='http://example.com/blade.php'>"
       "<input name='fname' id='fname'/>"
       "<input name='lname'/></form></html>");
 
@@ -266,7 +370,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormIsInvisible) {
 TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormStillVisible) {
   // Load a form.
   LoadHTML(
-      "<html><form id='myForm' action='blade.php'>"
+      "<html><form id='myForm' action='http://example.com/blade.php'>"
       "<input name='fname' id='fname' value='Rick'/>"
       "<input name='lname' value='Deckard'/></form></html>");
 

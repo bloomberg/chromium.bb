@@ -1103,9 +1103,17 @@ bool IsNamedElementVisible(
   return false;
 }
 
+bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
+  return WebFormElementToFormData(
+      form_element, WebFormControlElement(),
+      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
+                                          form_util::EXTRACT_OPTION_TEXT),
+      data, NULL);
+}
+
 bool IsFormVisible(blink::WebFrame* frame,
-                   const GURL& action,
-                   const GURL& origin,
+                   const GURL& canonical_action,
+                   const GURL& canonical_origin,
                    const FormData& form_data,
                    const FormsPredictionsMap& form_predictions) {
   const GURL frame_url = GURL(frame->document().url().string().utf8());
@@ -1113,7 +1121,7 @@ bool IsFormVisible(blink::WebFrame* frame,
   frame->document().forms(forms);
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  const bool action_is_empty = action == origin;
+  const bool action_is_empty = canonical_action == canonical_origin;
 #endif
 
   // Since empty or unspecified action fields are automatically set to page URL,
@@ -1127,9 +1135,9 @@ bool IsFormVisible(blink::WebFrame* frame,
     if (!IsWebNodeVisible(form))
       continue;
 
-    GURL canonical_action = GetCanonicalActionForForm(form);
+    GURL iter_canonical_action = GetCanonicalActionForForm(form);
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    bool form_action_is_empty = canonical_action == frame_url;
+    bool form_action_is_empty = iter_canonical_action == frame_url;
 
     if (action_is_empty != form_action_is_empty)
       continue;
@@ -1142,18 +1150,26 @@ bool IsFormVisible(blink::WebFrame* frame,
         return true;  // Form still exists.
       }
     } else {  // Both actions are non-empty, compare actions only.
-      if (action == canonical_action) {
+      if (canonical_action == iter_canonical_action) {
         return true;  // Form still exists.
       }
     }
 #else  // OS_MACOSX or OS_ANDROID
-    if (action == canonical_action) {
+    if (canonical_action == iter_canonical_action) {
       return true;  // Form still exists.
     }
 #endif
   }
 
   return false;
+}
+
+bool IsFormVisible(const WebFormElement& form) {
+  FormData form_data;
+  return ExtractFormData(form, &form_data) &&
+         IsFormVisible(form.document().frame(), GetCanonicalActionForForm(form),
+                       GetCanonicalOriginForDocument(form.document()),
+                       form_data, FormsPredictionsMap());
 }
 
 GURL GetCanonicalActionForForm(const WebFormElement& form) {

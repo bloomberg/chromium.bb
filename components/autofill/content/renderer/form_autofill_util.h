@@ -62,6 +62,10 @@ bool IsNamedElementVisible(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const base::string16& name);
 
+// Extract FormData from the form element and return whether the operation was
+// successful.
+bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
+
 // Helper function to check if there exist any form on |frame| where its action
 // equals |action|. Returns true if so. For forms with empty or unspecified
 // actions, all form data are used for comparison. Form data comparison is
@@ -74,6 +78,10 @@ bool IsFormVisible(blink::WebFrame* frame,
                    const GURL& origin,
                    const FormData& form_data,
                    const FormsPredictionsMap& form_predictions);
+
+// Returns whether |form| is still visible in the frame. Ends up calling
+// isFormVisible() above, deriving arguments from |form|.
+bool IsFormVisible(const blink::WebFormElement& form);
 
 // Helper functions to assist in getting the canonical form of the action and
 // origin. The action will proplerly take into account <BASE>, and both will
