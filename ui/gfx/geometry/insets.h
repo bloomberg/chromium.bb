@@ -7,20 +7,61 @@
 
 #include <string>
 
-#include "build/build_config.h"
-#include "ui/gfx/geometry/insets_base.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
 // An integer version of gfx::Insets.
-class GFX_EXPORT Insets : public InsetsBase<Insets, int> {
+class GFX_EXPORT Insets {
  public:
   Insets();
   Insets(int top, int left, int bottom, int right);
 
   ~Insets();
+
+  int top() const { return top_; }
+  int left() const { return left_; }
+  int bottom() const { return bottom_; }
+  int right() const { return right_; }
+
+  // Returns the total width taken up by the insets, which is the sum of the
+  // left and right insets.
+  int width() const { return left_ + right_; }
+
+  // Returns the total height taken up by the insets, which is the sum of the
+  // top and bottom insets.
+  int height() const { return top_ + bottom_; }
+
+  // Returns true if the insets are empty.
+  bool empty() const { return width() == 0 && height() == 0; }
+
+  void Set(int top, int left, int bottom, int right) {
+    top_ = top;
+    left_ = left;
+    bottom_ = bottom;
+    right_ = right;
+  }
+
+  bool operator==(const Insets& insets) const {
+    return top_ == insets.top_ && left_ == insets.left_ &&
+           bottom_ == insets.bottom_ && right_ == insets.right_;
+  }
+
+  bool operator!=(const Insets& insets) const {
+    return !(*this == insets);
+  }
+
+  void operator+=(const Insets& insets) {
+    top_ += insets.top_;
+    left_ += insets.left_;
+    bottom_ += insets.bottom_;
+    right_ += insets.right_;
+  }
+
+  Insets operator-() const {
+    return Insets(-top_, -left_, -bottom_, -right_);
+  }
 
   Insets Scale(float scale) const {
     return Scale(scale, scale);
@@ -40,11 +81,13 @@ class GFX_EXPORT Insets : public InsetsBase<Insets, int> {
 
   // Returns a string representation of the insets.
   std::string ToString() const;
-};
 
-#if !defined(COMPILER_MSVC) && !defined(__native_client__)
-extern template class InsetsBase<Insets, int>;
-#endif
+ private:
+  int top_;
+  int left_;
+  int bottom_;
+  int right_;
+};
 
 }  // namespace gfx
 

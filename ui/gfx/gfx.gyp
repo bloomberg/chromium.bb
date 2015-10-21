@@ -25,7 +25,6 @@
         'geometry/dip_util.h',
         'geometry/insets.cc',
         'geometry/insets.h',
-        'geometry/insets_base.h',
         'geometry/insets_f.cc',
         'geometry/insets_f.h',
         'geometry/matrix3_f.cc',

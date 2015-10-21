@@ -8,12 +8,10 @@
 
 namespace gfx {
 
-template class InsetsBase<InsetsF, float>;
-
-InsetsF::InsetsF() : InsetsBase<InsetsF, float>(0, 0, 0, 0) {}
+InsetsF::InsetsF() : InsetsF(0.f, 0.f, 0.f, 0.f) {}
 
 InsetsF::InsetsF(float top, float left, float bottom, float right)
-    : InsetsBase<InsetsF, float>(top, left, bottom, right) {}
+    : top_(top), left_(left), bottom_(bottom), right_(right) {}
 
 InsetsF::~InsetsF() {}
 
