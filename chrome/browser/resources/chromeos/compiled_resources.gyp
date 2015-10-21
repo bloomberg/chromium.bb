@@ -4,8 +4,18 @@
 {
   'targets': [
     {
+      'target_name': 'bluetooth_pair_device',
+      'variables': {
+        'depends': [
+          '../../../../chrome/browser/resources/options/compiled_resources.gyp:options_bundle',
+        ],
+        'externs': ['<(EXTERNS_DIR)/chrome_send.js'],
+      },
+      'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
       'target_name': 'certificate_manager_dialog',
-       'variables': {
+      'variables': {
         'depends': [
           '../../../../chrome/browser/resources/options/compiled_resources.gyp:options_bundle',
         ],
