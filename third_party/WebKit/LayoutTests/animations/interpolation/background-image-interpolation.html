@@ -93,6 +93,15 @@ assertNoInterpolation({
   to: to,
 });
 
+// Image to crossfade
+from = 'url(../resources/blue-100.png)';
+to = '-webkit-cross-fade(url(../resources/green-100.png), url(../resources/stripes-100.png), 0.5)';
+assertNoInterpolation({
+  property: 'background-image',
+  from: from,
+  to: to,
+});
+
 // Gradient to gradient
 from = 'linear-gradient(-45deg, red, yellow)';
 to = 'linear-gradient(45deg, blue, orange)';

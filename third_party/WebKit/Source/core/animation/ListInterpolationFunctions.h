@@ -23,6 +23,9 @@ public:
     using MergeSingleItemConversionsCallback = PairwiseInterpolationComponent (*)(InterpolationComponent& start, InterpolationComponent& end);
     static PairwiseInterpolationComponent mergeSingleConversions(InterpolationComponent& start, InterpolationComponent& end, MergeSingleItemConversionsCallback);
 
+    using EqualNonInterpolableValuesCallback = bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
+    static bool equalValues(const InterpolationComponent&, const InterpolationComponent&, EqualNonInterpolableValuesCallback);
+
     using NonInterpolableValuesAreCompatibleCallback = bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
     using CompositeItemCallback = void (*)(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
     static void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&, NonInterpolableValuesAreCompatibleCallback, CompositeItemCallback);

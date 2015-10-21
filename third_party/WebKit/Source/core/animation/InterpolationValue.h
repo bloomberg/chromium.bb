@@ -30,6 +30,7 @@ public:
     const InterpolationType& type() const { return m_type; }
     const InterpolableValue& interpolableValue() const { return *m_component.interpolableValue; }
     const NonInterpolableValue* nonInterpolableValue() const { return m_component.nonInterpolableValue.get(); }
+    const InterpolationComponent& component() const { return m_component; }
 
     InterpolationComponent& mutableComponent() { return m_component; }
 

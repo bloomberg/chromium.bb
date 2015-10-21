@@ -13,6 +13,28 @@ namespace blink {
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(NonInterpolableList);
 
+bool ListInterpolationFunctions::equalValues(const InterpolationComponent& a, const InterpolationComponent& b, EqualNonInterpolableValuesCallback equalNonInterpolableValues)
+{
+    const InterpolableList& interpolableListA = toInterpolableList(*a.interpolableValue);
+    const InterpolableList& interpolableListB = toInterpolableList(*b.interpolableValue);
+
+    if (interpolableListA.length() != interpolableListB.length())
+        return false;
+
+    size_t length = interpolableListA.length();
+    if (length == 0)
+        return true;
+
+    const NonInterpolableList& nonInterpolableListA = toNonInterpolableList(*a.nonInterpolableValue);
+    const NonInterpolableList& nonInterpolableListB = toNonInterpolableList(*b.nonInterpolableValue);
+
+    for (size_t i = 0; i < length; i++) {
+        if (!equalNonInterpolableValues(nonInterpolableListA.get(i), nonInterpolableListB.get(i)))
+            return false;
+    }
+    return true;
+}
+
 PairwiseInterpolationComponent ListInterpolationFunctions::mergeSingleConversions(InterpolationComponent& start, InterpolationComponent& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
 {
     size_t startLength = toInterpolableList(*start.interpolableValue).length();

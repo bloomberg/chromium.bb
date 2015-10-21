@@ -15,6 +15,7 @@
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/FilterStyleInterpolation.h"
 #include "core/animation/ImageInterpolationType.h"
+#include "core/animation/ImageListInterpolationType.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/IntegerSVGInterpolation.h"
@@ -239,6 +240,10 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyListStyleImage:
     case CSSPropertyWebkitMaskBoxImageSource:
         applicableTypes->append(new ImageInterpolationType(property));
+        break;
+    case CSSPropertyBackgroundImage:
+    case CSSPropertyWebkitMaskImage:
+        applicableTypes->append(new ImageListInterpolationType(property));
         break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
