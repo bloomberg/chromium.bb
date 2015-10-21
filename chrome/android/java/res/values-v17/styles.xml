@@ -287,6 +287,9 @@
         parent="@style/TextAppearance.StatusBar.EventContent.Info"/>
     <style name="WebNotificationTime"
         parent="@style/TextAppearance.StatusBar.EventContent.Time"/>
+    <style name="WebNotificationDivider">
+        <item name="android:background">?android:dividerHorizontal</item>
+    </style>
 
     <!-- First Run and Bookmark/recent-tabs dialogs -->
     <style name="DialogWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge" >

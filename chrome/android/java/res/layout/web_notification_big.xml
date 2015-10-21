@@ -4,13 +4,17 @@
      found in the LICENSE file. -->
 
 <!--
-  Web notification custom layout.
+  Web notification custom layout, big state.
    _______________________________________________________
    |        |                                            |
    |  Icon  |  Title text                        1:23 pm |
-   |        |  Body text                                 |
-   |        |  https://www.example.com/                  |
-   |________|____________________________________________|
+   |        |                                            |
+   |        |  Body text which may run to multiple lines |
+   |________|  if there is a lot of it.                  |
+   |           __________________________________________|
+   |                                                     |
+   |           https://www.example.com/                  |
+   |_____________________________________________________|
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -65,9 +69,21 @@
         android:layout_toEndOf="@id/icon_frame"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/title"
-        android:singleLine="true"
+        android:layout_marginBottom="8dp"
+        android:maxLines="8"
         android:ellipsize="end"
         style="@style/WebNotificationBody"/>
+
+    <ImageView
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_toEndOf="@id/icon_frame"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/body"
+        android:layout_marginBottom="8dp"
+        style="@style/WebNotificationDivider"
+        android:contentDescription="@null"/>
 
     <TextView
         android:id="@+id/origin"
@@ -75,7 +91,8 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/icon_frame"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/body"
+        android:layout_below="@id/divider"
+        android:layout_marginBottom="10dp"
         android:singleLine="true"
         android:ellipsize="end"
         style="@style/WebNotificationOrigin"/>

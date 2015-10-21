@@ -22,34 +22,45 @@ import java.util.Date;
  */
 public class CustomNotificationBuilder implements NotificationBuilder {
     private final NotificationCompat.Builder mBuilder;
-    private final RemoteViews mView;
+    private final RemoteViews mCompactView;
+    private final RemoteViews mBigView;
 
     public CustomNotificationBuilder(Context context) {
-        mView = new RemoteViews(context.getPackageName(), R.layout.web_notification);
-        mView.setTextViewText(R.id.time, DateFormat.getTimeFormat(context).format(new Date()));
+        mCompactView = new RemoteViews(context.getPackageName(), R.layout.web_notification);
+        mCompactView.setTextViewText(
+                R.id.time, DateFormat.getTimeFormat(context).format(new Date()));
+
+        mBigView = new RemoteViews(context.getPackageName(), R.layout.web_notification_big);
+        mBigView.setTextViewText(R.id.time, DateFormat.getTimeFormat(context).format(new Date()));
+
         mBuilder = new NotificationCompat.Builder(context);
     }
 
     @Override
     public Notification build() {
-        return mBuilder.setContent(mView).build();
+        Notification notification = mBuilder.setContent(mCompactView).build();
+        notification.bigContentView = mBigView;
+        return notification;
     }
 
     @Override
     public NotificationBuilder setTitle(String title) {
-        mView.setTextViewText(R.id.title, title);
+        mCompactView.setTextViewText(R.id.title, title);
+        mBigView.setTextViewText(R.id.title, title);
         return this;
     }
 
     @Override
     public NotificationBuilder setBody(String body) {
-        mView.setTextViewText(R.id.body, body);
+        mCompactView.setTextViewText(R.id.body, body);
+        mBigView.setTextViewText(R.id.body, body);
         return this;
     }
 
     @Override
     public NotificationBuilder setOrigin(String origin) {
-        mView.setTextViewText(R.id.origin, origin);
+        mCompactView.setTextViewText(R.id.origin, origin);
+        mBigView.setTextViewText(R.id.origin, origin);
         return this;
     }
 
@@ -61,7 +72,8 @@ public class CustomNotificationBuilder implements NotificationBuilder {
 
     @Override
     public NotificationBuilder setLargeIcon(Bitmap icon) {
-        mView.setImageViewBitmap(R.id.icon, icon);
+        mCompactView.setImageViewBitmap(R.id.icon, icon);
+        mBigView.setImageViewBitmap(R.id.icon, icon);
         return this;
     }
 

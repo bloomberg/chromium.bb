@@ -53,13 +53,15 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
                                             .setContentIntent(pendingContentIntent)
                                             .setDeleteIntent(pendingDeleteIntent)
                                             .build();
-        View view = notification.contentView.apply(context, new LinearLayout(context));
+        View compactView = notification.contentView.apply(context, new LinearLayout(context));
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
 
         assertEquals(R.drawable.ic_chrome, notification.icon);
-        assertNotNull(((ImageView) view.findViewById(R.id.icon)).getDrawable());
-        assertEquals("title", ((TextView) view.findViewById(R.id.title)).getText());
-        assertEquals("body", ((TextView) view.findViewById(R.id.body)).getText());
-        assertEquals("origin", ((TextView) view.findViewById(R.id.origin)).getText());
+        assertNotNull(((ImageView) compactView.findViewById(R.id.icon)).getDrawable());
+        assertNotNull(((ImageView) bigView.findViewById(R.id.icon)).getDrawable());
+        assertEquals("title", getIdenticalText(R.id.title, compactView, bigView));
+        assertEquals("body", getIdenticalText(R.id.body, compactView, bigView));
+        assertEquals("origin", getIdenticalText(R.id.origin, compactView, bigView));
         assertEquals("ticker", notification.tickerText.toString());
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
         assertEquals(1, notification.vibrate.length);
@@ -67,5 +69,27 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         assertEquals(pendingContentIntent, notification.contentIntent);
         assertEquals(pendingDeleteIntent, notification.deleteIntent);
         // TODO(mvanouwerkerk): Add coverage for action buttons.
+    }
+
+    /**
+     * Finds a TextView with the given id in each of the given views, and checks that they all
+     * contain the same text.
+     * @param id The id to find the TextView instances with.
+     * @param views The views to find the TextView instances in.
+     * @return The identical text.
+     */
+    private CharSequence getIdenticalText(int id, View... views) {
+        CharSequence result = null;
+        for (View view : views) {
+            TextView textView = (TextView) view.findViewById(id);
+            assertNotNull(textView);
+            CharSequence text = textView.getText();
+            if (result == null) {
+                result = text;
+            } else {
+                assertEquals(result, text);
+            }
+        }
+        return result;
     }
 }
