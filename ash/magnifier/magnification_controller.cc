@@ -68,7 +68,7 @@ const int kCursorPanningMargin = 100;
 const int kCaretPanningMargin = 50;
 
 void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
-  gfx::Point3F host_location_3f(root_location);
+  auto host_location_3f = gfx::Point3F(gfx::PointF(root_location));
   host->GetRootTransform().TransformPoint(&host_location_3f);
   host->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
@@ -568,7 +568,7 @@ void MagnificationControllerImpl::MoveWindow(int x, int y, bool animate) {
   if (!is_enabled_)
     return;
 
-  Redraw(gfx::Point(x, y), scale_, animate);
+  Redraw(gfx::PointF(x, y), scale_, animate);
 }
 
 void MagnificationControllerImpl::MoveWindow(const gfx::Point& point,
@@ -576,7 +576,7 @@ void MagnificationControllerImpl::MoveWindow(const gfx::Point& point,
   if (!is_enabled_)
     return;
 
-  Redraw(point, scale_, animate);
+  Redraw(gfx::PointF(point), scale_, animate);
 }
 
 void MagnificationControllerImpl::SetScrollDirection(
@@ -724,7 +724,7 @@ void MagnificationControllerImpl::MoveMagnifierWindowFollowPoint(
   }
   int y = top + y_diff;
   if (start_zoom && !is_on_animation_) {
-    bool ret = RedrawDIP(gfx::Point(x, y), scale_,
+    bool ret = RedrawDIP(gfx::PointF(x, y), scale_,
                          0,  // No animation on panning.
                          kDefaultAnimationTweenType);
 
@@ -746,9 +746,9 @@ void MagnificationControllerImpl::MoveMagnifierWindowCenterPoint(
 
   if (!is_on_animation_) {
     // With animation on panning.
-    RedrawDIP(window_rect.origin() + (point - window_rect.CenterPoint()),
-              scale_, kDefaultAnimationDurationInMs,
-              kCenterCaretAnimationTweenType);
+    RedrawDIP(
+        gfx::PointF(window_rect.origin() + (point - window_rect.CenterPoint())),
+        scale_, kDefaultAnimationDurationInMs, kCenterCaretAnimationTweenType);
   }
 }
 
@@ -785,7 +785,7 @@ void MagnificationControllerImpl::MoveMagnifierWindowFollowRect(
       root_window_->layer()->GetAnimator()->StopAnimating();
       is_on_animation_ = false;
     }
-    RedrawDIP(gfx::Point(x, y), scale_,
+    RedrawDIP(gfx::PointF(x, y), scale_,
               0,  // No animation on panning.
               kDefaultAnimationTweenType);
   }
