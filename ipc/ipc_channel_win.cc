@@ -103,8 +103,7 @@ bool ChannelWin::Send(Message* message) {
 
 bool ChannelWin::ProcessMessageForDelivery(Message* message) {
   // Sending a brokerable attachment requires a call to Channel::Send(), so
-  // both Send() and ProcessMessageForDelivery() may be re-entrant. Brokered
-  // attachments must be sent before the Message itself.
+  // both Send() and ProcessMessageForDelivery() may be re-entrant.
   if (message->HasBrokerableAttachments()) {
     DCHECK(GetAttachmentBroker());
     DCHECK(peer_pid_ != base::kNullProcessId);

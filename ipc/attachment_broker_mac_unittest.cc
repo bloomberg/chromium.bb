@@ -368,11 +368,23 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
     broker_.reset(broker);
   }
 
+  // Mach Setup that needs to occur before child processes are forked.
+  void MachPreForkSetUp() {
+    service_name_ = IPC::CreateRandomServiceName();
+    server_port_.reset(IPC::BecomeMachServer(service_name_.c_str()).release());
+  }
+
+  // Mach Setup that needs to occur after child processes are forked.
+  void MachPostForkSetUp() {
+    client_port_.reset(IPC::ReceiveMachPort(server_port_.get()).release());
+    IPC::SendMachPort(
+        client_port_.get(), mach_task_self(), MACH_MSG_TYPE_COPY_SEND);
+  }
+
   // Setup shared between tests.
   void CommonSetUp(const char* name) {
     Init(name);
-    service_name_ = IPC::CreateRandomServiceName();
-    server_port_.reset(IPC::BecomeMachServer(service_name_.c_str()).release());
+    MachPreForkSetUp();
 
     if (!broker_.get())
       SetBroker(new IPC::AttachmentBrokerUnprivilegedMac);
@@ -383,9 +395,7 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
 
-    client_port_.reset(IPC::ReceiveMachPort(server_port_.get()).release());
-    IPC::SendMachPort(
-        client_port_.get(), mach_task_self(), MACH_MSG_TYPE_COPY_SEND);
+    MachPostForkSetUp();
     active_names_at_start_ = IPC::GetActiveNameCount();
     get_proxy_listener()->set_listener(&result_listener_);
   }
@@ -428,6 +438,10 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
   AttachmentBrokerObserver* get_observer() { return &observer_; }
   ResultListener* get_result_listener() { return &result_listener_; }
 
+ protected:
+  // The number of active names immediately after set up.
+  mach_msg_type_number_t active_names_at_start_;
+
  private:
   ProxyListener proxy_listener_;
   scoped_ptr<IPC::AttachmentBrokerUnprivilegedMac> broker_;
@@ -440,9 +454,6 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
   // A port on which the child process listens for mach messages from the main
   // process.
   base::mac::ScopedMachSendRight client_port_;
-
-  // The number of active names immediately after set up.
-  mach_msg_type_number_t active_names_at_start_;
 
   std::string service_name_;
 
@@ -835,6 +846,57 @@ void SendSharedMemoryHandleToSelfCallback(IPC::Sender* sender,
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleToSelf) {
   return CommonPrivilegedProcessMain(&SendSharedMemoryHandleToSelfCallback,
                                      "SendSharedMemoryHandleToSelf");
+}
+
+// Similar to SendSharedMemoryHandle, but uses a ChannelProxy instead of a
+// Channel.
+TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
+  Init("SendSharedMemoryHandleChannelProxy");
+  MachPreForkSetUp();
+
+  SetBroker(new IPC::AttachmentBrokerUnprivilegedMac);
+  get_broker()->AddObserver(get_observer());
+
+  scoped_ptr<base::Thread> thread(
+      new base::Thread("ChannelProxyTestServerThread"));
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread->StartWithOptions(options);
+
+  CreateChannelProxy(get_proxy_listener(), thread->task_runner().get());
+  get_broker()->DesignateBrokerCommunicationChannel(channel_proxy());
+
+  ASSERT_TRUE(StartClient());
+
+  MachPostForkSetUp();
+  active_names_at_start_ = IPC::GetActiveNameCount();
+  get_proxy_listener()->set_listener(get_result_listener());
+
+  SendMessage1(kDataBuffer1);
+  base::MessageLoop::current()->Run();
+
+  CheckChildResult();
+
+  // There should be no leaked names.
+  EXPECT_EQ(active_names_at_start_, IPC::GetActiveNameCount());
+
+  // Close the channel so the client's OnChannelError() gets fired.
+  channel_proxy()->Close();
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannelProxy();
+}
+
+void SendSharedMemoryHandleChannelProxyCallback(IPC::Sender* sender,
+                                                const IPC::Message& message) {
+  bool success = CheckContentsOfMessage1(message, kDataBuffer1);
+  SendControlMessage(sender, success);
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleChannelProxy) {
+  return CommonPrivilegedProcessMain(
+      &SendSharedMemoryHandleChannelProxyCallback,
+      "SendSharedMemoryHandleChannelProxy");
 }
 
 }  // namespace

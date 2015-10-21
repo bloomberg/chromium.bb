@@ -693,8 +693,7 @@ void ChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
 
 bool ChannelPosix::ProcessMessageForDelivery(Message* message) {
   // Sending a brokerable attachment requires a call to Channel::Send(), so
-  // Send() may be re-entrant. Brokered attachments must be sent before the
-  // Message itself.
+  // Send() may be re-entrant.
   if (message->HasBrokerableAttachments()) {
     DCHECK(GetAttachmentBroker());
     DCHECK(peer_pid_ != base::kNullProcessId);
