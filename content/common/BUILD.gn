@@ -339,9 +339,15 @@ source_set("common") {
     sources += [
       "gpu/media/android_copying_backing_strategy.cc",
       "gpu/media/android_copying_backing_strategy.h",
+      "gpu/media/android_deferred_rendering_backing_strategy.cc",
+      "gpu/media/android_deferred_rendering_backing_strategy.h",
       "gpu/media/android_video_decode_accelerator.cc",
       "gpu/media/android_video_decode_accelerator.h",
+      "gpu/media/avda_codec_image.cc",
+      "gpu/media/avda_codec_image.h",
       "gpu/media/avda_return_on_failure.h",
+      "gpu/media/avda_shared_state.h",
+      "gpu/media/avda_state_provider.h",
     ]
 
     if (enable_webrtc) {
