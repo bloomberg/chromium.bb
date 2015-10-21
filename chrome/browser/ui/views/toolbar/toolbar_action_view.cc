@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -27,6 +28,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/resources/grit/views_resources.h"
@@ -45,6 +47,9 @@ const int kBorderInset = 0;
 // safe to have this be a global singleton.
 ToolbarActionView* context_menu_owner = nullptr;
 
+// The callback to call directly before showing the context menu.
+ToolbarActionView::ContextMenuCallback* context_menu_callback = nullptr;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,6 +65,7 @@ ToolbarActionView::ToolbarActionView(
       delegate_(delegate),
       called_register_command_(false),
       wants_to_run_(false),
+      menu_(nullptr),
       weak_factory_(this) {
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
@@ -193,6 +199,11 @@ gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }
 
+void ToolbarActionView::set_context_menu_callback_for_testing(
+    base::Callback<void(ToolbarActionView*)>* callback) {
+  context_menu_callback = callback;
+}
+
 views::View* ToolbarActionView::GetAsView() {
   return this;
 }
@@ -209,7 +220,7 @@ views::View* ToolbarActionView::GetReferenceViewForPopup() {
 }
 
 bool ToolbarActionView::IsMenuRunning() const {
-  return menu_runner_.get() != nullptr;
+  return menu_ != nullptr;
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
@@ -269,7 +280,6 @@ void ToolbarActionView::DoShowContextMenu(
 
   DCHECK(visible());  // We should never show a context menu for a hidden item.
   DCHECK(!context_menu_owner);
-  context_menu_owner = this;
 
   gfx::Point screen_loc;
   ConvertPointToScreen(this, &screen_loc);
@@ -285,18 +295,21 @@ void ToolbarActionView::DoShowContextMenu(
       delegate_->GetOverflowReferenceView()->GetWidget() :
       GetWidget();
 
-  menu_runner_.reset(new views::MenuRunner(context_menu_model, run_types));
+  views::MenuModelAdapter adapter(context_menu_model);
+  menu_ = adapter.CreateMenu();
+  menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  if (menu_runner_->RunMenuAt(parent,
-                              this,
-                              gfx::Rect(screen_loc, size()),
+  if (context_menu_callback)
+    context_menu_callback->Run(this);
+  if (menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
                               views::MENU_ANCHOR_TOPLEFT,
                               source_type) == views::MenuRunner::MENU_DELETED) {
     return;
   }
 
-  context_menu_owner = nullptr;
   menu_runner_.reset();
+  menu_ = nullptr;
+  context_menu_owner = nullptr;
   view_controller_->OnContextMenuClosed();
 
   // If another extension action wants to show its context menu, allow it to.
