@@ -27,11 +27,11 @@ void SeedAccountsInfo(JNIEnv* env,
   DVLOG(1) << "AccountTrackerServiceAndroid::SeedAccountsInfo: "
            << " number of accounts " << gaia_ids.size();
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  AccountTrackerService* account_tracker_service_ =
+  AccountTrackerService* account_tracker_service =
       AccountTrackerServiceFactory::GetForProfile(profile);
 
   for (size_t i = 0; i < gaia_ids.size(); i++) {
-    account_tracker_service_->SeedAccountInfo(gaia_ids[i], account_names[i]);
+    account_tracker_service->SeedAccountInfo(gaia_ids[i], account_names[i]);
   }
 }
 

@@ -339,6 +339,9 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     java_accounts =
         base::android::ToJavaArrayOfStrings(env, std::vector<std::string>());
   }
+
+  // Save the current accounts in the token service before calling
+  // FireRefreshToken* methods.
   Java_OAuth2TokenService_saveStoredAccounts(
       env, base::android::GetApplicationContext(), java_accounts.obj());
 
@@ -346,12 +349,10 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
        it != refreshed_ids.end(); it++) {
     FireRefreshTokenAvailable(*it);
   }
-
   for (std::vector<std::string>::iterator it = revoked_ids.begin();
        it != revoked_ids.end(); it++) {
     FireRefreshTokenRevoked(*it);
   }
-
   if (fire_refresh_token_loaded_ == RT_WAIT_FOR_VALIDATION) {
     fire_refresh_token_loaded_ = RT_LOADED;
     FireRefreshTokensLoaded();
@@ -512,19 +513,18 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
 void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials";
   ScopedBatchChange batch(this);
-  std::vector<std::string> accounts = GetAccounts();
-  for (std::vector<std::string>::iterator it = accounts.begin();
-       it != accounts.end(); it++) {
-    FireRefreshTokenRevoked(*it);
-  }
+  std::vector<std::string> accounts_to_revoke = GetAccounts();
 
-  // Clear everything on the Java side as well.
-  std::vector<std::string> empty;
+  // Clear accounts in the token service before calling
+  // |FireRefreshTokenRevoked|.
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> java_accounts(
-      base::android::ToJavaArrayOfStrings(env, empty));
+      base::android::ToJavaArrayOfStrings(env, std::vector<std::string>()));
   Java_OAuth2TokenService_saveStoredAccounts(
       env, base::android::GetApplicationContext(), java_accounts.obj());
+
+  for (const std::string& account : accounts_to_revoke)
+    FireRefreshTokenRevoked(account);
 }
 
 void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
