@@ -118,14 +118,16 @@ void MediaRecorderHandler::pause() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(recording_);
   recording_ = false;
-  NOTIMPLEMENTED();
+  for (const auto& video_recorder : video_recorders_)
+    video_recorder->Pause();
 }
 
 void MediaRecorderHandler::resume() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
   recording_ = true;
-  NOTIMPLEMENTED();
+  for (const auto& video_recorder : video_recorders_)
+    video_recorder->Resume();
 }
 
 void MediaRecorderHandler::OnEncodedVideo(

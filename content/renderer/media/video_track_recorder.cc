@@ -80,6 +80,8 @@ class VideoTrackRecorder::VpxEncoder final
   void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
                         base::TimeTicks capture_timestamp);
 
+  void set_paused(bool paused) { paused_ = paused; }
+
  private:
   friend class base::RefCountedThreadSafe<VpxEncoder>;
   ~VpxEncoder();
@@ -95,6 +97,9 @@ class VideoTrackRecorder::VpxEncoder final
   // Estimate the frame duration from |frame| and |last_frame_timestamp_|.
   base::TimeDelta CalculateFrameDuration(
       const scoped_refptr<VideoFrame>& frame);
+
+  // While |paused_|, frames are not encoded.
+  bool paused_;
 
   // Force usage of VP9 for encoding, instead of VP8 which is the default.
   const bool use_vp9_;
@@ -136,7 +141,8 @@ void VideoTrackRecorder::VpxEncoder::ShutdownEncoder(
 VideoTrackRecorder::VpxEncoder::VpxEncoder(
     bool use_vp9,
     const OnEncodedVideoCB& on_encoded_video_callback)
-    : use_vp9_(use_vp9),
+    : paused_(false),
+      use_vp9_(use_vp9),
       main_task_runner_(base::MessageLoop::current()->task_runner()),
       on_encoded_video_callback_(on_encoded_video_callback),
       encoding_thread_(new base::Thread("EncodingThread")) {
@@ -162,7 +168,8 @@ void VideoTrackRecorder::VpxEncoder::StartFrameEncode(
   if (!origin_task_runner_.get())
     origin_task_runner_ = base::MessageLoop::current()->task_runner();
   DCHECK(origin_task_runner_->BelongsToCurrentThread());
-
+  if (paused_)
+    return;
   encoding_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&VpxEncoder::EncodeOnEncodingThread,
                             this, frame, capture_timestamp));
@@ -356,6 +363,18 @@ VideoTrackRecorder::~VideoTrackRecorder() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   RemoveFromVideoTrack(this, track_);
   track_.reset();
+}
+
+void VideoTrackRecorder::Pause() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK(encoder_);
+  encoder_->set_paused(true);
+}
+
+void VideoTrackRecorder::Resume() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK(encoder_);
+  encoder_->set_paused(false);
 }
 
 void VideoTrackRecorder::OnVideoFrameForTesting(

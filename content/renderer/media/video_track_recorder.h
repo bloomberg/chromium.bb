@@ -38,9 +38,11 @@ class CONTENT_EXPORT VideoTrackRecorder
                      const OnEncodedVideoCB& on_encoded_video_cb);
   ~VideoTrackRecorder() override;
 
+  void Pause();
+  void Resume();
+
   void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
                               base::TimeTicks capture_time);
-
  private:
   friend class VideoTrackRecorderTest;
 
