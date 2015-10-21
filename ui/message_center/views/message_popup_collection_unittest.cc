@@ -98,7 +98,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
         NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16("test title"),
         base::UTF8ToUTF16("test message"), gfx::Image(),
         base::string16() /* display_source */, GURL(), NotifierId(),
-        message_center::RichNotificationData(), NULL /* delegate */));
+        message_center::RichNotificationData(), new NotificationDelegate()));
     MessageCenter::Get()->AddNotification(notification.Pass());
     return id;
   }

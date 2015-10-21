@@ -70,6 +70,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
+  void ClickOnSettingsButton(const std::string& notification_id) override;
 
   void MarkAllPopupsShown();
 

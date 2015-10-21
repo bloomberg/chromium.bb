@@ -22,6 +22,16 @@ using base::UTF8ToUTF16;
 
 namespace {
 
+// A test delegate used for tests that deal with the notification settings
+// button.
+class NotificationSettingsDelegate
+    : public message_center::NotificationDelegate {
+  bool ShouldDisplaySettingsButton() override { return true; }
+
+ private:
+  ~NotificationSettingsDelegate() override {}
+};
+
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter()
@@ -95,6 +105,10 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   return contextMessage_.get();
 }
 
+- (HoverImageButton*)settingsButton {
+  return settingsButton_.get();
+}
+
 - (NSView*)listView {
   return listView_.get();
 }
@@ -138,6 +152,40 @@ TEST_F(NotificationControllerTest, BasicLayout) {
   EXPECT_EQ(base::SysNSStringToUTF16([[controller messageView] string]),
             notification->message());
   EXPECT_EQ(controller.get(), [[controller closeButton] target]);
+}
+
+TEST_F(NotificationControllerTest, NotificationSetttingsButtonLayout) {
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, "",
+          ASCIIToUTF16("Added to circles"),
+          ASCIIToUTF16("Jonathan and 5 others"), gfx::Image(), base::string16(),
+          GURL("https://plus.com"), DummyNotifierId(),
+          message_center::RichNotificationData(),
+          new NotificationSettingsDelegate()));
+
+  base::scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:nullptr]);
+  [controller view];
+  EXPECT_EQ(controller.get(), [[controller settingsButton] target]);
+}
+
+TEST_F(NotificationControllerTest, ContextMessageAsDomainNotificationLayout) {
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, "",
+          ASCIIToUTF16("Added to circles"),
+          ASCIIToUTF16("Jonathan and 5 others"), gfx::Image(), base::string16(),
+          GURL("https://plus.com"), DummyNotifierId(),
+          message_center::RichNotificationData(), new NotificationDelegate()));
+  base::scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:nullptr]);
+  [controller view];
+
+  EXPECT_EQ(base::SysNSStringToUTF8([[controller contextMessageView] string]),
+            "plus.com");
 }
 
 TEST_F(NotificationControllerTest, OverflowText) {

@@ -39,6 +39,12 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
   // To be called when the user clicks a button in a notification.
   virtual void ButtonClick(int button_index);
 
+  // To be called when the user clicks the settings button in a notification.
+  virtual void SettingsClick();
+
+  // To be called in order to detect if a settings button should be displayed.
+  virtual bool ShouldDisplaySettingsButton();
+
  protected:
   virtual ~NotificationDelegate() {}
 

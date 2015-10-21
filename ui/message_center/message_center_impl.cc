@@ -785,6 +785,15 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
           id, button_index));
 }
 
+void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {
+  scoped_refptr<NotificationDelegate> delegate =
+      notification_list_->GetNotificationDelegate(id);
+  if (delegate.get())
+    delegate->SettingsClick();
+  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                    OnNotificationSettingsClicked());
+}
+
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
   if (FindVisibleNotificationById(id) == NULL)

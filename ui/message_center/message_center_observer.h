@@ -40,6 +40,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   virtual void OnNotificationButtonClicked(const std::string& notification_id,
                                            int button_index) {}
 
+  // Called when notification settings button is clicked.
+  virtual void OnNotificationSettingsClicked() {}
+
   // Called when the notification associated with |notification_id| is actually
   // displayed.
   virtual void OnNotificationDisplayed(

@@ -88,6 +88,7 @@ class ToastContentsView : public views::WidgetDelegateView,
   bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
+  void ClickOnSettingsButton(const std::string& notification_id) override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

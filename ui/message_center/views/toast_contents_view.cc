@@ -299,6 +299,12 @@ void ToastContentsView::ClickOnNotification(
     collection_->ClickOnNotification(notification_id);
 }
 
+void ToastContentsView::ClickOnSettingsButton(
+    const std::string& notification_id) {
+  if (collection_)
+    collection_->ClickOnSettingsButton(notification_id);
+}
+
 void ToastContentsView::RemoveNotification(
     const std::string& notification_id,
     bool by_user) {

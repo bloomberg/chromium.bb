@@ -32,6 +32,8 @@ class NotificationObjectProxy : public NotificationDelegate {
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;
+  void SettingsClick() override;
+  bool ShouldDisplaySettingsButton() override;
   std::string id() const override;
 
  protected:

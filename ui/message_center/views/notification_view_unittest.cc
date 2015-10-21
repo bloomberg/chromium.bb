@@ -24,12 +24,22 @@
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/notification_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
+
+// A test delegate used for tests that deal with the notification settings
+// button.
+class NotificationSettingsDelegate : public NotificationDelegate {
+  bool ShouldDisplaySettingsButton() override { return true; }
+
+ private:
+  ~NotificationSettingsDelegate() override {}
+};
 
 /* Test fixture ***************************************************************/
 
@@ -57,6 +67,7 @@ class NotificationViewTest : public views::ViewsTestBase,
   bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
+  void ClickOnSettingsButton(const std::string& notification_id) override;
 
  protected:
   // Used to fill bitmaps returned by CreateBitmap().
@@ -171,7 +182,8 @@ void NotificationViewTest::SetUp() {
       NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
       CreateTestImage(80, 80), base::UTF8ToUTF16("display source"), GURL(),
-      NotifierId(NotifierId::APPLICATION, "extension_id"), *data_, NULL));
+      NotifierId(NotifierId::APPLICATION, "extension_id"), *data_,
+      NULL));
   notification_->set_small_image(CreateTestImage(16, 16));
   notification_->set_image(CreateTestImage(320, 240));
 
@@ -227,6 +239,12 @@ void NotificationViewTest::ClickOnNotificationButton(
   NOTREACHED();
 }
 
+void NotificationViewTest::ClickOnSettingsButton(
+    const std::string& notification_id) {
+  // For this test, this method should not be invoked.
+  NOTREACHED();
+}
+
 /* Unit tests *****************************************************************/
 
 TEST_F(NotificationViewTest, CreateOrUpdateTest) {
@@ -244,8 +262,30 @@ TEST_F(NotificationViewTest, CreateOrUpdateTest) {
   EXPECT_TRUE(NULL == notification_view()->title_view_);
   EXPECT_TRUE(NULL == notification_view()->message_view_);
   EXPECT_TRUE(NULL == notification_view()->image_view_);
+  EXPECT_TRUE(NULL == notification_view()->settings_button_view_);
   // We still expect an icon view for all layouts.
   EXPECT_TRUE(NULL != notification_view()->icon_view_);
+}
+
+TEST_F(NotificationViewTest, CreateOrUpdateTestSettingsButton) {
+  scoped_refptr<NotificationSettingsDelegate> delegate =
+      new NotificationSettingsDelegate();
+  Notification notf(NOTIFICATION_TYPE_BASE_FORMAT,
+                    std::string("notification id"), base::UTF8ToUTF16("title"),
+                    base::UTF8ToUTF16("message"), CreateTestImage(80, 80),
+                    base::UTF8ToUTF16("display source"),
+                    GURL("https://hello.com"),
+                    NotifierId(NotifierId::APPLICATION, "extension_id"),
+                    *data(), delegate.get());
+
+  notification_view()->CreateOrUpdateViews(notf);
+  EXPECT_TRUE(NULL != notification_view()->title_view_);
+  EXPECT_TRUE(NULL != notification_view()->message_view_);
+  EXPECT_TRUE(NULL != notification_view()->context_message_view_);
+  EXPECT_TRUE(NULL != notification_view()->settings_button_view_);
+  EXPECT_TRUE(NULL != notification_view()->icon_view_);
+
+  EXPECT_TRUE(NULL == notification_view()->image_view_);
 }
 
 TEST_F(NotificationViewTest, TestLineLimits) {
@@ -444,6 +484,51 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
 
   EXPECT_EQ(views::CustomButton::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
+}
+
+TEST_F(NotificationViewTest, SettingsButtonTest) {
+  scoped_refptr<NotificationSettingsDelegate> delegate =
+      new NotificationSettingsDelegate();
+  Notification notf(NOTIFICATION_TYPE_BASE_FORMAT,
+                    std::string("notification id"), base::UTF8ToUTF16("title"),
+                    base::UTF8ToUTF16("message"), CreateTestImage(80, 80),
+                    base::UTF8ToUTF16("display source"),
+                    GURL("https://hello.com"),
+                    NotifierId(NotifierId::APPLICATION, "extension_id"),
+                    *data(), delegate.get());
+  notification_view()->CreateOrUpdateViews(notf);
+  widget()->Show();
+  notification_view()->Layout();
+
+  EXPECT_TRUE(NULL != notification_view()->settings_button_view_);
+  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+            notification_view()->settings_button_view_->state());
+
+  // Now construct a mouse move event 1 pixel inside the boundary of the action
+  // button.
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToScreen(notification_view()->settings_button_view_,
+                                    &cursor_location);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+  ui::EventDispatchDetails details =
+      views::test::WidgetTest::GetEventProcessor(widget())
+          ->OnEventFromSource(&move);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+
+  EXPECT_EQ(views::CustomButton::STATE_HOVERED,
+            notification_view()->settings_button_view_->state());
+
+  // Now construct a mouse move event 1 pixel outside the boundary of the
+  // widget.
+  cursor_location = gfx::Point(-1, -1);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+
+  EXPECT_EQ(views::CustomButton::STATE_NORMAL,
+            notification_view()->settings_button_view_->state());
 }
 
 TEST_F(NotificationViewTest, ViewOrderingTest) {

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -379,21 +378,6 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   for (const auto& action : notification_data.actions)
     buttons.push_back(message_center::ButtonInfo(action.title));
 
-// Android always includes the settings button in all notifications, whereas for
-// desktop only web (not extensions) notifications do.
-#if !defined(OS_ANDROID)
-  // The notification Settings button always comes at the end.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNotificationSettingsButton)) {
-    message_center::ButtonInfo settings_button = message_center::ButtonInfo(
-        l10n_util::GetStringUTF16(IDS_NOTIFICATION_SETTINGS));
-    settings_button.icon =
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_NOTIFICATION_SETTINGS);
-    buttons.push_back(settings_button);
-  }
-#endif  // !defined(OS_ANDROID)
-
   notification.set_buttons(buttons);
 
   // On desktop, notifications with require_interaction==true stay on-screen
@@ -413,21 +397,19 @@ PlatformNotificationServiceImpl::GetNotificationUIManager() const {
   return g_browser_process->notification_ui_manager();
 }
 
-bool PlatformNotificationServiceImpl::OpenNotificationSettings(
+void PlatformNotificationServiceImpl::OpenNotificationSettings(
     BrowserContext* browser_context) {
-#if !defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNotificationSettingsButton)) {
-    Profile* profile = Profile::FromBrowserContext(browser_context);
-    DCHECK(profile);
-    chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-        profile, chrome::GetActiveDesktop());
-    chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-    return true;
-  }
-#endif  // !defined(OS_ANDROID)
-  return false;
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+#else
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
+      profile, chrome::GetActiveDesktop());
+  chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
+                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+#endif  // defined(OS_ANDROID)
 }
 
 void PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting(

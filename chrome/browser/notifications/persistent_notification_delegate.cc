@@ -55,6 +55,16 @@ void PersistentNotificationDelegate::ButtonClick(int button_index) {
       button_index);
 }
 
+void PersistentNotificationDelegate::SettingsClick() {
+  PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
+      browser_context_);
+  return;
+}
+
+bool PersistentNotificationDelegate::ShouldDisplaySettingsButton() {
+  return true;
+}
+
 std::string PersistentNotificationDelegate::id() const {
   return id_;
 }

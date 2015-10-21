@@ -799,12 +799,6 @@ const char kNoStartupWindow[]               = "no-startup-window";
 const char kNoSupervisedUserAcknowledgmentCheck[]  =
     "no-managed-user-acknowledgment-check";
 
-// Enables a button in all Web Notifications which upon click
-// opens the notification settings screen.
-// TODO(miguelg) remove once the button ships.
-const char kNotificationSettingsButton[] =
-    "enable-notification-settings-button";
-
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";

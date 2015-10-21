@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
@@ -272,6 +273,8 @@ views::View* NotificationView::TargetForRect(views::View* root,
   // called. But buttons are exceptions, they'll have their own event handlings.
   std::vector<views::View*> buttons(action_buttons_.begin(),
                                     action_buttons_.end());
+  if (settings_button_view_)
+    buttons.push_back(settings_button_view_);
   buttons.push_back(close_button());
 
   for (size_t i = 0; i < buttons.size(); ++i) {
@@ -292,6 +295,7 @@ void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateIconView(notification);
   CreateOrUpdateImageView(notification);
   CreateOrUpdateContextMessageView(notification);
+  CreateOrUpdateSettingsButtonView(notification);
   CreateOrUpdateActionButtonViews(notification);
 }
 
@@ -322,6 +326,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
       title_view_(NULL),
       message_view_(NULL),
       context_message_view_(NULL),
+      settings_button_view_(NULL),
       icon_view_(NULL),
       bottom_view_(NULL),
       image_container_(NULL),
@@ -423,9 +428,18 @@ void NotificationView::Layout() {
   // Icon.
   icon_view_->SetBounds(insets.left(), insets.top(), kIconSize, kIconSize);
 
-  // Bottom views.
+  // Settings & Bottom views.
   int bottom_y = insets.top() + std::max(top_height, kIconSize);
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
+
+  if (settings_button_view_) {
+    gfx::Size settings_size(settings_button_view_->GetPreferredSize());
+    settings_button_view_->SetBounds(content_width - settings_size.width(),
+                                     bottom_y - settings_size.height(),
+                                     settings_size.width(),
+                                     settings_size.height());
+  }
+
   bottom_view_->SetBounds(insets.left(), bottom_y,
                           content_width, bottom_height);
 }
@@ -464,6 +478,12 @@ void NotificationView::ButtonPressed(views::Button* sender,
   // we send to other parts of the code.
   // TODO(dewittj): Remove this hack.
   std::string id(notification_id());
+
+  if (sender == settings_button_view_) {
+    controller_->ClickOnSettingsButton(id);
+    return;
+  }
+
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
@@ -472,7 +492,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
     }
   }
 
-  // Let the superclass handled anything other than action buttons.
+  // Let the superclass handle everything else.
   // Warning: This may cause the NotificationView itself to be deleted,
   // so don't do anything afterwards.
   MessageView::ButtonPressed(sender, event);
@@ -600,6 +620,33 @@ void NotificationView::CreateOrUpdateContextMessageView(
     top_view_->AddChildView(context_message_view_);
   } else {
     context_message_view_->SetText(message);
+  }
+}
+
+void NotificationView::CreateOrUpdateSettingsButtonView(
+    const Notification& notification) {
+  if (settings_button_view_) {
+    delete settings_button_view_;
+    settings_button_view_ = NULL;
+  }
+
+  if (!settings_button_view_ && notification.delegate() &&
+      notification.delegate()->ShouldDisplaySettingsButton()) {
+    PaddedButton* settings = new PaddedButton(this);
+    settings->SetPadding(-kNotificationSettingsPadding,
+                         kNotificationSettingsPadding);
+    settings->SetNormalImage(IDR_NOTIFICATION_SETTINGS_BUTTON_ICON);
+    settings->SetHoveredImage(IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_HOVER);
+    settings->SetPressedImage(IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_PRESSED);
+    settings->set_animate_on_state_change(false);
+    settings->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+    settings->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+    settings->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+        kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
+    settings_button_view_ = settings;
+    AddChildView(settings_button_view_);
   }
 }
 

@@ -83,6 +83,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
+  void ClickOnSettingsButton(const std::string& notification_id) override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

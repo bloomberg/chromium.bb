@@ -18,6 +18,12 @@ void NotificationDelegate::Click() {}
 
 void NotificationDelegate::ButtonClick(int button_index) {}
 
+void NotificationDelegate::SettingsClick() {}
+
+bool NotificationDelegate::ShouldDisplaySettingsButton() {
+  return false;
+}
+
 // HandleNotificationClickedDelegate:
 
 HandleNotificationClickedDelegate::HandleNotificationClickedDelegate(

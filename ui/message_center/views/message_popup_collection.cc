@@ -103,6 +103,11 @@ void MessagePopupCollection::ClickOnNotificationButton(
   message_center_->ClickOnNotificationButton(notification_id, button_index);
 }
 
+void MessagePopupCollection::ClickOnSettingsButton(
+    const std::string& notification_id) {
+  message_center_->ClickOnSettingsButton(notification_id);
+}
+
 void MessagePopupCollection::MarkAllPopupsShown() {
   std::set<std::string> closed_ids = CloseAllWidgets();
   for (std::set<std::string>::iterator iter = closed_ids.begin();

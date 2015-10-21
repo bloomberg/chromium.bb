@@ -8718,8 +8718,8 @@ should be able to be added at any place in this file.
 <action name="Notifications.ShowSiteSettings">
   <owner>peter@chromium.org</owner>
   <description>
-    Recorded when a user clicks on the Site Settings button included with Web
-    Notifications.
+    Recorded when a user clicks on the settings button that could be included on
+    notification toasts.
   </description>
 </action>
 

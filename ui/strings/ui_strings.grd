@@ -648,6 +648,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the close button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification close
       </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the settings button in a notification. Usually 'button' is suffixed to this text automatically.">
+        Notification settings
+      </message>
       <if expr="chromeos">
         <message name="IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME" desc="The name of screenshot notifier that is a system component">
           Screenshot

@@ -44,6 +44,16 @@ void NotificationObjectProxy::ButtonClick(int button_index) {
       browser_context_);
 }
 
+void NotificationObjectProxy::SettingsClick() {
+  PlatformNotificationServiceImpl::GetInstance()->OpenNotificationSettings(
+      browser_context_);
+  return;
+}
+
+bool NotificationObjectProxy::ShouldDisplaySettingsButton() {
+  return true;
+}
+
 std::string NotificationObjectProxy::id() const {
   return id_;
 }

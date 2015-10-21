@@ -43,7 +43,6 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest overrides.
   void SetUp() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
   void TearDown() override;
 
@@ -100,14 +99,6 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
       // The test server has a base directory that doesn't exist in the
       // filesystem.
       test_page_url_(std::string("files/") + kTestFileName) {
-}
-
-void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  const testing::TestInfo* const test_info =
-      testing::UnitTest::GetInstance()->current_test_info();
-  if (strcmp(test_info->name(), "WebNotificationSiteSettingsButton") == 0)
-    command_line->AppendSwitch(switches::kNotificationSettingsButton);
 }
 
 void PlatformNotificationServiceBrowserTest::SetUp() {
@@ -284,11 +275,9 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   const Notification& notification = ui_manager()->GetNotificationAt(0);
   const std::vector<message_center::ButtonInfo>& buttons =
       notification.buttons();
-  EXPECT_EQ(1u, buttons.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NOTIFICATION_SETTINGS),
-            buttons[0].title);
+  EXPECT_EQ(0u, buttons.size());
 
-  notification.delegate()->ButtonClick(0);
+  notification.delegate()->SettingsClick();
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 }
 
