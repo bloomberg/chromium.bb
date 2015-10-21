@@ -7,7 +7,6 @@
       'target_name': 'metadata_dispatcher',
       'variables': {
         'depends': [
-          'metadata_dispatcher.js',
           'metadata_parser.js',
           'byte_reader.js',
           'exif_parser.js',
