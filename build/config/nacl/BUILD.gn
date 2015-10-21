@@ -6,14 +6,14 @@ import("//build/config/nacl/config.gni")
 
 # Native Client Definitions
 config("nacl_defines") {
-  defines = [
-    "_DEFAULT_SOURCE=1",
-    "_BSD_SOURCE=1",
-    "_POSIX_C_SOURCE=199506",
-    "_XOPEN_SOURCE=600",
-    "_GNU_SOURCE=1",
-    "__STDC_LIMIT_MACROS=1",
-  ]
+  if (is_linux || is_android || is_nacl) {
+    defines = [
+      "_POSIX_C_SOURCE=199506",
+      "_XOPEN_SOURCE=600",
+      "_GNU_SOURCE=1",
+      "__STDC_LIMIT_MACROS=1",
+    ]
+  }
 }
 
 config("nexe_defines") {
