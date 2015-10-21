@@ -2573,7 +2573,9 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
     *size = view_data_.rect.size;
   } else {
     // All other cases: Report the screen size.
-    blink::WebScreenInfo info = render_frame()->GetRenderWidget()->screenInfo();
+    if (!render_frame_ || !render_frame_->GetRenderWidget())
+      return PP_FALSE;
+    blink::WebScreenInfo info = render_frame_->GetRenderWidget()->screenInfo();
     *size = PP_MakeSize(info.rect.width, info.rect.height);
   }
   return PP_TRUE;
