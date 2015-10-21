@@ -479,6 +479,7 @@ void SimpleSynchronousEntry::WriteSparseData(
     DVLOG(1) << "Truncating sparse data file (" << sparse_data_size << " + "
              << buf_len << " > " << max_sparse_data_size << ")";
     TruncateSparseFile();
+    out_entry_stat->set_sparse_data_size(0);
   }
 
   SparseRangeIterator it = sparse_ranges_.lower_bound(offset);
@@ -1226,6 +1227,7 @@ bool SimpleSynchronousEntry::TruncateSparseFile() {
   }
 
   sparse_ranges_.clear();
+  sparse_tail_offset_ = header_and_key_length;
 
   return true;
 }

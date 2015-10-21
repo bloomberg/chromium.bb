@@ -4145,5 +4145,16 @@ TEST_F(DiskCacheEntryTest, SimpleCacheTruncateLargeSparseFile) {
   ret = entry->ReadSparseData(0, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(0, callback.GetResult(ret));
 
+  // Close and reopen the entry and make sure the first entry is still absent
+  // and the second entry is still present.
+  entry->Close();
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+
+  ret = entry->ReadSparseData(0, buffer.get(), kSize, callback.callback());
+  EXPECT_EQ(0, callback.GetResult(ret));
+
+  ret = entry->ReadSparseData(kSize, buffer.get(), kSize, callback.callback());
+  EXPECT_EQ(kSize, callback.GetResult(ret));
+
   entry->Close();
 }
