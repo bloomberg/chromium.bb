@@ -158,6 +158,9 @@ class LayoutTestBluetoothAdapterProvider {
   //          - Mock Functions:
   //            - Read: Calls success callback with device's name.
   //            - Write: Calls success callback.
+  //            - GetProperties: Returns
+  //                BluetoothGattCharacteristic::PROPERTY_READ |
+  //                BluetoothGattCharacteristic::PROPERTY_WRITE
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetGenericAccessAdapter();
 
@@ -172,8 +175,12 @@ class LayoutTestBluetoothAdapterProvider {
   //           - Mock Functions:
   //              - Read: Calls GattCharacteristicValueChanged and success
   //                      callback with [1] which corresponds to chest.
+  //              - GetProperties: Returns
+  //                  BluetoothGattCharacteristic::PROPERTY_READ
   //         - Heart Rate Measurement Characteristic:
   //            - Mock Functions:
+  //               - GetProperties: Returns
+  //                  BluetoothGattCharacteristic::PROPERTY_NOTIFY
   //               - StartNotifySession: Sets a timer to call
   //                 GattCharacteristicValueChanged every 10ms and calls success
   //                 callback with a
@@ -211,6 +218,10 @@ class LayoutTestBluetoothAdapterProvider {
   // service: ErrorsService. This service contains a characteristic for each
   // type of GATT Error that can be thrown. Trying to write or read from these
   // characteristics results in the corresponding error being returned.
+  // GetProperties returns the following for all characteristics:
+  // (BluetoothGattCharacteristic::PROPERTY_READ |
+  // BluetoothGattCharacteristic::PROPERTY_WRITE |
+  // BluetoothGattCharacteristic::PROPERTY_INDICATE)
   // Internal Structure:
   //   - ErrorsDevice
   //      - ErrorsService errorUUID(0xA0)
@@ -414,8 +425,10 @@ class LayoutTestBluetoothAdapterProvider {
   //   - GetPermissions:
   //       Returns: NULL
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattCharacteristic>>
-  GetBaseGATTCharacteristic(device::MockBluetoothGattService* service,
-                            const std::string& uuid);
+  GetBaseGATTCharacteristic(
+      device::MockBluetoothGattService* service,
+      const std::string& uuid,
+      device::BluetoothGattCharacteristic::Properties properties);
 
   // |ErrorCharacteristic|(service, error_type)
   // Inherits from BaseCharacteristic(service, errorUUID(error_type + 0xA1))

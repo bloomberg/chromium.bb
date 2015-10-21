@@ -611,7 +611,8 @@ void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
 void BluetoothDispatcher::OnGetCharacteristicSuccess(
     int thread_id,
     int request_id,
-    const std::string& characteristic_instance_id) {
+    const std::string& characteristic_instance_id,
+    uint32 characteristic_properties) {
   DCHECK(pending_characteristic_requests_.Lookup(request_id)) << request_id;
 
   BluetoothCharacteristicRequest* request =
@@ -619,7 +620,8 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
   request->callbacks->onSuccess(
       blink::adoptWebPtr(new WebBluetoothGATTCharacteristicInit(
           WebString::fromUTF8(characteristic_instance_id),
-          request->service_instance_id, request->characteristic_uuid)));
+          request->service_instance_id, request->characteristic_uuid,
+          characteristic_properties)));
 
   pending_characteristic_requests_.Remove(request_id);
 }

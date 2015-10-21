@@ -624,7 +624,8 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       // TODO(ortuno): Use generated instance ID instead.
       // https://crbug.com/495379
       Send(new BluetoothMsg_GetCharacteristicSuccess(
-          thread_id, request_id, characteristic_instance_id));
+          thread_id, request_id, characteristic_instance_id,
+          static_cast<uint32>(characteristic->GetProperties())));
       return;
     }
   }

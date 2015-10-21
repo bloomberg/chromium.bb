@@ -175,10 +175,10 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnGetPrimaryServiceError(int thread_id,
                                 int request_id,
                                 blink::WebBluetoothError error);
-  void OnGetCharacteristicSuccess(
-      int thread_id,
-      int request_id,
-      const std::string& characteristic_instance_id);
+  void OnGetCharacteristicSuccess(int thread_id,
+                                  int request_id,
+                                  const std::string& characteristic_instance_id,
+                                  uint32 characteristic_properties);
   void OnGetCharacteristicError(int thread_id,
                                 int request_id,
                                 blink::WebBluetoothError error);

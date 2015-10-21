@@ -184,3 +184,23 @@ function assert_no_events(object, event_name) {
     }, 100);
   });
 }
+
+class TestCharacteristicProperties {
+  constructor(properties) {
+    this.broadcast = properties.broadcast || false;
+    this.read = properties.read || false;
+    this.writeWithoutResponse = properties.writeWithoutResponse || false;
+    this.write = properties.write || false;
+    this.notify = properties.notify || false;
+    this.indicate = properties.indicate || false;
+    this.authenticatedSignedWrites = properties.authenticatedSignedWrites || false;
+    this.reliableWrite = properties.reliableWrite || false;
+    this.writableAuxiliaries = properties.writableAuxiliaries || false;
+  }
+}
+
+function assert_properties_equal(properties, expected_properties) {
+  for (let key in expected_properties) {
+    assert_equals(properties[key], expected_properties[key]);
+  }
+}

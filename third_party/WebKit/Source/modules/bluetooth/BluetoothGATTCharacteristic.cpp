@@ -11,6 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
+#include "modules/bluetooth/BluetoothCharacteristicProperties.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
@@ -23,6 +24,7 @@ BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(ExecutionContext* conte
     , m_webCharacteristic(webCharacteristic)
     , m_stopped(false)
 {
+    m_properties = BluetoothCharacteristicProperties::create(m_webCharacteristic->characteristicProperties);
     // See example in Source/platform/heap/ThreadState.h
     ThreadState::current()->registerPreFinalizer(this);
 }
@@ -143,6 +145,7 @@ DEFINE_TRACE(BluetoothGATTCharacteristic)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothGATTCharacteristic>::trace(visitor);
     ActiveDOMObject::trace(visitor);
+    visitor->trace(m_properties);
 }
 
 } // namespace blink

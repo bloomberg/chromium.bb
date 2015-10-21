@@ -289,6 +289,17 @@ interface Blob
 interface BlobEvent
     getter data
     method constructor
+interface BluetoothCharacteristicProperties
+    getter authenticatedSignedWrites
+    getter broadcast
+    getter indicate
+    getter notify
+    getter read
+    getter reliableWrite
+    getter writableAuxiliaries
+    getter write
+    getter writeWithoutResponse
+    method constructor
 interface BluetoothDevice
     getter deviceClass
     getter instanceID
@@ -303,6 +314,7 @@ interface BluetoothDevice
     method constructor
 interface BluetoothGATTCharacteristic
     getter oncharacteristicvaluechanged
+    getter properties
     getter uuid
     getter value
     method constructor

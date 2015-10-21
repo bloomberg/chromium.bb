@@ -15,19 +15,19 @@ namespace blink {
 struct WebBluetoothGATTCharacteristicInit {
     WebBluetoothGATTCharacteristicInit(const WebString& characteristicInstanceID,
         const WebString& serviceInstanceID,
-        const WebString& uuid)
+        const WebString& uuid,
+        uint32_t characteristicProperties)
         : characteristicInstanceID(characteristicInstanceID)
         , serviceInstanceID(serviceInstanceID)
         , uuid(uuid)
+        , characteristicProperties(characteristicProperties)
     {
     }
 
     const WebString characteristicInstanceID;
     const WebString serviceInstanceID;
     const WebString uuid;
-    // TODO(ortuno): Add 'properties' once CharacteristicProperties is implemented.
-    // https://crbug.com/483345
-    // const WebCharacteristicProperties properties;
+    const uint32_t characteristicProperties;
     const WebVector<uint8_t> value;
 };
 

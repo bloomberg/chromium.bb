@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => {
+      return Promise.all([service.getCharacteristic('body_sensor_location'),
+                          service.getCharacteristic('heart_rate_measurement')]);
+    }).then(characteristics => {
+      let bsl_properties = characteristics[0].properties;
+      let bsl_expected_properties = new TestCharacteristicProperties({read: true});
+      assert_properties_equal(bsl_properties, bsl_expected_properties);
+
+      let hrm_properties = characteristics[1].properties;
+      let hrm_expected_properties = new TestCharacteristicProperties({notify: true});
+      assert_properties_equal(hrm_properties, hrm_expected_properties);
+    });
+}, 'HeartRate device properties');
+</script>

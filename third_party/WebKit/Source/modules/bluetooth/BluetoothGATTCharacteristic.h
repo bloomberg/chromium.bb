@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class BluetoothCharacteristicProperties;
 class ExecutionContext;
 class ScriptPromise;
 class ScriptPromiseResolver;
@@ -70,6 +71,8 @@ public:
 
     // IDL exposed interface:
     String uuid() { return m_webCharacteristic->uuid; }
+
+    BluetoothCharacteristicProperties* properties() { return m_properties; }
     PassRefPtr<DOMArrayBuffer> value() const { return m_value; }
     ScriptPromise readValue(ScriptState*);
     ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
@@ -81,6 +84,7 @@ public:
 private:
     OwnPtr<WebBluetoothGATTCharacteristicInit> m_webCharacteristic;
     bool m_stopped;
+    Member<BluetoothCharacteristicProperties> m_properties;
     RefPtr<DOMArrayBuffer> m_value;
 };
 
