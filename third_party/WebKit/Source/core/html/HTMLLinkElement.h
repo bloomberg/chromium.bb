@@ -111,6 +111,10 @@ private:
         ASSERT(!m_fetchFollowingCORS);
         m_fetchFollowingCORS = true;
     }
+    void clearFetchFollowingCORS()
+    {
+        m_fetchFollowingCORS = false;
+    }
 
     RefPtrWillBeMember<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;

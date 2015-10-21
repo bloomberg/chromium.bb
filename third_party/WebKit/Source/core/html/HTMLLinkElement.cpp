@@ -719,6 +719,7 @@ void LinkStyle::process()
         if (resource()) {
             removePendingSheet();
             clearResource();
+            clearFetchFollowingCORS();
         }
 
         if (!m_owner->shouldLoadLink())
