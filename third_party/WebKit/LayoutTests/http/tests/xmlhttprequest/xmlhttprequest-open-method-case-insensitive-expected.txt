@@ -1,4 +1,4 @@
-non-standard method names should be returned as is per step-5 of http://xhr.spec.whatwg.org/#the-open()-method.
+non-standard method names should be returned as is per step-5 of https://xhr.spec.whatwg.org/#the-open()-method.
 
 This is a testharness.js-based test.
 PASS XMLHttpRequest: open() - case-insensitive methods test 

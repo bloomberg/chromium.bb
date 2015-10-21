@@ -1,4 +1,4 @@
-Valid methods per step-5 of http://xhr.spec.whatwg.org/#the-open()-method.
+Valid methods per step-5 of https://xhr.spec.whatwg.org/#the-open()-method.
 
 This is a testharness.js-based test.
 PASS XMLHttpRequest: open() - allowed case in/sensitive methods test 

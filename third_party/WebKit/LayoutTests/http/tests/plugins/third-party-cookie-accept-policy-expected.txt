@@ -1,4 +1,4 @@
-CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 ALERT: Cookies should be clear, and are: ''
 ALERT: About to set a cookie, but on localhost instead of 127.0.0.1, which is our main document domain - This should fail.
 ALERT: Cookies should still be clear, and are: ''
