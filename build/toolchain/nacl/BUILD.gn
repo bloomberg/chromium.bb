@@ -16,11 +16,13 @@ import("//build/toolchain/nacl_toolchain.gni")
 revisions = exec_script("//native_client/build/get_toolchain_revision.py",
                         [
                           "nacl_x86_glibc",
+                          "nacl_arm_glibc",
                           "pnacl_newlib",
                         ],
                         "trim list lines")
 nacl_x86_glibc_rev = revisions[0]
-pnacl_newlib_rev = revisions[1]
+nacl_arm_glibc_rev = revisions[1]
+pnacl_newlib_rev = revisions[2]
 
 nacl_toolchain("newlib_pnacl") {
   toolchain_package = "pnacl_newlib"
@@ -44,36 +46,48 @@ nacl_toolchain("newlib_pnacl") {
   link_outputs = [ finalized_file ]
 }
 
-nacl_toolchain("glibc_x86") {
-  toolchain_package = "nacl_x86_glibc"
-  toolchain_revision = nacl_x86_glibc_rev
-  toolchain_cpu = "x86"
-  toolprefix =
-      rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/i686-nacl-",
-                  root_build_dir)
-  is_clang = false
-  is_nacl_glibc = true
+template("nacl_glibc_toolchain") {
+  toolchain_cpu = target_name
+  assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
+  assert(defined(invoker.toolchain_package), "Must define toolchain_package")
+  assert(defined(invoker.toolchain_revision), "Must define toolchain_revision")
+  forward_variables_from(invoker,
+                         [
+                           "toolchain_package",
+                           "toolchain_revision",
+                         ])
 
-  cc = toolprefix + "gcc"
-  cxx = toolprefix + "g++"
-  ar = toolprefix + "ar"
-  ld = cxx
+  toolprefix = rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/" +
+                               invoker.toolchain_tuple + "-",
+                           root_build_dir)
+
+  nacl_toolchain("glibc_" + toolchain_cpu) {
+    is_clang = false
+    is_nacl_glibc = true
+
+    cc = toolprefix + "gcc"
+    cxx = toolprefix + "g++"
+    ar = toolprefix + "ar"
+    ld = cxx
+  }
 }
 
-nacl_toolchain("glibc_x64") {
+nacl_glibc_toolchain("x86") {
   toolchain_package = "nacl_x86_glibc"
   toolchain_revision = nacl_x86_glibc_rev
-  toolchain_cpu = "x64"
-  toolprefix =
-      rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-",
-                  root_build_dir)
-  is_clang = false
-  is_nacl_glibc = true
+  toolchain_tuple = "i686-nacl"
+}
 
-  cc = toolprefix + "gcc"
-  cxx = toolprefix + "g++"
-  ar = toolprefix + "ar"
-  ld = cxx
+nacl_glibc_toolchain("x64") {
+  toolchain_package = "nacl_x86_glibc"
+  toolchain_revision = nacl_x86_glibc_rev
+  toolchain_tuple = "x86_64-nacl"
+}
+
+nacl_glibc_toolchain("arm") {
+  toolchain_package = "nacl_arm_glibc"
+  toolchain_revision = nacl_arm_glibc_rev
+  toolchain_tuple = "arm-nacl"
 }
 
 template("nacl_clang_toolchain") {
