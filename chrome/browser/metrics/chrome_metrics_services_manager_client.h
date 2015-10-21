@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/metrics/metrics_services_manager_client.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/metrics_services_manager/metrics_services_manager_client.h"
 
 class PrefService;
 
@@ -18,13 +18,14 @@ class MetricsStateManager;
 }
 
 // Provides a //chrome-specific implementation of MetricsServicesManagerClient.
-class ChromeMetricsServicesManagerClient : public MetricsServicesManagerClient {
+class ChromeMetricsServicesManagerClient
+    : public metrics_services_manager::MetricsServicesManagerClient {
  public:
   explicit ChromeMetricsServicesManagerClient(PrefService* local_state);
   ~ChromeMetricsServicesManagerClient() override;
 
  private:
-  // MetricsServicesManagerClient:
+  // metrics_services_manager::MetricsServicesManagerClient:
   scoped_ptr<rappor::RapporService> CreateRapporService() override;
   scoped_ptr<variations::VariationsService> CreateVariationsService() override;
   scoped_ptr<metrics::MetricsServiceClient> CreateMetricsServiceClient()

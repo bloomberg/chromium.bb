@@ -86,7 +86,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // BrowserProcess implementation.
   void ResourceDispatcherHostCreated() override;
   void EndSession() override;
-  MetricsServicesManager* GetMetricsServicesManager() override;
+  metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
+      override;
   metrics::MetricsService* metrics_service() override;
   rappor::RapporService* rappor_service() override;
   IOThread* io_thread() override;
@@ -176,7 +177,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   void CacheDefaultWebClientState();
 
-  scoped_ptr<MetricsServicesManager> metrics_services_manager_;
+  scoped_ptr<metrics_services_manager::MetricsServicesManager>
+      metrics_services_manager_;
 
   scoped_ptr<IOThread> io_thread_;
 

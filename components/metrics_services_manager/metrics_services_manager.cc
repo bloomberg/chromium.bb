@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_services_manager.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 
 #include "base/logging.h"
-#include "chrome/browser/metrics/metrics_services_manager_client.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics_services_manager/metrics_services_manager_client.h"
 #include "components/rappor/rappor_service.h"
 #include "components/variations/service/variations_service.h"
+
+namespace metrics_services_manager {
 
 MetricsServicesManager::MetricsServicesManager(
     scoped_ptr<MetricsServicesManagerClient> client)
@@ -18,8 +20,7 @@ MetricsServicesManager::MetricsServicesManager(
   DCHECK(client_);
 }
 
-MetricsServicesManager::~MetricsServicesManager() {
-}
+MetricsServicesManager::~MetricsServicesManager() {}
 
 metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -74,8 +75,7 @@ void MetricsServicesManager::UpdateRunningServices() {
   if (client_->OnlyDoMetricsRecording()) {
     metrics->StartRecordingForTests();
     GetRapporService()->Update(
-        rappor::UMA_RAPPOR_GROUP | rappor::SAFEBROWSING_RAPPOR_GROUP,
-        false);
+        rappor::UMA_RAPPOR_GROUP | rappor::SAFEBROWSING_RAPPOR_GROUP, false);
     return;
   }
 
@@ -112,3 +112,5 @@ void MetricsServicesManager::UpdateRunningServices() {
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
   return UpdatePermissions(client_->IsMetricsReportingEnabled(), may_upload);
 }
+
+}  // namespace metrics_services_manager

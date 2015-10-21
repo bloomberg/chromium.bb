@@ -102,7 +102,8 @@ void TestingBrowserProcess::ResourceDispatcherHostCreated() {
 void TestingBrowserProcess::EndSession() {
 }
 
-MetricsServicesManager* TestingBrowserProcess::GetMetricsServicesManager() {
+metrics_services_manager::MetricsServicesManager*
+TestingBrowserProcess::GetMetricsServicesManager() {
   return nullptr;
 }
 

@@ -44,7 +44,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
-#include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log_helper.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
@@ -78,6 +77,7 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_service.h"
@@ -534,11 +534,13 @@ void BrowserProcessImpl::EndSession() {
 #endif
 }
 
-MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
+metrics_services_manager::MetricsServicesManager*
+BrowserProcessImpl::GetMetricsServicesManager() {
   DCHECK(CalledOnValidThread());
   if (!metrics_services_manager_) {
-    metrics_services_manager_.reset(new MetricsServicesManager(make_scoped_ptr(
-        new ChromeMetricsServicesManagerClient(local_state()))));
+    metrics_services_manager_.reset(
+        new metrics_services_manager::MetricsServicesManager(make_scoped_ptr(
+            new ChromeMetricsServicesManagerClient(local_state()))));
   }
   return metrics_services_manager_.get();
 }

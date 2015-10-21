@@ -50,6 +50,7 @@
     'login.gypi',
     'memory_pressure.gypi',
     'metrics.gypi',
+    'metrics_services_manager.gypi',
     'navigation_metrics.gypi',
     'net_log.gypi',
     'network_hints.gypi',

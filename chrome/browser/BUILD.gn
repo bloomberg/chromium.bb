@@ -136,6 +136,7 @@ source_set("browser") {
     "//components/metrics:profiler_content",
     "//components/metrics/proto:proto",
     "//components/metrics:ui",
+    "//components/metrics_services_manager",
     "//components/mime_util",
     "//components/navigation_metrics",
     "//components/network_time",

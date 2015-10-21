@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_METRICS_SERVICES_MANAGER_CLIENT_H_
-#define CHROME_BROWSER_METRICS_METRICS_SERVICES_MANAGER_CLIENT_H_
+#ifndef COMPONENTS_METRICS_SERVICES_MANAGER_METRICS_SERVICES_MANAGER_CLIENT_H_
+#define COMPONENTS_METRICS_SERVICES_MANAGER_METRICS_SERVICES_MANAGER_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -26,6 +26,8 @@ class RapporService;
 namespace variations {
 class VariationsService;
 }
+
+namespace metrics_services_manager {
 
 // MetricsServicesManagerClient is an interface that allows
 // MetricsServicesManager to interact with its embedder.
@@ -59,4 +61,6 @@ class MetricsServicesManagerClient {
   virtual bool OnlyDoMetricsRecording() = 0;
 };
 
-#endif  // CHROME_BROWSER_METRICS_METRICS_SERVICES_MANAGER_CLIENT_H_
+}  // namespace metrics_services_manager
+
+#endif  // COMPONENTS_METRICS_SERVICES_MANAGER_METRICS_SERVICES_MANAGER_CLIENT_H_

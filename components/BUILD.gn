@@ -88,6 +88,7 @@ group("all_components") {
       "//components/login",
       "//components/memory_pressure",
       "//components/metrics",
+      "//components/metrics_services_manager",
       "//components/mime_util",
       "//components/navigation_interception",
       "//components/navigation_metrics",

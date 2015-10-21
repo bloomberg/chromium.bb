@@ -28,7 +28,6 @@ class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
 class MediaFileSystemRegistry;
-class MetricsServicesManager;
 class NotificationUIManager;
 class PrefRegistrySimple;
 class PrefService;
@@ -69,6 +68,10 @@ class MessageCenter;
 
 namespace metrics {
 class MetricsService;
+}
+
+namespace metrics_services_manager {
+class MetricsServicesManager;
 }
 
 namespace net {
@@ -124,7 +127,8 @@ class BrowserProcess {
 
   // Gets the manager for the various metrics-related services, constructing it
   // if necessary.
-  virtual MetricsServicesManager* GetMetricsServicesManager() = 0;
+  virtual metrics_services_manager::MetricsServicesManager*
+  GetMetricsServicesManager() = 0;
 
   // Services: any of these getters may return NULL
   virtual metrics::MetricsService* metrics_service() = 0;

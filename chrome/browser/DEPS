@@ -55,6 +55,7 @@ include_rules = [
   "+components/language_usage_metrics",
   "+components/leveldb_proto",
   "+components/metrics",
+  "+components/metrics_services_manager",
   "+components/mime_util",
   "+components/nacl/browser",
   "+components/nacl/common",
