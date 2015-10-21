@@ -103,6 +103,14 @@ void OfflinePageBridge::OfflinePageModelChanged(OfflinePageModel* model) {
   Java_OfflinePageBridge_offlinePageModelChanged(env, obj.obj());
 }
 
+void OfflinePageBridge::OfflinePageDeleted(int64 bookmark_id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_OfflinePageBridge_offlinePageDeleted(env, obj.obj(), bookmark_id);
+}
+
 void OfflinePageBridge::GetAllPages(JNIEnv* env,
                                     jobject obj,
                                     jobject j_result_obj) {
@@ -199,6 +207,10 @@ void OfflinePageBridge::DeletePages(JNIEnv* env,
   offline_page_model_->DeletePagesByBookmarkId(
       bookmark_ids,
       base::Bind(&DeletePageCallback, j_callback_ref));
+}
+
+void OfflinePageBridge::CheckMetadataConsistency(JNIEnv* env, jobject obj) {
+  offline_page_model_->CheckForExternalFileDeletion();
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

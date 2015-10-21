@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
@@ -60,6 +61,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     private MenuItem mDeleteButton;
 
     private OfflineButtonType mOfflineButtonType = OfflineButtonType.NONE;
+    private OfflinePageModelObserver mOfflinePageModelObserver;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -129,6 +131,16 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
         });
 
         if (OfflinePageBridge.isEnabled()) {
+            mOfflinePageModelObserver = new OfflinePageModelObserver() {
+                @Override
+                public void offlinePageDeleted(BookmarkId bookmarkId) {
+                    if (mBookmarkId.equals(bookmarkId)) {
+                        updateOfflineSection();
+                    }
+                }
+            };
+
+            mEnhancedBookmarksModel.getOfflinePageBridge().addObserver(mOfflinePageModelObserver);
             // Make offline page section visible and find controls.
             findViewById(R.id.offline_page_group).setVisibility(View.VISIBLE);
             getIntent().setExtrasClassLoader(WebContents.class.getClassLoader());
@@ -208,6 +220,10 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     @Override
     protected void onDestroy() {
         recordOfflineButtonAction(false);
+        if (OfflinePageBridge.isEnabled()) {
+            mEnhancedBookmarksModel.getOfflinePageBridge().removeObserver(
+                    mOfflinePageModelObserver);
+        }
         mEnhancedBookmarksModel.removeObserver(mBookmarkModelObserver);
         mEnhancedBookmarksModel.destroy();
         mEnhancedBookmarksModel = null;
@@ -215,6 +231,9 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     }
 
     private void updateOfflineSection() {
+        assert OfflinePageBridge.isEnabled();
+        mEnhancedBookmarksModel.getOfflinePageBridge().checkOfflinePageMetadata();
+
         Button saveRemoveVisitButton = (Button) findViewById(R.id.offline_page_save_remove_button);
         TextView offlinePageInfoTextView = (TextView) findViewById(R.id.offline_page_info_text);
 

@@ -280,6 +280,16 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 public void offlinePageModelChanged() {
                     mDelegate.notifyStateChange(EnhancedBookmarkItemsAdapter.this);
                 }
+
+                @Override
+                public void offlinePageDeleted(BookmarkId bookmarkId) {
+                    if (mDelegate.getCurrentState() == UIState.STATE_FILTER) {
+                        int deletedPosition = getPositionForBookmark(bookmarkId);
+                        if (deletedPosition >= 0) {
+                            removeItem(deletedPosition);
+                        }
+                    }
+                }
             };
             offlinePageBridge.addObserver(mOfflinePageModelObserver);
 
@@ -329,6 +339,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onFilterStateSet(EnhancedBookmarkFilter filter) {
         assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
         setBookmarks(null, mDelegate.getModel().getBookmarkIDsByFilter(filter));
+        mDelegate.getModel().getOfflinePageBridge().checkOfflinePageMetadata();
     }
 
     @Override

@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -69,8 +70,7 @@ public final class OfflinePageBridge {
     }
 
     /**
-     * Base empty implementation observer class that provides listeners to be notified of changes to
-     * the offline page model.
+     * Base observer class listeners to be notified of changes to the offline page model.
      */
     public abstract static class OfflinePageModelObserver {
         /**
@@ -83,6 +83,13 @@ public final class OfflinePageBridge {
          * update an offline page.
          */
         public void offlinePageModelChanged() {}
+
+        /**
+         * Called when an offline page is deleted. This can be called as a result of
+         * #checkOfflinePageMetadata().
+         * @param bookmarkId A bookmark ID of the deleted offline page.
+         */
+        public void offlinePageDeleted(BookmarkId bookmarkId) {}
     }
 
     private static int getFreeSpacePercentage() {
@@ -268,6 +275,13 @@ public final class OfflinePageBridge {
         return result;
     }
 
+    /**
+     * Starts a check of offline page metadata, e.g. are all offline copies present.
+     */
+    public void checkOfflinePageMetadata() {
+        nativeCheckMetadataConsistency(mNativeOfflinePageBridge);
+    }
+
     @CalledByNative
     private void offlinePageModelLoaded() {
         mIsNativeOfflinePageModelLoaded = true;
@@ -280,6 +294,14 @@ public final class OfflinePageBridge {
     private void offlinePageModelChanged() {
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageModelChanged();
+        }
+    }
+
+    @CalledByNative
+    private void offlinePageDeleted(long bookmarkId) {
+        BookmarkId id = new BookmarkId(bookmarkId, BookmarkType.NORMAL);
+        for (OfflinePageModelObserver observer : mObservers) {
+            observer.offlinePageDeleted(id);
         }
     }
 
@@ -313,4 +335,5 @@ public final class OfflinePageBridge {
             long nativeOfflinePageBridge, DeletePageCallback callback, long[] bookmarkIds);
     private native void nativeGetPagesToCleanUp(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
+    private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
 }

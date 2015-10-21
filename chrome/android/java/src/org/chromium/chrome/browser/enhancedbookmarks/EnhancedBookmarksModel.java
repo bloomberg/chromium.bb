@@ -105,6 +105,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     @Override
     public void destroy() {
         if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.removeObserver(mOfflinePageModelObserver);
             mOfflinePageBridge.destroy();
             mOfflinePageBridge = null;
         }

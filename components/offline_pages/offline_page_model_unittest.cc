@@ -173,6 +173,7 @@ class OfflinePageModelTest
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
+  void OfflinePageDeleted(int64 bookmark_id) override;
 
   // OfflinePageModel callbacks.
   void OnSavePageDone(SavePageResult result);
@@ -209,6 +210,10 @@ class OfflinePageModelTest
     return last_delete_result_;
   }
 
+  int64 last_deleted_bookmark_id() const {
+    return last_deleted_bookmark_id_;
+  }
+
   const base::FilePath& last_archiver_path() { return last_archiver_path_; }
   void set_last_archiver_path(const base::FilePath& last_archiver_path) {
     last_archiver_path_ = last_archiver_path;
@@ -223,6 +228,7 @@ class OfflinePageModelTest
   SavePageResult last_save_result_;
   DeletePageResult last_delete_result_;
   base::FilePath last_archiver_path_;
+  int64 last_deleted_bookmark_id_;
 };
 
 OfflinePageTestArchiver::OfflinePageTestArchiver(
@@ -263,7 +269,8 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
 
 OfflinePageModelTest::OfflinePageModelTest()
     : last_save_result_(SavePageResult::CANCELLED),
-      last_delete_result_(DeletePageResult::CANCELLED) {
+      last_delete_result_(DeletePageResult::CANCELLED),
+      last_deleted_bookmark_id_(-1) {
 }
 
 OfflinePageModelTest::~OfflinePageModelTest() {
@@ -278,6 +285,7 @@ void OfflinePageModelTest::SetUp() {
 
 void OfflinePageModelTest::TearDown() {
   model_->RemoveObserver(this);
+  base::RunLoop().RunUntilIdle();
 }
 
 void OfflinePageModelTest::OfflinePageModelLoaded(OfflinePageModel* model) {
@@ -287,6 +295,11 @@ void OfflinePageModelTest::OfflinePageModelLoaded(OfflinePageModel* model) {
 
 void OfflinePageModelTest::OfflinePageModelChanged(OfflinePageModel* model) {
   ASSERT_EQ(model_.get(), model);
+}
+
+void OfflinePageModelTest::OfflinePageDeleted(int64 bookmark_id) {
+  last_deleted_bookmark_id_ = bookmark_id;
+  run_loop_->Quit();
 }
 
 void OfflinePageModelTest::OnSavePageDone(
@@ -672,6 +685,55 @@ TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnRemove) {
                                        AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(DeletePageResult::STORE_FAILURE, last_delete_result());
+}
+
+TEST_F(OfflinePageModelTest, DetectThatOfflineCopyIsMissing) {
+  // Save a page.
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  ResetResults();
+
+  const OfflinePageItem* page =
+      model()->GetPageByBookmarkId(kTestPageBookmarkId1);
+  // Delete the offline copy of the page and check the metadata.
+  base::DeleteFile(page->file_path, false);
+  model()->CheckForExternalFileDeletion();
+  PumpLoop();
+
+  EXPECT_EQ(last_deleted_bookmark_id(), kTestPageBookmarkId1);
+  EXPECT_EQ(0UL, model()->GetAllPages().size());
+}
+
+TEST_F(OfflinePageModelTest, DetectThatOfflineCopyIsMissingAfterLoad) {
+  // Save a page.
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  ResetResults();
+
+  const OfflinePageItem* page =
+      model()->GetPageByBookmarkId(kTestPageBookmarkId1);
+  // Delete the offline copy of the page and check the metadata.
+  base::DeleteFile(page->file_path, false);
+  // Reseting the model should trigger the metadata consistency check as well.
+  ResetModel();
+  PumpLoop();
+
+  EXPECT_EQ(last_deleted_bookmark_id(), kTestPageBookmarkId1);
+  EXPECT_EQ(0UL, model()->GetAllPages().size());
 }
 
 TEST_F(OfflinePageModelTest, GetPageByBookmarkId) {

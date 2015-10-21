@@ -37,6 +37,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
+  void OfflinePageDeleted(int64 bookmark_id) override;
 
   void GetAllPages(JNIEnv* env,
                    jobject obj,
@@ -65,6 +66,8 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
                    jobject obj,
                    jobject j_callback_obj,
                    jlongArray bookmark_ids_array);
+
+  void CheckMetadataConsistency(JNIEnv* env, jobject obj);
 
  private:
   void NotifyIfDoneLoading() const;

@@ -5,6 +5,7 @@
 #include "components/offline_pages/offline_page_model.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -71,6 +72,19 @@ void DeleteArchiveFiles(const std::vector<base::FilePath>& paths_to_delete,
 }
 
 void EmptyDeleteCallback(OfflinePageModel::DeletePageResult /* result */) {
+}
+
+void FindPagesMissingArchiveFile(
+    const std::vector<std::pair<int64, base::FilePath>>& id_path_pairs,
+    std::vector<int64>* ids_of_pages_missing_archive_file) {
+  DCHECK(ids_of_pages_missing_archive_file);
+
+  for (const auto& id_path : id_path_pairs) {
+    if (!base::PathExists(id_path.second) ||
+        base::DirectoryExists(id_path.second)) {
+      ids_of_pages_missing_archive_file->push_back(id_path.first);
+    }
+  }
 }
 
 }  // namespace
@@ -233,6 +247,25 @@ const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
   return nullptr;
 }
 
+void OfflinePageModel::CheckForExternalFileDeletion() {
+  DCHECK(is_loaded_);
+
+  std::vector<std::pair<int64, base::FilePath>> id_path_pairs;
+  for (const auto& id_page_pair : offline_pages_) {
+    id_path_pairs.push_back(
+        std::make_pair(id_page_pair.first, id_page_pair.second.file_path));
+  }
+
+  std::vector<int64>* ids_of_pages_missing_archive_file =
+      new std::vector<int64>();
+  task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&FindPagesMissingArchiveFile, id_path_pairs,
+                            ids_of_pages_missing_archive_file),
+      base::Bind(&OfflinePageModel::OnFindPagesMissingArchiveFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(ids_of_pages_missing_archive_file)));
+}
+
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
 }
@@ -320,7 +353,8 @@ void OfflinePageModel::OnMarkPageForDeletionDone(
                  weak_ptr_factory_.GetWeakPtr()),
       kFinalDeletionDelay);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OfflinePageDeleted(offline_page_item.bookmark_id));
 }
 
 void OfflinePageModel::OnUndoOfflinePageDone(
@@ -410,6 +444,8 @@ void OfflinePageModel::OnLoadDone(
   FinalizePageDeletion();
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
+
+  CheckForExternalFileDeletion();
 }
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
@@ -476,6 +512,33 @@ void OfflinePageModel::InformDeletePageDone(const DeletePageCallback& callback,
       static_cast<int>(DeletePageResult::RESULT_COUNT));
   if (!callback.is_null())
     callback.Run(result);
+}
+
+void OfflinePageModel::OnFindPagesMissingArchiveFile(
+    const std::vector<int64>* ids_of_pages_missing_archive_file) {
+  DCHECK(ids_of_pages_missing_archive_file);
+  if (ids_of_pages_missing_archive_file->empty())
+    return;
+
+  DeletePageCallback done_callback(
+      base::Bind(&OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 *ids_of_pages_missing_archive_file));
+
+  store_->RemoveOfflinePages(
+      *ids_of_pages_missing_archive_file,
+      base::Bind(&OfflinePageModel::OnRemoveOfflinePagesDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 *ids_of_pages_missing_archive_file,
+                 done_callback));
+}
+
+void OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone(
+    const std::vector<int64>& bookmark_ids,
+    OfflinePageModel::DeletePageResult /* result */) {
+  for (int64 bookmark_id : bookmark_ids) {
+    FOR_EACH_OBSERVER(Observer, observers_, OfflinePageDeleted(bookmark_id));
+  }
 }
 
 }  // namespace offline_pages

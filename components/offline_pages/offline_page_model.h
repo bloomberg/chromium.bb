@@ -103,6 +103,11 @@ class OfflinePageModel : public KeyedService,
     // updating an offline page.
     virtual void OfflinePageModelChanged(OfflinePageModel* model) = 0;
 
+    // Invoked when an offline copy related to |bookmark_id| was deleted.
+    // In can be invoked as a result of |CheckForExternalFileDeletion|, if a
+    // deleted page is detected.
+    virtual void OfflinePageDeleted(int64 bookmark_id) = 0;
+
    protected:
     virtual ~Observer() {}
   };
@@ -169,9 +174,15 @@ class OfflinePageModel : public KeyedService,
   // is returned if not found.
   const OfflinePageItem* GetPageByBookmarkId(int64 bookmark_id) const;
 
-  // Returns an offline page that is stored as |offline_url|. nullptr is
+  // Returns an offline page that is stored as |offline_url|. A nullptr is
   // returned if not found.
   const OfflinePageItem* GetPageByOfflineURL(const GURL& offline_url) const;
+
+  // Checks that all of the offline pages have corresponding offline copies.
+  // If a page is discovered to be missing an offline copy, its offline page
+  // metadata will be removed and |OfflinePageDeleted| will be sent to model
+  // observers.
+  void CheckForExternalFileDeletion();
 
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
@@ -229,15 +240,22 @@ class OfflinePageModel : public KeyedService,
   void OnMarkPageAccesseDone(const OfflinePageItem& offline_page_item,
                              bool success);
 
-  // Steps for marking an offline page for deletion that can be undo-ed.
+  // Steps for marking an offline page for deletion that can be undone.
   void OnMarkPageForDeletionDone(const OfflinePageItem& offline_page_item,
                                  const DeletePageCallback& callback,
                                  bool success);
   void FinalizePageDeletion();
 
-  // Steps for undoing a offline page deletion.
+  // Steps for undoing an offline page deletion.
   void UndoPageDeletion(int64 bookmark_id);
   void OnUndoOfflinePageDone(const OfflinePageItem& offline_page, bool success);
+
+  // Callbacks for checking if offline pages are missing archive files.
+  void OnFindPagesMissingArchiveFile(
+      const std::vector<int64>* pages_missing_archive_file);
+  void OnRemoveOfflinePagesMissingArchiveFileDone(
+      const std::vector<int64>& bookmark_ids,
+      OfflinePageModel::DeletePageResult result);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
