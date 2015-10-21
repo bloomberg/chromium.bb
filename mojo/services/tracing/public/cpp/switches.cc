@@ -13,10 +13,4 @@ namespace tracing {
 const char kEnableStatsCollectionBindings[] =
     "enable-stats-collection-bindings";
 
-const char kTraceStartup[] = "trace-startup";
-
-#ifdef NDEBUG
-const char kEarlyTracing[] = "early-tracing";
-#endif
-
 }  // namespace tracing

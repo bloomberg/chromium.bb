@@ -24,17 +24,13 @@ class PackageManagerImpl;
 namespace runner {
 
 class NativeApplicationLoader;
-class Tracer;
 
 // The "global" context for the shell's main process.
 // TODO(use_chrome_edk)
 //class Context : public edk::ProcessDelegate {
 class Context : public embedder::ProcessDelegate {
  public:
-  // TODO(erg): There are enough uses of Context() that I am going to make the
-  // default value cleanup in another patch. crbug.com/534895
-  explicit Context(const base::FilePath& shell_file_root,
-                   Tracer* tracer = nullptr);
+  explicit Context(const base::FilePath& shell_file_root);
   ~Context() override;
 
   static void EnsureEmbedderIsInitialized();
@@ -77,7 +73,6 @@ class Context : public embedder::ProcessDelegate {
   std::set<GURL> app_urls_;
   scoped_ptr<TaskRunners> task_runners_;
   base::FilePath shell_file_root_;
-  Tracer* const tracer_;
   // Owned by |application_manager_|.
   package_manager::PackageManagerImpl* package_manager_;
   scoped_ptr<shell::ApplicationManager> application_manager_;

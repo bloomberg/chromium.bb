@@ -16,7 +16,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "mojo/common/tracing_impl.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"

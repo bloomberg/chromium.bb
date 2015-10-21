@@ -25,15 +25,14 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/common/trace_controller_impl.h"
+#include "mojo/common/tracing_impl.h"
 #include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
 #include "mojo/runner/register_local_aliases.h"
 #include "mojo/runner/switches.h"
-#include "mojo/runner/tracer.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
-#include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
@@ -41,7 +40,6 @@
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -149,21 +147,19 @@ void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
 
 class TracingServiceProvider : public ServiceProvider {
  public:
-  TracingServiceProvider(Tracer* tracer,
-                         InterfaceRequest<ServiceProvider> request)
-      : tracer_(tracer), binding_(this, request.Pass()) {}
+  explicit TracingServiceProvider(InterfaceRequest<ServiceProvider> request)
+      : binding_(this, request.Pass()) {}
   ~TracingServiceProvider() override {}
 
-  void ConnectToService(const mojo::String& service_name,
+  void ConnectToService(const String& service_name,
                         ScopedMessagePipeHandle client_handle) override {
-    if (tracer_ && service_name == tracing::TraceProvider::Name_) {
-      tracer_->ConnectToProvider(
-          MakeRequest<tracing::TraceProvider>(client_handle.Pass()));
+    if (service_name == tracing::TraceController::Name_) {
+      new TraceControllerImpl(
+          MakeRequest<tracing::TraceController>(client_handle.Pass()));
     }
   }
 
  private:
-  Tracer* tracer_;
   StrongBinding<ServiceProvider> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingServiceProvider);
@@ -171,9 +167,8 @@ class TracingServiceProvider : public ServiceProvider {
 
 }  // namespace
 
-Context::Context(const base::FilePath& shell_file_root, Tracer* tracer)
+Context::Context(const base::FilePath& shell_file_root)
     : shell_file_root_(shell_file_root),
-      tracer_(tracer),
       package_manager_(nullptr),
       main_entry_time_(base::Time::Now()) {}
 
@@ -216,9 +211,9 @@ bool Context::Init() {
       make_scoped_ptr(package_manager_), runner_factory.Pass(),
       task_runners_->blocking_pool()));
 
-  ServiceProviderPtr tracing_services;
-  ServiceProviderPtr tracing_exposed_services;
-  new TracingServiceProvider(tracer_, GetProxy(&tracing_exposed_services));
+  ServiceProviderPtr service_provider_ptr;
+  ServiceProviderPtr tracing_service_provider_ptr;
+  new TracingServiceProvider(GetProxy(&tracing_service_provider_ptr));
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
@@ -226,24 +221,15 @@ bool Context::Init() {
                                      shell::GetPermissiveCapabilityFilter()));
   params->SetTarget(shell::Identity(GURL("mojo:tracing"), std::string(),
                                     shell::GetPermissiveCapabilityFilter()));
-  params->set_services(GetProxy(&tracing_services));
-  params->set_exposed_services(tracing_exposed_services.Pass());
+  params->set_services(GetProxy(&service_provider_ptr));
+  params->set_exposed_services(tracing_service_provider_ptr.Pass());
   application_manager_->ConnectToApplication(params.Pass());
-
-  if (command_line.HasSwitch(tracing::kTraceStartup)) {
-    DCHECK(tracer_);
-    tracing::TraceCollectorPtr coordinator;
-    auto coordinator_request = GetProxy(&coordinator);
-    tracing_services->ConnectToService(tracing::TraceCollector::Name_,
-                                       coordinator_request.PassMessagePipe());
-    tracer_->StartCollectingFromTracingService(coordinator.Pass());
-  }
 
   // Record the shell startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     tracing::StartupPerformanceDataCollectorPtr collector;
-    tracing_services->ConnectToService(
+    service_provider_ptr->ConnectToService(
         tracing::StartupPerformanceDataCollector::Name_,
         GetProxy(&collector).PassMessagePipe());
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)

@@ -95,3 +95,21 @@ test("mojo_common_unittests") {
     "common_type_converters_unittest.cc",
   ]
 }
+
+if (!is_component_build) {
+  source_set("tracing_impl") {
+    sources = [
+      "trace_controller_impl.cc",
+      "trace_controller_impl.h",
+      "tracing_impl.cc",
+      "tracing_impl.h",
+    ]
+
+    deps = [
+      "//base",
+      "//mojo/application/public/cpp",
+      "//mojo/services/tracing/public/interfaces",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
+  }
+}

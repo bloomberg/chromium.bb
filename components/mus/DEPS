@@ -5,7 +5,6 @@ include_rules = [
   "+mojo/common",
   "+mojo/converters",
   "+mojo/services/network/public",
-  "+mojo/services/tracing/public",
   "+mojo/shell",
   "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services",

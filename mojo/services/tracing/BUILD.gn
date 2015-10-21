@@ -20,8 +20,6 @@ source_set("lib") {
   sources = [
     "trace_data_sink.cc",
     "trace_data_sink.h",
-    "trace_recorder_impl.cc",
-    "trace_recorder_impl.h",
     "tracing_app.cc",
     "tracing_app.h",
   ]

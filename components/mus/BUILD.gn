@@ -55,7 +55,7 @@ source_set("lib") {
     "//components/mus/ws:lib",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
-    "//mojo/services/tracing/public/cpp",
+    "//mojo/common:tracing_impl",
     "//ui/events",
     "//ui/gl:gl",
     "//ui/platform_window:platform_impls",

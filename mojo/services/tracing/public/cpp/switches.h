@@ -11,14 +11,6 @@ namespace tracing {
 // alongside the definition of their values in the .cc file.
 extern const char kEnableStatsCollectionBindings[];
 
-extern const char kTraceStartup[];
-
-#ifdef NDEBUG
-// In release builds, specifying this flag will force reporting of tracing
-// before the main Application is initialized.
-extern const char kEarlyTracing[];
-#endif
-
 }  // namespace tracing
 
 #endif  // MOJO_SERVICES_TRACING_PUBLIC_CPP_SWITCHES_H_

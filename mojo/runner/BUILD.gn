@@ -126,8 +126,6 @@ source_set("lib") {
     "scoped_user_data_dir.h",
     "task_runners.cc",
     "task_runners.h",
-    "tracer.cc",
-    "tracer.h",
   ]
 
   deps = [
@@ -140,6 +138,7 @@ source_set("lib") {
     "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
     "//mojo/application/public/cpp",
+    "//mojo/common:tracing_impl",
     "//mojo/message_pump",
     "//mojo/package_manager",
     "//mojo/services/network/public/interfaces",
