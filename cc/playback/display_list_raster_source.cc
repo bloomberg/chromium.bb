@@ -235,9 +235,10 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
 
 void DisplayListRasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
+    float raster_scale,
     std::vector<DrawImage>* images) const {
   DCHECK_EQ(0u, images->size());
-  display_list_->GetDiscardableImagesInRect(layer_rect, images);
+  display_list_->GetDiscardableImagesInRect(layer_rect, raster_scale, images);
 }
 
 bool DisplayListRasterSource::CoversRect(const gfx::Rect& layer_rect) const {

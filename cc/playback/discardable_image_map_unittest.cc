@@ -35,7 +35,7 @@ class DiscardableImageMapTest : public testing::Test {
       const DiscardableImageMap& image_map,
       const gfx::Rect& rect) {
     std::vector<DrawImage> draw_images;
-    image_map.GetDiscardableImagesInRect(rect, &draw_images);
+    image_map.GetDiscardableImagesInRect(rect, 1.f, &draw_images);
 
     std::vector<size_t> indices;
     image_map.images_rtree_.Search(gfx::RectF(rect), &indices);

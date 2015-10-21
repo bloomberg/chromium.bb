@@ -682,7 +682,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   ImageDecodeTask::Vector decode_tasks;
   std::vector<DrawImage> images;
   prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-      tile->enclosing_layer_rect(), &images);
+      tile->enclosing_layer_rect(), tile->contents_scale(), &images);
   for (const auto& image : images) {
     decode_tasks.push_back(image_decode_controller_.GetTaskForImage(
         image, tile->layer_id(), prepare_tiles_count_));

@@ -15,23 +15,23 @@ class DrawImage {
  public:
   DrawImage() : image_(nullptr), filter_quality_(kNone_SkFilterQuality) {}
   DrawImage(const SkImage* image,
-            const SkMatrix& matrix,
+            const SkSize& scale,
             SkFilterQuality filter_quality)
-      : image_(image), matrix_(matrix), filter_quality_(filter_quality) {}
+      : image_(image), scale_(scale), filter_quality_(filter_quality) {}
 
   const SkImage* image() const { return image_; }
-  const SkMatrix& matrix() const { return matrix_; }
+  const SkSize& scale() const { return scale_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }
 
-  DrawImage ApplyScale(float scale) {
-    SkMatrix scaled_matrix = matrix_;
-    scaled_matrix.preScale(scale, scale);
-    return DrawImage(image_, scaled_matrix, filter_quality_);
+  DrawImage ApplyScale(float scale) const {
+    return DrawImage(
+        image_, SkSize::Make(scale_.width() * scale, scale_.height() * scale),
+        filter_quality_);
   }
 
  private:
   const SkImage* image_;
-  SkMatrix matrix_;
+  SkSize scale_;
   SkFilterQuality filter_quality_;
 };
 
