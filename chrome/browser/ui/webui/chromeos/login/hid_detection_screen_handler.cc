@@ -89,6 +89,8 @@ void HIDDetectionScreenHandler::DeclareLocalizedValues(
       IDS_HID_DETECTION_SEARCHING_KEYBOARD);
   builder->Add("hidDetectionUSBMouseConnected",
       IDS_HID_DETECTION_CONNECTED_USB_MOUSE);
+  builder->Add("hidDetectionPointingDeviceConnected",
+      IDS_HID_DETECTION_CONNECTED_POINTING_DEVICE);
   builder->Add("hidDetectionUSBKeyboardConnected",
       IDS_HID_DETECTION_CONNECTED_USB_KEYBOARD);
   builder->Add("hidDetectionBTMousePaired",

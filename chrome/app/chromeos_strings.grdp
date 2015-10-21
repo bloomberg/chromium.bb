@@ -1394,6 +1394,9 @@ Press any key to continue exploring.
   <message name="IDS_HID_DETECTION_CONNECTED_USB_MOUSE" desc="Text shown on HID detection screen next to mouse icon after USB mouse is connected.">
     USB mouse connected
   </message>
+  <message name="IDS_HID_DETECTION_CONNECTED_POINTING_DEVICE" desc="Text shown on HID detection screen next to mouse icon after other pointing device is connected.">
+    Pointing device connected
+  </message>
   <message name="IDS_HID_DETECTION_CONNECTED_USB_KEYBOARD" desc="Text shown on HID detection screen next to keyboard icon after USB keyboard is connected.">
     USB keyboard connected
   </message>

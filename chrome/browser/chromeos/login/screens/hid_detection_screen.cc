@@ -19,7 +19,8 @@ namespace {
 
 // Possible ui-states for device-blocks.
 const char kSearchingState[] = "searching";
-const char kUSBConnectedState[] = "connected";
+const char kUSBState[] = "usb";
+const char kConnectedState[] = "connected";
 const char kBTPairedState[] = "paired";
 const char kBTPairingState[] = "pairing";
 
@@ -320,8 +321,10 @@ void HIDDetectionScreen::SendPointingDeviceNotification() {
     state = kSearchingState;
   else if (pointing_device_connect_type_ == InputDeviceInfo::TYPE_BLUETOOTH)
     state = kBTPairedState;
+  else if (pointing_device_connect_type_ == InputDeviceInfo::TYPE_USB)
+    state = kUSBState;
   else
-    state = kUSBConnectedState;
+    state = kConnectedState;
   GetContextEditor().SetString(kContextKeyMouseState, state)
                     .SetBoolean(
       kContextKeyContinueButtonEnabled,
@@ -351,7 +354,7 @@ void HIDDetectionScreen::SendKeyboardDeviceNotification() {
                     IDS_HID_DETECTION_PAIRED_BLUETOOTH_KEYBOARD,
                     base::UTF8ToUTF16(keyboard_device_name_)));
     } else {
-      editor.SetString(kContextKeyKeyboardState, kUSBConnectedState);
+      editor.SetString(kContextKeyKeyboardState, kUSBState);
     }
   }
   editor.SetString(kContextKeyKeyboardDeviceName, keyboard_device_name_)

@@ -39,6 +39,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
    // Enumeration of possible connection states of a device.
    CONNECTION: {
      SEARCHING: 'searching',
+     USB: 'usb',
      CONNECTED: 'connected',
      PAIRING: 'pairing',
      PAIRED: 'paired',
@@ -130,7 +131,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     },
 
     /**
-     * Sets a device-block css class to reflect device state of searching,
+     * Sets a device-block css class to reflect device state of searching, usb,
      * connected, pairing or paired (for BT devices).
      * @param {blockId} id one of keys of this.BLOCK dict.
      * @param {state} one of keys of this.CONNECTION dict.
