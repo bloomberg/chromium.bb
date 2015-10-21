@@ -41,6 +41,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(rtc::PacketOptions)
   IPC_STRUCT_TRAITS_MEMBER(dscp)
+  IPC_STRUCT_TRAITS_MEMBER(packet_id)
   IPC_STRUCT_TRAITS_MEMBER(packet_time_params)
 IPC_STRUCT_TRAITS_END()
 
@@ -51,6 +52,8 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::P2PSendPacketMetrics)
   IPC_STRUCT_TRAITS_MEMBER(packet_id)
+  IPC_STRUCT_TRAITS_MEMBER(rtc_packet_id)
+  IPC_STRUCT_TRAITS_MEMBER(send_time)
 IPC_STRUCT_TRAITS_END()
 
 // P2P Socket messages sent from the browser to the renderer.

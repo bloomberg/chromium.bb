@@ -291,50 +291,45 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
     }
   }
 
-  uint64 tick_received = base::TimeTicks::Now().ToInternalValue();
+  base::TimeTicks send_time = base::TimeTicks::Now();
 
   packet_processing_helpers::ApplyPacketOptions(
       packet.data->data(), packet.size, packet.packet_options, 0);
-  int result = socket_->SendTo(packet.data.get(),
-                               packet.size,
-                               packet.to,
-                               base::Bind(&P2PSocketHostUdp::OnSend,
-                                          base::Unretained(this),
-                                          packet.id,
-                                          tick_received));
+  auto callback_binding =
+      base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this), packet.id,
+                 packet.packet_options.packet_id, send_time);
+  int result = socket_->SendTo(packet.data.get(), packet.size, packet.to,
+                               callback_binding);
 
   // sendto() may return an error, e.g. if we've received an ICMP Destination
   // Unreachable message. When this happens try sending the same packet again,
   // and just drop it if it fails again.
   if (IsTransientError(result)) {
-    result = socket_->SendTo(packet.data.get(),
-                             packet.size,
-                             packet.to,
-                             base::Bind(&P2PSocketHostUdp::OnSend,
-                                        base::Unretained(this),
-                                        packet.id,
-                                        tick_received));
+    result = socket_->SendTo(packet.data.get(), packet.size, packet.to,
+                             callback_binding);
   }
 
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
-    HandleSendResult(packet.id, tick_received, result);
+    HandleSendResult(packet.id, packet.packet_options.packet_id, send_time,
+                     result);
   }
 
   if (dump_outgoing_rtp_packet_)
     DumpRtpPacket(packet.data->data(), packet.size, false);
 }
 
-void P2PSocketHostUdp::OnSend(uint64 packet_id,
-                              uint64 tick_received,
+void P2PSocketHostUdp::OnSend(uint64_t packet_id,
+                              int32_t transport_sequence_number,
+                              base::TimeTicks send_time,
                               int result) {
   DCHECK(send_pending_);
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   send_pending_ = false;
 
-  HandleSendResult(packet_id, tick_received, result);
+  HandleSendResult(packet_id, transport_sequence_number, send_time, result);
 
   // Send next packets if we have them waiting in the buffer.
   while (state_ == STATE_OPEN && !send_queue_.empty() && !send_pending_) {
@@ -345,8 +340,9 @@ void P2PSocketHostUdp::OnSend(uint64 packet_id,
   }
 }
 
-void P2PSocketHostUdp::HandleSendResult(uint64 packet_id,
-                                        uint64 tick_received,
+void P2PSocketHostUdp::HandleSendResult(uint64_t packet_id,
+                                        int32_t transport_sequence_number,
+                                        base::TimeTicks send_time,
                                         int result) {
   TRACE_EVENT_ASYNC_END1("p2p", "Send", packet_id,
                          "result", result);
@@ -363,13 +359,12 @@ void P2PSocketHostUdp::HandleSendResult(uint64 packet_id,
 
   // UMA to track the histograms from 1ms to 1 sec for how long a packet spends
   // in the browser process.
-  UMA_HISTOGRAM_TIMES(
-      "WebRTC.SystemSendPacketDuration_UDP" /* name */,
-      base::TimeTicks::Now() -
-          base::TimeTicks::FromInternalValue(tick_received) /* sample */);
+  UMA_HISTOGRAM_TIMES("WebRTC.SystemSendPacketDuration_UDP" /* name */,
+                      base::TimeTicks::Now() - send_time /* sample */);
 
-  message_sender_->Send(
-      new P2PMsg_OnSendComplete(id_, P2PSendPacketMetrics(packet_id)));
+  message_sender_->Send(new P2PMsg_OnSendComplete(
+      id_,
+      P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time)));
 }
 
 P2PSocketHost* P2PSocketHostUdp::AcceptIncomingTcpConnection(

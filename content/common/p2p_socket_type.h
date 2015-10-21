@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 
 namespace content {
@@ -48,14 +49,23 @@ struct P2PHostAndIPEndPoint {
   net::IPEndPoint ip_address;
 };
 
-// Stuct which keeps track of metrics during a send operation on P2P sockets.
-// Currently, it only carries packet_id but could be expanded to include
-// timestamps when packet arrives at various points.
+// Struct which keeps track of metrics during a send operation on P2P sockets.
 struct P2PSendPacketMetrics {
-  P2PSendPacketMetrics() : packet_id(0) {}
-  explicit P2PSendPacketMetrics(uint64_t packet_id) : packet_id(packet_id) {}
+  P2PSendPacketMetrics() {}
+  P2PSendPacketMetrics(uint64_t packet_id,
+                       int32_t rtc_packet_id,
+                       base::TimeTicks send_time)
+      : packet_id(packet_id),
+        rtc_packet_id(rtc_packet_id),
+        send_time(send_time) {}
 
-  uint64_t packet_id;
+  uint64_t packet_id = 0;
+  // rtc_packet_id is a sequential packet counter written in the RTP header and
+  // used by RTP receivers to ACK received packets. It is sent back with a
+  // corresponding send time to WebRTC in the browser process so that it can be
+  // combined with ACKs to compute inter-packet delay variations.
+  int32_t rtc_packet_id = -1;
+  base::TimeTicks send_time;
 };
 
 }  // namespace content

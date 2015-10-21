@@ -609,6 +609,14 @@ void IpcPacketSocket::OnSendComplete(const P2PSendPacketMetrics& send_metrics) {
   in_flight_packet_records_.pop_front();
   TraceSendThrottlingState();
 
+  int64_t send_time_ms = -1;
+  if (send_metrics.rtc_packet_id >= 0) {
+    send_time_ms = (send_metrics.send_time - base::TimeTicks::UnixEpoch())
+                       .InMilliseconds();
+  }
+  SignalSentPacket(this, rtc::SentPacket(send_metrics.rtc_packet_id,
+                                         send_time_ms));
+
   if (writable_signal_expected_ && send_bytes_available_ > 0) {
     WebRtcLogMessage(base::StringPrintf(
         "IpcPacketSocket: sending is unblocked. %d packets in flight.",
