@@ -30,9 +30,9 @@ Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
                                                             pixel_size.height(),
                                                             is_opaque));
   canvas_ = owned_canvas_.get();
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // skia::PlatformCanvas instances are initialized to 0 by Cairo on Linux, but
-  // uninitialized on Win and Mac.
+#if !defined(USE_CAIRO)
+  // skia::PlatformCanvas instances are initialized to 0 by Cairo, but
+  // uninitialized on other platforms.
   if (!is_opaque)
     owned_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
 #endif
