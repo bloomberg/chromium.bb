@@ -64,10 +64,15 @@ function convertTemplatesToShadowRootsWithin(node) {
     var nodes = node.querySelectorAll("template");
     for (var i = 0; i < nodes.length; ++i) {
         var template = nodes[i];
-
+        var mode = template.getAttribute("data-mode");
         var parent = template.parentNode;
         parent.removeChild(template);
-        var shadowRoot = parent.createShadowRoot();
+        var shadowRoot;
+        if (!mode) {
+            shadowRoot = parent.createShadowRoot();
+        } else {
+            shadowRoot = parent.attachShadow({'mode': mode});
+        }
         if (template.id)
             shadowRoot.id = template.id;
         var fragments = document.importNode(template.content, true);

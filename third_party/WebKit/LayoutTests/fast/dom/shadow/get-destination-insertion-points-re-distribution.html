@@ -21,7 +21,6 @@ document.body.appendChild(
 shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
                      [getNodeInTreeOfTrees('host-1/content-1'), getNodeInTreeOfTrees('host-1/host-2/content-2')]);
 
-debug('adding explicit open mode should not change the behavior.');
 document.body.appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'host-10'},
@@ -34,9 +33,8 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-10'}))));
 
 shouldBeEqualAsArray(document.getElementById('child-10').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host-10/content-10'), getNodeInTreeOfTrees('host-10/host-20/content-20')]);
+                     [getNodeInTreeOfTrees('host-10/content-10')]);
 
-debug('Only unclosed insertion points should be returned for getDestinationInsertionPoints().');
 document.body.appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'host-11'},

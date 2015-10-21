@@ -81,11 +81,16 @@ private:
     void distribute();
     void clearDistribution();
 
+    void distributeV0();
+    void distributeV1();
+
     void collectSelectFeatureSetFrom(ShadowRoot&);
     void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
+
+    bool isV1() const { return youngestShadowRoot().type() == ShadowRootType::Open || youngestShadowRoot().type() == ShadowRootType::Closed; };
 
 #if ENABLE(OILPAN)
     // The cost of |new| in Oilpan is lower than non-Oilpan.  We should reduce

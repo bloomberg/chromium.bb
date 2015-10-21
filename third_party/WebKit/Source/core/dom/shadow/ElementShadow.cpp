@@ -276,6 +276,14 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 
 void ElementShadow::distribute()
 {
+    if (isV1())
+        distributeV1();
+    else
+        distributeV0();
+}
+
+void ElementShadow::distributeV0()
+{
     host()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
     WillBeHeapVector<RawPtrWillBeMember<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
@@ -316,6 +324,11 @@ void ElementShadow::distribute()
             shadow->setNeedsDistributionRecalc();
     }
     InspectorInstrumentation::didPerformElementShadowDistribution(host());
+}
+
+void ElementShadow::distributeV1()
+{
+    // TODO(hayato): Implement this
 }
 
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)

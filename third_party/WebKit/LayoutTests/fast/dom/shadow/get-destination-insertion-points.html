@@ -15,6 +15,8 @@ document.body.appendChild(
 shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
                      [getNodeInTreeOfTrees('host-1/content-1')]);
 
+debug('Insertion points should be inactive in v1 shadow trees.');
+
 document.body.appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'host-2'},
@@ -23,8 +25,7 @@ document.body.appendChild(
                             createDOM('content', {'id': 'content-2'})),
                         createDOM('div', {'id': 'child-2'}))));
 
-shouldBeEqualAsArray(document.getElementById('child-2').getDestinationInsertionPoints(),
-                     [getNodeInTreeOfTrees('host-2/content-2')]);
+shouldBe('document.getElementById("child-2").getDestinationInsertionPoints().length', '0');
 
 document.body.appendChild(
     createDOM('div', {},
@@ -34,7 +35,6 @@ document.body.appendChild(
                             createDOM('content', {'id': 'content-3'})),
                         createDOM('div', {'id': 'child-3'}))));
 
-debug('Only unclosed insertion points should be returned for getDestinationInsertionPoints().');
 shouldBe('document.getElementById("child-3").getDestinationInsertionPoints().length', '0');
 
 </script>

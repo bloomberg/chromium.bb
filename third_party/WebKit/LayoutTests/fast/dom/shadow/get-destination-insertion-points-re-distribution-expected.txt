@@ -6,11 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS nodeList.length is expectedNodes.length
 PASS nodeList.item(0) is expectedNodes[0]
 PASS nodeList.item(1) is expectedNodes[1]
-adding explicit open mode should not change the behavior.
 PASS nodeList.length is expectedNodes.length
 PASS nodeList.item(0) is expectedNodes[0]
-PASS nodeList.item(1) is expectedNodes[1]
-Only unclosed insertion points should be returned for getDestinationInsertionPoints().
 PASS nodeList.length is expectedNodes.length
 PASS nodeList.item(0) is expectedNodes[0]
 PASS document.getElementById("child-12").getDestinationInsertionPoints().length is 0
