@@ -1184,7 +1184,7 @@ def CMDquery(parser, args):
         print('')
       print >> sys.stderr, 'Failed to access %s' % options.swarming
       return 1
-    data['items'].extend(new['items'])
+    data['items'].extend(new.get('items', []))
     data['cursor'] = new.get('cursor')
 
   if options.progress:
