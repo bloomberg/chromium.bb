@@ -66,12 +66,8 @@ TEST(SpdyHeaderBlockTest, CopyBlocks) {
 
   SpdyHeaderBlock block3(block1);
 
-  EXPECT_THAT(block1, ElementsAre(Pair("foo", string(300, 'x')),
-                                  Pair("bar", "baz"), Pair("qux", "qux1")));
-  EXPECT_THAT(block2, ElementsAre(Pair("foo", string(300, 'x')),
-                                  Pair("bar", "baz"), Pair("qux", "qux1")));
-  EXPECT_THAT(block3, ElementsAre(Pair("foo", string(300, 'x')),
-                                  Pair("bar", "baz"), Pair("qux", "qux1")));
+  EXPECT_EQ(block1, block2);
+  EXPECT_EQ(block1, block3);
 }
 
 TEST(SpdyHeaderBlockTest, ToNetLogParamAndBackAgain) {

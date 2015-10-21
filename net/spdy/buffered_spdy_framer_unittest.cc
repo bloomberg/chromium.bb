@@ -190,33 +190,6 @@ class BufferedSpdyFramerTest
     : public PlatformTest,
       public ::testing::WithParamInterface<NextProto> {
  protected:
-  // Returns true if the two header blocks have equivalent content.
-  bool CompareHeaderBlocks(const SpdyHeaderBlock* expected,
-                           const SpdyHeaderBlock* actual) {
-    if (expected->size() != actual->size()) {
-      LOG(ERROR) << "Expected " << expected->size() << " headers; actually got "
-                 << actual->size() << ".";
-      return false;
-    }
-    for (SpdyHeaderBlock::const_iterator it = expected->begin();
-         it != expected->end();
-         ++it) {
-      SpdyHeaderBlock::const_iterator it2 = actual->find(it->first);
-      if (it2 == actual->end()) {
-        LOG(ERROR) << "Expected header name '" << it->first << "'.";
-        return false;
-      }
-      if (it->second.compare(it2->second) != 0) {
-        LOG(ERROR) << "Expected header named '" << it->first
-                   << "' to have a value of '" << it->second
-                   << "'. The actual value received was '" << it2->second
-                   << "'.";
-        return false;
-      }
-    }
-    return true;
-  }
-
   SpdyMajorVersion spdy_version() {
     return NextProtoToSpdyMajorVersion(GetParam());
   }
@@ -268,7 +241,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
@@ -300,7 +273,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
     EXPECT_EQ(0, visitor.syn_reply_frame_count_);
     EXPECT_EQ(1, visitor.headers_frame_count_);
   }
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
@@ -324,7 +297,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
@@ -347,7 +320,7 @@ TEST_P(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
   EXPECT_EQ(1, visitor.push_promise_frame_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
   EXPECT_EQ(1u, visitor.header_stream_id_);
   EXPECT_EQ(2u, visitor.promised_stream_id_);
 }

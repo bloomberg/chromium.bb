@@ -157,6 +157,14 @@ SpdyHeaderBlock& SpdyHeaderBlock::operator=(const SpdyHeaderBlock& other) {
   return *this;
 }
 
+bool SpdyHeaderBlock::operator==(const SpdyHeaderBlock& other) const {
+  return std::equal(begin(), end(), other.begin());
+}
+
+bool SpdyHeaderBlock::operator!=(const SpdyHeaderBlock& other) const {
+  return !(*this == other);
+}
+
 void SpdyHeaderBlock::clear() {
   block_.clear();
   storage_->Clear();
@@ -182,10 +190,6 @@ SpdyHeaderBlock::StringPieceProxy SpdyHeaderBlock::operator[](
     out_key = iter->first;
   }
   return StringPieceProxy(&block_, storage_.get(), iter, out_key);
-}
-
-bool SpdyHeaderBlock::operator==(const SpdyHeaderBlock& other) const {
-  return size() == other.size() && std::equal(begin(), end(), other.begin());
 }
 
 void SpdyHeaderBlock::ReplaceOrAppendHeader(const StringPiece key,

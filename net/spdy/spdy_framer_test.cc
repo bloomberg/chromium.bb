@@ -662,33 +662,6 @@ class SpdyFramerTest : public ::testing::TestWithParam<SpdyMajorVersion> {
         actual_frame.size());
   }
 
-  // Returns true if the two header blocks have equivalent content.
-  bool CompareHeaderBlocks(const SpdyHeaderBlock* expected,
-                           const SpdyHeaderBlock* actual) {
-    if (expected->size() != actual->size()) {
-      LOG(ERROR) << "Expected " << expected->size() << " headers; actually got "
-                 << actual->size() << ".";
-      return false;
-    }
-    for (SpdyHeaderBlock::const_iterator it = expected->begin();
-         it != expected->end();
-         ++it) {
-      SpdyHeaderBlock::const_iterator it2 = actual->find(it->first);
-      if (it2 == actual->end()) {
-        LOG(ERROR) << "Expected header name '" << it->first << "'.";
-        return false;
-      }
-      if (it->second.compare(it2->second) != 0) {
-        LOG(ERROR) << "Expected header named '" << it->first
-                   << "' to have a value of '" << it->second
-                   << "'. The actual value received was '" << it2->second
-                   << "'.";
-        return false;
-      }
-    }
-    return true;
-  }
-
   bool IsSpdy2() { return spdy_version_ == SPDY2; }
   bool IsSpdy3() { return spdy_version_ == SPDY3; }
   bool IsHttp2() { return spdy_version_ == HTTP2; }
@@ -726,7 +699,7 @@ TEST_P(SpdyFramerTest, HeaderBlockWithEmptyCookie) {
       frame->size());
 
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
-  EXPECT_FALSE(CompareHeaderBlocks(&headers.header_block(), &visitor.headers_));
+  EXPECT_NE(headers.header_block(), visitor.headers_);
   EXPECT_EQ(1u, visitor.headers_.size());
   EXPECT_EQ("key=value; foo; bar=; k2=v2 ", visitor.headers_["cookie"]);
 }
@@ -752,7 +725,7 @@ TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
       frame->size());
 
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers.header_block(), &visitor.headers_));
+  EXPECT_EQ(headers.header_block(), visitor.headers_);
 }
 
 // Test that if there's not a full frame, we fail to parse it.
@@ -3596,7 +3569,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
   EXPECT_EQ(1, visitor.syn_frame_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
@@ -3622,7 +3595,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
     EXPECT_EQ(1, visitor.syn_reply_frame_count_);
     EXPECT_EQ(0, visitor.headers_frame_count_);
   }
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
@@ -3646,7 +3619,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   EXPECT_LE(2, visitor.control_frame_header_data_count_);
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
   EXPECT_EQ(0, visitor.zero_length_data_frame_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
@@ -3671,7 +3644,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   EXPECT_LE(2, visitor.control_frame_header_data_count_);
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
   EXPECT_EQ(1, visitor.zero_length_data_frame_count_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
@@ -4367,7 +4340,7 @@ TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
       frame->size());
   EXPECT_EQ(42u, visitor.last_push_promise_stream_);
   EXPECT_EQ(57u, visitor.last_push_promise_promised_stream_);
-  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+  EXPECT_EQ(headers, visitor.headers_);
 }
 
 TEST_P(SpdyFramerTest, ReadHeadersWithContinuation) {

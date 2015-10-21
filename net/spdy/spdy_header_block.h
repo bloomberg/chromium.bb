@@ -49,6 +49,8 @@ class NET_EXPORT SpdyHeaderBlock {
   ~SpdyHeaderBlock();
 
   SpdyHeaderBlock& operator=(const SpdyHeaderBlock& other);
+  bool operator==(const SpdyHeaderBlock& other) const;
+  bool operator!=(const SpdyHeaderBlock& other) const;
 
   // These methods delegate to our MapType member.
   iterator begin() { return block_.begin(); }
@@ -72,8 +74,6 @@ class NET_EXPORT SpdyHeaderBlock {
 
   // Allows either lookup or mutation of the value associated with a key.
   StringPieceProxy operator[](const base::StringPiece key);
-
-  bool operator==(const SpdyHeaderBlock& other) const;
 
   // This object provides automatic conversions that allow SpdyHeaderBlock to be
   // nearly a drop-in replacement for linked_hash_map<string, string>. It reads
