@@ -153,4 +153,8 @@
 
     <!-- Media UI Colors -->
     <color name="media_session_icon_color">#14181C</color>
+
+    <!-- Smart Lock for Passwords UI colors-->
+    <color name="smart_lock_auto_signin_snackbar_background_color">#2196F3</color>
+
 </resources>

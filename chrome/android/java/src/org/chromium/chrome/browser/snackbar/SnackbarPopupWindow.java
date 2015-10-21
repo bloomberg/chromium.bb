@@ -67,6 +67,10 @@ class SnackbarPopupWindow extends PopupWindow {
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
         String actionText = snackbar.getActionText();
+        if (snackbar.getBackgroundColor() != 0) {
+            View view = getContentView();
+            view.setBackgroundColor(snackbar.getBackgroundColor());
+        }
         if (actionText != null) {
             mActionButtonView.setVisibility(View.VISIBLE);
             setViewText(mActionButtonView, snackbar.getActionText(), animate);

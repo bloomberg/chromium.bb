@@ -23,6 +23,7 @@ public class Snackbar {
     private String mTemplateText;
     private String mActionText;
     private Object mActionData;
+    private int mBackgroundColor;
     private boolean mSingleLine = true;
     private int mDurationMs;
 
@@ -80,6 +81,14 @@ public class Snackbar {
         return this;
     }
 
+    /**
+     * Sets the background color for the snackbar. If 0, the snackbar will use default color.
+     */
+    public Snackbar setBackgroundColor(int color) {
+        mBackgroundColor = color;
+        return this;
+    }
+
     SnackbarController getController() {
         return mController;
     }
@@ -106,5 +115,12 @@ public class Snackbar {
 
     int getDuration() {
         return mDurationMs;
+    }
+
+    /**
+     * If method returns zero, then default color for snackbar will be used.
+     */
+    int getBackgroundColor() {
+        return mBackgroundColor;
     }
 }

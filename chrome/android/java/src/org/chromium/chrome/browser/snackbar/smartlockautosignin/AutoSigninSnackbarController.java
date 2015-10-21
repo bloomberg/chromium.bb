@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.snackbar.smartlockautosignin;
 
+import android.content.Context;
+
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -30,9 +34,14 @@ public class AutoSigninSnackbarController
     private static void showSnackbar(Tab tab, String text) {
         SnackbarManager snackbarManager = tab.getSnackbarManager();
         if (snackbarManager == null) return;
-        AutoSigninSnackbarController snackbar =
+        AutoSigninSnackbarController snackbarController =
                 new AutoSigninSnackbarController(snackbarManager, tab);
-        snackbarManager.showSnackbar(Snackbar.make(text, snackbar).setSingleLine(false));
+        Snackbar snackbar = Snackbar.make(text, snackbarController);
+        Context context = (Context) tab.getWindowAndroid().getActivity().get();
+        int backgroundColor = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.smart_lock_auto_signin_snackbar_background_color);
+        snackbar.setSingleLine(false).setBackgroundColor(backgroundColor);
+        snackbarManager.showSnackbar(snackbar);
     }
 
     /**
