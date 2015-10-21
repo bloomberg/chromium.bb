@@ -2,4 +2,5 @@ sdefresne@chromium.org
 sky@chromium.org
 
 per-file download_database.*=benjhayden@chromium.org
-per-file typed_url_syncable_service*.*=zea@chromium.org
+
+per-file typed_url_syncable_service*=zea@chromium.org

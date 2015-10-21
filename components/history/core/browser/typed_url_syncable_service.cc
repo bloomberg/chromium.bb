@@ -223,11 +223,44 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(sync): Add implementation
+  std::vector<GURL> pending_deleted_urls;
+  history::URLRows new_synced_urls;
+  history::URLRows updated_synced_urls;
+  TypedUrlVisitVector new_synced_visits;
+  history::VisitVector deleted_visits;
 
-  return syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                           "Typed url syncable service is not implemented.",
-                           syncer::TYPED_URLS);
+  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
+       it != change_list.end(); ++it) {
+    const sync_pb::EntitySpecifics& specifics = it->sync_data().GetSpecifics();
+    DCHECK(specifics.has_typed_url())
+        << "Typed URL delete change does not have necessary specifics.";
+    GURL url(specifics.typed_url().url());
+
+    if (syncer::SyncChange::ACTION_DELETE == it->change_type()) {
+      pending_deleted_urls.push_back(url);
+      continue;
+    }
+
+    if (ShouldIgnoreUrl(url))
+      continue;
+
+    const sync_pb::TypedUrlSpecifics& typed_url(specifics.typed_url());
+    DCHECK(typed_url.visits_size());
+    sync_pb::TypedUrlSpecifics filtered_url = FilterExpiredVisits(typed_url);
+    if (filtered_url.visits_size() == 0)
+      continue;
+
+    UpdateFromSyncDB(filtered_url, &new_synced_visits, &deleted_visits,
+                     &updated_synced_urls, &new_synced_urls);
+  }
+
+  if (!pending_deleted_urls.empty())
+    history_backend_->DeleteURLs(pending_deleted_urls);
+
+  WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls,
+                        &new_synced_visits, &deleted_visits);
+
+  return syncer::SyncError();
 }
 
 void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
@@ -791,18 +824,17 @@ void TypedUrlSyncableService::AddTypedUrlToChangeList(
     syncer::SyncChangeList* change_list) {
   sync_pb::EntitySpecifics entity_specifics;
   sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
+  std::string tag = row.url().spec();
 
   if (change_type == syncer::SyncChange::ACTION_DELETE) {
-    typed_url->set_url(row.url().spec());
+    typed_url->set_url(tag);
   } else {
     WriteToTypedUrlSpecifics(row, visits, typed_url);
   }
 
-  change_list->push_back(
-      syncer::SyncChange(FROM_HERE, change_type,
-                         syncer::SyncData::CreateLocalData(
-                             syncer::ModelTypeToRootTag(syncer::TYPED_URLS),
-                             title, entity_specifics)));
+  change_list->push_back(syncer::SyncChange(
+      FROM_HERE, change_type,
+      syncer::SyncData::CreateLocalData(tag, title, entity_specifics)));
 }
 
 void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
@@ -939,6 +971,91 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(URLRow* url,
   url->set_last_visit(visits->back().visit_time);
   DCHECK(CheckVisitOrdering(*visits));
   return true;
+}
+
+void TypedUrlSyncableService::UpdateFromSyncDB(
+    const sync_pb::TypedUrlSpecifics& typed_url,
+    TypedUrlVisitVector* visits_to_add,
+    history::VisitVector* visits_to_remove,
+    history::URLRows* updated_urls,
+    history::URLRows* new_urls) {
+  history::URLRow new_url(GURL(typed_url.url()));
+  history::VisitVector existing_visits;
+  bool existing_url = history_backend_->GetURL(new_url.url(), &new_url);
+  if (existing_url) {
+    // This URL already exists locally - fetch the visits so we can
+    // merge them below.
+    if (!FixupURLAndGetVisits(&new_url, &existing_visits)) {
+      // Couldn't load the visits for this URL due to some kind of DB error.
+      // Don't bother writing this URL to the history DB (if we ignore the
+      // error and continue, we might end up duplicating existing visits).
+      DLOG(ERROR) << "Could not load visits for url: " << new_url.url();
+      return;
+    }
+  }
+  visits_to_add->push_back(std::pair<GURL, std::vector<history::VisitInfo>>(
+      new_url.url(), std::vector<history::VisitInfo>()));
+
+  // Update the URL with information from the typed URL.
+  UpdateURLRowFromTypedUrlSpecifics(typed_url, &new_url);
+
+  // Figure out which visits we need to add.
+  DiffVisits(existing_visits, typed_url, &visits_to_add->back().second,
+             visits_to_remove);
+
+  if (existing_url) {
+    updated_urls->push_back(new_url);
+  } else {
+    new_urls->push_back(new_url);
+  }
+}
+
+// static
+void TypedUrlSyncableService::DiffVisits(
+    const history::VisitVector& history_visits,
+    const sync_pb::TypedUrlSpecifics& sync_specifics,
+    std::vector<history::VisitInfo>* new_visits,
+    history::VisitVector* removed_visits) {
+  DCHECK(new_visits);
+  size_t old_visit_count = history_visits.size();
+  size_t new_visit_count = sync_specifics.visits_size();
+  size_t old_index = 0;
+  size_t new_index = 0;
+  while (old_index < old_visit_count && new_index < new_visit_count) {
+    base::Time new_visit_time =
+        base::Time::FromInternalValue(sync_specifics.visits(new_index));
+    if (history_visits[old_index].visit_time < new_visit_time) {
+      if (new_index > 0 && removed_visits) {
+        // If there are visits missing from the start of the node, that
+        // means that they were probably clipped off due to our code that
+        // limits the size of the sync nodes - don't delete them from our
+        // local history.
+        removed_visits->push_back(history_visits[old_index]);
+      }
+      ++old_index;
+    } else if (history_visits[old_index].visit_time > new_visit_time) {
+      new_visits->push_back(history::VisitInfo(
+          new_visit_time, ui::PageTransitionFromInt(
+                              sync_specifics.visit_transitions(new_index))));
+      ++new_index;
+    } else {
+      ++old_index;
+      ++new_index;
+    }
+  }
+
+  if (removed_visits) {
+    for (; old_index < old_visit_count; ++old_index) {
+      removed_visits->push_back(history_visits[old_index]);
+    }
+  }
+
+  for (; new_index < new_visit_count; ++new_index) {
+    new_visits->push_back(history::VisitInfo(
+        base::Time::FromInternalValue(sync_specifics.visits(new_index)),
+        ui::PageTransitionFromInt(
+            sync_specifics.visit_transitions(new_index))));
+  }
 }
 
 }  // namespace history
