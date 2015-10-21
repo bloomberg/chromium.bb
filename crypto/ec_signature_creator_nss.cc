@@ -24,8 +24,7 @@ namespace {
 SECStatus SignData(SECItem* result,
                    SECItem* input,
                    SECKEYPrivateKey* key,
-                   HASH_HashType hash_type,
-                   size_t* out_signature_len) {
+                   HASH_HashType hash_type) {
   if (key->keyType != ecKey) {
     DLOG(FATAL) << "Should be using an EC key.";
     PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -50,8 +49,6 @@ SECStatus SignData(SECItem* result,
   if (rv != SECSuccess)
     return rv;
 
-  *out_signature_len = sig.len;
-
   // DER encode the signature.
   return DSAU_EncodeDerSigWithLen(result, &sig, sig.len);
 }
@@ -59,8 +56,7 @@ SECStatus SignData(SECItem* result,
 }  // namespace
 
 ECSignatureCreatorImpl::ECSignatureCreatorImpl(ECPrivateKey* key)
-    : key_(key),
-      signature_len_(0) {
+    : key_(key) {
   EnsureNSSInit();
 }
 
@@ -83,7 +79,7 @@ bool ECSignatureCreatorImpl::Sign(const uint8* data,
 
   // Sign the secret data and save it to |result|.
   SECStatus rv =
-      SignData(&result, &secret, key_->key(), HASH_AlgSHA256, &signature_len_);
+      SignData(&result, &secret, key_->key(), HASH_AlgSHA256);
   if (rv != SECSuccess) {
     DLOG(ERROR) << "DerSignData: " << PORT_GetError();
     return false;
@@ -103,7 +99,11 @@ bool ECSignatureCreatorImpl::DecodeSignature(
   der_sig_item.len = der_sig.size();
   der_sig_item.data = const_cast<uint8*>(&der_sig[0]);
 
-  SECItem* raw_sig = DSAU_DecodeDerSigToLen(&der_sig_item, signature_len_);
+  size_t signature_len = SECKEY_SignatureLen(key_->public_key());
+  if (signature_len == 0)
+    return false;
+
+  SECItem* raw_sig = DSAU_DecodeDerSigToLen(&der_sig_item, signature_len);
   if (!raw_sig)
     return false;
   out_raw_sig->assign(raw_sig->data, raw_sig->data + raw_sig->len);

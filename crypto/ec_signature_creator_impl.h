@@ -24,7 +24,6 @@ class ECSignatureCreatorImpl : public ECSignatureCreator {
 
  private:
   ECPrivateKey* key_;
-  size_t signature_len_;
 
   DISALLOW_COPY_AND_ASSIGN(ECSignatureCreatorImpl);
 };
