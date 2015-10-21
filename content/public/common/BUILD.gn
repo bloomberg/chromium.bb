@@ -62,6 +62,8 @@ source_set("common_sources") {
     "//content:content_implementation",
   ]
 
+  public_configs = [ "//v8:external_startup_data" ]
+
   public_deps = [
     "//content/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",

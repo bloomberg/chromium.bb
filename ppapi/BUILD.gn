@@ -36,7 +36,11 @@ shared_library("ppapi_tests") {
   sources = ppapi_sources.test_common_source_files +
             ppapi_sources.test_trusted_source_files
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//v8:external_startup_data",
+  ]
+
   defines = [ "GL_GLEXT_PROTOTYPES" ]
   include_dirs = [ "lib/gl/include" ]
 

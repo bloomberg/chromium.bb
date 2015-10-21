@@ -89,6 +89,8 @@ component("gin") {
     sources += [ "$target_gen_dir/v8_snapshot_fingerprint.cc" ]
     defines += [ "V8_VERIFY_EXTERNAL_STARTUP_DATA" ]
   }
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 if (v8_use_external_startup_data) {

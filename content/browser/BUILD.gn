@@ -136,6 +136,8 @@ source_set("browser") {
       "//ui/surface",
       "//ui/touch_selection",
     ]
+
+    configs += [ "//v8:external_startup_data" ]
   }
 
   configs += [

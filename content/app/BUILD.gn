@@ -70,6 +70,7 @@ if (is_ios) {
 content_app_extra_configs = [
   "//build/config/compiler:wexit_time_destructors",
   "//content:content_implementation",
+  "//v8:external_startup_data",
 ]
 
 if (!is_multi_dll_chrome) {

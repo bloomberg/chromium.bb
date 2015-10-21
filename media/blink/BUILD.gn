@@ -125,6 +125,8 @@ test("media_blink_unittests") {
   if (is_android) {
     deps += [ "//ui/gl" ]
   }
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.

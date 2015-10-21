@@ -221,6 +221,8 @@ source_set("lib") {
     "//mojo/services/network:network",
     "//mojo/services/tracing",
   ]
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 mojo_native_application("html_viewer") {
@@ -333,6 +335,8 @@ test("html_viewer_unittests") {
     deps += [ ":build_unittest_assets" ]
     apk_asset_location = html_viewer_unittests_assets
   }
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 mojo_native_application("apptests") {

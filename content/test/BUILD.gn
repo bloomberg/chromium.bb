@@ -23,7 +23,12 @@ content_tests_gypi_values =
 # GYP version //content/content_tests.gypi:test_support_content
 source_set("test_support") {
   testonly = true
-  configs += [ "//build/config:precompiled_headers" ]
+
+  configs += [
+    "//build/config:precompiled_headers",
+    "//v8:external_startup_data",
+  ]
+
   public_deps = [
     "//content/public/app:both",
     "//content/public/browser",
@@ -210,6 +215,8 @@ source_set("browsertest_support") {
   } else {
     deps += [ "//content/public/browser" ]
   }
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 mojom("content_test_mojo_bindings") {

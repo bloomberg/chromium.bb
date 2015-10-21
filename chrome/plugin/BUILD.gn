@@ -8,7 +8,10 @@ static_library("plugin") {
     "chrome_content_plugin_client.h",
   ]
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//v8:external_startup_data",
+  ]
 
   deps = [
     "//base",

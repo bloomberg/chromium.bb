@@ -8,7 +8,6 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
-import("//build_overrides/v8.gni")
 import("//build/toolchain/goma.gni")
 
 declare_args() {
@@ -242,9 +241,6 @@ config("feature_flags") {
   }
   if (enable_hangout_services_extension) {
     defines += [ "ENABLE_HANGOUT_SERVICES_EXTENSION=1" ]
-  }
-  if (v8_use_external_startup_data) {
-    defines += [ "V8_USE_EXTERNAL_STARTUP_DATA" ]
   }
   if (enable_background) {
     defines += [ "ENABLE_BACKGROUND=1" ]
