@@ -3534,7 +3534,7 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
     unsigned texture_id = 0;
     if (overlay.use_output_surface_for_resource) {
       texture_id = output_surface_->GetOverlayTextureId();
-      DCHECK(texture_id);
+      DCHECK_IMPLIES(!texture_id, IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
           make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(
