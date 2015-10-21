@@ -165,7 +165,7 @@
       'dependencies': [
         'chrome_elf_common',
         '../breakpad/breakpad.gyp:breakpad_handler',
-        '../chrome/common_constants.gyp:version_header',
+        '../chrome/chrome.gyp:chrome_version_header',
       ],
     },
   ], # targets
@@ -202,3 +202,4 @@
     }],
   ],
 }
+

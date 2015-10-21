@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_version.h"
+#include "version.h"  // NOLINT
 
 namespace safe_browsing {
 

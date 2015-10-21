@@ -68,7 +68,7 @@
             '<(version_path)',
             '<(branding_path)',
             '<(lastchange_path)',
-            '<(DEPTH)/chrome/common/chrome_version.h.in',
+            '<(DEPTH)/chrome/version.h.in',
             'BRANDING',
           ],
           'outputs': [
@@ -81,7 +81,7 @@
             '-f', '<(branding_path)',
             '-f', '<(lastchange_path)',
             '-f', 'BRANDING',
-            '<(DEPTH)/chrome/common/chrome_version.h.in',
+            '<(DEPTH)/chrome/version.h.in',
             '<@(_outputs)',
           ],
           'message': 'Generating version header file: <@(_outputs)',

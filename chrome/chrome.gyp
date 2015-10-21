@@ -415,6 +415,41 @@
           ],
         },
         {
+          # GN version: //chrome:version_header
+          'target_name': 'chrome_version_header',
+          'type': 'none',
+          'hard_dependency': 1,
+          'actions': [
+            {
+              'action_name': 'version_header',
+              'variables': {
+                'lastchange_path':
+                  '<(DEPTH)/build/util/LASTCHANGE',
+                'branding_path': 'app/theme/<(branding_path_component)/BRANDING',
+              },
+              'inputs': [
+                '<(version_path)',
+                '<(branding_path)',
+                '<(lastchange_path)',
+                'version.h.in',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/version.h',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(branding_path)',
+                '-f', '<(lastchange_path)',
+                'version.h.in',
+                '<@(_outputs)',
+              ],
+              'message': 'Generating version header file: <@(_outputs)',
+            },
+          ],
+        },
+        {
           'target_name': 'crash_service',
           'type': 'executable',
           'dependencies': [

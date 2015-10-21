@@ -425,6 +425,22 @@ group("child_dependencies") {
 }
 
 if (is_win) {
+  # TODO(brettw) this duplicates "//chrome/common:version" which applies to
+  # Linux.
+  process_version("version_header") {
+    # TODO(brettW) this should have more reduced visibility, but chrome/browser
+    # currently depends on this.
+    #visibility = [ ":*" ]
+
+    # This one just uses the custom template and no separate sources.
+    sources = []
+    template_file = "version.h.in"
+
+    # TODO(brettw) this should move to $target_gen_dir/version.h and
+    # source files including it should reference it via "chrome/version.h"
+    output = "$root_gen_dir/version.h"
+  }
+
   process_version("chrome_exe_version") {
     template_file = chrome_version_rc_template
     sources = [

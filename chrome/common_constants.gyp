@@ -5,7 +5,14 @@
 {
   'variables': {
     'chromium_code': 1,
-    'common_constants_sources': [
+  },
+
+  'includes': [
+    '../build/util/version.gypi',
+  ],
+
+  'target_defaults': {
+    'sources': [
       'common/chrome_constants.cc',
       'common/chrome_constants.h',
       'common/chrome_icon_resources_win.cc',
@@ -26,60 +33,43 @@
       'common/pref_names.cc',
       'common/pref_names.h',
     ],
-  },
-
-  'includes': [
-    '../build/util/version.gypi',
-  ],
-
-  'targets': [
-    {
-      # GN version: //chrome/common:version_header
-      'target_name': 'version_header',
-      'type': 'none',
-      'hard_dependency': 1,
-      'actions': [
-        {
-          'action_name': 'version_header',
-          'variables': {
-            'lastchange_path':
-              '<(DEPTH)/build/util/LASTCHANGE',
-            'branding_path': 'app/theme/<(branding_path_component)/BRANDING',
-          },
-          'inputs': [
-            '<(version_path)',
-            '<(branding_path)',
-            '<(lastchange_path)',
-            'common/chrome_version.h.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version.h',
-          ],
-          'action': [
-            'python',
-            '<(version_py_path)',
-            '-f', '<(version_path)',
-            '-f', '<(branding_path)',
-            '-f', '<(lastchange_path)',
-            'common/chrome_version.h.in',
-            '<@(_outputs)',
-          ],
-          'message': 'Generating version header file: <@(_outputs)',
+    'actions': [
+      {
+        'action_name': 'Make chrome_version.cc',
+        'variables': {
+          'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+          'template_input_path': 'common/chrome_version.cc.version',
         },
-      ],
-    },
+        'inputs': [
+          '<(version_py_path)',
+          '<(version_path)',
+          '<(lastchange_path)',
+          '<(template_input_path)',
+        ],
+        'outputs': [
+          '<(INTERMEDIATE_DIR)/chrome_version.cc',
+        ],
+        'action': [
+          'python',
+          '<(version_py_path)',
+          '-f', '<(version_path)',
+          '-f', '<(lastchange_path)',
+          '<(template_input_path)',
+          '<@(_outputs)',
+        ],
+        'process_outputs_as_sources': 1,
+      },
+    ],
+  },
+  'targets': [
     {
       # GN version: //chrome/common:constants
       'target_name': 'common_constants',
       'type': 'static_library',
-      'sources': [
-        '<@(common_constants_sources)'
-      ],
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)',  # Needed by chrome_paths.cc.
       ],
       'dependencies': [
-        'version_header',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../components/components.gyp:bookmarks_common',
@@ -109,14 +99,10 @@
         {
           'target_name': 'common_constants_win64',
           'type': 'static_library',
-          'sources': [
-            '<@(common_constants_sources)'
-          ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',  # Needed by chrome_paths.cc.
           ],
           'dependencies': [
-            'version_header',
             '../base/base.gyp:base_win64',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../components/nacl.gyp:nacl_switches_win64',

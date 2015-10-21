@@ -1962,7 +1962,6 @@
       'hard_dependency': 1,
       'dependencies': [
         'automation_client_lib',
-        'common_constants.gyp:version_header',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',

@@ -90,7 +90,7 @@ source_set("breakpad") {
   deps = [
     ":common",
     "//breakpad:breakpad_handler",
-    "//chrome/common:version_header",
+    "//chrome:version_header",
   ]
 }
 
