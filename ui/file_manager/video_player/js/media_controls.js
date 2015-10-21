@@ -33,7 +33,7 @@ function MediaControls(containerElement, onMediaError) {
   this.playButton_ = null;
 
   /**
-   * @type {MediaControls.Slider}
+   * @type {PaperSliderElement}
    * @private
    */
   this.progressSlider_ = null;
@@ -45,7 +45,7 @@ function MediaControls(containerElement, onMediaError) {
   this.duration_ = null;
 
   /**
-   * @type {MediaControls.AnimatedSlider}
+   * @type {PaperSliderElement}
    * @private
    */
   this.volume_ = null;
@@ -73,6 +73,11 @@ function MediaControls(containerElement, onMediaError) {
    * @private
    */
   this.currentTime_ = null;
+
+  /**
+   * @private {boolean}
+   */
+  this.seeking_ = false;
 }
 
 /**
@@ -151,14 +156,13 @@ MediaControls.prototype.createButton = function(
 };
 
 /**
- * Enable/disable controls matching a given selector.
+ * Enable/disable controls.
  *
- * @param {string} selector CSS selector.
  * @param {boolean} on True if enable, false if disable.
  * @private
  */
-MediaControls.prototype.enableControls_ = function(selector, on) {
-  var controls = this.container_.querySelectorAll(selector);
+MediaControls.prototype.enableControls_ = function(on) {
+  var controls = this.container_.querySelectorAll('.media-control');
   for (var i = 0; i != controls.length; i++) {
     var classList = controls[i].classList;
     if (on)
@@ -166,6 +170,8 @@ MediaControls.prototype.enableControls_ = function(selector, on) {
     else
       classList.add('disabled');
   }
+  this.progressSlider_.disabled = !on;
+  this.volume_.disabled = !on;
 };
 
 /*
@@ -241,13 +247,6 @@ MediaControls.PROGRESS_RANGE = 5000;
 MediaControls.prototype.initTimeControls = function(opt_parent) {
   var timeControls = this.createControl('time-controls', opt_parent);
 
-  this.progressSlider_ = new MediaControls.PreciseSlider(
-      this.createControl('progress media-control', timeControls),
-      0, /* value */
-      MediaControls.PROGRESS_RANGE,
-      this.onProgressChange_.bind(this),
-      this.onProgressDrag_.bind(this));
-
   var timeBox = this.createControl('time media-control', timeControls);
 
   this.duration_ = this.createControl('duration', timeBox);
@@ -255,6 +254,20 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
   this.duration_.textContent = MediaControls.formatTime_(0);
 
   this.currentTime_ = this.createControl('current', timeBox);
+
+  this.progressSlider_ = /** @type {!PaperSliderElement} */ (
+      document.createElement('paper-slider'));
+  this.progressSlider_.classList.add('progress', 'media-control');
+  this.progressSlider_.max = MediaControls.PROGRESS_RANGE;
+  this.progressSlider_.addEventListener('change', function(event) {
+    this.onProgressChange_(this.progressSlider_.ratio);
+  }.bind(this));
+  this.progressSlider_.addEventListener(
+      'immediate-value-change',
+      function(event) {
+        this.onProgressDrag_();
+      }.bind(this));
+  timeControls.appendChild(this.progressSlider_);
 };
 
 /**
@@ -264,7 +277,7 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
  */
 MediaControls.prototype.displayProgress_ = function(current, duration) {
   var ratio = current / duration;
-  this.progressSlider_.setValue(ratio);
+  this.progressSlider_.value = ratio * this.progressSlider_.max;
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
 
@@ -281,20 +294,44 @@ MediaControls.prototype.onProgressChange_ = function(value) {
     return;
   }
 
+  this.setSeeking_(false);
+
   var current = this.media_.duration * value;
   this.media_.currentTime = current;
   this.currentTime_.textContent = MediaControls.formatTime_(current);
 };
 
 /**
- * @param {boolean} on True if dragging.
  * @private
  */
-MediaControls.prototype.onProgressDrag_ = function(on) {
+MediaControls.prototype.onProgressDrag_ = function() {
   if (!this.media_)
     return;  // Media is detached.
 
-  if (on) {
+  this.setSeeking_(true);
+
+  // Show seeking position instead of playing position while dragging.
+  if (this.media_.duration && this.progressSlider_.max > 0) {
+    var immediateRatio =
+        this.progressSlider_.immediateValue / this.progressSlider_.max;
+    var current = this.media_.duration * immediateRatio;
+    this.currentTime_.textContent = MediaControls.formatTime_(current);
+  }
+};
+
+/**
+ * Handles 'seeking' state, which starts by dragging slider knob and finishes by
+ * releasing it. While seeking, we pause the video when seeking starts and
+ * resume the last play state when seeking ends.
+ * @private
+ */
+MediaControls.prototype.setSeeking_ = function(seeking) {
+  if (seeking === this.seeking_)
+    return;
+
+  this.seeking_ = seeking;
+
+  if (seeking) {
     this.resumeAfterDrag_ = this.isPlaying();
     this.media_.pause(true /* seeking */);
   } else {
@@ -304,8 +341,9 @@ MediaControls.prototype.onProgressDrag_ = function(on) {
       else
         this.media_.play(true /* seeking */);
     }
-    this.updatePlayButtonState_(this.isPlaying());
+    this.resumeAfterDrag_ = false;
   }
+  this.updatePlayButtonState_(this.isPlaying());
 };
 
 /*
@@ -322,12 +360,17 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
       this.onSoundButtonClick_.bind(this), volumeControls);
   this.soundButton_.setAttribute('level', 3);  // max level.
 
-  this.volume_ = new MediaControls.AnimatedSlider(
-      this.createControl('volume media-control', volumeControls),
-      1, /* value */
-      100 /* range */,
-      this.onVolumeChange_.bind(this),
-      this.onVolumeDrag_.bind(this));
+  this.volume_ = /** @type {!PaperSliderElement} */ (
+      document.createElement('paper-slider'));
+  this.volume_.classList.add('volume', 'media-control');
+  this.volume_.addEventListener('change', function(event) {
+    this.onVolumeChange_(this.volume_.ratio);
+  }.bind(this));
+  this.volume_.addEventListener('immediate-value-change', function(event) {
+    this.onVolumeDrag_();
+  }.bind(this));
+  this.volume_.value = this.volume_.max;
+  volumeControls.appendChild(this.volume_);
 };
 
 /**
@@ -336,12 +379,12 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
  */
 MediaControls.prototype.onSoundButtonClick_ = function() {
   if (this.media_.volume == 0) {
-    this.volume_.setValue(this.savedVolume_ || 1);
+    this.volume_.value = (this.savedVolume_ || 1) * this.volume_.max;
   } else {
     this.savedVolume_ = this.media_.volume;
-    this.volume_.setValue(0);
+    this.volume_.value = 0;
   }
-  this.onVolumeChange_(this.volume_.getValue());
+  this.onVolumeChange_(this.volume_.ratio);
 };
 
 /**
@@ -369,11 +412,10 @@ MediaControls.prototype.onVolumeChange_ = function(value) {
 };
 
 /**
- * @param {boolean} on True if dragging is in progress.
  * @private
  */
-MediaControls.prototype.onVolumeDrag_ = function(on) {
-  if (on && (this.media_.volume != 0)) {
+MediaControls.prototype.onVolumeDrag_ = function() {
+  if (this.media_.volume !== 0) {
     this.savedVolume_ = this.media_.volume;
   }
 };
@@ -406,7 +448,7 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   this.onMediaProgress_();
   if (this.volume_) {
     /* Copy the user selected volume to the new media element. */
-    this.savedVolume_ = this.media_.volume = this.volume_.getValue();
+    this.savedVolume_ = this.media_.volume = this.volume_.ratio;
   }
 };
 
@@ -446,7 +488,7 @@ MediaControls.prototype.cleanup = function() {
  * @private
  */
 MediaControls.prototype.onMediaPlay_ = function(playing) {
-  if (this.progressSlider_.isDragging())
+  if (this.progressSlider_.dragging)
     return;
 
   this.updatePlayButtonState_(playing);
@@ -459,17 +501,16 @@ MediaControls.prototype.onMediaPlay_ = function(playing) {
  */
 MediaControls.prototype.onMediaDuration_ = function() {
   if (!this.media_ || !this.media_.duration) {
-    this.enableControls_('.media-control', false);
+    this.enableControls_(false);
     return;
   }
 
-  this.enableControls_('.media-control', true);
+  this.enableControls_(true);
 
-  var sliderContainer = this.progressSlider_.getContainer();
   if (this.media_.seekable)
-    sliderContainer.classList.remove('readonly');
+    this.progressSlider_.classList.remove('readonly');
   else
-    sliderContainer.classList.add('readonly');
+    this.progressSlider_.classList.add('readonly');
 
   var valueToString = function(value) {
     var duration = this.media_ ? this.media_.duration : 0;
@@ -477,8 +518,6 @@ MediaControls.prototype.onMediaDuration_ = function() {
   }.bind(this);
 
   this.duration_.textContent = valueToString(1);
-
-  this.progressSlider_.setValueToStringFunction(valueToString);
 
   if (this.media_.seekable)
     this.restorePlayState();
@@ -497,7 +536,7 @@ MediaControls.prototype.onMediaProgress_ = function() {
   var current = this.media_.currentTime;
   var duration = this.media_.duration;
 
-  if (this.progressSlider_.isDragging())
+  if (this.progressSlider_.dragging)
     return;
 
   this.displayProgress_(current, duration);
@@ -525,7 +564,8 @@ MediaControls.prototype.onPlayStateChanged = function() {};
  * @private
  */
 MediaControls.prototype.updatePlayButtonState_ = function(playing) {
-  if (this.media_.ended && this.progressSlider_.isAtEnd()) {
+  if (this.media_.ended &&
+      this.progressSlider_.value === this.progressSlider_.max) {
     this.playButton_.setAttribute('state',
                                   MediaControls.ButtonStateType.ENDED);
   } else if (playing) {
@@ -584,458 +624,6 @@ MediaControls.prototype.clearState = function() {
 };
 
 /**
- * Create a customized slider control.
- *
- * @param {!HTMLElement} container The containing div element.
- * @param {number} value Initial value [0..1].
- * @param {number} range Number of distinct slider positions to be supported.
- * @param {function(number)} onChange Value change handler.
- * @param {function(boolean)} onDrag Drag begin/end handler.
- * @constructor
- * @struct
- */
-
-MediaControls.Slider = function(container, value, range, onChange, onDrag) {
-  this.container_ = container;
-  this.onChange_ = onChange;
-  this.onDrag_ = onDrag;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.isDragging_ = false;
-
-  var document = this.container_.ownerDocument;
-
-  this.container_.classList.add('custom-slider');
-
-  this.input_ = assertInstanceof(document.createElement('input'),
-      HTMLInputElement);
-  this.input_.type = 'range';
-  this.input_.min = (0).toString();
-  this.input_.max = range.toString();
-  this.input_.value = (value * range).toString();
-  this.container_.appendChild(this.input_);
-
-  this.input_.addEventListener(
-      'change', this.onInputChange_.bind(this));
-  this.input_.addEventListener(
-      'mousedown', this.onInputDrag_.bind(this, true));
-  this.input_.addEventListener(
-      'mouseup', this.onInputDrag_.bind(this, false));
-
-  this.bar_ = assertInstanceof(document.createElement('div'), HTMLDivElement);
-  this.bar_.className = 'bar';
-  this.container_.appendChild(this.bar_);
-
-  this.filled_ = document.createElement('div');
-  this.filled_.className = 'filled';
-  this.bar_.appendChild(this.filled_);
-
-  var leftCap = document.createElement('div');
-  leftCap.className = 'cap left';
-  this.bar_.appendChild(leftCap);
-
-  var rightCap = document.createElement('div');
-  rightCap.className = 'cap right';
-  this.bar_.appendChild(rightCap);
-
-  this.value_ = value;
-  this.setFilled_(value);
-};
-
-/**
- * @return {HTMLElement} The container element.
- */
-MediaControls.Slider.prototype.getContainer = function() {
-  return this.container_;
-};
-
-/**
- * @return {HTMLElement} The standard input element.
- * @private
- */
-MediaControls.Slider.prototype.getInput_ = function() {
-  return this.input_;
-};
-
-/**
- * @return {HTMLElement} The slider bar element.
- */
-MediaControls.Slider.prototype.getBar = function() {
-  return this.bar_;
-};
-
-/**
- * @return {number} [0..1] The current value.
- */
-MediaControls.Slider.prototype.getValue = function() {
-  return this.value_;
-};
-
-/**
- * @param {number} value [0..1].
- */
-MediaControls.Slider.prototype.setValue = function(value) {
-  this.value_ = value;
-  this.setValueToUI_(value);
-};
-
-/**
- * Fill the given proportion the slider bar (from the left).
- *
- * @param {number} proportion [0..1].
- * @private
- */
-MediaControls.Slider.prototype.setFilled_ = function(proportion) {
-  this.filled_.style.width = proportion * 100 + '%';
-};
-
-/**
- * Get the value from the input element.
- *
- * @return {number} Value [0..1].
- * @private
- */
-MediaControls.Slider.prototype.getValueFromUI_ = function() {
-  return this.input_.value / this.input_.max;
-};
-
-/**
- * Update the UI with the current value.
- *
- * @param {number} value [0..1].
- * @private
- */
-MediaControls.Slider.prototype.setValueToUI_ = function(value) {
-  this.input_.value = (value * this.input_.max).toString();
-  this.setFilled_(value);
-};
-
-/**
- * Compute the proportion in which the given position divides the slider bar.
- *
- * @param {number} position in pixels.
- * @return {number} [0..1] proportion.
- */
-MediaControls.Slider.prototype.getProportion = function(position) {
-  var rect = this.bar_.getBoundingClientRect();
-  return Math.max(0, Math.min(1, (position - rect.left) / rect.width));
-};
-
-/**
- * Sets value formatting function.
- * @param {function(number):string} func Value formatting function.
- */
-MediaControls.Slider.prototype.setValueToStringFunction = function(func) {};
-
-/**
- * 'change' event handler.
- * @private
- */
-MediaControls.Slider.prototype.onInputChange_ = function() {
-  this.value_ = this.getValueFromUI_();
-  this.setFilled_(this.value_);
-  this.onChange_(this.value_);
-};
-
-/**
- * @return {boolean} True if dragging is in progress.
- */
-MediaControls.Slider.prototype.isDragging = function() {
-  return this.isDragging_;
-};
-
-/**
- * Mousedown/mouseup handler.
- * @param {boolean} on True if the mouse is down.
- * @private
- */
-MediaControls.Slider.prototype.onInputDrag_ = function(on) {
-  this.isDragging_ = on;
-  this.onDrag_(on);
-};
-
-/**
- * Check if the slider position is at the end of the control.
- * @return {boolean} True if the slider position is at the end.
- */
-MediaControls.Slider.prototype.isAtEnd = function() {
-  return this.input_.value === this.input_.max;
-};
-
-/**
- * Create a customized slider with animated thumb movement.
- *
- * @param {!HTMLElement} container The containing div element.
- * @param {number} value Initial value [0..1].
- * @param {number} range Number of distinct slider positions to be supported.
- * @param {function(number)} onChange Value change handler.
- * @param {function(boolean)} onDrag Drag begin/end handler.
- * @constructor
- * @struct
- * @extends {MediaControls.Slider}
- */
-MediaControls.AnimatedSlider = function(
-    container, value, range, onChange, onDrag) {
-  MediaControls.Slider.apply(this, arguments);
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.animationInterval_ = 0;
-};
-
-MediaControls.AnimatedSlider.prototype = {
-  __proto__: MediaControls.Slider.prototype
-};
-
-/**
- * Number of animation steps.
- */
-MediaControls.AnimatedSlider.STEPS = 10;
-
-/**
- * Animation duration.
- */
-MediaControls.AnimatedSlider.DURATION = 100;
-
-/**
- * @param {number} value [0..1].
- * @private
- */
-MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
-  if (this.animationInterval_) {
-    clearInterval(this.animationInterval_);
-  }
-  var oldValue = this.getValueFromUI_();
-  var step = 0;
-  this.animationInterval_ = setInterval(function() {
-    step++;
-    var currentValue = oldValue +
-        (value - oldValue) * (step / MediaControls.AnimatedSlider.STEPS);
-    MediaControls.Slider.prototype.setValueToUI_.call(this, currentValue);
-    if (step == MediaControls.AnimatedSlider.STEPS) {
-      clearInterval(this.animationInterval_);
-    }
-  }.bind(this),
-  MediaControls.AnimatedSlider.DURATION / MediaControls.AnimatedSlider.STEPS);
-};
-
-/**
- * Create a customized slider with a precise time feedback.
- *
- * The time value is shown above the slider bar at the mouse position.
- *
- * @param {!HTMLElement} container The containing div element.
- * @param {number} value Initial value [0..1].
- * @param {number} range Number of distinct slider positions to be supported.
- * @param {function(number)} onChange Value change handler.
- * @param {function(boolean)} onDrag Drag begin/end handler.
- * @constructor
- * @struct
- * @extends {MediaControls.Slider}
- */
-MediaControls.PreciseSlider = function(
-    container, value, range, onChange, onDrag) {
-  MediaControls.Slider.apply(this, arguments);
-
-  var doc = this.container_.ownerDocument;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.latestMouseUpTime_ = 0;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.seekMarkTimer_ = 0;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.latestSeekRatio_ = 0;
-
-  /**
-   * @type {?function(number):string}
-   * @private
-   */
-  this.valueToString_ = null;
-
-  this.seekMark_ = doc.createElement('div');
-  this.seekMark_.className = 'seek-mark';
-  this.getBar().appendChild(this.seekMark_);
-
-  this.seekLabel_ = doc.createElement('div');
-  this.seekLabel_.className = 'seek-label';
-  this.seekMark_.appendChild(this.seekLabel_);
-
-  this.getContainer().addEventListener(
-      'mousemove', this.onMouseMove_.bind(this));
-  this.getContainer().addEventListener(
-      'mouseout', this.onMouseOut_.bind(this));
-};
-
-MediaControls.PreciseSlider.prototype = {
-  __proto__: MediaControls.Slider.prototype
-};
-
-/**
- * Show the seek mark after a delay.
- */
-MediaControls.PreciseSlider.SHOW_DELAY = 200;
-
-/**
- * Hide the seek mark for this long after changing the position with a click.
- */
-MediaControls.PreciseSlider.HIDE_AFTER_MOVE_DELAY = 2500;
-
-/**
- * Hide the seek mark for this long after changing the position with a drag.
- */
-MediaControls.PreciseSlider.HIDE_AFTER_DRAG_DELAY = 750;
-
-/**
- * Default hide timeout (no hiding).
- */
-MediaControls.PreciseSlider.NO_AUTO_HIDE = 0;
-
-/**
- * @override
- */
-MediaControls.PreciseSlider.prototype.setValueToStringFunction =
-    function(func) {
-  this.valueToString_ = func;
-
-  /* It is not completely accurate to assume that the max value corresponds
-   to the longest string, but generous CSS padding will compensate for that. */
-  var labelWidth = this.valueToString_(1).length / 2 + 1;
-  this.seekLabel_.style.width = labelWidth + 'em';
-  this.seekLabel_.style.marginLeft = -labelWidth / 2 + 'em';
-};
-
-/**
- * Show the time above the slider.
- *
- * @param {number} ratio [0..1] The proportion of the duration.
- * @param {number} timeout Timeout in ms after which the label should be hidden.
- *     MediaControls.PreciseSlider.NO_AUTO_HIDE means show until the next call.
- * @private
- */
-MediaControls.PreciseSlider.prototype.showSeekMark_ =
-    function(ratio, timeout) {
-  // Do not update the seek mark for the first 500ms after the drag is finished.
-  if (this.latestMouseUpTime_ && (this.latestMouseUpTime_ + 500 > Date.now()))
-    return;
-
-  this.seekMark_.style.left = ratio * 100 + '%';
-
-  if (ratio < this.getValue()) {
-    this.seekMark_.classList.remove('inverted');
-  } else {
-    this.seekMark_.classList.add('inverted');
-  }
-  this.seekLabel_.textContent = this.valueToString_(ratio);
-
-  this.seekMark_.classList.add('visible');
-
-  if (this.seekMarkTimer_) {
-    clearTimeout(this.seekMarkTimer_);
-    this.seekMarkTimer_ = 0;
-  }
-  if (timeout != MediaControls.PreciseSlider.NO_AUTO_HIDE) {
-    this.seekMarkTimer_ = setTimeout(this.hideSeekMark_.bind(this), timeout);
-  }
-};
-
-/**
- * @private
- */
-MediaControls.PreciseSlider.prototype.hideSeekMark_ = function() {
-  this.seekMarkTimer_ = 0;
-  this.seekMark_.classList.remove('visible');
-};
-
-/**
- * 'mouseout' event handler.
- * @param {Event} e Event.
- * @private
- */
-MediaControls.PreciseSlider.prototype.onMouseMove_ = function(e) {
-  this.latestSeekRatio_ = this.getProportion(e.clientX);
-
-  var showMark = function() {
-    if (!this.isDragging()) {
-      this.showSeekMark_(this.latestSeekRatio_,
-          MediaControls.PreciseSlider.HIDE_AFTER_MOVE_DELAY);
-    }
-  }.bind(this);
-
-  if (this.seekMark_.classList.contains('visible')) {
-    showMark();
-  } else if (!this.seekMarkTimer_) {
-    this.seekMarkTimer_ =
-        setTimeout(showMark, MediaControls.PreciseSlider.SHOW_DELAY);
-  }
-};
-
-/**
- * 'mouseout' event handler.
- * @param {Event} e Event.
- * @private
- */
-MediaControls.PreciseSlider.prototype.onMouseOut_ = function(e) {
-  for (var element = e.relatedTarget; element; element = element.parentNode) {
-    if (element == this.getContainer())
-      return;
-  }
-  if (this.seekMarkTimer_) {
-    clearTimeout(this.seekMarkTimer_);
-    this.seekMarkTimer_ = 0;
-  }
-  this.hideSeekMark_();
-};
-
-/**
- * 'change' event handler.
- * @private
- */
-MediaControls.PreciseSlider.prototype.onInputChange_ = function() {
-  MediaControls.Slider.prototype.onInputChange_.apply(this, arguments);
-  if (this.isDragging()) {
-    this.showSeekMark_(
-        this.getValue(), MediaControls.PreciseSlider.NO_AUTO_HIDE);
-  }
-};
-
-/**
- * Mousedown/mouseup handler.
- * @param {boolean} on True if the mouse is down.
- * @private
- */
-MediaControls.PreciseSlider.prototype.onInputDrag_ = function(on) {
-  MediaControls.Slider.prototype.onInputDrag_.apply(this, arguments);
-
-  if (on) {
-    // Dragging started, align the seek mark with the thumb position.
-    this.showSeekMark_(
-        this.getValue(), MediaControls.PreciseSlider.NO_AUTO_HIDE);
-  } else {
-    // Just finished dragging.
-    // Show the label for the last time with a shorter timeout.
-    this.showSeekMark_(
-        this.getValue(), MediaControls.PreciseSlider.HIDE_AFTER_DRAG_DELAY);
-    this.latestMouseUpTime_ = Date.now();
-  }
-};
-
-/**
  * Create video controls.
  *
  * @param {!HTMLElement} containerElement The container for the controls.
@@ -1079,7 +667,7 @@ function VideoControls(containerElement, onMediaError, stringFunction,
   }
 
   // Disables all controls at first.
-  this.enableControls_('.media-control', false);
+  this.enableControls_(false);
 
   var videoControls = this;
   chrome.mediaPlayerPrivate.onTogglePlayState.addListener(

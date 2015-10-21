@@ -7,6 +7,7 @@
 .media-button {
   background-position: center;
   background-repeat: no-repeat;
+  flex: none;
   height: 32px;
   position: relative;
   width: 32px;
@@ -25,153 +26,10 @@
   opacity: 0.26;
 }
 
-/* Custom sliders for progress and volume. */
-
-/* Customize the standard input[type='range']. */
-.custom-slider > input[type='range'] {
-  -webkit-appearance: none !important;  /* Hide the default thumb icon. */
-  background: transparent;  /* Hide the standard slider bar */
-  height: 100%;
-  left: -2px;  /* Required to align the input element with the parent. */
-  outline: none;
-  position: absolute;
-  top: -2px;
-  width: 100%;
-}
-
-/* Custom thumb icon. */
-.custom-slider > input[type='range']::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  background-position: center center;
-  background-repeat: no-repeat;
-  height: 24px;
-  position: relative;
-  z-index: 2;
-}
-
-/* Custom slider bar (we hide the standard one). */
-.custom-slider > .bar {
-  /* In order to match the horizontal position of the standard slider bar
-     left and right must be equal to 1/2 of the thumb icon width. */
-  border-bottom-style: solid;
-  border-top-style: solid;
-  border-width: 1px;
-  bottom: 14px;
-  pointer-events: none;  /* Mouse events pass through to the standard input. */
-  position: absolute;
-  top: 14px;
-}
-
-.custom-slider > .bar > .filled,
-.custom-slider > .bar > .cap {
-  border-style: solid;
-  border-width: 1px;
-  bottom: -1px;
-  position: absolute;
-  top: -1px;
-}
-
-/* The filled portion of the slider bar to the left of the thumb. */
-.custom-slider > .bar > .filled {
-  border-left-style: none;
-  border-right-style: none;
-  left: 0;
-  width: 0; /* The element style.width is manipulated from the code. */
-}
-
-/* Rounded caps to the left and right of the slider bar. */
-.custom-slider > .bar > .cap {
-  width: 4px;
-}
-
-/* Left cap is always filled, should be the same color as .filled. */
-.custom-slider > .bar > .cap.left {
-  border-bottom-left-radius: 4px;
-  border-right-style: none;
-  border-top-left-radius: 4px;
-  right: 100%;
-}
-
-/* Right cap is always not filled. */
-.custom-slider > .bar > .cap.right {
-  border-bottom-right-radius: 4px;
-  border-left-style: none;
-  border-top-right-radius: 4px;
-  left: 100%;
-}
-
-.custom-slider > .bar,
-.custom-slider > .bar > .cap.right {
-  background-color: #dadada;
-  border-color: #dadada;
-}
-
-.custom-slider > .bar > .filled,
-.custom-slider > .bar > .cap.left {
-  background-color: #4285f4;
-  border-color: #4285f4;
-}
-
-.custom-slider.disabled  > .bar > .filled,
-.custom-slider.disabled  > .bar > .cap.left {
-  background-color: rgba(0, 0, 0, 0.5);
-  background-image: none;
-}
-
-.custom-slider.disabled  > .bar,
-.custom-slider.disabled  > .bar > .filled,
-.custom-slider.disabled  > .bar > .cap {
-  border-color: #404040;
-}
-
 .media-button.disabled,
-.custom-slider.disabled,
-.custom-slider.readonly {
+paper-slider[disabled],
+paper-slider.readonly {
   pointer-events: none;
-}
-
-/* Progress seek marker (precise time shown on mouse hover. */
-
-/* Thin vertical line across the slider bar */
-.custom-slider > .bar > .seek-mark {
-  background-color: #202020;
-  bottom: -1px;
-  left: 0;
-  position: absolute;
-  top: -1px;
-  width: 0;
-}
-
-.custom-slider > .bar > .seek-mark.visible {
-  width: 1px;
-}
-
-.custom-slider > .bar > .seek-mark.inverted {
-  background-color: #808080;
-}
-
-/* Text label giving the precise time corresponding to the hover position. */
-.custom-slider > .bar > .seek-mark > .seek-label {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  background: #202020;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  bottom: 19px;
-  color: white;
-  display: -webkit-box;
-  font-size: 13px;
-  height: 15px;
-  left: 0;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  transition: opacity 150ms ease;
-}
-
-.custom-slider > .bar > .seek-mark.visible > .seek-label {
-  opacity: 1;
 }
 
 /* Media controls in order of appearance. */
@@ -193,58 +51,18 @@
 /* Time controls: a slider and a text time display. */
 
 .time-controls {
-  -webkit-box-align: center;
-  -webkit-box-flex: 1;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
+  display: flex;
+  flex: auto;
   height: 100%;
-  margin: 0 8px;
-}
-
-.custom-slider.progress {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-  height: 100%;
-  margin-left: -9px;  /* Set the margins at the edges of the slider bar. */
-  margin-right: -9px;
-  position: relative;
-}
-
-.custom-slider.progress > input[type='range']::-webkit-slider-thumb {
-  background-image: -webkit-image-set(
-    url(../images/media/media_slider_thumb.png) 1x,
-    url(../images/media/2x/media_slider_thumb.png) 2x);
-  width: 28px;
-}
-
-.custom-slider.progress > input[type='range']::-webkit-slider-thumb:hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_slider_thumb_hover.png) 1x,
-    url(../images/media/2x/media_slider_thumb_hover.png) 2x);
-}
-
-.custom-slider.progress > input[type='range']::-webkit-slider-thumb:active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_slider_thumb_down.png) 1x,
-    url(../images/media/2x/media_slider_thumb_down.png) 2x);
-}
-
-.custom-slider.progress.disabled > input[type='range']::-webkit-slider-thumb {
-  background-image: none;
-}
-
-.custom-slider.progress > .bar {
-  left: 14px;  /* Exactly 1/2 of the thumb width */
-  right: 14px;
 }
 
 /* Time display. */
 
 .time-controls > .time {
   cursor: default;
+  flex: none;
   height: 100%;
-  margin-left: 10px;
+  margin: 0 8px;
   position: relative;
 }
 
@@ -269,13 +87,18 @@
   top: -1px;
 }
 
+/* Progress slider. */
+
+.time-controls > .progress {
+  flex: auto;
+  height: 100%;
+  position: relative;
+}
+
 /* Volume controls: sound button and volume slider */
 
 .volume-controls {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
+  flex: none;
   height: 100%;
   margin: 0 8px;
 }
@@ -296,48 +119,17 @@
 
 /* Volume slider. */
 
-.custom-slider.volume {
+paper-slider.volume {
   height: 100%;
   position: relative;
-  width: 60px;
-}
-
-.custom-slider.volume > input[type='range']::-webkit-slider-thumb {
-  background-image: -webkit-image-set(
-    url(../images/media/media_volume_slider_thumb.png) 1x,
-    url(../images/media/2x/media_volume_slider_thumb.png) 2x);
-  width: 20px;
-}
-
-.custom-slider.volume > input[type='range']::-webkit-slider-thumb:hover {
-  background-image: -webkit-image-set(
-    url(../images/media/media_volume_slider_thumb_hover.png) 1x,
-    url(../images/media/2x/media_volume_slider_thumb_hover.png) 2x);
-}
-
-.custom-slider.volume > input[type='range']::-webkit-slider-thumb:active {
-  background-image: -webkit-image-set(
-    url(../images/media/media_volume_slider_thumb_down.png) 1x,
-    url(../images/media/2x/media_volume_slider_thumb_down.png) 2x);
-}
-
-.custom-slider.volume.disabled > input[type='range']::-webkit-slider-thumb {
-  background-image: none;
-}
-
-.custom-slider.volume > .bar {
-  left: 10px;  /* Exactly 1/2 of the thumb width */
-  right: 10px;
+  width: 110px;
 }
 
 /* Horizontal video control bar, all controls in a row. */
 
 .video-controls {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
   background: rgb(250, 250, 250);
-  display: -webkit-box;
+  display: flex;
   font-size: 13px;
   height: 32px;
   padding: 8px;

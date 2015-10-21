@@ -116,19 +116,15 @@ video {
 }
 
 #controls-wrapper {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
   bottom: 0;
-  display: -webkit-box;
+  display: flex;
   left: 0;
   position: absolute;
   right: 0;
 }
 
 #controls {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
+  flex: auto;
 }
 
 #video-player:not([tools]):not([casting]) .tool {
