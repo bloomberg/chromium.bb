@@ -35,7 +35,7 @@ private:
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSValueNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSValueNonInterpolableValue);
 
-PassOwnPtr<InterpolationValue> CSSValueInterpolationType::maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSValueInterpolationType::maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState*, const UnderlyingValue&, ConversionCheckers&) const
 {
     if (keyframe.isNeutral())
         return nullptr;

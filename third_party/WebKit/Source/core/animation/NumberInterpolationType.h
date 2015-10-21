@@ -20,7 +20,7 @@ public:
 
 private:
     PassOwnPtr<InterpolationValue> createNumberValue(double number) const;
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral() const final;
+    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
     PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState*, ConversionCheckers&) const final;

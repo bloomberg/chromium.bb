@@ -11,7 +11,7 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> PaintInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> PaintInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return InterpolationValue::create(*this, ColorInterpolationType::createInterpolableColor(Color::transparent));
 }
@@ -26,27 +26,29 @@ PassOwnPtr<InterpolationValue> PaintInterpolationType::maybeConvertInitial() con
 
 class ParentPaintChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentPaintChecker> create(CSSPropertyID property, const StyleColor& color)
+    static PassOwnPtr<ParentPaintChecker> create(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
     {
-        return adoptPtr(new ParentPaintChecker(property, color));
+        return adoptPtr(new ParentPaintChecker(type, property, color));
     }
-    static PassOwnPtr<ParentPaintChecker> create(CSSPropertyID property)
+    static PassOwnPtr<ParentPaintChecker> create(const InterpolationType& type, CSSPropertyID property)
     {
-        return adoptPtr(new ParentPaintChecker(property));
+        return adoptPtr(new ParentPaintChecker(type, property));
     }
 
 private:
-    ParentPaintChecker(CSSPropertyID property)
-        : m_property(property)
+    ParentPaintChecker(const InterpolationType& type, CSSPropertyID property)
+        : ConversionChecker(type)
+        , m_property(property)
         , m_validColor(false)
     { }
-    ParentPaintChecker(CSSPropertyID property, const StyleColor& color)
-        : m_property(property)
+    ParentPaintChecker(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
+        : ConversionChecker(type)
+        , m_property(property)
         , m_validColor(true)
         , m_color(color)
     { }
 
-    bool isValid(const StyleResolverState& state) const final
+    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
     {
         StyleColor parentColor;
         if (!PaintPropertyFunctions::getColor(m_property, *state.parentStyle(), parentColor))
@@ -70,10 +72,10 @@ PassOwnPtr<InterpolationValue> PaintInterpolationType::maybeConvertInherit(const
         return nullptr;
     StyleColor parentColor;
     if (!PaintPropertyFunctions::getColor(m_property, *state->parentStyle(), parentColor)) {
-        conversionCheckers.append(ParentPaintChecker::create(m_property));
+        conversionCheckers.append(ParentPaintChecker::create(*this, m_property));
         return nullptr;
     }
-    conversionCheckers.append(ParentPaintChecker::create(m_property, parentColor));
+    conversionCheckers.append(ParentPaintChecker::create(*this, m_property, parentColor));
     return InterpolationValue::create(*this, ColorInterpolationType::createInterpolableColor(parentColor));
 }
 

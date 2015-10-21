@@ -45,7 +45,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(NonInterpolableList);
 PassOwnPtr<InterpolationValue> ShadowListInterpolationType::convertShadowList(const ShadowList* shadowList, double zoom) const
 {
     if (!shadowList)
-        return maybeConvertNeutral();
+        return createNeutralValue();
 
     size_t length = shadowList->shadows().size();
     ASSERT(length > 0);
@@ -60,9 +60,14 @@ PassOwnPtr<InterpolationValue> ShadowListInterpolationType::convertShadowList(co
     return InterpolationValue::create(*this, interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
 }
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> ShadowListInterpolationType::createNeutralValue() const
 {
     return InterpolationValue::create(*this, InterpolableList::create(0));
+}
+
+PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+{
+    return createNeutralValue();
 }
 
 PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertInitial() const
@@ -72,18 +77,19 @@ PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertInitial(
 
 class ParentShadowListChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentShadowListChecker> create(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
+    static PassOwnPtr<ParentShadowListChecker> create(const InterpolationType& type, CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
     {
-        return adoptPtr(new ParentShadowListChecker(property, shadowList));
+        return adoptPtr(new ParentShadowListChecker(type, property, shadowList));
     }
 
 private:
-    ParentShadowListChecker(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
-        : m_property(property)
+    ParentShadowListChecker(const InterpolationType& type, CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
+        : ConversionChecker(type)
+        , m_property(property)
         , m_shadowList(shadowList)
     { }
 
-    bool isValid(const StyleResolverState& state) const final
+    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
     {
         const ShadowList* parentShadowList = ShadowListPropertyFunctions::getShadowList(m_property, *state.parentStyle());
         if (!parentShadowList && !m_shadowList)
@@ -102,21 +108,21 @@ PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertInherit(
     if (!state || !state->parentStyle())
         return nullptr;
     const ShadowList* parentShadowList = ShadowListPropertyFunctions::getShadowList(m_property, *state->parentStyle());
-    conversionCheckers.append(ParentShadowListChecker::create(m_property, const_cast<ShadowList*>(parentShadowList))); // Take ref.
+    conversionCheckers.append(ParentShadowListChecker::create(*this, m_property, const_cast<ShadowList*>(parentShadowList))); // Take ref.
     return convertShadowList(parentShadowList, state->parentStyle()->effectiveZoom());
 }
 
 PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
-        return maybeConvertNeutral();
+        return createNeutralValue();
 
     if (!value.isBaseValueList())
         return nullptr;
     const CSSValueList& valueList = toCSSValueList(value);
     size_t length = valueList.length();
     if (length == 0)
-        return maybeConvertNeutral();
+        return createNeutralValue();
 
     OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);

@@ -13,18 +13,19 @@ namespace blink {
 
 class ParentNumberChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentNumberChecker> create(CSSPropertyID property, double number)
+    static PassOwnPtr<ParentNumberChecker> create(const InterpolationType& type, CSSPropertyID property, double number)
     {
-        return adoptPtr(new ParentNumberChecker(property, number));
+        return adoptPtr(new ParentNumberChecker(type, property, number));
     }
 
 private:
-    ParentNumberChecker(CSSPropertyID property, double number)
-        : m_property(property)
+    ParentNumberChecker(const InterpolationType& type, CSSPropertyID property, double number)
+        : ConversionChecker(type)
+        , m_property(property)
         , m_number(number)
     { }
 
-    bool isValid(const StyleResolverState& state) const final
+    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
     {
         double parentNumber;
         if (!NumberPropertyFunctions::getNumber(m_property, *state.parentStyle(), parentNumber))
@@ -43,7 +44,7 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::createNumberValue(double
     return InterpolationValue::create(*this, InterpolableNumber::create(number));
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return createNumberValue(0);
 }
@@ -63,7 +64,7 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInherit(cons
     double inheritedNumber;
     if (!NumberPropertyFunctions::getNumber(m_property, *state->parentStyle(), inheritedNumber))
         return nullptr;
-    conversionCheckers.append(ParentNumberChecker::create(m_property, inheritedNumber));
+    conversionCheckers.append(ParentNumberChecker::create(*this, m_property, inheritedNumber));
     return createNumberValue(inheritedNumber);
 }
 

@@ -46,12 +46,12 @@ private:
     { }
 
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
-    const InterpolationValue* ensureValidInterpolation(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    const InterpolationValue* ensureValidInterpolation(const StyleResolverState&, const UnderlyingValue&) const;
     void clearCache() const;
-    bool isCacheValid(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    bool isCacheValid(const StyleResolverState&, const UnderlyingValue&) const;
     bool isNeutralKeyframeActive() const;
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const StyleResolverState*, const InterpolationValue* underlyingValue) const;
-    PassOwnPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const StyleResolverState*, const UnderlyingValue&) const;
+    PassOwnPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const UnderlyingValue&) const;
     void setFlagIfInheritUsed(StyleResolverState&) const;
     double underlyingFraction() const;
 

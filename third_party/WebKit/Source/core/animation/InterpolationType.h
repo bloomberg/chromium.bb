@@ -33,29 +33,33 @@ public:
         WTF_MAKE_NONCOPYABLE(ConversionChecker);
     public:
         virtual ~ConversionChecker() { }
-        virtual bool isValid(const StyleResolverState&) const = 0;
+        virtual bool isValid(const StyleResolverState&, const UnderlyingValue&) const = 0;
+        const InterpolationType& type() const { return m_type; }
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     protected:
-        ConversionChecker() { }
+        ConversionChecker(const InterpolationType& type)
+            : m_type(type)
+        { }
+        const InterpolationType& m_type;
     };
     using ConversionCheckers = Vector<OwnPtr<ConversionChecker>>;
 
-    virtual PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const CSSPropertySpecificKeyframe& startKeyframe, const CSSPropertySpecificKeyframe& endKeyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+    virtual PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const CSSPropertySpecificKeyframe& startKeyframe, const CSSPropertySpecificKeyframe& endKeyframe, const StyleResolverState* state, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
     {
-        OwnPtr<InterpolationValue> startValue = maybeConvertSingle(startKeyframe, state, conversionCheckers);
+        OwnPtr<InterpolationValue> startValue = maybeConvertSingle(startKeyframe, state, underlyingValue, conversionCheckers);
         if (!startValue)
             return nullptr;
-        OwnPtr<InterpolationValue> endValue = maybeConvertSingle(endKeyframe, state, conversionCheckers);
+        OwnPtr<InterpolationValue> endValue = maybeConvertSingle(endKeyframe, state, underlyingValue, conversionCheckers);
         if (!endValue)
             return nullptr;
         return mergeSingleConversions(*startValue, *endValue);
     }
 
-    virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+    virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState* state, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
     {
         const CSSValue* value = keyframe.value();
         if (!value)
-            return maybeConvertNeutral();
+            return maybeConvertNeutral(underlyingValue, conversionCheckers);
         if (value->isInitialValue() || (value->isUnsetValue() && !CSSPropertyMetadata::isInheritedProperty(m_property)))
             return maybeConvertInitial();
         if (value->isInheritedValue() || (value->isUnsetValue() && CSSPropertyMetadata::isInheritedProperty(m_property)))
@@ -83,9 +87,9 @@ protected:
         : m_property(property)
     { }
 
-    virtual PassOwnPtr<InterpolationValue> maybeConvertNeutral() const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
     virtual PassOwnPtr<InterpolationValue> maybeConvertInitial() const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
     virtual PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const { ASSERT_NOT_REACHED(); return nullptr; }
 
     virtual PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const

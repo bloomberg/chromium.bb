@@ -24,27 +24,30 @@ void InvalidatableStyleInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableStyleInterpolation::maybeConvertPairwise(const StyleResolverState* state, const InterpolationValue* underlyingValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableStyleInterpolation::maybeConvertPairwise(const StyleResolverState* state, const UnderlyingValue& underlyingValue) const
 {
     ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
         if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValue || underlyingValue->type() != *interpolationType))
             continue;
-        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, state, m_conversionCheckers);
+        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, state, underlyingValue, m_conversionCheckers);
         if (pairwiseConversion)
             return pairwiseConversion.release();
     }
     return nullptr;
 }
 
-PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state, const InterpolationValue* underlyingValue) const
+PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state, const UnderlyingValue& underlyingValue) const
 {
     if (keyframe.isNeutral() && !underlyingValue)
         return nullptr;
     for (const auto& interpolationType : m_interpolationTypes) {
-        if (keyframe.isNeutral() && underlyingValue->type() != *interpolationType)
+        UnderlyingValue conversionUnderlyingValue;
+        if (underlyingValue && underlyingValue->type() == *interpolationType)
+            conversionUnderlyingValue.set(underlyingValue.get());
+        if (keyframe.isNeutral() && !conversionUnderlyingValue)
             continue;
-        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
+        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, conversionUnderlyingValue, m_conversionCheckers);
         if (result)
             return result.release();
     }
@@ -80,7 +83,7 @@ void InvalidatableStyleInterpolation::clearCache() const
     m_cachedValue.clear();
 }
 
-bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& state, const InterpolationValue* underlyingValue) const
+bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& state, const UnderlyingValue& underlyingValue) const
 {
     if (!m_isCached)
         return false;
@@ -92,13 +95,16 @@ bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& sta
             return false;
     }
     for (const auto& checker : m_conversionCheckers) {
-        if (!checker->isValid(state))
+        UnderlyingValue checkedUnderlyingValue;
+        if (underlyingValue && underlyingValue->type() == checker->type())
+            checkedUnderlyingValue.set(underlyingValue.get());
+        if (!checker->isValid(state, checkedUnderlyingValue))
             return false;
     }
     return true;
 }
 
-const InterpolationValue* InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolverState& state, const InterpolationValue* underlyingValue) const
+const InterpolationValue* InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolverState& state, const UnderlyingValue& underlyingValue) const
 {
     ASSERT(!std::isnan(m_currentFraction));
     if (isCacheValid(state, underlyingValue))
@@ -154,7 +160,7 @@ void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& int
     if (firstInterpolation.dependsOnUnderlyingValue()) {
         underlyingValue.set(firstInterpolation.maybeConvertUnderlyingValue(state));
     } else {
-        const InterpolationValue* firstValue = firstInterpolation.ensureValidInterpolation(state, nullptr);
+        const InterpolationValue* firstValue = firstInterpolation.ensureValidInterpolation(state, UnderlyingValue());
         // Fast path for replace interpolations that are the only one to apply.
         if (interpolations.size() == 1) {
             if (firstValue) {
@@ -172,7 +178,7 @@ void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& int
     for (size_t i = startingIndex; i < interpolations.size(); i++) {
         const InvalidatableStyleInterpolation& currentInterpolation = toInvalidatableStyleInterpolation(*interpolations.at(i));
         ASSERT(currentInterpolation.dependsOnUnderlyingValue());
-        const InterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(state, underlyingValue.get());
+        const InterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(state, underlyingValue);
         if (!currentValue)
             continue;
         shouldApply = true;

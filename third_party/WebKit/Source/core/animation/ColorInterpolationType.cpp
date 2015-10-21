@@ -136,18 +136,19 @@ Color ColorInterpolationType::resolveInterpolableColor(const InterpolableValue& 
 
 class ParentColorChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentColorChecker> create(CSSPropertyID property, const StyleColor& color)
+    static PassOwnPtr<ParentColorChecker> create(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
     {
-        return adoptPtr(new ParentColorChecker(property, color));
+        return adoptPtr(new ParentColorChecker(type, property, color));
     }
 
 private:
-    ParentColorChecker(CSSPropertyID property, const StyleColor& color)
-        : m_property(property)
+    ParentColorChecker(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
+        : ConversionChecker(type)
+        , m_property(property)
         , m_color(color)
     { }
 
-    bool isValid(const StyleResolverState& state) const final
+    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
     {
         return m_color == ColorPropertyFunctions::getUnvisitedColor(m_property, *state.parentStyle());
     }
@@ -161,7 +162,7 @@ private:
     const StyleColor m_color;
 };
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return convertStyleColorPair(StyleColor(Color::transparent), StyleColor(Color::transparent));
 }
@@ -178,7 +179,7 @@ PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertInherit(const
         return nullptr;
     // Visited color can never explicitly inherit from parent visited color so only use the unvisited color.
     const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(m_property, *state->parentStyle());
-    conversionCheckers.append(ParentColorChecker::create(m_property, inheritedColor));
+    conversionCheckers.append(ParentColorChecker::create(*this, m_property, inheritedColor));
     return convertStyleColorPair(inheritedColor, inheritedColor);
 }
 

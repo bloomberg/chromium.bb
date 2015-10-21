@@ -110,18 +110,19 @@ InterpolationComponentValue LengthInterpolationType::maybeConvertCSSValue(const 
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
+    static PassOwnPtr<ParentLengthChecker> create(const InterpolationType& type, CSSPropertyID property, const Length& length)
     {
-        return adoptPtr(new ParentLengthChecker(property, length));
+        return adoptPtr(new ParentLengthChecker(type, property, length));
     }
 
 private:
-    ParentLengthChecker(CSSPropertyID property, const Length& length)
-        : m_property(property)
+    ParentLengthChecker(const InterpolationType& type, CSSPropertyID property, const Length& length)
+        : ConversionChecker(type)
+        , m_property(property)
         , m_length(length)
     { }
 
-    bool isValid(const StyleResolverState& state) const final
+    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
     {
         Length parentLength;
         if (!LengthPropertyFunctions::getLength(m_property, *state.parentStyle(), parentLength))
@@ -133,7 +134,7 @@ private:
     const Length m_length;
 };
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertNeutral() const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return InterpolationValue::create(*this, createNeutralInterpolableValue());
 }
@@ -153,7 +154,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(cons
     Length inheritedLength;
     if (!LengthPropertyFunctions::getLength(m_property, *state->parentStyle(), inheritedLength))
         return nullptr;
-    conversionCheckers.append(ParentLengthChecker::create(m_property, inheritedLength));
+    conversionCheckers.append(ParentLengthChecker::create(*this, m_property, inheritedLength));
     return maybeConvertLength(inheritedLength, effectiveZoom(*state->parentStyle()));
 }
 
