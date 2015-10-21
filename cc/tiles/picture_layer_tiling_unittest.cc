@@ -657,6 +657,13 @@ TEST(PictureLayerTilingTest, ComputeSkewportExtremeCases) {
   tiling->ComputeTilePriorityRects(viewport2, 1.f, time, Occlusion());
   time += 0.016;
   EXPECT_TRUE(tiling->ComputeSkewport(time, viewport3).Contains(viewport3));
+
+  // Use a tiling with a large scale, so the viewport times the scale no longer
+  // fits into integers, and the viewport is not anywhere close to the tiling.
+  tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 1000.0f,
+                                              raster_source, &client, settings);
+  tiling->ComputeTilePriorityRects(viewport3, 1.f, time, Occlusion());
+  EXPECT_EQ(gfx::Rect(), tiling->GetCurrentVisibleRectForTesting());
 }
 
 TEST(PictureLayerTilingTest, ComputeSkewport) {

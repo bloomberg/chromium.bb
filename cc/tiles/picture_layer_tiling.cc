@@ -22,6 +22,7 @@
 #include "cc/tiles/tile_priority.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -644,8 +645,51 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
     DCHECK_NE(current_frame_time_in_seconds, 0.0);
     return false;
   }
-  gfx::Rect visible_rect_in_content_space =
-      gfx::ScaleToEnclosingRect(viewport_in_layer_space, contents_scale_);
+
+  const float content_to_screen_scale = ideal_contents_scale / contents_scale_;
+
+  // We want to compute the visible rect and eventually rect from it in the
+  // space of the tiling. But the visible rect (viewport) can be arbitrarily
+  // positioned, so be careful when scaling it since we can exceed integer
+  // bounds.
+  gfx::Rect eventually_rect;
+  gfx::Rect visible_rect_in_content_space;
+
+  // We keep things as floats in here.
+  {
+    gfx::RectF visible_rectf_in_content_space =
+        gfx::ScaleRect(gfx::RectF(viewport_in_layer_space), contents_scale_);
+
+    // Determine if the eventually rect will even touch the tiling, if it's too
+    // far away just treat it as empty so we don't exceed integer bounds.
+    const float pad_in_content_space =
+        tiling_interest_area_padding_ / content_to_screen_scale;
+    gfx::RectF eventually_rectf = visible_rectf_in_content_space;
+    // If the visible rect is empty, keep the eventually rect as empty.
+    if (!eventually_rectf.IsEmpty()) {
+      eventually_rectf.Inset(-pad_in_content_space, -pad_in_content_space);
+
+      // If the eventually rect will touch the tiling, then we convert back to
+      // integers and set the visible and eventually rects.
+      auto bounds = gfx::RectF(gfx::SizeF(tiling_size()));
+      if (eventually_rectf.Intersects(bounds)) {
+        visible_rect_in_content_space =
+            gfx::ToEnclosingRect(visible_rectf_in_content_space);
+        eventually_rect = gfx::ToEnclosingRect(eventually_rectf);
+      }
+    }
+  }
+  DCHECK_EQ(visible_rect_in_content_space.IsEmpty(), eventually_rect.IsEmpty());
+
+  // Now we have an empty visible/eventually rect if it's not useful and a
+  // non-empty one if it is. We can compute the final eventually rect.
+  eventually_rect =
+      tiling_data_.ExpandRectIgnoringBordersToTileBounds(eventually_rect);
+
+  DCHECK_IMPLIES(!eventually_rect.IsEmpty(),
+                 gfx::Rect(tiling_size()).Contains(eventually_rect))
+      << "tiling_size: " << tiling_size().ToString()
+      << " eventually_rect: " << eventually_rect.ToString();
 
   if (tiling_size().IsEmpty()) {
     UpdateVisibleRectHistory(current_frame_time_in_seconds,
@@ -658,25 +702,6 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
   gfx::Rect skewport = ComputeSkewport(current_frame_time_in_seconds,
                                        visible_rect_in_content_space);
   DCHECK(skewport.Contains(visible_rect_in_content_space));
-
-  // Calculate the eventually/live tiles rect.
-  gfx::Size tile_size = tiling_data_.max_texture_size();
-
-  float content_to_screen_scale = ideal_contents_scale / contents_scale_;
-  int pad_in_content_space =
-      static_cast<int>(tiling_interest_area_padding_ / content_to_screen_scale);
-  gfx::Rect eventually_rect = visible_rect_in_content_space;
-  // If the visible rect is empty, keep the eventually rect as empty.
-  if (!eventually_rect.IsEmpty()) {
-    eventually_rect.Inset(-pad_in_content_space, -pad_in_content_space);
-    eventually_rect =
-        tiling_data_.ExpandRectIgnoringBordersToTileBounds(eventually_rect);
-  }
-
-  DCHECK_IMPLIES(!eventually_rect.IsEmpty(),
-                 gfx::Rect(tiling_size()).Contains(eventually_rect))
-      << "tiling_size: " << tiling_size().ToString()
-      << " eventually_rect: " << eventually_rect.ToString();
 
   // Calculate the soon border rect.
   gfx::Rect soon_border_rect = visible_rect_in_content_space;
