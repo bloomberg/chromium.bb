@@ -112,9 +112,8 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
-          gfx::Point(),
-          gfx::Point(target_bounds.x() - bounds.x(),
-                     target_bounds.y() - bounds.y())));
+          gfx::PointF(), gfx::PointF(target_bounds.x() - bounds.x(),
+                                     target_bounds.y() - bounds.y())));
 
   scale->SetChild(translation.release());
   scale->SetReversed(show);

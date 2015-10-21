@@ -460,8 +460,8 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
           scale.release()));
 
   scoped_ptr<ui::InterpolatedTransform> translation(
-      new ui::InterpolatedTranslation(gfx::Point(), gfx::Point(
-          0, kWindowAnimation_Rotate_TranslateY)));
+      new ui::InterpolatedTranslation(
+          gfx::PointF(), gfx::PointF(0, kWindowAnimation_Rotate_TranslateY)));
 
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedAxisAngleRotation(

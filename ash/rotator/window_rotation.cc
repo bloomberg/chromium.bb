@@ -83,8 +83,8 @@ void WindowRotation::InitTransform(ui::Layer* layer) {
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
-          gfx::Point(0, 0), gfx::Point(new_pivot.x() - old_pivot.x(),
-                                       new_pivot.y() - old_pivot.y())));
+          gfx::PointF(), gfx::PointF(new_pivot.x() - old_pivot.x(),
+                                     new_pivot.y() - old_pivot.y())));
 
   float scale_factor = 0.9f;
   scoped_ptr<ui::InterpolatedTransform> scale_down(

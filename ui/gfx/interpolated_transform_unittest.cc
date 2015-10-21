@@ -53,11 +53,11 @@ TEST(InterpolatedTransformTest, InterpolatedScale) {
 }
 
 TEST(InterpolatedTransformTest, InterpolatedTranslate) {
-  ui::InterpolatedTranslation interpolated_xform(gfx::Point(0, 0),
-                                                 gfx::Point(100, 100));
+  ui::InterpolatedTranslation interpolated_xform(gfx::PointF(),
+                                                 gfx::PointF(100.f, 100.f));
 
   ui::InterpolatedTranslation interpolated_xform_diff_start_end(
-      gfx::Point(0, 0), gfx::Point(100, 100), 100, 200);
+      gfx::PointF(), gfx::PointF(100.f, 100.f), 100, 200);
 
   for (int i = 0; i <= 100; ++i) {
     gfx::Transform xform;
@@ -149,9 +149,8 @@ ui::InterpolatedTransform* GetScreenRotation(int degrees, bool reversed) {
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
-          gfx::Point(0, 0),
-          gfx::Point(new_pivot.x() - old_pivot.x(),
-                     new_pivot.y() - old_pivot.y())));
+          gfx::PointF(), gfx::PointF(new_pivot.x() - old_pivot.x(),
+                                     new_pivot.y() - old_pivot.y())));
 
   float scale_factor = 0.9f;
   scoped_ptr<ui::InterpolatedTransform> scale_down(
@@ -206,9 +205,8 @@ ui::InterpolatedTransform* GetMaximize() {
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
-          gfx::Point(),
-          gfx::Point(target_bounds.x() - initial_bounds.x(),
-                     target_bounds.y() - initial_bounds.y())));
+          gfx::PointF(), gfx::PointF(target_bounds.x() - initial_bounds.x(),
+                                     target_bounds.y() - initial_bounds.y())));
 
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedRotation(0, 4.0f));

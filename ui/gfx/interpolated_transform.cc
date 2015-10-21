@@ -239,21 +239,17 @@ gfx::Transform InterpolatedScale::InterpolateButDoNotCompose(float t) const {
 // InterpolatedTranslation
 //
 
-InterpolatedTranslation::InterpolatedTranslation(const gfx::Point& start_pos,
-                                                 const gfx::Point& end_pos)
-    : InterpolatedTransform(),
-      start_pos_(start_pos),
-      end_pos_(end_pos) {
-}
+InterpolatedTranslation::InterpolatedTranslation(const gfx::PointF& start_pos,
+                                                 const gfx::PointF& end_pos)
+    : InterpolatedTransform(), start_pos_(start_pos), end_pos_(end_pos) {}
 
-InterpolatedTranslation::InterpolatedTranslation(const gfx::Point& start_pos,
-                                                 const gfx::Point& end_pos,
+InterpolatedTranslation::InterpolatedTranslation(const gfx::PointF& start_pos,
+                                                 const gfx::PointF& end_pos,
                                                  float start_time,
                                                  float end_time)
     : InterpolatedTransform(start_time, end_time),
       start_pos_(start_pos),
-      end_pos_(end_pos) {
-}
+      end_pos_(end_pos) {}
 
 InterpolatedTranslation::InterpolatedTranslation(const gfx::Point3F& start_pos,
                                                  const gfx::Point3F& end_pos)
