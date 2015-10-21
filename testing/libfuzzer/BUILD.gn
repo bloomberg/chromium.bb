@@ -29,6 +29,69 @@ static_library("libfuzzer_main") {
   ]
 }
 
+test("brotli_fuzzer") {
+  sources = [
+    "brotli_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//third_party/brotli:brotli",
+  ]
+}
+
+test("dns_record_fuzzer") {
+  sources = [
+    "dns_record_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//net",
+    "//base",
+  ]
+}
+
+test("ftp_ctrl_response_fuzzer") {
+  sources = [
+    "ftp_ctrl_response_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//net",
+    "//base",
+  ]
+}
+
+test("ftp_directory_listing_fuzzer") {
+  sources = [
+    "ftp_directory_listing_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//net",
+    "//base",
+  ]
+}
+
+test("snappy_fuzzer") {
+  sources = [
+    "snappy_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//third_party/snappy:snappy",
+  ]
+}
+
+test("string_to_int_fuzzer") {
+  sources = [
+    "string_to_int_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//base",
+  ]
+}
+
 test("url_parse_fuzzer") {
   sources = [
     "url_parse_fuzzer.cc",

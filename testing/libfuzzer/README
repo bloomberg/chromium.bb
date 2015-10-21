@@ -1,0 +1,10 @@
+LibFuzzer - a library for coverage-guided fuzz testing.
+
+=================================
+
+This directory contains LibFuzzer, and a set of fuzzers for
+various parts of Chromium.
+
+For more details, see
+http://llvm.org/docs/LibFuzzer.html
+https://www.chromium.org/developers/testing/libfuzzer
