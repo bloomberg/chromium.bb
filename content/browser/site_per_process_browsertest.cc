@@ -3598,4 +3598,25 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 #endif
 
+// Tests that we are using the correct RenderFrameProxy when navigating an
+// opener window.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
+  // Navigate the main window.
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), main_url);
+
+  // Load cross-site page into a new window.
+  GURL cross_url = embedded_test_server()->GetURL("foo.com", "/title1.html");
+  Shell* popup = OpenPopup(shell()->web_contents(), cross_url, "");
+  EXPECT_EQ(popup->web_contents()->GetLastCommittedURL(), cross_url);
+
+  // Use new window to navigate main window.
+  std::string script =
+      "window.opener.location.href = '" + cross_url.spec() + "'";
+  EXPECT_TRUE(ExecuteScript(popup->web_contents(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), cross_url);
+}
+
 }  // namespace content
