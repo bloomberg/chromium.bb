@@ -5070,12 +5070,9 @@ void Document::removeFromTopLayer(Element* element)
 
 HTMLDialogElement* Document::activeModalDialog() const
 {
-    for (auto it = m_topLayerElements.rbegin(); it != m_topLayerElements.rend(); ++it) {
-        if (isHTMLDialogElement(*it))
-            return toHTMLDialogElement((*it).get());
-    }
-
-    return nullptr;
+    if (m_topLayerElements.isEmpty())
+        return 0;
+    return toHTMLDialogElement(m_topLayerElements.last().get());
 }
 
 void Document::exitPointerLock()

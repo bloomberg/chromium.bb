@@ -2071,6 +2071,9 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (blockChildrenOnly && !child->isLayoutBlock())
             continue;
 
+        if (child->isLayoutFullScreen() || child->isLayoutFullScreenPlaceholder())
+            continue;
+
         RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
 
         // Preserve the position style of anonymous block continuations as they can have relative position when

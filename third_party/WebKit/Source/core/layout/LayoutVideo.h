@@ -68,6 +68,11 @@ private:
     LayoutUnit computeReplacedLogicalHeight() const override;
     LayoutUnit minimumReplacedHeight() const override;
 
+    LayoutUnit offsetLeft() const override;
+    LayoutUnit offsetTop() const override;
+    LayoutUnit offsetWidth() const override;
+    LayoutUnit offsetHeight() const override;
+
     CompositingReasons additionalCompositingReasons() const override;
 
     void updatePlayer();

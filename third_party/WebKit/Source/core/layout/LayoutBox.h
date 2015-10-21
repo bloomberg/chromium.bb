@@ -388,8 +388,8 @@ public:
 
     // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (LayoutFlow)
     // to return the remaining width on a given line (and the height of a single line).
-    LayoutUnit offsetWidth() const final { return m_frameRect.width(); }
-    LayoutUnit offsetHeight() const final { return m_frameRect.height(); }
+    LayoutUnit offsetWidth() const override { return m_frameRect.width(); }
+    LayoutUnit offsetHeight() const override { return m_frameRect.height(); }
 
     int pixelSnappedOffsetWidth() const final;
     int pixelSnappedOffsetHeight() const final;
@@ -729,8 +729,8 @@ public:
     LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
     int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
 
-    LayoutUnit offsetLeft() const final;
-    LayoutUnit offsetTop() const final;
+    LayoutUnit offsetLeft() const override;
+    LayoutUnit offsetTop() const override;
 
     LayoutPoint flipForWritingModeForChild(const LayoutBox* child, const LayoutPoint&) const;
     LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN {

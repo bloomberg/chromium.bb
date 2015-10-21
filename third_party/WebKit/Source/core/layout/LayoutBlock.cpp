@@ -381,7 +381,11 @@ void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObj
             // If the requested beforeChild is not one of our children, then this is because
             // there is an anonymous container within this object that contains the beforeChild.
             LayoutObject* beforeChildAnonymousContainer = beforeChildContainer;
-            if (beforeChildAnonymousContainer->isAnonymousBlock()) {
+            if (beforeChildAnonymousContainer->isAnonymousBlock()
+                // Full screen layoutObjects and full screen placeholders act as anonymous blocks, not tables:
+                || beforeChildAnonymousContainer->isLayoutFullScreen()
+                || beforeChildAnonymousContainer->isLayoutFullScreenPlaceholder()
+                ) {
                 // Insert the child into the anonymous block box instead of here.
                 if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeChild->parent()->slowFirstChild() != beforeChild)
                     beforeChild->parent()->addChild(newChild, beforeChild);

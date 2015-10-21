@@ -68,7 +68,7 @@ LayoutMenuList::~LayoutMenuList()
 // to prevent children from rendering.
 bool LayoutMenuList::isChildAllowed(LayoutObject* object, const ComputedStyle&) const
 {
-    return object->isAnonymous();
+    return object->isAnonymous() && !object->isLayoutFullScreen();
 }
 
 void LayoutMenuList::createInnerBlock()

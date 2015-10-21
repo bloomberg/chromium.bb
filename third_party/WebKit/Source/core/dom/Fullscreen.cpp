@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/dom/Fullscreen.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -42,9 +41,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -161,6 +159,7 @@ bool Fullscreen::isFullScreen(Document& document)
 
 Fullscreen::Fullscreen(Document& document)
     : DocumentLifecycleObserver(&document)
+    , m_fullScreenLayoutObject(nullptr)
     , m_eventQueueTimer(this, &Fullscreen::eventQueueTimerFired)
 {
     document.setHasFullscreenSupplement();
@@ -178,6 +177,9 @@ inline Document* Fullscreen::document()
 void Fullscreen::documentWasDetached()
 {
     m_eventQueue.clear();
+
+    if (m_fullScreenLayoutObject)
+        m_fullScreenLayoutObject->destroy();
 
 #if ENABLE(OILPAN)
     m_fullScreenElement = nullptr;
@@ -423,12 +425,28 @@ bool Fullscreen::fullscreenEnabled(Document& document)
 void Fullscreen::didEnterFullScreenForElement(Element* element)
 {
     ASSERT(element);
-    ASSERT(element->isInTopLayer());
-
     if (!document()->isActive())
         return;
 
+    if (m_fullScreenLayoutObject)
+        m_fullScreenLayoutObject->unwrapLayoutObject();
+
     m_fullScreenElement = element;
+
+    // Create a placeholder block for a the full-screen element, to keep the page from reflowing
+    // when the element is removed from the normal flow. Only do this for a LayoutBox, as only
+    // a box will have a frameRect. The placeholder will be created in setFullScreenLayoutObject()
+    // during layout.
+    LayoutObject* layoutObject = m_fullScreenElement->layoutObject();
+    bool shouldCreatePlaceholder = layoutObject && layoutObject->isBox();
+    if (shouldCreatePlaceholder) {
+        m_savedPlaceholderFrameRect = toLayoutBox(layoutObject)->frameRect();
+        m_savedPlaceholderComputedStyle = ComputedStyle::clone(layoutObject->styleRef());
+    }
+
+    if (m_fullScreenElement != document()->documentElement())
+        LayoutFullScreen::wrapLayoutObject(layoutObject, layoutObject ? layoutObject->parent() : 0, document());
+
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
     // FIXME: This should not call updateStyleIfNeeded.
@@ -451,10 +469,12 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     if (!document()->isActive())
         return;
 
-    document()->removeFromTopLayer(m_fullScreenElement.get());
     m_fullScreenElement->willStopBeingFullscreenElement();
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
+
+    if (m_fullScreenLayoutObject)
+        m_fullScreenLayoutObject->unwrapLayoutObject();
 
     m_fullScreenElement = nullptr;
     document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
@@ -472,12 +492,28 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void Fullscreen::didUpdateSize(Element& element)
+void Fullscreen::setFullScreenLayoutObject(LayoutFullScreen* layoutObject)
 {
-    // StyleAdjuster will set the size so we need to do a style recalc.
-    // Normally changing size means layout so just doing a style recalc is a
-    // bit surprising.
-    element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
+    if (layoutObject == m_fullScreenLayoutObject)
+        return;
+
+    if (layoutObject && m_savedPlaceholderComputedStyle) {
+        layoutObject->createPlaceholder(m_savedPlaceholderComputedStyle.release(), m_savedPlaceholderFrameRect);
+    } else if (layoutObject && m_fullScreenLayoutObject && m_fullScreenLayoutObject->placeholder()) {
+        LayoutBlock* placeholder = m_fullScreenLayoutObject->placeholder();
+        layoutObject->createPlaceholder(ComputedStyle::clone(placeholder->styleRef()), placeholder->frameRect());
+    }
+
+    if (m_fullScreenLayoutObject)
+        m_fullScreenLayoutObject->unwrapLayoutObject();
+    ASSERT(!m_fullScreenLayoutObject);
+
+    m_fullScreenLayoutObject = layoutObject;
+}
+
+void Fullscreen::fullScreenLayoutObjectDestroyed()
+{
+    m_fullScreenLayoutObject = nullptr;
 }
 
 void Fullscreen::enqueueChangeEvent(Document& document, RequestType requestType)
@@ -566,14 +602,12 @@ void Fullscreen::popFullscreenElementStack()
     if (m_fullScreenElementStack.isEmpty())
         return;
 
-    document()->removeFromTopLayer(m_fullScreenElementStack.last().first.get());
     m_fullScreenElementStack.removeLast();
 }
 
 void Fullscreen::pushFullscreenElementStack(Element& element, RequestType requestType)
 {
     m_fullScreenElementStack.append(std::make_pair(&element, requestType));
-    document()->addToTopLayer(&element);
 }
 
 DEFINE_TRACE(Fullscreen)

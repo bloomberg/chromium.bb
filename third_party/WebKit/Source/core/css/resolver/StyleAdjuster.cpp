@@ -34,8 +34,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/Fullscreen.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -46,7 +44,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGSVGElement.h"
@@ -180,17 +177,6 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         adjustStyleForFirstLetter(style);
 
         adjustStyleForDisplay(style, parentStyle, element ? &element->document() : 0);
-
-        if (element && Fullscreen::isActiveFullScreenElement(*element)) {
-            // We need to size the fullscreen element to the inner viewport and not to the
-            // outer viewport (what percentage would do). Unfortunately CSS can't handle
-            // that as we don't expose the inner viewport information.
-            //
-            // TODO(dsinclair): We should find a way to get this standardized. crbug.com/534924
-            IntSize viewportSize = element->document().page()->frameHost().visualViewport().size();
-            style.setWidth(Length(viewportSize.width(), Fixed));
-            style.setHeight(Length(viewportSize.height(), Fixed));
-        }
     } else {
         adjustStyleForFirstLetter(style);
     }
