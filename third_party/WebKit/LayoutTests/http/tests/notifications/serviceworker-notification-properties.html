@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Notifications: Property reflection in the "notificationclick" event.</title>
+    <title>Notifications: Property reflection in the "notificationclick" event and SWR.getNotifications().</title>
     <script src="../resources/testharness.js"></script>
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
@@ -9,9 +9,20 @@
   </head>
   <body>
     <script>
-      // Tests that the notification available in the "notificationclick" event in the
-      // Service Worker accurately reflects the attributes with which the notification
-      // was created (for this test --) in the document.
+      // Tests that the notification object in a) the "notificationclick" event in the
+      // Service Worker, and b) ServiceWorkerRegistration.getNotifications(), both
+      // accurately reflect the attributes with which the notification was created.
+
+      // Checks that all the properties in expected also exist and are equal in actual.
+      function assert_object_is_superset(actual, expected, description) {
+          Object.keys(expected).forEach(function(key) {
+              var fieldDescription = description + ' [field ' + key + ']';
+              if (typeof expected[key] == 'object')
+                  assert_object_equals(actual[key], expected[key], fieldDescription);
+              else
+                  assert_equals(actual[key], expected[key], fieldDescription);
+          });
+      }
 
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname,
@@ -50,6 +61,9 @@
                   options: options
               });
 
+              // Now limit actions to the number that we expect to be reflected on notifications.
+              options.actions = options.actions.slice(0, Notification.maxActions);
+
               workerInfo.port.addEventListener('message', function(event) {
                   if (typeof event.data != 'object' || !event.data.command) {
                       assert_unreached('Invalid message from the Service Worker.');
@@ -66,18 +80,17 @@
 
                   // (3) Listen for confirmation from the Service Worker that the
                   // notification has been clicked on. Make sure that all properties
-                  // set on the Notification object are as expected.
+                  // set on the cloned Notification object are as expected.
                   assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
+                  assert_object_is_superset(event.data.notification, options, 'The Notification object properties must be the same in notificationclick events.');
 
-                  options.actions = options.actions.slice(0, Notification.maxActions);
-                  Object.keys(options).forEach(function(key) {
-                      if (typeof options[key] == 'object')
-                          assert_object_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
-                      else
-                          assert_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
+                  // (4) Check that the properties are also set correctly on the
+                  // non-cloned Notification object from getNotifications.
+                  workerInfo.registration.getNotifications().then(function(notifications) {
+                      assert_equals(notifications.length, 1);
+                      assert_object_is_superset(notifications[0], options, 'The Notification object properties must be the same in getNotifications.');
+                      test.done();
                   });
-
-                  test.done();
               });
           }).catch(unreached_rejection(test));
 

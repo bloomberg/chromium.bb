@@ -12,6 +12,9 @@
       // manually, grant Notification permission first.
       test(function () {
           assert_greater_than_equal(Notification.maxActions, 0);
+          var oldMaxActions = Notification.maxActions;
+          Notification.maxActions++;
+          assert_equals(Notification.maxActions, oldMaxActions, 'Notification.maxActions should be immutable.');
 
           var options = {
                 dir: "rtl",
