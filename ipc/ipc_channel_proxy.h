@@ -215,6 +215,8 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
 
     void set_attachment_broker_endpoint(bool is_endpoint) {
       attachment_broker_endpoint_ = is_endpoint;
+      if (channel_)
+        channel_->SetAttachmentBrokerEndpoint(is_endpoint);
     }
 
     // Methods called on the IO thread.
