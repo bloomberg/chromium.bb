@@ -125,7 +125,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupCallAndSendDtmf) {
+// Times out on Dr. Memory bots: https://crbug.com/545740
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       DISABLED_CanSetupCallAndSendDtmf) {
   MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
 }
 
