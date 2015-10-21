@@ -322,7 +322,6 @@ crbug.com/498539 [ SnowLeopard ] http/tests/inspector/extensions-network-redirec
 crbug.com/498539 [ SnowLeopard ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
 crbug.com/498539 [ Win7 ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
 crbug.com/521092 http/tests/inspector/service-workers/service-workers-view.html [ Crash Failure Pass ]
-crbug.com/498539 [ Win7 ] inspector/domdebugger/domdebugger-getEventListeners.html [ Crash Pass ]
 crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
 crbug.com/498539 [ Win7 Debug ] inspector/elements/styles-3/styles-computed-trace.html [ Crash Pass ]
