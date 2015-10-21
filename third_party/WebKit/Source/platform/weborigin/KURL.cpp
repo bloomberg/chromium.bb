@@ -103,7 +103,7 @@ public:
 
     void ConvertFromUTF16(const url::UTF16Char* input, int inputLength, url::CanonOutput* output) override
     {
-        CString encoded = m_encoding->normalizeAndEncode(String(input, inputLength), WTF::URLEncodedEntitiesForUnencodables);
+        CString encoded = m_encoding->encode(String(input, inputLength), WTF::URLEncodedEntitiesForUnencodables);
         output->Append(encoded.data(), static_cast<int>(encoded.length()));
     }
 
@@ -672,7 +672,7 @@ String decodeURLEscapeSequences(const String& string, const WTF::TextEncoding& e
 
 String encodeWithURLEscapeSequences(const String& notEncodedString)
 {
-    CString utf8 = UTF8Encoding().normalizeAndEncode(notEncodedString, WTF::URLEncodedEntitiesForUnencodables);
+    CString utf8 = UTF8Encoding().encode(notEncodedString, WTF::URLEncodedEntitiesForUnencodables);
 
     url::RawCanonOutputT<char> buffer;
     int inputLength = utf8.length();

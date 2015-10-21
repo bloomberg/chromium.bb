@@ -349,6 +349,14 @@ TEST(KURLTest, Encode)
     String wideReference("%E4%BD%A0%E5%A5%BD");
     String wideOutput = encodeWithURLEscapeSequences(wideInput);
     EXPECT_EQ(wideReference, wideOutput);
+
+    // Encoding should not NFC-normalize the string.
+    // Contain a combining character ('e' + COMBINING OGONEK).
+    String combining(String::fromUTF8("\x65\xCC\xA8"));
+    EXPECT_EQ(encodeWithURLEscapeSequences(combining), "e%CC%A8");
+    // Contain a precomposed character corresponding to |combining|.
+    String precomposed(String::fromUTF8("\xC4\x99"));
+    EXPECT_EQ(encodeWithURLEscapeSequences(precomposed), "%C4%99");
 }
 
 TEST(KURLTest, ResolveEmpty)
