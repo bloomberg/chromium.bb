@@ -56,11 +56,12 @@ group("untrusted") {
     deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_x64)" ]
   }
   if (use_nacl_arm) {
+    if (use_gcc_glibc) {
+      deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:glibc_arm)" ]
+    }
     if (use_clang_newlib) {
       deps += [ "//native_client/src/:untrusted_targets(//build/toolchain/nacl:clang_newlib_arm)" ]
     }
-
-    # No glibc build, yet.
 
     deps += [ "//native_client/src/:irt_targets(//build/toolchain/nacl:irt_arm)" ]
   }
