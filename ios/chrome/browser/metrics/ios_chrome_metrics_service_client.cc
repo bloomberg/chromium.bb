@@ -105,6 +105,10 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
 }
 
+metrics::MetricsService* IOSChromeMetricsServiceClient::GetMetricsService() {
+  return metrics_service_.get();
+}
+
 void IOSChromeMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   crash_keys::SetMetricsClientIdFromGUID(client_id);

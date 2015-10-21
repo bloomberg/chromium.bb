@@ -43,6 +43,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log_helper.h"
@@ -535,8 +536,10 @@ void BrowserProcessImpl::EndSession() {
 
 MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
   DCHECK(CalledOnValidThread());
-  if (!metrics_services_manager_)
-    metrics_services_manager_.reset(new MetricsServicesManager(local_state()));
+  if (!metrics_services_manager_) {
+    metrics_services_manager_.reset(new MetricsServicesManager(make_scoped_ptr(
+        new ChromeMetricsServicesManagerClient(local_state()))));
+  }
   return metrics_services_manager_.get();
 }
 
