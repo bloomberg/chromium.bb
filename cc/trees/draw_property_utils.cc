@@ -727,10 +727,31 @@ bool SurfaceIsClipped(const RenderSurfaceImpl* render_surface,
 
 gfx::Rect SurfaceClipRect(const RenderSurfaceImpl* render_surface,
                           const ClipNode* parent_clip_node,
+                          const TransformTree& transform_tree,
                           bool is_clipped) {
   if (!is_clipped)
     return gfx::Rect();
-  return gfx::ToEnclosingRect(parent_clip_node->data.clip_in_target_space);
+  const TransformNode* transform_node =
+      transform_tree.Node(render_surface->TransformTreeIndex());
+  if (transform_node->data.target_id == parent_clip_node->data.target_id)
+    return gfx::ToEnclosingRect(parent_clip_node->data.clip_in_target_space);
+
+  // In this case, the clip child has reset the clip node for subtree and hence
+  // the parent clip node's clip rect is in clip parent's target space and not
+  // our target space. We need to transform it to our target space.
+  gfx::Transform clip_parent_target_to_target;
+  const bool success =
+      transform_tree.ComputeTransformWithDestinationSublayerScale(
+          parent_clip_node->data.target_id, transform_node->data.target_id,
+          &clip_parent_target_to_target);
+
+  if (!success)
+    return gfx::Rect();
+
+  DCHECK_LT(parent_clip_node->data.target_id, transform_node->data.target_id);
+  return gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
+      clip_parent_target_to_target,
+      parent_clip_node->data.clip_in_target_space));
 }
 
 gfx::Transform SurfaceScreenSpaceTransformFromPropertyTrees(
@@ -967,7 +988,7 @@ void ComputeSurfaceDrawPropertiesUsingPropertyTrees(
 
   draw_properties->clip_rect = SurfaceClipRect(
       render_surface, property_trees->clip_tree.parent(clip_node),
-      draw_properties->is_clipped);
+      property_trees->transform_tree, draw_properties->is_clipped);
 }
 
 template <typename LayerType>

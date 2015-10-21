@@ -3558,6 +3558,44 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(50, 50), render_surface2->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_child);
+
+  render_surface1->SetDrawsContent(true);
+  render_surface2->SetDrawsContent(true);
+  clip_child->SetDrawsContent(true);
+  clip_child->SetClipParent(clip_parent);
+  scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+  clip_children->insert(clip_child);
+  clip_parent->SetClipChildren(clip_children.release());
+
+  gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(50, 50), true,
+                               false, false);
+  SetLayerPropertiesForTesting(render_surface1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(60, 60), true, false,
+                               false);
+  SetLayerPropertiesForTesting(render_surface2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(60, 60), true, false,
+                               true);
+  clip_parent->SetMasksToBounds(true);
+  render_surface1->SetMasksToBounds(true);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(50, 50), render_surface2->render_surface()->clip_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWhenLayerNotDrawn) {
   // Test that only drawn layers contribute to render surface content rect.
   LayerImpl* root = root_layer();
