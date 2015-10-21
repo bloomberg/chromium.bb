@@ -50,10 +50,6 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   AttachmentBrokerPrivilegedMac();
   ~AttachmentBrokerPrivilegedMac() override;
 
-  // The port provider must live as long as the AttachmentBrokerPrivilegedMac. A
-  // port provider must be set before any attachment brokering occurs.
-  void SetPortProvider(base::PortProvider* port_provider);
-
   // IPC::AttachmentBroker overrides.
   bool SendAttachmentToProcess(BrokerableAttachment* attachment,
                                base::ProcessId destination_process) override;
@@ -121,8 +117,6 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   // Ownership of |wire_format.mach_port| is implicitly passed to the process
   // that receives the Chrome IPC message.
   void RouteWireFormatToAnother(const MachPortWireFormat& wire_format);
-
-  base::PortProvider* port_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivilegedMac);
 };

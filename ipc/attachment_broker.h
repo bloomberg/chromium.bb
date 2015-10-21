@@ -22,9 +22,17 @@
 #define USE_ATTACHMENT_BROKER 0
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+namespace base {
+class PortProvider;
+}  // namespace base
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 namespace IPC {
 
 class AttachmentBroker;
+class Endpoint;
+
 // Classes that inherit from this abstract base class are capable of
 // communicating with a broker to send and receive attachments to Chrome IPC
 // messages.
@@ -75,6 +83,26 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // These two methods should only be called by the broker process.
+  //
+  // Each unprivileged process should have one IPC channel on which it
+  // communicates attachment information with the broker process. In the broker
+  // process, these channels must be registered and deregistered with the
+  // Attachment Broker as they are created and destroyed.
+  virtual void RegisterCommunicationChannel(Endpoint* endpoint);
+  virtual void DeregisterCommunicationChannel(Endpoint* endpoint);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // This method should only be called by the broker process.
+  //
+  // The port provider must live as long as the AttachmentBroker. A port
+  // provider must be set before any attachment brokering occurs.
+  void set_port_provider(base::PortProvider* port_provider) {
+    DCHECK(!port_provider_);
+    port_provider_ = port_provider;
+  }
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
  protected:
   using AttachmentVector = std::vector<scoped_refptr<BrokerableAttachment>>;
 
@@ -88,6 +116,10 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   // This method is exposed for testing only.
   AttachmentVector* get_attachments() { return &attachments_; }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  base::PortProvider* port_provider() const { return port_provider_; }
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
  private:
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerUnprivilegedWinTest,
@@ -95,6 +127,10 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerUnprivilegedWinTest,
                            ReceiveInvalidMessage);
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  base::PortProvider* port_provider_;
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // A vector of BrokerableAttachments that have been received, but not yet
   // consumed.

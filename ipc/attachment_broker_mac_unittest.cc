@@ -480,7 +480,7 @@ scoped_ptr<ChildProcessGlobals> CommonChildProcessSetUp() {
 
   scoped_ptr<ChildProcessGlobals> globals(new ChildProcessGlobals);
   globals->port_provider.InsertEntry(getppid(), server_task_port.get());
-  globals->broker.SetPortProvider(&globals->port_provider);
+  globals->broker.set_port_provider(&globals->port_provider);
   globals->server_task_port.reset(server_task_port.release());
   return globals;
 }

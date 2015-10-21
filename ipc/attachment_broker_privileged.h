@@ -33,12 +33,9 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
    // global attachment broker.
   static scoped_ptr<AttachmentBrokerPrivileged> CreateBroker();
 
-  // Each unprivileged process should have one IPC channel on which it
-  // communicates attachment information with the broker process. In the broker
-  // process, these channels must be registered and deregistered with the
-  // Attachment Broker as they are created and destroyed.
-  void RegisterCommunicationChannel(Endpoint* endpoint);
-  void DeregisterCommunicationChannel(Endpoint* endpoint);
+  // AttachmentBroker overrides.
+  void RegisterCommunicationChannel(Endpoint* endpoint) override;
+  void DeregisterCommunicationChannel(Endpoint* endpoint) override;
 
  protected:
   // Returns the sender whose peer's process id is |id|.

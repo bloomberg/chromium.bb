@@ -25,7 +25,12 @@ AttachmentBroker* AttachmentBroker::GetGlobal() {
   return g_attachment_broker;
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+AttachmentBroker::AttachmentBroker() : port_provider_(nullptr) {}
+#else
 AttachmentBroker::AttachmentBroker() {}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 AttachmentBroker::~AttachmentBroker() {}
 
 bool AttachmentBroker::GetAttachmentWithId(
@@ -52,6 +57,14 @@ void AttachmentBroker::RemoveObserver(AttachmentBroker::Observer* observer) {
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   if (it != observers_.end())
     observers_.erase(it);
+}
+
+void AttachmentBroker::RegisterCommunicationChannel(Endpoint* endpoint) {
+  NOTREACHED();
+}
+
+void AttachmentBroker::DeregisterCommunicationChannel(Endpoint* endpoint) {
+  NOTREACHED();
 }
 
 void AttachmentBroker::HandleReceivedAttachment(
