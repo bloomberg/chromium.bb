@@ -1162,7 +1162,7 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
 const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
 {
     // Implemented according to
-    // http://dom.spec.whatwg.org/#dom-node-lookupprefix
+    // https://dom.spec.whatwg.org/#dom-node-lookupprefix
 
     if (namespaceURI.isEmpty() || namespaceURI.isNull())
         return nullAtom;
@@ -1294,7 +1294,7 @@ void Node::setTextContent(const String& text)
 
         ChildListMutationScope mutation(*this);
         // Note: This API will not insert empty text nodes:
-        // http://dom.spec.whatwg.org/#dom-node-textcontent
+        // https://dom.spec.whatwg.org/#dom-node-textcontent
         if (text.isEmpty()) {
             container->removeChildren(DispatchSubtreeModifiedEvent);
         } else {

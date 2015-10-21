@@ -418,7 +418,7 @@ bool HTMLCollection::namedPropertyQuery(const AtomicString& name, ExceptionState
 
 void HTMLCollection::supportedPropertyNames(Vector<String>& names)
 {
-    // As per the specification (http://dom.spec.whatwg.org/#htmlcollection):
+    // As per the specification (https://dom.spec.whatwg.org/#htmlcollection):
     // The supported property names are the values from the list returned by these steps:
     // 1. Let result be an empty list.
     // 2. For each element represented by the collection, in tree order, run these substeps:

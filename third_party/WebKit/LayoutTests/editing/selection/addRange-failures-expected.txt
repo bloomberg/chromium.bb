@@ -1,5 +1,5 @@
 CONSOLE ERROR: The given range is null.
-CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
+CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-range-detach).
 CONSOLE ERROR: Discontiguous selection is not supported.
 CONSOLE ERROR: The given range does not belong to the current selection's document.
 CONSOLE ERROR: The given range and the current selection belong to two different document fragments.

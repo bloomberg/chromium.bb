@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Spec: http://dom.spec.whatwg.org/#interface-mutationobserver
+// Spec: https://dom.spec.whatwg.org/#interface-mutationobserver
 
 dictionary MutationObserverInit {
     boolean childList = false;

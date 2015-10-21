@@ -605,7 +605,7 @@ void UseCounter::updateMeasurements()
 
     // FIXME: Sometimes this function is called more than once per page. The following
     //        bool guards against incrementing the page count when there are no CSS
-    //        bits set. http://crbug.com/236262.
+    //        bits set. https://crbug.com/236262.
     bool needsPagesMeasuredUpdate = false;
     for (int i = firstCSSProperty; i <= lastUnresolvedCSSProperty; ++i) {
         if (m_CSSFeatureBits.quickGet(i)) {
@@ -806,10 +806,10 @@ String UseCounter::deprecationMessage(Feature feature)
         return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
 
     case NodeIteratorDetach:
-        return "'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
+        return "'NodeIterator.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-nodeiterator-detach).";
 
     case RangeDetach:
-        return "'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).";
+        return "'Range.detach' is now a no-op, as per DOM (https://dom.spec.whatwg.org/#dom-range-detach).";
 
     case SyncXHRWithCredentials:
         return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
@@ -983,7 +983,7 @@ UseCounter* UseCounter::getFrom(const CSSStyleSheet* sheet)
 UseCounter* UseCounter::getFrom(const StyleSheetContents* sheetContents)
 {
     // FIXME: We may want to handle stylesheets that have multiple owners
-    //        http://crbug.com/242125
+    //        https://crbug.com/242125
     if (sheetContents && sheetContents->hasSingleOwnerNode())
         return getFrom(sheetContents->singleOwnerDocument());
     return 0;

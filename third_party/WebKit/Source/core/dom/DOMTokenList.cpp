@@ -232,7 +232,7 @@ AtomicString DOMTokenList::removeToken(const AtomicString& input, const AtomicSt
 AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<String>& tokens)
 {
     // Algorithm defined at http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
-    // New spec is at http://dom.spec.whatwg.org/#remove-a-token-from-a-string
+    // New spec is at https://dom.spec.whatwg.org/#remove-a-token-from-a-string
 
     unsigned inputLength = input.length();
     StringBuilder output; // 3
