@@ -238,6 +238,11 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             }
         }
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            request.grant(request.getResources());
+            return;
+        }
+
         // Find what Android permissions we need before we can grant these WebKit permissions.
         ArrayList<String> androidPermissionsNeeded = new ArrayList<String>();
         for (String webkitPermission : request.getResources()) {
@@ -366,11 +371,11 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
     private void loadUrl(String url) {
         // Request read access if necessary
-        if ("file".equals(Uri.parse(url).getScheme())) {
-            if (PackageManager.PERMISSION_DENIED
-                    == checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                requestPermissionsForPage(new FilePermissionRequest(url));
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && "file".equals(Uri.parse(url).getScheme())
+                && PackageManager.PERMISSION_DENIED
+                        == checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            requestPermissionsForPage(new FilePermissionRequest(url));
         }
 
         // If it is file:// and we don't have permission, they'll get the "Webpage not available"
