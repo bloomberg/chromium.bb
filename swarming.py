@@ -1128,10 +1128,15 @@ def CMDquery(parser, args):
 
   Examples:
     Listing all bots:
-      swarming.py query -S https://server-url bots/list
+      swarming.py query -S server-url.com bots/list
 
     Listing last 10 tasks on a specific bot named 'swarm1':
-      swarming.py query -S https://server-url --limit 10 bot/swarm1/tasks
+      swarming.py query -S server-url.com --limit 10 bot/swarm1/tasks
+
+    Listing last 10 tasks with tags os:Ubuntu-12.04 and pool:Chrome. Note that
+    quoting is important!:
+      swarming.py query -S server-url.com --limit 10 \\
+          'tasks/list?tags=os:Ubuntu-12.04&tags=pool:Chrome'
   """
   CHUNK_SIZE = 250
 
