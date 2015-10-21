@@ -13,18 +13,6 @@ namespace prefs {
 // Alphabetical list of preference names specific to the PasswordManager
 // component.
 
-// The value of this parameter is boolean that indicates whether
-// "Allow to collect URL?" bubble was shown or not.
-extern const char kAllowToCollectURLBubbleWasShown[];
-
-// The value of this parameter is used to calculate the start day of the
-// period, in which the "Allow to collect URL?" bubble can be shown.
-extern const char kAllowToCollectURLBubbleActivePeriodStartFactor[];
-
-// Boolean that indicated whether first run experience for the auto sign-in
-// prompt was shown or not.
-extern const char kWasAutoSignInFirstRunExperienceShown[];
-
 // The value of this preference controls whether the Password Manager will save
 // credentials. When it is false, it doesn't ask if you want to save passwords
 // but will continue to fill passwords. This preference in a future will
@@ -76,6 +64,10 @@ extern const char kPasswordManagerSavingEnabled[];
 // the array of groups containing the monitored domain. That group should be
 // used for reporting that domain.
 extern const char kPasswordManagerGroupsForDomains[];
+
+// Boolean that indicated whether first run experience for the auto sign-in
+// prompt was shown or not.
+extern const char kWasAutoSignInFirstRunExperienceShown[];
 
 // Boolean that indicated whether first run experience for the save prompt was
 // shown or not.

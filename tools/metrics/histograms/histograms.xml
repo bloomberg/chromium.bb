@@ -30589,7 +30589,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PasswordManager.AllowToCollectURLBubble.UIDismissalReason"
     enum="PasswordManagerAllowToCollectURLBubble.UIDismissalReason">
   <obsolete>
-    The bubble isn't shown anymore.
+    The bubble isn't shown anymore. Become obsolete in Feb. 2015.
   </obsolete>
   <owner>melandory@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
@@ -68394,6 +68394,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="PasswordManagerAllowToCollectURLBubble.UIDismissalReason"
     type="int">
+  <obsolete>
+    The bubble isn't shown anymore. Become obsolete in Feb. 2015.
+  </obsolete>
   <int value="0" label="Bubble lost focus / No infobar interaction"/>
   <int value="1" label="Clicked collect URL"/>
   <int value="2" label="Clicked do not collect URL"/>
