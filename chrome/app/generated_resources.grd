@@ -6021,12 +6021,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag specifying how the browser will handle autofilling the users sync credential.">
         How the password manager handles autofill for the sync credential.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_NAME" desc="Name of the flag to enable using an alternative version of the data reduction proxy">
-        Alternative data reduction proxy
-      </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_DESCRIPTION" desc="Description of the flag to enable using an alternative version of the data reduction proxy">
-        Use an experimental version of the data reduction proxy. The proxy must be enabled in settings for this flag to take effect.
-      </message>
       <message name="IDS_FLAGS_ENABLE_ICON_NTP_NAME" desc="Name of the flag to enable large icons on the NTP.">
         Enable large icons on the New Tab page
       </message>
@@ -6136,53 +6130,53 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Data Reduction Proxy -->
       <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME" desc="An about::flags experiment title to enable/disable the development version of the data reduction proxy">
+        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME" desc="An about::flags experiment title to enable/disable the development version of the data reduction proxy" translateable="false">
           Enable Experiment Data Reduction Proxy
         </message>
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable the development version of the data reduction proxy">
+        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable the development version of the data reduction proxy" translateable="false">
          Enable or disable using the development version of the data reduction proxy.
         </message>
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME" desc="Name of the flag to enable using data reduction proxy warnings">
+        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME" desc="Name of the flag to enable using data reduction proxy warnings" translateable="false">
           Data Saver proxy bypass warnings
         </message>
-        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION" desc="Description of the flag to enable using data reduction proxy warnings">
+        <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_DESCRIPTION" desc="Description of the flag to enable using data reduction proxy warnings" translateable="false">
           Use Data Saver with bypass warnings. The proxy must be enabled in settings for this flag to take effect.
         </message>
       </if>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
          Data Saver Lo-Fi mode
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about::flags experiment to enable/disable Data Saver Lo-Fi">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about::flags experiment to enable/disable Data Saver Lo-Fi" translateable="false">
          Forces Data Saver Lo-Fi mode to be always enabled, enabled only on cellular connections, or disabled. Data Saver must be enabled for Lo-Fi mode to be used.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi always on">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi always on" translateable="false">
          Always on
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_CELLULAR_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on celluar connections">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_CELLULAR_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on celluar connections" translateable="false">
          Cellular only
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to disable Lo-Fi">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to disable Lo-Fi" translateable="false">
          Disable
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections" translateable="false">
          Slow connections only
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME" desc="Title in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME" desc="Title in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
          Clear data savings on startup
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION" desc="Description in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION" desc="Description in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
          Clears data savings obtained by using data reduction proxy when chrome starts.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about::flags experiment title to enable using the carrier test data reduction proxy">
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about::flags experiment title to enable using the carrier test data reduction proxy" translateable="false">
         Enable a carrier-specific Data Reduction Proxy for testing.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy">
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy" translateable="false">
         Use a carrier-specific Data Reduction Proxy for testing.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME" desc="Title in about::flags to use the Data Reduction Proxy configuration service">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME" desc="Title in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
          Enable Data Reduction Proxy configuration service client.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about::flags to use the Data Reduction Proxy configuration service">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
          Uses the Data Reduction Proxy configuration service for authentication and proxy configuration.
       </message>
       <message name="IDS_FLAGS_LCD_TEXT_NAME" desc="Name of about:flags option for LCD text.">
@@ -6487,10 +6481,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables compositing with an addition of one hardware overlay when possible.
         </message>
       </if>
-      <message name="IDS_FLAGS_DATASAVER_PROMPT_NAME" desc="Title for the flag to enable a prompt to install Data Saver when a cellular network is detected.">
+      <message name="IDS_FLAGS_DATASAVER_PROMPT_NAME" desc="Title for the flag to enable a prompt to install Data Saver when a cellular network is detected." translateable="false">
         Enable cellular Data Saver Prompt.
       </message>
-      <message name="IDS_FLAGS_DATASAVER_PROMPT_DESCRIPTION" desc="Decription for the flag to enable a prompt to install Data Saver when a cellular network is detected.">
+      <message name="IDS_FLAGS_DATASAVER_PROMPT_DESCRIPTION" desc="Decription for the flag to enable a prompt to install Data Saver when a cellular network is detected." translateable="false">
         Enables a prompt, which appears when a cellular network connection is detected, to take the user to the Data Saver extension page on Chrome Web Store.
       </message>
       <message name="IDS_FLAGS_DATASAVER_PROMPT_DEMO_MODE" desc="The value of the Data Saver prompt flag which always shows prompt on network properties change.">
@@ -13931,19 +13925,19 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_VISIBLE_ONLY_DESCRIPTION" desc="Description of the flag to only auto-reload visible tabs">
         Pages that fail to load while the browser is offline will only be auto-reloaded if their tab is visible.
       </message>
-      <message name="IDS_FLAGS_SHOW_SAVED_COPY_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
+      <message name="IDS_FLAGS_SHOW_SAVED_COPY_NAME" desc="Name of the flag to enable offering users the option of loading a stale copy of a page when an error occurs." translateable="false">
         Enable Show Saved Copy Button
       </message>
-      <message name="IDS_FLAGS_SHOW_SAVED_COPY_DESCRIPTION" desc="Description of the flag to enable offering users the option of loading a stale copy of a page when an error occurs.">
+      <message name="IDS_FLAGS_SHOW_SAVED_COPY_DESCRIPTION" desc="Description of the flag to enable offering users the option of loading a stale copy of a page when an error occurs." translateable="false">
         When a page fails to load, if a stale copy of the page exists in the browser cache, a button will be presented to allow the user to load that stale copy.  The primary enabling choice puts the button in the most salient position on the error page; the secondary enabling choice puts it secondary to the reload button.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY" desc="Option for IDS_FLAGS_SHOW_SAVED_NAME to use the show saved copy as the primary button.">
+      <message name="IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY" desc="Option for IDS_FLAGS_SHOW_SAVED_NAME to use the show saved copy as the primary button." translateable="false">
         Enable: Primary
       </message>
-      <message name="IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_SECONDARY" desc="Option for IDS_FLAGS_SHOW_SAVED_COPY_NAME to use the reload as the primary button (in contrast to the show saved button).">
+      <message name="IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_SECONDARY" desc="Option for IDS_FLAGS_SHOW_SAVED_COPY_NAME to use the reload as the primary button (in contrast to the show saved button)." translateable="false">
         Enable: Secondary
       </message>
-      <message name="IDS_FLAGS_DISABLE_SHOW_SAVED_COPY" desc="Option to disable IDS_FLAGS_SHOW_SAVED_COPY_NAME.">
+      <message name="IDS_FLAGS_DISABLE_SHOW_SAVED_COPY" desc="Option to disable IDS_FLAGS_SHOW_SAVED_COPY_NAME." translateable="false">
         Disable
       </message>
 
