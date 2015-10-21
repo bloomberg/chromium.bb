@@ -96,7 +96,6 @@ struct launcher_weston_launch {
 	struct wl_event_source *source;
 
 	int kb_mode, tty, drm_fd;
-	struct wl_event_source *vt_source;
 };
 
 static int
@@ -283,7 +282,6 @@ launcher_weston_launch_destroy(struct weston_launcher *launcher_base)
 		wl_event_source_remove(launcher->source);
 	} else {
 		launcher_weston_launch_restore(&launcher->base);
-		wl_event_source_remove(launcher->vt_source);
 	}
 
 	if (launcher->tty >= 0)
