@@ -245,14 +245,15 @@ void PepperCompositorHost::UpdateLayer(
       layer_->ReplaceChild(layer.get(), clip_parent);
       clip_parent->AddChild(layer);
     }
-    gfx::Point position = PP_ToGfxPoint(new_layer->common.clip_rect.point);
+    auto position =
+        gfx::PointF(PP_ToGfxPoint(new_layer->common.clip_rect.point));
     clip_parent->SetPosition(position);
     clip_parent->SetBounds(PP_ToGfxSize(new_layer->common.clip_rect.size));
-    layer->SetPosition(gfx::Point(-position.x(), -position.y()));
+    layer->SetPosition(gfx::PointF(-position.x(), -position.y()));
   } else if (layer->parent() != layer_.get()) {
     // Remove the clip parent layer.
     layer_->ReplaceChild(layer->parent(), layer);
-    layer->SetPosition(gfx::Point());
+    layer->SetPosition(gfx::PointF());
   }
 
   if (new_layer->color) {

@@ -858,8 +858,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32 touch_press_event_id1 = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-      gfx::Point(1, 1), 0, timestamp));
+  expected_events.push_back(new ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(1.f, 1.f), 0, timestamp));
 
   // Move the finger.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -867,8 +867,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32 touch_move_event_id1 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(500, 500), 0, timestamp));
+  expected_events.push_back(new ui::TouchEvent(
+      ui::ET_TOUCH_MOVED, gfx::PointF(500.f, 500.f), 0, timestamp));
 
   // Now press a second finger.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -876,8 +876,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32 touch_press_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-      gfx::Point(2, 2), 1, timestamp));
+  expected_events.push_back(new ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(2.f, 2.f), 1, timestamp));
 
   // Move both fingers.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -886,10 +886,10 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   SetTouchTimestamp(timestamp);
   uint32 touch_move_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(10, 10), 0, timestamp));
-  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(20, 20), 1, timestamp));
+  expected_events.push_back(new ui::TouchEvent(
+      ui::ET_TOUCH_MOVED, gfx::PointF(10.f, 10.f), 0, timestamp));
+  expected_events.push_back(new ui::TouchEvent(
+      ui::ET_TOUCH_MOVED, gfx::PointF(20.f, 20.f), 1, timestamp));
 
   // Receive the ACKs and make sure the generated events from the acked events
   // are correct.

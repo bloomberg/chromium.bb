@@ -1060,10 +1060,10 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
 void RenderWidgetHostViewAura::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   ui::SelectionBound anchor_bound, focus_bound;
-  anchor_bound.SetEdge(params.anchor_rect.origin(),
-                       params.anchor_rect.bottom_left());
-  focus_bound.SetEdge(params.focus_rect.origin(),
-                      params.focus_rect.bottom_left());
+  anchor_bound.SetEdge(gfx::PointF(params.anchor_rect.origin()),
+                       gfx::PointF(params.anchor_rect.bottom_left()));
+  focus_bound.SetEdge(gfx::PointF(params.focus_rect.origin()),
+                      gfx::PointF(params.focus_rect.bottom_left()));
 
   if (params.anchor_rect == params.focus_rect) {
     anchor_bound.set_type(ui::SelectionBound::CENTER);

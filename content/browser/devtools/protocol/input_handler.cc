@@ -23,12 +23,12 @@ namespace input {
 
 namespace {
 
-gfx::Point CssPixelsToPoint(int x, int y, float page_scale_factor) {
-  return gfx::Point(x * page_scale_factor, y * page_scale_factor);
+gfx::PointF CssPixelsToPointF(int x, int y, float page_scale_factor) {
+  return gfx::PointF(x * page_scale_factor, y * page_scale_factor);
 }
 
-gfx::Vector2d CssPixelsToVector2d(int x, int y, float page_scale_factor) {
-  return gfx::Vector2d(x * page_scale_factor, y * page_scale_factor);
+gfx::Vector2dF CssPixelsToVector2dF(int x, int y, float page_scale_factor) {
+  return gfx::Vector2dF(x * page_scale_factor, y * page_scale_factor);
 }
 
 bool StringToGestureSourceType(const std::string& in,
@@ -319,7 +319,7 @@ Response InputHandler::SynthesizePinchGesture(
   const int kDefaultRelativeSpeed = 800;
 
   gesture_params.scale_factor = scale_factor;
-  gesture_params.anchor = CssPixelsToPoint(x, y, page_scale_factor_);
+  gesture_params.anchor = CssPixelsToPointF(x, y, page_scale_factor_);
   gesture_params.relative_pointer_speed_in_pixels_s =
       relative_speed ? *relative_speed : kDefaultRelativeSpeed;
 
@@ -358,23 +358,21 @@ Response InputHandler::SynthesizeScrollGesture(
   const bool kDefaultPreventFling = true;
   const int kDefaultSpeed = 800;
 
-  gesture_params.anchor = CssPixelsToPoint(x, y, page_scale_factor_);
+  gesture_params.anchor = CssPixelsToPointF(x, y, page_scale_factor_);
   gesture_params.prevent_fling =
       prevent_fling ? *prevent_fling : kDefaultPreventFling;
   gesture_params.speed_in_pixels_s = speed ? *speed : kDefaultSpeed;
 
   if (x_distance || y_distance) {
     gesture_params.distances.push_back(
-        CssPixelsToVector2d(x_distance ? *x_distance : 0,
-                            y_distance ? *y_distance : 0,
-                            page_scale_factor_));
+        CssPixelsToVector2dF(x_distance ? *x_distance : 0,
+                             y_distance ? *y_distance : 0, page_scale_factor_));
   }
 
   if (x_overscroll || y_overscroll) {
-    gesture_params.distances.push_back(
-        CssPixelsToVector2d(x_overscroll ? -*x_overscroll : 0,
-                            y_overscroll ? -*y_overscroll : 0,
-                            page_scale_factor_));
+    gesture_params.distances.push_back(CssPixelsToVector2dF(
+        x_overscroll ? -*x_overscroll : 0, y_overscroll ? -*y_overscroll : 0,
+        page_scale_factor_));
   }
 
   if (!StringToGestureSourceType(
@@ -449,7 +447,7 @@ Response InputHandler::SynthesizeTapGesture(
   const int kDefaultDuration = 50;
   const int kDefaultTapCount = 1;
 
-  gesture_params.position = CssPixelsToPoint(x, y, page_scale_factor_);
+  gesture_params.position = CssPixelsToPointF(x, y, page_scale_factor_);
   gesture_params.duration_ms = duration ? *duration : kDefaultDuration;
 
   if (!StringToGestureSourceType(

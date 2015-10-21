@@ -770,8 +770,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // These values are used to properly adjust popup position.
-  gfx::PointF popup_view_origin_for_emulation_;
-  gfx::PointF popup_screen_origin_for_emulation_;
+  gfx::Point popup_view_origin_for_emulation_;
+  gfx::Point popup_screen_origin_for_emulation_;
   float popup_origin_scale_for_emulation_;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;

@@ -165,7 +165,7 @@ void TouchSelectionControllerClientAura::ShowQuickMenu() {
   // bounds.
   gfx::PointF origin = rect.origin();
   gfx::PointF bottom_right = rect.bottom_right();
-  gfx::Rect client_bounds = rwhva_->GetNativeView()->bounds();
+  auto client_bounds = gfx::RectF(rwhva_->GetNativeView()->bounds());
   origin.SetToMax(client_bounds.origin());
   bottom_right.SetToMin(client_bounds.bottom_right());
   if (origin.x() > bottom_right.x() || origin.y() > bottom_right.y())

@@ -138,7 +138,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 
     SyntheticSmoothScrollGestureParams params;
     params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-    params.anchor = point;
+    params.anchor = gfx::PointF(point);
     params.distances.push_back(-distance);
 
     runner_ = new MessageLoopRunner();

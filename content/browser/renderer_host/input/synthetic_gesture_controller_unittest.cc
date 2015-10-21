@@ -163,7 +163,7 @@ class MockMoveTouchTarget : public MockMoveGestureTarget {
       ASSERT_EQ(touch_event.type, WebInputEvent::TouchStart);
       start_.SetPoint(touch_event.touches[0].position.x,
                       touch_event.touches[0].position.y);
-      last_touch_point_ = start_;
+      last_touch_point_ = gfx::PointF(start_);
       started_ = true;
     } else {
       ASSERT_NE(touch_event.type, WebInputEvent::TouchStart);
@@ -175,7 +175,7 @@ class MockMoveTouchTarget : public MockMoveGestureTarget {
       total_abs_move_distance_length_ += delta.Length();
 
       if (touch_event.type == WebInputEvent::TouchEnd)
-        start_to_end_distance_ = touch_point - start_;
+        start_to_end_distance_ = touch_point - gfx::PointF(start_);
 
       last_touch_point_ = touch_point;
     }
