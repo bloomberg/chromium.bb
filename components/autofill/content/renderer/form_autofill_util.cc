@@ -134,13 +134,13 @@ bool IsTraversableContainerElement(const WebNode& node) {
   if (!node.isElementNode())
     return false;
 
-  std::string tag_name = node.toConst<WebElement>().tagName().utf8();
-  return (tag_name == "DD" ||
-          tag_name == "DIV" ||
-          tag_name == "FIELDSET" ||
-          tag_name == "LI" ||
-          tag_name == "TD" ||
-          tag_name == "TABLE");
+  const WebElement element = node.toConst<WebElement>();
+  return element.hasHTMLTagName("dd") ||
+          element.hasHTMLTagName("div") ||
+          element.hasHTMLTagName("fieldset") ||
+          element.hasHTMLTagName("li") ||
+          element.hasHTMLTagName("td") ||
+          element.hasHTMLTagName("table");
 }
 
 // Returns the colspan for a <td> / <th>. Defaults to 1.
