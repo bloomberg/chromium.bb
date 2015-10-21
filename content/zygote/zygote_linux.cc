@@ -5,6 +5,7 @@
 #include "content/zygote/zygote_linux.h"
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -430,6 +431,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     // to system trace event data.
     base::trace_event::TraceLog::GetInstance()->SetProcessID(
         static_cast<int>(real_pid));
+    base::InitUniqueIdForProcessInPidNamespace(real_pid);
 #endif
     return 0;
   }

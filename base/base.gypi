@@ -477,6 +477,7 @@
           'process/memory_win.cc',
           'process/port_provider_mac.h',
           'process/process.h',
+          'process/process_handle.cc',
           'process/process_handle_freebsd.cc',
           'process/process_handle_linux.cc',
           'process/process_handle_mac.cc',

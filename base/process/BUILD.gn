@@ -24,6 +24,7 @@ source_set("process") {
     "memory_win.cc",
     "port_provider_mac.h",
     "process.h",
+    "process_handle.cc",
     "process_handle_freebsd.cc",
     "process_handle_linux.cc",
     "process_handle_mac.cc",
