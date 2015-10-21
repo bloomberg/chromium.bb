@@ -2661,6 +2661,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
     IP address:
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS_IPV6" desc="In settings Internet options, the label for the IPv6 address.">
+    IPv6 address:
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings Internet options, the label for subnet mask.">
     Subnet mask:
   </message>

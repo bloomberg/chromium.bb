@@ -1433,6 +1433,7 @@ cr.define('options.internet', function() {
     var inetAddress = {};
     var inetNetmask = {};
     var inetGateway = {};
+    var ipv6Address = {};
 
     var inetNameServersString;
 
@@ -1441,11 +1442,16 @@ cr.define('options.internet', function() {
       for (var i = 0; i < ipconfigList.length; ++i) {
         var ipconfig = ipconfigList[i];
         var ipType = ipconfig['Type'];
+        var address = ipconfig['IPAddress'];
         if (ipType != 'IPv4') {
-          // TODO(stevenjb): Handle IPv6 properties.
+          if (ipType == 'IPv6' && !ipv6Address.value) {
+            ipv6Address.automatic = address;
+            ipv6Address.value = address;
+          }
           continue;
         }
-        var address = ipconfig['IPAddress'];
+        if (inetAddress.value)
+          continue;  // ipv4 address already provided.
         inetAddress.automatic = address;
         inetAddress.value = address;
         var netmask = prefixLengthToNetmask(ipconfig['RoutingPrefix']);
@@ -1464,7 +1470,6 @@ cr.define('options.internet', function() {
           inetNameServers = inetNameServers.sort();
           inetNameServersString = inetNameServers.join(',');
         }
-        break;  // Use the first IPv4 entry.
       }
     }
 
@@ -1539,6 +1544,7 @@ cr.define('options.internet', function() {
       field.editable = model.autoConfig == 'user';
     };
     configureAddressField($('ip-address'), inetAddress);
+    configureAddressField($('ipv6-address'), ipv6Address);
     configureAddressField($('ip-netmask'), inetNetmask);
     configureAddressField($('ip-gateway'), inetGateway);
 
