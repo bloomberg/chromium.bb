@@ -8,7 +8,6 @@
 #include "core/animation/AngleSVGInterpolation.h"
 #include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/ColorInterpolationType.h"
-#include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DefaultSVGInterpolation.h"
@@ -37,7 +36,7 @@
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
-#include "core/animation/ShadowStyleInterpolation.h"
+#include "core/animation/ShadowListInterpolationType.h"
 #include "core/animation/TransformSVGInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -232,6 +231,10 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyStroke:
         applicableTypes->append(new PaintInterpolationType(property));
         break;
+    case CSSPropertyBoxShadow:
+    case CSSPropertyTextShadow:
+        applicableTypes->append(new ShadowListInterpolationType(property));
+        break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
         if (CSSPropertyMetadata::isInterpolableProperty(property)) {
@@ -350,22 +353,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
             return interpolation.release();
 
         // FIXME: Handle keywords: top, right, left, center, bottom
-        return createLegacyStyleInterpolation(property, end, element, baseStyle);
-    }
-
-    case CSSPropertyBoxShadow:
-    case CSSPropertyTextShadow: {
-        RefPtr<Interpolation> interpolation = ListStyleInterpolation<ShadowStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
-
-        // FIXME: AnimatableShadow incorrectly animates between inset and non-inset values so it will never indicate it needs default interpolation
-        if (ShadowStyleInterpolation::usesDefaultStyleInterpolation(*fromCSSValue, *toCSSValue)) {
-            forceDefaultInterpolation = true;
-            break;
-        }
-
-        // FIXME: Handle interpolation from/to none, unspecified color values
         return createLegacyStyleInterpolation(property, end, element, baseStyle);
     }
 

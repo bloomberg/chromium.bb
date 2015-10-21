@@ -46,6 +46,25 @@ void InterpolableList::interpolate(const InterpolableValue& to, const double pro
     }
 }
 
+PassOwnPtr<InterpolableValue> InterpolableList::cloneAndZero() const
+{
+    OwnPtr<InterpolableList> result = InterpolableList::create(m_size);
+    for (size_t i = 0; i < m_size; i++)
+        result->set(i, m_values[i]->cloneAndZero());
+    return result.release();
+}
+
+void InterpolableNumber::scale(double scale)
+{
+    m_value = m_value * scale;
+}
+
+void InterpolableList::scale(double scale)
+{
+    for (size_t i = 0; i < m_size; i++)
+        m_values[i]->scale(scale);
+}
+
 void InterpolableNumber::scaleAndAdd(double scale, const InterpolableValue& other)
 {
     m_value = m_value * scale + toInterpolableNumber(other).m_value;

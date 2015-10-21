@@ -6,8 +6,6 @@
 #include "core/animation/ListStyleInterpolation.h"
 
 #include "core/animation/LengthStyleInterpolation.h"
-#include "core/animation/ShadowStyleInterpolation.h"
-#include "core/css/CSSColorValue.h"
 
 #include <gtest/gtest.h>
 
@@ -36,44 +34,6 @@ protected:
             EXPECT_EQ(toCSSPrimitiveValue(currentExpectedValue)->getDoubleValue(), toCSSPrimitiveValue(currentActualValue)->getDoubleValue());
         }
     }
-
-    static PassRefPtrWillBeRawPtr<CSSValue> shadowRoundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
-    {
-        Vector<bool> nonInterpolableData;
-        return ListStyleInterpolationImpl<ShadowStyleInterpolation, bool>::interpolableValueToList(
-            ListStyleInterpolationImpl<ShadowStyleInterpolation, bool>::listToInterpolableValue(*value, &nonInterpolableData).get(), nonInterpolableData);
-    }
-
-    static RefPtrWillBeRawPtr<CSSShadowValue> createShadowValue()
-    {
-        RefPtrWillBeRawPtr<CSSColorValue> color = CSSColorValue::create(makeRGBA(112, 123, 175, 255));
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(20, CSSPrimitiveValue::UnitType::Pixels);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(30, CSSPrimitiveValue::UnitType::Pixels);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> spread = CSSPrimitiveValue::create(40, CSSPrimitiveValue::UnitType::Pixels);
-
-        return CSSShadowValue::create(x, y, blur, spread, CSSPrimitiveValue::createIdentifier(CSSValueNone), color);
-
-    }
-
-    static void compareShadowList(RefPtrWillBeRawPtr<CSSValueList> expectedList, RefPtrWillBeRawPtr<CSSValue> actualList)
-    {
-        ASSERT(actualList->isValueList());
-
-        for (size_t i = 0; i < 10; i++) {
-
-            CSSShadowValue* expectedShadow = toCSSShadowValue(expectedList->item(i));
-            CSSShadowValue* actualShadow = toCSSShadowValue(toCSSValueList(*actualList).item(i));
-
-            EXPECT_EQ(expectedShadow->x->getDoubleValue(), actualShadow->x->getDoubleValue());
-            EXPECT_EQ(expectedShadow->y->getDoubleValue(), actualShadow->y->getDoubleValue());
-            EXPECT_EQ(expectedShadow->blur->getDoubleValue(), actualShadow->blur->getDoubleValue());
-            EXPECT_EQ(expectedShadow->spread->getDoubleValue(), actualShadow->spread->getDoubleValue());
-            EXPECT_EQ(toCSSColorValue(*expectedShadow->color).value(), toCSSColorValue(*actualShadow->color).value());
-
-            EXPECT_EQ(expectedShadow->style->getValueID(), actualShadow->style->getValueID());
-        }
-    }
 };
 
 TEST_F(ListStyleInterpolationTest, LengthListMultipleValuesTest)
@@ -85,17 +45,6 @@ TEST_F(ListStyleInterpolationTest, LengthListMultipleValuesTest)
     }
 
     compareLengthLists(expectedList, lengthRoundTrip(expectedList, RangeNonNegative));
-}
-
-TEST_F(ListStyleInterpolationTest, ShadowListMultipleValuesTest)
-{
-    RefPtrWillBeRawPtr<CSSValueList> expectedList = CSSValueList::createCommaSeparated();
-    RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = createShadowValue();
-    for (size_t i = 0; i < 10; i++) {
-        expectedList->append(shadowValue);
-    }
-
-    compareShadowList(expectedList, shadowRoundTrip(expectedList));
 }
 
 } // namespace blink
