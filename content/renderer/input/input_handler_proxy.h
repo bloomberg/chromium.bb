@@ -18,6 +18,10 @@
 
 namespace content {
 
+namespace test {
+class InputHandlerProxyTest;
+}
+
 class InputHandlerProxyClient;
 class InputScrollElasticityController;
 
@@ -77,6 +81,8 @@ class CONTENT_EXPORT InputHandlerProxy
   }
 
  private:
+  friend class test::InputHandlerProxyTest;
+
   // Helper functions for handling more complicated input events.
   EventDisposition HandleMouseWheel(
       const blink::WebMouseWheelEvent& event);

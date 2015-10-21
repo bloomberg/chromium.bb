@@ -35,6 +35,8 @@ using blink::WebTouchPoint;
 using testing::Field;
 
 namespace content {
+namespace test {
+
 namespace {
 
 enum InputHandlerProxyTestType {
@@ -239,6 +241,8 @@ WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
   return point;
 }
 
+}  // namespace
+
 class InputHandlerProxyTest
     : public testing::Test,
       public testing::WithParamInterface<InputHandlerProxyTestType> {
@@ -344,6 +348,10 @@ class InputHandlerProxyTest
     VERIFY_AND_RESET_MOCKS();
   }
 
+  void SetSmoothScrollEnabled(bool value) {
+    input_handler_->smooth_scroll_enabled_ = value;
+  }
+
  protected:
   const bool synchronous_root_scroll_;
   const bool install_synchronous_handler_;
@@ -375,6 +383,34 @@ TEST_P(InputHandlerProxyTest, MouseWheelWithCtrlNotScroll) {
   wheel.modifiers = WebInputEvent::ControlKey;
   wheel.canScroll = false;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_P(InputHandlerProxyTest, MouseWheelWithPreciseScrollingDeltas) {
+  SetSmoothScrollEnabled(true);
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  WebMouseWheelEvent wheel;
+  wheel.type = WebInputEvent::MouseWheel;
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Smooth scroll because hasPreciseScrollingDeltas is set to false.
+  wheel.hasPreciseScrollingDeltas = false;
+  EXPECT_CALL(mock_input_handler_, ScrollAnimated(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // No smooth scroll because hasPreciseScrollingDeltas is set to true.
+  wheel.hasPreciseScrollingDeltas = true;
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+  EXPECT_CALL(mock_input_handler_, ScrollBy(::testing::_, ::testing::_))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+
   VERIFY_AND_RESET_MOCKS();
 }
 
@@ -2425,6 +2461,5 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
 INSTANTIATE_TEST_CASE_P(AnimateInput,
                         InputHandlerProxyTest,
                         testing::ValuesIn(test_types));
-
-} // namespace
-} // namespace content
+}  // namespace test
+}  // namespace content
