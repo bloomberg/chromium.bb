@@ -1184,8 +1184,12 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
                                         : bounds_);
 
+#if defined(NDEBUG)
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
     layer->SetDebugInfo(TakeDebugInfo());
+#else
+  layer->SetDebugInfo(TakeDebugInfo());
+#endif
 
   layer->SetTransformTreeIndex(transform_tree_index());
   layer->SetEffectTreeIndex(effect_tree_index());

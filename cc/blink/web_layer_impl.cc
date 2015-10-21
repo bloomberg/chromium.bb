@@ -67,6 +67,7 @@ WebLayerImpl::~WebLayerImpl() {
   if (animation_delegate_adapter_.get())
     layer_->set_layer_animation_delegate(nullptr);
   web_layer_client_ = nullptr;
+  layer_->SetLayerClient(nullptr);
 }
 
 // static
