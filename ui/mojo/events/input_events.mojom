@@ -96,9 +96,9 @@ struct BrushData {
   // |pressure| range is [0,1]. For devices like mice buttons where the
   // pressure is not available, it will be set to 0.5 if the button is down.
   float pressure;
-  // |tiltY| and |tiltX| are in degrees.
-  float tiltY;
-  float tiltZ;
+  // |tilt_y| and |tilt_z| are in degrees.
+  float tilt_y;
+  float tilt_z;
 };
 
 struct Event {

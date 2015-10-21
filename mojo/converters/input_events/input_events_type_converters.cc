@@ -228,8 +228,8 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
     brush_data->height = touch_event->pointer_details().radius_y();
     // TODO(rjk): update for touch_event->rotation_angle();
     brush_data->pressure = touch_event->pointer_details().force();
-    brush_data->tiltY = 0;
-    brush_data->tiltZ = 0;
+    brush_data->tilt_y = 0;
+    brush_data->tilt_z = 0;
     pointer_data->brush_data = brush_data.Pass();
     event->pointer_data = pointer_data.Pass();
 
