@@ -233,8 +233,8 @@ Transform ComposeTransform(const SkMatrix44& perspective,
 
 bool CheckViewportPointMapsWithinOnePixel(const Point& point,
                                           const Transform& transform) {
-  Point3F point_original(point);
-  Point3F point_transformed(point);
+  auto point_original = Point3F(PointF(point));
+  auto point_transformed = Point3F(PointF(point));
 
   // Can't use TransformRect here since it would give us the axis-aligned
   // bounding rect of the 4 points in the initial rectable which is not what we

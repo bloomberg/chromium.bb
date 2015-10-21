@@ -141,19 +141,19 @@ TEST(TransformUtilTest, SnapCompositeTransform) {
 
   Point3F point;
 
-  point = Point3F(viewport.origin());
+  point = Point3F(PointF(viewport.origin()));
   result.TransformPoint(&point);
   EXPECT_EQ(Point3F(31.f, 20.f, 10.f), point) << "Transformed origin";
 
-  point = Point3F(viewport.top_right());
+  point = Point3F(PointF(viewport.top_right()));
   result.TransformPoint(&point);
   EXPECT_EQ(Point3F(31.f, 1940.f, 10.f), point) << "Transformed top-right";
 
-  point = Point3F(viewport.bottom_left());
+  point = Point3F(PointF(viewport.bottom_left()));
   result.TransformPoint(&point);
   EXPECT_EQ(Point3F(-3569.f, 20.f, 10.f), point) << "Transformed bottom-left";
 
-  point = Point3F(viewport.bottom_right());
+  point = Point3F(PointF(viewport.bottom_right()));
   result.TransformPoint(&point);
   EXPECT_EQ(Point3F(-3569.f, 1940.f, 10.f), point)
       << "Transformed bottom-right";
