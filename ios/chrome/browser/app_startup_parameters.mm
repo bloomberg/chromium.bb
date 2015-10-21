@@ -13,9 +13,11 @@
   GURL _externalURL;
   base::scoped_nsobject<XCallbackParameters> _xCallbackParameters;
   BOOL _launchVoiceSearch;
+  BOOL _launchInIncognito;
 }
 
 @synthesize launchVoiceSearch = _launchVoiceSearch;
+@synthesize launchInIncognito = _launchInIncognito;
 
 - (const GURL&)externalURL {
   return _externalURL;
@@ -27,31 +29,19 @@
 
 - (instancetype)init {
   NOTREACHED();
-  return
-      [self initWithExternalURL:GURL() xCallbackParameters:nil voiceSearch:NO];
+  return nil;
 }
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL {
-  return [self initWithExternalURL:externalURL
-               xCallbackParameters:nil
-                       voiceSearch:NO];
+  return [self initWithExternalURL:externalURL xCallbackParameters:nil];
 }
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
                 xCallbackParameters:(XCallbackParameters*)xCallbackParameters {
-  return [self initWithExternalURL:externalURL
-               xCallbackParameters:xCallbackParameters
-                       voiceSearch:NO];
-}
-
-- (instancetype)initWithExternalURL:(const GURL&)externalURL
-                xCallbackParameters:(XCallbackParameters*)xCallbackParameters
-                        voiceSearch:(BOOL)voicesearch {
   self = [super init];
   if (self) {
     _externalURL = GURL(externalURL);
     _xCallbackParameters.reset([xCallbackParameters retain]);
-    _launchVoiceSearch = voicesearch;
   }
   return self;
 }

@@ -22,16 +22,17 @@ class GURL;
 @property(nonatomic, readonly, retain) XCallbackParameters* xCallbackParameters;
 
 // Boolean to track if a voice search is requested at startup.
-@property(nonatomic, readonly, assign) BOOL launchVoiceSearch;
+@property(nonatomic, readwrite, assign) BOOL launchVoiceSearch;
+// Boolean to track if the app should launch in incognito mode.
+@property(nonatomic, readwrite, assign) BOOL launchInIncognito;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL;
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
-                xCallbackParameters:(XCallbackParameters*)xCallbackParameters;
-
-- (instancetype)initWithExternalURL:(const GURL&)externalURL
                 xCallbackParameters:(XCallbackParameters*)xCallbackParameters
-                        voiceSearch:(BOOL)voicesearch NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 
