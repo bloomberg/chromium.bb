@@ -858,7 +858,7 @@ bool Layer::ConvertPointForAncestor(const Layer* ancestor,
                                     gfx::Point* point) const {
   gfx::Transform transform;
   bool result = GetTargetTransformRelativeTo(ancestor, &transform);
-  gfx::Point3F p(*point);
+  auto p = gfx::Point3F(gfx::PointF(*point));
   transform.TransformPoint(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
@@ -868,7 +868,7 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
                                      gfx::Point* point) const {
   gfx::Transform transform;
   bool result = GetTargetTransformRelativeTo(ancestor, &transform);
-  gfx::Point3F p(*point);
+  auto p = gfx::Point3F(gfx::PointF(*point));
   transform.TransformPointReverse(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
@@ -1073,7 +1073,8 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 }
 
 void Layer::RecomputePosition() {
-  cc_layer_->SetPosition(bounds_.origin() + subpixel_position_offset_);
+  cc_layer_->SetPosition(gfx::PointF(bounds_.origin()) +
+                         subpixel_position_offset_);
 }
 
 void Layer::AddAnimatorsInTreeToCollection(

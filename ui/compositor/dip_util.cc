@@ -84,7 +84,7 @@ void SnapLayerToPhysicalPixelBoundary(ui::Layer* snapped_layer,
   gfx::Point view_offset_dips = layer_to_snap->GetTargetBounds().origin();
   ui::Layer::ConvertPointToLayer(
       layer_to_snap->parent(), snapped_layer, &view_offset_dips);
-  gfx::PointF view_offset = view_offset_dips;
+  auto view_offset = gfx::PointF(view_offset_dips);
 
   float scale_factor = GetDeviceScaleFactor(layer_to_snap);
   view_offset.Scale(scale_factor);
@@ -100,7 +100,7 @@ void SnapLayerToPhysicalPixelBoundary(ui::Layer* snapped_layer,
   Layer::ConvertPointToLayer(
       layer_to_snap->parent(), snapped_layer, &layer_offset);
   if (layer_to_snap->GetAnimator()->is_animating()) {
-    origin = layer_to_snap->GetTargetBounds().origin() +
+    origin = gfx::PointF(layer_to_snap->GetTargetBounds().origin()) +
              layer_to_snap->subpixel_position_offset();
   } else {
     origin = layer_to_snap->position();
