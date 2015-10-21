@@ -1226,23 +1226,6 @@ void RemoveRunVerbOnWindows8(BrowserDistribution* dist,
   }
 }
 
-// Gets the short (8.3) form of |path|, putting the result in |short_path| and
-// returning true on success.  |short_path| is not modified on failure.
-bool ShortNameFromPath(const base::FilePath& path, base::string16* short_path) {
-  DCHECK(short_path);
-  base::string16 result(MAX_PATH, L'\0');
-  DWORD short_length = GetShortPathName(path.value().c_str(), &result[0],
-                                        result.size());
-  if (short_length == 0 || short_length > result.size()) {
-    PLOG(ERROR) << "Error getting short (8.3) path for " << path.value();
-    return false;
-  }
-
-  result.resize(short_length);
-  short_path->swap(result);
-  return true;
-}
-
 // Probe using IApplicationAssociationRegistration::QueryCurrentDefault
 // (Windows 8); see ProbeProtocolHandlers.  This mechanism is not suitable for
 // use on previous versions of Windows despite the presence of
@@ -1307,37 +1290,22 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
     const base::FilePath& chrome_exe,
     const wchar_t* const* protocols,
     size_t num_protocols) {
-  // Get its short (8.3) form if possible.
-  base::string16 app_path;
-  if (!ShortNameFromPath(chrome_exe, &app_path))
-    app_path = chrome_exe.value();
-
   const HKEY root_key = HKEY_CLASSES_ROOT;
   base::string16 key_path;
   base::win::RegKey key;
   base::string16 value;
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  base::string16 short_path;
-
+  InstallUtil::ProgramCompare chrome_compare(chrome_exe);
   for (size_t i = 0; i < num_protocols; ++i) {
     // Get the command line from HKCU\<protocol>\shell\open\command.
     key_path.assign(protocols[i]).append(ShellUtil::kRegShellOpen);
-    if ((key.Open(root_key, key_path.c_str(),
-                  KEY_QUERY_VALUE) != ERROR_SUCCESS) ||
-        (key.ReadValue(L"", &value) != ERROR_SUCCESS)) {
+    if (key.Open(root_key, key_path.c_str(),
+                 KEY_QUERY_VALUE) != ERROR_SUCCESS ||
+        key.ReadValue(L"", &value) != ERROR_SUCCESS) {
       return ShellUtil::NOT_DEFAULT;
     }
 
-    // Need to normalize path in case it's been munged.
-    command_line = base::CommandLine::FromString(value);
-    if (ShortNameFromPath(command_line.GetProgram(), &short_path)) {
-      if (!base::FilePath::CompareEqualIgnoreCase(short_path, app_path))
-        return ShellUtil::NOT_DEFAULT;
-    } else {
-      if (!base::FilePath::CompareEqualIgnoreCase(
-              command_line.GetProgram().value(), app_path))
-        return ShellUtil::NOT_DEFAULT;
-    }
+    if (!chrome_compare.Evaluate(value))
+      return ShellUtil::NOT_DEFAULT;
   }
 
   return ShellUtil::IS_DEFAULT;
