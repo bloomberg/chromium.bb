@@ -338,6 +338,8 @@ ServiceWorkerDatabase::Status LevelDBStatusToStatus(
     return ServiceWorkerDatabase::STATUS_ERROR_IO_ERROR;
   else if (status.IsCorruption())
     return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+  else if (status.IsNotSupportedError())
+    return ServiceWorkerDatabase::STATUS_ERROR_NOT_SUPPORTED;
   else
     return ServiceWorkerDatabase::STATUS_ERROR_FAILED;
 }
@@ -365,6 +367,8 @@ const char* ServiceWorkerDatabase::StatusToString(
       return "Database corrupted";
     case ServiceWorkerDatabase::STATUS_ERROR_FAILED:
       return "Database operation failed";
+    case ServiceWorkerDatabase::STATUS_ERROR_NOT_SUPPORTED:
+      return "Database operation not supported";
     case ServiceWorkerDatabase::STATUS_ERROR_MAX:
       NOTREACHED();
       return "Database unknown error";

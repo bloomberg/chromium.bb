@@ -71575,6 +71575,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="IO Error"/>
   <int value="3" label="Corruption Error"/>
   <int value="4" label="Operation Error"/>
+  <int value="5" label="Not Supported Error"/>
 </enum>
 
 <enum name="ServiceWorkerDeleteAndStartOverResult" type="int">

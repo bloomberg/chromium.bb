@@ -47,6 +47,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     STATUS_ERROR_IO_ERROR,
     STATUS_ERROR_CORRUPTED,
     STATUS_ERROR_FAILED,
+    STATUS_ERROR_NOT_SUPPORTED,
     STATUS_ERROR_MAX,
   };
   static const char* StatusToString(Status status);
