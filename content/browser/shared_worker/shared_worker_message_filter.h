@@ -16,8 +16,8 @@ namespace content {
 class MessagePortMessageFilter;
 class ResourceContext;
 
-// If "enable-embedded-shared-worker" is set this class will be used instead of
-// WorkerMessageFilter.
+// Handles SharedWorker related IPC messages for one renderer process by
+// forwarding them to the SharedWorkerServiceImpl singleton.
 class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
  public:
   SharedWorkerMessageFilter(int render_process_id,

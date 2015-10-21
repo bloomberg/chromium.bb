@@ -27,8 +27,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // Handled by RenderViewHost.
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
-    // Handled by WorkerMessageFilter (or by SharedWorkerMessageFilter when
-    // embedded-shared-worker is enabled).
+    // Handled by SharedWorkerMessageFilter.
     case ViewHostMsg_DocumentDetached::ID:
     // Allow cross-process JavaScript calls.
     case ViewHostMsg_RouteCloseEvent::ID:

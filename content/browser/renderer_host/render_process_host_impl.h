@@ -258,7 +258,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Called when the existence of the other renderer process which is connected
   // to the Worker in this renderer process has changed.
-  // It is only called when "enable-embedded-shared-worker" flag is set.
   void IncrementWorkerRefCount();
   void DecrementWorkerRefCount();
 

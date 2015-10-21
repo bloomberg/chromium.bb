@@ -15,7 +15,7 @@ namespace content {
 
 class WorkerServiceObserver;
 
-// A singleton for managing HTML5 shared web workers. These are run in a
+// A singleton for managing HTML5 shared web workers. These may be run in a
 // separate process, since multiple renderer processes can be talking to a
 // single shared worker. All the methods below can only be called on the IO
 // thread.
