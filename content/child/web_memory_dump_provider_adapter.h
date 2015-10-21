@@ -28,6 +28,8 @@ class WebMemoryDumpProviderAdapter
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  void OnHeapProfilingEnabled(bool enabled) override;
+
   bool is_registered() const { return is_registered_; }
   void set_is_registered(bool is_registered) { is_registered_ = is_registered; }
 

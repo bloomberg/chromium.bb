@@ -115,4 +115,12 @@ PartitionAllocMemoryDumpProvider::~PartitionAllocMemoryDumpProvider()
 {
 }
 
+void PartitionAllocMemoryDumpProvider::onHeapProfilingEnabled(AllocationHook* allocationHook, FreeHook* freeHook)
+{
+    // Make PartitionAlloc call |allocationHook| and |freeHook| for every
+    // subsequent allocation and free (or not if the pointers are null).
+    PartitionAllocHooks::setAllocationHook(allocationHook);
+    PartitionAllocHooks::setFreeHook(freeHook);
+}
+
 } // namespace blink

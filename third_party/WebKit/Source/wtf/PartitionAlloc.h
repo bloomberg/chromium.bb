@@ -411,6 +411,46 @@ WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, voi
 WTF_EXPORT void partitionDumpStats(PartitionRoot*, const char* partitionName, bool isLightDump, PartitionStatsDumper*);
 WTF_EXPORT void partitionDumpStatsGeneric(PartitionRootGeneric*, const char* partitionName, bool isLightDump, PartitionStatsDumper*);
 
+class WTF_EXPORT PartitionAllocHooks {
+public:
+    typedef void AllocationHook(void* address, size_t);
+    typedef void FreeHook(void* address);
+
+    static void setAllocationHook(AllocationHook* hook) { m_allocationHook = hook; }
+    static void setFreeHook(FreeHook* hook) { m_freeHook = hook; }
+
+    static void allocationHookIfEnabled(void* address, size_t size)
+    {
+        AllocationHook* allocationHook = m_allocationHook;
+        if (UNLIKELY(allocationHook != nullptr))
+            allocationHook(address, size);
+    }
+
+    static void freeHookIfEnabled(void* address)
+    {
+        FreeHook* freeHook = m_freeHook;
+        if (UNLIKELY(freeHook != nullptr))
+            freeHook(address);
+    }
+
+    static void reallocHookIfEnabled(void* oldAddress, void* newAddress, size_t size)
+    {
+        // Report a reallocation as a free followed by an allocation.
+        AllocationHook* allocationHook = m_allocationHook;
+        FreeHook* freeHook = m_freeHook;
+        if (UNLIKELY(allocationHook && freeHook)) {
+            freeHook(oldAddress);
+            allocationHook(newAddress, size);
+        }
+    }
+
+private:
+    // Pointers to hook functions that PartitionAlloc will call on allocation and
+    // free if the pointers are non-null.
+    static AllocationHook* m_allocationHook;
+    static FreeHook* m_freeHook;
+};
+
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
     // We use bswap on little endian as a fast mask for two reasons:
@@ -623,13 +663,16 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     RELEASE_ASSERT(result);
     return result;
 #else
+    size_t requestedSize = size;
     size = partitionCookieSizeAdjustAdd(size);
     ASSERT(root->initialized);
     size_t index = size >> kBucketShift;
     ASSERT(index < root->numBuckets);
     ASSERT(size == index << kBucketShift);
     PartitionBucket* bucket = &root->buckets()[index];
-    return partitionBucketAlloc(root, 0, size, bucket);
+    void* result = partitionBucketAlloc(root, 0, size, bucket);
+    PartitionAllocHooks::allocationHookIfEnabled(result, requestedSize);
+    return result;
 #endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
 
@@ -668,6 +711,7 @@ ALWAYS_INLINE void partitionFree(void* ptr)
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
+    PartitionAllocHooks::freeHookIfEnabled(ptr);
     ptr = partitionCookieFreePointerAdjust(ptr);
     ASSERT(partitionPointerIsValid(ptr));
     PartitionPage* page = partitionPointerToPage(ptr);
@@ -696,11 +740,13 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int f
     return result;
 #else
     ASSERT(root->initialized);
+    size_t requestedSize = size;
     size = partitionCookieSizeAdjustAdd(size);
     PartitionBucket* bucket = partitionGenericSizeToBucket(root, size);
     spinLockLock(&root->lock);
     void* ret = partitionBucketAlloc(root, flags, size, bucket);
     spinLockUnlock(&root->lock);
+    PartitionAllocHooks::allocationHookIfEnabled(ret, requestedSize);
     return ret;
 #endif
 }
@@ -720,6 +766,7 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
     if (UNLIKELY(!ptr))
         return;
 
+    PartitionAllocHooks::freeHookIfEnabled(ptr);
     ptr = partitionCookieFreePointerAdjust(ptr);
     ASSERT(partitionPointerIsValid(ptr));
     PartitionPage* page = partitionPointerToPage(ptr);

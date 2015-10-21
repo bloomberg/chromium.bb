@@ -17,6 +17,8 @@ public:
 
     // WebMemoryDumpProvider implementation.
     bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
+    bool supportsHeapProfiling() override { return true; }
+    void onHeapProfilingEnabled(AllocationHook*, FreeHook*) override;
 
 private:
     PartitionAllocMemoryDumpProvider();
