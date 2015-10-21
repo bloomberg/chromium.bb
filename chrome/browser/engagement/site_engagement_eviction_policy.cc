@@ -29,6 +29,7 @@ int64 GetSoftQuotaForOrigin(const GURL& origin,
 GURL DoCalculateEvictionOrigin(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     SiteEngagementScoreProvider* score_provider,
+    const std::set<GURL>& exceptions,
     const std::map<GURL, int64>& usage_map,
     int64 global_quota) {
   // TODO(calamity): Integrate storage access frequency as an input to this
@@ -58,7 +59,7 @@ GURL DoCalculateEvictionOrigin(
     int64 overuse = usage.second - GetSoftQuotaForOrigin(
                                        origin, score_provider->GetScore(origin),
                                        total_engagement_points, global_quota);
-    if (overuse > max_overuse) {
+    if (overuse > max_overuse && !ContainsKey(exceptions, origin)) {
       max_overuse = overuse;
       origin_to_evict = origin;
     }
@@ -70,6 +71,7 @@ GURL DoCalculateEvictionOrigin(
 GURL GetSiteEngagementEvictionOriginOnUIThread(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     content::BrowserContext* browser_context,
+    const std::set<GURL>& exceptions,
     const std::map<GURL, int64>& usage_map,
     int64 global_quota) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -84,7 +86,7 @@ GURL GetSiteEngagementEvictionOriginOnUIThread(
     return GURL();
 
   return DoCalculateEvictionOrigin(special_storage_policy, score_provider,
-                                   usage_map, global_quota);
+                                   exceptions, usage_map, global_quota);
 }
 
 }  // namespace
@@ -97,6 +99,7 @@ SiteEngagementEvictionPolicy::~SiteEngagementEvictionPolicy() {}
 
 void SiteEngagementEvictionPolicy::GetEvictionOrigin(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
+    const std::set<GURL>& exceptions,
     const std::map<GURL, int64>& usage_map,
     int64 global_quota,
     const storage::GetOriginCallback& callback) {
@@ -105,8 +108,8 @@ void SiteEngagementEvictionPolicy::GetEvictionOrigin(
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&GetSiteEngagementEvictionOriginOnUIThread,
-                 special_storage_policy, browser_context_, usage_map,
-                 global_quota),
+                 special_storage_policy, browser_context_, exceptions,
+                 usage_map, global_quota),
       callback);
 }
 
@@ -114,8 +117,9 @@ void SiteEngagementEvictionPolicy::GetEvictionOrigin(
 GURL SiteEngagementEvictionPolicy::CalculateEvictionOriginForTests(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     SiteEngagementScoreProvider* score_provider,
+    const std::set<GURL>& exceptions,
     const std::map<GURL, int64>& usage_map,
     int64 global_quota) {
   return DoCalculateEvictionOrigin(special_storage_policy, score_provider,
-                                   usage_map, global_quota);
+                                   exceptions, usage_map, global_quota);
 }

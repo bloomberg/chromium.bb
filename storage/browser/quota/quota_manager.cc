@@ -145,12 +145,12 @@ bool InitializeOnDBThread(int64* temporary_quota_override,
 }
 
 bool GetLRUOriginOnDBThread(StorageType type,
-                            std::set<GURL>* exceptions,
+                            const std::set<GURL>& exceptions,
                             SpecialStoragePolicy* policy,
                             GURL* url,
                             QuotaDatabase* database) {
   DCHECK(database);
-  database->GetLRUOrigin(type, *exceptions, policy, url);
+  database->GetLRUOrigin(type, exceptions, policy, url);
   return true;
 }
 
@@ -1510,6 +1510,36 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
                        unlimited_origins);
 }
 
+std::set<GURL> QuotaManager::GetEvictionOriginExceptions() {
+  std::set<GURL> exceptions;
+  for (const auto& p : origins_in_use_) {
+    if (p.second > 0)
+      exceptions.insert(p.first);
+  }
+
+  for (const auto& p : origins_in_error_) {
+    if (p.second > QuotaManager::kThresholdOfErrorsToBeBlacklisted)
+      exceptions.insert(p.first);
+  }
+
+  return exceptions;
+}
+
+void QuotaManager::DidGetEvictionOrigin(const GetOriginCallback& callback,
+                                        const GURL& origin) {
+  // Make sure the returned origin is (still) not in the origin_in_use_ set
+  // and has not been accessed since we posted the task.
+  if (ContainsKey(origins_in_use_, origin) ||
+      ContainsKey(access_notified_origins_, origin)) {
+    callback.Run(GURL());
+  } else {
+    callback.Run(origin);
+  }
+  access_notified_origins_.clear();
+
+  is_getting_eviction_origin_ = false;
+}
+
 void QuotaManager::GetEvictionOrigin(StorageType type,
                                      int64 global_quota,
                                      const GetOriginCallback& callback) {
@@ -1529,20 +1559,14 @@ void QuotaManager::GetEvictionOrigin(StorageType type,
     GetUsageTracker(kStorageTypeTemporary)->GetCachedOriginsUsage(&usage_map);
 
     temporary_storage_eviction_policy_->GetEvictionOrigin(
-        special_storage_policy_, usage_map, global_quota,
-        did_get_origin_callback);
+        special_storage_policy_, GetEvictionOriginExceptions(), usage_map,
+        global_quota, did_get_origin_callback);
+
     return;
   }
 
   // TODO(calamity): convert LRU origin retrieval into a QuotaEvictionPolicy.
   GetLRUOrigin(type, did_get_origin_callback);
-}
-
-void QuotaManager::DidGetEvictionOrigin(const GetOriginCallback& callback,
-                                        const GURL& origin) {
-  callback.Run(origin);
-
-  is_getting_eviction_origin_ = false;
 }
 
 void QuotaManager::EvictOriginData(const GURL& origin,
@@ -1589,31 +1613,12 @@ void QuotaManager::GetLRUOrigin(StorageType type,
     return;
   }
 
-  // TODO(calamity): make all QuotaEvictionPolicies aware of these exceptions.
-  std::set<GURL>* exceptions = new std::set<GURL>;
-  for (std::map<GURL, int>::const_iterator p = origins_in_use_.begin();
-       p != origins_in_use_.end();
-       ++p) {
-    if (p->second > 0)
-      exceptions->insert(p->first);
-  }
-  for (std::map<GURL, int>::const_iterator p = origins_in_error_.begin();
-       p != origins_in_error_.end();
-       ++p) {
-    if (p->second > QuotaManager::kThresholdOfErrorsToBeBlacklisted)
-      exceptions->insert(p->first);
-  }
-
   GURL* url = new GURL;
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
-      base::Bind(&GetLRUOriginOnDBThread,
-                 type,
-                 base::Owned(exceptions),
-                 special_storage_policy_,
-                 base::Unretained(url)),
-      base::Bind(&QuotaManager::DidGetLRUOrigin,
-                 weak_factory_.GetWeakPtr(),
+      base::Bind(&GetLRUOriginOnDBThread, type, GetEvictionOriginExceptions(),
+                 special_storage_policy_, base::Unretained(url)),
+      base::Bind(&QuotaManager::DidGetLRUOrigin, weak_factory_.GetWeakPtr(),
                  base::Owned(url)));
 }
 
@@ -1671,14 +1676,8 @@ void QuotaManager::DidInitialize(int64* temporary_quota_override,
 void QuotaManager::DidGetLRUOrigin(const GURL* origin,
                                    bool success) {
   DidDatabaseWork(success);
-  // Make sure the returned origin is (still) not in the origin_in_use_ set
-  // and has not been accessed since we posted the task.
-  if (origins_in_use_.find(*origin) != origins_in_use_.end() ||
-      access_notified_origins_.find(*origin) != access_notified_origins_.end())
-    lru_origin_callback_.Run(GURL());
-  else
-    lru_origin_callback_.Run(*origin);
-  access_notified_origins_.clear();
+
+  lru_origin_callback_.Run(*origin);
   lru_origin_callback_.Reset();
 }
 

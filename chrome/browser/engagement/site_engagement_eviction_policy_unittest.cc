@@ -57,9 +57,15 @@ class SiteEngagementEvictionPolicyTest : public testing::Test {
 
   ~SiteEngagementEvictionPolicyTest() override {}
 
-  GURL CalculateEvictionOrigin(const std::map<GURL, int64>& usage) {
+  GURL CalculateEvictionOriginWithExceptions(const std::map<GURL, int64>& usage,
+                                             const std::set<GURL>& exceptions) {
     return SiteEngagementEvictionPolicy::CalculateEvictionOriginForTests(
-        storage_policy_, score_provider_.get(), usage, kGlobalQuota);
+        storage_policy_, score_provider_.get(), exceptions, usage,
+        kGlobalQuota);
+  }
+
+  GURL CalculateEvictionOrigin(const std::map<GURL, int64>& usage) {
+    return CalculateEvictionOriginWithExceptions(usage, std::set<GURL>());
   }
 
   TestSiteEngagementScoreProvider* score_provider() {
@@ -136,4 +142,23 @@ TEST_F(SiteEngagementEvictionPolicyTest, SpecialStoragePolicy) {
   // Unlimited storage doesn't get evicted.
   storage_policy()->AddUnlimited(url1);
   EXPECT_EQ(GURL(), CalculateEvictionOrigin(usage));
+}
+
+TEST_F(SiteEngagementEvictionPolicyTest, Exceptions) {
+  GURL url1("http://www.google.com");
+  GURL url2("http://www.example.com");
+
+  std::map<GURL, int64> usage;
+  usage[url1] = 10 * 1024;
+  usage[url2] = 10 * 1024;
+
+  score_provider()->SetScore(url1, 50);
+  score_provider()->SetScore(url2, 25);
+
+  EXPECT_EQ(url2, CalculateEvictionOrigin(usage));
+
+  // The policy should respect exceptions.
+  std::set<GURL> exceptions;
+  exceptions.insert(url2);
+  EXPECT_EQ(url1, CalculateEvictionOriginWithExceptions(usage, exceptions));
 }

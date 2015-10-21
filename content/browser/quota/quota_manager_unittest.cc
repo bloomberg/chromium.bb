@@ -74,6 +74,7 @@ class TestEvictionPolicy : public storage::QuotaEvictionPolicy {
   // Overridden from storage::QuotaEvictionPolicy:
   void GetEvictionOrigin(const scoped_refptr<storage::SpecialStoragePolicy>&
                              special_storage_policy,
+                         const std::set<GURL>& exceptions,
                          const std::map<GURL, int64>& usage_map,
                          int64 global_quota,
                          const storage::GetOriginCallback& callback) override {

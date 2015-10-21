@@ -28,6 +28,7 @@ class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
   // Overridden from storage::QuotaEvictionPolicy:
   void GetEvictionOrigin(const scoped_refptr<storage::SpecialStoragePolicy>&
                              special_storage_policy,
+                         const std::set<GURL>& exceptions,
                          const std::map<GURL, int64>& usage_map,
                          int64 global_quota,
                          const storage::GetOriginCallback& callback) override;
@@ -39,6 +40,7 @@ class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
       SiteEngagementScoreProvider* score_provider,
+      const std::set<GURL>& exceptions,
       const std::map<GURL, int64>& usage_map,
       int64 global_quota);
 

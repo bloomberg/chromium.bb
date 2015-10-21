@@ -82,6 +82,7 @@ class STORAGE_EXPORT QuotaEvictionPolicy {
   // are no evictable origins.
   virtual void GetEvictionOrigin(
       const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
+      const std::set<GURL>& exceptions,
       const std::map<GURL, int64>& usage_map,
       int64 global_quota,
       const GetOriginCallback& callback) = 0;
@@ -393,6 +394,7 @@ class STORAGE_EXPORT QuotaManager
   void DidGetPersistentGlobalUsageForHistogram(int64 usage,
                                                int64 unlimited_usage);
 
+  std::set<GURL> GetEvictionOriginExceptions();
   void DidGetEvictionOrigin(const GetOriginCallback& callback,
                             const GURL& origin);
 
