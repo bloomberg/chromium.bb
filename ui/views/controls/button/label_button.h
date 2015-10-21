@@ -32,36 +32,39 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   LabelButton(ButtonListener* listener, const base::string16& text);
   ~LabelButton() override;
 
-  // Get or set the image shown for the specified button state.
+  // Gets or sets the image shown for the specified button state.
   // GetImage returns the image for STATE_NORMAL if the state's image is empty.
   virtual const gfx::ImageSkia& GetImage(ButtonState for_state);
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
-  // Get or set the text shown on the button.
+  // Gets or sets the text shown on the button.
   const base::string16& GetText() const;
   void SetText(const base::string16& text);
 
-  // Set the text color shown for the specified button state.
+  // Sets the text color shown for the specified button |for_state| to |color|.
   void SetTextColor(ButtonState for_state, SkColor color);
 
-  // Set drop shadows underneath the text.
+  // Sets the text colors shown for the non-disabled states to |color|.
+  void SetEnabledTextColors(SkColor color);
+
+  // Sets drop shadows underneath the text.
   void SetTextShadows(const gfx::ShadowValues& shadows);
 
   // Sets whether subpixel rendering is used on the label.
   void SetTextSubpixelRenderingEnabled(bool enabled);
 
-  // Get or set the text's multi-line property to break on '\n', etc.
+  // Gets or sets the text's multi-line property to break on '\n', etc.
   bool GetTextMultiLine() const;
   void SetTextMultiLine(bool text_multi_line);
 
-  // Get or set the font list used by this button.
+  // Gets or sets the font list used by this button.
   const gfx::FontList& GetFontList() const;
   void SetFontList(const gfx::FontList& font_list);
 
-  // Set the elide behavior of this button.
+  // Sets the elide behavior of this button.
   void SetElideBehavior(gfx::ElideBehavior elide_behavior);
 
-  // Get or set the horizontal alignment used for the button; reversed in RTL.
+  // Gets or sets the horizontal alignment used for the button; reversed in RTL.
   // The optional image will lead the text, unless the button is right-aligned.
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
@@ -70,15 +73,15 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetMinSize(const gfx::Size& min_size);
   void SetMaxSize(const gfx::Size& max_size);
 
-  // Get or set the option to handle the return key; false by default.
+  // Gets or sets the option to handle the return key; false by default.
   bool is_default() const { return is_default_; }
   void SetIsDefault(bool is_default);
 
-  // Get or set the button's overall style; the default is |STYLE_TEXTBUTTON|.
+  // Gets or sets the button's overall style; the default is |STYLE_TEXTBUTTON|.
   ButtonStyle style() const { return style_; }
   void SetStyle(ButtonStyle style);
 
-  // Set the spacing between the image and the text. Shrinking the spacing
+  // Sets the spacing between the image and the text. Shrinking the spacing
   // will not shrink the overall button size, as it is monotonically increasing.
   // Call SetMinSize(gfx::Size()) to clear the size if needed.
   void SetImageLabelSpacing(int spacing);
@@ -115,7 +118,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // CustomButton:
   void StateChanged() override;
 
-  // Fill |params| with information about the button.
+  // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.

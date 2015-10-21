@@ -116,6 +116,12 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   explicitly_set_colors_[for_state] = true;
 }
 
+void LabelButton::SetEnabledTextColors(SkColor color) {
+  ButtonState states[] = {STATE_NORMAL, STATE_HOVERED, STATE_PRESSED};
+  for (auto state : states)
+    SetTextColor(state, color);
+}
+
 void LabelButton::SetTextShadows(const gfx::ShadowValues& shadows) {
   label_->SetShadows(shadows);
 }

@@ -1721,8 +1721,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {
-    button->SetTextColor(
-        views::Button::STATE_NORMAL,
+    button->SetEnabledTextColors(
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
 
@@ -2035,13 +2034,12 @@ void BookmarkBarView::UpdateColors() {
   SkColor color =
       theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   for (int i = 0; i < GetBookmarkButtonCount(); ++i)
-    GetBookmarkButton(i)->SetTextColor(views::Button::STATE_NORMAL, color);
-  other_bookmarks_button_->SetTextColor(views::Button::STATE_NORMAL, color);
-  managed_bookmarks_button_->SetTextColor(views::Button::STATE_NORMAL, color);
-  supervised_bookmarks_button_->SetTextColor(views::Button::STATE_NORMAL,
-                                             color);
+    GetBookmarkButton(i)->SetEnabledTextColors(color);
+  other_bookmarks_button_->SetEnabledTextColors(color);
+  managed_bookmarks_button_->SetEnabledTextColors(color);
+  supervised_bookmarks_button_->SetEnabledTextColors(color);
   if (apps_page_shortcut_->visible())
-    apps_page_shortcut_->SetTextColor(views::Button::STATE_NORMAL, color);
+    apps_page_shortcut_->SetEnabledTextColors(color);
 
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
