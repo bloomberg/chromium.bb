@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 83
+    "kCurrentDataVersion": 84
   },
 
   // The following engines are included in country lists and are added to the
@@ -586,7 +586,7 @@
       "keyword": "yandex.ru",
       "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "http://yandex.ru/{yandex:searchPath}?text={searchTerms}",
-      "suggest_url": "http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
+      "suggest_url": "https://api.browser.yandex.ru/suggest/get?part={searchTerms}",
       "image_url": "http://yandex.ru/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -596,9 +596,9 @@
     "yandex_tr": {
       "name": "Yandex",
       "keyword": "yandex.com.tr",
-      "favicon_url": "http://yastatic.net/islands-icons/_/6jyHGXR8-HAc8oJ1bU8qMUQQz_g.ico",
+      "favicon_url": "http://yandex.st/lego/_/rBTjd6UOPk5913OSn5ZQVYMTQWQ.ico",
       "search_url": "http://www.yandex.com.tr/{yandex:searchPath}?text={searchTerms}",
-      "suggest_url": "http://suggest.yandex.com.tr/suggest-ff.cgi?part={searchTerms}",
+      "suggest_url": "https://api.browser.yandex.com.tr/suggest/get?part={searchTerms}",
       "image_url": "http://yandex.com.tr/gorsel/search?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",
@@ -608,9 +608,9 @@
     "yandex_ua": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ua",
-      "favicon_url": "http://yastatic.net/islands-icons/_/aKnllxm-gQhidpzbZqub7qe641g.ico",
+      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "http://yandex.ua/{yandex:searchPath}?text={searchTerms}",
-      "suggest_url": "http://suggest.yandex.ua/suggest-ff.cgi?part={searchTerms}",
+      "suggest_url": "https://api.browser.yandex.ua/suggest/get?part={searchTerms}",
       "image_url": "http://yandex.ua/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",

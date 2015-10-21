@@ -646,13 +646,13 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "yandex:searchPath") {
     switch (ui::GetDeviceFormFactor()) {
       case ui::DEVICE_FORM_FACTOR_DESKTOP:
-        url->insert(start, "yandsearch");
+        url->insert(start, "search/");
         break;
       case ui::DEVICE_FORM_FACTOR_PHONE:
-        url->insert(start, "touchsearch");
+        url->insert(start, "search/touch/");
         break;
       case ui::DEVICE_FORM_FACTOR_TABLET:
-        url->insert(start, "padsearch");
+        url->insert(start, "search/pad/");
         break;
     }
   } else if (parameter == "inputEncoding") {
