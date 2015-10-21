@@ -214,12 +214,12 @@
           'target_name': 'setup',
           'type': 'executable',
           'dependencies': [
-            'chrome_version_header',
             'installer_util',
             'installer_util_strings',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/common_constants.gyp:common_constants',
+            '../chrome/common_constants.gyp:version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
             '../rlz/rlz.gyp:rlz_lib',
             '../third_party/zlib/zlib.gyp:zlib',

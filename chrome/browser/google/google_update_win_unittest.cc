@@ -22,6 +22,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
@@ -29,7 +30,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/atl_module.h"
-#include "version.h"
 
 using ::testing::DoAll;
 using ::testing::HasSubstr;

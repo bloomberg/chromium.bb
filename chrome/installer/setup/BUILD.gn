@@ -23,7 +23,7 @@ if (is_win) {
     deps = [
       ":lib",
       "//build/config/sanitizers:deps",
-      "//chrome:version_header",
+      "//chrome/common:version_header",
     ]
   }
 

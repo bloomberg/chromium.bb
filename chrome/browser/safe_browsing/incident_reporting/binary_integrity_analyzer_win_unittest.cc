@@ -13,10 +13,10 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "version.h"  // NOLINT
 
 using ::testing::_;
 using ::testing::StrictMock;

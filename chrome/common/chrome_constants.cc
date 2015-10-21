@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_version.h"
 
 #define FPL FILE_PATH_LITERAL
 
@@ -18,6 +19,8 @@
 #endif  // defined(OS_MACOSX)
 
 namespace chrome {
+
+const char kChromeVersion[] = CHROME_VERSION_STRING;
 
 #if defined(OS_WIN)
 const char kChromeVersionEnvVar[] = "CHROME_VERSION";
