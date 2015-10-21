@@ -59,14 +59,16 @@ struct LayoutFlexibleBox::LineContext {
 };
 
 struct LayoutFlexibleBox::Violation {
-    Violation(LayoutBox* child, LayoutUnit childSize)
+    Violation(LayoutBox* child, LayoutUnit childSize, LayoutUnit childInnerFlexBaseSize)
         : child(child)
         , childSize(childSize)
+        , childInnerFlexBaseSize(childInnerFlexBaseSize)
     {
     }
 
     LayoutBox* child;
     LayoutUnit childSize;
+    LayoutUnit childInnerFlexBaseSize;
 };
 
 
@@ -960,10 +962,9 @@ void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, La
     for (size_t i = 0; i < violations.size(); ++i) {
         LayoutBox* child = violations[i].child;
         LayoutUnit childSize = violations[i].childSize;
-        LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child);
-        availableFreeSpace -= childSize - childInnerFlexBaseSize;
+        availableFreeSpace -= childSize - violations[i].childInnerFlexBaseSize;
         totalFlexGrow -= child->style()->flexGrow();
-        totalWeightedFlexShrink -= child->style()->flexShrink() * childInnerFlexBaseSize;
+        totalWeightedFlexShrink -= child->style()->flexShrink() * violations[i].childInnerFlexBaseSize;
         inflexibleItems.set(child, childSize);
     }
 }
@@ -1009,9 +1010,9 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
 
             LayoutUnit violation = adjustedChildSize - childSize;
             if (violation > 0)
-                minViolations.append(Violation(child, adjustedChildSize));
+                minViolations.append(Violation(child, adjustedChildSize, childInnerFlexBaseSize));
             else if (violation < 0)
-                maxViolations.append(Violation(child, adjustedChildSize));
+                maxViolations.append(Violation(child, adjustedChildSize, childInnerFlexBaseSize));
             totalViolation += violation;
         }
     }
