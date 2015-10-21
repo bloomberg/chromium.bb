@@ -36,9 +36,10 @@ class CONTENT_EXPORT GpuMemoryBufferImplOzoneNativePixmap
                                           gfx::GpuMemoryBufferHandle* handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  bool Map(void** data) override;
+  bool Map() override;
+  void* memory(size_t plane) override;
   void Unmap() override;
-  void GetStride(int* stride) const override;
+  int stride(size_t plane) const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:

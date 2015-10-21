@@ -43,21 +43,19 @@ const unsigned char* MojoGpuMemoryBufferImpl::GetMemory() const {
   return static_cast<const unsigned char*>(shared_memory_->memory());
 }
 
-bool MojoGpuMemoryBufferImpl::Map(void** data) {
+bool MojoGpuMemoryBufferImpl::Map() {
   DCHECK(!mapped_);
   if (!shared_memory_->Map(gfx::BufferSizeForBufferFormat(size_, format_)))
     return false;
   mapped_ = true;
-  size_t offset = 0;
-  int num_planes =
-      static_cast<int>(gfx::NumberOfPlanesForBufferFormat(format_));
-  for (int i = 0; i < num_planes; ++i) {
-    data[i] = reinterpret_cast<uint8*>(shared_memory_->memory()) + offset;
-    offset +=
-        gfx::RowSizeForBufferFormat(size_.width(), format_, i) *
-        (size_.height() / gfx::SubsamplingFactorForBufferFormat(format_, i));
-  }
   return true;
+}
+
+void* MojoGpuMemoryBufferImpl::memory(size_t plane) {
+  DCHECK(mapped_);
+  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  return reinterpret_cast<uint8*>(shared_memory_->memory()) +
+         gfx::BufferOffsetForBufferFormat(size_, format_, plane);
 }
 
 void MojoGpuMemoryBufferImpl::Unmap() {
@@ -74,12 +72,10 @@ gfx::BufferFormat MojoGpuMemoryBufferImpl::GetFormat() const {
   return format_;
 }
 
-void MojoGpuMemoryBufferImpl::GetStride(int* stride) const {
-  int num_planes =
-      static_cast<int>(gfx::NumberOfPlanesForBufferFormat(format_));
-  for (int i = 0; i < num_planes; ++i)
-    stride[i] = base::checked_cast<int>(
-        gfx::RowSizeForBufferFormat(size_.width(), format_, i));
+int MojoGpuMemoryBufferImpl::stride(size_t plane) const {
+  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  return base::checked_cast<int>(
+      gfx::RowSizeForBufferFormat(size_.width(), format_, plane));
 }
 
 gfx::GpuMemoryBufferId MojoGpuMemoryBufferImpl::GetId() const {

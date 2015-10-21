@@ -89,15 +89,18 @@ base::Closure GpuMemoryBufferImplIOSurface::AllocateForTesting(
   return base::Bind(&FreeIOSurfaceForTesting, kBufferId);
 }
 
-bool GpuMemoryBufferImplIOSurface::Map(void** data) {
+bool GpuMemoryBufferImplIOSurface::Map() {
   DCHECK(!mapped_);
   IOReturn status = IOSurfaceLock(io_surface_, lock_flags_, NULL);
   DCHECK_NE(status, kIOReturnCannotLock);
   mapped_ = true;
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(GetFormat());
-  for (size_t plane = 0; plane < num_planes; ++plane)
-    data[plane] = IOSurfaceGetBaseAddressOfPlane(io_surface_, plane);
   return true;
+}
+
+void* GpuMemoryBufferImplIOSurface::memory(size_t plane) {
+  DCHECK(mapped_);
+  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  return IOSurfaceGetBaseAddressOfPlane(io_surface_, plane);
 }
 
 void GpuMemoryBufferImplIOSurface::Unmap() {
@@ -106,10 +109,9 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
   mapped_ = false;
 }
 
-void GpuMemoryBufferImplIOSurface::GetStride(int* strides) const {
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(GetFormat());
-  for (size_t plane = 0; plane < num_planes; ++plane)
-    strides[plane] = IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
+int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
+  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  return IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
