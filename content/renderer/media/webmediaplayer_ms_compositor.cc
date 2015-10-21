@@ -109,8 +109,8 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       video_tracks.size() && video_tracks[0].source().remote();
 
   if (remote_video &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRTCSmoothnessAlgorithm)) {
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRTCSmoothnessAlgorithm)) {
     base::AutoLock auto_lock(current_frame_lock_);
     rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
         base::Bind(&WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
