@@ -2742,7 +2742,7 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
 
 void HTMLMediaElement::timeChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerTimeChanged(%p)", this);
+    WTF_LOG(Media, "HTMLMediaElement::timeChanged(%p)", this);
 
     cueTimeline().updateActiveCues(currentTime());
 
@@ -2827,7 +2827,7 @@ void HTMLMediaElement::durationChanged(double duration, bool requestSeek)
 
 void HTMLMediaElement::playbackStateChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged(%p)", this);
+    WTF_LOG(Media, "HTMLMediaElement::playbackStateChanged(%p)", this);
 
     if (!webMediaPlayer())
         return;
@@ -2882,7 +2882,7 @@ void HTMLMediaElement::repaint()
 
 void HTMLMediaElement::sizeChanged()
 {
-    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged(%p)", this);
+    WTF_LOG(Media, "HTMLMediaElement::sizeChanged(%p)", this);
 
     ASSERT(hasVideo()); // "resize" makes no sense absent video.
     if (m_readyState > HAVE_NOTHING && isHTMLVideoElement())
