@@ -182,7 +182,8 @@ const char kPrinterCapabilities[] = "capabilities";
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
-base::DictionaryValue* GetSettingsDictionary(const base::ListValue* args) {
+scoped_ptr<base::DictionaryValue> GetSettingsDictionary(
+    const base::ListValue* args) {
   std::string json_str;
   if (!args->GetString(0, &json_str)) {
     NOTREACHED() << "Could not read JSON argument";
@@ -192,10 +193,9 @@ base::DictionaryValue* GetSettingsDictionary(const base::ListValue* args) {
     NOTREACHED() << "Empty print job settings";
     return NULL;
   }
-  scoped_ptr<base::DictionaryValue> settings(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(json_str).release()));
-  if (!settings.get() || !settings->IsType(base::Value::TYPE_DICTIONARY)) {
+  scoped_ptr<base::DictionaryValue> settings =
+      base::DictionaryValue::From(base::JSONReader::Read(json_str));
+  if (!settings) {
     NOTREACHED() << "Print job settings must be a dictionary.";
     return NULL;
   }
@@ -205,7 +205,7 @@ base::DictionaryValue* GetSettingsDictionary(const base::ListValue* args) {
     return NULL;
   }
 
-  return settings.release();
+  return settings;
 }
 
 // Track the popularity of print settings and report the stats.
@@ -782,8 +782,8 @@ void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   DCHECK_EQ(3U, args->GetSize());
-  scoped_ptr<base::DictionaryValue> settings(GetSettingsDictionary(args));
-  if (!settings.get())
+  scoped_ptr<base::DictionaryValue> settings = GetSettingsDictionary(args);
+  if (!settings)
     return;
   int request_id = -1;
   if (!settings->GetInteger(printing::kPreviewRequestID, &request_id))
@@ -878,8 +878,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
 
-  scoped_ptr<base::DictionaryValue> settings(GetSettingsDictionary(args));
-  if (!settings.get())
+  scoped_ptr<base::DictionaryValue> settings = GetSettingsDictionary(args);
+  if (!settings)
     return;
 
   ReportPrintSettingsStats(*settings);
