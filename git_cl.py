@@ -245,7 +245,9 @@ def trigger_luci_job(changelist, masters, options):
   issue = changelist.GetIssue()
   patchset = changelist.GetMostRecentPatchset()
   for builders_and_tests in sorted(masters.itervalues()):
-    for builder in sorted(builders_and_tests.iterkeys()):
+    # TODO(hinoka et al): add support for other properties.
+    # Currently, this completely ignores testfilter and other properties.
+    for builder in sorted(builders_and_tests):
       luci_trigger.trigger(
           builder, 'HEAD', issue, patchset, issue_props['project'])
 
@@ -292,9 +294,10 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
               'patchset': patchset,
               'reason': options.name,
               'rietveld': rietveld_url,
-              'testfilter': tests,
           },
       }
+      if tests:
+        parameters['properties']['testfilter'] = tests
       if properties:
         parameters['properties'].update(properties)
       if options.clobber:
@@ -3216,7 +3219,7 @@ def CMDtry(parser, args):
       elif ',' in bot:
         parser.error('Specify one bot per --bot flag')
       else:
-        builders_and_tests.setdefault(bot, []).append('defaulttests')
+        builders_and_tests.setdefault(bot, [])
 
     for bot, tests in new_style:
       builders_and_tests.setdefault(bot, []).extend(tests)
