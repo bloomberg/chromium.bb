@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "cc/surfaces/surface_id.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
 #include "ui/mojo/events/input_events.mojom.h"
 #include "ui/mojo/events/input_key_codes.mojom.h"
@@ -17,17 +18,20 @@ class Point;
 }
 
 namespace mus {
-
 namespace ws {
 
+class EventDispatcherDelegate;
 class ServerWindow;
-class WindowTreeHostImpl;
 
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher {
  public:
-  explicit EventDispatcher(WindowTreeHostImpl* window_tree_host);
+  explicit EventDispatcher(EventDispatcherDelegate* delegate);
   ~EventDispatcher();
+
+  void set_root(ServerWindow* root) { root_ = root; }
+
+  void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
 
   void AddAccelerator(uint32_t id,
                       mojo::KeyboardCode keyboard_code,
@@ -63,18 +67,10 @@ class EventDispatcher {
   // make sure it is in the returned target's coordinate space.
   ServerWindow* FindEventTarget(mojo::Event* event);
 
-  // Finds the deepest visible window that contains the specified location, and
-  // updates |location| to be in the returned window's coordinate space.
-  ServerWindow* FindDeepestVisibleWindow(ServerWindow* window,
-                                         gfx::Point* location);
+  EventDispatcherDelegate* delegate_;
+  ServerWindow* root_;
 
-  // Finds the deepest visible window for the specified location based on
-  // surface
-  // hit-testing. Updates |location| to be in the returned window's coordinate
-  // space.
-  ServerWindow* FindDeepestVisibleWindowFromSurface(gfx::Point* location);
-
-  WindowTreeHostImpl* window_tree_host_;
+  cc::SurfaceId surface_id_;
 
   using Entry = std::pair<uint32_t, Accelerator>;
   std::map<uint32_t, Accelerator> accelerators_;
@@ -83,7 +79,6 @@ class EventDispatcher {
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_EVENT_DISPATCHER_H_

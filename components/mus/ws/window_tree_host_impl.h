@@ -11,11 +11,11 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
+#include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/server_window.h"
 
 namespace mus {
-
 namespace ws {
 
 class ConnectionManager;
@@ -30,7 +30,8 @@ class WindowTreeImpl;
 // deleted.
 class WindowTreeHostImpl : public DisplayManagerDelegate,
                            public mojom::WindowTreeHost,
-                           public FocusControllerDelegate {
+                           public FocusControllerDelegate,
+                           public EventDispatcherDelegate {
  public:
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
@@ -48,8 +49,6 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   WindowTreeImpl* GetWindowTree();
 
   mojom::WindowTreeHostClient* client() const { return client_.get(); }
-
-  cc::SurfaceId surface_id() const { return surface_id_; }
 
   // Returns whether |window| is a descendant of this root but not itself a
   // root window.
@@ -79,9 +78,6 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                             const ui::TextInputState& state);
   void SetImeVisibility(ServerWindow* window, bool visible);
 
-  void OnAccelerator(uint32_t accelerator_id, mojo::EventPtr event);
-  void DispatchInputEventToWindow(ServerWindow* target, mojo::EventPtr event);
-
   // WindowTreeHost:
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
@@ -106,6 +102,13 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnFocusChanged(ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override;
 
+  // EventDispatcherDelegate:
+  void OnAccelerator(uint32_t accelerator_id, mojo::EventPtr event) override;
+  void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
+  ServerWindow* GetFocusedWindowForEventDispatcher() override;
+  void DispatchInputEventToWindow(ServerWindow* target,
+                                  mojo::EventPtr event) override;
+
   WindowTreeHostDelegate* delegate_;
   ConnectionManager* const connection_manager_;
   mojom::WindowTreeHostClientPtr client_;
@@ -113,13 +116,11 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   scoped_ptr<ServerWindow> root_;
   scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<FocusController> focus_controller_;
-  cc::SurfaceId surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_

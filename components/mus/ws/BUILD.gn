@@ -23,6 +23,7 @@ source_set("lib") {
     "display_manager_factory.h",
     "event_dispatcher.cc",
     "event_dispatcher.h",
+    "event_dispatcher_delegate.h",
     "focus_controller.cc",
     "focus_controller.h",
     "focus_controller_delegate.h",
@@ -37,6 +38,8 @@ source_set("lib") {
     "server_window_surface.h",
     "window_coordinate_conversions.cc",
     "window_coordinate_conversions.h",
+    "window_finder.cc",
+    "window_finder.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
     "window_tree_host_connection.cc",
@@ -107,6 +110,7 @@ group("tests") {
 
 test("window_manager_unittests") {
   sources = [
+    "event_dispatcher_unittest.cc",
     "focus_controller_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
     "test_server_window_delegate.cc",
@@ -134,6 +138,7 @@ test("window_manager_unittests") {
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/events:interfaces",
     "//testing/gtest",
+    "//ui/events",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",

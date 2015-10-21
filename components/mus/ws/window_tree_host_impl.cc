@@ -15,7 +15,6 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace mus {
-
 namespace ws {
 
 WindowTreeHostImpl::WindowTreeHostImpl(
@@ -101,24 +100,6 @@ void WindowTreeHostImpl::SetImeVisibility(ServerWindow* window, bool visible) {
   display_manager_->SetImeVisibility(visible);
 }
 
-void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
-                                       mojo::EventPtr event) {
-  client()->OnAccelerator(accelerator_id, event.Pass());
-}
-
-void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
-                                                    mojo::EventPtr event) {
-  // If the window is an embed root, forward to the embedded window, not the
-  // owner.
-  WindowTreeImpl* connection =
-      connection_manager_->GetConnectionWithRoot(target->id());
-  if (!connection)
-    connection = connection_manager_->GetConnection(target->id().connection_id);
-  connection->client()->OnWindowInputEvent(WindowIdToTransportId(target->id()),
-                                           event.Pass(),
-                                           base::Bind(&base::DoNothing));
-}
-
 void WindowTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
 }
@@ -169,16 +150,15 @@ void WindowTreeHostImpl::OnViewportMetricsChanged(
     root_->SetVisible(true);
     if (delegate_)
       delegate_->OnDisplayInitialized();
+    event_dispatcher_.set_root(root_.get());
   } else {
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
   }
-  // TODO(fsamuel): We shouldn't broadcast this to all connections but only
-  // those within a window root.
   connection_manager_->ProcessViewportMetricsChanged(old_metrics, new_metrics);
 }
 
 void WindowTreeHostImpl::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {
-  surface_id_ = surface_id;
+  event_dispatcher_.set_surface_id(surface_id);
 }
 
 void WindowTreeHostImpl::OnFocusChanged(ServerWindow* old_focused_window,
@@ -243,6 +223,32 @@ void WindowTreeHostImpl::OnFocusChanged(ServerWindow* old_focused_window,
                        new_focused_window->text_input_state());
 }
 
-}  // namespace ws
+void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
+                                       mojo::EventPtr event) {
+  client()->OnAccelerator(accelerator_id, event.Pass());
+}
 
+void WindowTreeHostImpl::SetFocusedWindowFromEventDispatcher(
+    ServerWindow* new_focused_window) {
+  SetFocusedWindow(new_focused_window);
+}
+
+ServerWindow* WindowTreeHostImpl::GetFocusedWindowForEventDispatcher() {
+  return GetFocusedWindow();
+}
+
+void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
+                                                    mojo::EventPtr event) {
+  // If the window is an embed root, forward to the embedded window, not the
+  // owner.
+  WindowTreeImpl* connection =
+      connection_manager_->GetConnectionWithRoot(target->id());
+  if (!connection)
+    connection = connection_manager_->GetConnection(target->id().connection_id);
+  connection->client()->OnWindowInputEvent(WindowIdToTransportId(target->id()),
+                                           event.Pass(),
+                                           base::Bind(&base::DoNothing));
+}
+
+}  // namespace ws
 }  // namespace mus
