@@ -289,6 +289,7 @@
       'exported/WebFilterKeyframe.cpp',
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
+      'exported/WebImageGenerator.cpp',
       'exported/WebImageSkia.cpp',
       'exported/WebMediaConstraints.cpp',
       'exported/WebMediaDeviceInfo.cpp',
