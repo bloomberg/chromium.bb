@@ -85,19 +85,24 @@ class ProfileGenerator(object):
       options: Instance of BrowserFinderOptions to search for proper browser.
 
     Returns:
-      The path of generated profile or existing profile if --profile-dir
-      is given. Could be None if it's generated on default location
-      (e.g., crytohome on CrOS).
+      A 2-tuple (path, new_profile).
+
+      path: The path of the generated profile or existing profile if
+      --profile-dir is given. Could be None if it's generated on default
+      location (e.g., cryptohome on CrOS).
+
+      new_profile: Whether a new profile has been generated. If this is True,
+      the caller is responsible for deleting the profile.
     """
     possible_browser = browser_finder.FindBrowser(options)
 
     if possible_browser.browser_type.startswith('cros'):
       self.Create(options, None)
-      return None
+      return (None, False)
 
     # Use the given --profile-dir.
     if options.browser_options.profile_dir:
-      return options.browser_options.profile_dir
+      return (options.browser_options.profile_dir, False)
 
     out_dir = os.path.abspath(os.path.join(
         tempfile.gettempdir(), self._profile_name, self._profile_name))
@@ -109,7 +114,7 @@ class ProfileGenerator(object):
       shutil.rmtree(out_dir)
 
     self.Create(options, out_dir)
-    return out_dir
+    return (out_dir, True)
 
   def Create(self, options, out_dir):
     """Generate profile.

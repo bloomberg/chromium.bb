@@ -1,17 +1,48 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+import shutil
+
+from profile_creators import profile_generator
+from profile_creators import small_profile_extender
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
 
 
+class Typical25ProfileSharedState(shared_page_state.SharedDesktopPageState):
+  """Shared state associated with a profile generated from 25 navigations.
+
+  Generates a shared profile on initialization.
+  """
+
+  def __init__(self, test, finder_options, story_set):
+    super(Typical25ProfileSharedState, self).__init__(
+        test, finder_options, story_set)
+    generator = profile_generator.ProfileGenerator(
+        small_profile_extender.SmallProfileExtender,
+        'small_profile')
+    self._out_dir, self._owns_out_dir = generator.Run(finder_options)
+    if self._out_dir:
+      finder_options.browser_options.profile_dir = self._out_dir
+    else:
+      finder_options.browser_options.dont_override_profile = True
+
+  def TearDownState(self):
+    """Clean up generated profile directory."""
+    super(Typical25ProfileSharedState, self).TearDownState()
+    if self._owns_out_dir:
+      shutil.rmtree(self._out_dir)
+
+
 class Typical25Page(page_module.Page):
 
-  def __init__(self, url, page_set, run_no_page_interactions):
+  def __init__(self, url, page_set, run_no_page_interactions,
+      shared_page_state_class=shared_page_state.SharedDesktopPageState):
     super(Typical25Page, self).__init__(
         url=url, page_set=page_set,
-        shared_page_state_class=shared_page_state.SharedDesktopPageState)
+        shared_page_state_class=shared_page_state_class)
     self.archive_data_file = 'data/typical_25.json'
     self._run_no_page_interactions = run_no_page_interactions
 
@@ -22,11 +53,22 @@ class Typical25Page(page_module.Page):
       action_runner.ScrollPage()
 
 
+class Typical25PageWithProfile(Typical25Page):
+  """A page from the typical 25 set backed by a profile."""
+
+  def __init__(self, url, page_set, run_no_page_interactions):
+    super(Typical25PageWithProfile, self).__init__(
+        url=url, page_set=page_set,
+        run_no_page_interactions=run_no_page_interactions,
+        shared_page_state_class=Typical25ProfileSharedState)
+
+
 class Typical25PageSet(story.StorySet):
 
   """ Pages designed to represent the median, not highly optimized web """
 
-  def __init__(self, run_no_page_interactions=False):
+  def __init__(self, run_no_page_interactions=False,
+               page_class=Typical25Page):
     super(Typical25PageSet, self).__init__(
       archive_data_file='data/typical_25.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
@@ -74,4 +116,13 @@ class Typical25PageSet(story.StorySet):
 
     for url in urls_list:
       self.AddStory(
-        Typical25Page(url, self, run_no_page_interactions))
+        page_class(url, self, run_no_page_interactions))
+
+
+class Typical25PageSetWithProfile(Typical25PageSet):
+  """ Similar to Typical25PageSet, but with a non-empty profile. """
+
+  def __init__(self, run_no_page_interactions=False):
+    super(Typical25PageSetWithProfile, self).__init__(
+        run_no_page_interactions=run_no_page_interactions,
+        page_class=Typical25PageWithProfile)

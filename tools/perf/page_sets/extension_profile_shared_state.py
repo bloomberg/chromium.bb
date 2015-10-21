@@ -21,7 +21,7 @@ class ExtensionProfileSharedState(shared_page_state.SharedPageState):
     generator = profile_generator.ProfileGenerator(
         extension_profile_extender.ExtensionProfileExtender,
         'extension_profile')
-    self._out_dir = generator.Run(finder_options)
+    self._out_dir, self._owns_out_dir = generator.Run(finder_options)
     if self._out_dir:
       finder_options.browser_options.profile_dir = self._out_dir
     else:
@@ -30,5 +30,5 @@ class ExtensionProfileSharedState(shared_page_state.SharedPageState):
   def TearDownState(self):
     """Clean up generated profile directory."""
     super(ExtensionProfileSharedState, self).TearDownState()
-    if self._out_dir:
+    if self._owns_out_dir:
       shutil.rmtree(self._out_dir)

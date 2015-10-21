@@ -6,8 +6,6 @@ from core import perf_benchmark
 
 from measurements import session_restore
 import page_sets
-from profile_creators import profile_generator
-from profile_creators import small_profile_extender
 from telemetry import benchmark
 
 
@@ -21,25 +19,12 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
   Use Typical25PageSet to match what the SmallProfileCreator uses.
   TODO(slamm): Make SmallProfileCreator and this use the same page_set ref.
   """
-  page_set = page_sets.Typical25PageSet
+  page_set = page_sets.Typical25PageSetWithProfile
   tag = None  # override with 'warm' or 'cold'
-
-  PROFILE_TYPE = 'small_profile'
 
   @classmethod
   def Name(cls):
     return 'session_restore'
-
-  @classmethod
-  def ProcessCommandLineArgs(cls, parser, args):
-    super(_SessionRestoreTypical25, cls).ProcessCommandLineArgs(parser, args)
-    generator = profile_generator.ProfileGenerator(
-        small_profile_extender.SmallProfileExtender, cls.PROFILE_TYPE)
-    out_dir = generator.Run(args)
-    if out_dir:
-      args.browser_options.profile_dir = out_dir
-    else:
-      args.browser_options.dont_override_profile = True
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, _, is_first_result):
