@@ -5,6 +5,7 @@
 #ifndef SANDBOX_SRC_SERVICE_RESOLVER_H__
 #define SANDBOX_SRC_SERVICE_RESOLVER_H__
 
+#include "base/macros.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/resolver.h"
 
@@ -133,6 +134,21 @@ class Win8ResolverThunk : public ServiceResolverThunk {
   bool IsFunctionAService(void* local_thunk) const override;
 
   DISALLOW_COPY_AND_ASSIGN(Win8ResolverThunk);
+};
+
+// This is the concrete resolver used to perform service-call type functions
+// inside ntdll.dll on WOW64 for Windows 10.
+class Wow64W10ResolverThunk : public ServiceResolverThunk {
+ public:
+  // The service resolver needs a child process to write to.
+  Wow64W10ResolverThunk(HANDLE process, bool relaxed)
+      : ServiceResolverThunk(process, relaxed) {}
+  ~Wow64W10ResolverThunk() override {}
+
+ private:
+  bool IsFunctionAService(void* local_thunk) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(Wow64W10ResolverThunk);
 };
 
 }  // namespace sandbox

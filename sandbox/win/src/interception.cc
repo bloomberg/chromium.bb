@@ -486,7 +486,9 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
 #else
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
-    if (os_info->version() >= base::win::VERSION_WIN8)
+    if (os_info->version() >= base::win::VERSION_WIN10)
+      thunk = new Wow64W10ResolverThunk(child_->Process(), relaxed_);
+    else if (os_info->version() >= base::win::VERSION_WIN8)
       thunk = new Wow64W8ResolverThunk(child_->Process(), relaxed_);
     else
       thunk = new Wow64ResolverThunk(child_->Process(), relaxed_);

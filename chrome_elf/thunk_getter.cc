@@ -132,7 +132,9 @@ sandbox::ServiceResolverThunk* GetThunk(bool relaxed) {
   thunk = new sandbox::ServiceResolverThunk(current_process, relaxed);
 #else
   if (GetWOW64StatusForCurrentProcess() == WOW64_ENABLED) {
-    if (os_info.version() >= VERSION_WIN8)
+    if (os_info.version() >= VERSION_WIN10)
+      thunk = new sandbox::Wow64W10ResolverThunk(current_process, relaxed);
+    else if (os_info.version() >= VERSION_WIN8)
       thunk = new sandbox::Wow64W8ResolverThunk(current_process, relaxed);
     else
       thunk = new sandbox::Wow64ResolverThunk(current_process, relaxed);

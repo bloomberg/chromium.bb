@@ -61,6 +61,7 @@ typedef ResolverThunkTest<sandbox::ServiceResolverThunk> WinXpResolverTest;
 typedef ResolverThunkTest<sandbox::Win8ResolverThunk> Win8ResolverTest;
 typedef ResolverThunkTest<sandbox::Wow64ResolverThunk> Wow64ResolverTest;
 typedef ResolverThunkTest<sandbox::Wow64W8ResolverThunk> Wow64W8ResolverTest;
+typedef ResolverThunkTest<sandbox::Wow64W10ResolverThunk> Wow64W10ResolverTest;
 #endif
 
 const BYTE kJump32 = 0xE9;
@@ -135,6 +136,8 @@ sandbox::ServiceResolverThunk* GetTestResolver(bool relaxed) {
 #else
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
+    if (os_info->version() >= base::win::VERSION_WIN10)
+      return new Wow64W10ResolverTest(relaxed);
     if (os_info->version() >= base::win::VERSION_WIN8)
       return new Wow64W8ResolverTest(relaxed);
     return new Wow64ResolverTest(relaxed);
