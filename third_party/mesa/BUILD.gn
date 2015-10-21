@@ -687,7 +687,7 @@ if (!is_android) {  # TODO(GYP) enable for Android.
   #   osmesa.osmesa.obj : warning LNK4197: export 'OSMesaGetIntegerv' specified
   #   multiple times; using first specification
   # This also happens with the GYP build.
-  shared_library("osmesa") {
+  loadable_module("osmesa") {
     sources = [
       "src/src/mesa/drivers/common/driverfuncs.c",
       "src/src/mesa/drivers/common/driverfuncs.h",

@@ -187,8 +187,6 @@ template("mac_toolchain") {
       # specifies).
       default_output_extension = ".so"
 
-      output_prefix = "lib"
-
       outputs = [
         sofile,
       ]

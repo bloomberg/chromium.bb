@@ -61,15 +61,6 @@
       'sources!': [
         'src/cpp/src/util/json.cc',
       ],
-      'conditions': [
-        ['OS=="mac" or OS=="ios"', {
-          # localization.cc in libaddressinput_util_files includes
-          # grit-generated en_messages.cc, which does not have a newline.
-          'xcode_settings': {
-            'GCC_WARN_ABOUT_MISSING_NEWLINE': 'NO',
-          },
-        }],
-      ],
       'include_dirs': [
         'chromium/override/',
         'src/cpp/include/',

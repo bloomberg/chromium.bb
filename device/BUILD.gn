@@ -65,6 +65,7 @@ test("device_unittests") {
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
+    "//device/bluetooth:mocks",
     "//device/nfc",
     "//mojo/environment:chromium",
     "//net",
@@ -168,7 +169,7 @@ test("device_unittests") {
     # OSes older than OSX 10.10, the top level CoreBluetooth framework must be
     # weakly linked.
     if (mac_sdk_version == "10.10") {
-      ldflags += [ "-weak_framework CoreBluetooth" ]
+      ldflags += [ "-weak_framework", "CoreBluetooth" ]
     }
   }
 }

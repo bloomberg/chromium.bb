@@ -12,13 +12,10 @@ import("//third_party/WebKit/Source/platform/platform_generated.gni")
 # Most targets in this file are private actions so use that as the default.
 visibility = [ ":*" ]
 
-if (!is_mac) {
-  # TODO(GYP): can't link Blink binaries yet on mac.
-  heap_gypi = exec_script("//build/gypi_to_gn.py",
-                          [ rebase_path("heap/blink_heap.gypi") ],
-                          "scope",
-                          [ "heap/blink_heap.gypi" ])
-}
+heap_gypi = exec_script("//build/gypi_to_gn.py",
+                        [ rebase_path("heap/blink_heap.gypi") ],
+                        "scope",
+                        [ "heap/blink_heap.gypi" ])
 
 blink_platform_neon_files = [ "graphics/cpu/arm/WebGLImageConversionNEON.h" ]
 
@@ -331,78 +328,75 @@ source_set("test_support") {
   ]
 }
 
-if (!is_mac) {
-  # TODO(GYP): Can't link Blink binaries yet.
-  test("heap_unittests") {
-    visibility = []  # Allow re-assignment of list.
-    visibility = [ "*" ]
-    output_name = "blink_heap_unittests"
+test("heap_unittests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+  output_name = "blink_heap_unittests"
 
-    sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
-    sources += [ "heap/RunAllTests.cpp" ]
+  sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
+  sources += [ "heap/RunAllTests.cpp" ]
 
-    configs += [
-      "//third_party/WebKit/Source/wtf:wtf_config",
-      "//third_party/WebKit/Source:config",
-    ]
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
 
-    defines = [ "INSIDE_BLINK" ]
+  defines = [ "INSIDE_BLINK" ]
 
-    deps = [
-      ":platform",
-      "//base",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/WebKit/Source/wtf",
-      "//third_party/WebKit/Source/wtf:test_support",
-      "//content/test:test_support",
-    ]
+  deps = [
+    ":platform",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:test_support",
+    "//content/test:test_support",
+  ]
+}
+
+test("platform_unittests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+  output_name = "blink_platform_unittests"
+
+  sources = platform_test_files
+
+  if (is_win) {
+    sources += [ "text/LocaleWinTest.cpp" ]
+  } else if (is_mac) {
+    sources += [ "text/LocaleMacTest.cpp" ]
+  } else if (is_posix) {
+    sources += [ "text/LocaleICUTest.cpp" ]
   }
 
-  test("platform_unittests") {
-    visibility = []  # Allow re-assignment of list.
-    visibility = [ "*" ]
-    output_name = "blink_platform_unittests"
+  sources += [ "testing/RunAllTests.cpp" ]
 
-    sources = platform_test_files
+  configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
 
-    if (is_win) {
-      sources += [ "text/LocaleWinTest.cpp" ]
-    } else if (is_mac) {
-      sources += [ "text/LocaleMacTest.cpp" ]
-    } else if (is_posix) {
-      sources += [ "text/LocaleICUTest.cpp" ]
-    }
+  deps = [
+    ":blink_common",
+    ":platform",
+    ":test_support",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/harfbuzz-ng",
+    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:test_support",
+    "//url",
+  ]
 
-    sources += [ "testing/RunAllTests.cpp" ]
+  defines = [ "INSIDE_BLINK" ]
 
-    configs += [
-      "//third_party/WebKit/Source/wtf:wtf_config",
-      "//third_party/WebKit/Source:config",
-    ]
-
-    deps = [
-      ":blink_common",
-      ":platform",
-      ":test_support",
-      "//base",
-      "//base/allocator",
-      "//base/test:test_support",
-      "//skia",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/harfbuzz-ng",
-      "//third_party/WebKit/Source/wtf",
-      "//third_party/WebKit/Source/wtf:test_support",
-      "//url",
-    ]
-
-    defines = [ "INSIDE_BLINK" ]
-
-    include_dirs = [ "$root_gen_dir/blink" ]
-  }
+  include_dirs = [ "$root_gen_dir/blink" ]
 }
 
 if (current_cpu == "arm") {

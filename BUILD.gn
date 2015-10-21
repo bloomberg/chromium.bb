@@ -534,20 +534,13 @@ group("both_gn_and_gyp") {
       "//chrome/test:interactive_ui_tests",  # TODO(GYP)
       "//chrome/test:sync_integration_tests",  # TODO(GYP)
       "//chrome/test:unit_tests",  # TODO(GYP)
-      "//components:components_browsertests",  # TODO(GYP)
-      "//components:components_unittests",  # TODO(GYP)
       "//content/test:content_browsertests",  # TODO(GYP)
       "//content/test:content_perftests",  # TODO(GYP)
-      "//device:device_unittests",  # TODO(GYP)
-      "//extensions:extensions_browsertests",  # TODO(GYP)
-      "//extensions:extensions_unittests",  # TODO(GYP)
-      "//mojo",  # TODO(GYP)
-      "//mojo/application/public/cpp",  # TODO(GYP)
+      "//extensions:extensions_browsertests",  # TODO(GYP) Needs ContentMain
 
-      # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
-      "//third_party/WebKit/Source/platform:heap_unittests",
-      "//third_party/WebKit/Source/platform:platform_unittests",
-      "//third_party/WebKit/Source/web:webkit_unit_tests",
+      # Mojo in GN contains some things which are never compiled in GYP on Mac,
+      # so compilation fails on Mac. They need porting.
+      "//mojo",  # TODO(GYP)
     ]
   }
 

@@ -82,6 +82,7 @@ source_set("test_support") {
       "//ppapi/shared_impl:test_support",
       "//storage/browser",
       "//storage/common",
+      "//ui/compositor:test_support",
       "//ui/surface",
       "//v8",
     ]

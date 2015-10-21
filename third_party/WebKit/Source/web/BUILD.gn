@@ -15,9 +15,8 @@ web_gypi = exec_script("//build/gypi_to_gn.py",
                        [ rebase_path("web.gypi") ],
                        "scope",
                        [ "web.gypi" ])
+web_unittest_files = web_gypi.web_unittest_files
 if (!is_mac) {
-  # TODO(GYP): Can't link Blink binaries yet on mac.
-  web_unittest_files = web_gypi.web_unittest_files
   web_unittest_files += [ "tests/ScrollAnimatorNoneTest.cpp" ]
 }
 
@@ -101,46 +100,43 @@ source_set("test_support") {
 }
 
 # GYP version: WebKit/Source/web/web_tests.gyp:webkit_unit_tests
-if (!is_mac) {
-  # TODO(GYP): Can't link Blink binaries yet on mac.
-  test("webkit_unit_tests") {
-    visibility = []  # Allow re-assignment of list.
-    visibility = [ "*" ]
+test("webkit_unit_tests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
 
-    deps = [
-      ":test_support",
-      ":web",
-      "//base",
-      "//base/test:test_support",
-      "//base:i18n",
-      "//content/test:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/WebKit/Source/platform:test_support",
-      "//third_party/WebKit/Source/wtf:test_support",
-      "//third_party/libwebp",
-      "//third_party/zlib",
-      "//url",
-      "//v8",
-    ]
+  deps = [
+    ":test_support",
+    ":web",
+    "//base",
+    "//base/test:test_support",
+    "//base:i18n",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/platform:test_support",
+    "//third_party/WebKit/Source/wtf:test_support",
+    "//third_party/libwebp",
+    "//third_party/zlib",
+    "//url",
+    "//v8",
+  ]
 
-    sources = [
-      "tests/RunAllTests.cpp",
-    ]
+  sources = [
+    "tests/RunAllTests.cpp",
+  ]
 
-    configs += [ "//third_party/WebKit/Source:config" ]
+  configs += [ "//third_party/WebKit/Source:config" ]
 
-    if (!is_component_build) {
-      deps += [ "//third_party/WebKit/Source/core" ]
+  if (!is_component_build) {
+    deps += [ "//third_party/WebKit/Source/core" ]
 
-      configs += [ "//third_party/WebKit/Source:inside_blink" ]
+    configs += [ "//third_party/WebKit/Source:inside_blink" ]
 
-      sources += web_unittest_files
-      sources += bindings_unittest_files
-      sources += core_unittest_files
-      sources += modules_unittest_files
-      sources += platform_unittest_support_files
-      sources += platform_web_unittest_files
-    }
+    sources += web_unittest_files
+    sources += bindings_unittest_files
+    sources += core_unittest_files
+    sources += modules_unittest_files
+    sources += platform_unittest_support_files
+    sources += platform_web_unittest_files
   }
 }
