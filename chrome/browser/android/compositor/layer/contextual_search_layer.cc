@@ -121,9 +121,8 @@ void ContextualSearchLayer::SetProperties(
   panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
   panel_shadow_->SetAperture(panel_shadow_resource->aperture);
   panel_shadow_->SetBounds(shadow_bounds);
-  gfx::Point shadow_position(
-      -shadow_res_padding.origin().x(),
-      -shadow_res_padding.origin().y());
+  gfx::PointF shadow_position(-shadow_res_padding.origin().x(),
+                              -shadow_res_padding.origin().y());
   panel_shadow_->SetPosition(shadow_position);
 
   // ---------------------------------------------------------------------------

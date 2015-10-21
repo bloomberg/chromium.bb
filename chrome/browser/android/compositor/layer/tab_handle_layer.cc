@@ -90,7 +90,7 @@ void TabHandleLayer::SetProperties(
   }
   gfx::Size tab_bounds(width, height);
 
-  layer_->SetPosition(gfx::Point(x, y));
+  layer_->SetPosition(gfx::PointF(x, y));
   DecorationTitle* title_layer = nullptr;
   if (layer_title_cache_)
     title_layer = layer_title_cache_->GetTitleLayer(id);
@@ -144,7 +144,7 @@ void TabHandleLayer::SetProperties(
       title_x += original_x;
       title_y += original_y;
     }
-    title_layer->layer()->SetPosition(gfx::Point(title_x, title_y));
+    title_layer->layer()->SetPosition(gfx::PointF(title_x, title_y));
     if (is_loading) {
       title_layer->SetIsLoading(true);
       title_layer->SetSpinnerRotation(spinner_rotation);

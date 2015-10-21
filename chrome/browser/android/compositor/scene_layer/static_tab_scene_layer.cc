@@ -72,7 +72,7 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
 
   // Set up the content layer and move it to the proper position.
   content_layer_->layer()->SetBounds(gfx::Size(width, height));
-  content_layer_->layer()->SetPosition(gfx::Point(x, y));
+  content_layer_->layer()->SetPosition(gfx::PointF(x, y));
   content_layer_->SetProperties(
       id, can_use_live_layer, static_to_view_blend,
       should_override_content_alpha, content_alpha_override, saturation,
@@ -105,7 +105,7 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
     y += content_viewport_offset.y();
   }
 
-  content_layer_->layer()->SetPosition(gfx::Point(x, y));
+  content_layer_->layer()->SetPosition(gfx::PointF(x, y));
   content_layer_->layer()->SetIsDrawable(true);
 
   layer_->AddChild(content_layer_->layer());

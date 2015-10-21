@@ -50,7 +50,7 @@ void ToolbarLayer::PushResource(
 
   anonymize_layer_->SetHideLayerAndSubtree(!anonymize);
   if (anonymize) {
-    anonymize_layer_->SetPosition(resource->aperture.origin());
+    anonymize_layer_->SetPosition(gfx::PointF(resource->aperture.origin()));
     anonymize_layer_->SetBounds(resource->aperture.size());
     anonymize_layer_->SetBackgroundColor(toolbar_textbox_background_color);
   }

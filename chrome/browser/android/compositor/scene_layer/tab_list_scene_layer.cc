@@ -125,7 +125,7 @@ void TabListSceneLayer::PutLayer(JNIEnv* env,
   }
 
   background_color_ = background_color;
-  own_tree_->SetPosition(gfx::Point(viewport_x, viewport_y));
+  own_tree_->SetPosition(gfx::PointF(viewport_x, viewport_y));
   own_tree_->SetBounds(gfx::Size(viewport_width, viewport_height));
 
   scoped_refptr<TabLayer> layer = GetNextLayer(incognito);
