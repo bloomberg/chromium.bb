@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(dbeam): should these be global like this?
+var Page = cr.ui.pageManager.Page;
 var PageManager = cr.ui.pageManager.PageManager;
 var BluetoothPairing = options.BluetoothPairing;
-var FakeBluetoothOverlayParent = options.FakeBluetoothOverlayParent;
 
 /** @override */
 PageManager.closeOverlay = function() {
@@ -13,12 +14,13 @@ PageManager.closeOverlay = function() {
 
 /**
  * Listener for the |beforeunload| event.
+ * TODO(dbeam): probably ought to be using addEventListener() instead.
  */
 window.onbeforeunload = function() {
   PageManager.willClose();
 };
 
-/*
+/**
  * Override calls from BluetoothOptionsHandler.
  */
 cr.define('options', function() {
@@ -61,9 +63,9 @@ function load() {
 
   chrome.send('coreOptionsInitialize');
 
-  PageManager.register(FakeBluetoothOverlayParent.getInstance());
-  PageManager.registerOverlay(BluetoothPairing.getInstance(),
-                              FakeBluetoothOverlayParent.getInstance());
+  var fakeParent = new Page('bluetooth', '', 'bluetooth-container');
+  PageManager.register(fakeParent);
+  PageManager.registerOverlay(BluetoothPairing.getInstance(), fakeParent);
 
   var device = {};
   var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
