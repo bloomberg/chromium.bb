@@ -33,7 +33,8 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
   enum PipelineStatus {
     PIPELINE_STATUS_OK,
     PIPELINE_STATUS_BUSY,
-    PIPELINE_STATUS_ERROR
+    PIPELINE_STATUS_ERROR,
+    PIPELINE_STATUS_ASYNC_ERROR,
   };
 
   FakeAudioDecoder()
@@ -61,6 +62,10 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
         return MediaPipelineBackend::kBufferPending;
       case PIPELINE_STATUS_ERROR:
         return MediaPipelineBackend::kBufferFailed;
+      case PIPELINE_STATUS_ASYNC_ERROR:
+        pending_push_ = true;
+        delegate_->OnDecoderError(this);
+        return MediaPipelineBackend::kBufferPending;
       default:
         NOTREACHED();
         return MediaPipelineBackend::kBufferFailed;
@@ -80,8 +85,7 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
   const AudioConfig& config() const { return config_; }
   float volume() const { return volume_; }
   void set_pipeline_status(PipelineStatus status) {
-    if (pipeline_status_ == PIPELINE_STATUS_BUSY &&
-        status == PIPELINE_STATUS_OK && pending_push_) {
+    if (status == PIPELINE_STATUS_OK && pending_push_) {
       pending_push_ = false;
       delegate_->OnPushBufferComplete(this,
                                       MediaPipelineBackend::kBufferSuccess);
@@ -557,6 +561,40 @@ TEST_F(CastAudioOutputStreamTest, DeviceError) {
 
   // Make sure that AudioOutputStream attempted to push the initial frame.
   EXPECT_LT(0u, audio_decoder->pushed_buffer_count());
+  // AudioOutputStream must report error to source callback.
+  EXPECT_TRUE(source_callback->error());
+
+  StopStream(stream);
+  CloseStream(stream);
+}
+
+TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
+  ::media::AudioOutputStream* stream = CreateStream();
+  ASSERT_TRUE(stream);
+  EXPECT_TRUE(OpenStream(stream));
+
+  FakeAudioDecoder* audio_decoder = GetAudio();
+  ASSERT_TRUE(audio_decoder);
+  audio_decoder->set_pipeline_status(
+      FakeAudioDecoder::PIPELINE_STATUS_ASYNC_ERROR);
+
+  scoped_ptr<FakeAudioSourceCallback> source_callback(
+      new FakeAudioSourceCallback);
+  StartStream(stream, source_callback.get());
+
+  // Make sure that one frame was pushed.
+  EXPECT_EQ(1u, audio_decoder->pushed_buffer_count());
+
+  // Unblock the pipeline and verify that PushFrame resumes.
+  // (have to post because this directly calls buffer complete)
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeAudioDecoder::set_pipeline_status,
+                 base::Unretained(audio_decoder),
+                 FakeAudioDecoder::PIPELINE_STATUS_OK));
+
+  RunUntilIdle(audio_task_runner_.get());
+  RunUntilIdle(backend_task_runner_.get());
   // AudioOutputStream must report error to source callback.
   EXPECT_TRUE(source_callback->error());
 

@@ -135,9 +135,9 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
 
     backend_buffer_.set_buffer(decoder_buffer);
 
+    completion_cb_ = completion_cb;
     MediaPipelineBackend::BufferStatus status =
         decoder_->PushBuffer(nullptr /* decrypt_context */, &backend_buffer_);
-    completion_cb_ = completion_cb;
     if (status != MediaPipelineBackend::kBufferPending)
       OnPushBufferComplete(decoder_, status);
   }
@@ -157,6 +157,10 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
       MediaPipelineBackend::BufferStatus status) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK_NE(status, MediaPipelineBackend::kBufferPending);
+
+    // |completion_cb_| may be null if OnDecoderError was called.
+    if (completion_cb_.is_null())
+      return;
 
     base::ResetAndReturn(&completion_cb_)
         .Run(status == MediaPipelineBackend::kBufferSuccess);
