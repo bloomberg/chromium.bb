@@ -434,6 +434,11 @@ private:
     OwnPtr<TableLayoutAlgorithm> m_tableLayout;
 
     // A sorted list of all unique border values that we want to paint.
+    //
+    // Collapsed borders are SUPER EXPENSIVE to compute. The reason is that we
+    // need to compare a cells border against all the adjoining cells, rows,
+    // row groups, column, column groups and table. Thus we cache them in this
+    // field.
     CollapsedBorderValues m_collapsedBorders;
     bool m_collapsedBordersValid : 1;
 
