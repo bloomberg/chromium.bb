@@ -22,7 +22,6 @@
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/pepper_cursor_setter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
-#include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/client/plugin/pepper_video_renderer.h"
 #include "remoting/client/touch_input_scaler.h"
 #include "remoting/proto/event.pb.h"
@@ -243,8 +242,7 @@ class ChromotingInstance : public ClientUserInterface,
 
   bool initialized_;
 
-  PepperPluginThreadDelegate plugin_thread_delegate_;
-  scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
   scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
   scoped_ptr<jingle_glue::JingleThreadWrapper> thread_wrapper_;
   ClientContext context_;

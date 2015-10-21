@@ -42,6 +42,7 @@
 #include "remoting/client/normalizing_input_filter_mac.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/client/plugin/pepper_audio_player.h"
+#include "remoting/client/plugin/pepper_main_thread_task_runner.h"
 #include "remoting/client/plugin/pepper_mouse_locker.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_video_renderer_2d.h"
@@ -137,7 +138,7 @@ base::LazyInstance<base::Lock>::Leaky g_logging_lock =
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       initialized_(false),
-      plugin_task_runner_(new PluginThreadTaskRunner(&plugin_thread_delegate_)),
+      plugin_task_runner_(new PepperMainThreadTaskRunner()),
       context_(plugin_task_runner_.get()),
       input_tracker_(&mouse_input_filter_),
       touch_input_scaler_(&input_tracker_),
@@ -191,11 +192,6 @@ ChromotingInstance::~ChromotingInstance() {
   // Unregister this instance so that debug log messages will no longer be sent
   // to it. This will stop all logging in all Chromoting instances.
   UnregisterLoggingInstance();
-
-  plugin_task_runner_->Quit();
-
-  // Ensure that nothing touches the plugin thread delegate after this point.
-  plugin_task_runner_->DetachAndRunShutdownLoop();
 
   // Stopping the context shuts down all chromoting threads.
   context_.Stop();
