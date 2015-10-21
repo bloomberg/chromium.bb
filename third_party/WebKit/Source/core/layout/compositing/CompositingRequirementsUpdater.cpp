@@ -250,7 +250,7 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         }
     }
 
-    if (reasonsToComposite & CompositingReasonOverflowScrollingTouch)
+    if ((reasonsToComposite & CompositingReasonOverflowScrollingTouch) && !layer->isRootLayer())
         currentRecursionData.m_hasCompositedScrollingAncestor = true;
 
     // Next, accumulate reasons related to overlap.
