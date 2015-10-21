@@ -11,7 +11,7 @@ label seems suitable.
 * Identify new network issues.
 * Request data about recent Cr-Internals-Network issue.
 * Investigate each recent Cr-Internals-Network issue.
-* Monitor UMA histograms and gasper alerts.
+* Monitor UMA histograms and Chirp/Gasper alerts.
 
 ### Best effort:
 * Investigate unowned and owned-but-forgotten net/ crashers
@@ -67,11 +67,11 @@ uniform, predictable two day commitment for all triagers.
       Available.  Future triagers should ignore bugs with this status, unless
       investigating stale bugs.
 
-* Monitor UMA histograms and gasper alerts.
+* Monitor UMA histograms and Chirp/Gasper alerts.
 
-    * For each Gasper alert that fires, the triager should determine if the
-      alert is real (not due to noise), and file a bug with the appropriate
-      label if so.  Note that if no label more specific than
+    * For each Chirp and Gasper alert that fires, the triager should determine
+      if the alert is real (not due to noise), and file a bug with the
+      appropriate label if so.  Note that if no label more specific than
       Cr-Internals-Network is appropriate, the responsibility remains with the
       triager to continue investigating the bug, as above.
 

@@ -159,10 +159,16 @@
   sublabel applies, or only the Cr-Internals-Network-HTTP sublabel applies, and
   there's no clear owner), try to figure out the exact cause.
 
-## Monitoring UMA histograms and gasper alerts
+## Monitoring UMA histograms and Chirp/Gasper alerts
 
-For each Gasper alert that fires, determine if it's a real alert and file a bug
-if so.
+Sign up to chrome-network-debugging@google.com mailing list to receive automated
+e-mails about UMA alerts.  Chirp is the new alert system, sending automated
+e-mails with sender address finch-chirp@google.com.  Gasper is the old alert
+system, sending automated e-mails with sender address gasper-alerts@google.com.
+While Chirp is of higher priority, Gasper is not deprecated yet, so both alerts
+should be monitored for the time being.
+
+For each alert that fires, determine if it's a real alert and file a bug if so.
 
 * Don't file if the alert is coincident with a major volume change.  The volume
   at a particular date can be determined by hovering the mouse over the
@@ -178,9 +184,8 @@ if so.
     * SimpleCache on Windows
     * DiskCache on Android.
 
-For each Gasper alert, respond to chrome-network-debugging@google.com with a
-summary of the action you've taken and why, including issue link if an issue
-was filed.
+For each alert, respond to chrome-network-debugging@google.com with a summary of
+the action you've taken and why, including issue link if an issue was filed.
 
 ## Investigating crashers
 
