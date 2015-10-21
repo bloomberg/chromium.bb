@@ -830,8 +830,9 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
   EXPECT_TRUE(window->IsVisible());
 }
 
-// Check that a full screen window is staying full screen in maximize mode,
-// and that it returns to full screen thereafter (if left).
+// Check that a full screen window remains full screen upon entering maximize
+// mode. Furthermore, checks that this window is not full screen upon exiting
+// maximize mode if it was un-full-screened while in maximize mode.
 TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   gfx::Rect rect(20, 140, 100, 100);
   scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
@@ -865,12 +866,41 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 
-  // Ending the maximize mode should return to full screen and the shelf should
-  // be hidden again.
+  // We left fullscreen mode while in maximize mode, so the window should
+  // remain maximized and the shelf should not change state upon exiting
+  // maximize mode.
   DestroyMaximizeModeWindowManager();
-  EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_FALSE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+}
+
+// Verifies that if a window is un-full-screened while in maximize mode,
+// other changes to that window's state (such as minimizing it) are
+// preserved upon exiting maximize mode.
+TEST_F(MaximizeModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
+  gfx::Rect rect(20, 140, 100, 100);
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+
+  ShelfLayoutManager* shelf =
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+
+  // Allow the shelf to hide and enter full screen.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event);
+  ASSERT_FALSE(window_state->IsMinimized());
+
+  // Enter maximize mode, exit full screen, and then minimize the window.
+  CreateMaximizeModeWindowManager();
+  window_state->OnWMEvent(&event);
+  window_state->Minimize();
+  ASSERT_TRUE(window_state->IsMinimized());
+
+  // The window should remain minimized when exiting maximize mode.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_TRUE(window_state->IsMinimized());
 }
 
 // Check that full screen mode can be turned on in maximized mode and remains
