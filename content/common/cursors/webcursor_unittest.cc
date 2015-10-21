@@ -222,7 +222,7 @@ TEST(WebCursorTest, AlphaConversion) {
   cursor_info.image_scale_factor = 1;
   WebCursor custom_cursor;
 
-  // This round trip will convert the cursor to unpremultiplied form
+  // This round trip will convert the cursor to unpremultiplied form.
   custom_cursor.InitFromCursorInfo(cursor_info);
   custom_cursor.GetCursorInfo(&cursor_info);
   {
@@ -232,8 +232,8 @@ TEST(WebCursorTest, AlphaConversion) {
               SkPreMultiplyColor(*cursor_info.custom_image.getAddr32(0,0)));
   }
 
-  // Second round trip should not do any conversion because data is alread
-  // unpremultiplied
+  // Second round trip should not do any conversion because data is already
+  // unpremultiplied.
   custom_cursor.InitFromCursorInfo(cursor_info);
   custom_cursor.GetCursorInfo(&cursor_info);
   {
@@ -242,6 +242,19 @@ TEST(WebCursorTest, AlphaConversion) {
     EXPECT_EQ(testColor,
               SkPreMultiplyColor(*cursor_info.custom_image.getAddr32(0,0)));
   }
+
+#if defined(OS_MACOSX)
+  // On MacOS, test roundtrip through NSCursor conversion.
+  WebCursor custom_cursor_copy;
+  custom_cursor_copy.InitFromNSCursor(custom_cursor.GetNativeCursor());
+  custom_cursor_copy.GetCursorInfo(&cursor_info);
+  {
+    SkAutoLockPixels lock(cursor_info.custom_image);
+    EXPECT_EQ(kUnpremul_SkAlphaType, cursor_info.custom_image.alphaType());
+    EXPECT_EQ(testColor,
+              SkPreMultiplyColor(*cursor_info.custom_image.getAddr32(0,0)));
+  }
+#endif
 }
 
 }  // namespace content

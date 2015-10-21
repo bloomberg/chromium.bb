@@ -151,7 +151,9 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
   }
 
   SkBitmap bitmap;
-  if (bitmap.tryAllocN32Pixels(size.width(), size.height()) && data)
+  SkImageInfo image_info = SkImageInfo::MakeN32(size.width(), size.height(),
+                                                kUnpremul_SkAlphaType);
+  if (bitmap.tryAllocPixels(image_info) && data)
     memcpy(bitmap.getAddr32(0, 0), data, data_size);
   else
     bitmap.eraseARGB(0, 0, 0, 0);
