@@ -21,10 +21,6 @@ TestMetricsServiceClient::TestMetricsServiceClient()
 TestMetricsServiceClient::~TestMetricsServiceClient() {
 }
 
-metrics::MetricsService* TestMetricsServiceClient::GetMetricsService() {
-  return nullptr;
-}
-
 void TestMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   client_id_ = client_id;

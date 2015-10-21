@@ -179,10 +179,6 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif  // defined(ENABLE_PLUGINS)
 }
 
-metrics::MetricsService* ChromeMetricsServiceClient::GetMetricsService() {
-  return metrics_service_.get();
-}
-
 void ChromeMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   crash_keys::SetMetricsClientIdFromGUID(client_id);
@@ -280,7 +276,7 @@ base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
 #endif
 }
 
-void ChromeMetricsServiceClient::OnPluginLoadingError(
+void ChromeMetricsServiceClient::LogPluginLoadingError(
     const base::FilePath& plugin_path) {
 #if defined(ENABLE_PLUGINS)
   plugin_metrics_provider_->LogPluginLoadingError(plugin_path);

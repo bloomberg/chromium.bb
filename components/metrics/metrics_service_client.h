@@ -15,26 +15,15 @@
 #include "base/time/time.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace metrics {
 
 class MetricsLogUploader;
-class MetricsService;
 
 // An abstraction of operations that depend on the embedder's (e.g. Chrome)
 // environment.
 class MetricsServiceClient {
  public:
   virtual ~MetricsServiceClient() {}
-
-  // Returns the MetricsService instance that this client is associated with.
-  // With the exception of testing contexts, the returned instance must be valid
-  // for the lifetime of this object (typically, the embedder's client
-  // implementation will own the MetricsService instance being returned).
-  virtual MetricsService* GetMetricsService() = 0;
 
   // Registers the client id with other services (e.g. crash reporting), called
   // when metrics recording gets enabled.
@@ -90,9 +79,6 @@ class MetricsServiceClient {
   // Returns the name of a key under HKEY_CURRENT_USER that can be used to store
   // backups of metrics data. Unused except on Windows.
   virtual base::string16 GetRegistryBackupKey();
-
-  // Called on plugin loading errors.
-  virtual void OnPluginLoadingError(const base::FilePath& plugin_path) {}
 };
 
 }  // namespace metrics

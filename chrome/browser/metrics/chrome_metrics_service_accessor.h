@@ -65,7 +65,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ::FlashDOMHandler;
   friend class BrowserProcessImpl;
   friend class ChromeExtensionDownloaderFactory;
-  friend class ChromeMetricsServicesManagerClient;
   friend class ChromeRenderMessageFilter;
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
@@ -73,6 +72,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend void InitiateMetricsReportingChange(
       bool, const OnMetricsReportingCallbackType&);
+  friend class MetricsServicesManager;
   friend class options::BrowserOptionsHandler;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class safe_browsing::IncidentReportingService;

@@ -98,10 +98,6 @@ void CastMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kMetricsOldClientID, std::string());
 }
 
-::metrics::MetricsService* CastMetricsServiceClient::GetMetricsService() {
-  return metrics_service_.get();
-}
-
 void CastMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   client_id_ = client_id;

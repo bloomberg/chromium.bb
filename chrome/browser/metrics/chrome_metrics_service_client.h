@@ -29,6 +29,10 @@ class PrefService;
 class SigninStatusMetricsProvider;
 #endif
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace metrics {
 class DriveMetricsProvider;
 class MetricsService;
@@ -54,7 +58,6 @@ class ChromeMetricsServiceClient
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // metrics::MetricsServiceClient:
-  metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   void OnRecordingDisabled() override;
   bool IsOffTheRecordSessionActive() override;
@@ -71,7 +74,10 @@ class ChromeMetricsServiceClient
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
-  void OnPluginLoadingError(const base::FilePath& plugin_path) override;
+
+  metrics::MetricsService* metrics_service() { return metrics_service_.get(); }
+
+  void LogPluginLoadingError(const base::FilePath& plugin_path);
 
  private:
   explicit ChromeMetricsServiceClient(
