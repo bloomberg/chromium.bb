@@ -25,10 +25,10 @@ namespace {
 
 // TODO(llandwerlin): Libvpx doesn't seem to have a maximum frame size
 // limitation. We currently limit the size of the frames to encode at
-// 1080p (%64 pixels blocks), this seems like a reasonable limit for
+// 2160p (%64 pixels blocks), this seems like a reasonable limit for
 // software encoding.
-const int32_t kMaxWidth = 1920;
-const int32_t kMaxHeight = 1088;
+const int32_t kMaxWidth = 4096;
+const int32_t kMaxHeight = 2176;
 
 // Bitstream buffer size.
 const uint32_t kBitstreamBufferSize = 2 * 1024 * 1024;
