@@ -51706,6 +51706,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Decoded.Vp8.Qp" units="qp value">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average QP (quantizer value) per frame for a received VP8 video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.DecodedFramesPerSecond" units="fps">
   <owner>asapersson@chromium.org</owner>
   <summary>
