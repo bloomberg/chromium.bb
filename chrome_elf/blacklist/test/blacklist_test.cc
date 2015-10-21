@@ -13,11 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/blacklist/test/blacklist_test_main_dll.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "version.h"  // NOLINT
 
 const wchar_t kTestDllName1[] = L"blacklist_test_dll_1.dll";
 const wchar_t kTestDllName2[] = L"blacklist_test_dll_2.dll";

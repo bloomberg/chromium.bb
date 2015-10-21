@@ -26,8 +26,8 @@ shared_library("port_monitor") {
     ":lib",
     ":resources",
     "//base",
-    "//chrome:version_header",
     "//chrome/common:constants",
+    "//chrome/common:version_header",
   ]
 
   libs = [ "userenv.lib" ]
