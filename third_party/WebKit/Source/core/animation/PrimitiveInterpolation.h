@@ -41,6 +41,11 @@ public:
         return adoptPtr(new PairwisePrimitiveInterpolation(type, start, end, nonInterpolableValue));
     }
 
+    static PassOwnPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PairwiseInterpolationComponent& component)
+    {
+        return adoptPtr(new PairwisePrimitiveInterpolation(type, component.startInterpolableValue.release(), component.endInterpolableValue.release(), component.nonInterpolableValue.release()));
+    }
+
     PassOwnPtr<InterpolationValue> initialValue() const
     {
         return InterpolationValue::create(m_type, m_start->clone(), m_nonInterpolableValue);
@@ -52,7 +57,10 @@ private:
         , m_start(start)
         , m_end(end)
         , m_nonInterpolableValue(nonInterpolableValue)
-    { }
+    {
+        ASSERT(m_start);
+        ASSERT(m_end);
+    }
 
     void interpolateValue(double fraction, OwnPtr<InterpolationValue>& result) const final
     {

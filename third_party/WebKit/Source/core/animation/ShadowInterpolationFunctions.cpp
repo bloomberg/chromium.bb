@@ -54,13 +54,14 @@ bool ShadowInterpolationFunctions::nonInterpolableValuesAreCompatible(const NonI
     return toShadowNonInterpolableValue(*a).style() == toShadowNonInterpolableValue(*b).style();
 }
 
-PassRefPtr<NonInterpolableValue> ShadowInterpolationFunctions::mergeNonInterpolableValues(const NonInterpolableValue* a, const NonInterpolableValue* b)
+PairwiseInterpolationComponent ShadowInterpolationFunctions::mergeSingleConversions(InterpolationComponent& start, InterpolationComponent& end)
 {
-    ASSERT(nonInterpolableValuesAreCompatible(a, b));
-    return const_cast<NonInterpolableValue*>(b); // Take ref.
+    if (!nonInterpolableValuesAreCompatible(start.nonInterpolableValue.get(), end.nonInterpolableValue.get()))
+        return nullptr;
+    return PairwiseInterpolationComponent(start.interpolableValue.release(), end.interpolableValue.release(), start.nonInterpolableValue.release());
 }
 
-InterpolationComponentValue ShadowInterpolationFunctions::convertShadowData(const ShadowData& shadowData, double zoom)
+InterpolationComponent ShadowInterpolationFunctions::convertShadowData(const ShadowData& shadowData, double zoom)
 {
     OwnPtr<InterpolableList> interpolableList = InterpolableList::create(ShadowComponentIndexCount);
     interpolableList->set(ShadowX, LengthInterpolationType::createInterpolablePixels(shadowData.x() / zoom));
@@ -68,10 +69,10 @@ InterpolationComponentValue ShadowInterpolationFunctions::convertShadowData(cons
     interpolableList->set(ShadowBlur, LengthInterpolationType::createInterpolablePixels(shadowData.blur() / zoom));
     interpolableList->set(ShadowSpread, LengthInterpolationType::createInterpolablePixels(shadowData.spread() / zoom));
     interpolableList->set(ShadowColor, ColorInterpolationType::createInterpolableColor(shadowData.color()));
-    return InterpolationComponentValue(interpolableList.release(), ShadowNonInterpolableValue::create(shadowData.style()));
+    return InterpolationComponent(interpolableList.release(), ShadowNonInterpolableValue::create(shadowData.style()));
 }
 
-InterpolationComponentValue ShadowInterpolationFunctions::maybeConvertCSSValue(const CSSValue& value)
+InterpolationComponent ShadowInterpolationFunctions::maybeConvertCSSValue(const CSSValue& value)
 {
     if (!value.isShadowValue())
         return nullptr;
@@ -98,7 +99,7 @@ InterpolationComponentValue ShadowInterpolationFunctions::maybeConvertCSSValue(c
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(lengths); i++) {
         if (lengths[i]) {
-            InterpolationComponentValue component = LengthInterpolationType::maybeConvertCSSValue(*lengths[i]);
+            InterpolationComponent component = LengthInterpolationType::maybeConvertCSSValue(*lengths[i]);
             if (!component)
                 return nullptr;
             ASSERT(!component.nonInterpolableValue);
@@ -117,7 +118,7 @@ InterpolationComponentValue ShadowInterpolationFunctions::maybeConvertCSSValue(c
         interpolableList->set(ShadowColor, ColorInterpolationType::createInterpolableColor(StyleColor::currentColor()));
     }
 
-    return InterpolationComponentValue(interpolableList.release(), ShadowNonInterpolableValue::create(style));
+    return InterpolationComponent(interpolableList.release(), ShadowNonInterpolableValue::create(style));
 }
 
 void ShadowInterpolationFunctions::composite(OwnPtr<InterpolableValue>& underlyingInterpolableValue, RefPtr<NonInterpolableValue>& underlyingNonInterpolableValue, double underlyingFraction, const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)

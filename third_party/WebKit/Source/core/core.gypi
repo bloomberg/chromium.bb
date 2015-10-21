@@ -902,6 +902,8 @@
             'animation/LengthSVGInterpolation.h',
             'animation/LengthStyleInterpolation.cpp',
             'animation/LengthStyleInterpolation.h',
+            'animation/ListInterpolationFunctions.cpp',
+            'animation/ListInterpolationFunctions.h',
             'animation/NonInterpolableValue.h',
             'animation/NumberInterpolationType.cpp',
             'animation/NumberInterpolationType.h',

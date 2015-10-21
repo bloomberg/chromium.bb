@@ -42,12 +42,9 @@ PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKey
     if (keyframe.isNeutral() && !underlyingValue)
         return nullptr;
     for (const auto& interpolationType : m_interpolationTypes) {
-        UnderlyingValue conversionUnderlyingValue;
-        if (underlyingValue && underlyingValue->type() == *interpolationType)
-            conversionUnderlyingValue.set(underlyingValue.get());
-        if (keyframe.isNeutral() && !conversionUnderlyingValue)
+        if (keyframe.isNeutral() && underlyingValue->type() != *interpolationType)
             continue;
-        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, conversionUnderlyingValue, m_conversionCheckers);
+        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, underlyingValue, m_conversionCheckers);
         if (result)
             return result.release();
     }
@@ -95,10 +92,7 @@ bool InvalidatableStyleInterpolation::isCacheValid(const StyleResolverState& sta
             return false;
     }
     for (const auto& checker : m_conversionCheckers) {
-        UnderlyingValue checkedUnderlyingValue;
-        if (underlyingValue && underlyingValue->type() == checker->type())
-            checkedUnderlyingValue.set(underlyingValue.get());
-        if (!checker->isValid(state, checkedUnderlyingValue))
+        if (!checker->isValid(state, underlyingValue))
             return false;
     }
     return true;

@@ -82,7 +82,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const
     return InterpolationValue::create(*this, values.release(), LengthNonInterpolableValue::create(length.hasPercent()));
 }
 
-InterpolationComponentValue LengthInterpolationType::maybeConvertCSSValue(const CSSValue& value)
+InterpolationComponent LengthInterpolationType::maybeConvertCSSValue(const CSSValue& value)
 {
     if (!value.isPrimitiveValue())
         return nullptr;
@@ -105,7 +105,7 @@ InterpolationComponentValue LengthInterpolationType::maybeConvertCSSValue(const 
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
         values->set(i, InterpolableNumber::create(valueArray.at(i)));
 
-    return InterpolationComponentValue(values.release(), LengthNonInterpolableValue::create(hasPercentage));
+    return InterpolationComponent(values.release(), LengthNonInterpolableValue::create(hasPercentage));
 }
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
@@ -168,7 +168,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const 
         return InterpolationValue::create(*this, createInterpolablePixels(pixels));
     }
 
-    InterpolationComponentValue component = maybeConvertCSSValue(value);
+    InterpolationComponent component = maybeConvertCSSValue(value);
     if (!component)
         return nullptr;
     return InterpolationValue::create(*this, component);
@@ -192,7 +192,7 @@ PassOwnPtr<PairwisePrimitiveInterpolation> LengthInterpolationType::mergeSingleC
 
 void LengthInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
 {
-    InterpolationComponentValue& underlyingComponent = underlyingValue.mutableComponent();
+    InterpolationComponent& underlyingComponent = underlyingValue.mutableComponent();
     underlyingComponent.interpolableValue->scaleAndAdd(underlyingFraction, value.interpolableValue());
     underlyingComponent.nonInterpolableValue = LengthNonInterpolableValue::merge(underlyingValue->nonInterpolableValue(), value.nonInterpolableValue());
 }

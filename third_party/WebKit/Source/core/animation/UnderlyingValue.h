@@ -34,7 +34,7 @@ public:
         m_valueOwner = interpolationValue;
         m_value = m_valueOwner.get();
     }
-    InterpolationComponentValue& mutableComponent()
+    InterpolationComponent& mutableComponent()
     {
         ASSERT(m_value);
         if (!m_valueOwner)

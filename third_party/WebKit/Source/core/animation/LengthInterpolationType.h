@@ -22,7 +22,7 @@ public:
 
     static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
     static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);
-    static InterpolationComponentValue maybeConvertCSSValue(const CSSValue&);
+    static InterpolationComponent maybeConvertCSSValue(const CSSValue&);
 
 private:
     float effectiveZoom(const ComputedStyle&) const;
