@@ -137,11 +137,10 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Docum
     , m_contentFrame(nullptr)
     , m_widget(nullptr)
     , m_sandboxFlags(SandboxNone)
-    , m_wasDisconnected(false)
+    , m_wasConnected(0)
+    , m_wasDisconnected(0)
     , m_wasWidgetAttached(false)
     , m_wasWidgetDetached(false)
-    , m_domWindow(nullptr)
-    , m_document(nullptr)
 {
 }
 
@@ -156,16 +155,13 @@ LayoutPart* HTMLFrameOwnerElement::layoutPart() const
 
 void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
 {
+    ++m_wasConnected;
+
     // Make sure we will not end up with two frames referencing the same owner element.
     ASSERT(!m_contentFrame || m_contentFrame->owner() != this);
     // Disconnected frames should not be allowed to load.
     ASSERT(inDocument());
     m_contentFrame = &frame;
-
-    if (m_contentFrame->isLocalFrame()) {
-        m_domWindow = toLocalFrame(m_contentFrame)->localDOMWindow();
-        m_document = toLocalFrame(m_contentFrame)->localDOMWindow()->document();
-    }
 
     for (ContainerNode* node = this; node; node = node->parentOrShadowHostNode())
         node->incrementConnectedSubframeCount();
@@ -184,7 +180,8 @@ void HTMLFrameOwnerElement::clearContentFrame()
 
 void HTMLFrameOwnerElement::disconnectContentFrame()
 {
-    m_wasDisconnected = true;
+    ++m_wasDisconnected;
+
     // FIXME: Currently we don't do this in removedFrom because this causes an
     // unload event in the subframe which could execute script that could then
     // reach up into this document and then attempt to look back down. We should
