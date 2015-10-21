@@ -240,7 +240,7 @@ if (!is_nacl) {
     }
   }
 
-  if (use_glib && !is_chromeos) {
+  if (use_glib && use_gconf && !is_chromeos) {
     net_shared_configs += [ "//build/config/linux:gconf" ]
     net_shared_deps += [ "//build/linux:gio" ]
   }
@@ -959,7 +959,7 @@ if (!is_ios && !is_android) {
         "//build/config/sanitizers:deps",
       ]
 
-      if (is_desktop_linux && use_gconf) {
+      if (is_desktop_linux && use_gconf && use_glib) {
         configs += [
           "//build/config/linux:gconf",
           "//build/config/linux:glib",
