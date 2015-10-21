@@ -207,11 +207,7 @@ bool ThemePainterDefault::paintMenuList(const LayoutObject& o, const PaintInfo& 
     if (!o.isBox())
         return false;
 
-    const int right = rect.x() + rect.width();
-    const int middle = rect.y() + rect.height() / 2;
-
     WebThemeEngine::ExtraParams extraParams;
-    extraParams.menuList.arrowY = middle;
     const LayoutBox& box = toLayoutBox(o);
     // Match Chromium Win behaviour of showing all borders if any are shown.
     extraParams.menuList.hasBorder = box.borderRight() || box.borderLeft() || box.borderTop() || box.borderBottom();
@@ -229,20 +225,9 @@ bool ThemePainterDefault::paintMenuList(const LayoutObject& o, const PaintInfo& 
     // investigate if we really need fillContentArea.
     extraParams.menuList.fillContentArea = !o.styleRef().hasBackgroundImage() && backgroundColor.alpha();
 
-    if (useMockTheme()) {
-        // The size and position of the drop-down button is different between
-        // the mock theme and the regular aura theme.
-        int spacingTop = box.borderTop() + box.paddingTop();
-        int spacingBottom = box.borderBottom() + box.paddingBottom();
-        int spacingRight = box.borderRight() + box.paddingRight();
-        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
-        extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
-    } else {
-        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 7 : right - 13;
-    }
+    setupMenuListArrow(box, rect, extraParams);
 
     WebCanvas* canvas = i.context->canvas();
-
     Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartMenuList, getWebThemeState(o), WebRect(rect), &extraParams);
     return false;
 }
@@ -252,33 +237,35 @@ bool ThemePainterDefault::paintMenuListButton(const LayoutObject& o, const Paint
     if (!o.isBox())
         return false;
 
-    const int right = rect.x() + rect.width();
-    const int middle = rect.y() + rect.height() / 2;
-
     WebThemeEngine::ExtraParams extraParams;
-    extraParams.menuList.arrowY = middle;
     extraParams.menuList.hasBorder = false;
     extraParams.menuList.hasBorderRadius = o.styleRef().hasBorderRadius();
     extraParams.menuList.backgroundColor = Color::transparent;
     extraParams.menuList.fillContentArea = false;
+    setupMenuListArrow(toLayoutBox(o), rect, extraParams);
 
+    WebCanvas* canvas = i.context->canvas();
+    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartMenuList, getWebThemeState(o), WebRect(rect), &extraParams);
+    return false;
+}
+
+void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect& rect, WebThemeEngine::ExtraParams& extraParams)
+{
+    const int right = rect.x() + rect.width();
+    const int middle = rect.y() + rect.height() / 2;
+
+    extraParams.menuList.arrowY = middle;
     if (useMockTheme()) {
-        const LayoutBox& box = toLayoutBox(o);
         // The size and position of the drop-down button is different between
         // the mock theme and the regular aura theme.
         int spacingTop = box.borderTop() + box.paddingTop();
         int spacingBottom = box.borderBottom() + box.paddingBottom();
         int spacingRight = box.borderRight() + box.paddingRight();
-        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
+        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
         extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
     } else {
-        extraParams.menuList.arrowX = (o.styleRef().direction() == RTL) ? rect.x() + 7 : right - 13;
+        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 7 : right - 13;
     }
-
-    WebCanvas* canvas = i.context->canvas();
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartMenuList, getWebThemeState(o), WebRect(rect), &extraParams);
-    return false;
 }
 
 bool ThemePainterDefault::paintSliderTrack(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)

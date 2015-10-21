@@ -30,8 +30,11 @@
 #define ThemePainterDefault_h
 
 #include "core/paint/ThemePainter.h"
+#include "public/platform/WebThemeEngine.h"
 
 namespace blink {
+
+class LayoutBox;
 
 class ThemePainterDefault final : public ThemePainter {
 private:
@@ -49,6 +52,8 @@ private:
     bool paintSearchField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintSearchFieldCancelButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintSearchFieldResultsDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+
+    void setupMenuListArrow(const LayoutBox&, const IntRect&, WebThemeEngine::ExtraParams&);
 };
 
 } // namespace blink
