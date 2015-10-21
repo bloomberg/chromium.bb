@@ -305,6 +305,7 @@ void ClientSession::OnConnectionAuthenticated(
   desktop_environment_ =
       desktop_environment_factory_->Create(weak_factory_.GetWeakPtr());
   if (!desktop_environment_) {
+    // TODO(sergeyu): Fix the host to return an error code (crbug.com/543334).
     DisconnectSession();
     return;
   }

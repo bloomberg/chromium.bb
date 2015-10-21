@@ -221,10 +221,14 @@ remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = null;
 
-  if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
+  if (error.isNone()) {
+    // This could happen if the host terminates the session before it is
+    // connected.
+    this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+  } else if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
       this.retryOnHostOffline_) {
     this.reconnectOnHostOffline_(error);
-  } else if (!error.isNone()) {
+  } else {
     this.showErrorMessage_(error);
   }
 };
