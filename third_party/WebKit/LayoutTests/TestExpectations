@@ -1560,8 +1560,8 @@ crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Fai
 
 crbug.com/525299 [ MountainLion Mavericks XP Win10 ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 
-crbug.com/240576 fullscreen/api/element-ready-check-containing-iframe.html [ Timeout ]
-crbug.com/240576 virtual/android/fullscreen/api/element-ready-check-containing-iframe.html [ Timeout ]
+crbug.com/240576 fullscreen/api/element-ready-check-containing-iframe.html [ Timeout Text Pass ]
+crbug.com/240576 virtual/android/fullscreen/api/element-ready-check-containing-iframe.html [ Timeout Text Pass ]
 
 crbug.com/525903 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ Failure Pass ]
 
