@@ -2331,10 +2331,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                     @Override
                     public void onRequestPermissionsResult(
                             String[] permissions, int[] grantResults) {
-                        if (grantResults.length != 1) {
-                            assert false;
-                            return;
-                        }
+                        if (grantResults.length != 1) return;
 
                         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                             startVoiceRecognition();

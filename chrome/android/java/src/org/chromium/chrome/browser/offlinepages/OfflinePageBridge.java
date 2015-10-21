@@ -193,7 +193,8 @@ public final class OfflinePageBridge {
             PermissionCallback permissionCallback = new PermissionCallback() {
                 @Override
                 public void onRequestPermissionsResult(String[] permission, int[] grantResults) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (grantResults.length > 0
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         nativeSavePage(mNativeOfflinePageBridge, callback, webContents,
                                 bookmarkId.getId());
                     } else {

@@ -194,8 +194,8 @@ public class DownloadController {
             PermissionCallback permissionCallback = new PermissionCallback() {
                 @Override
                 public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                    onRequestFileAccessResult(
-                            callbackId, grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onRequestFileAccessResult(callbackId, grantResults.length > 0
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED);
                 }
             };
             view.getWindowAndroid().requestPermissions(

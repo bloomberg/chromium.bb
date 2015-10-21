@@ -351,8 +351,9 @@ public class ChromeDownloadDelegate
             final PermissionCallback permissionCallback = new PermissionCallback() {
                 @Override
                 public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                    DownloadController.getInstance().onRequestFileAccessResult(
-                            callbackId, grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    DownloadController.getInstance().onRequestFileAccessResult(callbackId,
+                            grantResults.length > 0
+                                    && grantResults[0] == PackageManager.PERMISSION_GRANTED);
                 }
             };
 
@@ -644,7 +645,8 @@ public class ChromeDownloadDelegate
                     @Override
                     public void onRequestPermissionsResult(
                             String[] permissions, int[] grantResults) {
-                        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        if (grantResults.length > 0
+                                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                             onDownloadStartNoStream(downloadInfo);
                         }
                     }

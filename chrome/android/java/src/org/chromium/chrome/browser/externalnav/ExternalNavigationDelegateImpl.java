@@ -274,7 +274,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         PermissionCallback permissionCallback = new PermissionCallback() {
             @Override
             public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     loadIntent(intent, referrerUrl, null, tab, needsToCloseTab, tab.isIncognito());
                 } else {
                     // TODO(tedchoc): Show an indication to the user that the navigation failed
