@@ -965,6 +965,10 @@ void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, La
         availableFreeSpace -= childSize - violations[i].childInnerFlexBaseSize;
         totalFlexGrow -= child->style()->flexGrow();
         totalWeightedFlexShrink -= child->style()->flexShrink() * violations[i].childInnerFlexBaseSize;
+        // totalWeightedFlexShrink can be negative when we exceed the precision of a double when we initially
+        // calcuate totalWeightedFlexShrink. We then subtract each child's weighted flex shrink with full precision,
+        // now leading to a negative result. See css3/flexbox/large-flex-shrink-assert.html
+        totalWeightedFlexShrink = std::max(totalWeightedFlexShrink, 0.0);
         inflexibleItems.set(child, childSize);
     }
 }
