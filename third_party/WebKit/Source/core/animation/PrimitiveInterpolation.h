@@ -46,6 +46,8 @@ public:
         return adoptPtr(new PairwisePrimitiveInterpolation(type, component.startInterpolableValue.release(), component.endInterpolableValue.release(), component.nonInterpolableValue.release()));
     }
 
+    const InterpolationType& type() const { return m_type; }
+
     PassOwnPtr<InterpolationValue> initialValue() const
     {
         return InterpolationValue::create(m_type, m_start->clone(), m_nonInterpolableValue);

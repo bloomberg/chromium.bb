@@ -7,6 +7,22 @@
 
 namespace blink {
 
+bool InterpolableNumber::equals(const InterpolableValue& other) const
+{
+    return m_value == toInterpolableNumber(other).m_value;
+}
+
+bool InterpolableList::equals(const InterpolableValue& other) const
+{
+    const InterpolableList& otherList = toInterpolableList(other);
+    ASSERT(m_size == otherList.m_size);
+    for (size_t i = 0; i < m_size; i++) {
+        if (!m_values[i]->equals(*otherList.m_values[i]))
+            return false;
+    }
+    return true;
+}
+
 void InterpolableNumber::interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const
 {
     const InterpolableNumber& toNumber = toInterpolableNumber(to);

@@ -24,6 +24,7 @@ public:
     virtual bool isList() const { return false; }
     virtual bool isAnimatableValue() const { return false; }
 
+    virtual bool equals(const InterpolableValue&) const = 0;
     virtual PassOwnPtr<InterpolableValue> clone() const = 0;
     virtual PassOwnPtr<InterpolableValue> cloneAndZero() const = 0;
     virtual void scale(double scale) = 0;
@@ -54,6 +55,7 @@ public:
 
     bool isNumber() const final { return true; }
     double value() const { return m_value; }
+    bool equals(const InterpolableValue& other) const final;
     PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
     PassOwnPtr<InterpolableValue> cloneAndZero() const final { return create(0); }
     void scale(double scale) final;
@@ -79,6 +81,7 @@ public:
 
     bool isBool() const final { return true; }
     bool value() const { return m_value; }
+    bool equals(const InterpolableValue&) const final { ASSERT_NOT_REACHED(); return false; }
     PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
     PassOwnPtr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
     void scale(double scale) final { ASSERT_NOT_REACHED(); }
@@ -132,6 +135,7 @@ public:
         return m_values[position];
     }
     size_t length() const { return m_size; }
+    bool equals(const InterpolableValue& other) const final;
     PassOwnPtr<InterpolableValue> clone() const final { return create(*this); }
     PassOwnPtr<InterpolableValue> cloneAndZero() const final;
     void scale(double scale) final;
@@ -167,6 +171,7 @@ public:
 
     bool isAnimatableValue() const final { return true; }
     AnimatableValue* value() const { return m_value.get(); }
+    bool equals(const InterpolableValue&) const final { ASSERT_NOT_REACHED(); return false; }
     PassOwnPtr<InterpolableValue> clone() const final { return create(m_value); }
     PassOwnPtr<InterpolableValue> cloneAndZero() const final { ASSERT_NOT_REACHED(); return nullptr; }
     void scale(double scale) final { ASSERT_NOT_REACHED(); }

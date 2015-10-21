@@ -31,8 +31,10 @@ PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableStyleInterpolation::mayb
         if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValue || underlyingValue->type() != *interpolationType))
             continue;
         OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, state, underlyingValue, m_conversionCheckers);
-        if (pairwiseConversion)
+        if (pairwiseConversion) {
+            ASSERT(pairwiseConversion->type() == *interpolationType);
             return pairwiseConversion.release();
+        }
     }
     return nullptr;
 }
@@ -45,8 +47,10 @@ PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKey
         if (keyframe.isNeutral() && underlyingValue->type() != *interpolationType)
             continue;
         OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, underlyingValue, m_conversionCheckers);
-        if (result)
+        if (result) {
+            ASSERT(result->type() == *interpolationType);
             return result.release();
+        }
     }
     ASSERT(keyframe.isNeutral());
     return nullptr;

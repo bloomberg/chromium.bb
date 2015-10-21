@@ -14,8 +14,8 @@
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/FilterStyleInterpolation.h"
+#include "core/animation/ImageInterpolationType.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
-#include "core/animation/ImageStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/IntegerSVGInterpolation.h"
 #include "core/animation/InterpolationType.h"
@@ -235,6 +235,11 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyTextShadow:
         applicableTypes->append(new ShadowListInterpolationType(property));
         break;
+    case CSSPropertyBorderImageSource:
+    case CSSPropertyListStyleImage:
+    case CSSPropertyWebkitMaskBoxImageSource:
+        applicableTypes->append(new ImageInterpolationType(property));
+        break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
         if (CSSPropertyMetadata::isInterpolableProperty(property)) {
@@ -327,17 +332,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
 
         break;
 
-    case CSSPropertyBorderImageSource:
-    case CSSPropertyListStyleImage:
-    case CSSPropertyWebkitMaskBoxImageSource:
-        if (fromCSSValue == toCSSValue)
-            return ConstantStyleInterpolation::create(fromCSSValue, property);
-
-        if (ImageStyleInterpolation::canCreateFrom(*fromCSSValue) && ImageStyleInterpolation::canCreateFrom(*toCSSValue))
-            return ImageStyleInterpolation::create(*fromCSSValue, *toCSSValue, property);
-
-        forceDefaultInterpolation = true;
-        break;
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
