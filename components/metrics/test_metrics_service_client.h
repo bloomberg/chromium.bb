@@ -21,6 +21,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   ~TestMetricsServiceClient() override;
 
   // MetricsServiceClient:
+  metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   void OnRecordingDisabled() override;
   bool IsOffTheRecordSessionActive() override;

@@ -50,6 +50,7 @@ class IOSChromeMetricsServiceClient
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // metrics::MetricsServiceClient:
+  metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   void OnRecordingDisabled() override;
   bool IsOffTheRecordSessionActive() override;
@@ -70,8 +71,6 @@ class IOSChromeMetricsServiceClient
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;
   void WebStateDidStopLoading(web::WebState* web_state) override;
-
-  metrics::MetricsService* metrics_service() { return metrics_service_.get(); }
 
   // Records an unexpected renderer (web) process termination.
   // This path only exists on iOS because the other platforms use the (now
