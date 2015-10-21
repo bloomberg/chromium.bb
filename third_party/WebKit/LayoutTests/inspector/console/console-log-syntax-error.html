@@ -6,12 +6,8 @@
 <script>
 function test()
 {
-    InspectorTest.dumpConsoleMessages(undefined, undefined, simpleFormatter);
+    InspectorTest.dumpConsoleMessages(undefined, undefined, InspectorTest.simpleFormatter);
     InspectorTest.completeTest();
-    function simpleFormatter(element, message)
-    {
-    	return message.messageText + ":" + message.line + ":" + message.column;
-    }
 }
 </script>
 </head>

@@ -103,6 +103,8 @@ public:
         virtual void call(XMLDocumentParser*) = 0;
     };
 
+    void setScriptStartPosition(TextPosition);
+
 private:
     explicit XMLDocumentParser(Document&, FrameView* = 0);
     XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);

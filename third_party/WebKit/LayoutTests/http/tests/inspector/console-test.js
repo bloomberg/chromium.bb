@@ -140,6 +140,11 @@ InspectorTest.formatterIgnoreStackFrameUrls = function(messageFormatter, node)
     return buffer.split("\n").map(ignoreStackFrameAndMutableData).filter(isNotEmptyLine).join("\n");
 }
 
+InspectorTest.simpleFormatter = function(element, message)
+{
+    return message.messageText + ":" + message.line + ":" + message.column;
+}
+
 InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames = function(printOriginatingCommand, dumpClassNames, messageFormatter)
 {
     InspectorTest.addResults(InspectorTest.dumpConsoleMessagesIntoArray(printOriginatingCommand, dumpClassNames, InspectorTest.formatterIgnoreStackFrameUrls.bind(this, messageFormatter)));
