@@ -32,12 +32,12 @@ DEFINE_TRACE(DeviceLightDispatcher)
 
 void DeviceLightDispatcher::startListening()
 {
-    Platform::current()->startListening(WebPlatformEventDeviceLight, this);
+    Platform::current()->startListening(WebPlatformEventTypeDeviceLight, this);
 }
 
 void DeviceLightDispatcher::stopListening()
 {
-    Platform::current()->stopListening(WebPlatformEventDeviceLight);
+    Platform::current()->stopListening(WebPlatformEventTypeDeviceLight);
     m_lastDeviceLightData = -1;
 }
 

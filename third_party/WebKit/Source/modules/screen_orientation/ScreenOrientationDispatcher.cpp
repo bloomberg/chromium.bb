@@ -26,12 +26,12 @@ DEFINE_TRACE(ScreenOrientationDispatcher)
 
 void ScreenOrientationDispatcher::startListening()
 {
-    Platform::current()->startListening(WebPlatformEventScreenOrientation, 0);
+    Platform::current()->startListening(WebPlatformEventTypeScreenOrientation, 0);
 }
 
 void ScreenOrientationDispatcher::stopListening()
 {
-    Platform::current()->stopListening(WebPlatformEventScreenOrientation);
+    Platform::current()->stopListening(WebPlatformEventTypeScreenOrientation);
 }
 
 } // namespace blink

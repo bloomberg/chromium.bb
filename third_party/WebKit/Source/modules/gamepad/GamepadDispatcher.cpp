@@ -57,12 +57,12 @@ void GamepadDispatcher::dispatchDidConnectOrDisconnectGamepad(unsigned index, co
 
 void GamepadDispatcher::startListening()
 {
-    Platform::current()->startListening(WebPlatformEventGamepad, this);
+    Platform::current()->startListening(WebPlatformEventTypeGamepad, this);
 }
 
 void GamepadDispatcher::stopListening()
 {
-    Platform::current()->stopListening(WebPlatformEventGamepad);
+    Platform::current()->stopListening(WebPlatformEventTypeGamepad);
 }
 
 } // namespace blink

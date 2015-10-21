@@ -59,12 +59,12 @@ DEFINE_TRACE(DeviceMotionDispatcher)
 
 void DeviceMotionDispatcher::startListening()
 {
-    Platform::current()->startListening(WebPlatformEventDeviceMotion, this);
+    Platform::current()->startListening(WebPlatformEventTypeDeviceMotion, this);
 }
 
 void DeviceMotionDispatcher::stopListening()
 {
-    Platform::current()->stopListening(WebPlatformEventDeviceMotion);
+    Platform::current()->stopListening(WebPlatformEventTypeDeviceMotion);
     m_lastDeviceMotionData.clear();
 }
 

@@ -883,7 +883,7 @@ WebBlobRegistry* RendererBlinkPlatformImpl::blobRegistry() {
 
 void RendererBlinkPlatformImpl::sampleGamepads(WebGamepads& gamepads) {
   PlatformEventObserverBase* observer =
-      platform_event_observers_.Lookup(blink::WebPlatformEventGamepad);
+      platform_event_observers_.Lookup(blink::WebPlatformEventTypeGamepad);
   if (!observer)
     return;
   static_cast<RendererGamepadProvider*>(observer)->SampleGamepads(gamepads);
@@ -1128,15 +1128,15 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     thread = NULL;
 
   switch (type) {
-    case blink::WebPlatformEventDeviceMotion:
+    case blink::WebPlatformEventTypeDeviceMotion:
       return new DeviceMotionEventPump(thread);
-    case blink::WebPlatformEventDeviceOrientation:
+    case blink::WebPlatformEventTypeDeviceOrientation:
       return new DeviceOrientationEventPump(thread);
-    case blink::WebPlatformEventDeviceLight:
+    case blink::WebPlatformEventTypeDeviceLight:
       return new DeviceLightEventPump(thread);
-    case blink::WebPlatformEventGamepad:
+    case blink::WebPlatformEventTypeGamepad:
       return new GamepadSharedMemoryReader(thread);
-    case blink::WebPlatformEventScreenOrientation:
+    case blink::WebPlatformEventTypeScreenOrientation:
       return new ScreenOrientationObserver();
     default:
       // A default statement is required to prevent compilation errors when
@@ -1151,7 +1151,7 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
 void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     blink::WebPlatformEventType type,
     scoped_ptr<PlatformEventObserverBase> observer) {
-  DCHECK(type != blink::WebPlatformEventBattery);
+  DCHECK(type != blink::WebPlatformEventTypeBattery);
 
   if (platform_event_observers_.Lookup(type))
     platform_event_observers_.Remove(type);
@@ -1161,7 +1161,7 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
 void RendererBlinkPlatformImpl::startListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
-  if (type == blink::WebPlatformEventBattery) {
+  if (type == blink::WebPlatformEventTypeBattery) {
     if (RenderThreadImpl::current() &&
         RenderThreadImpl::current()->layout_test_mode()) {
       g_test_battery_status_listener =
@@ -1188,9 +1188,9 @@ void RendererBlinkPlatformImpl::startListening(
   // using this broken pattern.
   if (RenderThreadImpl::current() &&
       RenderThreadImpl::current()->layout_test_mode() &&
-      (type == blink::WebPlatformEventDeviceMotion ||
-       type == blink::WebPlatformEventDeviceOrientation ||
-       type == blink::WebPlatformEventDeviceLight)) {
+      (type == blink::WebPlatformEventTypeDeviceMotion ||
+       type == blink::WebPlatformEventTypeDeviceOrientation ||
+       type == blink::WebPlatformEventTypeDeviceLight)) {
     SendFakeDeviceEventDataForTesting(type);
   }
 }
@@ -1203,15 +1203,15 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
   void* data = 0;
 
   switch (type) {
-  case blink::WebPlatformEventDeviceMotion:
+  case blink::WebPlatformEventTypeDeviceMotion:
     if (!(g_test_device_motion_data == 0))
       data = &g_test_device_motion_data.Get();
     break;
-  case blink::WebPlatformEventDeviceOrientation:
+  case blink::WebPlatformEventTypeDeviceOrientation:
     if (!(g_test_device_orientation_data == 0))
       data = &g_test_device_orientation_data.Get();
     break;
-  case blink::WebPlatformEventDeviceLight:
+  case blink::WebPlatformEventTypeDeviceLight:
     if (g_test_device_light_data >= 0)
       data = &g_test_device_light_data;
     break;
@@ -1230,7 +1230,7 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
 
 void RendererBlinkPlatformImpl::stopListening(
     blink::WebPlatformEventType type) {
-  if (type == blink::WebPlatformEventBattery) {
+  if (type == blink::WebPlatformEventTypeBattery) {
     g_test_battery_status_listener = nullptr;
     battery_status_dispatcher_.reset();
     return;

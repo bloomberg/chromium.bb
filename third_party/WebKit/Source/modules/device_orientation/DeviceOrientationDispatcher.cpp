@@ -59,12 +59,12 @@ DEFINE_TRACE(DeviceOrientationDispatcher)
 
 void DeviceOrientationDispatcher::startListening()
 {
-    Platform::current()->startListening(WebPlatformEventDeviceOrientation, this);
+    Platform::current()->startListening(WebPlatformEventTypeDeviceOrientation, this);
 }
 
 void DeviceOrientationDispatcher::stopListening()
 {
-    Platform::current()->stopListening(WebPlatformEventDeviceOrientation);
+    Platform::current()->stopListening(WebPlatformEventTypeDeviceOrientation);
     m_lastDeviceOrientationData.clear();
 }
 

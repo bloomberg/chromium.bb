@@ -143,7 +143,7 @@ void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider) {
   RenderThreadImpl::current()
       ->blink_platform_impl()
       ->SetPlatformEventObserverForTesting(
-          blink::WebPlatformEventGamepad,
+          blink::WebPlatformEventTypeGamepad,
           provider.Pass());
 }
 
