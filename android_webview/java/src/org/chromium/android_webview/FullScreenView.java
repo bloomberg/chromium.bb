@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -227,6 +228,13 @@ public class FullScreenView extends FrameLayout {
         @Override
         public int super_getScrollBarStyle() {
             return FullScreenView.super.getScrollBarStyle();
+        }
+
+        @Override
+        public void super_startActivityForResult(Intent intent, int requestCode) {
+            throw new RuntimeException(
+                    "FullScreenView InternalAccessAdapter shouldn't call startActivityForResult. "
+                    + "See AwContents#startActivityForResult");
         }
 
         @Override

@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -153,6 +154,11 @@ public class AwContents implements SmartClipProvider,
          * @see View#getScrollBarStyle()
          */
         int super_getScrollBarStyle();
+
+        /**
+         * @see View#startActivityForResult(Intent, int)
+         */
+        void super_startActivityForResult(Intent intent, int requestCode);
     }
 
     /**
@@ -2199,6 +2205,23 @@ public class AwContents implements SmartClipProvider,
     //--------------------------------------------------------------------------------------------
     //  View and ViewGroup method implementations
     //--------------------------------------------------------------------------------------------
+    /**
+     * Calls android.view.View#startActivityForResult.  A RuntimeException will
+     * be thrown by Android framework if startActivityForResult is called with
+     * a non-Activity context.
+     */
+    public void startActivityForResult(Intent intent, int requestCode) {
+        // Even in fullscreen mode, startActivityForResult will still use the
+        // initial internal access delegate because it has access to
+        // the hidden API View#startActivityForResult.
+        mFullScreenTransitionsState.getInitialInternalAccessDelegate()
+                .super_startActivityForResult(intent, requestCode);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO(hush): Forward the activity result to content view core and
+        // replace the text with translated text.
+    }
 
     /**
      * @see android.webkit.View#onTouchEvent()

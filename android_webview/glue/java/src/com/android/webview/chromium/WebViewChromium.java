@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -62,6 +63,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
@@ -1750,6 +1752,21 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mAwContents.setLayoutParams(layoutParams);
     }
 
+    // Overrides WebViewProvider.ViewDelegate.onActivityResult (not in system api jar yet).
+    // crbug.com/543272.
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    onActivityResult(requestCode, resultCode, data);
+                }
+            });
+            return;
+        }
+        mAwContents.onActivityResult(requestCode, resultCode, data);
+    }
+
     @Override
     public boolean performLongClick() {
         // Return false unless the WebView is attached to a View with a parent
@@ -2242,6 +2259,19 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         @Override
         public int super_getScrollBarStyle() {
             return mWebViewPrivate.super_getScrollBarStyle();
+        }
+
+        @Override
+        public void super_startActivityForResult(Intent intent, int requestCode) {
+            // TODO(hush): Use mWebViewPrivate.super_startActivityForResult
+            // after N release. crbug.com/543272.
+            try {
+                Method startActivityForResultMethod =
+                        View.class.getMethod("startActivityForResult", Intent.class, int.class);
+                startActivityForResultMethod.invoke(mWebView, intent, requestCode);
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid reflection", e);
+            }
         }
 
         @Override

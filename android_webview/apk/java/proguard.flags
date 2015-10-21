@@ -80,6 +80,11 @@
   public static boolean dumpWithoutCrashing(...);
 }
 
+#TODO(hush): remove after N release. crbug.com/543272
+-keep class com.android.webview.chromium.WebViewChromium {
+  public void onActivityResult(int,int,android.content.Intent);
+}
+
 # Ignore notes and warnings about the support library, which uses reflection and
 # may reference classes no longer in the SDK.
 -dontnote android.support.**

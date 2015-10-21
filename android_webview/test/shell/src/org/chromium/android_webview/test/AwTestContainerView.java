@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
@@ -510,5 +511,8 @@ public class AwTestContainerView extends FrameLayout {
         public int super_getScrollBarStyle() {
             return AwTestContainerView.super.getScrollBarStyle();
         }
+
+        @Override
+        public void super_startActivityForResult(Intent intent, int requestCode) {}
     }
 }
