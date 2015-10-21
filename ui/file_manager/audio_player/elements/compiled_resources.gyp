@@ -10,7 +10,7 @@
         'externs': []
       },
       'includes': [
-        '../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../compile_js.gypi'
       ]
     },
     {
@@ -22,7 +22,7 @@
         ]
       },
       'includes': [
-        '../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../compile_js.gypi'
       ]
     },
     {
@@ -32,7 +32,7 @@
         'externs': []
       },
       'includes': [
-        '../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../compile_js.gypi'
       ]
     },
     {
@@ -48,7 +48,7 @@
         ]
       },
       'includes': [
-        '../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../compile_js.gypi'
       ]
     }
   ],

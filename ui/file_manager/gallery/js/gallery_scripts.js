@@ -75,13 +75,13 @@
 //<include src="dimmable_ui_controller.js">
 //<include src="entry_list_watcher.js">
 //<include src="error_banner.js">
-//<include src="gallery.js">
 //<include src="gallery_data_model.js">
 //<include src="gallery_item.js">
 //<include src="gallery_util.js">
 //<include src="ribbon.js">
 //<include src="slide_mode.js">
 //<include src="thumbnail_mode.js">
+//<include src="gallery.js">
 
 // Exports
 window.ImageUtil = ImageUtil;

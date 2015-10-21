@@ -62,9 +62,9 @@
           '../../background/js/app_window_wrapper.js',
           '../../background/js/import_history.js',
           '../../background/js/launcher_search.js',
+          '../../background/js/task_queue.js',
           '../../background/js/media_import_handler.js',
           '../../background/js/media_scanner.js',
-          '../../background/js/task_queue.js',
           '../../background/js/background_base.js',
           '../../background/js/background.js',
           '../../../image_loader/image_loader_client.js',
@@ -145,8 +145,8 @@
           './metadata/byte_reader.js',
         ],
         'externs': [
-          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
+          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/command_line_private.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
@@ -168,7 +168,7 @@
       },
       'includes': [
         '../../../../../components/chrome_apps/webstore_widget/cws_widget/compiled_resources.gypi',
-        '../../../../../third_party/closure_compiler/compile_js.gypi',
+        '../../../compile_js.gypi',
       ],
     }
   ],

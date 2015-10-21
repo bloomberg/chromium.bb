@@ -169,7 +169,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.savedSelection_ = null;
 
   /**
-   * @type {Gallery.Item}
+   * @type {GalleryItem}
    * @private
    */
   this.displayedItem_ = null;
@@ -476,7 +476,7 @@ SlideMode.KEY_OFFSET_MAP = {
 
 /**
  * Returns editor warning message if it should be shown.
- * @param {!Gallery.Item} item
+ * @param {!GalleryItem} item
  * @param {string} readonlyDirName Name of read only volume. Pass empty string
  *     if volume is writable.
  * @param {!DirectoryEntry} fallbackSaveDirectory
@@ -675,11 +675,11 @@ SlideMode.prototype.getItemCount_ = function() {
 
 /**
  * @param {number} index Index.
- * @return {Gallery.Item} Item.
+ * @return {GalleryItem} Item.
  */
 SlideMode.prototype.getItem = function(index) {
   var item =
-      /** @type {(Gallery.Item|undefined)} */ (this.dataModel_.item(index));
+      /** @type {(GalleryItem|undefined)} */ (this.dataModel_.item(index));
   return item === undefined ? null : item;
 };
 
@@ -701,7 +701,7 @@ SlideMode.prototype.getSelectedImageRect = function() {
 };
 
 /**
- * @return {Gallery.Item} Selected item.
+ * @return {GalleryItem} Selected item.
  */
 SlideMode.prototype.getSelectedItem = function() {
   return this.getItem(this.getSelectedIndex());
@@ -782,7 +782,7 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   }
 
   this.displayedItem_ = this.getSelectedItem();
-  var selectedItem = assertInstanceof(this.getSelectedItem(), Gallery.Item);
+  var selectedItem = assertInstanceof(this.getSelectedItem(), GalleryItem);
 
   function shouldPrefetch(loadType, step, sequenceLength) {
     // Never prefetch when selecting out of sequence.
@@ -948,7 +948,7 @@ SlideMode.prototype.selectLast = function() {
 /**
  * Load and display an item.
  *
- * @param {!Gallery.Item} item Item.
+ * @param {!GalleryItem} item Item.
  * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function()} displayCallback Called when the image is displayed
  *     (which can happen before the image load due to caching).
@@ -977,7 +977,7 @@ SlideMode.prototype.loadItem_ = function(
 
 /**
  * A callback function when the editor opens a editing session for an image.
- * @param {!Gallery.Item} item Gallery item.
+ * @param {!GalleryItem} item Gallery item.
  * @param {function(number, number)} loadCallback Called when the image is fully
  *     loaded.
  * @param {number} loadType Load type.
@@ -1262,7 +1262,7 @@ SlideMode.prototype.updateThumbnails = function() {
 /**
  * Save the current image to a file.
  *
- * @param {!Gallery.Item} item Item to save the image.
+ * @param {!GalleryItem} item Item to save the image.
  * @param {function()} callback Callback.
  * @private
  */

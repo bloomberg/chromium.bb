@@ -58,7 +58,7 @@ GalleryDataModel.prototype = {
  * Saves new image.
  *
  * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
- * @param {!Gallery.Item} item Original gallery item.
+ * @param {!GalleryItem} item Original gallery item.
  * @param {!HTMLCanvasElement} canvas Canvas containing new image.
  * @param {boolean} overwrite Set true to overwrite original if it's possible.
  * @return {!Promise} Promise to be fulfilled with when the operation completes.
@@ -97,7 +97,7 @@ GalleryDataModel.prototype.saveItem = function(
             ]).then(function(itemLists) {
               // New entry is added and the item now tracks it.
               // Add another item for the old entry.
-              var anotherItem = new Gallery.Item(
+              var anotherItem = new GalleryItem(
                   oldEntry,
                   oldLocationInfo,
                   itemLists[0][0],

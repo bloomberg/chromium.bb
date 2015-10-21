@@ -81,7 +81,7 @@ function ImageView(container, viewport, metadataModel) {
 
   /**
    * Gallery item which is loaded.
-   * @type {Gallery.Item}
+   * @type {GalleryItem}
    * @private
    */
   this.contentItem_ = null;
@@ -141,7 +141,7 @@ ImageView.LoadTarget = {
 /**
  * Obtains prefered load type from GalleryItem.
  *
- * @param {!Gallery.Item} item
+ * @param {!GalleryItem} item
  * @param {!ImageView.Effect} effect
  * @return {ImageView.LoadTarget} Load target.
  */
@@ -365,7 +365,7 @@ ImageView.prototype.cancelLoad = function() {
  * Loads the thumbnail first, then replaces it with the main image.
  * Takes into account the image orientation encoded in the metadata.
  *
- * @param {!Gallery.Item} item Gallery item to be loaded.
+ * @param {!GalleryItem} item Gallery item to be loaded.
  * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function()} displayCallback Called when the image is displayed
  *     (possibly as a preview).
@@ -518,7 +518,7 @@ ImageView.prototype.load =
 
 /**
  * Prefetches an image.
- * @param {!Gallery.Item} item The image item.
+ * @param {!GalleryItem} item The image item.
  * @param {number=} opt_delay Image load delay in ms.
  */
 ImageView.prototype.prefetch = function(item, opt_delay) {

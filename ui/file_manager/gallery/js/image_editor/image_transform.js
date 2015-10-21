@@ -16,43 +16,43 @@ ImageEditor.Mode.Crop = function() {
   this.paddingBottom = ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.domOverlay_ = null;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.shadowTop_ = null;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.middleBox_ = null;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.shadowLeft_ = null;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.cropFrame_ = null;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.shadowRight_ = null;
 
   /**
-   * @type {HTMLDivElement}
+   * @type {HTMLElement}
    * @private
    */
   this.shadowBottom_ = null;
@@ -82,31 +82,31 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
   var container = this.getImageView().container_;
   var doc = container.ownerDocument;
 
-  this.domOverlay_ = doc.createElement('div');
+  this.domOverlay_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.domOverlay_.className = 'crop-overlay';
   container.appendChild(this.domOverlay_);
 
-  this.shadowTop_ = doc.createElement('div');
+  this.shadowTop_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.shadowTop_.className = 'shadow';
   this.domOverlay_.appendChild(this.shadowTop_);
 
-  this.middleBox_ = doc.createElement('div');
+  this.middleBox_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.middleBox_.className = 'middle-box';
   this.domOverlay_.appendChild(this.middleBox_);
 
-  this.shadowLeft_ = doc.createElement('div');
+  this.shadowLeft_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.shadowLeft_.className = 'shadow';
   this.middleBox_.appendChild(this.shadowLeft_);
 
-  this.cropFrame_ = doc.createElement('div');
+  this.cropFrame_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.cropFrame_.className = 'crop-frame';
   this.middleBox_.appendChild(this.cropFrame_);
 
-  this.shadowRight_ = doc.createElement('div');
+  this.shadowRight_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.shadowRight_.className = 'shadow';
   this.middleBox_.appendChild(this.shadowRight_);
 
-  this.shadowBottom_ = doc.createElement('div');
+  this.shadowBottom_ = /** @type {!HTMLElement} */ (doc.createElement('div'));
   this.shadowBottom_.className = 'shadow';
   this.domOverlay_.appendChild(this.shadowBottom_);
 

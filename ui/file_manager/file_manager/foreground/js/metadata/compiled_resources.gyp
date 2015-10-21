@@ -7,6 +7,7 @@
       'target_name': 'metadata_dispatcher',
       'variables': {
         'depends': [
+          'metadata_dispatcher.js',
           'metadata_parser.js',
           'byte_reader.js',
           'exif_parser.js',
@@ -20,10 +21,10 @@
         'externs': [
           '../../../../externs/exif_entry.js',
           '../../../../externs/platform_worker.js',
-        ]
+        ],
       },
       'includes': [
-        '../../../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../../../compile_js.gypi',
       ],
     }
   ]

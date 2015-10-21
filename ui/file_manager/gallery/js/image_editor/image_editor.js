@@ -194,7 +194,7 @@ ImageEditor.prototype.onContentUpdate_ = function() {
 /**
  * Open the editing session for a new image.
  *
- * @param {!Gallery.Item} item Gallery item.
+ * @param {!GalleryItem} item Gallery item.
  * @param {!ImageView.Effect} effect Transition effect object.
  * @param {function(function())} saveFunction Image save function.
  * @param {function()} displayCallback Display callback.

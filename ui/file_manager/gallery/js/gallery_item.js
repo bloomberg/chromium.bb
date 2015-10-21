@@ -13,7 +13,7 @@
  * @constructor
  * @struct
  */
-Gallery.Item = function(
+function GalleryItem(
     entry, locationInfo, metadataItem, thumbnailMetadataItem, original) {
   /**
    * @private {!FileEntry}
@@ -71,59 +71,59 @@ Gallery.Item = function(
 /**
  * @return {!FileEntry} Image entry.
  */
-Gallery.Item.prototype.getEntry = function() { return this.entry_; };
+GalleryItem.prototype.getEntry = function() { return this.entry_; };
 
 /**
  * @return {!EntryLocation} Entry location information.
  */
-Gallery.Item.prototype.getLocationInfo = function() {
+GalleryItem.prototype.getLocationInfo = function() {
   return this.locationInfo_;
 };
 
 /**
  * @return {MetadataItem} Metadata.
  */
-Gallery.Item.prototype.getMetadataItem = function() {
+GalleryItem.prototype.getMetadataItem = function() {
   return this.metadataItem_;
 };
 
 /**
  * @param {!MetadataItem} metadata
  */
-Gallery.Item.prototype.setMetadataItem = function(metadata) {
+GalleryItem.prototype.setMetadataItem = function(metadata) {
   this.metadataItem_ = metadata;
 };
 
 /**
  * @return {ThumbnailMetadataItem} Thumbnail metadata item.
  */
-Gallery.Item.prototype.getThumbnailMetadataItem = function() {
+GalleryItem.prototype.getThumbnailMetadataItem = function() {
   return this.thumbnailMetadataItem_;
 };
 
 /**
  * @param {!ThumbnailMetadataItem} item Thumbnail metadata item.
  */
-Gallery.Item.prototype.setThumbnailMetadataItem = function(item) {
+GalleryItem.prototype.setThumbnailMetadataItem = function(item) {
   this.thumbnailMetadataItem_ = item;
 };
 
 /**
  * @return {string} File name.
  */
-Gallery.Item.prototype.getFileName = function() {
+GalleryItem.prototype.getFileName = function() {
   return this.entry_.name;
 };
 
 /**
  * @return {boolean} True if this image has not been created in this session.
  */
-Gallery.Item.prototype.isOriginal = function() { return this.original_; };
+GalleryItem.prototype.isOriginal = function() { return this.original_; };
 
 /**
  * Sets an item as original.
  */
-Gallery.Item.prototype.setAsOriginal = function() {
+GalleryItem.prototype.setAsOriginal = function() {
   this.original_ = true;
 };
 
@@ -131,14 +131,14 @@ Gallery.Item.prototype.setAsOriginal = function() {
  * Obtains the last accessed date.
  * @return {number} Last accessed date.
  */
-Gallery.Item.prototype.getLastAccessedDate = function() {
+GalleryItem.prototype.getLastAccessedDate = function() {
   return this.lastAccessed_;
 };
 
 /**
  * Updates the last accessed date.
  */
-Gallery.Item.prototype.touch = function() {
+GalleryItem.prototype.touch = function() {
   this.lastAccessed_ = Date.now();
 };
 
@@ -147,23 +147,23 @@ Gallery.Item.prototype.touch = function() {
  * @type {string} Suffix for a edited copy file name.
  * @const
  */
-Gallery.Item.COPY_SIGNATURE = ' - Edited';
+GalleryItem.COPY_SIGNATURE = ' - Edited';
 
 /**
  * Regular expression to match '... - Edited'.
  * @type {!RegExp}
  * @const
  */
-Gallery.Item.REGEXP_COPY_0 =
-    new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + '$');
+GalleryItem.REGEXP_COPY_0 =
+    new RegExp('^(.+)' + GalleryItem.COPY_SIGNATURE + '$');
 
 /**
  * Regular expression to match '... - Edited (N)'.
  * @type {!RegExp}
  * @const
  */
-Gallery.Item.REGEXP_COPY_N =
-    new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + ' \\((\\d+)\\)$');
+GalleryItem.REGEXP_COPY_N =
+    new RegExp('^(.+)' + GalleryItem.COPY_SIGNATURE + ' \\((\\d+)\\)$');
 
 /**
  * Creates a name for an edited copy of the file.
@@ -173,7 +173,7 @@ Gallery.Item.REGEXP_COPY_N =
  * @param {function(string)} callback Callback.
  * @private
  */
-Gallery.Item.prototype.createCopyName_ = function(
+GalleryItem.prototype.createCopyName_ = function(
     dirEntry, newMimeType, callback) {
   var name = this.getFileName();
 
@@ -196,16 +196,16 @@ Gallery.Item.prototype.createCopyName_ = function(
 
     // If the file name contains the copy signature add/advance the sequential
     // number.
-    var matchN = Gallery.Item.REGEXP_COPY_N.exec(baseName);
-    var match0 = Gallery.Item.REGEXP_COPY_0.exec(baseName);
+    var matchN = GalleryItem.REGEXP_COPY_N.exec(baseName);
+    var match0 = GalleryItem.REGEXP_COPY_0.exec(baseName);
     if (matchN && matchN[1] && matchN[2]) {
       var copyNumber = parseInt(matchN[2], 10) + 1;
-      baseName = matchN[1] + Gallery.Item.COPY_SIGNATURE +
+      baseName = matchN[1] + GalleryItem.COPY_SIGNATURE +
           ' (' + copyNumber + ')';
     } else if (match0 && match0[1]) {
-      baseName = match0[1] + Gallery.Item.COPY_SIGNATURE + ' (1)';
+      baseName = match0[1] + GalleryItem.COPY_SIGNATURE + ' (1)';
     } else {
-      baseName += Gallery.Item.COPY_SIGNATURE;
+      baseName += GalleryItem.COPY_SIGNATURE;
     }
 
     dirEntry.getFile(baseName + ext, {create: false, exclusive: false},
@@ -220,7 +220,7 @@ Gallery.Item.prototype.createCopyName_ = function(
  * Returns true if the original format is writable format of Gallery.
  * @return {boolean} True if the original format is writable format.
  */
-Gallery.Item.prototype.isWritableFormat = function() {
+GalleryItem.prototype.isWritableFormat = function() {
   var type = FileType.getType(this.entry_);
   return type.type === 'image' &&
       (type.subtype === 'JPEG' || type.subtype === 'PNG');
@@ -231,7 +231,7 @@ Gallery.Item.prototype.isWritableFormat = function() {
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @return {boolean} True if the entry of item is writable.
  */
-Gallery.Item.prototype.isWritableFile = function(volumeManager) {
+GalleryItem.prototype.isWritableFile = function(volumeManager) {
   return this.isWritableFormat() &&
       !this.locationInfo_.isReadOnly &&
       !GalleryUtil.isOnMTPVolume(this.entry_, volumeManager);
@@ -242,7 +242,7 @@ Gallery.Item.prototype.isWritableFile = function(volumeManager) {
  * @return {string} Mime type.
  * @private
  */
-Gallery.Item.prototype.getNewMimeType_ = function() {
+GalleryItem.prototype.getNewMimeType_ = function() {
   return this.getFileName().match(/\.jpe?g$/i) || FileType.isRaw(this.entry_) ?
       'image/jpeg' : 'image/png';
 };
@@ -252,7 +252,7 @@ Gallery.Item.prototype.getNewMimeType_ = function() {
  * @param {!DirectoryEntry} dirEntry Parent directory entry of copied item.
  * @return {!Promise<string>} A promise which will be fulfilled with copy name.
  */
-Gallery.Item.prototype.getCopyName = function(dirEntry) {
+GalleryItem.prototype.getCopyName = function(dirEntry) {
   return new Promise(this.createCopyName_.bind(
       this, dirEntry, this.getNewMimeType_()));
 };
@@ -268,7 +268,7 @@ Gallery.Item.prototype.getCopyName = function(dirEntry) {
  * @param {boolean} overwrite Set true to overwrite original if it's possible.
  * @param {function(boolean)} callback Callback accepting true for success.
  */
-Gallery.Item.prototype.saveToFile = function(
+GalleryItem.prototype.saveToFile = function(
     volumeManager, metadataModel, fallbackDir, canvas, overwrite, callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
   var saveResultRecorded = false;
@@ -352,7 +352,7 @@ Gallery.Item.prototype.saveToFile = function(
  * @return {!Promise<!FileEntry>}
  * @private
  */
-Gallery.Item.prototype.getEntryToWrite_ = function(
+GalleryItem.prototype.getEntryToWrite_ = function(
     overwrite, fallbackDirectory, volumeManager) {
   return new Promise(function(resolve, reject) {
     // Since in-place editing is not supported on MTP volume, Gallery.app
@@ -393,7 +393,7 @@ Gallery.Item.prototype.getEntryToWrite_ = function(
  * @return {!Promise<!Blob>}
  * @private
  */
-Gallery.Item.prototype.getBlobForSave_ = function(canvas, metadataModel) {
+GalleryItem.prototype.getBlobForSave_ = function(canvas, metadataModel) {
   return metadataModel.get(
       [this.entry_],
       ['mediaMimeType', 'contentMimeType', 'ifd', 'exifLittleEndian']
@@ -420,7 +420,7 @@ Gallery.Item.prototype.getBlobForSave_ = function(canvas, metadataModel) {
  * @return {!Promise} Promise fulfilled with when renaming completes, or
  *     rejected with the error message.
  */
-Gallery.Item.prototype.rename = function(displayName) {
+GalleryItem.prototype.rename = function(displayName) {
   var newFileName = this.entry_.name.replace(
       ImageUtil.getDisplayNameFromName(this.entry_.name), displayName);
 

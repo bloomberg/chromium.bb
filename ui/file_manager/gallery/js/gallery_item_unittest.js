@@ -77,7 +77,7 @@ function testSaveToFile(callback) {
     entryChanged = true;
   };
 
-  var item = new Gallery.Item(
+  var item = new GalleryItem(
       entry,
       {isReadOnly: false},
       {size: 100},
@@ -125,7 +125,7 @@ function testSaveToFileWriteFailCase(callback) {
     });
   };
 
-  var item = new Gallery.Item(
+  var item = new GalleryItem(
       entry,
       {isReadOnly: false},
       {size: 100},
@@ -178,7 +178,7 @@ function testSaveToFileGetBlobFailCase(callback) {
     });
   };
 
-  var item = new Gallery.Item(
+  var item = new GalleryItem(
       entry,
       {isReadOnly: false},
       {size: 100},
@@ -229,7 +229,7 @@ function testSaveToFileRaw(callback) {
     entryChanged = true;
   };
 
-  var item = new Gallery.Item(
+  var item = new GalleryItem(
       fileSystem.entries['/test.arw'],
       {isReadOnly: false},
       {size: 100},
@@ -276,7 +276,7 @@ function testIsWritableFile() {
   };
 
   var getGalleryItem = function(path, fileSystem, isReadOnly) {
-    return new Gallery.Item(new MockEntry(fileSystem, path),
+    return new GalleryItem(new MockEntry(fileSystem, path),
         {isReadOnly: isReadOnly},
         {size: 100},
         {},

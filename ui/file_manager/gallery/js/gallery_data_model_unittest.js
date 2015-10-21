@@ -31,7 +31,7 @@ function setUp() {
 }
 
 function testSaveItemOverwrite(callback) {
-  var item = new Gallery.Item(
+  var item = new GalleryItem(
       new MockEntry(fileSystem, '/test.jpg'),
       null,
       /* metadataItem */ {},
@@ -57,7 +57,7 @@ function testSaveItemOverwrite(callback) {
 }
 
 function testSaveItemToNewFile(callback) {
-  var item = new Gallery.Item(
+  var item = new GalleryItem(
       new MockEntry(fileSystem, '/test.webp'),
       null,
       /* metadataItem */ {},

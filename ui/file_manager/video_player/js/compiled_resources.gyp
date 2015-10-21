@@ -31,8 +31,8 @@
           'test_util.js',
         ],
         'externs': [
-          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
+          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
           '../../../../third_party/analytics/externs.js',
@@ -42,7 +42,7 @@
         ],
       },
       'includes': [
-        '../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../compile_js.gypi',
       ],
     },
     {
@@ -98,8 +98,8 @@
           'media_controls.js',
         ],
         'externs': [
-          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
+          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/media_player_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
@@ -113,7 +113,7 @@
         ],
       },
       'includes': [
-        '../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../compile_js.gypi',
       ],
     }
   ],

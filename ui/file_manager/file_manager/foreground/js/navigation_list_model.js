@@ -288,7 +288,7 @@ NavigationListModel.prototype = {
 /**
  * Returns the item at the given index.
  * @param {number} index The index of the entry to get.
- * @return {NavigationModelItem} The item at the given index.
+ * @return {NavigationModelItem|undefined} The item at the given index.
  */
 NavigationListModel.prototype.item = function(index) {
   if (index < this.volumeList_.length)
@@ -297,6 +297,7 @@ NavigationListModel.prototype.item = function(index) {
     return this.shortcutList_[index - this.volumeList_.length];
   if (index === this.length_() - 1)
     return this.menuModel_;
+  return undefined;
 };
 
 /**

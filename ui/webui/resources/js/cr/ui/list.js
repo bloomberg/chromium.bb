@@ -719,12 +719,11 @@ cr.define('cr.ui', function() {
     /**
      * Ensures that a given index is inside the viewport.
      * @param {number} index The index of the item to scroll into view.
-     * @return {boolean} Whether any scrolling was needed.
      */
     scrollIndexIntoView: function(index) {
       var dataModel = this.dataModel;
       if (!dataModel || index < 0 || index >= dataModel.length)
-        return false;
+        return;
 
       var itemHeight = this.getItemHeightByIndex_(index);
       var scrollTop = this.scrollTop;
@@ -739,28 +738,25 @@ cr.define('cr.ui', function() {
       var self = this;
       // Function to adjust the tops of viewport and row.
       function scrollToAdjustTop() {
-          self.scrollTop = top;
-          return true;
-      };
+        self.scrollTop = top;
+      }
       // Function to adjust the bottoms of viewport and row.
       function scrollToAdjustBottom() {
-          self.scrollTop = top + itemHeight - availableHeight;
-          return true;
-      };
+        self.scrollTop = top + itemHeight - availableHeight;
+      }
 
       // Check if the entire of given indexed row can be shown in the viewport.
       if (itemHeight <= availableHeight) {
         if (top < scrollTop)
-          return scrollToAdjustTop();
-        if (scrollTop + availableHeight < top + itemHeight)
-          return scrollToAdjustBottom();
+          scrollToAdjustTop();
+        else if (scrollTop + availableHeight < top + itemHeight)
+          scrollToAdjustBottom();
       } else {
         if (scrollTop < top)
-          return scrollToAdjustTop();
-        if (top + itemHeight < scrollTop + availableHeight)
-          return scrollToAdjustBottom();
+          scrollToAdjustTop();
+        else if (top + itemHeight < scrollTop + availableHeight)
+          scrollToAdjustBottom();
       }
-      return false;
     },
 
     /**

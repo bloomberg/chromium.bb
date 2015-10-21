@@ -33,7 +33,7 @@ ImageEditor.Mode.Adjust = function(name, title) {
   this.viewportGeneration_ = 0;
 
   /**
-   * @type {?string}
+   * @type {?function(!ImageData,!ImageData,number,number)}
    * @private
    */
   this.filter_ = null;
@@ -230,12 +230,6 @@ ImageEditor.Mode.Autofix = function() {
 
 ImageEditor.Mode.Autofix.prototype =
     {__proto__: ImageEditor.Mode.ColorFilter.prototype};
-
-/** @override */
-ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
-  var self = this;
-  toolbar.addButton('Apply', 'Apply', this.apply.bind(this));
-};
 
 /** @override */
 ImageEditor.Mode.Autofix.prototype.isApplicable = function() {

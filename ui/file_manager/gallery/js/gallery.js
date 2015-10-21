@@ -318,7 +318,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
     var locationInfo = this.volumeManager_.getLocationInfo(entries[i]);
     if (!locationInfo)  // Skip the item, since gone.
       return;
-    items.push(new Gallery.Item(
+    items.push(new GalleryItem(
         entries[i],
         locationInfo,
         null,
@@ -660,7 +660,7 @@ Gallery.prototype.delete_ = function() {
 };
 
 /**
- * @return {!Array<Gallery.Item>} Current selection.
+ * @return {!Array<GalleryItem>} Current selection.
  */
 Gallery.prototype.getSelectedItems = function() {
   return this.selectionModel_.selectedIndexes.map(
@@ -677,7 +677,7 @@ Gallery.prototype.getSelectedEntries = function() {
 };
 
 /**
- * @return {?Gallery.Item} Current single selection.
+ * @return {?GalleryItem} Current single selection.
  */
 Gallery.prototype.getSingleSelectedItem = function() {
   var items = this.getSelectedItems();

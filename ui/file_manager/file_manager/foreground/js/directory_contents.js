@@ -501,7 +501,7 @@ FileListModel.prototype.splice = function(index, deleteCount, var_args) {
     this.onAddEntryToList_(arguments[i]);
   }
 
-  cr.ui.ArrayDataModel.prototype.splice.apply(this, arguments);
+  return cr.ui.ArrayDataModel.prototype.splice.apply(this, arguments);
 };
 
 /**

@@ -305,7 +305,7 @@ FileGrid.prototype.getFirstItemInRow = function(row) {
 FileGrid.prototype.scrollIndexIntoView = function(index) {
   var dataModel = this.dataModel;
   if (!dataModel || index < 0 || index >= dataModel.length)
-    return false;
+    return;
 
   var itemHeight = index < this.dataModel.getFolderCount() ?
       this.getFolderItemHeight_() : this.getFileItemHeight_();
@@ -322,27 +322,24 @@ FileGrid.prototype.scrollIndexIntoView = function(index) {
   // Function to adjust the tops of viewport and row.
   var scrollToAdjustTop = function() {
       self.scrollTop = top;
-      return true;
   };
   // Function to adjust the bottoms of viewport and row.
   var scrollToAdjustBottom = function() {
       self.scrollTop = top + itemHeight - availableHeight;
-      return true;
   };
 
   // Check if the entire of given indexed row can be shown in the viewport.
   if (itemHeight <= availableHeight) {
     if (top < scrollTop)
-      return scrollToAdjustTop();
-    if (scrollTop + availableHeight < top + itemHeight)
-      return scrollToAdjustBottom();
+      scrollToAdjustTop();
+    else if (scrollTop + availableHeight < top + itemHeight)
+      scrollToAdjustBottom();
   } else {
     if (scrollTop < top)
-      return scrollToAdjustTop();
-    if (top + itemHeight < scrollTop + availableHeight)
-      return scrollToAdjustBottom();
+      scrollToAdjustTop();
+    else if (top + itemHeight < scrollTop + availableHeight)
+      scrollToAdjustBottom();
   }
-  return false;
 };
 
 /**

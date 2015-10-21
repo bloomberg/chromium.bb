@@ -414,7 +414,7 @@ Ribbon.prototype.removeVanishing_ = function() {
  * @private
  */
 Ribbon.prototype.renderThumbnail_ = function(index) {
-  var item = assertInstanceof(this.dataModel_.item(index), Gallery.Item);
+  var item = assertInstanceof(this.dataModel_.item(index), GalleryItem);
   var url = item.getEntry().toURL();
 
   var cached = this.renderCache_[url];
@@ -452,7 +452,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  * Set the thumbnail image.
  *
  * @param {!Element} thumbnail Thumbnail element.
- * @param {!Gallery.Item} item Gallery item.
+ * @param {!GalleryItem} item Gallery item.
  * @private
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {

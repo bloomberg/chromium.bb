@@ -12,7 +12,7 @@
           '../file_manager/common/js/metrics_base.js',
           '../file_manager/common/js/metrics.js',
           '../file_manager/common/js/metrics_events.js',
-          "../file_manager/foreground/js/metadata/image_orientation.js",
+          '../file_manager/foreground/js/metadata/image_orientation.js',
           'cache.js',
           'image_loader.js',
           'piex_loader.js',
@@ -20,7 +20,6 @@
           'scheduler.js',
         ],
         'externs': [
-          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
@@ -28,7 +27,7 @@
         ],
       },
       'includes': [
-        '../../../third_party/closure_compiler/compile_js.gypi'
+        '../compile_js.gypi',
       ],
     }
   ],

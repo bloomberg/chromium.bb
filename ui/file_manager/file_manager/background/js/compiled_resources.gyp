@@ -10,6 +10,7 @@
           '../../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           '../../../../webui/resources/js/load_time_data.js',
           '../../../../webui/resources/js/cr.js',
+          '../../../../webui/resources/js/cr/ui.js',
           '../../../../webui/resources/js/util.js',
           '../../../../webui/resources/js/cr/event_target.js',
           '../../../../webui/resources/js/cr/ui/array_data_model.js',
@@ -38,16 +39,16 @@
           'file_operation_util.js',
           'import_history.js',
           'launcher_search.js',
+          'task_queue.js',
           'media_import_handler.js',
           'media_scanner.js',
           'progress_center.js',
-          'task_queue.js',
           'volume_manager.js',
           'background_base.js',
         ],
         'externs': [
-          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
+          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/command_line_private.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
@@ -63,7 +64,7 @@
         ],
       },
       'includes': [
-        '../../../../../third_party/closure_compiler/compile_js.gypi'
+        '../../../compile_js.gypi',
       ],
     }
   ],

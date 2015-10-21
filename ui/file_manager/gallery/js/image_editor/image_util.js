@@ -467,7 +467,7 @@ ImageUtil.ImageLoader = function(document, metadataModel) {
  * TODO(mtomasz): Simplify, or even get rid of this class and merge with the
  * ThumbnaiLoader class.
  *
- * @param {!Gallery.Item} item Item representing the image to be loaded.
+ * @param {!GalleryItem} item Item representing the image to be loaded.
  * @param {function(!HTMLCanvasElement, string=)} callback Callback to be
  *     called when loaded. The second optional argument is an error identifier.
  * @param {number=} opt_delay Load delay in milliseconds, useful to let the
