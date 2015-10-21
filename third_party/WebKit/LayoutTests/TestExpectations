@@ -1608,3 +1608,5 @@ crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-lr-selection.html [ Nee
 crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-lr-text.html [ NeedsRebaseline ]
 crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
 crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-rl-text.html [ NeedsRebaseline ]
+
+crbug.com/543397 [ Win10 ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
