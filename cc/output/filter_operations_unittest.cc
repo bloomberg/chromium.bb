@@ -44,6 +44,19 @@ TEST(FilterOperationsTest, GetOutsetsDropShadowReferenceFilter) {
   EXPECT_EQ(15, left);
 }
 
+TEST(FilterOperationsTest, GetOutsetsNullReferenceFilter) {
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateReferenceFilter(nullptr));
+
+  int top, right, bottom, left;
+  top = right = bottom = left = 0;
+  ops.GetOutsets(&top, &right, &bottom, &left);
+  EXPECT_EQ(0, top);
+  EXPECT_EQ(0, right);
+  EXPECT_EQ(0, bottom);
+  EXPECT_EQ(0, left);
+}
+
 TEST(FilterOperationsTest, GetOutsetsDropShadow) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 20, 0));
