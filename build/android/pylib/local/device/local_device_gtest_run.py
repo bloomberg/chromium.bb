@@ -340,7 +340,10 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if self._test_instance.app_files:
       self._delegate.PullAppFiles(device, self._test_instance.app_files,
                                   self._test_instance.app_file_dir)
-    self._delegate.Clear(device)
+    # Clearing data when using incremental install wipes out cached optimized
+    # dex files (and shouldn't be necessary by tests anyways).
+    if not self._env.incremental_install:
+      self._delegate.Clear(device)
 
     # Parse the output.
     # TODO(jbudorick): Transition test scripts away from parsing stdout.
