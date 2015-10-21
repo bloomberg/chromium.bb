@@ -34,8 +34,8 @@
                 "enabled": "true",
                 "promo_on_limited_taps": "true",
                 "promo_opt_out": "true",
-                "tap_preload_limit_for_decided": "50",
-                "tap_preload_limit_for_undecided": "20",
+                "tap_prefetch_limit_for_decided": "50",
+                "tap_prefetch_limit_for_undecided": "20",
                 "tap_resolve_limit_for_decided": "50",
                 "tap_resolve_limit_for_undecided": "20",
                 "tap_triggered_promo_limit": "50"
