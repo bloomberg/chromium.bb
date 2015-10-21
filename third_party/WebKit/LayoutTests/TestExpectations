@@ -838,11 +838,6 @@ crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
-# Assertion failures seen only on Slow Leopard.
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-skip-step-in.html [ Crash ]
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-steppings.html [ Crash ]
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-callstack-get-as-string.html [ Crash ]
-
 crbug.com/539725 [ Linux Debug ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Slow Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
