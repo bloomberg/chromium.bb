@@ -1607,6 +1607,8 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
             ? view()->frameView()->visibleContentSize().height()
             : view()->frameView()->visibleContentSize().width();
         LayoutUnit fillAvailableExtent = containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding);
+        if (fillAvailableExtent == -1)
+            return fillFallbackExtent;
         return std::min(fillAvailableExtent, fillFallbackExtent);
     }
 
