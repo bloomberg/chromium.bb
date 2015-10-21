@@ -71,5 +71,3 @@ class FactoryTest(cros_test_lib.TestCase):
     a = self.of2.GetInstance()
     self.of2.Setup('t4', None)
     self.assertNotEqual(a, self.of2.GetInstance())
-
-

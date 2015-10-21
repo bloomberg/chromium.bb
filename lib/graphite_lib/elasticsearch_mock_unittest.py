@@ -44,4 +44,3 @@ class statsd_mock_test(unittest.TestCase):
       raise elasticsearch.ElasticsearchException('error message')
     except elasticsearch.ElasticsearchException:
       pass
-

@@ -112,7 +112,7 @@ class SyncChromeStageTest(generic_stages_unittest.AbstractStageTestCase,
                           cros_build_lib_unittest.RunCommandTestCase):
   """Tests for SyncChromeStage."""
 
-  # pylint: disable-msg=protected-access
+  # pylint: disable=protected-access
   def setUp(self):
     self._Prepare()
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'DetermineChromeVersion',
@@ -126,4 +126,3 @@ class SyncChromeStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Basic syntax sanity test."""
     stage = self.ConstructStage()
     stage.PerformStage()
-

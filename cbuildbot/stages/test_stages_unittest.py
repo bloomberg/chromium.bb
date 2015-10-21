@@ -17,14 +17,12 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import artifact_stages
-from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util

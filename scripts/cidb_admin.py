@@ -79,5 +79,3 @@ def main(argv):
     db = cidb.CIDBConnection(options.cred_dir)
     db.DropDatabase()
     print('Done.')
-
-

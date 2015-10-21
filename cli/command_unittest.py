@@ -130,4 +130,3 @@ class CommandTest(cros_test_lib.MockTestCase):
     # Pick some commands that are likely to not go away.
     self.assertIn('chrome-sdk', cros_commands)
     self.assertIn('flash', cros_commands)
-
