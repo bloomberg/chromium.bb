@@ -7,7 +7,10 @@
 #include "build/build_config.h"
 #include "components/version_info/version_info_values.h"
 #include "grit/components_strings.h"
+
+#if defined(USE_UNOFFICIAL_VERSION_NUMBER)
 #include "ui/base/l10n/l10n_util.h"
+#endif  // USE_UNOFFICIAL_VERSION_NUMBER
 
 namespace version_info {
 
@@ -83,7 +86,7 @@ std::string GetChannelString(Channel channel) {
 std::string GetVersionStringWithModifier(const std::string& modifier) {
   std::string current_version;
   current_version += GetVersionNumber();
-#if !defined(GOOGLE_CHROME_BUILD)
+#if defined(USE_UNOFFICIAL_VERSION_NUMBER)
   current_version += " (";
   current_version += l10n_util::GetStringUTF8(IDS_VERSION_UI_UNOFFICIAL);
   current_version += " ";
@@ -91,7 +94,7 @@ std::string GetVersionStringWithModifier(const std::string& modifier) {
   current_version += " ";
   current_version += GetOSType();
   current_version += ")";
-#endif
+#endif  // USE_UNOFFICIAL_VERSION_NUMBER
   if (!modifier.empty())
     current_version += " " + modifier;
   return current_version;

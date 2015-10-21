@@ -2,14 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//chrome/version.gni")
 
-if (is_ios) {
-  declare_args() {
+declare_args() {
+  if (is_ios) {
     # Path to the file used to override the version PATH level on iOS.
     # Default to ios/build/util/VERSION.
     ios_extra_version_path = "//ios/build/util/VERSION"
   }
+
+  use_unofficial_version_number = !is_chrome_branded
 }
 
 source_set("version_info") {
@@ -21,8 +24,12 @@ source_set("version_info") {
   deps = [
     "//base",
     "//components/strings",
-    "//ui/base",
   ]
+
+  if (use_unofficial_version_number) {
+    defines = [ "USE_UNOFFICIAL_VERSION_NUMBER" ]
+    deps += [ "//ui/base" ]
+  }
 
   public_deps = [
     ":generate_version_info",

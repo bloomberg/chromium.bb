@@ -10,6 +10,13 @@
     # of a file with the corresponding value overrides. If present it will
     # be loaded after all other input files.
     'extra_version_name': '',
+    'conditions': [
+      ['branding == "Chrome"', {
+        'use_unofficial_version_number%': 0,
+      }, {
+        'use_unofficial_version_number%': 1,
+      }],
+    ],
   },
   'targets': [
     {
@@ -21,13 +28,20 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../ui/base/ui_base.gyp:ui_base',
         'components_strings.gyp:components_strings',
         'generate_version_info',
       ],
       'sources': [
         'version_info/version_info.cc',
         'version_info/version_info.h',
+      ],
+      'conditions': [
+        ['use_unofficial_version_number==1', {
+          'dependencies': [
+              '../ui/base/ui_base.gyp:ui_base',
+            ],
+          'defines': ['USE_UNOFFICIAL_VERSION_NUMBER'],
+        }],
       ],
       'export_dependent_settings': [
         'generate_version_info',
