@@ -14,12 +14,16 @@
 #include "content/renderer/savable_resources.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
 class SavableResourcesTest : public ContentBrowserTest {
  public:
+  using UrlVectorMatcher = testing::Matcher<std::vector<GURL>>;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
@@ -33,7 +37,7 @@ class SavableResourcesTest : public ContentBrowserTest {
   // matches expected_resources_set.
   void GetSavableResourceLinksForPage(
       const base::FilePath& page_file_path,
-      const std::set<GURL>& expected_resources_set) {
+      const UrlVectorMatcher& expected_resources_matcher) {
     // Convert local file path to file URL.
     GURL file_url = net::FilePathToFileURL(page_file_path);
     // Load the test file.
@@ -41,12 +45,12 @@ class SavableResourcesTest : public ContentBrowserTest {
 
     PostTaskToInProcessRendererAndWait(base::Bind(
         &SavableResourcesTest::CheckResources, base::Unretained(this),
-        page_file_path, expected_resources_set, file_url,
+        page_file_path, expected_resources_matcher, file_url,
         shell()->web_contents()->GetMainFrame()->GetRoutingID()));
   }
 
   void CheckResources(const base::FilePath& page_file_path,
-                      const std::set<GURL>& expected_resources_set,
+                      const UrlVectorMatcher& expected_resources_matcher,
                       const GURL& file_url,
                       int render_frame_routing_id) {
     // Get all savable resource links for the page.
@@ -70,92 +74,47 @@ class SavableResourcesTest : public ContentBrowserTest {
         render_frame->GetWebFrame(),
         &result, savable_schemes));
 
-    // Check all links of sub-resource
-    for (const auto& resource : resources_list) {
-      ASSERT_TRUE(expected_resources_set.count(resource) != 0);
-    }
+    EXPECT_EQ(resources_list.size(), referrer_urls_list.size());
+    EXPECT_EQ(resources_list.size(), referrer_policies_list.size());
+    EXPECT_THAT(resources_list, expected_resources_matcher);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
                        GetSavableResourceLinksWithPageHasValidStyleLink) {
-  const char* expected_sub_resource_links[] = {
-    "style.css"
-  };
-
-  const char* expected_frame_links[] = {
-    "simple_linked_stylesheet.html",
-  };
-
-  // Add all expected links of sub-resource to expected set.
-  std::set<GURL> expected_resources_set;
-    const base::FilePath expected_resource_url =
-        GetTestFilePath("dom_serializer", expected_sub_resource_links[0]);
-    expected_resources_set.insert(
-        net::FilePathToFileURL(expected_resource_url));
-
-    //expected frame set
-    const base::FilePath expected_frame_url =
-        GetTestFilePath("dom_serializer", expected_frame_links[0]);
-    expected_resources_set.insert(
-        net::FilePathToFileURL(expected_frame_url));
-
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "simple_linked_stylesheet.html");
-  GetSavableResourceLinksForPage(page_file_path, expected_resources_set);
+
+  auto expected_subresources_matcher = testing::UnorderedElementsAre(
+      net::FilePathToFileURL(GetTestFilePath("dom_serializer", "style.css")));
+
+  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher);
 }
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
 // which has valid savable resource links.
 IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
                        GetSavableResourceLinksWithPageHasValidLinks) {
-  std::set<GURL> expected_resources_set;
-
-  const char* expected_sub_resource_links[] = {
-    "file:///c:/yt/css/base_all-vfl36460.css",
-    "file:///c:/yt/js/base_all_with_bidi-vfl36451.js",
-    "file:///c:/yt/img/pixel-vfl73.gif"
-  };
-  const char* expected_frame_links[] = {
-    "youtube_1.htm",
-    "youtube_2.htm"
-  };
-  // Add all expected links of sub-resource to expected set.
-  for (size_t i = 0; i < arraysize(expected_sub_resource_links); ++i)
-    expected_resources_set.insert(GURL(expected_sub_resource_links[i]));
-  // Add all expected links of frame to expected set.
-  for (size_t i = 0; i < arraysize(expected_frame_links); ++i) {
-    const base::FilePath expected_frame_url =
-        GetTestFilePath("dom_serializer", expected_frame_links[i]);
-    expected_resources_set.insert(
-        net::FilePathToFileURL(expected_frame_url));
-  }
-
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_1.htm");
-  GetSavableResourceLinksForPage(page_file_path, expected_resources_set);
+
+  auto expected_subresources_matcher = testing::UnorderedElementsAre(
+      GURL("file:///c:/yt/css/base_all-vfl36460.css"),
+      GURL("file:///c:/yt/js/base_all_with_bidi-vfl36451.js"),
+      GURL("file:///c:/yt/img/pixel-vfl73.gif"));
+
+  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher);
 }
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
 // which does not have valid savable resource links.
 IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
                        GetSavableResourceLinksWithPageHasInvalidLinks) {
-  std::set<GURL> expected_resources_set;
-
-  const char* expected_frame_links[] = {
-    "youtube_2.htm"
-  };
-  // Add all expected links of frame to expected set.
-  for (size_t i = 0; i < arraysize(expected_frame_links); ++i) {
-    base::FilePath expected_frame_url =
-        GetTestFilePath("dom_serializer", expected_frame_links[i]);
-    expected_resources_set.insert(
-        net::FilePathToFileURL(expected_frame_url));
-  }
-
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_2.htm");
-  GetSavableResourceLinksForPage(page_file_path, expected_resources_set);
+
+  auto expected_subresources_matcher = testing::IsEmpty();
+  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher);
 }
 
 }  // namespace content
