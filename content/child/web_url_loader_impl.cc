@@ -967,15 +967,15 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   if (!headers)
     return;
 
-  WebURLResponse::HTTPVersion version = WebURLResponse::Unknown;
+  WebURLResponse::HTTPVersion version = WebURLResponse::HTTPVersionUnknown;
   if (headers->GetHttpVersion() == net::HttpVersion(0, 9))
-    version = WebURLResponse::HTTP_0_9;
+    version = WebURLResponse::HTTPVersion_0_9;
   else if (headers->GetHttpVersion() == net::HttpVersion(1, 0))
-    version = WebURLResponse::HTTP_1_0;
+    version = WebURLResponse::HTTPVersion_1_0;
   else if (headers->GetHttpVersion() == net::HttpVersion(1, 1))
-    version = WebURLResponse::HTTP_1_1;
+    version = WebURLResponse::HTTPVersion_1_1;
   else if (headers->GetHttpVersion() == net::HttpVersion(2, 0))
-    version = WebURLResponse::HTTP_2_0;
+    version = WebURLResponse::HTTPVersion_2_0;
   response->setHTTPVersion(version);
   response->setHTTPStatusCode(headers->response_code());
   response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));

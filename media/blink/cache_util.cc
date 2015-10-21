@@ -29,11 +29,15 @@ uint32 GetReasonsForUncacheability(const WebURLResponse& response) {
   const int code = response.httpStatusCode();
   const int version = response.httpVersion();
   const HttpVersion http_version =
-      version == WebURLResponse::HTTP_2_0 ? HttpVersion(2, 0) :
-      version == WebURLResponse::HTTP_1_1 ? HttpVersion(1, 1) :
-      version == WebURLResponse::HTTP_1_0 ? HttpVersion(1, 0) :
-      version == WebURLResponse::HTTP_0_9 ? HttpVersion(0, 9) :
-      HttpVersion();
+      version == WebURLResponse::HTTPVersion_2_0
+          ? HttpVersion(2, 0)
+          : version == WebURLResponse::HTTPVersion_1_1
+                ? HttpVersion(1, 1)
+                : version == WebURLResponse::HTTPVersion_1_0
+                      ? HttpVersion(1, 0)
+                      : version == WebURLResponse::HTTPVersion_0_9
+                            ? HttpVersion(0, 9)
+                            : HttpVersion();
   if (code != kHttpOK && code != kHttpPartialContent)
     reasons |= kNoData;
   if (http_version < HttpVersion(1, 1) && code == kHttpPartialContent)

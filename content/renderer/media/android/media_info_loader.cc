@@ -120,10 +120,14 @@ void MediaInfoLoader::didReceiveResponse(
     WebURLLoader* loader,
     const WebURLResponse& response) {
   DVLOG(1) << "didReceiveResponse: HTTP/"
-           << (response.httpVersion() == WebURLResponse::HTTP_0_9 ? "0.9" :
-               response.httpVersion() == WebURLResponse::HTTP_1_0 ? "1.0" :
-               response.httpVersion() == WebURLResponse::HTTP_1_1 ? "1.1" :
-               "Unknown")
+           << (response.httpVersion() == WebURLResponse::HTTPVersion_0_9
+                   ? "0.9"
+                   : response.httpVersion() == WebURLResponse::HTTPVersion_1_0
+                         ? "1.0"
+                         : response.httpVersion() ==
+                                   WebURLResponse::HTTPVersion_1_1
+                               ? "1.1"
+                               : "Unknown")
            << " " << response.httpStatusCode();
   DCHECK(active_loader_.get());
   if (!url_.SchemeIs(url::kHttpScheme) && !url_.SchemeIs(url::kHttpsScheme)) {

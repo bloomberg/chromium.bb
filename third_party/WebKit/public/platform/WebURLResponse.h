@@ -48,7 +48,11 @@ class WebURLResponsePrivate;
 
 class WebURLResponse {
 public:
-    enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1, HTTP_2_0 };
+    enum HTTPVersion { HTTPVersionUnknown,
+        HTTPVersion_0_9,
+        HTTPVersion_1_0,
+        HTTPVersion_1_1,
+        HTTPVersion_2_0 };
     enum SecurityStyle {
         SecurityStyleUnknown,
         SecurityStyleUnauthenticated,

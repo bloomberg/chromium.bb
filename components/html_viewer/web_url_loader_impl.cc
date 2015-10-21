@@ -29,17 +29,17 @@ namespace {
 blink::WebURLResponse::HTTPVersion StatusLineToHTTPVersion(
     const mojo::String& status_line) {
   if (status_line.is_null())
-    return blink::WebURLResponse::HTTP_0_9;
+    return blink::WebURLResponse::HTTPVersion_0_9;
 
   if (base::StartsWith(status_line.get(), "HTTP/1.0",
                        base::CompareCase::SENSITIVE))
-    return blink::WebURLResponse::HTTP_1_0;
+    return blink::WebURLResponse::HTTPVersion_1_0;
 
   if (base::StartsWith(status_line.get(), "HTTP/1.1",
                        base::CompareCase::SENSITIVE))
-    return blink::WebURLResponse::HTTP_1_1;
+    return blink::WebURLResponse::HTTPVersion_1_1;
 
-  return blink::WebURLResponse::Unknown;
+  return blink::WebURLResponse::HTTPVersionUnknown;
 }
 
 blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {

@@ -367,11 +367,11 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
             protocol = "spdy";
         } else if (response.isHTTP()) {
             protocol = "http";
-            if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTP_0_9)
+            if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTPVersion_0_9)
                 protocol = "http/0.9";
-            else if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTP_1_0)
+            else if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTPVersion_1_0)
                 protocol = "http/1.0";
-            else if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTP_1_1)
+            else if (response.httpVersion() == ResourceResponse::HTTPVersion::HTTPVersion_1_1)
                 protocol = "http/1.1";
         } else {
             protocol = response.url().protocol();
