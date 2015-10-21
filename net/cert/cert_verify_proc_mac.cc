@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
@@ -37,6 +38,12 @@
 #endif
 
 using base::ScopedCFTypeRef;
+
+extern "C" {
+// Declared in <Security/SecTrust.h>, available in 10.9+
+OSStatus SecTrustSetOCSPResponse(SecTrustRef, CFTypeRef)
+    __attribute__((weak_import));
+}  // extern "C"
 
 namespace net {
 
@@ -380,6 +387,7 @@ bool IsIssuedByKnownRoot(CFArrayRef chain) {
 // held.
 int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
                                 CFArrayRef trust_policies,
+                                const std::string& ocsp_response,
                                 int flags,
                                 ScopedCFTypeRef<SecTrustRef>* trust_ref,
                                 SecTrustResultType* trust_result,
@@ -443,6 +451,20 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
   if (status)
     return NetErrorFromOSStatus(status);
 
+  // Copy the stapled OCSP data; for EV certs, this can avoid an online
+  // revocation check, as OS X force-enables revocation checking for EV.
+  if (&SecTrustSetOCSPResponse != nullptr) {
+    ScopedCFTypeRef<CFDataRef> ocsp_data(
+        CFDataCreate(kCFAllocatorDefault,
+                     reinterpret_cast<const UInt8*>(ocsp_response.data()),
+                     ocsp_response.size()));
+    if (ocsp_data) {
+      status = SecTrustSetOCSPResponse(tmp_trust, ocsp_data);
+      if (status)
+        return NetErrorFromOSStatus(status);
+    }
+  }
+
   // Verify the certificate. A non-zero result from SecTrustGetResult()
   // indicates that some fatal error occurred and the chain couldn't be
   // processed, not that the chain contains no errors. We need to examine the
@@ -477,9 +499,7 @@ bool CertVerifyProcMac::SupportsAdditionalTrustAnchors() const {
 }
 
 bool CertVerifyProcMac::SupportsOCSPStapling() const {
-  // TODO(rsleevi): Plumb an OCSP response into the Mac system library.
-  // https://crbug.com/430714
-  return false;
+  return base::mac::IsOSMavericksOrLater();
 }
 
 int CertVerifyProcMac::VerifyInternal(
@@ -565,9 +585,9 @@ int CertVerifyProcMac::VerifyInternal(
     ScopedCFTypeRef<CFArrayRef> temp_chain;
     CSSM_TP_APPLE_EVIDENCE_INFO* temp_chain_info = NULL;
 
-    int rv = BuildAndEvaluateSecTrustRef(cert_array, trust_policies, flags,
-                                         &temp_ref, &temp_trust_result,
-                                         &temp_chain, &temp_chain_info);
+    int rv = BuildAndEvaluateSecTrustRef(
+        cert_array, trust_policies, ocsp_response, flags, &temp_ref,
+        &temp_trust_result, &temp_chain, &temp_chain_info);
     if (rv != OK)
       return rv;
 
