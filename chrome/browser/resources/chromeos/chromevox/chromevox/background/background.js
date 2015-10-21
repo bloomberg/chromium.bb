@@ -19,12 +19,8 @@ goog.require('cvox.ClassicEarcons');
 goog.require('cvox.CompositeTts');
 goog.require('cvox.ConsoleTts');
 goog.require('cvox.ExtensionBridge');
-goog.require('cvox.HostFactory');
 goog.require('cvox.InjectedScriptLoader');
 goog.require('cvox.NavBraille');
-// TODO(dtseng): This is required to prevent Closure from stripping our export
-// prefs on window.
-goog.require('cvox.OptionsPage');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
 goog.require('cvox.QueueMode');
@@ -264,7 +260,7 @@ cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
  */
 cvox.ChromeVoxBackground.prototype.onEarconMessage = function(msg) {
   if (msg.action == 'play') {
-    cvox.ChromeVox.earcons.playEarcon(msg.earcon);
+    cvox.ChromeVox.earcons.playEarcon(msg['earcon']);
   }
 };
 

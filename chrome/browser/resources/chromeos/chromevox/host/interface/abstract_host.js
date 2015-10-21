@@ -10,6 +10,7 @@
 
 goog.provide('cvox.AbstractHost');
 
+goog.require('cvox.ChromeVoxEventWatcher');
 
 /**
  * @constructor

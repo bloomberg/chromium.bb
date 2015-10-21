@@ -5,8 +5,6 @@
 goog.provide('cvox.ChromeVoxKbHandler');
 
 goog.require('cvox.ChromeVox');
-goog.require('cvox.ChromeVoxUserCommands');
-goog.require('cvox.History');
 goog.require('cvox.KeyMap');
 goog.require('cvox.KeySequence');
 goog.require('cvox.KeyUtil');
@@ -24,6 +22,13 @@ cvox.ChromeVoxKbHandler = {};
  * @type {cvox.KeyMap}
  */
 cvox.ChromeVoxKbHandler.handlerKeyMap;
+
+/**
+ * Handler for ChromeVox commands. Returns undefined if the command does not
+ * exist. Otherwise, returns the result of executing the command.
+ * @type {function(string) : boolean|undefined}
+ */
+cvox.ChromeVoxKbHandler.commandHandler;
 
 /**
  * Loads the key bindings into the keyToFunctionsTable.
@@ -110,13 +115,9 @@ cvox.ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
   // propagate and the default action should be performed, false if we eat
   // the key.
   var returnValue = true;
-
-  var func = cvox.ChromeVoxUserCommands.commands[functionName];
-  if (func) {
-    var history = cvox.History.getInstance();
-    history.enterUserCommand(functionName);
-    returnValue = func();
-    history.exitUserCommand(functionName);
+  var commandResult = cvox.ChromeVoxKbHandler.commandHandler(functionName);
+  if (commandResult !== undefined) {
+    returnValue = commandResult;
   } else if (keySequence.cvoxModifier) {
     // Modifier/prefix is active -- prevent default action
     returnValue = false;

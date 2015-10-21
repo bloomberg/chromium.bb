@@ -12,7 +12,6 @@ goog.provide('NextEarcons');
 
 goog.require('EarconEngine');
 goog.require('cvox.AbstractEarcons');
-goog.require('cvox.HostFactory');
 
 
 /**

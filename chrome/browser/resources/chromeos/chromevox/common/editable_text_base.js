@@ -470,7 +470,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     // Only use this logic when observing deletions (and insertion of word
     // breakers).
     // TODO(dtseng): Think about a more reliable way to do this.
-    if (!(this instanceof cvox.ChromeVoxEditableContentEditable) ||
+    if (!(cvox.ChromeVoxEditableContentEditable &&
+            this instanceof cvox.ChromeVoxEditableContentEditable) ||
         newLen < len ||
         this.isWordBreakChar(evt.value[newLen - 1] || '')) {
       this.describeTextChangedHelper(

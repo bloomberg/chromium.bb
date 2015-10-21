@@ -20,12 +20,14 @@ goog.provide('cvox.ChromeVoxUserCommands');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.BrailleOverlayWidget');
 goog.require('cvox.ChromeVox');
+goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.CommandStore');
 goog.require('cvox.ConsoleTts');
 goog.require('cvox.ContextMenuWidget');
 goog.require('cvox.DomPredicates');
 goog.require('cvox.DomUtil');
 goog.require('cvox.FocusUtil');
+goog.require('cvox.History');
 goog.require('cvox.KeyboardHelpWidget');
 goog.require('cvox.NodeSearchWidget');
 goog.require('cvox.PlatformUtil');
@@ -51,6 +53,17 @@ cvox.ChromeVoxUserCommands.init_ = function() {
     cvox.ChromeVoxUserCommands.commands[cmd] =
         cvox.ChromeVoxUserCommands.createCommand_(cmd);
   }
+
+  cvox.ChromeVoxKbHandler.commandHandler = function(commandName) {
+    var command = cvox.ChromeVoxUserCommands.commands[commandName];
+    if (!command)
+      return undefined;
+    var history = cvox.History.getInstance();
+    history.enterUserCommand(commandName);
+    var ret = command();
+    history.exitUserCommand(commandName);
+    return ret;
+  };
 };
 
 
