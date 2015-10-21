@@ -2708,6 +2708,9 @@ void CalculateDrawPropertiesAndVerify(
             inputs->property_trees, inputs->page_scale_layer,
             inputs->page_scale_factor, inputs->device_scale_factor,
             inputs->device_transform);
+        // Similarly, the device viewport is shared between both trees.
+        inputs->property_trees->clip_tree.SetViewportClip(
+            gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
         ComputeVisibleRectsUsingPropertyTrees(
             inputs->root_layer, inputs->property_trees,
             inputs->can_render_to_separate_surface, &update_layer_list);

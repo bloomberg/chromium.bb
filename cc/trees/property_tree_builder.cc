@@ -544,6 +544,7 @@ void BuildPropertyTreesTopLevelInternal(
     UpdatePageScaleFactorInPropertyTrees(property_trees, page_scale_layer,
                                          page_scale_factor, device_scale_factor,
                                          device_transform);
+    property_trees->clip_tree.SetViewportClip(gfx::RectF(viewport));
     return;
   }
 
