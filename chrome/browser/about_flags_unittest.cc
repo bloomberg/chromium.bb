@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -19,6 +21,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -32,6 +35,7 @@ const char kFlags3[] = "flag3";
 const char kFlags4[] = "flag4";
 const char kFlags5[] = "flag5";
 const char kFlags6[] = "flag6";
+const char kFlags7[] = "flag7";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
@@ -186,6 +190,8 @@ std::string FilePathStringTypeToString(const base::FilePath::StringType& path) {
 #endif
 }
 
+// Get all associated switches corresponding to defined about_flags.cc entries.
+// Does not include information about FEATURE_VALUE entries.
 std::set<std::string> GetAllSwitchesForTesting() {
   std::set<std::string> result;
 
@@ -195,17 +201,22 @@ std::set<std::string> GetAllSwitchesForTesting() {
 
   for (size_t i = 0; i < num_entries; ++i) {
     const FeatureEntry& entry = entries[i];
-    if (entry.type == FeatureEntry::SINGLE_VALUE ||
-        entry.type == FeatureEntry::SINGLE_DISABLE_VALUE) {
-      result.insert(entry.command_line_switch);
-    } else if (entry.type == FeatureEntry::MULTI_VALUE) {
-      for (int j = 0; j < entry.num_choices; ++j) {
-        result.insert(entry.choices[j].command_line_switch);
-      }
-    } else {
-      DCHECK_EQ(entry.type, FeatureEntry::ENABLE_DISABLE_VALUE);
-      result.insert(entry.command_line_switch);
-      result.insert(entry.disable_command_line_switch);
+    switch (entry.type) {
+      case FeatureEntry::SINGLE_VALUE:
+      case FeatureEntry::SINGLE_DISABLE_VALUE:
+        result.insert(entry.command_line_switch);
+        break;
+      case FeatureEntry::MULTI_VALUE:
+        for (int j = 0; j < entry.num_choices; ++j) {
+          result.insert(entry.choices[j].command_line_switch);
+        }
+        break;
+      case FeatureEntry::ENABLE_DISABLE_VALUE:
+        result.insert(entry.command_line_switch);
+        result.insert(entry.disable_command_line_switch);
+        break;
+      case FeatureEntry::FEATURE_VALUE:
+        break;
     }
   }
   return result;
@@ -222,84 +233,33 @@ const FeatureEntry::Choice kMultiChoices[] = {
 // The entries that are set for these tests. The 3rd entry is not supported on
 // the current platform, all others are.
 static FeatureEntry kEntries[] = {
-  {
-    kFlags1,
-    IDS_PRODUCT_NAME,
-    IDS_PRODUCT_NAME,
-    0,  // Ends up being mapped to the current platform.
-    FeatureEntry::SINGLE_VALUE,
-    kSwitch1,
-    "",
-    NULL,
-    NULL,
-    NULL,
-    0
-  },
-  {
-    kFlags2,
-    IDS_PRODUCT_NAME,
-    IDS_PRODUCT_NAME,
-    0,  // Ends up being mapped to the current platform.
-    FeatureEntry::SINGLE_VALUE,
-    kSwitch2,
-    kValueForSwitch2,
-    NULL,
-    NULL,
-    NULL,
-    0
-  },
-  {
-    kFlags3,
-    IDS_PRODUCT_NAME,
-    IDS_PRODUCT_NAME,
-    0,  // This ends up enabling for an OS other than the current.
-    FeatureEntry::SINGLE_VALUE,
-    kSwitch3,
-    "",
-    NULL,
-    NULL,
-    NULL,
-    0
-  },
-  {
-    kFlags4,
-    IDS_PRODUCT_NAME,
-    IDS_PRODUCT_NAME,
-    0,  // Ends up being mapped to the current platform.
-    FeatureEntry::MULTI_VALUE,
-    "",
-    "",
-    "",
-    "",
-    kMultiChoices,
-    arraysize(kMultiChoices)
-  },
-  {
-    kFlags5,
-    IDS_PRODUCT_NAME,
-    IDS_PRODUCT_NAME,
-    0,  // Ends up being mapped to the current platform.
-    FeatureEntry::ENABLE_DISABLE_VALUE,
-    kSwitch1,
-    kEnableDisableValue1,
-    kSwitch2,
-    kEnableDisableValue2,
-    NULL,
-    3
-  },
-  {
-    kFlags6,
-    IDS_PRODUCT_NAME,
-    IDS_PRODUCT_NAME,
-    0,
-    FeatureEntry::SINGLE_DISABLE_VALUE,
-    kSwitch6,
-    "",
-    NULL,
-    NULL,
-    NULL,
-    0
-  },
+    {kFlags1, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::SINGLE_VALUE, kSwitch1, "", nullptr, nullptr, nullptr,
+     nullptr, 0},
+    {kFlags2, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::SINGLE_VALUE, kSwitch2, kValueForSwitch2, nullptr, nullptr,
+     nullptr, nullptr, 0},
+    {kFlags3, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
+     0,  // This ends up enabling for an OS other than the current.
+     FeatureEntry::SINGLE_VALUE, kSwitch3, "", nullptr, nullptr, nullptr,
+     nullptr, 0},
+    {kFlags4, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::MULTI_VALUE, "", "", "", "", nullptr, kMultiChoices,
+     arraysize(kMultiChoices)},
+    {kFlags5, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::ENABLE_DISABLE_VALUE, kSwitch1, kEnableDisableValue1,
+     kSwitch2, kEnableDisableValue2, nullptr, nullptr, 3},
+    {kFlags6, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME, 0,
+     FeatureEntry::SINGLE_DISABLE_VALUE, kSwitch6, "", nullptr, nullptr,
+     nullptr, nullptr, 0},
+    {kFlags7, IDS_PRODUCT_NAME, IDS_PRODUCT_NAME,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr,
+     "FeatureName", nullptr, 3},
 };
 
 class AboutFlagsTest : public ::testing::Test {
@@ -322,7 +282,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::SetFeatureEntries(kEntries, arraysize(kEntries));
   }
 
-  void TearDown() override { testing::SetFeatureEntries(NULL, 0); }
+  void TearDown() override { testing::SetFeatureEntries(nullptr, 0); }
 
   TestingPrefServiceSimple prefs_;
   flags_ui::PrefServiceFlagsStorage flags_storage_;
@@ -367,13 +327,13 @@ TEST_F(AboutFlagsTest, MultiFlagChangeNeedsRestart) {
 }
 
 TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
-  // Add two entriess, check they're there.
+  // Add two entries, check they're there.
   SetFeatureEntryEnabled(&flags_storage_, kFlags1, true);
   SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
 
   const base::ListValue* entries_list =
       prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
-  ASSERT_TRUE(entries_list != NULL);
+  ASSERT_TRUE(entries_list != nullptr);
 
   ASSERT_EQ(2u, entries_list->GetSize());
 
@@ -389,7 +349,7 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
   SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
 
   entries_list = prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
-  ASSERT_TRUE(entries_list != NULL);
+  ASSERT_TRUE(entries_list != nullptr);
   ASSERT_EQ(1u, entries_list->GetSize());
   ASSERT_TRUE(entries_list->GetString(0, &s0));
   EXPECT_TRUE(s0 == kFlags1);
@@ -401,13 +361,13 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
   SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
   const base::ListValue* entries_list =
       prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
-  ASSERT_TRUE(entries_list != NULL);
+  ASSERT_TRUE(entries_list != nullptr);
 
   // Remove both, the pref should have been removed completely.
   SetFeatureEntryEnabled(&flags_storage_, kFlags1, false);
   SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
   entries_list = prefs_.GetList(flags_ui::prefs::kEnabledLabsExperiments);
-  EXPECT_TRUE(entries_list == NULL || entries_list->GetSize() == 0);
+  EXPECT_TRUE(entries_list == nullptr || entries_list->GetSize() == 0);
 }
 
 TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
@@ -454,8 +414,8 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   base::CommandLine new_command_line(base::CommandLine::NO_PROGRAM);
   ConvertFlagsToSwitches(&flags_storage_, &new_command_line, kAddSentinels);
 
-  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
-      new_command_line, command_line, NULL));
+  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
+                                                        command_line, nullptr));
   {
     std::set<base::CommandLine::StringType> difference;
     EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
@@ -466,8 +426,8 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
 
   ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
 
-  EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(
-      new_command_line, command_line, NULL));
+  EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
+                                                       command_line, nullptr));
   {
     std::set<base::CommandLine::StringType> difference;
     EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(
@@ -483,7 +443,7 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   ConvertFlagsToSwitches(&flags_storage_, &another_command_line, kAddSentinels);
 
   EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
-      new_command_line, another_command_line, NULL));
+      new_command_line, another_command_line, nullptr));
   {
     std::set<base::CommandLine::StringType> difference;
     EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
@@ -508,12 +468,10 @@ TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
   // This shouldn't do anything before ConvertFlagsToSwitches() wasn't called.
   RemoveFlagsSwitches(&switch_list);
   ASSERT_EQ(4u, switch_list.size());
-  EXPECT_TRUE(switch_list.find(kSwitch1) != switch_list.end());
-  EXPECT_TRUE(switch_list.find(switches::kFlagSwitchesBegin) !=
-              switch_list.end());
-  EXPECT_TRUE(switch_list.find(switches::kFlagSwitchesEnd) !=
-              switch_list.end());
-  EXPECT_TRUE(switch_list.find("foo") != switch_list.end());
+  EXPECT_TRUE(ContainsKey(switch_list, kSwitch1));
+  EXPECT_TRUE(ContainsKey(switch_list, switches::kFlagSwitchesBegin));
+  EXPECT_TRUE(ContainsKey(switch_list, switches::kFlagSwitchesEnd));
+  EXPECT_TRUE(ContainsKey(switch_list, "foo"));
 
   // Call ConvertFlagsToSwitches(), then RemoveFlagsSwitches() again.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -523,7 +481,81 @@ TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
 
   // Now the about:flags-related switch should have been removed.
   ASSERT_EQ(1u, switch_list.size());
-  EXPECT_TRUE(switch_list.find("foo") != switch_list.end());
+  EXPECT_TRUE(ContainsKey(switch_list, "foo"));
+}
+
+TEST_F(AboutFlagsTest, RemoveFlagSwitches_Features) {
+  struct {
+    int enabled_choice;  // 0: default, 1: enabled, 2: disabled.
+    const char* existing_enable_features;
+    const char* existing_disable_features;
+    const char* expected_enable_features;
+    const char* expected_disable_features;
+  } cases[] = {
+      // Default value: Should not affect existing flags.
+      {0, nullptr, nullptr, nullptr, nullptr},
+      {0, "A,B", "C", "A,B", "C"},
+      // "Enable" option: should only affect enabled list.
+      {1, nullptr, nullptr, "FeatureName", nullptr},
+      {1, "A,B", "C", "A,B,FeatureName", "C"},
+      // "Disable" option: should only affect disabled list.
+      {2, nullptr, nullptr, nullptr, "FeatureName"},
+      {2, "A,B", "C", "A,B", "C,FeatureName"},
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Test[%" PRIuS "]: %d [%s] [%s]", i, cases[i].enabled_choice,
+        cases[i].existing_enable_features ? cases[i].existing_enable_features
+                                          : "null",
+        cases[i].existing_disable_features ? cases[i].existing_disable_features
+                                           : "null"));
+
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    if (cases[i].existing_enable_features) {
+      command_line.AppendSwitchASCII(switches::kEnableFeatures,
+                                     cases[i].existing_enable_features);
+    }
+    if (cases[i].existing_disable_features) {
+      command_line.AppendSwitchASCII(switches::kDisableFeatures,
+                                     cases[i].existing_disable_features);
+    }
+
+    testing::ClearState();
+
+    const std::string entry_name = base::StringPrintf(
+        "%s%s%d", kFlags7, testing::kMultiSeparator, cases[i].enabled_choice);
+    SetFeatureEntryEnabled(&flags_storage_, entry_name, true);
+
+    ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
+    auto switch_list = command_line.GetSwitches();
+    EXPECT_EQ(cases[i].expected_enable_features != nullptr,
+              ContainsKey(switch_list, switches::kEnableFeatures));
+    if (cases[i].expected_enable_features)
+      EXPECT_EQ(CreateSwitch(cases[i].expected_enable_features),
+                switch_list[switches::kEnableFeatures]);
+
+    EXPECT_EQ(cases[i].expected_disable_features != nullptr,
+              ContainsKey(switch_list, switches::kDisableFeatures));
+    if (cases[i].expected_disable_features)
+      EXPECT_EQ(CreateSwitch(cases[i].expected_disable_features),
+                switch_list[switches::kDisableFeatures]);
+
+    // RemoveFlagsSwitches() should result in the original values for these
+    // switches.
+    switch_list = command_line.GetSwitches();
+    RemoveFlagsSwitches(&switch_list);
+    EXPECT_EQ(cases[i].existing_enable_features != nullptr,
+              ContainsKey(switch_list, switches::kEnableFeatures));
+    if (cases[i].existing_enable_features)
+      EXPECT_EQ(CreateSwitch(cases[i].existing_enable_features),
+                switch_list[switches::kEnableFeatures]);
+    EXPECT_EQ(cases[i].existing_disable_features != nullptr,
+              ContainsKey(switch_list, switches::kEnableFeatures));
+    if (cases[i].existing_disable_features)
+      EXPECT_EQ(CreateSwitch(cases[i].existing_disable_features),
+                switch_list[switches::kDisableFeatures]);
+  }
 }
 
 // Tests enabling entries that aren't supported on the current platform.
@@ -714,9 +746,65 @@ TEST_F(AboutFlagsTest, EnableDisableValues) {
   }
 }
 
+TEST_F(AboutFlagsTest, FeatureValues) {
+  const FeatureEntry& entry = kEntries[6];
+  ASSERT_EQ(kFlags7, entry.internal_name);
+
+  struct {
+    int enabled_choice;
+    const char* existing_enable_features;
+    const char* existing_disable_features;
+    const char* expected_enable_features;
+    const char* expected_disable_features;
+  } cases[] = {
+      // Nothing selected.
+      {-1, nullptr, nullptr, "", ""},
+      // "Default" option selected, same as nothing selected.
+      {0, nullptr, nullptr, "", ""},
+      // "Enable" option selected.
+      {1, nullptr, nullptr, "FeatureName", ""},
+      // "Disable" option selected.
+      {2, nullptr, nullptr, "", "FeatureName"},
+      // "Enable" option should get added to the existing list.
+      {1, "Foo,Bar", nullptr, "Foo,Bar,FeatureName", ""},
+      // "Disable" option should get added to the existing list.
+      {2, nullptr, "Foo,Bar", "", "Foo,Bar,FeatureName"},
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Test[%" PRIuS "]: %d [%s] [%s]", i, cases[i].enabled_choice,
+        cases[i].existing_enable_features ? cases[i].existing_enable_features
+                                          : "null",
+        cases[i].existing_disable_features ? cases[i].existing_disable_features
+                                           : "null"));
+
+    if (cases[i].enabled_choice != -1) {
+      SetFeatureEntryEnabled(
+          &flags_storage_, entry.NameForChoice(cases[i].enabled_choice), true);
+    }
+
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    if (cases[i].existing_enable_features) {
+      command_line.AppendSwitchASCII(switches::kEnableFeatures,
+                                     cases[i].existing_enable_features);
+    }
+    if (cases[i].existing_disable_features) {
+      command_line.AppendSwitchASCII(switches::kDisableFeatures,
+                                     cases[i].existing_disable_features);
+    }
+
+    ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
+    EXPECT_EQ(cases[i].expected_enable_features,
+              command_line.GetSwitchValueASCII(switches::kEnableFeatures));
+    EXPECT_EQ(cases[i].expected_disable_features,
+              command_line.GetSwitchValueASCII(switches::kDisableFeatures));
+  }
+}
+
 // Makes sure there are no separators in any of the entry names.
 TEST_F(AboutFlagsTest, NoSeparators) {
-  testing::SetFeatureEntries(NULL, 0);
+  testing::SetFeatureEntries(nullptr, 0);
   size_t count;
   const FeatureEntry* entries = testing::GetFeatureEntries(&count);
   for (size_t i = 0; i < count; ++i) {

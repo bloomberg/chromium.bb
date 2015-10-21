@@ -20,11 +20,6 @@ namespace {
 // have more control over initialization timing. Leaky.
 FeatureList* g_instance = nullptr;
 
-// Splits a comma-separated string containing feature names into a vector.
-std::vector<std::string> SplitFeatureListString(const std::string& input) {
-  return SplitString(input, ",", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
-}
-
 }  // namespace
 
 FeatureList::FeatureList() : initialized_(false) {}
@@ -91,6 +86,12 @@ void FeatureList::AssociateReportingFieldTrial(
 // static
 bool FeatureList::IsEnabled(const Feature& feature) {
   return GetInstance()->IsFeatureEnabled(feature);
+}
+
+// static
+std::vector<std::string> FeatureList::SplitFeatureListString(
+    const std::string& input) {
+  return SplitString(input, ",", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
 }
 
 // static

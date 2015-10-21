@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
@@ -44,7 +45,7 @@ struct BASE_EXPORT Feature {
 // The basic use case is for any feature that can be toggled (e.g. through
 // command-line or an experiment) to have a defined Feature struct, e.g.:
 //
-//   struct base::Feature kMyGreatFeature {
+//   const base::Feature kMyGreatFeature {
 //     "MyGreatFeature", base::FEATURE_ENABLED_BY_DEFAULT
 //   };
 //
@@ -121,6 +122,10 @@ class BASE_EXPORT FeatureList {
   // a feature with a given name must only have a single corresponding Feature
   // struct, which is checked in builds with DCHECKs enabled.
   static bool IsEnabled(const Feature& feature);
+
+  // Splits a comma-separated string containing feature names into a vector.
+  static std::vector<std::string> SplitFeatureListString(
+      const std::string& input);
 
   // Returns the singleton instance of FeatureList. Will return null until an
   // instance is registered via SetInstance().

@@ -477,10 +477,10 @@ void EnableNewProfileManagementPreview(Profile* profile) {
       switches::kEnableNewProfileManagement,
       "",  // not used with ENABLE_DISABLE_VALUE type
       switches::kDisableNewProfileManagement,
-      "",  // not used with ENABLE_DISABLE_VALUE type
-      NULL,  // not used with ENABLE_DISABLE_VALUE type
-      3
-  };
+      "",       // not used with ENABLE_DISABLE_VALUE type
+      nullptr,  // not used with ENABLE_DISABLE_VALUE type
+      nullptr,  // not used with ENABLE_DISABLE_VALUE type
+      3};
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::SetFeatureEntryEnabled(&flags_storage, entry.NameForChoice(1),

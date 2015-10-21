@@ -56,6 +56,11 @@ struct FeatureEntry {
     // if the feature should be on when not explicitly specified via about
     // flags - for example via FieldTrials.
     ENABLE_DISABLE_VALUE,
+
+    // Corresponds to a base::Feature, per base/feature_list.h. The entry will
+    // have three states: Default, Enabled, Disabled. When not specified or set
+    // to Default, the normal default value of the feature is used.
+    FEATURE_VALUE,
   };
 
   // Used for MULTI_VALUE types to describe one of the possible values the user
@@ -100,6 +105,9 @@ struct FeatureEntry {
   // disable the feature.
   const char* disable_command_line_switch;
   const char* disable_command_line_value;
+
+  // For FEATURE_VALUE, the name of the base::Feature this entry corresponds to.
+  const char* feature_name;
 
   // This is used if type is MULTI_VALUE.
   const Choice* choices;
