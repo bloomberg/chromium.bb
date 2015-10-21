@@ -107,6 +107,7 @@ public:
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.css");
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.js");
+        URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "white-1x1.png");
     }
 
     void TearDown() override

@@ -252,6 +252,7 @@ TEST_F(WebViewTest, SaveImageAt)
 
     std::string url = m_baseURL + "image-with-data-url.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-with-data-url.html");
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://test"), "white-1x1.png");
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
     webView->resize(WebSize(400, 400));
     webView->layout();
@@ -883,6 +884,7 @@ TEST_F(WebViewTest, TextInputInfoWithReplacedElements)
 {
     std::string url = m_baseURL + "div_with_image.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "div_with_image.html");
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com/foo.png"), "white-1x1.png");
     WebView* webView = m_webViewHelper.initializeAndLoad(url);
     webView->setInitialFocus(false);
     WebTextInputInfo info = webView->textInputInfo();

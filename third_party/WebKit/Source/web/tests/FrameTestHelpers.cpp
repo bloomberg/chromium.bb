@@ -251,6 +251,12 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
     m_webView = WebViewImpl::create(webViewClient);
     m_webView->settings()->setJavaScriptEnabled(enableJavascript);
     m_webView->settings()->setPluginsEnabled(true);
+    // Enable (mocked) network loads of image URLs, as this simplifies
+    // the completion of resource loads upon test shutdown & helps avoid
+    // dormant loads trigger Resource leaks for image loads.
+    //
+    // Consequently, all external image resources must be mocked.
+    m_webView->settings()->setLoadsImagesAutomatically(true);
     if (updateSettingsFunc)
         updateSettingsFunc(m_webView->settings());
     else

@@ -68,11 +68,14 @@ private:
 
 class WebPageSerializerTest : public testing::Test {
 public:
-    WebPageSerializerTest() : m_supportedSchemes(static_cast<size_t>(3))
+    WebPageSerializerTest()
+        : m_supportedSchemes(static_cast<size_t>(3))
     {
         m_supportedSchemes[0] = "http";
         m_supportedSchemes[1] = "https";
         m_supportedSchemes[2] = "file";
+
+        registerMockedImageURL("http://www.test.com/awesome.png");
     }
 
 protected:
@@ -89,6 +92,12 @@ protected:
     void registerMockedURLLoad(const std::string& url, const WebString& fileName)
     {
         URLTestHelpers::registerMockedURLLoad(toKURL(url), fileName, WebString::fromUTF8("pageserialization/"), WebString::fromUTF8("text/html"));
+    }
+
+    void registerMockedImageURL(const std::string& url)
+    {
+        // Image resources need to be mocked, but irrelevant here what image they map to.
+        URLTestHelpers::registerMockedURLLoad(toKURL(url), "pageserialization/awesome.png");
     }
 
     void loadURLInTopFrame(const WebURL& url)
@@ -122,6 +131,17 @@ TEST_F(WebPageSerializerTest, HTMLNodes)
     WebURL topFrameURL = toKURL("http://www.test.com");
     registerMockedURLLoad("http://www.test.com", WebString::fromUTF8("simple_page.html"));
     registerMockedURLLoad("http://www.example.com/beautifull.css", WebString::fromUTF8("beautifull.css"));
+
+    registerMockedImageURL("http://www.test.com/imageButton.png");
+    registerMockedImageURL("http://www.test.com/tableBackground.png");
+    registerMockedImageURL("http://www.test.com/trBackground.png");
+    registerMockedImageURL("http://www.test.com/tdBackground.png");
+    registerMockedImageURL("http://www.test.com/innerFrame.png");
+    registerMockedImageURL("http://www.test.com/bodyBackground.jpg");
+    registerMockedImageURL("https://www.secure.com/https.gif");
+    registerMockedImageURL("ftp://ftp.com/ftp.gif");
+    registerMockedImageURL("unknown://unkown.com/unknown.gif");
+
     loadURLInTopFrame(topFrameURL);
 
     // Retrieve all resources.
@@ -155,6 +175,8 @@ TEST_F(WebPageSerializerTest, URLAttributeValues)
 {
     WebURL topFrameURL = toKURL("http://www.test.com");
     registerMockedURLLoad(topFrameURL.spec(), WebString::fromUTF8("url_attribute_values.html"));
+    registerMockedImageURL("javascript:\"");
+
     loadURLInTopFrame(topFrameURL);
 
     SimpleWebPageSerializerClient serializerClient;
@@ -197,11 +219,9 @@ TEST_F(WebPageSerializerTest, MultipleFrames)
                           WebString::fromUTF8("object_iframe.html"));
     registerMockedURLLoad("http://www.test.com/embed_iframe.html",
                           WebString::fromUTF8("embed_iframe.html"));
-    // If we don't register a mocked resource for awesome.png, it causes the
-    // document loader of the iframe that has it as its src to assert on close,
-    // not sure why.
-    registerMockedURLLoad("http://www.test.com/awesome.png",
-                          WebString::fromUTF8("awesome.png"));
+    registerMockedImageURL("http://www.test.com/innerFrame.png");
+    registerMockedImageURL("http://www.test.com/embed.png");
+    registerMockedImageURL("http://www.test.com/object.png");
 
     loadURLInTopFrame(topFrameURL);
 
