@@ -317,6 +317,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // LayerTreeMutatorsClient implementation.
   bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
   void SetMutatorsNeedCommit() override;
+  void SetMutatorsNeedRebuildPropertyTrees() override;
   void SetLayerFilterMutated(int layer_id,
                              LayerTreeType tree_type,
                              const FilterOperations& filters) override;

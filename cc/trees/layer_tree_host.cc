@@ -1073,6 +1073,10 @@ void LayerTreeHost::SetMutatorsNeedCommit() {
   SetNeedsCommit();
 }
 
+void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
+  property_trees_.needs_rebuild = true;
+}
+
 void LayerTreeHost::SetLayerFilterMutated(int layer_id,
                                           LayerTreeType tree_type,
                                           const FilterOperations& filters) {

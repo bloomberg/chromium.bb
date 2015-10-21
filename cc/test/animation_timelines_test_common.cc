@@ -63,6 +63,8 @@ void TestHostClient::SetMutatorsNeedCommit() {
   mutators_need_commit_ = true;
 }
 
+void TestHostClient::SetMutatorsNeedRebuildPropertyTrees() {}
+
 void TestHostClient::SetLayerFilterMutated(int layer_id,
                                            LayerTreeType tree_type,
                                            const FilterOperations& filters) {
@@ -215,6 +217,11 @@ AnimationTimelinesTest::~AnimationTimelinesTest() {
 void AnimationTimelinesTest::SetUp() {
   timeline_ = AnimationTimeline::Create(timeline_id_);
   player_ = AnimationPlayer::Create(player_id_);
+}
+
+void AnimationTimelinesTest::TearDown() {
+  host_impl_->ClearTimelines();
+  host_->ClearTimelines();
 }
 
 void AnimationTimelinesTest::GetImplTimelineAndPlayerByID() {

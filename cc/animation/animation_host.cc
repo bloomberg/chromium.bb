@@ -244,6 +244,11 @@ void AnimationHost::SetNeedsCommit() {
   mutator_host_client_->SetMutatorsNeedCommit();
 }
 
+void AnimationHost::SetNeedsRebuildPropertyTrees() {
+  DCHECK(mutator_host_client_);
+  mutator_host_client_->SetMutatorsNeedRebuildPropertyTrees();
+}
+
 void AnimationHost::PushPropertiesTo(AnimationHost* host_impl) {
   PushTimelinesToImplThread(host_impl);
   RemoveTimelinesFromImplThread(host_impl);

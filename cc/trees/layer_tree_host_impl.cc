@@ -3513,6 +3513,8 @@ void LayerTreeHostImpl::SetMutatorsNeedCommit() {
   SetNeedsCommit();
 }
 
+void LayerTreeHostImpl::SetMutatorsNeedRebuildPropertyTrees() {}
+
 void LayerTreeHostImpl::SetTreeLayerFilterMutated(
     int layer_id,
     LayerTreeImpl* tree,

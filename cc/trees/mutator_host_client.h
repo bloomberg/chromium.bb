@@ -21,6 +21,7 @@ class MutatorHostClient {
  public:
   virtual bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const = 0;
   virtual void SetMutatorsNeedCommit() = 0;
+  virtual void SetMutatorsNeedRebuildPropertyTrees() = 0;
 
   virtual void SetLayerFilterMutated(int layer_id,
                                      LayerTreeType tree_type,

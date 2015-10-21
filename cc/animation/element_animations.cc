@@ -94,6 +94,11 @@ void ElementAnimations::CreateLayerAnimationController(int layer_id) {
 void ElementAnimations::DestroyLayerAnimationController() {
   DCHECK(animation_host_);
 
+  if (active_value_observer_)
+    SetTransformIsPotentiallyAnimatingChanged(LayerTreeType::ACTIVE, false);
+  if (pending_value_observer_)
+    SetTransformIsPotentiallyAnimatingChanged(LayerTreeType::PENDING, false);
+
   DestroyPendingValueObserver();
   DestroyActiveValueObserver();
 

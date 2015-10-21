@@ -998,5 +998,106 @@ class LayerTreeHostTimelinesTestAnimationFinishesDuringCommit
 // compositor thread.
 MULTI_THREAD_TEST_F(LayerTreeHostTimelinesTestAnimationFinishesDuringCommit);
 
+// Check that SetTransformIsPotentiallyAnimatingChanged is called
+// if we destroy LayerAnimationController and ElementAnimations.
+class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
+    : public LayerTreeHostTimelinesTest {
+ public:
+  void SetupTree() override {
+    LayerTreeHostTimelinesTest::SetupTree();
+    AttachPlayersToTimeline();
+    player_->AttachLayer(layer_tree_host()->root_layer()->id());
+    AddAnimatedTransformToPlayer(player_.get(), 1.0, 5, 5);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() == 2) {
+      EXPECT_TRUE(host_impl->active_tree());
+      EXPECT_TRUE(host_impl->active_tree()->root_layer());
+      EXPECT_TRUE(host_impl->pending_tree());
+      EXPECT_TRUE(host_impl->pending_tree()->root_layer());
+
+      EXPECT_TRUE(host_impl->active_tree()
+                      ->root_layer()
+                      ->screen_space_transform_is_animating());
+      EXPECT_FALSE(host_impl->pending_tree()
+                       ->root_layer()
+                       ->screen_space_transform_is_animating());
+    }
+  }
+
+  void WillCommit() override {}
+
+  void DidCommit() override { PostSetNeedsCommitToMainThread(); }
+
+  void Layout() override {
+    if (layer_tree_host()->source_frame_number() == 2) {
+      // Destroy player.
+      timeline_->DetachPlayer(player_.get());
+      player_ = nullptr;
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() >= 2)
+      EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+MULTI_THREAD_TEST_F(
+    LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction);
+
+// Check that we invalidate property trees on AnimationPlayer::SetNeedsCommit.
+class LayerTreeHostTimelinesTestRebuildPropertyTreesOnAnimationSetNeedsCommit
+    : public LayerTreeHostTimelinesTest {
+ public:
+  void SetupTree() override {
+    LayerTreeHostTimelinesTest::SetupTree();
+    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_->SetBounds(gfx::Size(4, 4));
+    layer_tree_host()->root_layer()->AddChild(layer_);
+
+    AttachPlayersToTimeline();
+
+    player_->AttachLayer(layer_tree_host()->root_layer()->id());
+    player_child_->AttachLayer(layer_->id());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    if (layer_tree_host()->source_frame_number() == 1 ||
+        layer_tree_host()->source_frame_number() == 2)
+      PostSetNeedsCommitToMainThread();
+  }
+
+  void Layout() override {
+    if (layer_tree_host()->source_frame_number() == 1) {
+      EXPECT_FALSE(layer_tree_host()->property_trees()->needs_rebuild);
+      AddAnimatedTransformToPlayer(player_child_.get(), 1.0, 5, 5);
+    }
+
+    EXPECT_TRUE(layer_tree_host()->property_trees()->needs_rebuild);
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() >= 2)
+      EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> layer_;
+  FakeContentLayerClient client_;
+};
+
+MULTI_THREAD_TEST_F(
+    LayerTreeHostTimelinesTestRebuildPropertyTreesOnAnimationSetNeedsCommit);
+
 }  // namespace
 }  // namespace cc

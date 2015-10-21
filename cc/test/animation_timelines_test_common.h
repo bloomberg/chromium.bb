@@ -76,6 +76,7 @@ class TestHostClient : public MutatorHostClient {
   bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
 
   void SetMutatorsNeedCommit() override;
+  void SetMutatorsNeedRebuildPropertyTrees() override;
 
   void SetLayerFilterMutated(int layer_id,
                              LayerTreeType tree_type,
@@ -165,6 +166,7 @@ class AnimationTimelinesTest : public testing::Test {
 
  protected:
   void SetUp() override;
+  void TearDown() override;
 
   void GetImplTimelineAndPlayerByID();
 

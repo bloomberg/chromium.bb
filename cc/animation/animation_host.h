@@ -72,6 +72,7 @@ class CC_EXPORT AnimationHost {
   void SetMutatorHostClient(MutatorHostClient* client);
 
   void SetNeedsCommit();
+  void SetNeedsRebuildPropertyTrees();
 
   void PushPropertiesTo(AnimationHost* host_impl);
 

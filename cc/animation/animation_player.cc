@@ -184,6 +184,7 @@ void AnimationPlayer::NotifyAnimationFinished(
 void AnimationPlayer::SetNeedsCommit() {
   DCHECK(animation_host_);
   animation_host_->SetNeedsCommit();
+  animation_host_->SetNeedsRebuildPropertyTrees();
 }
 
 }  // namespace cc
