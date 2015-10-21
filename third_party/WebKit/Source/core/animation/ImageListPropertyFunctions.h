@@ -7,10 +7,11 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-using StyleImageList = WillBeHeapVector<RefPtrWillBeRawPtr<StyleImage>, 1>;
+using StyleImageList = WillBePersistentHeapVector<RefPtrWillBeMember<StyleImage>, 1>;
 
 class ImageListPropertyFunctions {
 public:

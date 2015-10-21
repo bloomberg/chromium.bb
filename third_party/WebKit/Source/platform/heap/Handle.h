@@ -628,6 +628,11 @@ class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, i
 public:
     PersistentHeapVector() { }
 
+    explicit PersistentHeapVector(size_t size)
+        : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(size)
+    {
+    }
+
     template<size_t otherCapacity>
     PersistentHeapVector(const HeapVector<T, otherCapacity>& other)
         : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(other)
