@@ -60,9 +60,9 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
             '<(DEPTH)/chrome/chrome.gyp:launcher_support',
             '<(DEPTH)/chrome/common_constants.gyp:common_constants',
+            '<(DEPTH)/chrome/common_constants.gyp:version_header',
           ],
         }],
         ['OS=="win" and clang==1', {

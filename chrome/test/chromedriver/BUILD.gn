@@ -157,6 +157,7 @@ source_set("lib") {
     ":embed_version_in_cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//chrome/common:version_header",
     "//crypto",
     "//net",
     "//net:http_server",
