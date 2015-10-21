@@ -14,17 +14,24 @@ RandomSelector::RandomSelector() : sum_of_weights_(0) {}
 
 RandomSelector::~RandomSelector() {}
 
+// static
 double RandomSelector::SumWeights(const std::vector<WeightAndValue>& odds) {
   double sum = 0.0;
   for (const auto& odd : odds) {
+    if (odd.weight <= 0.0)
+      return -1.0;
     sum += odd.weight;
   }
   return sum;
 }
 
-void RandomSelector::SetOdds(const std::vector<WeightAndValue>& odds) {
+bool RandomSelector::SetOdds(const std::vector<WeightAndValue>& odds) {
+  double sum = SumWeights(odds);
+  if (sum <= 0.0)
+    return false;
   odds_ = odds;
-  sum_of_weights_ = SumWeights(odds_);
+  sum_of_weights_ = sum;
+  return true;
 }
 
 const std::string& RandomSelector::Select() {
@@ -48,4 +55,10 @@ const std::string& RandomSelector::GetValueFor(double random) {
   }
   NOTREACHED() << "Invalid value for key: " << random;
   return base::EmptyString();
+}
+
+// Print the value. Used for friendly test failure messages.
+::std::ostream& operator<<(
+    ::std::ostream& os, const RandomSelector::WeightAndValue& value) {
+  return os << "{" << value.weight << ", \"" << value.value << "\"}";
 }

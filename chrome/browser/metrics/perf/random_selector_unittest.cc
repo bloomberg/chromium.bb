@@ -84,8 +84,9 @@ TEST(RandomSelector, SimpleAccessors) {
   odds.push_back(WeightAndValue(107, "c bar"));
   EXPECT_EQ(111.0L, RandomSelector::SumWeights(odds));
   RandomSelector random_selector;
-  random_selector.SetOdds(odds);
+  EXPECT_TRUE(random_selector.SetOdds(odds));
   EXPECT_EQ(3UL, random_selector.num_values());
+  EXPECT_EQ(odds, random_selector.odds());
 }
 
 // Ensure RandomSelector is able to generate results from given odds.
@@ -97,10 +98,47 @@ TEST(RandomSelector, GenerateTest) {
   odds.push_back(WeightAndValue(2, "b --help"));
   odds.push_back(WeightAndValue(3, "c bar"));
   RandomSelectorWithCustomRNG random_selector(kLargeNumber);
-  random_selector.SetOdds(odds);
+  EXPECT_TRUE(random_selector.SetOdds(odds));
   // Generate a lot of values.
   std::map<std::string, int> results;
   GenerateResults(kLargeNumber, &random_selector, &results);
   // Ensure the values and odds are related.
   CheckResultsAgainstOdds(odds, results);
+}
+
+TEST(RandomSelector, InvalidWeights) {
+  using WeightAndValue = RandomSelector::WeightAndValue;
+  std::vector<RandomSelector::WeightAndValue> good_odds;
+  good_odds.push_back(WeightAndValue(1, "a 1"));
+  good_odds.push_back(WeightAndValue(2, "b --help"));
+  good_odds.push_back(WeightAndValue(3, "c bar"));
+  RandomSelector random_selector;
+  EXPECT_TRUE(random_selector.SetOdds(good_odds));
+  EXPECT_EQ(good_odds, random_selector.odds());
+
+  std::vector<RandomSelector::WeightAndValue> bad_odds;
+  bad_odds.push_back(WeightAndValue(1, "a 1"));
+  bad_odds.push_back(WeightAndValue(2, "b --help"));
+  bad_odds.push_back(WeightAndValue(-3.5, "c bar"));
+  EXPECT_FALSE(random_selector.SetOdds(bad_odds));
+  EXPECT_EQ(good_odds, random_selector.odds());
+
+  bad_odds[2].weight = 0.0;
+  EXPECT_FALSE(random_selector.SetOdds(bad_odds));
+  EXPECT_EQ(good_odds, random_selector.odds());
+}
+
+TEST(RandomSelector, EmptyWeights) {
+  using WeightAndValue = RandomSelector::WeightAndValue;
+  std::vector<RandomSelector::WeightAndValue> good_odds;
+  good_odds.push_back(WeightAndValue(1, "a 1"));
+  good_odds.push_back(WeightAndValue(2, "b --help"));
+  good_odds.push_back(WeightAndValue(3, "c bar"));
+  RandomSelector random_selector;
+  EXPECT_TRUE(random_selector.SetOdds(good_odds));
+  EXPECT_EQ(good_odds, random_selector.odds());
+
+  std::vector<RandomSelector::WeightAndValue> empty_odds;
+  EXPECT_FALSE(random_selector.SetOdds(empty_odds));
+  EXPECT_EQ(good_odds, random_selector.odds());
 }

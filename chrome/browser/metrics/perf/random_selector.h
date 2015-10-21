@@ -35,6 +35,10 @@ class RandomSelector {
       : weight(weight), value(value) {
     }
 
+    bool operator==(const WeightAndValue& other) const {
+      return weight == other.weight && value == other.value;
+    }
+
     // Probability weight for selecting this value.
     double weight;
     // Value to be returned by Select(), if selected.
@@ -44,8 +48,10 @@ class RandomSelector {
   RandomSelector();
   virtual ~RandomSelector();
 
-  // Set the probabilities for various strings.
-  void SetOdds(const std::vector<WeightAndValue>& odds);
+  // Set the probabilities for various strings. Returns false and doesn't
+  // modify the values if odds contains any invalid weights (<=0.0) or if
+  // odds is empty.
+  bool SetOdds(const std::vector<WeightAndValue>& odds);
 
   // Randomly select one of the values from the set.
   const std::string& Select();
@@ -55,7 +61,10 @@ class RandomSelector {
     return odds_.size();
   }
 
-  // Sum of the |weight| fields in the vector.
+  const std::vector<WeightAndValue>& odds() const { return odds_; }
+
+  // Sum of the |weight| fields in the vector. Returns -1.0 if odds contains any
+  // weight <= 0.0.
   static double SumWeights(const std::vector<WeightAndValue>& odds);
 
  private:
@@ -75,5 +84,8 @@ class RandomSelector {
 
   DISALLOW_COPY_AND_ASSIGN(RandomSelector);
 };
+
+::std::ostream& operator<<(
+    ::std::ostream& os, const RandomSelector::WeightAndValue& value);
 
 #endif  // CHROME_BROWSER_METRICS_PERF_RANDOM_SELECTOR_H_

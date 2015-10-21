@@ -132,6 +132,13 @@ class PerfProvider : public base::NonThreadSafe,
       const std::vector<uint8>& perf_data,
       const std::vector<uint8>& perf_stat);
 
+  const CollectionParams& collection_params() const {
+    return collection_params_;
+  }
+  const RandomSelector& command_selector() const {
+    return command_selector_;
+  }
+
  private:
   static const CollectionParams kDefaultParameters;
 
@@ -150,6 +157,11 @@ class PerfProvider : public base::NonThreadSafe,
     // the login state.
     PerfProvider* perf_provider_;
   };
+
+  // Change the values in |collection_params_| and the commands in
+  // |command_selector_| for any keys that are present in |params|.
+  void SetCollectionParamsFromVariationParams(
+      const std::map<std::string, std::string> &params);
 
   // Called when a suspend finishes. This is either a successful suspend
   // followed by a resume, or a suspend that was canceled. Inherited from
@@ -237,6 +249,15 @@ namespace internal {
 // Return the default set of perf commands and their odds of selection given
 // the identity of the CPU in |cpuid|.
 std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
+    const CPUIdentity& cpuid);
+
+// For the "PerfCommand::"-prefixed keys in |params|, return the cpu specifier
+// that is the narrowest match for the CPU identified by |cpuid|.
+// Valid CPU specifiers, in increasing order of specificity, are:
+// "default", a system architecture (e.g. "x86_64"), a CPU microarchitecture
+// (currently only Intel uarchs supported), or a CPU model name substring.
+std::string FindBestCpuSpecifierFromParams(
+    const std::map<std::string, std::string>& params,
     const CPUIdentity& cpuid);
 
 }  // namespace internal

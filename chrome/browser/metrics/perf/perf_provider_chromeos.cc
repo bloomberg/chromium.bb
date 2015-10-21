@@ -5,23 +5,29 @@
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 
 #include <algorithm>
+#include <map>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace metrics {
 
 namespace {
+
+const char kCWPFieldTrialName[] = "ChromeOSWideProfilingCollection";
 
 // Limit the total size of protobufs that can be cached, so they don't take up
 // too much memory. If the size of cached protobufs exceeds this value, stop
@@ -66,6 +72,36 @@ bool IsNormalUserLoggedIn() {
 base::TimeDelta RandomTimeDelta(base::TimeDelta max) {
   return base::TimeDelta::FromMicroseconds(
       base::RandGenerator(max.InMicroseconds()));
+}
+
+// Gets parameter named by |key| from the map. If it is present and is an
+// integer, stores the result in |out| and return true. Otherwise return false.
+bool GetInt64Param(const std::map<std::string, std::string>& params,
+                   const std::string& key,
+                   int64* out) {
+  auto it = params.find(key);
+  if (it == params.end())
+    return false;
+  int64 value;
+  // NB: StringToInt64 will set value even if the conversion fails.
+  if (!base::StringToInt64(it->second, &value))
+    return false;
+  *out = value;
+  return true;
+}
+
+// Parses the key. e.g.: "PerfCommand::arm::0" returns "arm"
+bool ExtractPerfCommandCpuSpecifier(const std::string& key,
+                                    std::string* cpu_specifier) {
+  std::vector<std::string> tokens;
+  base::SplitStringUsingSubstr(key, "::", &tokens);
+  if (tokens.size() != 3)
+    return false;
+  if (tokens[0] != "PerfCommand")
+    return false;
+  *cpu_specifier = tokens[1];
+  // tokens[2] is just a unique string (usually an index).
+  return true;
 }
 
 // Hopefully we never need a space in a command argument.
@@ -184,8 +220,11 @@ PerfProvider::PerfProvider()
       login_observer_(this),
       next_profiling_interval_start_(base::TimeTicks::Now()),
       weak_factory_(this) {
-  command_selector_.SetOdds(
-      internal::GetDefaultCommandsForCpu(GetCPUIdentity())),
+  CHECK(command_selector_.SetOdds(
+      internal::GetDefaultCommandsForCpu(GetCPUIdentity())));
+  std::map<std::string, std::string> params;
+  if (variations::GetVariationParams(kCWPFieldTrialName, &params))
+    SetCollectionParamsFromVariationParams(params);
 
   // Register the login observer with LoginState.
   chromeos::LoginState::Get()->AddObserver(&login_observer_);
@@ -210,6 +249,117 @@ PerfProvider::PerfProvider()
 
 PerfProvider::~PerfProvider() {
   chromeos::LoginState::Get()->RemoveObserver(&login_observer_);
+}
+
+namespace internal {
+
+std::string FindBestCpuSpecifierFromParams(
+    const std::map<std::string, std::string>& params,
+    const CPUIdentity& cpuid) {
+  std::string ret;
+  // The CPU specified in the variation params could be "default", a system
+  // architecture, a CPU microarchitecture, or a CPU model substring. We should
+  // prefer to match the most specific.
+  enum MatchSpecificity {
+    NO_MATCH,
+    DEFAULT,
+    SYSTEM_ARCH,
+    CPU_UARCH,
+    CPU_MODEL,
+  };
+  MatchSpecificity match_level = NO_MATCH;
+
+  const std::string intel_uarch = GetIntelUarch(cpuid);
+  const std::string simplified_cpu_model =
+      SimplifyCPUModelName(cpuid.model_name);
+
+  for (const auto& key_val : params) {
+    const std::string& key = key_val.first;
+
+    std::string cpu_specifier;
+    if (!ExtractPerfCommandCpuSpecifier(key, &cpu_specifier))
+      continue;
+
+    if (match_level < DEFAULT && cpu_specifier == "default") {
+      match_level = DEFAULT;
+      ret = cpu_specifier;
+    }
+    if (match_level < SYSTEM_ARCH && cpu_specifier == cpuid.arch) {
+      match_level = SYSTEM_ARCH;
+      ret = cpu_specifier;
+    }
+    if (match_level < CPU_UARCH &&
+        !intel_uarch.empty() && cpu_specifier == intel_uarch) {
+      match_level = CPU_UARCH;
+      ret = cpu_specifier;
+    }
+    if (match_level < CPU_MODEL &&
+        simplified_cpu_model.find(cpu_specifier) != std::string::npos) {
+      match_level = CPU_MODEL;
+      ret = cpu_specifier;
+    }
+  }
+  return ret;
+}
+
+}  // namespace internal
+
+void PerfProvider::SetCollectionParamsFromVariationParams(
+    const std::map<std::string, std::string>& params) {
+  int64 value;
+  if (GetInt64Param(params, "ProfileCollectionDurationSec", &value)) {
+    collection_params_.set_collection_duration(
+        base::TimeDelta::FromSeconds(value));
+  }
+  if (GetInt64Param(params, "PeriodicProfilingIntervalMs", &value)) {
+    collection_params_.set_periodic_interval(
+        base::TimeDelta::FromMilliseconds(value));
+  }
+  if (GetInt64Param(params, "ResumeFromSuspend::SamplingFactor", &value)) {
+    collection_params_.mutable_resume_from_suspend()
+        ->set_sampling_factor(value);
+  }
+  if (GetInt64Param(params, "ResumeFromSuspend::MaxDelaySec", &value)) {
+    collection_params_.mutable_resume_from_suspend()->set_max_collection_delay(
+        base::TimeDelta::FromSeconds(value));
+  }
+  if (GetInt64Param(params, "RestoreSession::SamplingFactor", &value)) {
+    collection_params_.mutable_restore_session()->set_sampling_factor(value);
+  }
+  if (GetInt64Param(params, "RestoreSession::MaxDelaySec", &value)) {
+    collection_params_.mutable_restore_session()->set_max_collection_delay(
+        base::TimeDelta::FromSeconds(value));
+  }
+
+  const std::string best_cpu_specifier =
+      internal::FindBestCpuSpecifierFromParams(params, GetCPUIdentity());
+
+  if (best_cpu_specifier.empty())  // No matching cpu specifier. Keep defaults.
+    return;
+
+  std::vector<RandomSelector::WeightAndValue> commands;
+  for (const auto& key_val : params) {
+    const std::string& key = key_val.first;
+    const std::string& val = key_val.second;
+
+    std::string cpu_specifier;
+    if (!ExtractPerfCommandCpuSpecifier(key, &cpu_specifier))
+      continue;
+    if (cpu_specifier != best_cpu_specifier)
+      continue;
+
+    auto split = val.find(" ");
+    if (split == std::string::npos)
+      continue;  // Just drop invalid commands.
+    std::string weight_str = std::string(val.begin(), val.begin() + split);
+
+    double weight;
+    if (!(base::StringToDouble(weight_str, &weight) && weight > 0.0))
+      continue;  // Just drop invalid commands.
+    std::string command(val.begin() + split + 1, val.end());
+    commands.push_back(RandomSelector::WeightAndValue(weight, command));
+  }
+  command_selector_.SetOdds(commands);
 }
 
 bool PerfProvider::GetSampledProfiles(

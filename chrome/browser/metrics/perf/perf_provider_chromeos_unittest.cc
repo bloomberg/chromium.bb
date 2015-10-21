@@ -9,12 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "components/metrics/proto/sampled_profile.pb.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -120,12 +122,14 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
   DISALLOW_COPY_AND_ASSIGN(TestIncognitoObserver);
 };
 
-// Allows access to PerfProvider::ParseOutputProtoIfValid() for testing.
+// Allows access to some private methods for testing.
 class TestPerfProvider : public PerfProvider {
  public:
   TestPerfProvider() {}
 
   using PerfProvider::ParseOutputProtoIfValid;
+  using PerfProvider::collection_params;
+  using PerfProvider::command_selector;
 
  private:
   std::vector<SampledProfile> stored_profiles_;
@@ -580,6 +584,270 @@ TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Unknown) {
       internal::GetDefaultCommandsForCpu(cpuid);
   EXPECT_EQ(1UL, cmds.size());
   EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
+}
+
+TEST_F(PerfProviderTest, CommandMatching_Empty) {
+  CPUIdentity cpuid = {};
+  std::map<std::string, std::string> params;
+  EXPECT_EQ("", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_NoPerfCommands) {
+  CPUIdentity cpuid = {};
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("NotEvenClose", ""));
+  params.insert(std::make_pair("NotAPerfCommand", ""));
+  params.insert(std::make_pair("NotAPerfCommand::Really", ""));
+  params.insert(std::make_pair("NotAPerfCommand::Nope::0", ""));
+  params.insert(std::make_pair("PerfCommands::SoClose::0", ""));
+  EXPECT_EQ("", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_NoMatch) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 6;
+  cpuid.model = 0x3a;  // IvyBridge
+  cpuid.model_name = "Xeon or somesuch";
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("PerfCommand::armv7l::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86::1", "perf command"));
+  params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
+
+  EXPECT_EQ("", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_default) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 6;
+  cpuid.model = 0x3a;  // IvyBridge
+  cpuid.model_name = "Xeon or somesuch";
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::armv7l::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86::1", "perf command"));
+  params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
+
+  EXPECT_EQ("default", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_SystemArch) {
+  CPUIdentity cpuid;
+  cpuid.arch = "nothing_in_particular";
+  cpuid.vendor = "";
+  cpuid.family = 0;
+  cpuid.model = 0;
+  cpuid.model_name = "";
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::armv7l::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86::1", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86_64::xyz#$%", "perf command"));
+  params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
+
+  EXPECT_EQ("default", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+
+  cpuid.arch = "armv7l";
+  EXPECT_EQ("armv7l", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+
+  cpuid.arch = "x86";
+  EXPECT_EQ("x86", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+
+  cpuid.arch = "x86_64";
+  EXPECT_EQ("x86_64", internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_Microarchitecture) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 6;
+  cpuid.model = 0x3D;  // Broadwell
+  cpuid.model_name = "Wrong Model CPU @ 0 Hz";
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::interesting-model-500x::0",
+                               "perf command"));
+
+  EXPECT_EQ("Broadwell",
+            internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_SpecificModel) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 6;
+  cpuid.model = 0x3D;  // Broadwell
+  cpuid.model_name = "An Interesting(R) Model(R) 500x CPU @ 1.2GHz";
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::interesting-model-500x::0",
+                               "perf command"));
+
+  EXPECT_EQ("interesting-model-500x",
+            internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+TEST_F(PerfProviderTest, CommandMatching_SpecificModel_LongestMatch) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 6;
+  cpuid.model = 0x3D;  // Broadwell
+  cpuid.model_name = "An Interesting(R) Model(R) 500x CPU @ 1.2GHz";
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
+  params.insert(std::make_pair("PerfCommand::model-500x::0",
+                               "perf command"));
+  params.insert(std::make_pair("PerfCommand::interesting-model-500x::0",
+                               "perf command"));
+  params.insert(std::make_pair("PerfCommand::interesting-model::0",
+                               "perf command"));
+
+  EXPECT_EQ("interesting-model-500x",
+            internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+class PerfProviderCollectionParamsTest : public testing::Test {
+ public:
+  PerfProviderCollectionParamsTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        task_runner_handle_(task_runner_),
+        field_trial_list_(nullptr) {}
+
+  void SetUp() override {
+    // PerfProvider requires chromeos::LoginState and
+    // chromeos::DBusThreadManagerto be initialized.
+    chromeos::LoginState::Initialize();
+    chromeos::DBusThreadManager::Initialize();
+
+    // PerfProvider requires the user to be logged in.
+    chromeos::LoginState::Get()->SetLoggedInState(
+        chromeos::LoginState::LOGGED_IN_ACTIVE,
+        chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+  }
+
+  void TearDown() override {
+    chromeos::DBusThreadManager::Shutdown();
+    chromeos::LoginState::Shutdown();
+    variations::testing::ClearAllVariationParams();
+  }
+
+ private:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
+  base::FieldTrialList field_trial_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(PerfProviderCollectionParamsTest);
+};
+
+TEST_F(PerfProviderCollectionParamsTest, Commands_EmptyExperiment) {
+  std::vector<RandomSelector::WeightAndValue> default_cmds =
+      internal::GetDefaultCommandsForCpu(GetCPUIdentity());
+  std::map<std::string, std::string> params;
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      "ChromeOSWideProfilingCollection", "group_name", params));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "ChromeOSWideProfilingCollection", "group_name"));
+
+  TestPerfProvider perf_provider;
+  EXPECT_EQ(default_cmds, perf_provider.command_selector().odds());
+}
+
+TEST_F(PerfProviderCollectionParamsTest, Commands_InvalidValues) {
+  std::vector<RandomSelector::WeightAndValue> default_cmds =
+      internal::GetDefaultCommandsForCpu(GetCPUIdentity());
+  std::map<std::string, std::string> params;
+  // Use the "default" cpu specifier since we don't want to predict what CPU
+  // this test is running on. (CPU detection is tested above.)
+  params.insert(std::make_pair("PerfCommand::default::0", ""));
+  params.insert(std::make_pair("PerfCommand::default::1", " "));
+  params.insert(std::make_pair("PerfCommand::default::2", " leading space"));
+  params.insert(std::make_pair("PerfCommand::default::3",
+                               "no-spaces-or-numbers"));
+  params.insert(std::make_pair("PerfCommand::default::4",
+                               "NaN-trailing-space "));
+  params.insert(std::make_pair("PerfCommand::default::5", "NaN x"));
+  params.insert(std::make_pair("PerfCommand::default::6", "perf command"));
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      "ChromeOSWideProfilingCollection", "group_name", params));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "ChromeOSWideProfilingCollection", "group_name"));
+
+  TestPerfProvider perf_provider;
+  EXPECT_EQ(default_cmds, perf_provider.command_selector().odds());
+}
+
+TEST_F(PerfProviderCollectionParamsTest, Commands_Override) {
+  using WeightAndValue = RandomSelector::WeightAndValue;
+  std::vector<RandomSelector::WeightAndValue> default_cmds =
+      internal::GetDefaultCommandsForCpu(GetCPUIdentity());
+  std::map<std::string, std::string> params;
+  // Use the "default" cpu specifier since we don't want to predict what CPU
+  // this test is running on. (CPU detection is tested above.)
+  params.insert(std::make_pair("PerfCommand::default::0",
+                               "50 perf record foo"));
+  params.insert(std::make_pair("PerfCommand::default::1",
+                               "25 perf record bar"));
+  params.insert(std::make_pair("PerfCommand::default::2",
+                               "25 perf record baz"));
+  params.insert(std::make_pair("PerfCommand::another-cpu::0",
+                               "7 perf record bar"));
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      "ChromeOSWideProfilingCollection", "group_name", params));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "ChromeOSWideProfilingCollection", "group_name"));
+
+  TestPerfProvider perf_provider;
+
+  std::vector<WeightAndValue> expected_cmds;
+  expected_cmds.push_back(WeightAndValue(50.0, "perf record foo"));
+  expected_cmds.push_back(WeightAndValue(25.0, "perf record bar"));
+  expected_cmds.push_back(WeightAndValue(25.0, "perf record baz"));
+
+  EXPECT_EQ(expected_cmds, perf_provider.command_selector().odds());
+}
+
+TEST_F(PerfProviderCollectionParamsTest, Parameters_Override) {
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("ProfileCollectionDurationSec", "15"));
+  params.insert(std::make_pair("PeriodicProfilingIntervalMs", "3600000"));
+  params.insert(std::make_pair("ResumeFromSuspend::SamplingFactor", "1"));
+  params.insert(std::make_pair("ResumeFromSuspend::MaxDelaySec", "10"));
+  params.insert(std::make_pair("RestoreSession::SamplingFactor", "2"));
+  params.insert(std::make_pair("RestoreSession::MaxDelaySec", "20"));
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      "ChromeOSWideProfilingCollection", "group_name", params));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "ChromeOSWideProfilingCollection", "group_name"));
+
+  TestPerfProvider perf_provider;
+
+  const auto& parsed_params = perf_provider.collection_params();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(15),
+            parsed_params.collection_duration());
+  EXPECT_EQ(base::TimeDelta::FromHours(1),
+            parsed_params.periodic_interval());
+  EXPECT_EQ(1, parsed_params.resume_from_suspend().sampling_factor());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10),
+            parsed_params.resume_from_suspend().max_collection_delay());
+  EXPECT_EQ(2, parsed_params.restore_session().sampling_factor());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(20),
+            parsed_params.restore_session().max_collection_delay());
 }
 
 }  // namespace metrics
