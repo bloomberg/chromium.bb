@@ -274,6 +274,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   // seen (on Android the browser is instead woken up the next time it goes
   // online). For periodic syncs this means creating an alarm.
   void SchedulePendingRegistrations();
+  void SchedulePendingRegistrationsOnUIThread(
+      bool keep_browser_alive_for_one_shot);
 
   // FireReadyEvents and callbacks
   void FireReadyEvents();

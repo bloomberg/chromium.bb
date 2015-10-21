@@ -315,6 +315,7 @@ android_library("chrome_shared_test_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/android:ui_javatests",
+    google_play_services_library,
   ]
 }
 

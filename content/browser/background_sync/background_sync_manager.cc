@@ -23,7 +23,6 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/background_sync_launcher_android.h"
 #include "content/browser/android/background_sync_network_observer_android.h"
 #endif
 
@@ -62,18 +61,29 @@ bool ShouldDisableForFieldTrial() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+// Returns nullptr if the controller cannot be accessed for any reason.
+BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!service_worker_context)
+    return nullptr;
+  StoragePartitionImpl* storage_partition_impl =
+      service_worker_context->storage_partition();
+  if (!storage_partition_impl)  // may be null in tests
+    return nullptr;
+
+  return storage_partition_impl->browser_context()
+      ->GetBackgroundSyncController();
+}
+
 void NotifyBackgroundSyncRegisteredOnUIThread(
     const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  StoragePartitionImpl* storage_partition_impl =
-      sw_context_wrapper->storage_partition();
-  if (!storage_partition_impl)  // happens in tests
-    return;
-
   BackgroundSyncController* background_sync_controller =
-      storage_partition_impl->browser_context()->GetBackgroundSyncController();
+      GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
 
   if (!background_sync_controller)
     return;
@@ -982,15 +992,28 @@ void BackgroundSyncManager::SchedulePendingRegistrations() {
     }
   }
 
-  // TODO(jkarlin): Use the context's path instead of the 'this' pointer as an
-  // identifier. See crbug.com/489705.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline,
-                 this, keep_browser_alive_for_one_shot));
+      base::Bind(&BackgroundSyncManager::SchedulePendingRegistrationsOnUIThread,
+                 base::Unretained(this), keep_browser_alive_for_one_shot));
+
 #else
 // TODO(jkarlin): Toggle Chrome's background mode.
 #endif
+}
+
+void BackgroundSyncManager::SchedulePendingRegistrationsOnUIThread(
+    bool keep_browser_alive_for_one_shot) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BackgroundSyncController* background_sync_controller =
+      GetBackgroundSyncControllerOnUIThread(service_worker_context_);
+  if (background_sync_controller) {
+    // TODO(jkarlin): Use the context's path instead of the 'this' pointer as an
+    // identifier. See crbug.com/489705.
+    background_sync_controller->LaunchBrowserWhenNextOnline(
+        this, keep_browser_alive_for_one_shot);
+  }
 }
 
 void BackgroundSyncManager::FireReadyEvents() {

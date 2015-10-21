@@ -58,15 +58,6 @@
                  android:exported="false" />
         {% endfor %}
 
-        <!-- Service Worker Background Sync service listener -->
-        <service android:name="org.chromium.content.browser.BackgroundSyncLauncherService"
-            android:exported="false" />
-        <receiver android:name="org.chromium.content.browser.BackgroundSyncLauncherService$Receiver">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
-
     </application>
 
     <instrumentation android:name="org.chromium.native_test.NativeTestInstrumentationTestRunner"

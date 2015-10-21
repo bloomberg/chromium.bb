@@ -8,6 +8,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/rappor/rappor_utils.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/background_sync_launcher_android.h"
+#endif
+
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
     : profile_(profile) {}
 
@@ -28,3 +32,13 @@ void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
   rappor::SampleDomainAndRegistryFromGURL(
       GetRapporService(), "BackgroundSync.Register.Origin", origin);
 }
+
+#if defined(OS_ANDROID)
+void BackgroundSyncControllerImpl::LaunchBrowserWhenNextOnline(
+    const content::BackgroundSyncManager* registrant,
+    bool launch_when_next_online) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(
+      registrant, launch_when_next_online);
+}
+#endif

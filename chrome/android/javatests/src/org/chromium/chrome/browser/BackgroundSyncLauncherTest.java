@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -16,57 +14,29 @@ import org.chromium.base.test.util.Feature;
 import java.util.concurrent.Semaphore;
 
 /**
- * Tests {@link BackgroundSyncLauncherService} and {@link BackgroundSyncLauncherService.Receiver}.
+ * Tests {@link BackgroundSyncLauncher}.
  */
 public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     private Context mContext;
     private BackgroundSyncLauncher mLauncher;
-    private MockReceiver mLauncherServiceReceiver;
     private Boolean mShouldLaunchResult;
-
-    static class MockReceiver extends BackgroundSyncLauncherService.Receiver {
-        private boolean mIsOnline = true;
-        private boolean mDidStartService;
-
-        public void setOnline(boolean online) {
-            mIsOnline = online;
-        }
-
-        @Override
-        protected boolean isOnline(Context context) {
-            return mIsOnline;
-        }
-
-        @Override
-        protected void startService(Context context) {
-            startServiceImpl();
-        }
-
-        private void startServiceImpl() {
-            mDidStartService = true;
-        }
-
-        protected void checkExpectations(boolean expectedStartService) {
-            assertEquals("StartedService", expectedStartService, mDidStartService);
-        }
-    }
 
     @Override
     protected void setUp() throws Exception {
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
+        BackgroundSyncLauncher.setGCMEnabled(false);
         mLauncher = BackgroundSyncLauncher.create(mContext);
-        mLauncherServiceReceiver = new MockReceiver();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        BackgroundSyncLauncher.setGCMEnabled(true);
+        super.tearDown();
     }
 
     private void deleteLauncherInstance() {
         mLauncher.destroy();
         mLauncher = null;
-    }
-
-    private void startOnReceiveAndVerify(boolean shouldStart) {
-        mLauncherServiceReceiver.onReceive(
-                mContext, new Intent(ConnectivityManager.CONNECTIVITY_ACTION));
-        mLauncherServiceReceiver.checkExpectations(shouldStart);
     }
 
     private Boolean shouldLaunchWhenNextOnlineSync() {
@@ -112,57 +82,21 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     @Feature({"BackgroundSync"})
     public void testSetLaunchWhenNextOnline() {
         assertFalse(shouldLaunchWhenNextOnlineSync());
-        mLauncher.setLaunchWhenNextOnline(mContext, true);
+        mLauncher.launchBrowserWhenNextOnlineIfStopped(mContext, true);
         assertTrue(shouldLaunchWhenNextOnlineSync());
-        mLauncher.setLaunchWhenNextOnline(mContext, false);
+        mLauncher.launchBrowserWhenNextOnlineIfStopped(mContext, false);
         assertFalse(shouldLaunchWhenNextOnlineSync());
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testNewLauncherDisablesNextOnline() {
-        mLauncher.setLaunchWhenNextOnline(mContext, true);
+        mLauncher.launchBrowserWhenNextOnlineIfStopped(mContext, true);
         assertTrue(shouldLaunchWhenNextOnlineSync());
 
         // Simulate restarting the browser by deleting the launcher and creating a new one.
         deleteLauncherInstance();
         mLauncher = BackgroundSyncLauncher.create(mContext);
         assertFalse(shouldLaunchWhenNextOnlineSync());
-    }
-
-    @SmallTest
-    @Feature({"BackgroundSync"})
-    public void testNoFireWhenInstanceExists() {
-        mLauncher.setLaunchWhenNextOnline(mContext, true);
-        mLauncherServiceReceiver.setOnline(true);
-        startOnReceiveAndVerify(false);
-
-        deleteLauncherInstance();
-        startOnReceiveAndVerify(true);
-    }
-
-    @SmallTest
-    @Feature({"BackgroundSync"})
-    public void testReceiverOffline() {
-        mLauncher.setLaunchWhenNextOnline(mContext, true);
-        mLauncherServiceReceiver.setOnline(false);
-        deleteLauncherInstance();
-        startOnReceiveAndVerify(false);
-    }
-
-    @SmallTest
-    @Feature({"BackgroundSync"})
-    public void testReceiverOnline() {
-        mLauncher.setLaunchWhenNextOnline(mContext, true);
-        mLauncherServiceReceiver.setOnline(true);
-        deleteLauncherInstance();
-        startOnReceiveAndVerify(true);
-    }
-
-    @SmallTest
-    @Feature({"BackgroundSync"})
-    public void testStartingService() {
-        Intent serviceIntent = new Intent(mContext, BackgroundSyncLauncherService.class);
-        MockReceiver.startWakefulService(mContext, serviceIntent);
     }
 }

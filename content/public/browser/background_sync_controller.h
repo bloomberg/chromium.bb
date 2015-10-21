@@ -10,6 +10,8 @@
 
 namespace content {
 
+class BackgroundSyncManager;
+
 // An interface that the Background Sync API uses to access services from the
 // embedder. Must only be used on the UI thread.
 class CONTENT_EXPORT BackgroundSyncController {
@@ -19,6 +21,15 @@ class CONTENT_EXPORT BackgroundSyncController {
   // Notification that a service worker registration with origin |origin| just
   // registered a background sync event.
   virtual void NotifyBackgroundSyncRegistered(const GURL& origin) {}
+
+  // Register the |registrant|'s interest (or disinterest) in starting the
+  // browser the next time the device goes online after the browser has closed.
+  // This only needs to be implemented by browsers; WebView and other embedders
+  // which should not have their application relaunched by Background Sync can
+  // use the default implentation.
+  virtual void LaunchBrowserWhenNextOnline(
+      const BackgroundSyncManager* registrant,
+      bool launch_when_next_online) {}
 };
 
 }  // namespace content

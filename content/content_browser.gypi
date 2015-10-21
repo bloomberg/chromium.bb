@@ -345,8 +345,6 @@
       'browser/accessibility/one_shot_accessibility_tree_search.cc',
       'browser/accessibility/one_shot_accessibility_tree_search.h',
       'browser/android/animation_utils.h',
-      'browser/android/background_sync_launcher_android.cc',
-      'browser/android/background_sync_launcher_android.h',
       'browser/android/background_sync_network_observer_android.cc',
       'browser/android/background_sync_network_observer_android.h',
       'browser/android/browser_jni_registrar.cc',

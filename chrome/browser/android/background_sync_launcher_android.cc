@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/background_sync_launcher_android.h"
+#include "chrome/browser/android/background_sync_launcher_android.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "jni/BackgroundSyncLauncher_jni.h"
 
-namespace content {
+using content::BrowserThread;
 
 namespace {
 base::LazyInstance<BackgroundSyncLauncherAndroid> g_background_sync_launcher =
@@ -23,7 +23,7 @@ BackgroundSyncLauncherAndroid* BackgroundSyncLauncherAndroid::Get() {
 
 // static
 void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(
-    const BackgroundSyncManager* registrant,
+    const content::BackgroundSyncManager* registrant,
     bool launch_when_next_online) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -31,7 +31,7 @@ void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline(
 }
 
 void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnlineImpl(
-    const BackgroundSyncManager* registrant,
+    const content::BackgroundSyncManager* registrant,
     bool launch_when_next_online) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -45,7 +45,7 @@ void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnlineImpl(
   bool now_launching = !launch_when_next_online_registrants_.empty();
   if (was_launching != now_launching) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_BackgroundSyncLauncher_setLaunchWhenNextOnline(
+    Java_BackgroundSyncLauncher_launchBrowserWhenNextOnlineIfStopped(
         env, java_launcher_.obj(), base::android::GetApplicationContext(),
         now_launching);
   }
@@ -70,5 +70,3 @@ BackgroundSyncLauncherAndroid::~BackgroundSyncLauncherAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BackgroundSyncLauncher_destroy(env, java_launcher_.obj());
 }
-
-}  // namespace content

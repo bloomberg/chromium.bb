@@ -25,6 +25,12 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // content::BackgroundSyncController overrides.
   void NotifyBackgroundSyncRegistered(const GURL& origin) override;
 
+#if defined(OS_ANDROID)
+  void LaunchBrowserWhenNextOnline(
+      const content::BackgroundSyncManager* registrant,
+      bool launch_when_next_online) override;
+#endif
+
  protected:
   // Virtual for testing.
   virtual rappor::RapporService* GetRapporService();

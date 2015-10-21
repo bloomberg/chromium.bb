@@ -113,6 +113,10 @@
   *;
 }
 
+-keepnames class com.google.android.gms.gcm.** {
+  *;
+}
+
 -keepnames class jp.tomorrowkey.android.gifplayer.** {
   public *;
 }

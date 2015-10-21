@@ -295,6 +295,7 @@
         '../../net/net.gyp:net_java_test_support',
         '../../sync/sync.gyp:sync_java_test_support',
         '../../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
+        '../../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
         '../../ui/android/ui_android.gyp:ui_javatests',
       ],
       'includes': [ '../../build/java.gypi' ],

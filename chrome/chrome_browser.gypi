@@ -854,6 +854,8 @@
       'browser/web_data_service_factory.h',
     ],
     'chrome_browser_android_sources': [
+      'browser/android/background_sync_launcher_android.cc',
+      'browser/android/background_sync_launcher_android.h',
       'browser/download/download_request_infobar_delegate.cc',
       'browser/download/download_request_infobar_delegate.h',
       'browser/geolocation/geolocation_infobar_delegate.cc',
@@ -1735,6 +1737,7 @@
       'android/java/src/org/chromium/chrome/browser/autofill/CreditCardScanner.java',
       'android/java/src/org/chromium/chrome/browser/autofill/PasswordGenerationPopupBridge.java',
       'android/java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java',
+      'android/java/src/org/chromium/chrome/browser/BackgroundSyncLauncher.java',
       'android/java/src/org/chromium/chrome/browser/BluetoothChooserDialog.java',
       'android/java/src/org/chromium/chrome/browser/BookmarksBridge.java',
       'android/java/src/org/chromium/chrome/browser/bookmark/EditBookmarkHelper.java',

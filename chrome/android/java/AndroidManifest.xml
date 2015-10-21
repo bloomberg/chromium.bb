@@ -45,6 +45,7 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.NFC"/>
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -563,14 +564,14 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
-        <!-- Service Worker Background Sync service listener -->
-        <service android:name="org.chromium.content.browser.BackgroundSyncLauncherService"
-            android:exported="false" />
-        <receiver android:name="org.chromium.content.browser.BackgroundSyncLauncherService$Receiver">
+        <!-- Service Worker Background Sync GCM scheduler task -->
+        <service android:name="org.chromium.chrome.browser.BackgroundSyncLauncherService"
+            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
             </intent-filter>
-        </receiver>
+        </service>
 
         <service android:name="org.chromium.chrome.browser.prerender.ChromePrerenderService"
             android:exported="true"
