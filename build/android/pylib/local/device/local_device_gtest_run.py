@@ -20,6 +20,7 @@ from pylib.local.device import local_device_test_run
 
 _COMMAND_LINE_FLAGS_SUPPORTED = True
 
+_MAX_INLINE_FLAGS_LENGTH = 50  # Arbitrarily chosen.
 _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
@@ -27,6 +28,9 @@ _EXTRA_COMMAND_LINE_FLAGS = (
 _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')
+_EXTRA_TEST = (
+    'org.chromium.native_test.NativeTestInstrumentationTestRunner'
+        '.Test')
 
 _MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
@@ -40,6 +44,15 @@ _SUITE_REQUIRES_TEST_SERVER_SPAWNER = [
   'components_browsertests', 'content_unittests', 'content_browsertests',
   'net_unittests', 'unit_tests'
 ]
+
+# No-op context manager. If we used Python 3, we could change this to
+# contextlib.ExitStack()
+class _NullContextManager(object):
+  def __enter__(self):
+    pass
+  def __exit__(self, *args):
+    pass
+
 
 # TODO(jbudorick): Move this inside _ApkDelegate once TestPackageApk is gone.
 def PullAppFilesImpl(device, package, files, directory):
@@ -122,21 +135,31 @@ class _ApkDelegate(object):
       extras[gtest_test_instance.EXTRA_SHARD_NANO_TIMEOUT] = int(
           kwargs['timeout'] * _SECONDS_TO_NANOS)
 
-    with device_temp_file.DeviceTempFile(device.adb) as command_line_file:
-      device.WriteFile(command_line_file.name, '_ %s' % flags if flags else '_')
-      extras[_EXTRA_COMMAND_LINE_FILE] = command_line_file.name
+    command_line_file = _NullContextManager()
+    if flags:
+      if len(flags) > _MAX_INLINE_FLAGS_LENGTH:
+        command_line_file = device_temp_file.DeviceTempFile(device.adb)
+        device.WriteFile(command_line_file.name, '_ %s' % flags)
+        extras[_EXTRA_COMMAND_LINE_FILE] = command_line_file.name
+      else:
+        extras[_EXTRA_COMMAND_LINE_FLAGS] = flags
 
-      with device_temp_file.DeviceTempFile(device.adb) as test_list_file:
-        if test:
-          device.WriteFile(test_list_file.name, '\n'.join(test))
-          extras[_EXTRA_TEST_LIST] = test_list_file.name
+    test_list_file = _NullContextManager()
+    if test:
+      if len(test) > 1:
+        test_list_file = device_temp_file.DeviceTempFile(device.adb)
+        device.WriteFile(test_list_file.name, '\n'.join(test))
+        extras[_EXTRA_TEST_LIST] = test_list_file.name
+      else:
+        extras[_EXTRA_TEST] = test[0]
 
-        try:
-          return device.StartInstrumentation(
-              self._component, extras=extras, raw=False, **kwargs)
-        except Exception:
-          device.ForceStop(self._package)
-          raise
+    with command_line_file, test_list_file:
+      try:
+        return device.StartInstrumentation(
+            self._component, extras=extras, raw=False, **kwargs)
+      except Exception:
+        device.ForceStop(self._package)
+        raise
 
   def PullAppFiles(self, device, files, directory):
     PullAppFilesImpl(device, self._package, files, directory)

@@ -51,6 +51,8 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             "org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardSizeLimit";
     public static final String EXTRA_TEST_LIST_FILE =
             "org.chromium.native_test.NativeTestInstrumentationTestRunner.TestList";
+    public static final String EXTRA_TEST =
+            "org.chromium.native_test.NativeTestInstrumentationTestRunner.Test";
 
     private static final String TAG = "cr_NativeTest";
 
@@ -91,6 +93,13 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
         String shardSizeLimit = arguments.getString(EXTRA_SHARD_SIZE_LIMIT);
         if (shardSizeLimit != null) mShardSizeLimit = Integer.parseInt(shardSizeLimit);
         mTransparentArguments.remove(EXTRA_SHARD_SIZE_LIMIT);
+
+        String singleTest = arguments.getString(EXTRA_TEST);
+        if (singleTest != null) {
+            ArrayList<String> shard = new ArrayList<>(1);
+            shard.add(singleTest);
+            mShards.add(shard);
+        }
 
         String testListFilePath = arguments.getString(EXTRA_TEST_LIST_FILE);
         if (testListFilePath != null) {

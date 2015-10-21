@@ -36,11 +36,6 @@ namespace android {
 
 namespace {
 
-// The test runner script writes the command line file in
-// "/data/local/tmp".
-static const char kCommandLineFilePath[] =
-    "/data/local/tmp/chrome-native-tests-command-line";
-
 const char kLogTag[] = "chromium";
 const char kCrashedMarker[] = "[ CRASHED      ]\n";
 
@@ -89,7 +84,7 @@ static void RunTests(JNIEnv* env,
   const std::string command_line_file_path(
       base::android::ConvertJavaStringToUTF8(env, jcommand_line_file_path));
   if (command_line_file_path.empty())
-    ParseArgsFromCommandLineFile(kCommandLineFilePath, &args);
+    args.push_back("_");
   else
     ParseArgsFromCommandLineFile(command_line_file_path.c_str(), &args);
 
