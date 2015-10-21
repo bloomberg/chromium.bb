@@ -14,9 +14,9 @@ namespace test {
 QuicPacketNumber QuicFramerPeer::CalculatePacketNumberFromWire(
     QuicFramer* framer,
     QuicPacketNumberLength packet_number_length,
-    QuicPacketNumber packet_packet_number) {
+    QuicPacketNumber packet_number) {
   return framer->CalculatePacketNumberFromWire(packet_number_length,
-                                               packet_packet_number);
+                                               packet_number);
 }
 
 // static
@@ -26,10 +26,9 @@ void QuicFramerPeer::SetLastSerializedConnectionId(
 }
 
 // static
-void QuicFramerPeer::SetLastPacketNumber(
-    QuicFramer* framer,
-    QuicPacketNumber packet_packet_number) {
-  framer->last_packet_number_ = packet_packet_number;
+void QuicFramerPeer::SetLastPacketNumber(QuicFramer* framer,
+                                         QuicPacketNumber packet_number) {
+  framer->last_packet_number_ = packet_number;
 }
 
 // static

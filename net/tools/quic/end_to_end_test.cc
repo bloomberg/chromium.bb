@@ -1648,31 +1648,32 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
 // called exactly once on destruction.
 class TestAckNotifierDelegate : public QuicAckListenerInterface {
  public:
-  TestAckNotifierDelegate() {}
+  explicit TestAckNotifierDelegate(int num_packets)
+      : num_notifications_(num_packets) {}
 
   void OnAckNotification(int /*num_retransmitted_packets*/,
                          int /*num_retransmitted_bytes*/,
                          QuicTime::Delta /*delta_largest_observed*/) override {
-    ASSERT_FALSE(has_been_notified_);
-    has_been_notified_ = true;
+    ASSERT_LT(0, num_notifications_);
+    num_notifications_ = 0;
   }
 
   void OnPacketAcked(int /*acked_bytes*/,
                      QuicTime::Delta /*delta_largest_observed*/) override {
-    ASSERT_FALSE(has_been_notified_);
-    has_been_notified_ = true;
+    ASSERT_LT(0, num_notifications_);
+    num_notifications_--;
   }
 
   void OnPacketRetransmitted(int /*retransmitted_bytes*/) override {}
 
-  bool has_been_notified() const { return has_been_notified_; }
+  bool has_been_notified() const { return num_notifications_ == 0; }
 
  protected:
   // Object is ref counted.
-  ~TestAckNotifierDelegate() override { EXPECT_TRUE(has_been_notified_); }
+  ~TestAckNotifierDelegate() override { EXPECT_EQ(0, num_notifications_); }
 
  private:
-  bool has_been_notified_ = false;
+  int num_notifications_;
 };
 
 TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
@@ -1698,7 +1699,8 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   client_->SendMessage(request);
 
   // The TestAckNotifierDelegate will cause a failure if not notified.
-  scoped_refptr<TestAckNotifierDelegate> delegate(new TestAckNotifierDelegate);
+  scoped_refptr<TestAckNotifierDelegate> delegate(
+      new TestAckNotifierDelegate(2));
 
   // Test the AckNotifier's ability to track multiple packets by making the
   // request body exceed the size of a single packet.

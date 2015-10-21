@@ -51,7 +51,8 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       should_send_stop_waiting_(false),
       ack_queued_(false),
       stop_waiting_queued_(false),
-      max_packet_length_(kDefaultMaxPacketSize) {}
+      max_packet_length_(kDefaultMaxPacketSize),
+      no_acknotifier_(false) {}
 
 QuicPacketGenerator::~QuicPacketGenerator() {
   for (QuicFrame& frame : queued_control_frames_) {
@@ -128,7 +129,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
-    QuicAckListenerInterface* delegate) {
+    QuicAckListenerInterface* listener) {
   bool has_handshake = id == kCryptoStreamId;
   // To make reasoning about crypto frames easier, we don't combine them with
   // other retransmittable frames in a single packet.
@@ -150,8 +151,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   // This notifier will be owned by the AckNotifierManager (or deleted below) if
   // not attached to a packet.
   QuicAckNotifier* notifier = nullptr;
-  if (delegate != nullptr) {
-    notifier = new QuicAckNotifier(delegate);
+  if (!no_acknotifier_ && listener != nullptr) {
+    notifier = new QuicAckNotifier(listener);
   }
 
   if (!fin && (iov.total_length == 0)) {
@@ -170,7 +171,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     ++frames_created;
 
     // We want to track which packet this stream frame ends up in.
-    if (notifier != nullptr) {
+    if (!no_acknotifier_ && notifier != nullptr) {
       ack_notifiers_.push_back(notifier);
     }
 
@@ -181,6 +182,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       delegate_->CloseConnection(QUIC_INTERNAL_ERROR, false);
       delete notifier;
       return QuicConsumedData(0, false);
+    }
+    if (no_acknotifier_ && listener != nullptr) {
+      ack_listeners_.push_back(AckListenerWrapper(listener, bytes_consumed));
     }
 
     total_bytes_consumed += bytes_consumed;
@@ -228,13 +232,13 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
 
 void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
     QuicByteCount target_mtu,
-    QuicAckListenerInterface* delegate) {
+    QuicAckListenerInterface* listener) {
   // MTU discovery frames must be sent by themselves.
   DCHECK(!InBatchMode() && !packet_creator_.HasPendingFrames());
 
   // If an ack notifier delegate is provided, register it.
-  if (delegate) {
-    QuicAckNotifier* ack_notifier = new QuicAckNotifier(delegate);
+  if (!no_acknotifier_ && listener != nullptr) {
+    QuicAckNotifier* ack_notifier = new QuicAckNotifier(listener);
     // The notifier manager will take the ownership of the notifier after the
     // packet is sent.
     ack_notifiers_.push_back(ack_notifier);
@@ -250,6 +254,9 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
   // Send the probe packet with the new length.
   SetMaxPacketLength(target_mtu, /*force=*/true);
   const bool success = AddFrame(frame, nullptr, /*needs_padding=*/true);
+  if (no_acknotifier_ && listener != nullptr) {
+    ack_listeners_.push_back(AckListenerWrapper(listener, 0));
+  }
   SerializeAndSendPacket();
   // The only reason AddFrame can fail is that the packet is too full to fit in
   // a ping.  This is not possible for any sane MTU.
@@ -463,8 +470,13 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
   }
 
   // There may be AckNotifiers interested in this packet.
-  serialized_packet.notifiers.swap(ack_notifiers_);
-  ack_notifiers_.clear();
+  if (no_acknotifier_) {
+    serialized_packet.listeners.swap(ack_listeners_);
+    ack_listeners_.clear();
+  } else {
+    serialized_packet.notifiers.swap(ack_notifiers_);
+    ack_notifiers_.clear();
+  }
 
   delegate_->OnSerializedPacket(serialized_packet);
   MaybeSendFecPacketAndCloseGroup(/*force=*/false, /*is_fec_timeout=*/false);

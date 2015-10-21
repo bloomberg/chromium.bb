@@ -426,7 +426,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
-  void OnFecData(const QuicFecData& fec) override;
+  void OnFecData(base::StringPiece redundnancy) override;
   void OnPacketComplete() override;
 
   // QuicPacketGenerator::DelegateInterface

@@ -139,7 +139,7 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     DCHECK(false);
     return false;
   }
-  void OnFecData(const QuicFecData& /*fec*/) override { DCHECK(false); }
+  void OnFecData(StringPiece /*redundancy*/) override { DCHECK(false); }
   void OnPacketComplete() override { DCHECK(false); }
 
  private:
@@ -285,7 +285,7 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     // This connection ID is already in time-wait state.
     time_wait_list_manager_->ProcessPacket(
         current_server_address_, current_client_address_,
-        header.public_header.connection_id, header.packet_packet_number,
+        header.public_header.connection_id, header.packet_number,
         *current_packet_);
     return;
   }
@@ -327,7 +327,7 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
           header.public_header.connection_id));
       time_wait_list_manager_->ProcessPacket(
           current_server_address_, current_client_address_,
-          header.public_header.connection_id, header.packet_packet_number,
+          header.public_header.connection_id, header.packet_number,
           *current_packet_);
       break;
     case kFateDrop:
@@ -359,8 +359,8 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
 
   // Check that the sequence numer is within the range that the client is
   // expected to send before receiving a response from the server.
-  if (header.packet_packet_number == kInvalidPacketNumber ||
-      header.packet_packet_number > kMaxReasonableInitialPacketNumber) {
+  if (header.packet_number == kInvalidPacketNumber ||
+      header.packet_number > kMaxReasonableInitialPacketNumber) {
     return kFateTimeWait;
   }
 

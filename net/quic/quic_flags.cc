@@ -58,10 +58,6 @@ bool FLAGS_quic_require_handshake_confirmation = false;
 // client, a GO_AWAY frame is sent to the client.
 bool FLAGS_send_goaway_after_client_migration = true;
 
-// Close the connection instead of attempting to write a packet out of sequence
-// number order.
-bool FLAGS_quic_close_connection_out_of_order_sending = true;
-
 // QUIC-specific flag. If true, Cubic's epoch is reset when the sender is
 // application-limited.
 bool FLAGS_reset_cubic_epoch_when_app_limited = true;
@@ -103,3 +99,7 @@ bool FLAGS_quic_fix_fin_accounting = true;
 // incoming data to be ignored but the read side of the stream object is not
 // closed.
 bool FLAGS_quic_implement_stop_reading = true;
+
+// Invoke the QuicAckListener directly, instead of going through the AckNotifier
+// and AckNotifierManager.
+bool FLAGS_quic_no_ack_notifier = true;

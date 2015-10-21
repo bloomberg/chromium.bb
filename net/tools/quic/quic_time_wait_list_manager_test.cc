@@ -153,7 +153,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
     header.public_header.version_flag = false;
     header.public_header.reset_flag = false;
     header.public_header.packet_number_length = PACKET_6BYTE_PACKET_NUMBER;
-    header.packet_packet_number = packet_number;
+    header.packet_number = packet_number;
     header.entropy_flag = false;
     header.entropy_hash = 0;
     header.fec_flag = false;

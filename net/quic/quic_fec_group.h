@@ -19,7 +19,7 @@ namespace net {
 
 class NET_EXPORT_PRIVATE QuicFecGroup : public QuicFecGroupInterface {
  public:
-  QuicFecGroup();
+  explicit QuicFecGroup(QuicPacketNumber fec_group_number);
   virtual ~QuicFecGroup();
 
   // Implementation of QuicFecGroupInterface.
@@ -27,8 +27,8 @@ class NET_EXPORT_PRIVATE QuicFecGroup : public QuicFecGroupInterface {
               const QuicPacketHeader& header,
               base::StringPiece decrypted_payload) override;
   bool UpdateFec(EncryptionLevel encryption_level,
-                 QuicPacketNumber fec_packet_packet_number,
-                 const QuicFecData& fec) override;
+                 const QuicPacketHeader& header,
+                 base::StringPiece redundancy) override;
   bool CanRevive() const override;
   bool IsFinished() const override;
   size_t Revive(QuicPacketHeader* header,
@@ -46,12 +46,16 @@ class NET_EXPORT_PRIVATE QuicFecGroup : public QuicFecGroupInterface {
   // if the number of missing packets is not known.
   QuicPacketCount NumMissingPackets() const;
 
+  bool has_received_fec_packet() const {
+    return max_protected_packet_ != kInvalidPacketNumber;
+  }
+
   // Set of packets that we have recevied.
   PacketNumberSet received_packets_;
   // packet number of the first protected packet in this group (the one
   // with the lowest packet number).  Will only be set once the FEC
   // packet has been seen.
-  QuicPacketNumber min_protected_packet_;
+  const QuicPacketNumber min_protected_packet_;
   // packet number of the last protected packet in this group (the one
   // with the highest packet number).  Will only be set once the FEC
   // packet has been seen.

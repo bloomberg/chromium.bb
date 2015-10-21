@@ -40,7 +40,7 @@ class TcpLossAlgorithmTest : public ::testing::Test {
     SerializedPacket packet(
         packet_number, PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
         new RetransmittableFrames(ENCRYPTION_NONE), false, false);
-    unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),
+    unacked_packets_.AddSentPacket(&packet, 0, NOT_RETRANSMISSION, clock_.Now(),
                                    1000, true);
   }
 

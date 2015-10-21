@@ -92,8 +92,7 @@ scoped_ptr<base::Value> NetLogQuicPacketHeaderCallback(
                   base::Uint64ToString(header->public_header.connection_id));
   dict->SetInteger("reset_flag", header->public_header.reset_flag);
   dict->SetInteger("version_flag", header->public_header.version_flag);
-  dict->SetString("packet_number",
-                  base::Uint64ToString(header->packet_packet_number));
+  dict->SetString("packet_number", base::Uint64ToString(header->packet_number));
   dict->SetInteger("entropy_flag", header->entropy_flag);
   dict->SetInteger("fec_flag", header->fec_flag);
   dict->SetInteger("fec_group", static_cast<int>(header->fec_group));
@@ -519,9 +518,9 @@ void QuicConnectionLogger::OnProtocolVersionMismatch(
 void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PACKET_AUTHENTICATED);
   ++num_packets_received_;
-  if (largest_received_packet_number_ < header.packet_packet_number) {
+  if (largest_received_packet_number_ < header.packet_number) {
     QuicPacketNumber delta =
-        header.packet_packet_number - largest_received_packet_number_;
+        header.packet_number - largest_received_packet_number_;
     if (delta > 1) {
       // There is a gap between the largest packet previously received and
       // the current packet.  This indicates either loss, or out-of-order
@@ -529,21 +528,21 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
       UMA_HISTOGRAM_COUNTS("Net.QuicSession.PacketGapReceived",
                            static_cast<base::HistogramBase::Sample>(delta - 1));
     }
-    largest_received_packet_number_ = header.packet_packet_number;
+    largest_received_packet_number_ = header.packet_number;
   }
-  if (header.packet_packet_number < received_packets_.size()) {
-    received_packets_[static_cast<size_t>(header.packet_packet_number)] = true;
+  if (header.packet_number < received_packets_.size()) {
+    received_packets_[static_cast<size_t>(header.packet_number)] = true;
   }
-  if (header.packet_packet_number < last_received_packet_number_) {
+  if (header.packet_number < last_received_packet_number_) {
     ++num_out_of_order_received_packets_;
     if (previous_received_packet_size_ < last_received_packet_size_)
       ++num_out_of_order_large_received_packets_;
     UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.OutOfOrderGapReceived",
         static_cast<base::HistogramBase::Sample>(last_received_packet_number_ -
-                                                 header.packet_packet_number));
+                                                 header.packet_number));
   }
-  last_received_packet_number_ = header.packet_packet_number;
+  last_received_packet_number_ = header.packet_number;
 }
 
 void QuicConnectionLogger::OnStreamFrame(const QuicStreamFrame& frame) {

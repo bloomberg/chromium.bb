@@ -252,6 +252,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     return consecutive_tlp_count_;
   }
 
+  void set_no_acknotifier(bool no_acknotifier) {
+    no_acknotifier_ = no_acknotifier;
+    unacked_packets_.set_no_acknotifier(no_acknotifier);
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -407,6 +412,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Records bandwidth from server to client in normal operation, over periods
   // of time with no loss events.
   QuicSustainedBandwidthRecorder sustained_bandwidth_recorder_;
+
+  // True if the AckNotifierManager should not be called.
+  bool no_acknotifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

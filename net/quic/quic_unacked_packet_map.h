@@ -31,7 +31,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // don't arrive, indicating the need for retransmission.
   // |old_packet_number| is the packet number of the previous transmission,
   // or 0 if there was none.
-  void AddSentPacket(const SerializedPacket& serialized_packet,
+  // Any AckNotifierWrappers in |serialized_packet| are swapped from the
+  // serialized packet into the TransmissionInfo.
+  void AddSentPacket(SerializedPacket* serialized_packet,
                      QuicPacketNumber old_packet_number,
                      TransmissionType transmission_type,
                      QuicTime sent_time,
@@ -43,6 +45,11 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Sets the nack count to the max of the current nack count and |min_nacks|.
   void NackPacket(QuicPacketNumber packet_number, uint16 min_nacks);
+
+  // Notifies all the AckListeners attached to the packet of an ack and
+  // clears them to ensure they're not notified again.
+  void NotifyAndClearListeners(QuicPacketNumber newest_transmission,
+                               QuicTime::Delta delta_largest_observed);
 
   // Marks |packet_number| as no longer in flight.
   void RemoveFromInFlight(QuicPacketNumber packet_number);
@@ -122,6 +129,10 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // RTT measurement purposes.
   void RemoveObsoletePackets();
 
+  void set_no_acknotifier(bool no_acknotifier) {
+    no_acknotifier_ = no_acknotifier;
+  }
+
  private:
   // Called when a packet is retransmitted with a new packet number.
   // |old_packet_number| will remain unacked, but will have no
@@ -171,6 +182,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Notifier manager for ACK packets.  We notify it every time we abandon a
   // packet.
   AckNotifierManager* ack_notifier_manager_;
+
+  // True if the AckNotifierManager should not be called.
+  bool no_acknotifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };

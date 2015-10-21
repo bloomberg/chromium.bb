@@ -18,11 +18,11 @@ class QuicFramerPeer {
   static QuicPacketNumber CalculatePacketNumberFromWire(
       QuicFramer* framer,
       QuicPacketNumberLength packet_number_length,
-      QuicPacketNumber packet_packet_number);
+      QuicPacketNumber packet_number);
   static void SetLastSerializedConnectionId(QuicFramer* framer,
                                             QuicConnectionId connection_id);
   static void SetLastPacketNumber(QuicFramer* framer,
-                                  QuicPacketNumber packet_packet_number);
+                                  QuicPacketNumber packet_number);
   static void SetPerspective(QuicFramer* framer, Perspective perspective);
 
   // SwapCrypters exchanges the state of the crypters of |framer1| with

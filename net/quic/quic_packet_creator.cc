@@ -206,7 +206,7 @@ InFecGroup QuicPacketCreator::MaybeUpdateLengthsAndStartFec() {
   // Start a new FEC group since protection is on. Set the fec group number to
   // the packet number of the next packet.
   fec_group_number_ = packet_number() + 1;
-  fec_group_.reset(new QuicFecGroup());
+  fec_group_.reset(new QuicFecGroup(fec_group_number_));
   return IN_FEC_GROUP;
 }
 
@@ -510,7 +510,7 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   queued_frames_.clear();
   needs_padding_ = false;
   return SerializedPacket(
-      header.packet_packet_number, header.public_header.packet_number_length,
+      header.packet_number, header.public_header.packet_number_length,
       encrypted, QuicFramer::GetPacketEntropyHash(header),
       queued_retransmittable_frames_.release(), has_ack, has_stop_waiting);
 }
@@ -526,14 +526,13 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   DCHECK_EQ(0u, queued_frames_.size());
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, true, &header);
-  QuicFecData fec_data;
-  fec_data.fec_group = fec_group_->MinProtectedPacket();
-  fec_data.redundancy = fec_group_->PayloadParity();
-  scoped_ptr<QuicPacket> packet(framer_->BuildFecPacket(header, fec_data));
+  scoped_ptr<QuicPacket> packet(
+      framer_->BuildFecPacket(header, fec_group_->PayloadParity()));
   fec_group_.reset(nullptr);
   packet_size_ = 0;
   LOG_IF(DFATAL, packet == nullptr)
-      << "Failed to serialize fec packet for group:" << fec_data.fec_group;
+      << "Failed to serialize fec packet for group:"
+      << fec_group_->MinProtectedPacket();
   DCHECK_GE(max_packet_length_, packet->length());
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // packet number multiple times.
@@ -544,7 +543,7 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
     return NoPacket();
   }
   SerializedPacket serialized(
-      header.packet_packet_number, header.public_header.packet_number_length,
+      header.packet_number, header.public_header.packet_number_length,
       encrypted, QuicFramer::GetPacketEntropyHash(header), nullptr, false,
       false);
   serialized.is_fec_packet = true;
@@ -579,7 +578,7 @@ void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
   header->public_header.reset_flag = false;
   header->public_header.version_flag = send_version_in_packet_;
   header->fec_flag = fec_flag;
-  header->packet_packet_number = ++packet_number_;
+  header->packet_number = ++packet_number_;
   header->public_header.packet_number_length = packet_number_length_;
   header->entropy_flag = random_bool_source_->RandBool();
   header->is_in_fec_group = fec_group == 0 ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;

@@ -198,7 +198,7 @@ class QuicReceivedPacketManagerTest : public ::testing::Test {
                            QuicPacketEntropyHash entropy_hash,
                            QuicTime receipt_time) {
     QuicPacketHeader header;
-    header.packet_packet_number = packet_number;
+    header.packet_number = packet_number;
     header.entropy_hash = entropy_hash;
     received_manager_.RecordPacketReceived(0u, header, receipt_time);
   }
@@ -290,9 +290,9 @@ TEST_F(QuicReceivedPacketManagerTest, SetCumulativeEntropyUpTo) {
 
 TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
   QuicPacketHeader header;
-  header.packet_packet_number = 2u;
+  header.packet_number = 2u;
   received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero());
-  header.packet_packet_number = 7u;
+  header.packet_number = 7u;
   received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero());
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(3u));
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(6u));
@@ -304,7 +304,7 @@ TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
 
 TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   QuicPacketHeader header;
-  header.packet_packet_number = 2u;
+  header.packet_number = 2u;
   QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
   received_manager_.RecordPacketReceived(0u, header, two_ms);
 

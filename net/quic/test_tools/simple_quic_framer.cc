@@ -81,10 +81,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  void OnFecData(const QuicFecData& fec) override {
-    fec_data_ = fec;
-    fec_redundancy_ = fec_data_.redundancy.as_string();
-    fec_data_.redundancy = fec_redundancy_;
+  void OnFecData(StringPiece redundancy) override {
+    fec_redundancy_ = redundancy.as_string();
   }
 
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
@@ -134,9 +132,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const vector<QuicPingFrame>& ping_frames() const {
     return ping_frames_;
   }
-  const QuicFecData& fec_data() const {
-    return fec_data_;
-  }
+  StringPiece fec_data() const { return fec_redundancy_; }
   const QuicVersionNegotiationPacket* version_negotiation_packet() const {
     return version_negotiation_packet_.get();
   }
@@ -145,7 +141,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   QuicErrorCode error_;
   bool has_header_;
   QuicPacketHeader header_;
-  QuicFecData fec_data_;
   scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
   string fec_redundancy_;
@@ -186,12 +181,11 @@ void SimpleQuicFramer::Reset() {
   visitor_.reset(new SimpleFramerVisitor);
 }
 
-
 const QuicPacketHeader& SimpleQuicFramer::header() const {
   return visitor_->header();
 }
 
-const QuicFecData& SimpleQuicFramer::fec_data() const {
+StringPiece SimpleQuicFramer::fec_data() const {
   return visitor_->fec_data();
 }
 

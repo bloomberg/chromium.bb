@@ -68,7 +68,7 @@ class QuicFecGroupTest : public ::testing::Test {
       }
     }
 
-    QuicFecGroup group;
+    QuicFecGroup group(1);
 
     // If we're out of order, send the FEC packet in the position of the
     // lost packet. Otherwise send all (non-missing) packets, then FEC.
@@ -76,16 +76,17 @@ class QuicFecGroupTest : public ::testing::Test {
       // Update the FEC state for each non-lost packet.
       for (size_t packet = 1; packet <= num_packets; packet++) {
         if (packet == lost_packet) {
+          QuicPacketHeader header;
+          header.packet_number = num_packets + 1;
+          header.fec_group = 1;
           ASSERT_FALSE(group.IsFinished());
-          QuicFecData fec;
-          fec.fec_group = 1u;
-          fec.redundancy = StringPiece(redundancy.get(), kDataMaxLen);
           ASSERT_TRUE(
-              group.UpdateFec(ENCRYPTION_FORWARD_SECURE, num_packets + 1, fec));
+              group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header,
+                              StringPiece(redundancy.get(), kDataMaxLen)));
         } else {
           QuicPacketHeader header;
-          header.packet_packet_number = packet;
-          header.entropy_flag = kEntropyFlag[packet];
+          header.packet_number = packet;
+          header.fec_group = 1;
           ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header,
                                    kData[packet]));
         }
@@ -99,7 +100,8 @@ class QuicFecGroupTest : public ::testing::Test {
         }
 
         QuicPacketHeader header;
-        header.packet_packet_number = packet;
+        header.packet_number = packet;
+        header.fec_group = 1;
         header.entropy_flag = kEntropyFlag[packet];
         ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header,
                                  kData[packet]));
@@ -107,13 +109,12 @@ class QuicFecGroupTest : public ::testing::Test {
       }
 
       ASSERT_FALSE(group.IsFinished());
+      QuicPacketHeader header;
+      header.packet_number = num_packets + 1;
+      header.fec_group = 1;
       // Attempt to revive the missing packet.
-      QuicFecData fec;
-      fec.fec_group = 1u;
-      fec.redundancy = StringPiece(redundancy.get(), kDataMaxLen);
-
-      ASSERT_TRUE(
-          group.UpdateFec(ENCRYPTION_FORWARD_SECURE, num_packets + 1, fec));
+      ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header,
+                                  StringPiece(redundancy.get(), kDataMaxLen)));
     }
     QuicPacketHeader header;
     char recovered[kMaxPacketSize];
@@ -122,9 +123,9 @@ class QuicFecGroupTest : public ::testing::Test {
     ASSERT_NE(0u, len)
         << "Failed to revive packet " << lost_packet << " out of "
         << num_packets;
-    EXPECT_EQ(lost_packet, header.packet_packet_number)
-        << "Failed to revive packet " << lost_packet << " out of "
-        << num_packets;
+    EXPECT_EQ(lost_packet, header.packet_number) << "Failed to revive packet "
+                                                 << lost_packet << " out of "
+                                                 << num_packets;
     // Revived packets have an unknown entropy.
     EXPECT_FALSE(header.entropy_flag);
     ASSERT_GE(len, strlen(kData[lost_packet])) << "Incorrect length";
@@ -160,25 +161,23 @@ TEST_F(QuicFecGroupTest, UpdateFecIfReceivedPacketIsNotCovered) {
     redundancy[i] = data1[i];
   }
 
-  QuicFecGroup group;
+  QuicFecGroup group(1);
 
   QuicPacketHeader header;
-  header.packet_packet_number = 3;
+  header.fec_group = 1;
+  header.packet_number = 3;
   group.Update(ENCRYPTION_FORWARD_SECURE, header, data1);
 
-  QuicFecData fec;
-  fec.fec_group = 1u;
-  fec.redundancy = redundancy;
-
-  header.packet_packet_number = 2;
-  ASSERT_FALSE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, 2, fec));
+  header.packet_number = 2;
+  ASSERT_FALSE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header, redundancy));
 }
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
   QuicPacketHeader header;
-  header.packet_packet_number = 3;
+  header.fec_group = 3;
+  header.packet_number = 3;
 
-  QuicFecGroup group;
+  QuicFecGroup group(3);
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
   EXPECT_FALSE(group.ProtectsPacketsBefore(1));
@@ -191,15 +190,16 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithSeveralPackets) {
   QuicPacketHeader header;
-  header.packet_packet_number = 3;
+  header.fec_group = 3;
+  header.packet_number = 3;
 
-  QuicFecGroup group;
+  QuicFecGroup group(3);
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  header.packet_packet_number = 7;
+  header.packet_number = 7;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  header.packet_packet_number = 5;
+  header.packet_number = 5;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
   EXPECT_FALSE(group.ProtectsPacketsBefore(1));
@@ -215,12 +215,11 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithSeveralPackets) {
 }
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
-  QuicFecData fec;
-  fec.fec_group = 2u;
-  fec.redundancy = kDataSingle;
-
-  QuicFecGroup group;
-  ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, 3, fec));
+  QuicFecGroup group(2);
+  QuicPacketHeader header;
+  header.fec_group = 2;
+  header.packet_number = 3;
+  ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
   EXPECT_FALSE(group.ProtectsPacketsBefore(1));
   EXPECT_FALSE(group.ProtectsPacketsBefore(2));
@@ -231,21 +230,20 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
 }
 
 TEST_F(QuicFecGroupTest, EffectiveEncryptionLevel) {
-  QuicFecGroup group;
+  QuicFecGroup group(1);
   EXPECT_EQ(NUM_ENCRYPTION_LEVELS, group.EffectiveEncryptionLevel());
 
   QuicPacketHeader header;
-  header.packet_packet_number = 5;
+  header.fec_group = 1;
+  header.packet_number = 5;
   ASSERT_TRUE(group.Update(ENCRYPTION_INITIAL, header, kDataSingle));
   EXPECT_EQ(ENCRYPTION_INITIAL, group.EffectiveEncryptionLevel());
 
-  QuicFecData fec;
-  fec.fec_group = 1u;
-  fec.redundancy = kDataSingle;
-  ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, 7, fec));
+  header.packet_number = 7;
+  ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
   EXPECT_EQ(ENCRYPTION_INITIAL, group.EffectiveEncryptionLevel());
 
-  header.packet_packet_number = 3;
+  header.packet_number = 3;
   ASSERT_TRUE(group.Update(ENCRYPTION_NONE, header, kDataSingle));
   EXPECT_EQ(ENCRYPTION_NONE, group.EffectiveEncryptionLevel());
 }

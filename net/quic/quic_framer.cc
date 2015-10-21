@@ -318,7 +318,7 @@ QuicFramer::AckFrameInfo::~AckFrameInfo() {}
 // static
 QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
     const QuicPacketHeader& header) {
-  return header.entropy_flag << (header.packet_packet_number % 8);
+  return header.entropy_flag << (header.packet_number % 8);
 }
 
 QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
@@ -421,11 +421,11 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
 }
 
 QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
-                                       const QuicFecData& fec) {
+                                       StringPiece redundancy) {
   DCHECK_EQ(IN_FEC_GROUP, header.is_in_fec_group);
   DCHECK_NE(0u, header.fec_group);
   size_t len = GetPacketHeaderSize(header);
-  len += fec.redundancy.length();
+  len += redundancy.length();
 
   scoped_ptr<char[]> buffer(new char[len]);
   QuicDataWriter writer(len, buffer.get());
@@ -434,7 +434,7 @@ QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
     return nullptr;
   }
 
-  if (!writer.WriteBytes(fec.redundancy.data(), fec.redundancy.length())) {
+  if (!writer.WriteBytes(redundancy.data(), redundancy.length())) {
     LOG(DFATAL) << "Failed to add FEC";
     return nullptr;
   }
@@ -629,10 +629,7 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
       return false;
     }
   } else {
-    QuicFecData fec_data;
-    fec_data.fec_group = header.fec_group;
-    fec_data.redundancy = reader.ReadRemainingPayload();
-    visitor_->OnFecData(fec_data);
+    visitor_->OnFecData(reader.ReadRemainingPayload());
   }
 
   visitor_->OnPacketComplete();
@@ -770,7 +767,7 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   }
 
   if (!AppendPacketSequenceNumber(header.public_header.packet_number_length,
-                                  header.packet_packet_number, writer)) {
+                                  header.packet_number, writer)) {
     return false;
   }
 
@@ -791,12 +788,12 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   // The FEC group number is the packet number of the first fec
   // protected packet, or 0 if this packet is not protected.
   if (header.is_in_fec_group == IN_FEC_GROUP) {
-    DCHECK_LE(header.fec_group, header.packet_packet_number);
-    DCHECK_LT(header.packet_packet_number - header.fec_group, 255u);
+    DCHECK_LE(header.fec_group, header.packet_number);
+    DCHECK_LT(header.packet_number - header.fec_group, 255u);
     // Offset from the current packet number to the first fec
     // protected packet.
     uint8 first_fec_protected_packet_offset =
-        static_cast<uint8>(header.packet_packet_number - header.fec_group);
+        static_cast<uint8>(header.packet_number - header.fec_group);
     if (!writer->WriteBytes(&first_fec_protected_packet_offset, 1)) {
       return false;
     }
@@ -831,7 +828,7 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
 
 QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
     QuicPacketNumberLength packet_number_length,
-    QuicPacketNumber packet_packet_number) const {
+    QuicPacketNumber packet_number) const {
   // The new packet number might have wrapped to the next epoch, or
   // it might have reverse wrapped to the previous epoch, or it might
   // remain in the same epoch.  Select the packet number closest to the
@@ -847,10 +844,9 @@ QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
   QuicPacketNumber prev_epoch = epoch - epoch_delta;
   QuicPacketNumber next_epoch = epoch + epoch_delta;
 
-  return ClosestTo(
-      next_packet_number, epoch + packet_packet_number,
-      ClosestTo(next_packet_number, prev_epoch + packet_packet_number,
-                next_epoch + packet_packet_number));
+  return ClosestTo(next_packet_number, epoch + packet_number,
+                   ClosestTo(next_packet_number, prev_epoch + packet_number,
+                             next_epoch + packet_number));
 }
 
 bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
@@ -1020,12 +1016,12 @@ bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                               QuicPacketHeader* header) {
   if (!ProcessPacketSequenceNumber(encrypted_reader,
                                    header->public_header.packet_number_length,
-                                   &header->packet_packet_number)) {
+                                   &header->packet_number)) {
     set_detailed_error("Unable to read packet number.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
-  if (header->packet_packet_number == 0u) {
+  if (header->packet_number == 0u) {
     set_detailed_error("packet numbers cannot be 0.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
@@ -1059,20 +1055,20 @@ bool QuicFramer::ProcessAuthenticatedHeader(QuicDataReader* reader,
       set_detailed_error("Unable to read first fec protected packet offset.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
-    if (first_fec_protected_packet_offset >= header->packet_packet_number) {
+    if (first_fec_protected_packet_offset >= header->packet_number) {
       set_detailed_error(
           "First fec protected packet offset must be less "
           "than the packet number.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
     header->fec_group =
-        header->packet_packet_number - first_fec_protected_packet_offset;
+        header->packet_number - first_fec_protected_packet_offset;
   }
 
   header->entropy_hash = GetPacketEntropyHash(*header);
   // Set the last packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
-  last_packet_number_ = header->packet_packet_number;
+  last_packet_number_ = header->packet_number;
   return true;
 }
 
@@ -1466,9 +1462,8 @@ bool QuicFramer::ProcessStopWaitingFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read least unacked delta.");
     return false;
   }
-  DCHECK_GE(header.packet_packet_number, least_unacked_delta);
-  stop_waiting->least_unacked =
-      header.packet_packet_number - least_unacked_delta;
+  DCHECK_GE(header.packet_number, least_unacked_delta);
+  stop_waiting->least_unacked = header.packet_number - least_unacked_delta;
 
   return true;
 }
@@ -1624,12 +1619,11 @@ void QuicFramer::SetEncrypter(EncryptionLevel level,
   encrypter_[level].reset(encrypter);
 }
 
-QuicEncryptedPacket* QuicFramer::EncryptPayload(
-    EncryptionLevel level,
-    QuicPacketNumber packet_packet_number,
-    const QuicPacket& packet,
-    char* buffer,
-    size_t buffer_len) {
+QuicEncryptedPacket* QuicFramer::EncryptPayload(EncryptionLevel level,
+                                                QuicPacketNumber packet_number,
+                                                const QuicPacket& packet,
+                                                char* buffer,
+                                                size_t buffer_len) {
   DCHECK(encrypter_[level].get() != nullptr);
 
   const size_t encrypted_len =
@@ -1654,7 +1648,7 @@ QuicEncryptedPacket* QuicFramer::EncryptPayload(
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(
-          packet_packet_number, packet.AssociatedData(), packet.Plaintext(),
+          packet_number, packet.AssociatedData(), packet.Plaintext(),
           encryption_buffer + header_data.length(), &output_length,
           encrypted_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
@@ -1695,14 +1689,14 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
       header.public_header.version_flag,
       header.public_header.packet_number_length);
   bool success = decrypter_->DecryptPacket(
-      header.packet_packet_number, associated_data, encrypted, decrypted_buffer,
+      header.packet_number, associated_data, encrypted, decrypted_buffer,
       decrypted_length, buffer_length);
   if (success) {
     visitor_->OnDecryptedPacket(decrypter_level_);
   } else if (alternative_decrypter_.get() != nullptr) {
     success = alternative_decrypter_->DecryptPacket(
-        header.packet_packet_number, associated_data, encrypted,
-        decrypted_buffer, decrypted_length, buffer_length);
+        header.packet_number, associated_data, encrypted, decrypted_buffer,
+        decrypted_length, buffer_length);
     if (success) {
       visitor_->OnDecryptedPacket(alternative_decrypter_level_);
       if (alternative_decrypter_latch_) {
@@ -1723,7 +1717,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
 
   if (!success) {
     DLOG(WARNING) << "DecryptPacket failed for packet_number:"
-                  << header.packet_packet_number;
+                  << header.packet_number;
     return false;
   }
 
@@ -1857,7 +1851,7 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
 // static
 bool QuicFramer::AppendPacketSequenceNumber(
     QuicPacketNumberLength packet_number_length,
-    QuicPacketNumber packet_packet_number,
+    QuicPacketNumber packet_number,
     QuicDataWriter* writer) {
   // Ensure the entire packet number can be written.
   if (writer->capacity() - writer->length() <
@@ -1866,20 +1860,16 @@ bool QuicFramer::AppendPacketSequenceNumber(
   }
   switch (packet_number_length) {
     case PACKET_1BYTE_PACKET_NUMBER:
-      return writer->WriteUInt8(packet_packet_number &
-                                k1ByteSequenceNumberMask);
+      return writer->WriteUInt8(packet_number & k1ByteSequenceNumberMask);
       break;
     case PACKET_2BYTE_PACKET_NUMBER:
-      return writer->WriteUInt16(packet_packet_number &
-                                 k2ByteSequenceNumberMask);
+      return writer->WriteUInt16(packet_number & k2ByteSequenceNumberMask);
       break;
     case PACKET_4BYTE_PACKET_NUMBER:
-      return writer->WriteUInt32(packet_packet_number &
-                                 k4ByteSequenceNumberMask);
+      return writer->WriteUInt32(packet_number & k4ByteSequenceNumberMask);
       break;
     case PACKET_6BYTE_PACKET_NUMBER:
-      return writer->WriteUInt48(packet_packet_number &
-                                 k6ByteSequenceNumberMask);
+      return writer->WriteUInt48(packet_number & k6ByteSequenceNumberMask);
       break;
     default:
       DCHECK(false) << "packet_number_length: " << packet_number_length;
@@ -2132,9 +2122,9 @@ bool QuicFramer::AppendStopWaitingFrame(
     const QuicPacketHeader& header,
     const QuicStopWaitingFrame& frame,
     QuicDataWriter* writer) {
-  DCHECK_GE(header.packet_packet_number, frame.least_unacked);
+  DCHECK_GE(header.packet_number, frame.least_unacked);
   const QuicPacketNumber least_unacked_delta =
-      header.packet_packet_number - frame.least_unacked;
+      header.packet_number - frame.least_unacked;
   const QuicPacketNumber length_shift =
       header.public_header.packet_number_length * 8;
   if (!writer->WriteUInt8(frame.entropy_hash)) {

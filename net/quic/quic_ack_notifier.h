@@ -6,7 +6,6 @@
 #define NET_QUIC_QUIC_ACK_NOTIFIER_H_
 
 #include "base/memory/ref_counted.h"
-#include "net/quic/quic_ack_listener_interface.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 

@@ -206,7 +206,6 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     ASSERT_TRUE(packet.packet != nullptr);
     ASSERT_TRUE(simple_framer_.ProcessPacket(*packet.packet));
     EXPECT_TRUE(simple_framer_.header().fec_flag);
-    EXPECT_EQ(fec_group, simple_framer_.fec_data().fec_group);
   }
 
   QuicIOVector CreateData(size_t len) {

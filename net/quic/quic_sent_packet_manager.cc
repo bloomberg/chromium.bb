@@ -96,7 +96,8 @@ QuicSentPacketManager::QuicSentPacketManager(
       enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
-      handshake_confirmed_(false) {}
+      handshake_confirmed_(false),
+      no_acknotifier_(false) {}
 
 QuicSentPacketManager::~QuicSentPacketManager() {
 }
@@ -474,8 +475,13 @@ void QuicSentPacketManager::MarkPacketRevived(
 
   // The AckNotifierManager needs to be notified for revived packets,
   // since it indicates the packet arrived from the appliction's perspective.
-  ack_notifier_manager_.OnPacketAcked(newest_transmission,
-                                      delta_largest_observed);
+  if (no_acknotifier_) {
+    unacked_packets_.NotifyAndClearListeners(newest_transmission,
+                                             delta_largest_observed);
+  } else {
+    ack_notifier_manager_.OnPacketAcked(newest_transmission,
+                                        delta_largest_observed);
+  }
 
   unacked_packets_.RemoveRetransmittability(packet_number);
 }
@@ -492,9 +498,19 @@ void QuicSentPacketManager::MarkPacketHandled(
 
   // The AckNotifierManager needs to be notified about the most recent
   // transmission, since that's the one only one it tracks.
-  ack_notifier_manager_.OnPacketAcked(newest_transmission,
-                                      delta_largest_observed);
+  if (no_acknotifier_) {
+    // TODO(ianswett): An extra retrieval into the UnackedPacketMap is done
+    // here, so there may be opportunity for optimization.
+    unacked_packets_.NotifyAndClearListeners(newest_transmission,
+                                             delta_largest_observed);
+  } else {
+    ack_notifier_manager_.OnPacketAcked(newest_transmission,
+                                        delta_largest_observed);
+  }
+
   if (newest_transmission != packet_number) {
+    const TransmissionInfo& newest_transmission_info =
+        unacked_packets_.GetTransmissionInfo(newest_transmission);
     RecordSpuriousRetransmissions(*info.all_transmissions, packet_number);
     // Remove the most recent packet from flight if it's a crypto handshake
     // packet, since they won't be acked now that one has been processed.
@@ -502,8 +518,7 @@ void QuicSentPacketManager::MarkPacketHandled(
     // transmission of a crypto packet is in flight at once.
     // TODO(ianswett): Instead of handling all crypto packets special,
     // only handle nullptr encrypted packets in a special way.
-    if (HasCryptoHandshake(
-        unacked_packets_.GetTransmissionInfo(newest_transmission))) {
+    if (HasCryptoHandshake(newest_transmission_info)) {
       unacked_packets_.RemoveFromInFlight(newest_transmission);
     }
   }
@@ -548,8 +563,10 @@ bool QuicSentPacketManager::OnPacketSent(
     }
     // Inform the ack notifier of retransmissions so it can calculate the
     // retransmit rate.
-    ack_notifier_manager_.OnPacketRetransmitted(original_packet_number,
-                                                packet_number, bytes);
+    if (!no_acknotifier_) {
+      ack_notifier_manager_.OnPacketRetransmitted(original_packet_number,
+                                                  packet_number, bytes);
+    }
   }
 
   if (pending_timer_transmission_count_ > 0) {
@@ -566,7 +583,7 @@ bool QuicSentPacketManager::OnPacketSent(
       sent_time, unacked_packets_.bytes_in_flight(), packet_number, bytes,
       has_congestion_controlled_data);
 
-  unacked_packets_.AddSentPacket(*serialized_packet, original_packet_number,
+  unacked_packets_.AddSentPacket(serialized_packet, original_packet_number,
                                  transmission_type, sent_time, bytes,
                                  in_flight);
 
@@ -912,7 +929,9 @@ QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
 
 void QuicSentPacketManager::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
-  ack_notifier_manager_.OnSerializedPacket(serialized_packet);
+  if (!no_acknotifier_) {
+    ack_notifier_manager_.OnSerializedPacket(serialized_packet);
+  }
 }
 
 void QuicSentPacketManager::CancelRetransmissionsForStream(

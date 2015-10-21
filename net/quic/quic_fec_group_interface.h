@@ -32,8 +32,8 @@ class NET_EXPORT_PRIVATE QuicFecGroupInterface {
   // if it does not claim to protect all the packets previously seen in this
   // group.
   virtual bool UpdateFec(EncryptionLevel encryption_level,
-                         QuicPacketNumber fec_packet_packet_number,
-                         const QuicFecData& fec) = 0;
+                         const QuicPacketHeader& header,
+                         base::StringPiece redundancy) = 0;
 
   // Returns true if a packet can be revived from this FEC group.
   virtual bool CanRevive() const = 0;

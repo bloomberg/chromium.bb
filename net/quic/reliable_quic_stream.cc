@@ -57,11 +57,12 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
   explicit ProxyAckNotifierDelegate(QuicAckListenerInterface* delegate)
       : delegate_(delegate),
         pending_acks_(0),
-        pending_bytes_(0),
         wrote_last_data_(false),
         num_retransmitted_packets_(0),
         num_retransmitted_bytes_(0) {}
 
+  // TODO(ianswett): Remove this class and indirection once OnAckNotification
+  // goes away because the above class comment is no longer true.
   void OnAckNotification(int num_retransmitted_packets,
                          int num_retransmitted_bytes,
                          QuicTime::Delta delta_largest_observed) override {
@@ -79,25 +80,16 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 
   void OnPacketAcked(int acked_bytes,
                      QuicTime::Delta delta_largest_observed) override {
-    DCHECK_LE(acked_bytes, pending_bytes_);
-    pending_bytes_ -= acked_bytes;
-    if (wrote_last_data_ && pending_bytes_ == 0) {
-      DCHECK_EQ(0, pending_bytes_);
-      delegate_->OnAckNotification(num_retransmitted_packets_,
-                                   num_retransmitted_bytes_,
-                                   delta_largest_observed);
-    }
+    delegate_->OnPacketAcked(acked_bytes, delta_largest_observed);
   }
 
   void OnPacketRetransmitted(int retransmitted_bytes) override {
-    ++num_retransmitted_packets_;
-    num_retransmitted_bytes_ += retransmitted_bytes;
+    delegate_->OnPacketRetransmitted(retransmitted_bytes);
   }
 
   void WroteData(bool last_data, size_t bytes_consumed) {
     DCHECK(!wrote_last_data_);
     ++pending_acks_;
-    pending_bytes_ += bytes_consumed;
     wrote_last_data_ = last_data;
   }
 
@@ -112,9 +104,6 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 
   // Number of outstanding acks.
   int pending_acks_;
-
-  // Number of outstanding bytes.
-  int pending_bytes_;
 
   // True if no pending writes remain.
   bool wrote_last_data_;

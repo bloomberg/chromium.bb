@@ -16,9 +16,9 @@ using std::set;
 
 namespace net {
 
-QuicFecGroup::QuicFecGroup()
+QuicFecGroup::QuicFecGroup(QuicPacketNumber fec_group_number)
     : QuicFecGroupInterface(),
-      min_protected_packet_(kInvalidPacketNumber),
+      min_protected_packet_(fec_group_number),
       max_protected_packet_(kInvalidPacketNumber),
       payload_parity_len_(0),
       effective_encryption_level_(NUM_ENCRYPTION_LEVELS) {}
@@ -28,22 +28,22 @@ QuicFecGroup::~QuicFecGroup() {}
 bool QuicFecGroup::Update(EncryptionLevel encryption_level,
                           const QuicPacketHeader& header,
                           StringPiece decrypted_payload) {
-  DCHECK_NE(kInvalidPacketNumber, header.packet_packet_number);
-  if (ContainsKey(received_packets_, header.packet_packet_number)) {
+  DCHECK_EQ(min_protected_packet_, header.fec_group);
+  DCHECK_NE(kInvalidPacketNumber, header.packet_number);
+  if (ContainsKey(received_packets_, header.packet_number)) {
     return false;
   }
-  if (min_protected_packet_ != kInvalidPacketNumber &&
-      max_protected_packet_ != kInvalidPacketNumber &&
-      (header.packet_packet_number < min_protected_packet_ ||
-       header.packet_packet_number > max_protected_packet_)) {
+  if (header.packet_number < min_protected_packet_ ||
+      (has_received_fec_packet() &&
+       header.packet_number > max_protected_packet_)) {
     DLOG(ERROR) << "FEC group does not cover received packet: "
-                << header.packet_packet_number;
+                << header.packet_number;
     return false;
   }
   if (!UpdateParity(decrypted_payload)) {
     return false;
   }
-  received_packets_.insert(header.packet_packet_number);
+  received_packets_.insert(header.packet_number);
   if (encryption_level < effective_encryption_level_) {
     effective_encryption_level_ = encryption_level;
   }
@@ -51,26 +51,23 @@ bool QuicFecGroup::Update(EncryptionLevel encryption_level,
 }
 
 bool QuicFecGroup::UpdateFec(EncryptionLevel encryption_level,
-                             QuicPacketNumber fec_packet_packet_number,
-                             const QuicFecData& fec) {
-  DCHECK_NE(kInvalidPacketNumber, fec_packet_packet_number);
-  DCHECK_NE(kInvalidPacketNumber, fec.fec_group);
-  if (min_protected_packet_ != kInvalidPacketNumber) {
+                             const QuicPacketHeader& header,
+                             StringPiece redundancy) {
+  DCHECK_EQ(min_protected_packet_, header.fec_group);
+  DCHECK_NE(kInvalidPacketNumber, header.packet_number);
+  if (has_received_fec_packet()) {
     return false;
   }
-  PacketNumberSet::const_iterator it = received_packets_.begin();
-  while (it != received_packets_.end()) {
-    if ((*it < fec.fec_group) || (*it >= fec_packet_packet_number)) {
-      DLOG(ERROR) << "FEC group does not cover received packet: " << *it;
+  for (QuicPacketNumber packet : received_packets_) {
+    if (packet >= header.packet_number) {
+      DLOG(ERROR) << "FEC group does not cover received packet: " << packet;
       return false;
     }
-    ++it;
   }
-  if (!UpdateParity(fec.redundancy)) {
+  if (!UpdateParity(redundancy)) {
     return false;
   }
-  min_protected_packet_ = fec.fec_group;
-  max_protected_packet_ = fec_packet_packet_number - 1;
+  max_protected_packet_ = header.packet_number - 1;
   if (encryption_level < effective_encryption_level_) {
     effective_encryption_level_ = encryption_level;
   }
@@ -114,7 +111,7 @@ size_t QuicFecGroup::Revive(QuicPacketHeader* header,
     decrypted_payload[i] = payload_parity_[i];
   }
 
-  header->packet_packet_number = missing;
+  header->packet_number = missing;
   header->entropy_flag = false;  // Unknown entropy.
 
   received_packets_.insert(missing);
@@ -122,7 +119,7 @@ size_t QuicFecGroup::Revive(QuicPacketHeader* header,
 }
 
 bool QuicFecGroup::ProtectsPacketsBefore(QuicPacketNumber num) const {
-  if (max_protected_packet_ != kInvalidPacketNumber) {
+  if (has_received_fec_packet()) {
     return max_protected_packet_ < num;
   }
   // Since we might not yet have received the FEC packet, we must check
@@ -139,8 +136,7 @@ bool QuicFecGroup::UpdateParity(StringPiece payload) {
   if (payload_parity_len_ < payload.size()) {
     payload_parity_len_ = payload.size();
   }
-  if (received_packets_.empty() &&
-      min_protected_packet_ == kInvalidPacketNumber) {
+  if (received_packets_.empty() && !has_received_fec_packet()) {
     // Initialize the parity to the value of this payload
     memcpy(payload_parity_, payload.data(), payload.size());
     if (payload.size() < kMaxPacketSize) {
@@ -156,7 +152,7 @@ bool QuicFecGroup::UpdateParity(StringPiece payload) {
 }
 
 QuicPacketCount QuicFecGroup::NumMissingPackets() const {
-  if (min_protected_packet_ == kInvalidPacketNumber) {
+  if (!has_received_fec_packet()) {
     return numeric_limits<QuicPacketCount>::max();
   }
   return static_cast<QuicPacketCount>(

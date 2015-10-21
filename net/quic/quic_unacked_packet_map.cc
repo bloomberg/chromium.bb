@@ -22,8 +22,8 @@ QuicUnackedPacketMap::QuicUnackedPacketMap(
       least_unacked_(1),
       bytes_in_flight_(0),
       pending_crypto_packet_count_(0),
-      ack_notifier_manager_(ack_notifier_manager) {
-}
+      ack_notifier_manager_(ack_notifier_manager),
+      no_acknotifier_(false) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   QuicPacketNumber index = least_unacked_;
@@ -38,13 +38,13 @@ QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   }
 }
 
-void QuicUnackedPacketMap::AddSentPacket(const SerializedPacket& packet,
+void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
                                          QuicPacketNumber old_packet_number,
                                          TransmissionType transmission_type,
                                          QuicTime sent_time,
                                          QuicByteCount bytes_sent,
                                          bool set_in_flight) {
-  QuicPacketNumber packet_number = packet.packet_number;
+  QuicPacketNumber packet_number = packet->packet_number;
   LOG_IF(DFATAL, largest_sent_packet_ >= packet_number) << packet_number;
   DCHECK_GE(packet_number, least_unacked_ + unacked_packets_.size());
   while (least_unacked_ + unacked_packets_.size() < packet_number) {
@@ -52,13 +52,16 @@ void QuicUnackedPacketMap::AddSentPacket(const SerializedPacket& packet,
     unacked_packets_.back().is_unackable = true;
   }
 
-  TransmissionInfo info(packet.retransmittable_frames,
-                        packet.packet_number_length, transmission_type,
-                        sent_time, bytes_sent, packet.is_fec_packet);
+  TransmissionInfo info(packet->retransmittable_frames,
+                        packet->packet_number_length, transmission_type,
+                        sent_time, bytes_sent, packet->is_fec_packet);
   if (old_packet_number == 0) {
-    if (packet.retransmittable_frames != nullptr &&
-        packet.retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE) {
+    if (packet->retransmittable_frames != nullptr &&
+        packet->retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE) {
       ++pending_crypto_packet_count_;
+    }
+    if (no_acknotifier_) {
+      info.ack_listeners.swap(packet->listeners);
     }
   } else {
     TransferRetransmissionInfo(old_packet_number, packet_number,
@@ -104,6 +107,13 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
       &unacked_packets_.at(old_packet_number - least_unacked_);
   RetransmittableFrames* frames = transmission_info->retransmittable_frames;
   transmission_info->retransmittable_frames = nullptr;
+  if (no_acknotifier_) {
+    for (AckListenerWrapper& wrapper : transmission_info->ack_listeners) {
+      wrapper.ack_listener->OnPacketRetransmitted(wrapper.length);
+    }
+    // Transfer the ack listeners if it's present.
+    info->ack_listeners.swap(transmission_info->ack_listeners);
+  }
   LOG_IF(DFATAL, frames == nullptr)
       << "Attempt to retransmit packet with no "
       << "retransmittable frames: " << old_packet_number;
@@ -252,6 +262,18 @@ bool QuicUnackedPacketMap::IsUnacked(QuicPacketNumber packet_number) const {
   }
   return !IsPacketUseless(packet_number,
                           unacked_packets_[packet_number - least_unacked_]);
+}
+
+void QuicUnackedPacketMap::NotifyAndClearListeners(
+    QuicPacketNumber packet_number,
+    QuicTime::Delta delta_largest_observed) {
+  DCHECK_GE(packet_number, least_unacked_);
+  DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
+  TransmissionInfo* info = &unacked_packets_[packet_number - least_unacked_];
+  for (const AckListenerWrapper& wrapper : info->ack_listeners) {
+    wrapper.ack_listener->OnPacketAcked(wrapper.length, delta_largest_observed);
+  }
+  info->ack_listeners.clear();
 }
 
 void QuicUnackedPacketMap::RemoveFromInFlight(QuicPacketNumber packet_number) {

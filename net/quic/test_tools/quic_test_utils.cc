@@ -513,7 +513,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   header.public_header.version_flag = version_flag;
   header.public_header.reset_flag = reset_flag;
   header.public_header.packet_number_length = packet_number_length;
-  header.packet_packet_number = packet_number;
+  header.packet_number = packet_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
@@ -551,7 +551,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.public_header.version_flag = version_flag;
   header.public_header.reset_flag = reset_flag;
   header.public_header.packet_number_length = packet_number_length;
-  header.packet_packet_number = packet_number;
+  header.packet_number = packet_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
@@ -637,7 +637,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   header.public_header.connection_id = connection_id;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = should_include_version;
-  header.packet_packet_number = 1;
+  header.packet_number = 1;
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;

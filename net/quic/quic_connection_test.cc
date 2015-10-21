@@ -17,6 +17,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -838,13 +839,11 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     header.public_header.connection_id = connection_id_;
     header.public_header.packet_number_length = packet_number_length_;
     header.public_header.connection_id_length = connection_id_length_;
-    header.packet_packet_number = number;
+    header.packet_number = number;
     header.entropy_flag = entropy_flag;
     header.fec_flag = true;
     header.is_in_fec_group = IN_FEC_GROUP;
     header.fec_group = min_protected_packet;
-    QuicFecData fec_data;
-    fec_data.fec_group = header.fec_group;
 
     // Since all data packets in this test have the same payload, the
     // redundancy is either equal to that payload or the xor of that payload
@@ -858,9 +857,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         data_packet->mutable_data()[i] ^= data_packet->data()[i];
       }
     }
-    fec_data.redundancy = data_packet->FecProtectedData();
 
-    scoped_ptr<QuicPacket> fec_packet(framer_.BuildFecPacket(header, fec_data));
+    scoped_ptr<QuicPacket> fec_packet(
+        framer_.BuildFecPacket(header, data_packet->FecProtectedData()));
     char buffer[kMaxPacketSize];
     scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
         ENCRYPTION_NONE, number, *fec_packet, buffer, kMaxPacketSize));
@@ -928,7 +927,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     header.public_header.packet_number_length = packet_number_length_;
     header.public_header.connection_id_length = connection_id_length_;
     header.entropy_flag = entropy_flag;
-    header.packet_packet_number = number;
+    header.packet_number = number;
     header.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
     header.fec_group = fec_group;
 
@@ -941,7 +940,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                                    QuicFecGroupNumber fec_group) {
     QuicPacketHeader header;
     header.public_header.connection_id = connection_id_;
-    header.packet_packet_number = number;
+    header.packet_number = number;
     header.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
     header.fec_group = fec_group;
 
@@ -1082,7 +1081,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 1;
+  header.packet_number = 1;
 
   QuicFrames frames;
   QuicPaddingFrame padding;
@@ -1113,7 +1112,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSizeWhileWriterLimited) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 1;
+  header.packet_number = 1;
 
   QuicFrames frames;
   QuicPaddingFrame padding;
@@ -1671,7 +1670,7 @@ TEST_P(QuicConnectionTest, BasicSending) {
   ProcessAckPacket(&frame2);  // Acks don't instigate acks.
 
   // Verify that we did not send an ack.
-  EXPECT_EQ(6u, writer_->header().packet_packet_number);
+  EXPECT_EQ(6u, writer_->header().packet_number);
 
   // So the last ack has not changed.
   EXPECT_EQ(4u, least_unacked());
@@ -2845,13 +2844,13 @@ TEST_P(QuicConnectionTest, TLP) {
       connection_.GetRetransmissionAlarm()->deadline();
   EXPECT_NE(QuicTime::Zero(), retransmission_time);
 
-  EXPECT_EQ(1u, writer_->header().packet_packet_number);
+  EXPECT_EQ(1u, writer_->header().packet_number);
   // Simulate the retransmission alarm firing and sending a tlp,
   // so send algorithm's OnRetransmissionTimeout is not called.
   clock_.AdvanceTime(retransmission_time.Subtract(clock_.Now()));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 2u, _, _));
   connection_.GetRetransmissionAlarm()->Fire();
-  EXPECT_EQ(2u, writer_->header().packet_packet_number);
+  EXPECT_EQ(2u, writer_->header().packet_number);
   // We do not raise the high water mark yet.
   EXPECT_EQ(1u, stop_waiting()->least_unacked);
 }
@@ -2862,14 +2861,14 @@ TEST_P(QuicConnectionTest, RTO) {
   SendStreamDataToPeer(3, "foo", 0, !kFin, nullptr);
   EXPECT_EQ(1u, stop_waiting()->least_unacked);
 
-  EXPECT_EQ(1u, writer_->header().packet_packet_number);
+  EXPECT_EQ(1u, writer_->header().packet_number);
   EXPECT_EQ(default_retransmission_time,
             connection_.GetRetransmissionAlarm()->deadline());
   // Simulate the retransmission alarm firing.
   clock_.AdvanceTime(DefaultRetransmissionTime());
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 2u, _, _));
   connection_.GetRetransmissionAlarm()->Fire();
-  EXPECT_EQ(2u, writer_->header().packet_packet_number);
+  EXPECT_EQ(2u, writer_->header().packet_number);
   // We do not raise the high water mark yet.
   EXPECT_EQ(1u, stop_waiting()->least_unacked);
 }
@@ -4138,7 +4137,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 12;
+  header.packet_number = 12;
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&frame1_));
@@ -4171,7 +4170,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 12;
+  header.packet_number = 12;
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&frame1_));
@@ -4211,7 +4210,7 @@ TEST_P(QuicConnectionTest,
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 12;
+  header.packet_number = 12;
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&frame1_));
@@ -4237,7 +4236,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 12;
+  header.packet_number = 12;
 
   QuicVersionVector supported_versions;
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
@@ -4270,7 +4269,7 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.version_flag = true;
-  header.packet_packet_number = 12;
+  header.packet_number = 12;
 
   QuicVersionVector supported_versions;
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
@@ -4380,7 +4379,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   // Construct a packet with stream frame and connection close frame.
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.packet_packet_number = 1;
+  header.packet_number = 1;
   header.public_header.version_flag = false;
 
   QuicConnectionCloseFrame qccf;
@@ -4466,7 +4465,11 @@ TEST_P(QuicConnectionTest, AckNotifierTriggerCallback) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(_, _)).Times(1);
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  }
 
   // Send some data, which will register the delegate to be notified.
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, delegate.get());
@@ -4482,7 +4485,11 @@ TEST_P(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
 
   // Create a delegate which we don't expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(0);
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(_, _)).Times(0);
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(0);
+  }
 
   // Send some data, which will register the delegate to be notified. This will
   // not be ACKed and so the delegate should never be called.
@@ -4509,7 +4516,12 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketRetransmitted(3)).Times(1);
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(3, _)).Times(1);
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  }
 
   // Send four packets, and register to be notified on ACK of packet 2.
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, nullptr);
@@ -4541,8 +4553,6 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
 // out and was retransmitted, even though the retransmission has a
 // different packet number.
 TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
-  InSequence s;
-
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(
       new StrictMock<MockAckNotifierDelegate>);
@@ -4552,20 +4562,27 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, delegate.get());
   EXPECT_EQ(1u, stop_waiting()->least_unacked);
 
-  EXPECT_EQ(1u, writer_->header().packet_packet_number);
+  EXPECT_EQ(1u, writer_->header().packet_number);
   EXPECT_EQ(default_retransmission_time,
             connection_.GetRetransmissionAlarm()->deadline());
   // Simulate the retransmission alarm firing.
   clock_.AdvanceTime(DefaultRetransmissionTime());
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketRetransmitted(3));
+  }
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 2u, _, _));
   connection_.GetRetransmissionAlarm()->Fire();
-  EXPECT_EQ(2u, writer_->header().packet_packet_number);
+  EXPECT_EQ(2u, writer_->header().packet_number);
   // We do not raise the high water mark yet.
   EXPECT_EQ(1u, stop_waiting()->least_unacked);
 
   // Ack the original packet, which will revert the RTO.
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(*delegate, OnAckNotification(1, _, _));
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(3, _));
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(1, _, _));
+  }
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   QuicAckFrame ack_frame = InitAckFrame(1);
   ProcessAckPacket(&ack_frame);
@@ -4580,8 +4597,6 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
 // previously nacked, even though the retransmission has a different
 // packet number.
 TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
-  InSequence s;
-
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(
       new StrictMock<MockAckNotifierDelegate>);
@@ -4597,6 +4612,9 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
   NackPacket(2, &frame);
   PacketNumberSet lost_packets;
   lost_packets.insert(2);
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketRetransmitted(_));
+  }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(lost_packets));
@@ -4606,7 +4624,11 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
 
   // Now we get an ACK for packet 2, which was previously nacked.
   PacketNumberSet no_lost_packets;
-  EXPECT_CALL(*delegate.get(), OnAckNotification(1, _, _));
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(3, _));
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(1, _, _));
+  }
   EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(no_lost_packets));
   QuicAckFrame second_ack_frame = InitAckFrame(4);
@@ -4625,9 +4647,12 @@ TEST_P(QuicConnectionTest, AckNotifierFECTriggerCallback) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Create a delegate which we expect to be called.
-  scoped_refptr<MockAckNotifierDelegate> delegate(
-      new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(_, _)).Times(1);
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  }
 
   // Send some data, which will register the delegate to be notified.
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, delegate.get());
@@ -4650,7 +4675,11 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  if (FLAGS_quic_no_ack_notifier) {
+    EXPECT_CALL(*delegate.get(), OnPacketAcked(_, _)).Times(1);
+  } else {
+    EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _)).Times(1);
+  }
 
   // Expect ACKs for 1 packet.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
@@ -4674,7 +4703,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
   ack_header.public_header.version_flag = false;
   ack_header.entropy_flag = !kEntropyFlag;
   ack_header.fec_flag = true;
-  ack_header.packet_packet_number = 1;
+  ack_header.packet_number = 1;
   ack_header.is_in_fec_group = IN_FEC_GROUP;
   ack_header.fec_group = 1;
 

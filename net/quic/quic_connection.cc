@@ -345,6 +345,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   SetMaxPacketLength(perspective_ == Perspective::IS_SERVER
                          ? kDefaultServerMaxPacketSize
                          : kDefaultMaxPacketSize);
+  const bool no_acknotifier = FLAGS_quic_no_ack_notifier;
+  packet_generator_.set_no_acknotifier(no_acknotifier);
+  sent_packet_manager_.set_no_acknotifier(no_acknotifier);
 }
 
 QuicConnection::~QuicConnection() {
@@ -640,8 +643,8 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   // Will be decremented below if we fall through to return true.
   ++stats_.packets_dropped;
 
-  if (!Near(header.packet_packet_number, last_header_.packet_packet_number)) {
-    DVLOG(1) << ENDPOINT << "Packet " << header.packet_packet_number
+  if (!Near(header.packet_number, last_header_.packet_number)) {
+    DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
              << " out of bounds.  Discarding";
     SendConnectionCloseWithDetails(QUIC_INVALID_PACKET_HEADER,
                                    "packet number out of bounds");
@@ -650,11 +653,11 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
 
   // If this packet has already been seen, or the sender has told us that it
   // will not be retransmitted, then stop processing the packet.
-  if (!received_packet_manager_.IsAwaitingPacket(header.packet_packet_number)) {
-    DVLOG(1) << ENDPOINT << "Packet " << header.packet_packet_number
+  if (!received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
+    DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
              << " no longer being waited for.  Discarding.";
     if (debug_visitor_ != nullptr) {
-      debug_visitor_->OnDuplicatePacket(header.packet_packet_number);
+      debug_visitor_->OnDuplicatePacket(header.packet_number);
     }
     return false;
   }
@@ -662,7 +665,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_SERVER) {
       if (!header.public_header.version_flag) {
-        DLOG(WARNING) << ENDPOINT << "Packet " << header.packet_packet_number
+        DLOG(WARNING) << ENDPOINT << "Packet " << header.packet_number
                       << " without version flag before version negotiated.";
         // Packets should have the version flag till version negotiation is
         // done.
@@ -733,7 +736,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   }
   DVLOG(1) << ENDPOINT << "OnAckFrame: " << incoming_ack;
 
-  if (last_header_.packet_packet_number <= largest_seen_packet_with_ack_) {
+  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
     DVLOG(1) << ENDPOINT << "Received an old ack frame: ignoring";
     return true;
   }
@@ -760,7 +763,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 }
 
 void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
-  largest_seen_packet_with_ack_ = last_header_.packet_packet_number;
+  largest_seen_packet_with_ack_ = last_header_.packet_number;
   sent_packet_manager_.OnIncomingAck(incoming_ack,
                                      time_of_last_received_packet_);
   sent_entropy_manager_.ClearEntropyBefore(
@@ -773,7 +776,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
 void QuicConnection::ProcessStopWaitingFrame(
     const QuicStopWaitingFrame& stop_waiting) {
-  largest_seen_packet_with_stop_waiting_ = last_header_.packet_packet_number;
+  largest_seen_packet_with_stop_waiting_ = last_header_.packet_number;
   received_packet_manager_.UpdatePacketInformationSentByPeer(stop_waiting);
   // Possibly close any FecGroups which are now irrelevant.
   CloseFecGroupsBefore(stop_waiting.least_unacked + 1);
@@ -782,8 +785,7 @@ void QuicConnection::ProcessStopWaitingFrame(
 bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
   DCHECK(connected_);
 
-  if (last_header_.packet_packet_number <=
-      largest_seen_packet_with_stop_waiting_) {
+  if (last_header_.packet_number <= largest_seen_packet_with_stop_waiting_) {
     DVLOG(1) << ENDPOINT << "Received an old stop waiting frame: ignoring";
     return true;
   }
@@ -876,24 +878,23 @@ bool QuicConnection::ValidateStopWaitingFrame(
     return false;
   }
 
-  if (stop_waiting.least_unacked > last_header_.packet_packet_number) {
+  if (stop_waiting.least_unacked > last_header_.packet_number) {
     DLOG(ERROR) << ENDPOINT
                 << "Peer sent least_unacked:" << stop_waiting.least_unacked
                 << " greater than the enclosing packet number:"
-                << last_header_.packet_packet_number;
+                << last_header_.packet_number;
     return false;
   }
 
   return true;
 }
 
-void QuicConnection::OnFecData(const QuicFecData& fec) {
+void QuicConnection::OnFecData(StringPiece redundancy) {
   DCHECK_EQ(IN_FEC_GROUP, last_header_.is_in_fec_group);
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
   if (group != nullptr) {
-    group->UpdateFec(last_decrypted_packet_level_,
-                     last_header_.packet_packet_number, fec);
+    group->UpdateFec(last_decrypted_packet_level_, last_header_, redundancy);
   }
 }
 
@@ -974,7 +975,7 @@ void QuicConnection::OnPacketComplete() {
   }
 
   DVLOG(1) << ENDPOINT << (last_packet_revived_ ? "Revived" : "Got")
-           << " packet " << last_header_.packet_packet_number << " for "
+           << " packet " << last_header_.packet_number << " for "
            << last_header_.public_header.connection_id;
 
   ++num_packets_received_since_last_ack_sent_;
@@ -987,8 +988,7 @@ void QuicConnection::OnPacketComplete() {
   // processing stream frames, since the processing may result in a response
   // packet with a bundled ack.
   if (last_packet_revived_) {
-    received_packet_manager_.RecordPacketRevived(
-        last_header_.packet_packet_number);
+    received_packet_manager_.RecordPacketRevived(last_header_.packet_number);
   } else {
     received_packet_manager_.RecordPacketReceived(
         last_size_, last_header_, time_of_last_received_packet_);
@@ -1020,8 +1020,7 @@ void QuicConnection::MaybeQueueAck() {
     return;
   }
   // If the incoming packet was missing, send an ack immediately.
-  ack_queued_ =
-      received_packet_manager_.IsMissing(last_header_.packet_packet_number);
+  ack_queued_ = received_packet_manager_.IsMissing(last_header_.packet_number);
 
   if (!ack_queued_) {
     if (ack_alarm_->IsSet()) {
@@ -1266,7 +1265,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
       }
     }
     DVLOG(1) << ENDPOINT << "Unable to process packet.  Last packet processed: "
-             << last_header_.packet_packet_number;
+             << last_header_.packet_number;
     return;
   }
 
@@ -1506,9 +1505,8 @@ bool QuicConnection::WritePacket(QueuedPacket* packet) {
 }
 
 bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
-  if (FLAGS_quic_close_connection_out_of_order_sending &&
-      packet->serialized_packet.packet_number <
-          sent_packet_manager_.largest_sent_packet()) {
+  if (packet->serialized_packet.packet_number <
+      sent_packet_manager_.largest_sent_packet()) {
     LOG(DFATAL) << "Attempt to write packet:"
                 << packet->serialized_packet.packet_number
                 << " after:" << sent_packet_manager_.largest_sent_packet();
@@ -1938,7 +1936,7 @@ QuicFecGroup* QuicConnection::GetFecGroup() {
       delete group_map_.begin()->second;
       group_map_.erase(group_map_.begin());
     }
-    group_map_[fec_group_num] = new QuicFecGroup();
+    group_map_[fec_group_num] = new QuicFecGroup(fec_group_num);
   }
   return group_map_[fec_group_num];
 }

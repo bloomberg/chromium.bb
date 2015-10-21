@@ -126,11 +126,11 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
                                QuicStreamOffset offset,
                                bool fin,
                                FecProtection fec_protection,
-                               QuicAckListenerInterface* delegate);
+                               QuicAckListenerInterface* listener);
 
   // Generates an MTU discovery packet of specified size.
   void GenerateMtuDiscoveryPacket(QuicByteCount target_mtu,
-                                  QuicAckListenerInterface* delegate);
+                                  QuicAckListenerInterface* listener);
 
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();
@@ -222,6 +222,10 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     fec_send_policy_ = fec_send_policy;
   }
 
+  void set_no_acknotifier(bool no_acknotifier) {
+    no_acknotifier_ = no_acknotifier;
+  }
+
  private:
   friend class test::QuicPacketGeneratorPeer;
 
@@ -305,11 +309,16 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   // Stores notifiers that should be attached to the next serialized packet.
   std::list<QuicAckNotifier*> ack_notifiers_;
+  // Stores ack listeners that should be attached to the next packet.
+  std::list<AckListenerWrapper> ack_listeners_;
 
   // Stores the maximum packet size we are allowed to send.  This might not be
   // the maximum size we are actually using now, if we are in the middle of the
   // packet.
   QuicByteCount max_packet_length_;
+
+  // True if the AckNotifier should not be created.
+  bool no_acknotifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };

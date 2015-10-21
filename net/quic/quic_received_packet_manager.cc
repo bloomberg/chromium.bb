@@ -145,7 +145,7 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     QuicByteCount bytes,
     const QuicPacketHeader& header,
     QuicTime receipt_time) {
-  QuicPacketNumber packet_number = header.packet_packet_number;
+  QuicPacketNumber packet_number = header.packet_number;
   DCHECK(IsAwaitingPacket(packet_number));
 
   // Adds the range of packet numbers from max(largest observed + 1, least

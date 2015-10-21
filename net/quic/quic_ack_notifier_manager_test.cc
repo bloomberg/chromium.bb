@@ -5,6 +5,7 @@
 #include "net/quic/quic_ack_notifier_manager.h"
 
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_ack_notifier_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -22,12 +23,18 @@ class QuicAckNotifierManagerTest : public ::testing::Test {
   AckNotifierManager manager_;
   scoped_refptr<MockAckNotifierDelegate> delegate_;
   QuicTime::Delta zero_;
+  bool save_FLAGS_quic_no_ack_notifier_;
 
   QuicAckNotifierManagerTest() : zero_(QuicTime::Delta::Zero()) {
     delegate_ = new MockAckNotifierDelegate;
+    // This test is obsolete once this flag is deprecated.
+    save_FLAGS_quic_no_ack_notifier_ = FLAGS_quic_no_ack_notifier;
+    FLAGS_quic_no_ack_notifier = false;
   }
 
-  ~QuicAckNotifierManagerTest() override {}
+  ~QuicAckNotifierManagerTest() override {
+    FLAGS_quic_no_ack_notifier = save_FLAGS_quic_no_ack_notifier_;
+  }
 
   size_t CountPackets() const {
     return AckNotifierManagerPeer::GetNumberOfRegisteredPackets(&manager_);
