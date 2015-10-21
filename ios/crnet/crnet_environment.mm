@@ -26,6 +26,7 @@
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/crn_http_protocol_handler.h"
 #include "ios/net/empty_nsurlcache.h"
+#include "ios/net/http_cache_helper.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
 #include "net/base/net_errors.h"
@@ -33,7 +34,6 @@
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert_net/nss_ocsp.h"
-#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
@@ -487,29 +487,8 @@ std::string CrNetEnvironment::user_agent() {
 }
 
 void CrNetEnvironment::ClearCache(ClearCacheCallback callback) {
-  PostToNetworkThread(FROM_HERE,
-      base::Bind(&CrNetEnvironment::ClearCacheOnNetworkThread,
-                 base::Unretained(this),
-                 callback));
-}
-
-void CrNetEnvironment::ClearCacheOnNetworkThread(ClearCacheCallback callback) {
-  DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
-  __block disk_cache::Backend* backend = nullptr;
-  net::HttpCache* cache = main_context_->http_transaction_factory()->GetCache();
-  net::CompletionCallback client_callback = base::BindBlock(^(int error) {
-    if (callback != nil) {
-      callback(error);
-    }
-  });
-  net::CompletionCallback doom_callback = base::BindBlock(^(int error) {
-      if (backend)
-        backend->DoomAllEntries(client_callback);
-  });
-  int rc = cache->GetBackend(&backend, doom_callback);
-  if (rc != net::ERR_IO_PENDING) {
-    // GetBackend doesn't call the callback if it completes synchronously, so
-    // call it directly here.
-    doom_callback.Run(rc);
-  }
+  PostToNetworkThread(
+      FROM_HERE,
+      base::Bind(&net::ClearHttpCache, main_context_getter_,
+                 network_io_thread_->task_runner(), base::BindBlock(callback)));
 }

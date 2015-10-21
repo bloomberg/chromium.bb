@@ -45,6 +45,8 @@
         'crn_http_url_response.mm',
         'empty_nsurlcache.h',
         'empty_nsurlcache.mm',
+        'http_cache_helper.cc',
+        'http_cache_helper.h',
         'http_protocol_logging.h',
         'http_protocol_logging.mm',
         'http_response_headers_util.h',

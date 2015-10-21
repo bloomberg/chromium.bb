@@ -142,9 +142,6 @@ class CrNetEnvironment {
   std::string sdch_pref_store_filename_;
   double alternate_protocol_threshold_;
 
-  // Helper method that clears the cache on the network thread.
-  void ClearCacheOnNetworkThread(ClearCacheCallback callback);
-
   static CrNetEnvironment* chrome_net_;
   scoped_ptr<base::Thread> network_io_thread_;
   scoped_ptr<base::Thread> network_cache_thread_;
