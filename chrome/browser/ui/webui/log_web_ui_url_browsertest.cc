@@ -71,10 +71,14 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
   GURL uber_url(scheme + "://" + chrome::kChromeUIUberHost);
   uint32 uber_url_hash = base::Hash(uber_url.spec());
 
+  GURL uber_frame_url(chrome::kChromeUIUberFrameURL);
+  uint32 uber_frame_url_hash = base::Hash(uber_frame_url.spec());
+
   GURL history_frame_url(chrome::kChromeUIHistoryFrameURL);
   uint32 history_frame_url_hash = base::Hash(history_frame_url.spec());
 
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 1),
+                                        Bucket(uber_frame_url_hash, 1),
                                         Bucket(uber_url_hash, 1)));
 
   {
@@ -84,6 +88,7 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
   }
 
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 2),
+                                        Bucket(uber_frame_url_hash, 2),
                                         Bucket(uber_url_hash, 2)));
 
   {
@@ -102,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
 
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
                                         Bucket(history_frame_url_hash, 2),
+                                        Bucket(uber_frame_url_hash, 2),
                                         Bucket(uber_url_hash, 2)));
 }
 #endif

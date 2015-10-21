@@ -144,7 +144,7 @@ void SubframeLogger::DidCommitProvisionalLoadForFrame(
       url == GURL(chrome::kChromeUIHelpFrameURL) ||
       url == GURL(chrome::kChromeUIHistoryFrameURL) ||
       url == GURL(chrome::kChromeUISettingsFrameURL) ||
-      url == GURL(chrome::kChromeUIHelpFrameURL)) {
+      url == GURL(chrome::kChromeUIUberFrameURL)) {
     webui::LogWebUIUrl(url);
   }
 }
