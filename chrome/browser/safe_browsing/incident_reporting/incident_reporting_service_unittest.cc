@@ -37,12 +37,12 @@
 #endif
 
 // A test fixture that sets up a test task runner and makes it the thread's
-// runner. The fixture implements a fake envrionment data collector and a fake
-// report uploader.
+// runner. The fixture implements a fake environment data collector, extension
+// data collector and a fake report uploader.
 class IncidentReportingServiceTest : public testing::Test {
  protected:
   // An IRS class that allows a test harness to provide a fake environment
-  // collector and report uploader via callbacks.
+  // collector, extension collector and report uploader via callbacks.
   class TestIncidentReportingService
       : public safe_browsing::IncidentReportingService {
    public:
@@ -73,7 +73,8 @@ class IncidentReportingServiceTest : public testing::Test {
           pre_profile_add_callback_(pre_profile_add_callback),
           collect_environment_callback_(collect_environment_callback),
           create_download_finder_callback_(create_download_finder_callback),
-          start_upload_callback_(start_upload_callback) {
+          start_upload_callback_(start_upload_callback),
+          extension_collected_(false) {
       SetCollectEnvironmentHook(&CollectEnvironmentData, task_runner);
       test_instance_.Get().Set(this);
     }
@@ -84,10 +85,23 @@ class IncidentReportingServiceTest : public testing::Test {
       return IncidentReportingService::IsProcessingReport();
     }
 
+    bool HasCollectedExtension() const { return extension_collected_; }
+
    protected:
     void OnProfileAdded(Profile* profile) override {
       pre_profile_add_callback_.Run(profile);
       safe_browsing::IncidentReportingService::OnProfileAdded(profile);
+    }
+
+    // A fake extension collection implementation invoked by the service during
+    // operation.
+    void DoExtensionCollection(
+        safe_browsing::ClientIncidentReport_ExtensionData* data) override {
+      ASSERT_NE(static_cast<safe_browsing::ClientIncidentReport_ExtensionData*>(
+                    nullptr),
+                data);
+      data->mutable_last_installed_extension()->set_id(kFakeExtensionId);
+      extension_collected_ = true;
     }
 
     scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
@@ -121,6 +135,7 @@ class IncidentReportingServiceTest : public testing::Test {
     CollectEnvironmentCallback collect_environment_callback_;
     CreateDownloadFinderCallback create_download_finder_callback_;
     StartUploadCallback start_upload_callback_;
+    bool extension_collected_;
   };
 
   // A type for specifying whether or not a profile created by CreateProfile
@@ -160,6 +175,7 @@ class IncidentReportingServiceTest : public testing::Test {
   static const char kFakeOsName[];
   static const char kFakeDownloadToken[];
   static const char kTestTrackedPrefPath[];
+  static const char kFakeExtensionId[];
 
   IncidentReportingServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner),
@@ -309,6 +325,9 @@ class IncidentReportingServiceTest : public testing::Test {
     ASSERT_TRUE(uploaded_report_->environment().os().has_os_name());
     ASSERT_EQ(std::string(kFakeOsName),
               uploaded_report_->environment().os().os_name());
+    ASSERT_EQ(
+        std::string(kFakeExtensionId),
+        uploaded_report_->extension_data().last_installed_extension().id());
     ASSERT_EQ(std::string(kFakeDownloadToken),
               uploaded_report_->download().token());
 
@@ -317,7 +336,9 @@ class IncidentReportingServiceTest : public testing::Test {
 
   void AssertNoUpload() { ASSERT_FALSE(uploaded_report_); }
 
-  bool HasCollectedEnvironmentData() const { return environment_collected_; }
+  bool HasCollectedEnvironmentAndExtensionData() const {
+    return environment_collected_ && instance_->HasCollectedExtension();
+  }
   bool HasCreatedDownloadFinder() const { return download_finder_created_; }
   bool DownloadFinderDestroyed() const { return download_finder_destroyed_; }
   bool UploaderDestroyed() const { return uploader_destroyed_; }
@@ -517,6 +538,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 const char IncidentReportingServiceTest::kFakeOsName[] = "fakedows";
 const char IncidentReportingServiceTest::kFakeDownloadToken[] = "fakedlt";
 const char IncidentReportingServiceTest::kTestTrackedPrefPath[] = "some_pref";
+const char IncidentReportingServiceTest::kFakeExtensionId[] = "fakeExtensionId";
 
 // Tests that an incident added during profile initialization when safe browsing
 // is on is uploaded.
@@ -531,8 +553,8 @@ TEST_F(IncidentReportingServiceTest, AddIncident) {
   // Let all tasks run.
   task_runner_->RunUntilIdle();
 
-  // Verify that environment collection took place.
-  EXPECT_TRUE(HasCollectedEnvironmentData());
+  // Verify that environment and extension collection took place.
+  EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that the most recent download was looked for.
   EXPECT_TRUE(HasCreatedDownloadFinder());
@@ -561,8 +583,8 @@ TEST_F(IncidentReportingServiceTest, CoalesceIncidents) {
   // Let all tasks run.
   task_runner_->RunUntilIdle();
 
-  // Verify that environment collection took place.
-  EXPECT_TRUE(HasCollectedEnvironmentData());
+  // Verify that environment and extension collection took place.
+  EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that the most recent download was looked for.
   EXPECT_TRUE(HasCreatedDownloadFinder());
@@ -611,7 +633,7 @@ TEST_F(IncidentReportingServiceTest, SafeBrowsingFieldTrial) {
   task_runner_->RunUntilIdle();
 
   // Verify that environment collection took place.
-  EXPECT_TRUE(HasCollectedEnvironmentData());
+  EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that the most recent download was looked for.
   EXPECT_TRUE(HasCreatedDownloadFinder());
@@ -645,7 +667,7 @@ TEST_F(IncidentReportingServiceTest, SafeBrowsingNoFieldTrial) {
   // (DownloadFinder will be created, but should be a no-op since no eligible
   // profiles are loaded).
   ASSERT_TRUE(HasCreatedDownloadFinder());
-  ASSERT_FALSE(HasCollectedEnvironmentData());
+  ASSERT_FALSE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that no report upload took place.
   AssertNoUpload();
@@ -668,7 +690,7 @@ TEST_F(IncidentReportingServiceTest, ExtendedReportingNoFieldTrial) {
   task_runner_->RunUntilIdle();
 
   // Verify that environment collection took place.
-  EXPECT_TRUE(HasCollectedEnvironmentData());
+  EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that the most recent download was looked for.
   EXPECT_TRUE(HasCreatedDownloadFinder());
@@ -706,7 +728,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   // (DownloadFinder will be created, but should be a no-op since no eligible
   // profiles are loaded).
   ASSERT_TRUE(HasCreatedDownloadFinder());
-  ASSERT_FALSE(HasCollectedEnvironmentData());
+  ASSERT_FALSE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that no report upload took place.
   AssertNoUpload();
@@ -725,7 +747,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   task_runner_->RunUntilIdle();
 
   // Verify that environment collection took place.
-  EXPECT_TRUE(HasCollectedEnvironmentData());
+  EXPECT_TRUE(HasCollectedEnvironmentAndExtensionData());
 
   // Verify that the most recent download was looked for.
   EXPECT_TRUE(HasCreatedDownloadFinder());
@@ -1084,7 +1106,7 @@ TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
   ASSERT_FALSE(DelayedAnalysisRan());
 
   // No collection should have taken place.
-  ASSERT_FALSE(HasCollectedEnvironmentData());
+  ASSERT_FALSE(HasCollectedEnvironmentAndExtensionData());
 
   // Add a profile that participates in safe browsing.
   CreateProfile("profile1", EXTENDED_REPORTING_OPT_IN,
@@ -1097,7 +1119,7 @@ TEST_F(IncidentReportingServiceTest, NoCollectionWithoutIncident) {
   ASSERT_TRUE(DelayedAnalysisRan());
 
   // Still no collection should have taken place.
-  ASSERT_FALSE(HasCollectedEnvironmentData());
+  ASSERT_FALSE(HasCollectedEnvironmentAndExtensionData());
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
@@ -1332,7 +1354,7 @@ TEST_F(IncidentReportingServiceTest, ClearProcessIncidentOnCleanState) {
 
   // Downloads and environment data should have not been collected.
   ASSERT_FALSE(HasCreatedDownloadFinder());
-  ASSERT_FALSE(HasCollectedEnvironmentData());
+  ASSERT_FALSE(HasCollectedEnvironmentAndExtensionData());
 
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());

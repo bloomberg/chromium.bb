@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection.h"
+#include "chrome/browser/safe_browsing/incident_reporting/extension_data_collection.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
@@ -438,6 +439,11 @@ void IncidentReportingService::SetCollectEnvironmentHook(
   }
 }
 
+void IncidentReportingService::DoExtensionCollection(
+    ClientIncidentReport_ExtensionData* extension_data) {
+  CollectExtensionData(extension_data);
+}
+
 void IncidentReportingService::OnProfileAdded(Profile* profile) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -646,6 +652,38 @@ void IncidentReportingService::BeginIncidentCollation() {
   collation_timer_.Reset();
 }
 
+bool IncidentReportingService::WaitingToCollateIncidents() {
+  return collation_timeout_pending_;
+}
+
+void IncidentReportingService::CancelIncidentCollection() {
+  collation_timeout_pending_ = false;
+  last_incident_time_ = base::TimeTicks();
+  report_.reset();
+}
+
+void IncidentReportingService::OnCollationTimeout() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Exit early if collection was cancelled.
+  if (!collation_timeout_pending_)
+    return;
+
+  // Wait another round if profile-bound incidents have come in from a profile
+  // that has yet to complete creation.
+  for (ProfileContextCollection::iterator scan = profiles_.begin();
+       scan != profiles_.end(); ++scan) {
+    if (scan->first && !scan->second->added && scan->second->HasIncidents()) {
+      collation_timer_.Reset();
+      return;
+    }
+  }
+
+  collation_timeout_pending_ = false;
+
+  ProcessIncidentsIfCollectionComplete();
+}
+
 void IncidentReportingService::BeginEnvironmentCollection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(report_);
@@ -703,39 +741,6 @@ void IncidentReportingService::OnEnvironmentDataCollected(
   UMA_HISTOGRAM_TIMES("SBIRS.EnvCollectionTime",
                       base::TimeTicks::Now() - environment_collection_begin_);
   environment_collection_begin_ = base::TimeTicks();
-
-  ProcessIncidentsIfCollectionComplete();
-}
-
-bool IncidentReportingService::WaitingToCollateIncidents() {
-  return collation_timeout_pending_;
-}
-
-void IncidentReportingService::CancelIncidentCollection() {
-  collation_timeout_pending_ = false;
-  last_incident_time_ = base::TimeTicks();
-  report_.reset();
-}
-
-void IncidentReportingService::OnCollationTimeout() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Exit early if collection was cancelled.
-  if (!collation_timeout_pending_)
-    return;
-
-  // Wait another round if profile-bound incidents have come in from a profile
-  // that has yet to complete creation.
-  for (ProfileContextCollection::iterator scan = profiles_.begin();
-       scan != profiles_.end();
-       ++scan) {
-    if (scan->first && !scan->second->added && scan->second->HasIncidents()) {
-      collation_timer_.Reset();
-      return;
-    }
-  }
-
-  collation_timeout_pending_ = false;
 
   ProcessIncidentsIfCollectionComplete();
 }
@@ -813,8 +818,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
   DCHECK(report_);
   // Bail out if there are still outstanding collection tasks. Completion of any
   // of these will start another upload attempt.
-  if (WaitingForEnvironmentCollection() ||
-      WaitingToCollateIncidents() ||
+  if (WaitingForEnvironmentCollection() || WaitingToCollateIncidents() ||
       WaitingForMostRecentDownload()) {
     return;
   }
@@ -941,6 +945,9 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
   }
 
   UMA_HISTOGRAM_COUNTS_100("SBIRS.IncidentCount", count);
+
+  // Perform final synchronous collection tasks for the report.
+  DoExtensionCollection(report->mutable_extension_data());
 
   scoped_ptr<UploadContext> context(new UploadContext(report.Pass()));
   context->profiles_to_state.swap(profiles_to_state);

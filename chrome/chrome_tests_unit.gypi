@@ -978,6 +978,7 @@
       'browser/safe_browsing/incident_reporting/delayed_callback_runner_unittest.cc',
       'browser/safe_browsing/incident_reporting/download_metadata_manager_unittest.cc',
       'browser/safe_browsing/incident_reporting/environment_data_collection_win_unittest.cc',
+      'browser/safe_browsing/incident_reporting/extension_data_collection_unittest.cc',
       'browser/safe_browsing/incident_reporting/incident_report_uploader_impl_unittest.cc',
       'browser/safe_browsing/incident_reporting/incident_reporting_service_unittest.cc',
       'browser/safe_browsing/incident_reporting/last_download_finder_unittest.cc',

@@ -2495,6 +2495,8 @@
       'browser/safe_browsing/incident_reporting/environment_data_collection.h',
       'browser/safe_browsing/incident_reporting/environment_data_collection_win.cc',
       'browser/safe_browsing/incident_reporting/environment_data_collection_win.h',
+      'browser/safe_browsing/incident_reporting/extension_data_collection.cc',
+      'browser/safe_browsing/incident_reporting/extension_data_collection.h',
       'browser/safe_browsing/incident_reporting/incident.cc',
       'browser/safe_browsing/incident_reporting/incident.h',
       'browser/safe_browsing/incident_reporting/incident_handler_util.cc',

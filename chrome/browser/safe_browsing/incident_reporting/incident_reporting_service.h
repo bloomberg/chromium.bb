@@ -52,6 +52,7 @@ class ClientDownloadRequest;
 class ClientIncidentReport;
 class ClientIncidentReport_DownloadDetails;
 class ClientIncidentReport_EnvironmentData;
+class ClientIncidentReport_ExtensionData;
 class ClientIncidentReport_IncidentData;
 class Incident;
 class IncidentReceiver;
@@ -120,6 +121,11 @@ class IncidentReportingService : public content::NotificationObserver {
       CollectEnvironmentDataFn collect_environment_data_hook,
       const scoped_refptr<base::TaskRunner>& task_runner);
 
+  // Initiates extension collection. Overriden by unit tests to provide fake
+  // extension data.
+  virtual void DoExtensionCollection(
+      ClientIncidentReport_ExtensionData* extension_data);
+
   // Handles the addition of a new profile to the ProfileManager. Creates a new
   // context for |profile| if one does not exist, drops any received incidents
   // for the profile if the profile is not participating in safe browsing, and
@@ -182,6 +188,19 @@ class IncidentReportingService : public content::NotificationObserver {
   // arrive. This function is idempotent.
   void BeginIncidentCollation();
 
+  // Returns true if the service is waiting for additional incidents before
+  // uploading a report.
+  bool WaitingToCollateIncidents();
+
+  // Cancels the collection timeout.
+  void CancelIncidentCollection();
+
+  // A callback invoked on the UI thread after which incident collation has
+  // completed. Incident report processing continues, either by waiting for
+  // environment data or the most recent download to arrive or by sending an
+  // incident report.
+  void OnCollationTimeout();
+
   // Starts a task to collect environment data in the blocking pool.
   void BeginEnvironmentCollection();
 
@@ -197,19 +216,6 @@ class IncidentReportingService : public content::NotificationObserver {
   // collection timeout or by sending an incident report.
   void OnEnvironmentDataCollected(
       scoped_ptr<ClientIncidentReport_EnvironmentData> environment_data);
-
-  // Returns true if the service is waiting for additional incidents before
-  // uploading a report.
-  bool WaitingToCollateIncidents();
-
-  // Cancels the collection timeout.
-  void CancelIncidentCollection();
-
-  // A callback invoked on the UI thread after which incident collation has
-  // completed. Incident report processing continues, either by waiting for
-  // environment data or the most recent download to arrive or by sending an
-  // incident report.
-  void OnCollationTimeout();
 
   // Starts the asynchronous process of finding the most recent executable
   // download if one is not currently being search for and/or has not already

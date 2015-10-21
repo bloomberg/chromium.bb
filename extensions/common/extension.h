@@ -339,6 +339,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
   bool from_bookmark() const { return (creation_flags_ & FROM_BOOKMARK) != 0; }
+  bool may_be_untrusted() const {
+    return (creation_flags_ & MAY_BE_UNTRUSTED) != 0;
+  }
   bool was_installed_by_default() const {
     return (creation_flags_ & WAS_INSTALLED_BY_DEFAULT) != 0;
   }

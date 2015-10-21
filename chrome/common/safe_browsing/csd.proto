@@ -551,10 +551,47 @@ message ClientIncidentReport {
     optional Process process = 3;
   }
 
+  message ExtensionData {
+    message ExtensionInfo {
+      enum ExtensionState {
+        STATE_UNKNOWN = 0;
+        STATE_ENABLED = 1;
+        STATE_DISABLED = 2;
+        STATE_BLACKLISTED = 3;
+        STATE_BLOCKED = 4;
+        STATE_TERMINATED = 5;
+      }
+
+      optional string id = 1;
+      optional string version = 2;
+      optional string name = 3;
+      optional string description = 4;
+      optional ExtensionState state = 5 [default = STATE_UNKNOWN];
+      optional int32 type = 6;
+      optional string update_url = 7;
+      optional bool has_signature_validation = 8;
+      optional bool signature_is_valid = 9;
+      optional bool installed_by_custodian = 10;
+      optional bool installed_by_default = 11;
+      optional bool installed_by_oem = 12;
+      optional bool from_bookmark = 13;
+      optional bool from_webstore = 14;
+      optional bool converted_from_user_script = 15;
+      optional bool may_be_untrusted = 16;
+      optional int64 install_time_msec = 17;
+      optional int32 manifest_location_type = 18;
+      optional string manifest = 19;
+    }
+
+    optional ExtensionInfo last_installed_extension = 1;
+  }
+
   optional EnvironmentData environment = 3;
 
   // Population that the reporting user is part of.
   optional ChromeUserPopulation population = 7;
+
+  optional ExtensionData extension_data = 8;
 }
 
 message ClientIncidentResponse {
