@@ -143,3 +143,4 @@ crbug.com/506756 inspector/console/only-one-deprecation-warning.html [ Leak ]
 crbug.com/506757 webaudio/mediastreamaudiodestinationnode.html [ Leak ]
 
 crbug.com/538524 editing/selection/modify-crash.html [ Leak ]
+crbug.com/546132 editing/execCommand/insert-html-to-document-element-crash.html [ Leak ]
