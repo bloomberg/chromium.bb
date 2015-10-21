@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.TopControlsState;
 
@@ -53,10 +53,10 @@ public interface ContextualSearchManagementDelegate {
     void promoteToTab();
 
     /**
-     * Sets the delegate responsible for manipulating the ContextualSearchLayout.
-     * @param delegate The ContextualSearchLayoutDelegate.
+     * Sets the handle to the ContextualSearchPanel.
+     * @param delegate The ContextualSearchPanel.
      */
-    void setContextualSearchPanelDelegate(ContextualSearchPanelDelegate delegate);
+    void setContextualSearchPanel(ContextualSearchPanel panel);
 
     /**
      * Gets whether the device is running in compatibility mode for Contextual Search.

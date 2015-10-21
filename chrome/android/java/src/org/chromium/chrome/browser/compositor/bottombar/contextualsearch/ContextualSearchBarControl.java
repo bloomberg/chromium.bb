@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -26,13 +27,15 @@ public class ContextualSearchBarControl {
     /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
-     * @param panel     The panel delegate.
+     * @param panel     The panel.
      * @param context   The context used to build this view.
      * @param container The parent view for the bottom bar views.
      * @param loader    The resource loader that will handle the snapshot capturing.
      */
-    public ContextualSearchBarControl(ContextualSearchPanelDelegate panel, Context context,
-                                      ViewGroup container, DynamicResourceLoader loader) {
+    public ContextualSearchBarControl(OverlayPanel panel,
+                                      Context context,
+                                      ViewGroup container,
+                                      DynamicResourceLoader loader) {
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
     }

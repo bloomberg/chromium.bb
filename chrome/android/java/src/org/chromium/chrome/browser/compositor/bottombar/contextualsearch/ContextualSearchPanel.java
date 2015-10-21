@@ -8,22 +8,19 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.View.MeasureSpec;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Controls the Contextual Search Panel.
  */
-public class ContextualSearchPanel extends OverlayPanel
-        implements ContextualSearchPanelDelegate {
+public class ContextualSearchPanel extends OverlayPanel {
 
     /**
      * The extra dp added around the close button touch target.
@@ -334,83 +331,62 @@ public class ContextualSearchPanel extends OverlayPanel
     }
 
     // ============================================================================================
-    // Panel Delegate
+    // Contextual Search Panel API
     // ============================================================================================
 
-    @Override
+    /**
+     * Notify the panel that the ContentViewCore was seen.
+     */
     public void setWasSearchContentViewSeen() {
         mPanelMetrics.setWasSearchContentViewSeen();
     }
 
-    @Override
+    /**
+     * @param isActive Whether the promo is active.
+     */
     public void setIsPromoActive(boolean isActive) {
         setPromoVisibility(isActive);
         mPanelMetrics.setIsPromoActive(isActive);
     }
 
-    @Override
+    /**
+     * Shows the peek promo.
+     */
     public void showPeekPromo() {
         getPeekPromoControl().show();
     }
 
-    @Override
+    /**
+     * @return Whether the Peek Promo is visible.
+     */
+    @VisibleForTesting
     public boolean isPeekPromoVisible() {
         return getPeekPromoControl().isVisible();
     }
 
-    @Override
+    /**
+     * Called when the SERP finishes loading, this records the duration of loading the SERP from
+     * the time the panel was opened until the present.
+     * @param wasPrefetch Whether the request was prefetch-enabled.
+     */
     public void onSearchResultsLoaded(boolean wasPrefetch) {
         mPanelMetrics.onSearchResultsLoaded(wasPrefetch);
     }
 
-    @Override
-    public boolean isFullscreenSizePanel() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.isFullscreenSizePanel();
-    }
-
-    @Override
-    public boolean isShowing() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.isShowing();
-    }
-
-    @Override
-    public boolean isPeeking() {
-        return super.isPeeking();
-    }
-
-    @Override
-    public int getMaximumWidthPx() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.getMaximumWidthPx();
-    }
-
-    @Override
-    public int getMaximumHeightPx() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.getMaximumHeightPx();
-    }
-
-    @Override
-    public int getSearchContentViewWidthPx() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.getSearchContentViewWidthPx();
-    }
-
-    @Override
-    public int getSearchContentViewHeightPx() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.getSearchContentViewHeightPx();
-    }
-
-    @Override
+    /**
+     * Maximizes the Contextual Search Panel, then promotes it to a regular Tab.
+     * @param reason The {@code StateChangeReason} behind the maximization and promotion to tab.
+     */
     public void maximizePanelThenPromoteToTab(StateChangeReason reason) {
         mShouldPromoteToTabAfterMaximizing = true;
         maximizePanel(reason);
     }
 
-    @Override
+    /**
+     * Maximizes the Contextual Search Panel, then promotes it to a regular Tab.
+     * @param reason The {@code StateChangeReason} behind the maximization and promotion to tab.
+     * @param duration The animation duration in milliseconds.
+     */
     public void maximizePanelThenPromoteToTab(StateChangeReason reason, long duration) {
         mShouldPromoteToTabAfterMaximizing = true;
         animatePanelToState(PanelState.MAXIMIZED, reason, duration);
@@ -441,7 +417,7 @@ public class ContextualSearchPanel extends OverlayPanel
 
     @Override
     public void updateBasePageSelectionYPx(float y) {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        // NOTE(pedrosimonetti): exposing superclass method.
         super.updateBasePageSelectionYPx(y);
     }
 
@@ -451,72 +427,58 @@ public class ContextualSearchPanel extends OverlayPanel
         return super.getPanelState();
     }
 
-    @Override
-    public boolean didTouchSearchContentView() {
+    /**
+     * Gets whether a touch on the content view has been done yet or not.
+     */
+    public boolean didTouchContent() {
         return mHasContentBeenTouched;
     }
 
-    @Override
+    /**
+     * @return {@code true} Whether the close animation should run when the the panel is closed
+     *                      due the panel being promoted to a tab.
+     */
     public boolean shouldAnimatePanelCloseOnPromoteToTab() {
         // TODO(pedrosimonetti): This is not currently used.
         return mActivity.isCustomTab();
     }
 
-    @Override
+    /**
+     * Shows the search term in the SearchBar. This should be called when the search term is set
+     * without search term resolution.
+     * @param searchTerm The string that represents the search term.
+     */
     public void displaySearchTerm(String searchTerm) {
         cancelSearchTermResolutionAnimation();
         getSearchBarControl().setSearchTerm(searchTerm);
         resetSearchBarTermOpacity();
     }
 
-    @Override
+    /**
+     * Shows the search context in the SearchBar.
+     * @param selection The portion of the context that represents the user's selection.
+     * @param end The portion of the context from the selection to its end.
+     */
     public void displaySearchContext(String selection, String end) {
         cancelSearchTermResolutionAnimation();
         getSearchBarControl().setSearchContext(selection, end);
         resetSearchBarContextOpacity();
     }
 
-    @Override
+    /**
+     * Handles showing the resolved search term in the SearchBar.
+     * @param searchTerm The string that represents the search term.
+     */
     public void onSearchTermResolutionResponse(String searchTerm) {
         getSearchBarControl().setSearchTerm(searchTerm);
         animateSearchTermResolution();
     }
 
-    @Override
-    public boolean isContentViewShowing() {
-        return super.isContentShowing();
-    }
-
-    @Override
-    public void setChromeActivity(ChromeActivity activity) {
-        mActivity = activity;
-    }
-
-    @Override
-    public void loadUrlInPanel(String url) {
-        super.loadUrlInPanel(url);
-    }
-
-    @Override
-    public boolean isProcessingPendingNavigation() {
-        return super.isProcessingPendingNavigation();
-    }
-
-    @Override
-    public void updateTopControlsState() {
-        super.updateTopControlsState();
-    }
-
-    @Override
+    /**
+     * Sets that the contextual search involved the promo.
+     */
     public void setDidSearchInvolvePromo() {
         mPanelMetrics.setDidSearchInvolvePromo();
-    }
-
-    @Override
-    public <T extends Enum<?>> void addToAnimation(ChromeAnimation.Animatable<T> object, T prop,
-                                                   float start, float end, long duration,
-                                                   long startTime) {
-        super.addToAnimation(object, prop, start, end, duration, startTime);
     }
 
     // ============================================================================================
@@ -734,22 +696,18 @@ public class ContextualSearchPanel extends OverlayPanel
         mHasContentBeenTouched = true;
     }
 
-    @Override
-    public ContentViewCore getContentViewCore() {
-        return super.getContentViewCore();
-    }
-
-    @Override
-    public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {
-        super.removeLastHistoryEntry(historyUrl, urlTimeMs);
-    }
-
-    @Override
+    /**
+     * Notify the panel that it's content has been touched.
+     */
     public void notifyPanelTouched() {
         getOverlayPanelContent().notifyPanelTouched();
     }
 
-    @Override
+    /**
+     * Destroy the current content in the panel.
+     * NOTE(mdjones): This should not be exposed. The only use is in ContextualSearchManager for a
+     * bug related to loading new panel content.
+     */
     public void destroyContent() {
         super.destroyOverlayPanelContent();
     }

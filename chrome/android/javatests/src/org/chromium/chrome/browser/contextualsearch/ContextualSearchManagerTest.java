@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -81,7 +81,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     private ContextualSearchManager mManager;
     private ContextualSearchFakeServer mFakeServer;
-    private ContextualSearchPanelDelegate mPanelDelegate;
+    private ContextualSearchPanel mPanel;
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchPolicy mPolicy;
     private ActivityMonitor mActivityMonitor;
@@ -97,13 +97,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         mManager = getActivity().getContextualSearchManager();
 
         if (mManager != null) {
-            mPanelDelegate = mManager.getContextualSearchPanelDelegate();
+            mPanel = mManager.getContextualSearchPanel();
             mFakeServer = new ContextualSearchFakeServer(mManager,
                     mManager.getOverlayContentDelegate(),
                     new OverlayContentProgressObserver(),
                     getActivity());
 
-            mPanelDelegate.setOverlayPanelContentFactory(mFakeServer);
+            mPanel.setOverlayPanelContentFactory(mFakeServer);
             mManager.setNetworkCommunicator(mFakeServer);
             mSelectionController = mManager.getSelectionController();
             mPolicy = ContextualSearchPolicy.getInstance(getActivity());
@@ -255,10 +255,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     private void assertPanelClosedOrUndefined() {
         boolean success = false;
-        if (mPanelDelegate == null) {
+        if (mPanel == null) {
             success = true;
         } else {
-            PanelState panelState = mPanelDelegate.getPanelState();
+            PanelState panelState = mPanel.getPanelState();
             success = panelState == PanelState.CLOSED || panelState == PanelState.UNDEFINED;
         }
         assertTrue(success);
@@ -381,8 +381,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         return CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mPanelDelegate != null
-                        && mPanelDelegate.getPanelState() == state;
+                return mPanel != null
+                        && mPanel.getPanelState() == state;
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
@@ -1111,7 +1111,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         CriteriaHelper.pollForCriteria(new Criteria(){
             @Override
             public boolean isSatisfied() {
-                PanelState panelState = mPanelDelegate.getPanelState();
+                PanelState panelState = mPanel.getPanelState();
                 return panelState != PanelState.PEEKED;
             }
         });
@@ -1155,7 +1155,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         CriteriaHelper.pollForCriteria(new Criteria(){
             @Override
             public boolean isSatisfied() {
-                PanelState panelState = mPanelDelegate.getPanelState();
+                PanelState panelState = mPanel.getPanelState();
                 return panelState != PanelState.PEEKED;
             }
         });
@@ -1975,16 +1975,16 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Long press and make sure the Promo shows.
         longPressNode("intelligence");
         waitForPanelToPeekAndAssert();
-        assertTrue(mPanelDelegate.isPeekPromoVisible());
+        assertTrue(mPanel.isPeekPromoVisible());
 
         // After expanding the Panel the Promo should be invisible.
         swipePanelUp();
         waitForPanelToExpandAndAssert();
-        assertFalse(mPanelDelegate.isPeekPromoVisible());
+        assertFalse(mPanel.isPeekPromoVisible());
 
         // After closing the Panel the Promo should still be invisible.
         tapBasePageToClosePanel();
-        assertFalse(mPanelDelegate.isPeekPromoVisible());
+        assertFalse(mPanel.isPeekPromoVisible());
 
         // Click elsewhere to clear the selection.
         clickNode("question-mark");
@@ -1993,6 +1993,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Now that the Panel was opened at least once, the Promo should not show again.
         longPressNode("intelligence");
         waitForPanelToPeekAndAssert();
-        assertFalse(mPanelDelegate.isPeekPromoVisible());
+        assertFalse(mPanel.isPeekPromoVisible());
     }
 }

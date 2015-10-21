@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -76,12 +77,12 @@ public class ContextualSearchPeekPromoControl extends ContextualSearchInflater
     private final float mRippleMaximumWidthPx;
 
     /**
-     * @param panel             The panel delegate.
+     * @param panel             The panel.
      * @param context           The Android Context used to inflate the View.
      * @param container         The container View used to inflate the View.
      * @param resourceLoader    The resource loader that will handle the snapshot capturing.
      */
-    public ContextualSearchPeekPromoControl(ContextualSearchPanelDelegate panel,
+    public ContextualSearchPeekPromoControl(OverlayPanel panel,
                                             Context context,
                                             ViewGroup container,
                                             DynamicResourceLoader resourceLoader) {
@@ -224,7 +225,7 @@ public class ContextualSearchPeekPromoControl extends ContextualSearchInflater
      */
     public void animateAppearance() {
         // TODO(pedrosimonetti): Find a generic way to tell when a specific animation finishes.
-        mSearchPanelDelegate.addToAnimation(this, AnimationType.APPEARANCE, 0.f, 1.f,
+        mOverlayPanel.addToAnimation(this, AnimationType.APPEARANCE, 0.f, 1.f,
                 ContextualSearchPanelAnimation.BASE_ANIMATION_DURATION_MS, 0);
     }
 

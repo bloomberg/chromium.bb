@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -22,12 +23,12 @@ public class ContextualSearchTermControl extends ContextualSearchInflater {
     private TextView mSearchTerm;
 
     /**
-     * @param panel             The panel delegate.
+     * @param panel             The panel.
      * @param context           The Android Context used to inflate the View.
      * @param container         The container View used to inflate the View.
      * @param resourceLoader    The resource loader that will handle the snapshot capturing.
      */
-    public ContextualSearchTermControl(ContextualSearchPanelDelegate panel,
+    public ContextualSearchTermControl(OverlayPanel panel,
                                           Context context,
                                           ViewGroup container,
                                           DynamicResourceLoader resourceLoader) {

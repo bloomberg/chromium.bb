@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceInflater;
 
@@ -19,7 +20,7 @@ abstract class ContextualSearchInflater extends ViewResourceInflater {
     /**
      * The panel delegate used to get information about the panel layout.
      */
-    protected ContextualSearchPanelDelegate mSearchPanelDelegate;
+    protected OverlayPanel mOverlayPanel;
 
     /**
      * Object Replacement Character that is used in place of HTML objects that cannot be represented
@@ -29,14 +30,14 @@ abstract class ContextualSearchInflater extends ViewResourceInflater {
     private static final String OBJ_CHARACTER = "\uFFFC";
 
     /**
-     * @param panelDelegate     The panel delegate.
+     * @param panel             The panel.
      * @param layoutId          The XML Layout that declares the View.
      * @param viewId            The id of the root View of the Layout.
      * @param context           The Android Context used to inflate the View.
      * @param container         The container View used to inflate the View.
      * @param resourceLoader    The resource loader that will handle the snapshot capturing.
      */
-    public ContextualSearchInflater(ContextualSearchPanelDelegate panelDelegate,
+    public ContextualSearchInflater(OverlayPanel panel,
                                     int layoutId,
                                     int viewId,
                                     Context context,
@@ -44,27 +45,27 @@ abstract class ContextualSearchInflater extends ViewResourceInflater {
                                     DynamicResourceLoader resourceLoader) {
         super(layoutId, viewId, context, container, resourceLoader);
 
-        mSearchPanelDelegate = panelDelegate;
+        mOverlayPanel = panel;
     }
 
     @Override
     public void destroy() {
         super.destroy();
 
-        mSearchPanelDelegate = null;
+        mOverlayPanel = null;
     }
 
     @Override
     protected void onFinishInflate() {
-        if (!mSearchPanelDelegate.isFullscreenSizePanel()) {
-            setWidth(mSearchPanelDelegate.getMaximumWidthPx());
+        if (!mOverlayPanel.isFullscreenSizePanel()) {
+            setWidth(mOverlayPanel.getMaximumWidthPx());
         }
     }
 
     @Override
     protected int getWidthMeasureSpec() {
         return View.MeasureSpec.makeMeasureSpec(
-                mSearchPanelDelegate.getMaximumWidthPx(), View.MeasureSpec.EXACTLY);
+                mOverlayPanel.getMaximumWidthPx(), View.MeasureSpec.EXACTLY);
     }
 
     /**

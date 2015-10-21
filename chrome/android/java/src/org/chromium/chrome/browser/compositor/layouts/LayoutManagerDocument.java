@@ -161,7 +161,7 @@ public class LayoutManagerDocument extends LayoutManager
 
         // Set back flow communication
         if (contextualSearchDelegate != null) {
-            contextualSearchDelegate.setContextualSearchPanelDelegate(mContextualSearchPanel);
+            contextualSearchDelegate.setContextualSearchPanel(mContextualSearchPanel);
         }
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
