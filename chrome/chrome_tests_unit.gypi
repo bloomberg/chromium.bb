@@ -135,7 +135,6 @@
       'browser/media/native_desktop_media_list_unittest.cc',
       'browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
-      'browser/metrics/cloned_install_detector_unittest.cc',
       'browser/metrics/perf/perf_provider_chromeos_unittest.cc',
       'browser/metrics/thread_watcher_android_unittest.cc',
       'browser/metrics/thread_watcher_unittest.cc',
@@ -961,8 +960,8 @@
       'browser/safe_browsing/ui_manager_unittest.cc',
      ],
     'chrome_unit_tests_mobile_safe_browsing_sources': [
-      'browser/safe_browsing/safe_browsing_api_handler_unittest.cc',
       'browser/safe_browsing/remote_database_manager_unittest.cc',
+      'browser/safe_browsing/safe_browsing_api_handler_unittest.cc',
      ],
     'chrome_unit_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',

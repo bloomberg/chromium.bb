@@ -332,6 +332,7 @@
     ],
     'metrics_unittest_sources': [
       'metrics/call_stack_profile_metrics_provider_unittest.cc',
+      'metrics/cloned_install_detector_unittest.cc',
       'metrics/daily_event_unittest.cc',
       'metrics/drive_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',

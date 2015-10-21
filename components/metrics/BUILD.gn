@@ -245,6 +245,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "call_stack_profile_metrics_provider_unittest.cc",
+    "cloned_install_detector_unittest.cc",
     "daily_event_unittest.cc",
     "drive_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
