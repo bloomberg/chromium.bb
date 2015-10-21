@@ -40,6 +40,15 @@ enum class UMAWebBluetoothFunction {
 // API.
 void RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction function);
 
+// Enumation for outcomes of querying the bluetooth cache.
+enum class CacheQueryOutcome {
+  SUCCESS = 0,
+  BAD_RENDERER = 1,
+  NO_DEVICE = 2,
+  NO_SERVICE = 3,
+  NO_CHARACTERISTIC = 4,
+};
+
 // requestDevice() Metrics
 enum class UMARequestDeviceOutcome {
   SUCCESS = 0,
@@ -94,6 +103,9 @@ enum class UMAConnectGATTOutcome {
 // Send(BluetoothMsg_ConnectGATTSuccess) and
 // Send(BluetoothMsg_ConnectGATTError).
 void RecordConnectGATTOutcome(UMAConnectGATTOutcome outcome);
+// Records the outcome of the cache query for connectGATT. Should only be called
+// if QueryCacheForDevice fails.
+void RecordConnectGATTOutcome(CacheQueryOutcome outcome);
 // Records how long it took for the connection to succeed.
 void RecordConnectGATTTimeSuccess(const base::TimeDelta& duration);
 // Records how long it took for the connection to fail.
@@ -115,6 +127,9 @@ void RecordGetPrimaryServiceService(const device::BluetoothUUID& service);
 // Send(BluetoothMsg_GetPrimaryServiceSuccess) and
 // Send(BluetoothMsg_GetPrimaryServiceError).
 void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome);
+// Records the outcome of the cache query for getPrimaryService. Should only be
+// called if QueryCacheForDevice fails.
+void RecordGetPrimaryServiceOutcome(CacheQueryOutcome outcome);
 
 // getCharacteristic() Metrics
 enum class UMAGetCharacteristicOutcome {
@@ -131,6 +146,9 @@ enum class UMAGetCharacteristicOutcome {
 // Send(BluetoothMsg_GetCharacteristicSuccess) and
 // Send(BluetoothMsg_GetCharacteristicError).
 void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome);
+// Records the outcome of the cache query for getCharacteristic. Should only be
+// called if QueryCacheForService fails.
+void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome);
 // Records the UUID of the characteristic used when calling getCharacteristic.
 void RecordGetCharacteristicCharacteristic(const std::string& characteristic);
 
@@ -177,18 +195,27 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
 // Send(BluetoothMsg_ReadCharacteristicValueSuccess) and
 // Send(BluetoothMsg_ReadCharacteristicValueError).
 void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome error);
+// Records the outcome of a cache query for readValue. Should only be called if
+// QueryCacheForCharacteristic fails.
+void RecordCharacteristicReadValueOutcome(CacheQueryOutcome outcome);
 
 // Characteristic.writeValue() Metrics
 // There should be a call to this function for every call to
 // Send(BluetoothMsg_WriteCharacteristicValueSuccess) and
 // Send(BluetoothMsg_WriteCharacteristicValueError).
 void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome error);
+// Records the outcome of a cache query for writeValue. Should only be called if
+// QueryCacheForCharacteristic fails.
+void RecordCharacteristicWriteValueOutcome(CacheQueryOutcome outcome);
 
 // Characteristic.startNotifications() Metrics
 // There should be a call to this function for every call to
 // Send(BluetoothMsg_StartNotificationsSuccess) and
 // Send(BluetoothMsg_StopNotificationsError).
 void RecordStartNotificationsOutcome(UMAGATTOperationOutcome outcome);
+// Records the outcome of a cache query for startNotifications. Should only be
+// called if QueryCacheForCharacteristic fails.
+void RecordStartNotificationsOutcome(CacheQueryOutcome outcome);
 
 }  // namespace content
 

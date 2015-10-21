@@ -56,6 +56,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   friend class base::DeleteHelper<BluetoothDispatcherHost>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
+  struct CacheQueryResult;
   struct RequestDeviceSession;
 
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
@@ -194,6 +195,29 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnStopNotifySession(int thread_id,
                            int request_id,
                            const std::string& characteristic_instance_id);
+
+  // Functions to query the platform cache for the bluetooth object.
+  // result.outcome == CacheQueryOutcome::SUCCESS if the object was found in the
+  // cache. Otherwise result.outcome that can used to record the outcome and
+  // result.error will contain the error that should be send to the renderer.
+  // One of the possible outcomes is BAD_RENDERER. In this case the outcome
+  // was already recorded and since there renderer crashed there is no need to
+  // send a response.
+
+  // Queries the platform cache for a Device with |device_instance_id|. If
+  // successful the device will be in result.device
+  void QueryCacheForDevice(const std::string& device_instance_id,
+                           CacheQueryResult& result);
+  // Queries the platform cache for a Service with |service_instance_id|.
+  // If successfull the service will be in result.service.
+  void QueryCacheForService(const std::string& service_instance_id,
+                            CacheQueryResult& result);
+  // Queries the platform cache for a characteristic with
+  // |characteristic_instance_id|. If successfull the characteristic will be in
+  // result.characteristic.
+  void QueryCacheForCharacteristic(
+      const std::string& characteristic_instance_id,
+      CacheQueryResult& result);
 
   // Show help pages from the chooser dialog.
   void ShowBluetoothOverviewLink();

@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// NETWORK_ERROR Note:
-// When a device can't be found in the BluetoothAdapter, that generally
-// indicates that it's gone out of range. We reject with a NetworkError in that
-// case.
-// https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
-
 // ID Not In Map Note:
 // A service, characteristic, or descriptor ID not in the corresponding
 // BluetoothDispatcherHost map [service_to_device_, characteristic_to_service_,
@@ -283,6 +277,36 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session;
 };
 
+struct BluetoothDispatcherHost::CacheQueryResult {
+  CacheQueryResult()
+      : device(nullptr),
+        service(nullptr),
+        characteristic(nullptr),
+        outcome(CacheQueryOutcome::SUCCESS) {}
+  ~CacheQueryResult() {}
+  WebBluetoothError GetWebError() {
+    switch (outcome) {
+      case CacheQueryOutcome::SUCCESS:
+      case CacheQueryOutcome::BAD_RENDERER:
+        NOTREACHED();
+        return WebBluetoothError::DeviceNoLongerInRange;
+      case CacheQueryOutcome::NO_DEVICE:
+        return WebBluetoothError::DeviceNoLongerInRange;
+      case CacheQueryOutcome::NO_SERVICE:
+        return WebBluetoothError::ServiceNoLongerExists;
+      case CacheQueryOutcome::NO_CHARACTERISTIC:
+        return WebBluetoothError::CharacteristicNoLongerExists;
+    }
+    NOTREACHED();
+    return WebBluetoothError::DeviceNoLongerInRange;
+  }
+
+  device::BluetoothDevice* device;
+  device::BluetoothGattService* service;
+  device::BluetoothGattCharacteristic* characteristic;
+  CacheQueryOutcome outcome;
+};
+
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -517,14 +541,18 @@ void BluetoothDispatcherHost::OnConnectGATT(
   // the device, because any domain can connect to any device. But once
   // permissions are implemented we should check that the domain has access to
   // the device. https://crbug.com/484745
-  device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
-  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
-    RecordConnectGATTOutcome(UMAConnectGATTOutcome::NO_DEVICE);
-    Send(new BluetoothMsg_ConnectGATTError(
-        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
+
+  CacheQueryResult query_result = CacheQueryResult();
+  QueryCacheForDevice(device_instance_id, query_result);
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordConnectGATTOutcome(query_result.outcome);
+    Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
+                                           query_result.GetWebError()));
     return;
   }
-  device->CreateGattConnection(
+
+  query_result.device->CreateGattConnection(
       base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
                  weak_ptr_on_ui_thread_, thread_id, request_id,
                  device_instance_id, start_time),
@@ -565,38 +593,22 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_CHARACTERISTIC);
   RecordGetCharacteristicCharacteristic(characteristic_uuid);
 
-  auto device_iter = service_to_device_.find(service_instance_id);
-  // Kill the renderer, see "ID Not In Map Note" above.
-  if (device_iter == service_to_device_.end()) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_SERVICE_ID);
+  CacheQueryResult query_result = CacheQueryResult();
+  QueryCacheForService(service_instance_id, query_result);
+
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
   }
 
-  // TODO(ortuno): Check if domain has access to device.
-  // https://crbug.com/493459
-  device::BluetoothDevice* device =
-      adapter_->GetDevice(device_iter->second /* device_instance_id */);
-
-  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
-    RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_DEVICE);
-    Send(new BluetoothMsg_GetCharacteristicError(
-        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
-    return;
-  }
-
-  // TODO(ortuno): Check if domain has access to service
-  // http://crbug.com/493460
-  device::BluetoothGattService* service =
-      device->GetGattService(service_instance_id);
-  if (!service) {
-    RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_SERVICE);
-    Send(new BluetoothMsg_GetCharacteristicError(
-        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordGetCharacteristicOutcome(query_result.outcome);
+    Send(new BluetoothMsg_GetCharacteristicError(thread_id, request_id,
+                                                 query_result.GetWebError()));
     return;
   }
 
   for (BluetoothGattCharacteristic* characteristic :
-       service->GetCharacteristics()) {
+       query_result.service->GetCharacteristics()) {
     if (characteristic->GetUUID().canonical_value() == characteristic_uuid) {
       const std::string& characteristic_instance_id =
           characteristic->GetIdentifier();
@@ -629,50 +641,21 @@ void BluetoothDispatcherHost::OnReadValue(
   RecordWebBluetoothFunctionCall(
       UMAWebBluetoothFunction::CHARACTERISTIC_READ_VALUE);
 
-  auto characteristic_iter =
-      characteristic_to_service_.find(characteristic_instance_id);
+  CacheQueryResult query_result = CacheQueryResult();
+  QueryCacheForCharacteristic(characteristic_instance_id, query_result);
 
-  // Kill the renderer, see "ID Not In Map Note" above.
-  if (characteristic_iter == characteristic_to_service_.end()) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
   }
-  const std::string& service_instance_id = characteristic_iter->second;
 
-  auto device_iter = service_to_device_.find(service_instance_id);
-
-  CHECK(device_iter != service_to_device_.end());
-
-  device::BluetoothDevice* device =
-      adapter_->GetDevice(device_iter->second /* device_instance_id */);
-  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
-    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::NO_DEVICE);
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordCharacteristicReadValueOutcome(query_result.outcome);
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
+        thread_id, request_id, query_result.GetWebError()));
     return;
   }
 
-  BluetoothGattService* service = device->GetGattService(service_instance_id);
-  if (service == nullptr) {
-    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::NO_SERVICE);
-    Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
-    return;
-  }
-
-  BluetoothGattCharacteristic* characteristic =
-      service->GetCharacteristic(characteristic_instance_id);
-  if (characteristic == nullptr) {
-    RecordCharacteristicReadValueOutcome(
-        UMAGATTOperationOutcome::NO_CHARACTERISTIC);
-    Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id,
-        WebBluetoothError::CharacteristicNoLongerExists));
-    return;
-  }
-
-  characteristic->ReadRemoteCharacteristic(
+  query_result.characteristic->ReadRemoteCharacteristic(
       base::Bind(&BluetoothDispatcherHost::OnCharacteristicValueRead,
                  weak_ptr_on_ui_thread_, thread_id, request_id),
       base::Bind(&BluetoothDispatcherHost::OnCharacteristicReadValueError,
@@ -699,49 +682,21 @@ void BluetoothDispatcherHost::OnWriteValue(
     return;
   }
 
-  auto characteristic_iter =
-      characteristic_to_service_.find(characteristic_instance_id);
+  CacheQueryResult query_result = CacheQueryResult();
+  QueryCacheForCharacteristic(characteristic_instance_id, query_result);
 
-  // Kill the renderer, see "ID Not In Map Note" above.
-  if (characteristic_iter == characteristic_to_service_.end()) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
   }
-  const std::string& service_instance_id = characteristic_iter->second;
 
-  auto device_iter = service_to_device_.find(service_instance_id);
-
-  CHECK(device_iter != service_to_device_.end());
-
-  device::BluetoothDevice* device =
-      adapter_->GetDevice(device_iter->second /* device_instance_id */);
-  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
-    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::NO_DEVICE);
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordCharacteristicWriteValueOutcome(query_result.outcome);
     Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
+        thread_id, request_id, query_result.GetWebError()));
     return;
   }
 
-  BluetoothGattService* service = device->GetGattService(service_instance_id);
-  if (service == nullptr) {
-    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::NO_SERVICE);
-    Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
-    return;
-  }
-
-  BluetoothGattCharacteristic* characteristic =
-      service->GetCharacteristic(characteristic_instance_id);
-  if (characteristic == nullptr) {
-    RecordCharacteristicWriteValueOutcome(
-        UMAGATTOperationOutcome::NO_CHARACTERISTIC);
-    Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id,
-        WebBluetoothError::CharacteristicNoLongerExists));
-    return;
-  }
-  characteristic->WriteRemoteCharacteristic(
+  query_result.characteristic->WriteRemoteCharacteristic(
       value, base::Bind(&BluetoothDispatcherHost::OnWriteValueSuccess,
                         weak_ptr_on_ui_thread_, thread_id, request_id),
       base::Bind(&BluetoothDispatcherHost::OnWriteValueFailed,
@@ -768,48 +723,21 @@ void BluetoothDispatcherHost::OnStartNotifications(
   // TODO(ortuno): Check if notify/indicate bit is set.
   // http://crbug.com/538869
 
-  auto characteristic_iter =
-      characteristic_to_service_.find(characteristic_instance_id);
+  CacheQueryResult query_result = CacheQueryResult();
+  QueryCacheForCharacteristic(characteristic_instance_id, query_result);
 
-  // Kill the renderer, see "ID Not In Map Note" above.
-  if (characteristic_iter == characteristic_to_service_.end()) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
   }
 
-  const std::string& service_instance_id = characteristic_iter->second;
-  auto device_iter = service_to_device_.find(service_instance_id);
-  CHECK(device_iter != service_to_device_.end());
-
-  device::BluetoothDevice* device =
-      adapter_->GetDevice(device_iter->second /* device_instance_id */);
-  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
-    RecordStartNotificationsOutcome(UMAGATTOperationOutcome::NO_DEVICE);
-    Send(new BluetoothMsg_StartNotificationsError(
-        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordStartNotificationsOutcome(query_result.outcome);
+    Send(new BluetoothMsg_StartNotificationsError(thread_id, request_id,
+                                                  query_result.GetWebError()));
     return;
   }
 
-  BluetoothGattService* service = device->GetGattService(service_instance_id);
-  if (service == nullptr) {
-    RecordStartNotificationsOutcome(UMAGATTOperationOutcome::NO_SERVICE);
-    Send(new BluetoothMsg_StartNotificationsError(
-        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
-    return;
-  }
-
-  BluetoothGattCharacteristic* characteristic =
-      service->GetCharacteristic(characteristic_instance_id);
-  if (characteristic == nullptr) {
-    RecordStartNotificationsOutcome(UMAGATTOperationOutcome::NO_CHARACTERISTIC);
-    Send(new BluetoothMsg_StartNotificationsError(
-        thread_id, request_id,
-        WebBluetoothError::CharacteristicNoLongerExists));
-    return;
-  }
-
-  characteristic->StartNotifySession(
+  query_result.characteristic->StartNotifySession(
       base::Bind(&BluetoothDispatcherHost::OnStartNotifySessionSuccess,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
       base::Bind(&BluetoothDispatcherHost::OnStartNotifySessionFailed,
@@ -1026,16 +954,18 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
     const std::string& service_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
-  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
-    RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NO_DEVICE);
-    Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
+  CacheQueryResult query_result = CacheQueryResult();
+  QueryCacheForDevice(device_instance_id, query_result);
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordGetPrimaryServiceOutcome(query_result.outcome);
+    Send(new BluetoothMsg_GetPrimaryServiceError(thread_id, request_id,
+                                                 query_result.GetWebError()));
     return;
   }
 
   VLOG(1) << "Looking for service: " << service_uuid;
-  for (BluetoothGattService* service : device->GetGattServices()) {
+  for (BluetoothGattService* service : query_result.device->GetGattServices()) {
     VLOG(1) << "Service in cache: " << service->GetUUID().canonical_value();
     if (service->GetUUID().canonical_value() == service_uuid) {
       // TODO(ortuno): Use generated instance ID instead.
@@ -1127,6 +1057,73 @@ void BluetoothDispatcherHost::OnStopNotifySession(
     const std::string& characteristic_instance_id) {
   characteristic_id_to_notify_session_.erase(characteristic_instance_id);
   Send(new BluetoothMsg_StopNotificationsSuccess(thread_id, request_id));
+}
+
+void BluetoothDispatcherHost::QueryCacheForDevice(
+    const std::string& device_instance_id,
+    CacheQueryResult& result) {
+  result.device = adapter_->GetDevice(device_instance_id);
+  // When a device can't be found in the BluetoothAdapter, that generally
+  // indicates that it's gone out of range. We reject with a NetworkError in
+  // that case.
+  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
+  if (result.device == nullptr) {
+    result.outcome = CacheQueryOutcome::NO_DEVICE;
+  }
+}
+
+void BluetoothDispatcherHost::QueryCacheForService(
+    const std::string& service_instance_id,
+    CacheQueryResult& result) {
+  auto device_iter = service_to_device_.find(service_instance_id);
+
+  // Kill the renderer, see "ID Not In Map Note" above.
+  if (device_iter == service_to_device_.end()) {
+    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_SERVICE_ID);
+    result.outcome = CacheQueryOutcome::BAD_RENDERER;
+    return;
+  }
+
+  // TODO(ortuno): Check if domain has access to device.
+  // https://crbug.com/493459
+
+  QueryCacheForDevice(device_iter->second, result);
+
+  if (result.outcome != CacheQueryOutcome::SUCCESS) {
+    return;
+  }
+
+  result.service = result.device->GetGattService(service_instance_id);
+  if (result.service == nullptr) {
+    result.outcome = CacheQueryOutcome::NO_SERVICE;
+  }
+}
+
+void BluetoothDispatcherHost::QueryCacheForCharacteristic(
+    const std::string& characteristic_instance_id,
+    CacheQueryResult& result) {
+  auto characteristic_iter =
+      characteristic_to_service_.find(characteristic_instance_id);
+
+  // Kill the renderer, see "ID Not In Map Note" above.
+  if (characteristic_iter == characteristic_to_service_.end()) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+    result.outcome = CacheQueryOutcome::BAD_RENDERER;
+    return;
+  }
+
+  QueryCacheForService(characteristic_iter->second, result);
+  if (result.outcome != CacheQueryOutcome::SUCCESS) {
+    return;
+  }
+
+  result.characteristic =
+      result.service->GetCharacteristic(characteristic_instance_id);
+
+  if (result.characteristic == nullptr) {
+    result.outcome = CacheQueryOutcome::NO_CHARACTERISTIC;
+  }
 }
 
 void BluetoothDispatcherHost::ShowBluetoothOverviewLink() {
