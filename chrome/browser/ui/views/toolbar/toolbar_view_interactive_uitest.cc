@@ -10,10 +10,10 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/common/feature_switch.h"
 
@@ -132,7 +132,7 @@ void ToolbarViewInteractiveUITest::SetUpCommandLine(
   feature_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::extension_action_redesign(), true));
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  WrenchToolbarButton::g_open_app_immediately_for_testing = true;
+  AppMenuButton::g_open_app_immediately_for_testing = true;
 }
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
@@ -145,7 +145,7 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
 
 void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = false;
-  WrenchToolbarButton::g_open_app_immediately_for_testing = false;
+  AppMenuButton::g_open_app_immediately_for_testing = false;
 }
 
 IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/toolbar/media_router_action_platform_delegate_views.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 
 // static
 scoped_ptr<MediaRouterActionPlatformDelegate>
@@ -26,7 +26,7 @@ MediaRouterActionPlatformDelegateViews::
 }
 
 void MediaRouterActionPlatformDelegateViews::CloseOverflowMenuIfOpen() {
-  WrenchToolbarButton* app_menu_button =
+  AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()
           ->app_menu_button();

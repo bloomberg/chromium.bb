@@ -36,12 +36,12 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/back_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -210,7 +210,7 @@ void ToolbarView::Init() {
       browser_,
       NULL);  // No master container for this one (it is master).
 
-  app_menu_button_ = new WrenchToolbarButton(this);
+  app_menu_button_ = new AppMenuButton(this);
   app_menu_button_->EnableCanvasFlippingForRTLUI(true);
   app_menu_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_APP));

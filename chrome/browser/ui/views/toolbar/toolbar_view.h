@@ -18,13 +18,13 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
+class AppMenuButton;
 class BackButton;
-class BrowserActionsContainer;
 class Browser;
+class BrowserActionsContainer;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
-class WrenchToolbarButton;
 
 namespace extensions {
 class Command;
@@ -89,7 +89,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  WrenchToolbarButton* app_menu_button() const { return app_menu_button_; }
+  AppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
   WrenchMenuBadgeController* app_menu_badge_controller() {
     return &badge_controller_;
@@ -213,7 +213,7 @@ class ToolbarView : public views::AccessiblePaneView,
   HomeButton* home_;
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
-  WrenchToolbarButton* app_menu_button_;
+  AppMenuButton* app_menu_button_;
   Browser* browser_;
 
   WrenchMenuBadgeController badge_controller_;

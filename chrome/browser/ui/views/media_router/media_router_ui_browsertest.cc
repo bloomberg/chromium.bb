@@ -10,10 +10,10 @@
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -55,7 +55,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     content::TestNavigationObserver nav_observer(NULL);
     nav_observer.StartWatchingNewWebContents();
 
-    WrenchToolbarButton* app_menu_button =
+    AppMenuButton* app_menu_button =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar()
             ->app_menu_button();
@@ -75,7 +75,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     nav_observer.StopWatchingNewWebContents();
   }
 
-  void ExecuteMediaRouterAction(WrenchToolbarButton* app_menu_button) {
+  void ExecuteMediaRouterAction(AppMenuButton* app_menu_button) {
     EXPECT_TRUE(app_menu_button->IsMenuShowing());
     media_router_action_->ExecuteAction(true);
   }

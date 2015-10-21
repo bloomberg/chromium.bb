@@ -9,11 +9,11 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -25,7 +25,7 @@ namespace {
 void TestOverflowedToolbarAction(Browser* browser,
                                  const base::Closure& quit_closure) {
   // A bunch of plumbing to safely get at the overflowed toolbar action.
-  WrenchToolbarButton* app_menu_button =
+  AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar()
           ->app_menu_button();
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // opened. Listen for the message.
   ExtensionTestMessageListener listener("Popup opened", false);
 
-  WrenchToolbarButton* app_menu_button =
+  AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser())
           ->toolbar()
           ->app_menu_button();

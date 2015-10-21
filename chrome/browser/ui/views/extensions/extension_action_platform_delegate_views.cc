@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/notification_details.h"
@@ -89,7 +89,7 @@ void ExtensionActionPlatformDelegateViews::ShowPopup(
 }
 
 void ExtensionActionPlatformDelegateViews::CloseOverflowMenu() {
-  WrenchToolbarButton* app_menu_button =
+  AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(controller_->browser())
           ->toolbar()
           ->app_menu_button();

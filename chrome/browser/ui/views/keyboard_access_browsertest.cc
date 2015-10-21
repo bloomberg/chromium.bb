@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -82,7 +82,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
 
 class SendKeysMenuListener : public views::MenuListener {
  public:
-  SendKeysMenuListener(WrenchToolbarButton* app_menu_button,
+  SendKeysMenuListener(AppMenuButton* app_menu_button,
                        Browser* browser,
                        bool test_dismiss_menu)
       : app_menu_button_(app_menu_button),
@@ -118,7 +118,7 @@ class SendKeysMenuListener : public views::MenuListener {
     }
   }
 
-  WrenchToolbarButton* app_menu_button_;
+  AppMenuButton* app_menu_button_;
   Browser* browser_;
   // Keeps track of the number of times the menu was opened.
   int menu_open_count_;

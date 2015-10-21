@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -32,9 +32,9 @@
 #include "ui/views/painter.h"
 
 // static
-bool WrenchToolbarButton::g_open_app_immediately_for_testing = false;
+bool AppMenuButton::g_open_app_immediately_for_testing = false;
 
-WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
+AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     : views::MenuButton(NULL, base::string16(), toolbar_view, false),
       severity_(WrenchIconPainter::SEVERITY_NONE),
       ink_drop_animation_controller_(
@@ -61,13 +61,13 @@ WrenchToolbarButton::WrenchToolbarButton(ToolbarView* toolbar_view)
       kInkDropSmallCornerRadius);
 }
 
-WrenchToolbarButton::~WrenchToolbarButton() {
+AppMenuButton::~AppMenuButton() {
   if (destroyed_)
     *destroyed_ = true;
 }
 
-void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
-                                      bool animate) {
+void AppMenuButton::SetSeverity(WrenchIconPainter::Severity severity,
+                                bool animate) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     severity_ = severity;
     UpdateIcon();
@@ -78,7 +78,7 @@ void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
   SchedulePaint();
 }
 
-void WrenchToolbarButton::ShowMenu(bool for_drop) {
+void AppMenuButton::ShowMenu(bool for_drop) {
   if (menu_ && menu_->IsShowing())
     return;
 
@@ -118,25 +118,25 @@ void WrenchToolbarButton::ShowMenu(bool for_drop) {
   }
 }
 
-void WrenchToolbarButton::CloseMenu() {
+void AppMenuButton::CloseMenu() {
   if (menu_)
     menu_->CloseMenu();
   menu_.reset();
 }
 
-bool WrenchToolbarButton::IsMenuShowing() const {
+bool AppMenuButton::IsMenuShowing() const {
   return menu_ && menu_->IsShowing();
 }
 
-void WrenchToolbarButton::AddMenuListener(views::MenuListener* listener) {
+void AppMenuButton::AddMenuListener(views::MenuListener* listener) {
   menu_listeners_.AddObserver(listener);
 }
 
-void WrenchToolbarButton::RemoveMenuListener(views::MenuListener* listener) {
+void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
   menu_listeners_.RemoveObserver(listener);
 }
 
-gfx::Size WrenchToolbarButton::GetPreferredSize() const {
+gfx::Size AppMenuButton::GetPreferredSize() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::Size size(image()->GetPreferredSize());
     ui::ThemeProvider* provider = GetThemeProvider();
@@ -151,11 +151,11 @@ gfx::Size WrenchToolbarButton::GetPreferredSize() const {
       GetImageSkiaNamed(IDR_TOOLBAR_BEZEL_HOVER)->size();
 }
 
-void WrenchToolbarButton::ScheduleWrenchIconPaint() {
+void AppMenuButton::ScheduleWrenchIconPaint() {
   SchedulePaint();
 }
 
-void WrenchToolbarButton::UpdateIcon() {
+void AppMenuButton::UpdateIcon() {
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
   SkColor color = SK_ColorRED;
   switch (severity_) {
@@ -181,7 +181,7 @@ void WrenchToolbarButton::UpdateIcon() {
                                  color));
 }
 
-void WrenchToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+void AppMenuButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(true);
   image()->SetPaintToLayer(true);
   image()->SetFillsBoundsOpaquely(false);
@@ -190,7 +190,7 @@ void WrenchToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->StackAtBottom(ink_drop_layer);
 }
 
-void WrenchToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+void AppMenuButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->Remove(ink_drop_layer);
 
   image()->SetFillsBoundsOpaquely(true);
@@ -198,11 +198,11 @@ void WrenchToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(false);
 }
 
-const char* WrenchToolbarButton::GetClassName() const {
-  return "WrenchToolbarButton";
+const char* AppMenuButton::GetClassName() const {
+  return "AppMenuButton";
 }
 
-bool WrenchToolbarButton::GetDropFormats(
+bool AppMenuButton::GetDropFormats(
     int* formats,
     std::set<ui::Clipboard::FormatType>* format_types) {
   return allow_extension_dragging_ ?
@@ -210,20 +210,20 @@ bool WrenchToolbarButton::GetDropFormats(
       views::View::GetDropFormats(formats, format_types);
 }
 
-bool WrenchToolbarButton::AreDropTypesRequired() {
+bool AppMenuButton::AreDropTypesRequired() {
   return allow_extension_dragging_ ?
       BrowserActionDragData::AreDropTypesRequired() :
       views::View::AreDropTypesRequired();
 }
 
-bool WrenchToolbarButton::CanDrop(const ui::OSExchangeData& data) {
+bool AppMenuButton::CanDrop(const ui::OSExchangeData& data) {
   return allow_extension_dragging_ ?
       BrowserActionDragData::CanDrop(data,
                                      toolbar_view_->browser()->profile()) :
       views::View::CanDrop(data);
 }
 
-void WrenchToolbarButton::Layout() {
+void AppMenuButton::Layout() {
   MenuButton::Layout();
 
   // ToolbarView extends the bounds of the app button to the right in maximized
@@ -233,35 +233,35 @@ void WrenchToolbarButton::Layout() {
       gfx::Rect(GetPreferredSize()).CenterPoint());
 }
 
-void WrenchToolbarButton::OnDragEntered(const ui::DropTargetEvent& event) {
+void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(allow_extension_dragging_);
   DCHECK(!weak_factory_.HasWeakPtrs());
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&WrenchToolbarButton::ShowMenu,
-                              weak_factory_.GetWeakPtr(), true),
+        FROM_HERE,
+        base::Bind(&AppMenuButton::ShowMenu, weak_factory_.GetWeakPtr(), true),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   } else {
     ShowMenu(true);
   }
 }
 
-int WrenchToolbarButton::OnDragUpdated(const ui::DropTargetEvent& event) {
+int AppMenuButton::OnDragUpdated(const ui::DropTargetEvent& event) {
   DCHECK(allow_extension_dragging_);
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-void WrenchToolbarButton::OnDragExited() {
+void AppMenuButton::OnDragExited() {
   DCHECK(allow_extension_dragging_);
   weak_factory_.InvalidateWeakPtrs();
 }
 
-int WrenchToolbarButton::OnPerformDrop(const ui::DropTargetEvent& event) {
+int AppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(allow_extension_dragging_);
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
+void AppMenuButton::OnPaint(gfx::Canvas* canvas) {
   views::MenuButton::OnPaint(canvas);
   if (ui::MaterialDesignController::IsModeMaterial())
     return;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_TOOLBAR_BUTTON_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_TOOLBAR_BUTTON_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_BUTTON_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,13 +25,12 @@ class MenuListener;
 
 class ToolbarView;
 
-// TODO(gbillock): Rename this? No longer a wrench.
-class WrenchToolbarButton : public views::InkDropHost,
-                            public views::MenuButton,
-                            public WrenchIconPainter::Delegate {
+class AppMenuButton : public views::InkDropHost,
+                      public views::MenuButton,
+                      public WrenchIconPainter::Delegate {
  public:
-  explicit WrenchToolbarButton(ToolbarView* toolbar_view);
-  ~WrenchToolbarButton() override;
+  explicit AppMenuButton(ToolbarView* toolbar_view);
+  ~AppMenuButton() override;
 
   void SetSeverity(WrenchIconPainter::Severity severity, bool animate);
 
@@ -116,9 +115,9 @@ class WrenchToolbarButton : public views::InkDropHost,
   bool* destroyed_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
-  base::WeakPtrFactory<WrenchToolbarButton> weak_factory_;
+  base::WeakPtrFactory<AppMenuButton> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchToolbarButton);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_TOOLBAR_BUTTON_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_BUTTON_H_
