@@ -321,8 +321,7 @@ public class WebappActivity extends FullScreenActivity {
         }
 
         if (mBrandColor == null
-                && mWebappInfo.themeColor() != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING
-                && (mWebappInfo.themeColor() & 0xFF000000L) != 0) {
+                && mWebappInfo.themeColor() != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
             mBrandColor = (int) mWebappInfo.themeColor();
         }
 
@@ -334,7 +333,8 @@ public class WebappActivity extends FullScreenActivity {
             statusBarColor = ColorUtils.getDarkenedColorForStatusBar(mBrandColor);
         }
 
-        ApiCompatibilityUtils.setTaskDescription(this, title, icon, taskDescriptionColor);
+        ApiCompatibilityUtils.setTaskDescription(this, title, icon,
+                ColorUtils.getOpaqueColor(taskDescriptionColor));
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }
 

@@ -103,4 +103,13 @@ public class ColorUtils {
     public static boolean shouldUseOpaqueTextboxBackground(int color) {
         return getLightnessForColor(color) > LIGHTNESS_OPAQUE_BOX_THRESHOLD;
     }
+
+    /**
+     * Returns an opaque version of the given color.
+     * @param color Color for which an opaque version should be returned.
+     * @return Opaque version of the given color.
+     */
+    public static int getOpaqueColor(int color) {
+        return Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
+    }
 }

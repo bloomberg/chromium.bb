@@ -340,9 +340,12 @@ public class ApiCompatibilityUtils {
      * @param activity Activity that should get the task description update.
      * @param title Title of the activity.
      * @param icon Icon of the activity.
-     * @param color Color of the activity.
+     * @param color Color of the activity. It must be a fully opaque color.
      */
     public static void setTaskDescription(Activity activity, String title, Bitmap icon, int color) {
+        // TaskDescription requires an opaque color.
+        assert Color.alpha(color) == 255;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ActivityManager.TaskDescription description =
                     new ActivityManager.TaskDescription(title, icon, color);
