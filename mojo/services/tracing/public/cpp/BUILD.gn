@@ -6,5 +6,16 @@ source_set("cpp") {
   sources = [
     "switches.cc",
     "switches.h",
+    "trace_provider_impl.cc",
+    "trace_provider_impl.h",
+    "tracing_impl.cc",
+    "tracing_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application/public/cpp",
+    "//mojo/services/tracing/public/interfaces",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

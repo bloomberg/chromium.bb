@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_TRACING_TRACING_APP_H_
 #define MOJO_SERVICES_TRACING_TRACING_APP_H_
 
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -12,16 +14,15 @@
 #include "mojo/common/weak_interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
+#include "mojo/services/tracing/trace_data_sink.h"
+#include "mojo/services/tracing/trace_recorder_impl.h"
 
 namespace tracing {
 
-class CollectorImpl;
-class TraceDataSink;
-
 class TracingApp
     : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<TraceCoordinator>,
-      public TraceCoordinator,
+      public mojo::InterfaceFactory<TraceCollector>,
+      public TraceCollector,
       public mojo::InterfaceFactory<StartupPerformanceDataCollector>,
       public StartupPerformanceDataCollector {
  public:
@@ -33,16 +34,16 @@ class TracingApp
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // mojo::InterfaceFactory<TraceCoordinator> implementation.
+  // mojo::InterfaceFactory<TraceCollector> implementation.
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<TraceCoordinator> request) override;
+              mojo::InterfaceRequest<TraceCollector> request) override;
 
   // mojo::InterfaceFactory<StartupPerformanceDataCollector> implementation.
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<StartupPerformanceDataCollector> request) override;
 
-  // TraceCoordinator implementation.
+  // tracing::TraceCollector implementation.
   void Start(mojo::ScopedDataPipeProducerHandle stream,
              const mojo::String& categories) override;
   void StopAndFlush() override;
@@ -61,12 +62,14 @@ class TracingApp
   void AllDataCollected();
 
   scoped_ptr<TraceDataSink> sink_;
-  ScopedVector<CollectorImpl> collector_impls_;
-  mojo::WeakInterfacePtrSet<TraceController> controller_ptrs_;
-  mojo::WeakBindingSet<TraceCoordinator> coordinator_bindings_;
+  ScopedVector<TraceRecorderImpl> recorder_impls_;
+  mojo::WeakInterfacePtrSet<TraceProvider> provider_ptrs_;
+  mojo::Binding<TraceCollector> collector_binding_;
   mojo::WeakBindingSet<StartupPerformanceDataCollector>
       startup_performance_data_collector_bindings_;
   StartupPerformanceTimes startup_performance_times_;
+  bool tracing_active_;
+  mojo::String tracing_categories_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingApp);
 };

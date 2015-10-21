@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_COMMON_TRACING_IMPL_H_
-#define MOJO_COMMON_TRACING_IMPL_H_
+#ifndef MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_
+#define MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace mojo {
 
+class ApplicationConnection;
 class ApplicationImpl;
 
-class TracingImpl : public InterfaceFactory<tracing::TraceController> {
+class TracingImpl : public InterfaceFactory<tracing::TraceProvider> {
  public:
   TracingImpl();
   ~TracingImpl() override;
@@ -24,15 +25,16 @@ class TracingImpl : public InterfaceFactory<tracing::TraceController> {
   void Initialize(ApplicationImpl* app);
 
  private:
-  // InterfaceFactory<tracing::TraceController> implementation.
+  // InterfaceFactory<tracing::TraceProvider> implementation.
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<tracing::TraceController> request) override;
+              InterfaceRequest<tracing::TraceProvider> request) override;
 
   scoped_ptr<ApplicationConnection> connection_;
+  TraceProviderImpl provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingImpl);
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_COMMON_TRACING_IMPL_H_
+#endif  // MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_TRACING_TRACE_DATA_SINK_H_
-#define SERVICES_TRACING_TRACE_DATA_SINK_H_
+#ifndef MOJO_SERVICES_TRACING_TRACE_DATA_SINK_H_
+#define MOJO_SERVICES_TRACING_TRACE_DATA_SINK_H_
 
 #include <string>
 
@@ -18,7 +18,6 @@ class TraceDataSink {
   ~TraceDataSink();
 
   void AddChunk(const std::string& json);
-  void Flush();
 
  private:
   mojo::ScopedDataPipeProducerHandle pipe_;
@@ -29,4 +28,4 @@ class TraceDataSink {
 
 }  // namespace tracing
 
-#endif  // SERVICES_TRACING_TRACE_DATA_SINK_H_
+#endif  // MOJO_SERVICES_TRACING_TRACE_DATA_SINK_H_
