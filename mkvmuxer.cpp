@@ -1047,7 +1047,10 @@ const char Tracks::kVp8CodecId[] = "V_VP8";
 const char Tracks::kVp9CodecId[] = "V_VP9";
 const char Tracks::kVp10CodecId[] = "V_VP10";
 
-Tracks::Tracks() : track_entries_(NULL), track_entries_size_(0) {}
+Tracks::Tracks()
+    : track_entries_(NULL),
+      track_entries_size_(0),
+      wrote_tracks_(false) {}
 
 Tracks::~Tracks() {
   if (track_entries_) {
@@ -1060,7 +1063,7 @@ Tracks::~Tracks() {
 }
 
 bool Tracks::AddTrack(Track* track, int32 number) {
-  if (number < 0)
+  if (number < 0 || wrote_tracks_)
     return false;
 
   // This muxer only supports track numbers in the range [1, 126], in
@@ -1186,6 +1189,7 @@ bool Tracks::Write(IMkvWriter* writer) const {
       stop_position - payload_position != static_cast<int64>(size))
     return false;
 
+  wrote_tracks_ = true;
   return true;
 }
 

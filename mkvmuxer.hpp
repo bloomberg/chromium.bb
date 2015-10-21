@@ -569,6 +569,9 @@ class Tracks {
   // Number of Track elements added.
   uint32 track_entries_size_;
 
+  // Whether or not Tracks element has already been written via IMkvWriter.
+  mutable bool wrote_tracks_;
+
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Tracks);
 };
 
