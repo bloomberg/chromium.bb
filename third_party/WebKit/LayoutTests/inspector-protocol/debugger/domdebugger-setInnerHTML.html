@@ -21,8 +21,11 @@ function test()
     {
         var callFrame = messageObject.params.callFrames[0];
         InspectorTest.log("Paused on the innerHTML assignment: " + callFrame.functionName + "@:" + callFrame.location.lineNumber);
-        InspectorTest.sendCommand("Debugger.resume", { });
-        InspectorTest.completeTest();
+        InspectorTest.sendCommand("Debugger.resume", { }, didResume);
+        function didResume()
+        {
+            InspectorTest.completeTest();
+        }
     }
 }
 </script>

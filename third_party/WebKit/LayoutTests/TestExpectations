@@ -269,7 +269,6 @@ crbug.com/498539 inspector/tracing/timeline-injected-script-eval.html [ Pass Fai
 crbug.com/498539 inspector/tracing/timeline-time.html [ Pass Failure Timeout ]
 crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
 crbug.com/498539 inspector/elements/styles-3/styles-change-node-while-editing.html [ Failure Pass ]
-crbug.com/498539 [ Mac ] inspector-protocol/debugger/domdebugger-setInnerHTML.html [ Failure Pass Timeout ]
 crbug.com/498539 http/tests/inspector/console-fetch-logging.html [ Failure Pass Timeout ]
 crbug.com/498539 [ Precise MountainLion Trusty Linux32 XP SnowLeopard ] inspector/extensions/extensions-panel.html [ Failure Pass ]
 crbug.com/498539 [ Lion ] inspector/sources/debugger/js-with-inline-stylesheets.html [ Pass Timeout ]
