@@ -7,7 +7,6 @@ core/css/MediaQueryList
 core/dom/MessagePort
 core/dom/Node
 core/fileapi/FileReader
-core/html/MediaController
 core/html/ime/InputMethodContext
 core/html/track/AudioTrackList
 core/html/track/TextTrack

@@ -163,7 +163,7 @@ bool MediaControlsPainter::paintMediaOverlayPlayButton(const LayoutObject& objec
     if (!mediaElement)
         return false;
 
-    if (!hasSource(mediaElement) || !mediaElement->togglePlayStateWillPlay())
+    if (!hasSource(mediaElement) || !mediaElement->paused())
         return false;
 
     static Image* mediaOverlayPlay = platformResource("mediaplayerOverlayPlay",

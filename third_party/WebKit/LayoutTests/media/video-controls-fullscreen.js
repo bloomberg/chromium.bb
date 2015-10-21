@@ -6,14 +6,13 @@ function hasFullscreenButton(element)
     return size[0] > 0 && size[1] > 0;
 }
 
-function fullscreen_test(controller)
+function fullscreen_test()
 {
     async_test(function(t)
     {
         var v1 = document.createElement("video");
         var v2 = document.createElement("video");
         v1.controls = v2.controls = true;
-        v1.controller = v2.controller = controller;
         v1.src = findMediaFile("video", "content/test");
         v2.src = findMediaFile("audio", "content/test");
         document.body.appendChild(v1);

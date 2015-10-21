@@ -33,7 +33,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/MediaController.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/layout/LayoutTheme.h"
 
@@ -379,9 +378,9 @@ void MediaControls::updatePlayState()
 
 void MediaControls::beginScrubbing()
 {
-    if (!mediaElement().togglePlayStateWillPlay()) {
+    if (!mediaElement().paused()) {
         m_isPausedForScrubbing = true;
-        mediaElement().togglePlayState();
+        mediaElement().pause();
     }
 }
 
@@ -389,8 +388,8 @@ void MediaControls::endScrubbing()
 {
     if (m_isPausedForScrubbing) {
         m_isPausedForScrubbing = false;
-        if (mediaElement().togglePlayStateWillPlay())
-            mediaElement().togglePlayState();
+        if (mediaElement().paused())
+            mediaElement().play();
     }
 }
 
@@ -547,7 +546,7 @@ void MediaControls::defaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::mouseover) {
         if (!containsRelatedTarget(event)) {
             m_isMouseOverControls = true;
-            if (!mediaElement().togglePlayStateWillPlay()) {
+            if (!mediaElement().paused()) {
                 makeOpaque();
                 if (shouldHideMediaControls())
                     startHideMediaControlsTimer();
@@ -580,7 +579,7 @@ void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
     unsigned behaviorFlags = m_hideTimerBehaviorFlags | IgnoreFocus | IgnoreVideoHover;
     m_hideTimerBehaviorFlags = IgnoreNone;
 
-    if (mediaElement().togglePlayStateWillPlay())
+    if (mediaElement().paused())
         return;
 
     if (!shouldHideMediaControls(behaviorFlags))

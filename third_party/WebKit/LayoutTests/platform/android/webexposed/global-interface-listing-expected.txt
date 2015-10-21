@@ -2369,7 +2369,6 @@ interface HTMLMediaElement
     getter audioTracks
     getter autoplay
     getter buffered
-    getter controller
     getter controls
     getter crossOrigin
     getter currentSrc
@@ -2381,7 +2380,6 @@ interface HTMLMediaElement
     getter error
     getter integrity
     getter loop
-    getter mediaGroup
     getter mediaKeys
     getter muted
     getter networkState
@@ -2414,7 +2412,6 @@ interface HTMLMediaElement
     method webkitCancelKeyRequest
     method webkitGenerateKeyRequest
     setter autoplay
-    setter controller
     setter controls
     setter crossOrigin
     setter currentTime
@@ -2422,7 +2419,6 @@ interface HTMLMediaElement
     setter defaultPlaybackRate
     setter integrity
     setter loop
-    setter mediaGroup
     setter muted
     setter onencrypted
     setter onwebkitkeyadded
@@ -3187,27 +3183,6 @@ interface Map
     method keys
     method set
     method values
-interface MediaController
-    getter buffered
-    getter currentTime
-    getter defaultPlaybackRate
-    getter duration
-    getter muted
-    getter paused
-    getter playbackRate
-    getter playbackState
-    getter played
-    getter seekable
-    getter volume
-    method constructor
-    method pause
-    method play
-    method unpause
-    setter currentTime
-    setter defaultPlaybackRate
-    setter muted
-    setter playbackRate
-    setter volume
 interface MediaElementAudioSourceNode
     getter mediaElement
     method constructor

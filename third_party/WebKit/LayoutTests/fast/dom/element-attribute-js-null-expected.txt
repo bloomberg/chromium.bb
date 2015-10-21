@@ -34,7 +34,6 @@ TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLA
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.shape]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.target]
 
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAudioElement.mediaGroup]
 TEST SUCCEEDED: The value was the string 'auto'. [tested HTMLAudioElement.preload]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLAudioElement.src]
 
@@ -295,7 +294,6 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.srclan
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLUListElement.type]
 
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLVideoElement.mediaGroup]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLVideoElement.poster]
 TEST SUCCEEDED: The value was the string 'auto'. [tested HTMLVideoElement.preload]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLVideoElement.src]

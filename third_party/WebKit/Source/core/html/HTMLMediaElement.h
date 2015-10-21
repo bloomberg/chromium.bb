@@ -55,7 +55,6 @@ class ExceptionState;
 class HTMLSourceElement;
 class HTMLTrackElement;
 class KURL;
-class MediaController;
 class MediaControls;
 class MediaError;
 class HTMLMediaSource;
@@ -129,7 +128,7 @@ public:
 
     // playback state
     double currentTime() const;
-    void setCurrentTime(double, ExceptionState&);
+    void setCurrentTime(double);
     double duration() const;
     bool paused() const;
     double defaultPlaybackRate() const;
@@ -165,9 +164,6 @@ public:
     bool muted() const;
     void setMuted(bool);
 
-    // play/pause toggling that uses the media controller if present. togglePlayStateWillPlay() is
-    // true if togglePlayState() will call play() or unpause() on the media element or controller.
-    bool togglePlayStateWillPlay() const;
     void togglePlayState();
 
     AudioTrackList& audioTracks();
@@ -236,7 +232,6 @@ public:
 
     // ActiveDOMObject functions.
     bool hasPendingActivity() const final;
-    void contextDestroyed() final;
 
 #if ENABLE(WEB_AUDIO)
     AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
@@ -251,9 +246,6 @@ public:
     // Checks to see if current media data is CORS-same-origin as the
     // specified origin.
     bool isMediaDataCORSSameOrigin(SecurityOrigin*) const;
-
-    MediaController* controller() const;
-    void setController(MediaController*); // Resets the MediaGroup and sets the MediaController.
 
     void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduleTimeupdateEvent(bool periodicEvent);
@@ -283,8 +275,6 @@ protected:
     enum DisplayMode { Unknown, Poster, Video };
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
-
-    void setControllerInternal(MediaController*);
 
 private:
     void resetMediaPlayerAndMediaSource();
@@ -424,11 +414,6 @@ private:
 
     void changeNetworkStateFromLoadingToIdle();
 
-    const AtomicString& mediaGroup() const;
-    void setMediaGroup(const AtomicString&);
-    void updateMediaController();
-    bool isBlocked() const;
-    bool isBlockedOnMediaController() const;
     bool isAutoplaying() const { return m_autoplaying; }
 
     void setAllowHiddenVolumeControls(bool);
@@ -440,9 +425,6 @@ private:
     // Returns the "direction of playback" value as specified in the HTML5 spec.
     enum DirectionOfPlayback { Backward, Forward };
     DirectionOfPlayback directionOfPlayback() const;
-
-    // Returns the "effective playback rate" value as specified in the HTML5 spec.
-    double effectivePlaybackRate() const;
 
     // Creates placeholder AudioTrack and/or VideoTrack objects when WebMemediaPlayer objects
     // advertise they have audio and/or video, but don't explicitly signal them via
@@ -628,9 +610,6 @@ private:
 
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
-
-    friend class MediaController;
-    PersistentWillBeMember<MediaController> m_mediaController;
 
     friend class Internals;
     friend class TrackDisplayUpdateScope;

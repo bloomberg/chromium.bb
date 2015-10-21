@@ -6,7 +6,7 @@
 <script>
 description("Check that interfaces inherit from EventTarget");
 
-eventTargets = ['EventSource', 'FileReader', 'MediaController', 'MediaSource', 'MessagePort', 'Node', 'Performance', 'SharedWorker', 'WebSocket', 'Worker', 'AudioContext'];
+eventTargets = ['EventSource', 'FileReader', 'MediaSource', 'MessagePort', 'Node', 'Performance', 'SharedWorker', 'WebSocket', 'Worker', 'AudioContext'];
 
 for (var i = 0; i < eventTargets.length; i++) {
     if (eventTargets[i] in window)

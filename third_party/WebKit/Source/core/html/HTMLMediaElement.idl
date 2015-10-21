@@ -59,7 +59,7 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
     readonly attribute boolean seeking;
 
     // playback state
-    [RaisesException=Setter] attribute double currentTime;
+    attribute double currentTime;
     // FIXME: void fastSeek(double time);
     readonly attribute unrestricted double duration;
     // FIXME: Date getStartDate(); crbug.com/312699
@@ -73,10 +73,6 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
     [Reflect] attribute boolean loop;
     void play();
     void pause();
-
-    // media controller
-    [RuntimeEnabled=MediaController, Reflect] attribute DOMString mediaGroup;
-    [RuntimeEnabled=MediaController, TypeChecking=Interface] attribute MediaController? controller;
 
     // controls
     [Reflect] attribute boolean controls;

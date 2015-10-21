@@ -288,7 +288,6 @@ html element audio
     property autoplay
     property buffered
     property canPlayType
-    property controller
     property controls
     property crossOrigin
     property currentSrc
@@ -300,7 +299,6 @@ html element audio
     property error
     property load
     property loop
-    property mediaGroup
     property mediaKeys
     property muted
     property networkState
@@ -1032,7 +1030,6 @@ html element video
     property autoplay
     property buffered
     property canPlayType
-    property controller
     property controls
     property crossOrigin
     property currentSrc
@@ -1046,7 +1043,6 @@ html element video
     property height
     property load
     property loop
-    property mediaGroup
     property mediaKeys
     property muted
     property networkState

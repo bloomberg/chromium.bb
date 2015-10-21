@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL MediaController events task source assert_array_equals: property 1, expected object "[object MediaController]" but got object "[object MediaController]"
+FAIL MediaController events task source MediaController is not defined
 Harness: the test ran to completion.
 

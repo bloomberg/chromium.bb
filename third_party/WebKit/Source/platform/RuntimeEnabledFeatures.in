@@ -95,7 +95,6 @@ FractionalScrollOffsets status=experimental
 Media status=stable
 MediaCapture
 MediaConstraints status=test
-MediaController depends_on=Media, status=experimental
 MediaDevices status=stable
 MediaRecorder status=experimental
 MediaSession

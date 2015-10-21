@@ -1,4 +1,0 @@
-EXPECTED (video.controller instanceof MediaController == 'true') OK
-TEST(video.currentTime = 0) THROWS(DOMException.INVALID_STATE_ERR: Failed to set the 'currentTime' property on 'HTMLMediaElement': The element is slaved to a MediaController.) OK
-END OF TEST
-
