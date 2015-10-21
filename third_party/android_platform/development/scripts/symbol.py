@@ -29,18 +29,20 @@ import subprocess
 import sys
 import zipfile
 
-CHROME_SRC = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                          os.pardir, os.pardir, os.pardir, os.pardir)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),
+                                os.pardir, os.pardir, os.pardir, os.pardir,
+                                'build', 'android'))
+from pylib import constants
+from pylib.symbols import elf_symbolizer
+
+
+CHROME_SRC = constants.DIR_SOURCE_ROOT
 ANDROID_BUILD_TOP = CHROME_SRC
 SYMBOLS_DIR = CHROME_SRC
-CHROME_SYMBOLS_DIR = CHROME_SRC
-
+CHROME_SYMBOLS_DIR = None
 ARCH = "arm"
-
 TOOLCHAIN_INFO = None
 
-sys.path.insert(0, os.path.join(CHROME_SRC, 'build', 'android'))
-from pylib.symbols import elf_symbolizer
 
 # See:
 # http://bugs.python.org/issue14315
@@ -202,10 +204,19 @@ def PathListJoin(prefix_list, suffix_list):
    """
    return [
        os.path.join(prefix, suffix)
-       for prefix in prefix_list for suffix in suffix_list ]
+       for suffix in suffix_list for prefix in prefix_list ]
+
+
+def _GetChromeOutputDirCandidates():
+  """Returns a list of output directories to look in."""
+  if os.environ.get('CHROMIUM_OUTPUT_DIR') or os.environ.get('BUILDTYPE'):
+    return [constants.GetOutDirectory()]
+  return [constants.GetOutDirectory(build_type='Debug'),
+          constants.GetOutDirectory(build_type='Release')]
+
 
 def GetCandidates(dirs, filepart, candidate_fun):
-  """Returns a list of candidate filenames.
+  """Returns a list of candidate filenames, sorted by modification time.
 
   Args:
     dirs: a list of the directory part of the pathname.
@@ -215,21 +226,11 @@ def GetCandidates(dirs, filepart, candidate_fun):
   Returns:
     A list of candidate files ordered by modification time, newest first.
   """
-  out_dir = os.environ.get('CHROMIUM_OUT_DIR', 'out')
-  out_dir = os.path.join(CHROME_SYMBOLS_DIR, out_dir)
-  buildtype = os.environ.get('BUILDTYPE')
-  if buildtype:
-    buildtype_list = [ buildtype ]
-  else:
-    buildtype_list = [ 'Debug', 'Release' ]
-
-  candidates = PathListJoin([out_dir], buildtype_list) + [CHROME_SYMBOLS_DIR]
-  candidates = PathListJoin(candidates, dirs)
-  candidates = PathListJoin(candidates, [filepart])
+  candidates = PathListJoin(dirs, [filepart])
   logging.debug('GetCandidates: prefiltered candidates = %s' % candidates)
   candidates = list(
       itertools.chain.from_iterable(map(candidate_fun, candidates)))
-  candidates = sorted(candidates, key=os.path.getmtime, reverse=True)
+  candidates.sort(key=os.path.getmtime, reverse=True)
   return candidates
 
 def GetCandidateApks():
@@ -241,7 +242,8 @@ def GetCandidateApks():
   Returns:
     list of APK filename which could contain the library.
   """
-  return GetCandidates(['apks'], '*.apk', glob.glob)
+  dirs = PathListJoin(_GetChromeOutputDirCandidates(), ['apks'])
+  return GetCandidates(dirs, '*.apk', glob.glob)
 
 def GetCrazyLib(apk_filename):
   """Returns the name of the first crazy library from this APK.
@@ -294,6 +296,12 @@ def MapDeviceApkToLibrary(device_apk_name):
     if crazy_lib:
       return crazy_lib
 
+def GetLibrarySearchPaths():
+  if CHROME_SYMBOLS_DIR:
+    return [CHROME_SYMBOLS_DIR]
+  dirs = _GetChromeOutputDirCandidates()
+  return PathListJoin(dirs, ['lib.unstripped', 'lib', 'lib.target', '.'])
+
 def GetCandidateLibraries(library_name):
   """Returns a list of candidate library filenames.
 
@@ -303,9 +311,15 @@ def GetCandidateLibraries(library_name):
   Returns:
     A list of matching library filenames for library_name.
   """
-  return GetCandidates(
-      ['lib', 'lib.target', '.'], library_name,
+  candidates = GetCandidates(
+      GetLibrarySearchPaths(), library_name,
       lambda filename: filter(os.path.exists, [filename]))
+  # For GN, candidates includes both stripped an unstripped libraries. Stripped
+  # libraries are always newer. Explicitly look for .unstripped and sort them
+  # ahead.
+  candidates.sort(key=lambda c: int('unstripped' not in c))
+  return candidates
+
 
 def TranslateLibPath(lib):
   # The filename in the stack trace maybe an APK name rather than a library

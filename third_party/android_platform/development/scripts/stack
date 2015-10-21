@@ -138,7 +138,7 @@ def main(argv):
     elif option == "--arch":
       symbol.ARCH = value
     elif option == "--chrome-symbols-dir":
-      symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SYMBOLS_DIR, value)
+      symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SRC, value)
     elif option == "--more-info":
       more_info = True
     elif option == "--less-info":
@@ -164,7 +164,8 @@ def main(argv):
     rootdir, symbol.SYMBOLS_DIR = UnzipSymbols(zip_arg)
 
   print "Reading Android symbols from", symbol.SYMBOLS_DIR
-  print "Reading Chrome symbols from", symbol.CHROME_SYMBOLS_DIR
+  chrome_search_path = symbol.GetLibrarySearchPaths()
+  print "Searching for Chrome symbols from within", ':'.join(chrome_search_path)
   stack_core.ConvertTrace(lines, more_info)
 
   if rootdir:
