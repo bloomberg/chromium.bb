@@ -836,8 +836,8 @@ void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInser
 
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         // As an optimization we don't notify leaf nodes when when inserting
-        // into detached subtrees.
-        if (!inDocument() && !node.isContainerNode())
+        // into detached subtrees that are not in a shadow tree.
+        if (!inDocument() && !isInShadowTree() && !node.isContainerNode())
             continue;
         if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node.insertedInto(this))
             postInsertionNotificationTargets.append(&node);
