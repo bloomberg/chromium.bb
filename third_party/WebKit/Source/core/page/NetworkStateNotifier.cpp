@@ -158,7 +158,7 @@ NetworkStateNotifier::ObserverList* NetworkStateNotifier::lockAndFindObserverLis
 {
     MutexLocker locker(m_mutex);
     ObserverListMap::iterator it = m_observers.find(context);
-    return it == m_observers.end() ? 0 : it->value.get();
+    return it == m_observers.end() ? nullptr : it->value.get();
 }
 
 void NetworkStateNotifier::collectZeroedObservers(ObserverList* list, ExecutionContext* context)
