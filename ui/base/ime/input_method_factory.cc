@@ -17,6 +17,8 @@
 #elif defined(USE_AURA) && defined(OS_LINUX) && defined(USE_X11) && \
       !defined(OS_CHROMEOS)
 #include "ui/base/ime/input_method_auralinux.h"
+#elif defined(OS_ANDROID)
+#include "ui/base/ime/input_method_android.h"
 #else
 #include "ui/base/ime/input_method_minimal.h"
 #endif
@@ -59,6 +61,8 @@ scoped_ptr<InputMethod> CreateInputMethod(
 #elif defined(USE_AURA) && defined(OS_LINUX) && defined(USE_X11) && \
       !defined(OS_CHROMEOS)
   return make_scoped_ptr(new InputMethodAuraLinux(delegate));
+#elif defined(OS_ANDROID)
+  return make_scoped_ptr(new InputMethodAndroid(delegate));
 #else
   return make_scoped_ptr(new InputMethodMinimal(delegate));
 #endif

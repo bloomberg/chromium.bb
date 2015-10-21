@@ -22,6 +22,7 @@ component("ime") {
     "chromeos/fake_ime_keyboard.h",
     "chromeos/fake_input_method_delegate.cc",
     "chromeos/fake_input_method_delegate.h",
+    "chromeos/ime_candidate_window_handler_interface.h",
     "chromeos/ime_keyboard.cc",
     "chromeos/ime_keyboard.h",
     "chromeos/ime_keyboard_ozone.cc",
@@ -30,7 +31,6 @@ component("ime") {
     "chromeos/ime_keyboard_x11.h",
     "chromeos/ime_keymap.cc",
     "chromeos/ime_keymap.h",
-    "chromeos/ime_candidate_window_handler_interface.h",
     "chromeos/input_method_delegate.h",
     "chromeos/input_method_descriptor.cc",
     "chromeos/input_method_descriptor.h",
@@ -51,12 +51,12 @@ component("ime") {
     "composition_text_util_pango.cc",
     "composition_text_util_pango.h",
     "composition_underline.h",
-    "infolist_entry.cc",
-    "infolist_entry.h",
     "ime_bridge.cc",
     "ime_bridge.h",
     "ime_engine_handler_interface.h",
     "ime_input_context_handler_interface.h",
+    "infolist_entry.cc",
+    "infolist_entry.h",
     "input_method.h",
     "input_method_auralinux.cc",
     "input_method_auralinux.h",
@@ -120,6 +120,13 @@ component("ime") {
     sources -= [
       "input_method_auralinux.cc",
       "input_method_auralinux.h",
+    ]
+  }
+
+  if (use_aura && is_android) {
+    sources += [
+      "input_method_android.cc",
+      "input_method_android.h",
     ]
   }
 
