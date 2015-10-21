@@ -8,12 +8,12 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 354362
-  "build_rev": "972beed504af8891c0258e912d176e26d1843520", # from cr commit position 354349
-  "build_overrides_rev": "8c154a6ede185ce6d97122e2945608b6064841ae", # from cr commit position 353969
+  # chrome_rev: 355398
+  "build_rev": "688c5744d1aacd6ab8002bd96f86df0cc0c81c53", # from cr commit position 355398
+  "build_overrides_rev": "4a42782ca738cbd7989f5354aae438d971cacd37", # from cr commit position 355291
   "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
   "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
-  "tools_valgrind_rev": "fcbedb1404dd50322a0cbd96b4feedb2c19ed5de", # from cr commit position 354357
+  "tools_valgrind_rev": "18e0ed94552aa5605fbadf66f3a5404217d2efd0", # from cr commit position 354950
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
   "clang_rev": "a56c9063d582660d29b32f967ce20875c589fc3e", # from cr commit position 353437
@@ -25,7 +25,7 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "01528c7244837168a1c80f06ff60fa5a9793c824",
+  "gyp_rev": "3f21260b43401553c37bb28090b65a75577d5b4e",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
