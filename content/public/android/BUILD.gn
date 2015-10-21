@@ -121,6 +121,8 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
   sources = [
     "//content/browser/android/content_view_core_impl.cc",
     "//content/browser/android/gesture_event_type.h",
+    "//content/browser/device_sensors/device_sensors_consts.h",
+    "//content/browser/device_sensors/sensor_manager_android.h",
     "//content/browser/gamepad/gamepad_standard_mappings.h",
     "//content/public/browser/invalidate_type.h",
     "//content/public/browser/navigation_controller.h",
@@ -132,7 +134,9 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/common/top_controls_state.h",
   ]
   outputs = [
+    "org/chromium/content/browser/ConsumerType.java",
     "org/chromium/content/browser/GestureEventType.java",
+    "org/chromium/content/browser/OrientationSensorType.java",
     "org/chromium/content/browser/input/CanonicalAxisIndex.java",
     "org/chromium/content/browser/input/CanonicalButtonIndex.java",
     "org/chromium/content/browser/input/PopupItemType.java",

@@ -8,7 +8,7 @@
 
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
-#include "content/browser/device_sensors/inertial_sensor_consts.h"
+#include "content/browser/device_sensors/device_sensors_consts.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace {

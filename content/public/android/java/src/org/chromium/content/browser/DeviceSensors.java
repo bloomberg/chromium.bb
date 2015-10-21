@@ -72,19 +72,6 @@ class DeviceSensors implements SensorEventListener {
     private static DeviceSensors sSingleton;
     private static Object sSingletonLock = new Object();
 
-    /**
-     * constants for using in JNI calls, also see
-     * content/browser/device_sensors/sensor_manager_android.cc
-     */
-    static final int DEVICE_ORIENTATION = 0;
-    static final int DEVICE_MOTION = 1;
-    static final int DEVICE_LIGHT = 2;
-
-    static final int ORIENTATION_NOT_AVAILABLE = 0;
-    static final int ORIENTATION_ROTATION_VECTOR = 1;
-    static final int ORIENTATION_ACCELEROMETER_MAGNETIC = 2;
-    static final int ORIENTATION_GAME_ROTATION_VECTOR = 3;
-
     static final Set<Integer> DEVICE_ORIENTATION_SENSORS_A = CollectionUtil.newHashSet(
             Sensor.TYPE_GAME_ROTATION_VECTOR);
     static final Set<Integer> DEVICE_ORIENTATION_SENSORS_B = CollectionUtil.newHashSet(
@@ -173,14 +160,14 @@ class DeviceSensors implements SensorEventListener {
         boolean success = false;
         synchronized (mNativePtrLock) {
             switch (eventType) {
-                case DEVICE_ORIENTATION:
+                case ConsumerType.ORIENTATION:
                     success = registerOrientationSensorsWithFallback(rateInMicroseconds);
                     break;
-                case DEVICE_MOTION:
+                case ConsumerType.MOTION:
                     // note: device motion spec does not require all sensors to be available
                     success = registerSensors(DEVICE_MOTION_SENSORS, rateInMicroseconds, false);
                     break;
-                case DEVICE_LIGHT:
+                case ConsumerType.LIGHT:
                     success = registerSensors(DEVICE_LIGHT_SENSORS, rateInMicroseconds, true);
                     break;
                 default:
@@ -205,20 +192,20 @@ class DeviceSensors implements SensorEventListener {
     @CalledByNative
     public int getOrientationSensorTypeUsed() {
         if (mOrientationNotAvailable) {
-            return ORIENTATION_NOT_AVAILABLE;
+            return OrientationSensorType.NOT_AVAILABLE;
         }
         if (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_A) {
-            return ORIENTATION_GAME_ROTATION_VECTOR;
+            return OrientationSensorType.GAME_ROTATION_VECTOR;
         }
         if (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_B) {
-            return ORIENTATION_ROTATION_VECTOR;
+            return OrientationSensorType.ROTATION_VECTOR;
         }
         if (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_C) {
-            return ORIENTATION_ACCELEROMETER_MAGNETIC;
+            return OrientationSensorType.ACCELEROMETER_MAGNETIC;
         }
 
         assert false;  // should never happen
-        return ORIENTATION_NOT_AVAILABLE;
+        return OrientationSensorType.NOT_AVAILABLE;
     }
 
     /**
@@ -235,7 +222,7 @@ class DeviceSensors implements SensorEventListener {
         Set<Integer> sensorsToRemainActive = new HashSet<Integer>();
         synchronized (mNativePtrLock) {
             switch (eventType) {
-                case DEVICE_ORIENTATION:
+                case ConsumerType.ORIENTATION:
                     if (mDeviceMotionIsActive) {
                         sensorsToRemainActive.addAll(DEVICE_MOTION_SENSORS);
                     }
@@ -243,7 +230,7 @@ class DeviceSensors implements SensorEventListener {
                         sensorsToRemainActive.addAll(DEVICE_LIGHT_SENSORS);
                     }
                     break;
-                case DEVICE_MOTION:
+                case ConsumerType.MOTION:
                     if (mDeviceOrientationIsActive) {
                         sensorsToRemainActive.addAll(mDeviceOrientationSensors);
                     }
@@ -251,7 +238,7 @@ class DeviceSensors implements SensorEventListener {
                         sensorsToRemainActive.addAll(DEVICE_LIGHT_SENSORS);
                     }
                     break;
-                case DEVICE_LIGHT:
+                case ConsumerType.LIGHT:
                     if (mDeviceMotionIsActive) {
                         sensorsToRemainActive.addAll(DEVICE_MOTION_SENSORS);
                     }
@@ -472,15 +459,15 @@ class DeviceSensors implements SensorEventListener {
 
     private void setEventTypeActive(int eventType, boolean active) {
         switch (eventType) {
-            case DEVICE_ORIENTATION:
+            case ConsumerType.ORIENTATION:
                 mDeviceOrientationIsActive = active;
                 mDeviceOrientationIsActiveWithBackupSensors = active
                         && (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_C);
                 return;
-            case DEVICE_MOTION:
+            case ConsumerType.MOTION:
                 mDeviceMotionIsActive = active;
                 return;
-            case DEVICE_LIGHT:
+            case ConsumerType.LIGHT:
                 mDeviceLightIsActive = active;
                 return;
         }

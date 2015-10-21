@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "content/browser/device_sensors/inertial_sensor_consts.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/DeviceSensors_jni.h"
 
@@ -18,21 +17,10 @@ using base::android::AttachCurrentThread;
 
 namespace {
 
-// These constants should match ORIENTATION_* constants in content/public/
-// android/java/src/org/chromium/content/browser/DeviceSensors.java.
-// When adding new constants don't modify the order as they are used for UMA.
-// TODO(timvolodine): make this a shared enum, crbug.com/522571.
-enum OrientationSensorType {
-  NOT_AVAILABLE = 0,
-  ROTATION_VECTOR = 1,
-  ACCELEROMETER_MAGNETIC = 2,
-  GAME_ROTATION_VECTOR = 3,
-  ORIENTATION_SENSOR_MAX = 4,
-};
-
-void UpdateDeviceOrientationHistogram(OrientationSensorType type) {
+void UpdateDeviceOrientationHistogram(
+    content::SensorManagerAndroid::OrientationSensorType type) {
   UMA_HISTOGRAM_ENUMERATION("InertialSensor.DeviceOrientationSensorAndroid",
-                            type, ORIENTATION_SENSOR_MAX);
+      type, content::SensorManagerAndroid::ORIENTATION_SENSOR_MAX);
 }
 
 }  // namespace
@@ -166,9 +154,9 @@ void SensorManagerAndroid::GotLight(JNIEnv*, jobject, double value) {
   device_light_buffer_->seqlock.WriteEnd();
 }
 
-bool SensorManagerAndroid::Start(EventType event_type) {
+bool SensorManagerAndroid::Start(ConsumerType event_type) {
   DCHECK(!device_sensors_.is_null());
-  int rate_in_microseconds = (event_type == kTypeLight)
+  int rate_in_microseconds = (event_type == CONSUMER_TYPE_LIGHT)
                                  ? kLightSensorIntervalMicroseconds
                                  : kInertialSensorIntervalMicroseconds;
   return Java_DeviceSensors_start(AttachCurrentThread(),
@@ -178,7 +166,7 @@ bool SensorManagerAndroid::Start(EventType event_type) {
                                   rate_in_microseconds);
 }
 
-void SensorManagerAndroid::Stop(EventType event_type) {
+void SensorManagerAndroid::Stop(ConsumerType event_type) {
   DCHECK(!device_sensors_.is_null());
   Java_DeviceSensors_stop(AttachCurrentThread(),
                           device_sensors_.obj(),
@@ -227,7 +215,7 @@ void SensorManagerAndroid::StartFetchingLightDataOnUI(
     device_light_buffer_ = buffer;
     SetLightBufferValue(-1);
   }
-  bool success = Start(kTypeLight);
+  bool success = Start(CONSUMER_TYPE_LIGHT);
   if (!success) {
     base::AutoLock autolock(light_buffer_lock_);
     SetLightBufferValue(std::numeric_limits<double>::infinity());
@@ -251,7 +239,7 @@ void SensorManagerAndroid::StopFetchingLightDataOnUI() {
   if (is_shutdown_)
     return;
 
-  Stop(kTypeLight);
+  Stop(CONSUMER_TYPE_LIGHT);
   {
     base::AutoLock autolock(light_buffer_lock_);
     if (device_light_buffer_) {
@@ -295,7 +283,7 @@ void SensorManagerAndroid::StartFetchingMotionDataOnUI(
     device_motion_buffer_ = buffer;
     ClearInternalMotionBuffers();
   }
-  Start(kTypeMotion);
+  Start(CONSUMER_TYPE_MOTION);
 
   // If no motion data can ever be provided, the number of active device motion
   // sensors will be zero. In that case flag the shared memory buffer
@@ -324,7 +312,7 @@ void SensorManagerAndroid::StopFetchingMotionDataOnUI() {
   if (is_shutdown_)
     return;
 
-  Stop(kTypeMotion);
+  Stop(CONSUMER_TYPE_MOTION);
   {
     base::AutoLock autolock(motion_buffer_lock_);
     if (device_motion_buffer_) {
@@ -406,7 +394,7 @@ void SensorManagerAndroid::StartFetchingOrientationDataOnUI(
     base::AutoLock autolock(orientation_buffer_lock_);
     device_orientation_buffer_ = buffer;
   }
-  bool success = Start(kTypeOrientation);
+  bool success = Start(CONSUMER_TYPE_ORIENTATION);
 
   {
     base::AutoLock autolock(orientation_buffer_lock_);
@@ -436,7 +424,7 @@ void SensorManagerAndroid::StopFetchingOrientationDataOnUI() {
   if (is_shutdown_)
     return;
 
-  Stop(kTypeOrientation);
+  Stop(CONSUMER_TYPE_ORIENTATION);
   {
     base::AutoLock autolock(orientation_buffer_lock_);
     if (device_orientation_buffer_) {

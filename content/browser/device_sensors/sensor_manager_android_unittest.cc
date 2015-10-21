@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/device_sensors/inertial_sensor_consts.h"
+#include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +21,7 @@ class FakeSensorManagerAndroid : public SensorManagerAndroid {
   ~FakeSensorManagerAndroid() override {}
 
   int GetOrientationSensorTypeUsed() override {
-    return 1; // ROTATION_VECTOR
+    return SensorManagerAndroid::ROTATION_VECTOR;
   }
 
   int GetNumberActiveDeviceMotionSensors() override {
@@ -33,8 +33,8 @@ class FakeSensorManagerAndroid : public SensorManagerAndroid {
   }
 
  protected:
-  bool Start(EventType event_type) override { return true; }
-  void Stop(EventType event_type) override {}
+  bool Start(ConsumerType event_type) override { return true; }
+  void Stop(ConsumerType event_type) override {}
 
  private:
   int number_active_sensors_;

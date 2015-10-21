@@ -8,6 +8,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/common/content_export.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
@@ -57,21 +58,23 @@ class CONTENT_EXPORT SensorManagerAndroid {
 
   void Shutdown();
 
- protected:
-  enum EventType {
-    // These constants should match DEVICE_ORIENTATION, DEVICE_MOTION and
-    // DEVICE_LIGHT constants in content/public/android/java/src/org/
-    // chromium/content/browser/DeviceSensors.java
-    kTypeOrientation = 0,
-    kTypeMotion = 1,
-    kTypeLight = 2
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser
+  // When adding new constants don't modify the order as they are used for UMA.
+  enum OrientationSensorType {
+    NOT_AVAILABLE = 0,
+    ROTATION_VECTOR = 1,
+    ACCELEROMETER_MAGNETIC = 2,
+    GAME_ROTATION_VECTOR = 3,
+    ORIENTATION_SENSOR_MAX = 4,
   };
 
+ protected:
   SensorManagerAndroid();
   virtual ~SensorManagerAndroid();
 
-  virtual bool Start(EventType event_type);
-  virtual void Stop(EventType event_type);
+  virtual bool Start(ConsumerType event_type);
+  virtual void Stop(ConsumerType event_type);
   virtual int GetOrientationSensorTypeUsed();
   virtual int GetNumberActiveDeviceMotionSensors();
 

@@ -11,7 +11,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_checker.h"
-#include "content/browser/device_sensors/inertial_sensor_consts.h"
+#include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -53,8 +53,7 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   DeviceInertialSensorService();
   virtual ~DeviceInertialSensorService();
 
-  bool ChangeNumberConsumers(ConsumerType consumer_type,
-      int delta);
+  bool ChangeNumberConsumers(ConsumerType consumer_type, int delta);
   int GetNumberConsumers(ConsumerType consumer_type) const;
 
   int num_light_readers_;

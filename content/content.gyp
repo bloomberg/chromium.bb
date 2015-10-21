@@ -447,6 +447,8 @@
             'content_common',
             'content_strings_grd',
             'content_gamepad_mapping',
+            'device_sensors_consts_java',
+            'sensor_manager_android_java',
             'gesture_event_type_java',
             'invalidate_types_java',
             'navigation_controller_java',
@@ -485,6 +487,22 @@
           'includes': [
             '../build/java_strings_grd.gypi',
           ],
+        },
+        {
+          'target_name': 'device_sensors_consts_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/device_sensors/device_sensors_consts.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'sensor_manager_android_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/device_sensors/sensor_manager_android.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'content_gamepad_mapping',

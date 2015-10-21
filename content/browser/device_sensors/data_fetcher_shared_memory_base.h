@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "content/browser/device_sensors/inertial_sensor_consts.h"
+#include "content/browser/device_sensors/device_sensors_consts.h"
 #include "content/common/content_export.h"
 
 namespace content {
