@@ -5,7 +5,7 @@
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -21,7 +21,9 @@ class ScrollbarAnimationControllerLinearFadeTest
       public ScrollbarAnimationControllerClient {
  public:
   ScrollbarAnimationControllerLinearFadeTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
+      : host_impl_(&task_runner_provider_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         did_request_redraw_(false),
         did_request_animate_(false) {}
 
@@ -73,7 +75,7 @@ class ScrollbarAnimationControllerLinearFadeTest
 
   virtual ScrollbarOrientation orientation() const { return HORIZONTAL; }
 
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;

@@ -14,13 +14,13 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/proxy.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/task_runner_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -565,14 +565,13 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
 
 TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
   LayerTreeSettings settings;
-  FakeProxy proxy;
-  DebugScopedSetImplThread impl(&proxy);
+  FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, nullptr, &proxy, &stats_instrumentation, &shared_bitmap_manager,
-      nullptr, &task_graph_runner, 0);
+      settings, nullptr, &task_runner_provider, &stats_instrumentation,
+      &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
   host_->SetRootLayer(layer_tree_root);
@@ -599,14 +598,13 @@ TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
 
 TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   LayerTreeSettings settings;
-  FakeProxy proxy;
-  DebugScopedSetImplThread impl(&proxy);
+  FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, nullptr, &proxy, &stats_instrumentation, &shared_bitmap_manager,
-      nullptr, &task_graph_runner, 0);
+      settings, nullptr, &task_runner_provider, &stats_instrumentation,
+      &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
   scoped_refptr<Layer> scroll_parent = Layer::Create(layer_settings_);
@@ -667,14 +665,13 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
 
 TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   LayerTreeSettings settings;
-  FakeProxy proxy;
-  DebugScopedSetImplThread impl(&proxy);
+  FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, nullptr, &proxy, &stats_instrumentation, &shared_bitmap_manager,
-      nullptr, &task_graph_runner, 0);
+      settings, nullptr, &task_runner_provider, &stats_instrumentation,
+      &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
   scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings_);

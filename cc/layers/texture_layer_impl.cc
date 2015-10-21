@@ -247,9 +247,10 @@ void TextureLayerImpl::FreeTextureMailbox() {
   if (own_mailbox_) {
     DCHECK(!external_texture_resource_);
     if (release_callback_) {
-      release_callback_->Run(texture_mailbox_.sync_point(),
-                             false,
-                             layer_tree_impl()->BlockingMainThreadTaskRunner());
+      release_callback_->Run(texture_mailbox_.sync_point(), false,
+                             layer_tree_impl()
+                                 ->task_runner_provider()
+                                 ->blocking_main_thread_task_runner());
     }
     texture_mailbox_ = TextureMailbox();
     release_callback_ = nullptr;

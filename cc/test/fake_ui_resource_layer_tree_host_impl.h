@@ -13,9 +13,10 @@ class TaskGraphRunner;
 
 class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
  public:
-  explicit FakeUIResourceLayerTreeHostImpl(Proxy* proxy,
-                                           SharedBitmapManager* manager,
-                                           TaskGraphRunner* task_graph_runner);
+  explicit FakeUIResourceLayerTreeHostImpl(
+      TaskRunnerProvider* task_runner_provider,
+      SharedBitmapManager* manager,
+      TaskGraphRunner* task_graph_runner);
   ~FakeUIResourceLayerTreeHostImpl() override;
 
   void CreateUIResource(UIResourceId uid,

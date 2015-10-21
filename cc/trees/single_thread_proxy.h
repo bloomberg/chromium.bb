@@ -179,21 +179,22 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 // code is running on the impl thread to satisfy assertion checks.
 class DebugScopedSetImplThread {
  public:
-  explicit DebugScopedSetImplThread(Proxy* proxy) : proxy_(proxy) {
+  explicit DebugScopedSetImplThread(TaskRunnerProvider* task_runner_provider)
+      : task_runner_provider_(task_runner_provider) {
 #if DCHECK_IS_ON()
-    previous_value_ = proxy_->impl_thread_is_overridden_;
-    proxy_->SetCurrentThreadIsImplThread(true);
+    previous_value_ = task_runner_provider_->impl_thread_is_overridden_;
+    task_runner_provider_->SetCurrentThreadIsImplThread(true);
 #endif
   }
   ~DebugScopedSetImplThread() {
 #if DCHECK_IS_ON()
-    proxy_->SetCurrentThreadIsImplThread(previous_value_);
+    task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
 
  private:
   bool previous_value_;
-  Proxy* proxy_;
+  TaskRunnerProvider* task_runner_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugScopedSetImplThread);
 };
@@ -202,21 +203,22 @@ class DebugScopedSetImplThread {
 // code is running on the main thread to satisfy assertion checks.
 class DebugScopedSetMainThread {
  public:
-  explicit DebugScopedSetMainThread(Proxy* proxy) : proxy_(proxy) {
+  explicit DebugScopedSetMainThread(TaskRunnerProvider* task_runner_provider)
+      : task_runner_provider_(task_runner_provider) {
 #if DCHECK_IS_ON()
-    previous_value_ = proxy_->impl_thread_is_overridden_;
-    proxy_->SetCurrentThreadIsImplThread(false);
+    previous_value_ = task_runner_provider_->impl_thread_is_overridden_;
+    task_runner_provider_->SetCurrentThreadIsImplThread(false);
 #endif
   }
   ~DebugScopedSetMainThread() {
 #if DCHECK_IS_ON()
-    proxy_->SetCurrentThreadIsImplThread(previous_value_);
+    task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
 
  private:
   bool previous_value_;
-  Proxy* proxy_;
+  TaskRunnerProvider* task_runner_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugScopedSetMainThread);
 };
@@ -226,8 +228,10 @@ class DebugScopedSetMainThread {
 // satisfy assertion checks
 class DebugScopedSetImplThreadAndMainThreadBlocked {
  public:
-  explicit DebugScopedSetImplThreadAndMainThreadBlocked(Proxy* proxy)
-      : impl_thread_(proxy), main_thread_blocked_(proxy) {}
+  explicit DebugScopedSetImplThreadAndMainThreadBlocked(
+      TaskRunnerProvider* task_runner_provider)
+      : impl_thread_(task_runner_provider),
+        main_thread_blocked_(task_runner_provider) {}
 
  private:
   DebugScopedSetImplThread impl_thread_;

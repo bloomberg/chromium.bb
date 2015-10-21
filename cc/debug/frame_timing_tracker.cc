@@ -44,12 +44,9 @@ scoped_ptr<FrameTimingTracker> FrameTimingTracker::Create(
 FrameTimingTracker::FrameTimingTracker(LayerTreeHostImpl* layer_tree_host_impl)
     : layer_tree_host_impl_(layer_tree_host_impl),
       post_events_notifier_(
-          layer_tree_host_impl_->proxy()->HasImplThread()
-              ? layer_tree_host_impl_->proxy()->ImplThreadTaskRunner()
-              : layer_tree_host_impl_->proxy()->MainThreadTaskRunner(),
+          layer_tree_host_impl_->GetTaskRunner(),
           base::Bind(&FrameTimingTracker::PostEvents, base::Unretained(this)),
-          base::TimeDelta::FromMilliseconds(kSendTimingIntervalMS)) {
-}
+          base::TimeDelta::FromMilliseconds(kSendTimingIntervalMS)) {}
 
 FrameTimingTracker::~FrameTimingTracker() {
 }

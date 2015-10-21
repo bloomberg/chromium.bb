@@ -16,13 +16,7 @@
 #include "base/values.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/top_controls_state.h"
-
-namespace base {
-namespace trace_event {
-class TracedValue;
-}
-class SingleThreadTaskRunner;
-}
+#include "cc/trees/task_runner_provider.h"
 
 namespace gfx {
 class Rect;
@@ -30,29 +24,15 @@ class Vector2d;
 }
 
 namespace cc {
-class BlockingTaskRunner;
 class LayerTreeDebugState;
 class OutputSurface;
 struct RendererCapabilities;
 
 // Abstract class responsible for proxying commands from the main-thread side of
 // the compositor over to the compositor implementation.
-class CC_EXPORT Proxy {
+class CC_EXPORT Proxy : public TaskRunnerProvider {
  public:
-  base::SingleThreadTaskRunner* MainThreadTaskRunner() const;
-  bool HasImplThread() const;
-  base::SingleThreadTaskRunner* ImplThreadTaskRunner() const;
-
-  // Debug hooks.
-  bool IsMainThread() const;
-  bool IsImplThread() const;
-  bool IsMainThreadBlocked() const;
-#if DCHECK_IS_ON()
-  void SetMainThreadBlocked(bool is_main_thread_blocked);
-  void SetCurrentThreadIsImplThread(bool is_impl_thread);
-#endif
-
-  virtual ~Proxy();
+  ~Proxy() override;
 
   virtual void FinishAllRendering() = 0;
 
@@ -106,55 +86,13 @@ class CC_EXPORT Proxy {
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 
-  BlockingTaskRunner* blocking_main_thread_task_runner() const {
-    return blocking_main_thread_task_runner_.get();
-  }
-
  protected:
   Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
         scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
-  friend class DebugScopedSetImplThread;
-  friend class DebugScopedSetMainThread;
-  friend class DebugScopedSetMainThreadBlocked;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
-  scoped_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
-
-#if DCHECK_IS_ON()
-  const base::PlatformThreadId main_thread_id_;
-  bool impl_thread_is_overridden_;
-  bool is_main_thread_blocked_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
-
-#if DCHECK_IS_ON()
-class DebugScopedSetMainThreadBlocked {
- public:
-  explicit DebugScopedSetMainThreadBlocked(Proxy* proxy) : proxy_(proxy) {
-    DCHECK(!proxy_->IsMainThreadBlocked());
-    proxy_->SetMainThreadBlocked(true);
-  }
-  ~DebugScopedSetMainThreadBlocked() {
-    DCHECK(proxy_->IsMainThreadBlocked());
-    proxy_->SetMainThreadBlocked(false);
-  }
- private:
-  Proxy* proxy_;
-  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetMainThreadBlocked);
-};
-#else
-class DebugScopedSetMainThreadBlocked {
- public:
-  explicit DebugScopedSetMainThreadBlocked(Proxy* proxy) {}
-  ~DebugScopedSetMainThreadBlocked() {}
- private:
-  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetMainThreadBlocked);
-};
-#endif
 
 }  // namespace cc
 

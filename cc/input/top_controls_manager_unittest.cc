@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -28,7 +28,9 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   MockTopControlsManagerClient(float top_controls_height,
                                float top_controls_show_threshold,
                                float top_controls_hide_threshold)
-      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
+      : host_impl_(&task_runner_provider_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         redraw_needed_(false),
         update_draw_properties_needed_(false),
         top_controls_shown_ratio_(1.f),
@@ -81,7 +83,7 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   void SetTopControlsHeight(float height) { top_controls_height_ = height; }
 
  private:
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;

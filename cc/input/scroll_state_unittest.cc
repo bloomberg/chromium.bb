@@ -5,7 +5,7 @@
 #include "cc/input/scroll_state.h"
 
 #include "cc/layers/layer_impl.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -57,10 +57,10 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative) {
 TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
   ScrollState scrollState(0, 0, 0, 0, false, false, false);
 
-  FakeImplProxy proxy;
+  FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
   scoped_ptr<LayerImpl> layer_impl =

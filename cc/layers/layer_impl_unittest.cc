@@ -8,7 +8,7 @@
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
@@ -86,11 +86,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
   // The constructor on this will fake that we are on the correct thread.
   // Create a simple LayerImpl tree:
-  FakeImplProxy proxy;
+  FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
@@ -246,11 +246,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 }
 
 TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
-  FakeImplProxy proxy;
+  FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
@@ -362,11 +362,11 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 }
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
-  FakeImplProxy proxy;
+  FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
@@ -397,10 +397,10 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
 }
 
 TEST(LayerImplTest, TransformInvertibility) {
-  FakeImplProxy proxy;
+  FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
 
   scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
@@ -432,7 +432,7 @@ class LayerImplScrollTest : public testing::Test {
  public:
   LayerImplScrollTest()
       : host_impl_(settings(),
-                   &proxy_,
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_id_(7) {
@@ -463,7 +463,7 @@ class LayerImplScrollTest : public testing::Test {
   }
 
  private:
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;

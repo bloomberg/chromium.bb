@@ -139,28 +139,28 @@ LayerTreeHostImpl::FrameData::~FrameData() {}
 scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     const LayerTreeSettings& settings,
     LayerTreeHostImplClient* client,
-    Proxy* proxy,
+    TaskRunnerProvider* task_runner_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     int id) {
   return make_scoped_ptr(new LayerTreeHostImpl(
-      settings, client, proxy, rendering_stats_instrumentation,
+      settings, client, task_runner_provider, rendering_stats_instrumentation,
       shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner, id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
     const LayerTreeSettings& settings,
     LayerTreeHostImplClient* client,
-    Proxy* proxy,
+    TaskRunnerProvider* task_runner_provider,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
     int id)
     : client_(client),
-      proxy_(proxy),
+      task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       output_surface_(nullptr),
       content_is_suitable_for_gpu_rasterization_(true),
@@ -178,9 +178,10 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       settings_(settings),
       visible_(false),
       cached_managed_memory_policy_(settings.memory_policy_),
-      is_synchronous_single_threaded_(!proxy->HasImplThread() &&
+      is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
                                       !settings.single_thread_proxy_scheduler),
-      // Must be initialized after is_synchronous_single_threaded_ and proxy_.
+      // Must be initialized after is_synchronous_single_threaded_ and
+      // task_runner_provider_.
       tile_manager_(
           TileManager::Create(this,
                               GetTaskRunner(),
@@ -190,7 +191,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                               settings.use_partial_raster)),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
-      fps_counter_(FrameRateCounter::Create(proxy_->HasImplThread())),
+      fps_counter_(
+          FrameRateCounter::Create(task_runner_provider_->HasImplThread())),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
       texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
@@ -210,16 +212,15 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     if (settings.accelerated_animation_enabled) {
       animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
       animation_host_->SetMutatorHostClient(this);
-      animation_host_->SetSupportsScrollAnimations(
-          proxy_->SupportsImplScrolling());
+      animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
     }
   } else {
     animation_registrar_ = AnimationRegistrar::Create();
     animation_registrar_->set_supports_scroll_animations(
-        proxy_->SupportsImplScrolling());
+        SupportsImplScrolling());
   }
 
-  DCHECK(proxy_->IsImplThread());
+  DCHECK(task_runner_provider_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
   SetDebugState(settings.initial_debug_state);
@@ -241,7 +242,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
-  DCHECK(proxy_->IsImplThread());
+  DCHECK(task_runner_provider_->IsImplThread());
   TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
@@ -300,14 +301,14 @@ void LayerTreeHostImpl::BeginCommit() {
   if (output_surface_)
     output_surface_->ForceReclaimResources();
 
-  if (!proxy_->CommitToActiveTree())
+  if (!CommitToActiveTree())
     CreatePendingTree();
 }
 
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
-  if (proxy_->CommitToActiveTree()) {
+  if (CommitToActiveTree()) {
     // We have to activate animations here or "IsActive()" is true on the layers
     // but the animations aren't activated yet so they get ignored by
     // UpdateDrawProperties.
@@ -342,7 +343,7 @@ void LayerTreeHostImpl::CommitComplete() {
     // is important for SingleThreadProxy and impl-side painting case. For
     // STP, we commit to active tree and RequiresHighResToDraw, and set
     // Scheduler to wait for ReadyToDraw signal to avoid Checkerboard.
-    if (proxy_->CommitToActiveTree())
+    if (CommitToActiveTree())
       NotifyReadyToDraw();
   }
 
@@ -396,7 +397,7 @@ bool LayerTreeHostImpl::CanDraw() const {
 }
 
 void LayerTreeHostImpl::Animate() {
-  DCHECK(proxy_->IsImplThread());
+  DCHECK(task_runner_provider_->IsImplThread());
   base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
 
   // mithro(TODO): Enable these checks.
@@ -1355,7 +1356,7 @@ void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 
 void LayerTreeHostImpl::SetTreeActivationCallback(
     const base::Closure& callback) {
-  DCHECK(proxy_->IsImplThread());
+  DCHECK(task_runner_provider_->IsImplThread());
   tree_activation_callback_ = callback;
 }
 
@@ -1372,13 +1373,13 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
   if (old_policy == actual_policy)
     return;
 
-  if (!proxy_->HasImplThread()) {
+  if (!task_runner_provider_->HasImplThread()) {
     // In single-thread mode, this can be called on the main thread by
     // GLRenderer::OnMemoryAllocationChanged.
-    DebugScopedSetImplThread impl_thread(proxy_);
+    DebugScopedSetImplThread impl_thread(task_runner_provider_);
     UpdateTileManagerMemoryPolicy(actual_policy);
   } else {
-    DCHECK(proxy_->IsImplThread());
+    DCHECK(task_runner_provider_->IsImplThread());
     UpdateTileManagerMemoryPolicy(actual_policy);
   }
 
@@ -1986,7 +1987,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {
-  DCHECK(proxy_->IsImplThread());
+  DCHECK(task_runner_provider_->IsImplThread());
 
   if (visible_ == visible)
     return;
@@ -2238,7 +2239,7 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   output_surface_ = output_surface;
   resource_provider_ = ResourceProvider::Create(
       output_surface_, shared_bitmap_manager_, gpu_memory_buffer_manager_,
-      proxy_->blocking_main_thread_task_runner(),
+      task_runner_provider_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
       settings_.use_image_texture_targets);
@@ -3646,6 +3647,17 @@ gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
   }
 
   return gfx::ScrollOffset();
+}
+
+bool LayerTreeHostImpl::SupportsImplScrolling() const {
+  // Supported in threaded mode.
+  return task_runner_provider_->HasImplThread();
+}
+
+bool LayerTreeHostImpl::CommitToActiveTree() const {
+  // In single threaded mode we skip the pending tree and commit directly to the
+  // active tree.
+  return !task_runner_provider_->HasImplThread();
 }
 
 }  // namespace cc

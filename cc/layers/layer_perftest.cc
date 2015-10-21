@@ -6,7 +6,7 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -24,7 +24,9 @@ static const int kTimeCheckInterval = 10;
 class LayerPerfTest : public testing::Test {
  public:
   LayerPerfTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
+      : host_impl_(&task_runner_provider_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         fake_client_(FakeLayerTreeHostClient::DIRECT_3D),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
@@ -43,7 +45,7 @@ class LayerPerfTest : public testing::Test {
     layer_tree_host_ = nullptr;
   }
 
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;

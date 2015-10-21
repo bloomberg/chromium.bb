@@ -44,7 +44,7 @@ class MemoryHistory;
 class OutputSurface;
 class PageScaleAnimation;
 class PictureLayerImpl;
-class Proxy;
+class TaskRunnerProvider;
 class ResourceProvider;
 class TileManager;
 class UIResourceRequest;
@@ -106,7 +106,6 @@ class CC_EXPORT LayerTreeImpl {
   bool use_gpu_rasterization() const;
   GpuRasterizationStatus GetGpuRasterizationStatus() const;
   bool create_low_res_tiling() const;
-  BlockingTaskRunner* BlockingMainThreadTaskRunner() const;
   bool RequiresHighResToDraw() const;
   bool SmoothnessTakesPriority() const;
   VideoFrameControllerClient* GetVideoFrameControllerClient() const;
@@ -266,8 +265,8 @@ class CC_EXPORT LayerTreeImpl {
   void SetViewportSizeInvalid();
   void ResetViewportSizeInvalid();
 
-  // Useful for debug assertions, probably shouldn't be used for anything else.
-  Proxy* proxy() const;
+  // Used for accessing the task runner and debug assertions.
+  TaskRunnerProvider* task_runner_provider() const;
 
   // Distribute the root scroll between outer and inner viewport scroll layer.
   // The outer viewport scroll layer scrolls first.

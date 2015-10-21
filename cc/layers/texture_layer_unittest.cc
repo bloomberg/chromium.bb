@@ -22,7 +22,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -190,7 +190,9 @@ class TextureLayerTest : public testing::Test {
       : fake_client_(
             FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
         output_surface_(FakeOutputSurface::Create3d()),
-        host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
+        host_impl_(&task_runner_provider_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         test_data_(&shared_bitmap_manager_) {}
 
  protected:
@@ -211,7 +213,7 @@ class TextureLayerTest : public testing::Test {
   }
 
   scoped_ptr<MockLayerTreeHost> layer_tree_host_;
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;

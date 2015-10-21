@@ -7,7 +7,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
@@ -26,8 +26,9 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.verify_property_trees = true;
-    host_impl_.reset(new FakeLayerTreeHostImpl(
-        settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider_,
+                                               &shared_bitmap_manager_,
+                                               &task_graph_runner_));
     host_impl_->SetVisible(true);
     EXPECT_TRUE(host_impl_->InitializeRenderer(output_surface_.get()));
   }
@@ -43,7 +44,7 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
  private:
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
 };
@@ -97,13 +98,14 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   // Ensures that the viewport rect is correctly updated by the clip tree.
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeImplProxy proxy;
+  FakeImplTaskRunnerProvider task_runner_provider;
   LayerTreeSettings settings;
   settings.verify_property_trees = true;
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   scoped_ptr<FakeLayerTreeHostImpl> host_impl;
-  host_impl.reset(new FakeLayerTreeHostImpl(
-      settings, &proxy, &shared_bitmap_manager, &task_graph_runner));
+  host_impl.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider,
+                                            &shared_bitmap_manager,
+                                            &task_graph_runner));
   host_impl->SetVisible(true);
   EXPECT_TRUE(host_impl->InitializeRenderer(output_surface.get()));
   scoped_ptr<LayerImpl> root =

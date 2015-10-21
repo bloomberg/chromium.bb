@@ -9,7 +9,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -31,21 +31,22 @@ namespace {
 class DelegatedRendererLayerImplTest : public testing::Test {
  public:
   DelegatedRendererLayerImplTest()
-      : proxy_(),
-        always_impl_thread_and_main_thread_blocked_(&proxy_),
+      : task_runner_provider_(),
+        always_impl_thread_and_main_thread_blocked_(&task_runner_provider_),
         output_surface_(FakeOutputSurface::Create3d()) {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
-    host_impl_.reset(new FakeLayerTreeHostImpl(
-        settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider_,
+                                               &shared_bitmap_manager_,
+                                               &task_graph_runner_));
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
  protected:
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   DebugScopedSetImplThreadAndMainThreadBlocked
       always_impl_thread_and_main_thread_blocked_;
   TestSharedBitmapManager shared_bitmap_manager_;

@@ -11,7 +11,7 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_display_list_recording_source.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -50,10 +50,10 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
         max_tiles_(10000),
         ready_to_activate_(false),
         id_(7),
-        proxy_(base::ThreadTaskRunnerHandle::Get()),
+        task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
         output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LowResTilingsSettings(),
-                   &proxy_,
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_,
                    &gpu_memory_buffer_manager_) {}
@@ -163,7 +163,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   int max_tiles_;
   bool ready_to_activate_;
   int id_;
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;
@@ -1457,8 +1457,9 @@ class TileManagerTest : public testing::Test {
   void SetUp() override {
     LayerTreeSettings settings;
     CustomizeSettings(&settings);
-    host_impl_.reset(new MockLayerTreeHostImpl(
-        settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
+    host_impl_.reset(new MockLayerTreeHostImpl(settings, &task_runner_provider_,
+                                               &shared_bitmap_manager_,
+                                               &task_graph_runner_));
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
   }
@@ -1468,10 +1469,13 @@ class TileManagerTest : public testing::Test {
   class MockLayerTreeHostImpl : public FakeLayerTreeHostImpl {
    public:
     MockLayerTreeHostImpl(const LayerTreeSettings& settings,
-                          Proxy* proxy,
+                          TaskRunnerProvider* task_runner_provider,
                           SharedBitmapManager* manager,
                           TaskGraphRunner* task_graph_runner)
-        : FakeLayerTreeHostImpl(settings, proxy, manager, task_graph_runner) {}
+        : FakeLayerTreeHostImpl(settings,
+                                task_runner_provider,
+                                manager,
+                                task_graph_runner) {}
 
     MOCK_METHOD0(NotifyAllTileTasksCompleted, void());
   };
@@ -1481,7 +1485,7 @@ class TileManagerTest : public testing::Test {
 
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<MockLayerTreeHostImpl> host_impl_;
 };

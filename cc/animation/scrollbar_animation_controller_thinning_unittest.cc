@@ -5,7 +5,7 @@
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -21,7 +21,9 @@ class ScrollbarAnimationControllerThinningTest
       public ScrollbarAnimationControllerClient {
  public:
   ScrollbarAnimationControllerThinningTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
+      : host_impl_(&task_runner_provider_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_) {}
 
   void PostDelayedScrollbarAnimationTask(const base::Closure& start_fade,
                                          base::TimeDelta delay) override {
@@ -70,7 +72,7 @@ class ScrollbarAnimationControllerThinningTest
         base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(3));
   }
 
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;

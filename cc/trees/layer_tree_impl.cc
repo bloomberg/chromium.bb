@@ -731,10 +731,9 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   // raster source due to draw properties.
   if (update_lcd_text) {
     // TODO(enne): Make LTHI::sync_tree return this value.
-    LayerTreeImpl* sync_tree =
-        layer_tree_host_impl_->proxy()->CommitToActiveTree()
-            ? layer_tree_host_impl_->active_tree()
-            : layer_tree_host_impl_->pending_tree();
+    LayerTreeImpl* sync_tree = layer_tree_host_impl_->CommitToActiveTree()
+                                   ? layer_tree_host_impl_->active_tree()
+                                   : layer_tree_host_impl_->pending_tree();
     // If this is not the sync tree, then it is not safe to update lcd text
     // as it causes invalidations and the tiles may be in use.
     DCHECK_EQ(this, sync_tree);
@@ -874,8 +873,8 @@ void LayerTreeImpl::ResetViewportSizeInvalid() {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
-Proxy* LayerTreeImpl::proxy() const {
-  return layer_tree_host_impl_->proxy();
+TaskRunnerProvider* LayerTreeImpl::task_runner_provider() const {
+  return layer_tree_host_impl_->task_runner_provider();
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {
@@ -1712,10 +1711,6 @@ void LayerTreeImpl::InputScrollAnimationFinished() {
 
 bool LayerTreeImpl::SmoothnessTakesPriority() const {
   return layer_tree_host_impl_->GetTreePriority() == SMOOTHNESS_TAKES_PRIORITY;
-}
-
-BlockingTaskRunner* LayerTreeImpl::BlockingMainThreadTaskRunner() const {
-  return proxy()->blocking_main_thread_task_runner();
 }
 
 VideoFrameControllerClient* LayerTreeImpl::GetVideoFrameControllerClient()

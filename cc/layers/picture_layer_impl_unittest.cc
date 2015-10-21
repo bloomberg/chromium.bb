@@ -20,7 +20,7 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_display_list_recording_source.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -93,10 +93,10 @@ class LowResTilingsSettings : public PictureLayerImplTestSettings {
 class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
-      : proxy_(base::ThreadTaskRunnerHandle::Get()),
+      : task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
         output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LowResTilingsSettings(),
-                   &proxy_,
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_id_(6),
@@ -108,10 +108,10 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   explicit PictureLayerImplTest(const LayerTreeSettings& settings)
-      : proxy_(base::ThreadTaskRunnerHandle::Get()),
+      : task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
         output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(settings,
-                   &proxy_,
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_id_(6),
@@ -371,7 +371,7 @@ class PictureLayerImplTest : public testing::Test {
  protected:
   void TestQuadsForSolidColor(bool test_for_solid);
 
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<OutputSurface> output_surface_;

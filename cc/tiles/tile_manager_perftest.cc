@@ -10,7 +10,7 @@
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_display_list_raster_source.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -92,10 +92,10 @@ class TileManagerPerfTest : public testing::Test {
       : memory_limit_policy_(ALLOW_ANYTHING),
         max_tiles_(10000),
         id_(7),
-        proxy_(base::ThreadTaskRunnerHandle::Get()),
+        task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
         output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LayerTreeSettings(),
-                   &proxy_,
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         timer_(kWarmupRuns,
@@ -418,7 +418,7 @@ class TileManagerPerfTest : public testing::Test {
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
   int id_;
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_root_layer_;

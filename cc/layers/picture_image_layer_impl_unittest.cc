@@ -8,7 +8,7 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/test/fake_display_list_raster_source.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -42,10 +42,10 @@ class PictureLayerImplImageTestSettings : public LayerTreeSettings {
 class PictureImageLayerImplTest : public testing::Test {
  public:
   PictureImageLayerImplTest()
-      : proxy_(base::ThreadTaskRunnerHandle::Get()),
+      : task_runner_provider_(base::ThreadTaskRunnerHandle::Get()),
         output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(PictureLayerImplImageTestSettings(),
-                   &proxy_,
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_) {
     host_impl_.CreatePendingTree();
@@ -92,7 +92,7 @@ class PictureImageLayerImplTest : public testing::Test {
   }
 
  protected:
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<OutputSurface> output_surface_;

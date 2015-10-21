@@ -13,7 +13,7 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
     : LayerTreeHost(params),
       client_(client),
       host_impl_(*params->settings,
-                 &proxy_,
+                 &task_runner_provider_,
                  &manager_,
                  params->task_graph_runner),
       needs_commit_(false) {

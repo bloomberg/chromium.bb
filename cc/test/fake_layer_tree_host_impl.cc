@@ -9,34 +9,36 @@
 
 namespace cc {
 
-FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
-                                             SharedBitmapManager* manager,
-                                             TaskGraphRunner* task_graph_runner)
+FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
+    TaskRunnerProvider* task_runner_provider,
+    SharedBitmapManager* manager,
+    TaskGraphRunner* task_graph_runner)
     : FakeLayerTreeHostImpl(LayerTreeSettings(),
-                            proxy,
-                            manager,
-                            task_graph_runner,
-                            nullptr) {}
-
-FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
-                                             Proxy* proxy,
-                                             SharedBitmapManager* manager,
-                                             TaskGraphRunner* task_graph_runner)
-    : FakeLayerTreeHostImpl(settings,
-                            proxy,
+                            task_runner_provider,
                             manager,
                             task_graph_runner,
                             nullptr) {}
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     const LayerTreeSettings& settings,
-    Proxy* proxy,
+    TaskRunnerProvider* task_runner_provider,
+    SharedBitmapManager* manager,
+    TaskGraphRunner* task_graph_runner)
+    : FakeLayerTreeHostImpl(settings,
+                            task_runner_provider,
+                            manager,
+                            task_graph_runner,
+                            nullptr) {}
+
+FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
+    const LayerTreeSettings& settings,
+    TaskRunnerProvider* task_runner_provider,
     SharedBitmapManager* manager,
     TaskGraphRunner* task_graph_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : LayerTreeHostImpl(settings,
                         &client_,
-                        proxy,
+                        task_runner_provider,
                         &stats_instrumentation_,
                         manager,
                         gpu_memory_buffer_manager,

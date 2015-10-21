@@ -38,7 +38,7 @@
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
-#include "cc/trees/proxy.h"
+#include "cc/trees/task_runner_provider.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -148,7 +148,7 @@ class CC_EXPORT LayerTreeHostImpl
   static scoped_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
-      Proxy* proxy,
+      TaskRunnerProvider* task_runner_provider,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -413,7 +413,7 @@ class CC_EXPORT LayerTreeHostImpl
   // Returns the tree LTH synchronizes with.
   LayerTreeImpl* sync_tree() {
     // TODO(enne): This is bogus.  It should return based on the value of
-    // Proxy::CommitToActiveTree and not whether the pending tree exists.
+    // CommitToActiveTree() and not whether the pending tree exists.
     return pending_tree_ ? pending_tree_.get() : active_tree_.get();
   }
   virtual void CreatePendingTree();
@@ -477,7 +477,9 @@ class CC_EXPORT LayerTreeHostImpl
     return global_tile_state_;
   }
 
-  Proxy* proxy() const { return proxy_; }
+  TaskRunnerProvider* task_runner_provider() const {
+    return task_runner_provider_;
+  }
 
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
@@ -553,6 +555,9 @@ class CC_EXPORT LayerTreeHostImpl
   // Only valid for synchronous (non-scheduled) single-threaded case.
   void SynchronouslyInitializeAllTiles();
 
+  bool SupportsImplScrolling() const;
+  bool CommitToActiveTree() const;
+
   virtual void CreateResourceAndTileTaskWorkerPool(
       scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
       scoped_ptr<ResourcePool>* resource_pool);
@@ -586,11 +591,18 @@ class CC_EXPORT LayerTreeHostImpl
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
 
+  base::SingleThreadTaskRunner* GetTaskRunner() const {
+    DCHECK(task_runner_provider_);
+    return task_runner_provider_->HasImplThread()
+               ? task_runner_provider_->ImplThreadTaskRunner()
+               : task_runner_provider_->MainThreadTaskRunner();
+  }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
-      Proxy* proxy,
+      TaskRunnerProvider* task_runner_provider,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -608,7 +620,7 @@ class CC_EXPORT LayerTreeHostImpl
   static void RemoveRenderPasses(FrameData* frame);
 
   LayerTreeHostImplClient* client_;
-  Proxy* proxy_;
+  TaskRunnerProvider* task_runner_provider_;
 
   BeginFrameTracker current_begin_frame_tracker_;
 
@@ -681,12 +693,6 @@ class CC_EXPORT LayerTreeHostImpl
                              const gfx::ScrollOffset& current_offset);
   bool ScrollAnimationUpdateTarget(LayerImpl* layer_impl,
                                    const gfx::Vector2dF& scroll_delta);
-
-  base::SingleThreadTaskRunner* GetTaskRunner() const {
-    DCHECK(proxy_);
-    return proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
-                                   : proxy_->MainThreadTaskRunner();
-  }
 
   typedef base::hash_map<UIResourceId, UIResourceData>
       UIResourceMap;

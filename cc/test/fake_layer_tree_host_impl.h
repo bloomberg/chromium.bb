@@ -18,15 +18,15 @@ namespace cc {
 
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
  public:
-  FakeLayerTreeHostImpl(Proxy* proxy,
+  FakeLayerTreeHostImpl(TaskRunnerProvider* task_runner_provider,
                         SharedBitmapManager* manager,
                         TaskGraphRunner* task_graph_runner);
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
-                        Proxy* proxy,
+                        TaskRunnerProvider* task_runner_provider,
                         SharedBitmapManager* manager,
                         TaskGraphRunner* task_graph_runner);
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
-                        Proxy* proxy,
+                        TaskRunnerProvider* task_runner_provider,
                         SharedBitmapManager* manager,
                         TaskGraphRunner* task_graph_runner,
                         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);

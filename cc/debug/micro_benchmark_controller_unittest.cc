@@ -7,6 +7,7 @@
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/layers/layer.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_proxy.h"
@@ -22,9 +23,11 @@ class MicroBenchmarkControllerTest : public testing::Test {
       : layer_tree_host_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   void SetUp() override {
-    impl_proxy_ = make_scoped_ptr(new FakeImplProxy);
+    impl_task_runner_provider_ =
+        make_scoped_ptr(new FakeImplTaskRunnerProvider);
     layer_tree_host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(
-        impl_proxy_.get(), &shared_bitmap_manager_, &task_graph_runner_));
+        impl_task_runner_provider_.get(), &shared_bitmap_manager_,
+        &task_graph_runner_));
 
     layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_,
                                                  &task_graph_runner_);
@@ -35,7 +38,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
   void TearDown() override {
     layer_tree_host_impl_ = nullptr;
     layer_tree_host_ = nullptr;
-    impl_proxy_ = nullptr;
+    impl_task_runner_provider_ = nullptr;
   }
 
   FakeLayerTreeHostClient layer_tree_host_client_;
@@ -43,7 +46,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
   TestSharedBitmapManager shared_bitmap_manager_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_ptr<FakeLayerTreeHostImpl> layer_tree_host_impl_;
-  scoped_ptr<FakeImplProxy> impl_proxy_;
+  scoped_ptr<FakeImplTaskRunnerProvider> impl_task_runner_provider_;
 };
 
 void Noop(scoped_ptr<base::Value> value) {

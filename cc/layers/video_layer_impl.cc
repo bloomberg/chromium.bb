@@ -15,7 +15,7 @@
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
-#include "cc/trees/proxy.h"
+#include "cc/trees/task_runner_provider.h"
 #include "media/base/video_frame.h"
 
 #if defined(VIDEO_HOLE)
@@ -30,8 +30,8 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
     int id,
     VideoFrameProvider* provider,
     media::VideoRotation video_rotation) {
-  DCHECK(tree_impl->proxy()->IsMainThreadBlocked());
-  DCHECK(tree_impl->proxy()->IsImplThread());
+  DCHECK(tree_impl->task_runner_provider()->IsMainThreadBlocked());
+  DCHECK(tree_impl->task_runner_provider()->IsImplThread());
 
   scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl =
       VideoFrameProviderClientImpl::Create(
@@ -59,8 +59,8 @@ VideoLayerImpl::~VideoLayerImpl() {
     // on the VideoFrameProviderClientImpl, but we stop when the first
     // LayerImpl (the one on the pending tree) is destroyed since we know
     // the main thread is blocked for this commit.
-    DCHECK(layer_tree_impl()->proxy()->IsImplThread());
-    DCHECK(layer_tree_impl()->proxy()->IsMainThreadBlocked());
+    DCHECK(layer_tree_impl()->task_runner_provider()->IsImplThread());
+    DCHECK(layer_tree_impl()->task_runner_provider()->IsMainThreadBlocked());
     provider_client_impl_->Stop();
   }
 }
@@ -369,8 +369,10 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   if (frame_resource_type_ ==
       VideoFrameExternalResources::SOFTWARE_RESOURCE) {
     for (size_t i = 0; i < software_resources_.size(); ++i) {
-      software_release_callback_.Run(
-          0, false, layer_tree_impl()->BlockingMainThreadTaskRunner());
+      software_release_callback_.Run(0, false,
+                                     layer_tree_impl()
+                                         ->task_runner_provider()
+                                         ->blocking_main_thread_task_runner());
     }
 
     software_resources_.clear();

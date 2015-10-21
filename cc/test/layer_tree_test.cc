@@ -388,7 +388,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   void BlockNotifyReadyToActivateForTesting(bool block) override {
-    CHECK(proxy()->ImplThreadTaskRunner())
+    CHECK(task_runner_provider()->ImplThreadTaskRunner())
         << "Not supported for single-threaded mode.";
     block_notify_ready_to_activate_for_testing_ = block;
     if (!block && notify_ready_to_activate_was_blocked_) {

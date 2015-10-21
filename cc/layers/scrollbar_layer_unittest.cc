@@ -12,7 +12,7 @@
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/quads/solid_color_draw_quad.h"
-#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -479,9 +479,9 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {
     LayerTreeSettings layer_tree_settings;
-    host_impl_.reset(new FakeLayerTreeHostImpl(layer_tree_settings, &proxy_,
-                                               &shared_bitmap_manager_,
-                                               &task_graph_runner_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(
+        layer_tree_settings, &task_runner_provider_, &shared_bitmap_manager_,
+        &task_graph_runner_));
 
     const int kThumbThickness = 3;
     const int kTrackStart = 0;
@@ -507,7 +507,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
   }
 
  protected:
-  FakeImplProxy proxy_;
+  FakeImplTaskRunnerProvider task_runner_provider_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;

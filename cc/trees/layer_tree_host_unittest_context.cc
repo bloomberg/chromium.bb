@@ -111,7 +111,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     if (draw_result == DRAW_ABORTED_MISSING_HIGH_RES_CONTENT) {
       // Only valid for single-threaded compositing, which activates
       // immediately and will try to draw again when content has finished.
-      DCHECK(!host_impl->proxy()->HasImplThread());
+      DCHECK(!host_impl->task_runner_provider()->HasImplThread());
       return draw_result;
     }
     EXPECT_EQ(DRAW_SUCCESS, draw_result);

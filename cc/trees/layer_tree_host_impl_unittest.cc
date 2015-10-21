@@ -48,7 +48,6 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_impl.h"
-#include "cc/test/fake_proxy.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/gpu_rasterization_enabled_settings.h"
@@ -82,10 +81,10 @@ class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
  public:
   LayerTreeHostImplTest()
-      : proxy_(base::ThreadTaskRunnerHandle::Get(),
-               base::ThreadTaskRunnerHandle::Get()),
-        always_impl_thread_(&proxy_),
-        always_main_thread_blocked_(&proxy_),
+      : task_runner_provider_(base::ThreadTaskRunnerHandle::Get(),
+                              base::ThreadTaskRunnerHandle::Get()),
+        always_impl_thread_(&task_runner_provider_),
+        always_main_thread_blocked_(&task_runner_provider_),
         on_can_draw_state_changed_called_(false),
         did_notify_ready_to_activate_(false),
         did_request_commit_(false),
@@ -166,7 +165,7 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual bool CreateHostImpl(const LayerTreeSettings& settings,
                               scoped_ptr<OutputSurface> output_surface) {
     host_impl_ = LayerTreeHostImpl::Create(
-        settings, this, &proxy_, &stats_instrumentation_,
+        settings, this, &task_runner_provider_, &stats_instrumentation_,
         &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
         &task_graph_runner_, 0);
     output_surface_ = output_surface.Pass();
@@ -429,7 +428,7 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->DidDrawAllLayers(frame_data);
   }
 
-  FakeProxy proxy_;
+  TaskRunnerProvider task_runner_provider_;
   DebugScopedSetImplThread always_impl_thread_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
 
@@ -2149,13 +2148,13 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
   LayerTreeHostImplOverridePhysicalTime(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
-      Proxy* proxy,
+      TaskRunnerProvider* task_runner_provider,
       SharedBitmapManager* manager,
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* rendering_stats_instrumentation)
       : LayerTreeHostImpl(settings,
                           client,
-                          proxy,
+                          task_runner_provider,
                           rendering_stats_instrumentation,
                           manager,
                           nullptr,
@@ -2182,7 +2181,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
         new LayerTreeHostImplOverridePhysicalTime(
-            settings, this, &proxy_, &shared_bitmap_manager_,
+            settings, this, &task_runner_provider_, &shared_bitmap_manager_,
             &task_graph_runner_, &stats_instrumentation_);
     host_impl_ = make_scoped_ptr(host_impl_override_time);
     output_surface_ = CreateOutputSurface();
@@ -5842,7 +5841,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   settings.renderer_settings.partial_swap_enabled = true;
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl =
       LayerTreeHostImpl::Create(
-          settings, this, &proxy_, &stats_instrumentation_,
+          settings, this, &task_runner_provider_, &stats_instrumentation_,
           &shared_bitmap_manager_, NULL, &task_graph_runner_, 0);
   layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeRenderer(output_surface.get());
@@ -6118,16 +6117,16 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
 static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
     bool partial_swap,
     LayerTreeHostImplClient* client,
-    Proxy* proxy,
+    TaskRunnerProvider* task_runner_provider,
     SharedBitmapManager* manager,
     TaskGraphRunner* task_graph_runner,
     RenderingStatsInstrumentation* stats_instrumentation,
     OutputSurface* output_surface) {
   LayerTreeSettings settings;
   settings.renderer_settings.partial_swap_enabled = partial_swap;
-  scoped_ptr<LayerTreeHostImpl> my_host_impl =
-      LayerTreeHostImpl::Create(settings, client, proxy, stats_instrumentation,
-                                manager, nullptr, task_graph_runner, 0);
+  scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
+      settings, client, task_runner_provider, stats_instrumentation, manager,
+      nullptr, task_graph_runner, 0);
   my_host_impl->SetVisible(true);
   my_host_impl->InitializeRenderer(output_surface);
   my_host_impl->WillBeginImplFrame(
@@ -6198,8 +6197,8 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(provider));
   scoped_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      true, this, &proxy_, &shared_bitmap_manager, &task_graph_runner,
-      &stats_instrumentation_, output_surface.get());
+      true, this, &task_runner_provider_, &shared_bitmap_manager,
+      &task_graph_runner, &stats_instrumentation_, output_surface.get());
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
@@ -6227,8 +6226,8 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(provider));
   scoped_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      false, this, &proxy_, &shared_bitmap_manager, &task_graph_runner,
-      &stats_instrumentation_, output_surface.get());
+      false, this, &task_runner_provider_, &shared_bitmap_manager,
+      &task_graph_runner, &stats_instrumentation_, output_surface.get());
   {
     LayerTreeHostImpl::FrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
@@ -6644,8 +6643,9 @@ TEST_F(LayerTreeHostImplTest,
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
   LayerTreeSettings settings;
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_, &shared_bitmap_manager_,
-      &gpu_memory_buffer_manager_, &task_graph_runner_, 0);
+      settings, this, &task_runner_provider_, &stats_instrumentation_,
+      &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
+      0);
 
   output_surface_ =
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create());
@@ -6708,7 +6708,7 @@ class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
     fake_host_impl_ =
-        new FakeLayerTreeHostImpl(LayerTreeSettings(), &proxy_,
+        new FakeLayerTreeHostImpl(LayerTreeSettings(), &task_runner_provider_,
                                   &shared_bitmap_manager_, &task_graph_runner_);
     host_impl_.reset(fake_host_impl_);
     output_surface_ = CreateOutputSurface();
