@@ -52,6 +52,73 @@ namespace blink {
 
 using namespace WTF::Unicode;
 
+class ExpansionOpportunities {
+public:
+    ExpansionOpportunities()
+    : m_totalOpportunities(0)
+    { }
+
+    void addRunWithExpansions(BidiRun& run, bool& isAfterExpansion, TextJustify textJustify)
+    {
+        LayoutText* text = toLayoutText(run.m_object);
+        unsigned opportunitiesInRun;
+        if (text->is8Bit()) {
+            opportunitiesInRun = Character::expansionOpportunityCount(text->characters8() + run.m_start,
+                run.m_stop - run.m_start, run.m_box->direction(), isAfterExpansion, textJustify);
+        } else {
+            opportunitiesInRun = Character::expansionOpportunityCount(text->characters16() + run.m_start,
+                run.m_stop - run.m_start, run.m_box->direction(), isAfterExpansion, textJustify);
+        }
+        m_runsWithExpansions.append(opportunitiesInRun);
+        m_totalOpportunities += opportunitiesInRun;
+    }
+    void removeTrailingExpansion()
+    {
+        if (!m_totalOpportunities)
+            return;
+        ASSERT(m_runsWithExpansions.last());
+        m_runsWithExpansions.last()--;
+        m_totalOpportunities--;
+    }
+
+    unsigned count() { return m_totalOpportunities; }
+
+    unsigned opportunitiesInRun(size_t run) { return m_runsWithExpansions[run]; }
+
+    void computeExpansionsForJustifiedText(BidiRun* firstRun, BidiRun* trailingSpaceRun, LayoutUnit& totalLogicalWidth, LayoutUnit availableLogicalWidth)
+    {
+        if (!m_totalOpportunities || availableLogicalWidth <= totalLogicalWidth)
+            return;
+
+        size_t i = 0;
+        for (BidiRun* r = firstRun; r; r = r->next()) {
+            if (!r->m_box || r == trailingSpaceRun)
+                continue;
+
+            if (r->m_object->isText()) {
+                unsigned opportunitiesInRun = m_runsWithExpansions[i++];
+
+                ASSERT(opportunitiesInRun <= m_totalOpportunities);
+
+                // Don't justify for white-space: pre.
+                if (r->m_object->style()->whiteSpace() != PRE) {
+                    InlineTextBox* textBox = toInlineTextBox(r->m_box);
+                    RELEASE_ASSERT(m_totalOpportunities);
+                    int expansion = (availableLogicalWidth - totalLogicalWidth) * opportunitiesInRun / m_totalOpportunities;
+                    textBox->setExpansion(expansion);
+                    totalLogicalWidth += expansion;
+                }
+                m_totalOpportunities -= opportunitiesInRun;
+                if (!m_totalOpportunities)
+                    break;
+            }
+        }
+    }
+private:
+    Vector<unsigned, 16> m_runsWithExpansions;
+    unsigned m_totalOpportunities;
+};
+
 static inline InlineBox* createInlineBoxForLayoutObject(LayoutObject* obj, bool isRootLineBox, bool isOnlyRun = false)
 {
     // Callers should handle text themselves.
@@ -452,36 +519,6 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     }
 }
 
-static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* trailingSpaceRun, Vector<unsigned, 16>& expansionOpportunities, unsigned expansionOpportunityCount, LayoutUnit& totalLogicalWidth, LayoutUnit availableLogicalWidth)
-{
-    if (!expansionOpportunityCount || availableLogicalWidth <= totalLogicalWidth)
-        return;
-
-    size_t i = 0;
-    for (BidiRun* r = firstRun; r; r = r->next()) {
-        if (!r->m_box || r == trailingSpaceRun)
-            continue;
-
-        if (r->m_object->isText()) {
-            unsigned opportunitiesInRun = expansionOpportunities[i++];
-
-            ASSERT(opportunitiesInRun <= expansionOpportunityCount);
-
-            // Don't justify for white-space: pre.
-            if (r->m_object->style()->whiteSpace() != PRE) {
-                InlineTextBox* textBox = toInlineTextBox(r->m_box);
-                RELEASE_ASSERT(expansionOpportunityCount);
-                int expansion = (availableLogicalWidth - totalLogicalWidth) * opportunitiesInRun / expansionOpportunityCount;
-                textBox->setExpansion(expansion);
-                totalLogicalWidth += expansion;
-            }
-            expansionOpportunityCount -= opportunitiesInRun;
-            if (!expansionOpportunityCount)
-                break;
-        }
-    }
-}
-
 void LayoutBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox, BidiRun* trailingSpaceRun, LayoutUnit& logicalLeft, LayoutUnit& totalLogicalWidth, LayoutUnit& availableLogicalWidth, unsigned expansionOpportunityCount)
 {
     TextDirection direction;
@@ -578,9 +615,8 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
 {
     bool needsWordSpacing = true;
     LayoutUnit totalLogicalWidth = lineBox->getFlowSpacingLogicalWidth();
-    unsigned expansionOpportunityCount = 0;
     bool isAfterExpansion = true;
-    Vector<unsigned, 16> expansionOpportunities;
+    ExpansionOpportunities expansions;
     LayoutObject* previousObject = nullptr;
     TextJustify textJustify = style()->textJustify();
 
@@ -596,14 +632,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
             if (textAlign == JUSTIFY && r != trailingSpaceRun && textJustify != TextJustifyNone) {
                 if (!isAfterExpansion)
                     toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
-                unsigned opportunitiesInRun;
-                if (rt->is8Bit())
-                    opportunitiesInRun = Character::expansionOpportunityCount(rt->characters8() + r->m_start, r->m_stop - r->m_start, r->m_box->direction(), isAfterExpansion, textJustify);
-                else
-                    opportunitiesInRun = Character::expansionOpportunityCount(rt->characters16() + r->m_start, r->m_stop - r->m_start, r->m_box->direction(), isAfterExpansion, textJustify);
-                // TODO(leviw): Why append if there are no expansion opportunities?
-                expansionOpportunities.append(opportunitiesInRun);
-                expansionOpportunityCount += opportunitiesInRun;
+                expansions.addRunWithExpansions(*r, isAfterExpansion, textJustify);
             }
 
             if (rt->textLength()) {
@@ -629,14 +658,12 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
         previousObject = r->m_object;
     }
 
-    if (isAfterExpansion && expansionOpportunityCount) {
-        expansionOpportunities.last()--;
-        expansionOpportunityCount--;
-    }
+    if (isAfterExpansion)
+        expansions.removeTrailingExpansion();
 
-    updateLogicalWidthForAlignment(textAlign, lineBox, trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth, expansionOpportunityCount);
+    updateLogicalWidthForAlignment(textAlign, lineBox, trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth, expansions.count());
 
-    computeExpansionForJustifiedText(firstRun, trailingSpaceRun, expansionOpportunities, expansionOpportunityCount, totalLogicalWidth, availableLogicalWidth);
+    expansions.computeExpansionsForJustifiedText(firstRun, trailingSpaceRun, totalLogicalWidth, availableLogicalWidth);
 
     return r;
 }
