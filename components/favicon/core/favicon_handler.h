@@ -78,12 +78,25 @@ class TestFaviconHandler;
 
 class FaviconHandler {
  public:
-  enum Type { FAVICON, TOUCH, LARGE };
+  enum Type {
+    // Selects the icon URL of type favicon_base::FAVICON with bitmaps whose
+    // edge sizes most closely match "16 * favicon_base::GetFaviconScales()".
+    // When favicon_base::GetFaviconScales() returns multiple scales, the ideal
+    // match is a .ico file.
+    FAVICON,
+
+    // Selects the icon URL of type favicon_base::FAVICON with the largest
+    // bitmap.
+    LARGEST_FAVICON,
+
+    // Selects the icon URL of type favicon_base::TOUCH_ICON or
+    // favicon_base::TOUCH_PRECOMPOSED_ICON with the largest bitmap.
+    LARGEST_TOUCH
+  };
 
   FaviconHandler(FaviconService* service,
                  FaviconDriver* driver,
-                 Type handler_type,
-                 bool download_largest_icon);
+                 Type handler_type);
   virtual ~FaviconHandler();
 
   // Returns the bit mask of favicon_base::IconType based on the handler's type.
@@ -239,9 +252,7 @@ class FaviconHandler {
   // Returns the preferred size of the image. 0 means no preference (any size
   // will do).
   int preferred_icon_size() const {
-    if (download_largest_icon_)
-      return 0;
-    return handler_type_ == FAVICON ? gfx::kFaviconSize : 0;
+    return download_largest_icon_ ? 0 : gfx::kFaviconSize;
   }
 
   // Used for FaviconService requests.
@@ -262,9 +273,6 @@ class FaviconHandler {
   // Requests to the renderer to download favicons.
   typedef std::map<int, DownloadRequest> DownloadRequests;
   DownloadRequests download_requests_;
-
-  // The type of the current handler.
-  const Type handler_type_;
 
   // The combination of the supported icon types.
   const int icon_types_;

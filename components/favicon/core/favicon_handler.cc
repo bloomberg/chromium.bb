@@ -212,13 +212,12 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 
 FaviconHandler::FaviconHandler(FaviconService* service,
                                FaviconDriver* driver,
-                               Type handler_type,
-                               bool download_largest_icon)
+                               Type handler_type)
     : got_favicon_from_history_(false),
       favicon_expired_or_incomplete_(false),
-      handler_type_(handler_type),
       icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
-      download_largest_icon_(download_largest_icon),
+      download_largest_icon_(handler_type == LARGEST_FAVICON ||
+                             handler_type == LARGEST_TOUCH),
       service_(service),
       driver_(driver),
       current_candidate_index_(0u) {
@@ -233,12 +232,10 @@ int FaviconHandler::GetIconTypesFromHandlerType(
     FaviconHandler::Type handler_type) {
   switch (handler_type) {
     case FAVICON:
+    case LARGEST_FAVICON:
       return favicon_base::FAVICON;
-    case TOUCH:  // Falls through.
-    case LARGE:
+    case LARGEST_TOUCH:
       return favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON;
-    default:
-      NOTREACHED();
   }
   return 0;
 }
@@ -340,8 +337,7 @@ void FaviconHandler::NotifyFaviconAvailable(const GURL& icon_url,
   gfx::Image image_with_adjusted_colorspace = image;
   favicon_base::SetFaviconColorSpace(&image_with_adjusted_colorspace);
 
-  bool is_active_favicon =
-      (handler_type_ == FAVICON && !download_largest_icon_);
+  bool is_active_favicon = !download_largest_icon_;
 
   driver_->OnFaviconAvailable(
       url_, icon_url, image_with_adjusted_colorspace, is_active_favicon);
@@ -527,7 +523,6 @@ void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
                                         const GURL& icon_url,
                                         favicon_base::IconType icon_type,
                                         const gfx::Image& image) {
-  // TODO(huangs): Get the following to garbage collect if handler_type_ == ALL.
   if (service_) {
     service_->SetFavicons(page_url, icon_url, icon_type, image);
   }
@@ -569,7 +564,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
 
-  if (has_results && handler_type_ == FAVICON && !download_largest_icon_ &&
+  if (has_results && !download_largest_icon_ &&
       (!current_candidate() ||
        DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results))) {
     if (has_valid_result) {
@@ -586,7 +581,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     }
   }
 
-  if (has_valid_result && (handler_type_ != FAVICON || download_largest_icon_))
+  if (has_valid_result && download_largest_icon_)
     NotifyFaviconAvailable(favicon_bitmap_results);
 
   if (current_candidate())

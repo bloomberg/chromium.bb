@@ -48,14 +48,15 @@ FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
       history_service_(history_service),
       bookmark_model_(bookmark_model) {
   favicon_handler_.reset(new FaviconHandler(
-      favicon_service_, this, FaviconHandler::FAVICON, kEnableTouchIcon));
+      favicon_service_, this, kEnableTouchIcon ? FaviconHandler::LARGEST_FAVICON
+                                               : FaviconHandler::FAVICON));
   if (kEnableTouchIcon) {
-    touch_icon_handler_.reset(new FaviconHandler(favicon_service_, this,
-                                                 FaviconHandler::TOUCH, true));
+    touch_icon_handler_.reset(new FaviconHandler(
+        favicon_service_, this, FaviconHandler::LARGEST_TOUCH));
   }
   if (IsIconNTPEnabled()) {
-    large_icon_handler_.reset(new FaviconHandler(favicon_service_, this,
-                                                 FaviconHandler::LARGE, true));
+    large_icon_handler_.reset(new FaviconHandler(
+        favicon_service_, this, FaviconHandler::LARGEST_TOUCH));
   }
 }
 
