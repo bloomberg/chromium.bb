@@ -1496,6 +1496,9 @@ void V8DebuggerAgentImpl::didParseSource(const ParsedScript& parsedScript)
 V8DebuggerListener::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> v8exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
 {
     ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->contextIsValid())
+        return V8DebuggerListener::Continue;
+
     ScriptValue exception(scriptState, v8exception);
 
     V8DebuggerListener::SkipPauseRequest result;
