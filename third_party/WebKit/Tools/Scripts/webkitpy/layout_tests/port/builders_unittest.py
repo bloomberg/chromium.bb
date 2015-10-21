@@ -40,8 +40,3 @@ class BuildersTest(unittest.TestCase):
         }
         for name, expected in tests.items():
             self.assertEqual(expected, builders.builder_path_from_name(name))
-
-    def test_deps_builder_mappings(self):
-        for port_name in builders.all_port_names():
-            if port_name != 'android':
-                self.assertIsNotNone(builders.deps_builder_name_for_port_name(port_name))

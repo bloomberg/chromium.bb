@@ -61,25 +61,6 @@ _exact_matches = {
 }
 
 
-# Mapping from port name to the deps builder of the same os:
-_deps_builders = {
-    "linux-x86": "WebKit Linux (deps)",
-    "linux-precise": "WebKit Linux (deps)",
-    "linux-trusty": "WebKit Linux (deps)",
-    "win-xp": "WebKit XP (deps)",
-    "win-win7": "WebKit XP (deps)",
-    "win-win10": "WebKit XP (deps)",
-    "mac-snowleopard": "WebKit Mac10.6 (deps)",
-    # The following port names are mapped to 10.6 bot since we don't have bots
-    # for these ports.
-    "mac-lion": "WebKit Mac10.6 (deps)",
-    "mac-mountainlion": "WebKit Mac10.6 (deps)",
-    "mac-mavericks": "WebKit Mac10.6 (deps)",
-    "mac-retina": "WebKit Mac10.6 (deps)",
-    "mac-yosemite": "WebKit Mac10.6 (deps)",
-}
-
-
 _ports_without_builders = [
 ]
 
@@ -121,7 +102,3 @@ def builder_name_for_port_name(target_port_name):
 
 def builder_path_for_port_name(port_name):
     builder_path_from_name(builder_name_for_port_name(port_name))
-
-
-def deps_builder_name_for_port_name(target_port_name):
-    return _deps_builders.get(target_port_name, None)

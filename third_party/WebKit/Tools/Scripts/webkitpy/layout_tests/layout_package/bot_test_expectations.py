@@ -109,11 +109,7 @@ class BotTestExpectationsFactory(object):
     RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=layout-tests&name=results-small.json&builder='
 
     def _results_json_for_port(self, port_name, builder_category):
-        if builder_category == 'deps':
-            builder = builders.deps_builder_name_for_port_name(port_name)
-        else:
-            builder = builders.builder_name_for_port_name(port_name)
-
+        builder = builders.builder_name_for_port_name(port_name)
         if not builder:
             return None
         return self._results_json_for_builder(builder)
