@@ -54,7 +54,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
-#include "net/cert/cert_verifier.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
@@ -5616,7 +5615,11 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
             sts_state.upgrade_mode);
   EXPECT_TRUE(sts_state.include_subdomains);
   EXPECT_FALSE(pkp_state.include_subdomains);
+#if defined(OS_ANDROID)
+  // Android's CertVerifyProc does not (yet) handle pins.
+#else
   EXPECT_FALSE(pkp_state.HasPublicKeyPins());
+#endif
 }
 
 TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
@@ -5643,13 +5646,30 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
       security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
 }
 
+// Android's CertVerifyProc does not (yet) handle pins. Therefore, it will
+// reject HPKP headers, and a test setting only HPKP headers will fail (no
+// PKPState present because header rejected).
+#if defined(OS_ANDROID)
+#define MAYBE_ProcessPKP DISABLED_ProcessPKP
+#define MAYBE_ProcessPKPAndSendReport DISABLED_ProcessPKPAndSendReport
+#define MAYBE_ProcessPKPReportOnly DISABLED_ProcessPKPReportOnly
+#define MAYBE_ProcessPKPReportOnlyWithNoViolation \
+  DISABLED_ProcessPKPReportOnlyWithNoViolation
+#else
+#define MAYBE_ProcessPKP ProcessPKP
+#define MAYBE_ProcessPKPAndSendReport ProcessPKPAndSendReport
+#define MAYBE_ProcessPKPReportOnly ProcessPKPReportOnly
+#define MAYBE_ProcessPKPReportOnlyWithNoViolation \
+  ProcessPKPReportOnlyWithNoViolation
+#endif
+
 namespace {
 const char kHPKPReportUri[] = "https://hpkp-report.test";
 }  // namespace
 
 // Tests that enabling HPKP on a domain does not affect the HSTS
 // validity/expiration.
-TEST_F(URLRequestTestHTTP, ProcessPKP) {
+TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
   GURL report_uri(kHPKPReportUri);
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
@@ -5685,7 +5705,7 @@ TEST_F(URLRequestTestHTTP, ProcessPKP) {
 }
 
 // Tests that reports get sent on HPKP violations when a report-uri is set.
-TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
+TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPAndSendReport) {
   GURL report_uri(kHPKPReportUri);
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
@@ -5764,7 +5784,7 @@ TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
 
 // Tests that reports get sent on requests with
 // Public-Key-Pins-Report-Only headers.
-TEST_F(URLRequestTestHTTP, ProcessPKPReportOnly) {
+TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPReportOnly) {
   GURL report_uri(kHPKPReportUri);
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
@@ -5828,7 +5848,7 @@ TEST_F(URLRequestTestHTTP, ProcessPKPReportOnly) {
 
 // Tests that reports do not get sent on requests with
 // Public-Key-Pins-Report-Only headers that don't have pin violations.
-TEST_F(URLRequestTestHTTP, ProcessPKPReportOnlyWithNoViolation) {
+TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPReportOnlyWithNoViolation) {
   GURL report_uri(kHPKPReportUri);
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
@@ -5947,7 +5967,11 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
       security_state->GetDynamicPKPState(test_server_hostname, &pkp_state));
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
+#if defined(OS_ANDROID)
+  // Android's CertVerifyProc does not (yet) handle pins.
+#else
   EXPECT_TRUE(pkp_state.HasPublicKeyPins());
+#endif
   EXPECT_NE(sts_state.expiry, pkp_state.expiry);
 
   // Even though there is an HSTS header asserting includeSubdomains, it is
@@ -5986,7 +6010,11 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
       security_state->GetDynamicPKPState(test_server_hostname, &pkp_state));
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
+#if defined(OS_ANDROID)
+  // Android's CertVerifyProc does not (yet) handle pins.
+#else
   EXPECT_TRUE(pkp_state.HasPublicKeyPins());
+#endif
   EXPECT_NE(sts_state.expiry, pkp_state.expiry);
 
   EXPECT_TRUE(sts_state.include_subdomains);
@@ -8913,8 +8941,13 @@ static bool SystemSupportsOCSP() {
 }
 
 static bool SystemSupportsOCSPStapling() {
-  scoped_ptr<CertVerifier> verifier(CertVerifier::CreateDefault());
-  return verifier->SupportsOCSPStapling();
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+  return true;
+#elif defined(OS_WIN)
+  return base::win::GetVersion() >= base::win::VERSION_VISTA;
+#else
+  return false;
+#endif
 }
 
 TEST_F(HTTPSOCSPTest, Valid) {
@@ -8981,7 +9014,7 @@ TEST_F(HTTPSOCSPTest, Invalid) {
 }
 
 TEST_F(HTTPSOCSPTest, ValidStapled) {
-  if (!SystemSupportsOCSPStapling() || !SystemSupportsOCSP()) {
+  if (!SystemSupportsOCSPStapling()) {
     LOG(WARNING)
         << "Skipping test because system doesn't support OCSP stapling";
     return;
@@ -9011,7 +9044,7 @@ TEST_F(HTTPSOCSPTest, ValidStapled) {
 #define MAYBE_RevokedStapled RevokedStapled
 #endif
 TEST_F(HTTPSOCSPTest, MAYBE_RevokedStapled) {
-  if (!SystemSupportsOCSPStapling() || !SystemSupportsOCSP()) {
+  if (!SystemSupportsOCSPStapling()) {
     LOG(WARNING)
         << "Skipping test because system doesn't support OCSP stapling";
     return;
