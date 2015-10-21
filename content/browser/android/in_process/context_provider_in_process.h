@@ -53,7 +53,6 @@ class ContextProviderInProcess
   base::Lock* GetLock() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
-  bool DestroyedOnMainThread() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
@@ -68,9 +67,6 @@ class ContextProviderInProcess
   scoped_ptr<GrContextForWebGraphicsContext3D> gr_context_;
 
   LostContextCallback lost_context_callback_;
-
-  base::Lock destroyed_lock_;
-  bool destroyed_;
 
   base::Lock context_lock_;
   std::string debug_name_;

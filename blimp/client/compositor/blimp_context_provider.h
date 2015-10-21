@@ -34,7 +34,6 @@ class BlimpContextProvider : public cc::ContextProvider {
   base::Lock* GetLock() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
-  bool DestroyedOnMainThread() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
@@ -55,9 +54,6 @@ class BlimpContextProvider : public cc::ContextProvider {
   cc::ContextProvider::Capabilities capabilities_;
 
   LostContextCallback lost_context_callback_;
-
-  base::Lock destroyed_lock_;
-  bool destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContextProvider);
 };

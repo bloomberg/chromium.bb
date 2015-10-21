@@ -47,8 +47,7 @@ AwRenderThreadContextProvider::Create(
 
 AwRenderThreadContextProvider::AwRenderThreadContextProvider(
     scoped_refptr<gfx::GLSurface> surface,
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service)
-    : destroyed_(false) {
+    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   blink::WebGraphicsContext3D::Attributes attributes;
@@ -170,12 +169,6 @@ void AwRenderThreadContextProvider::DeleteCachedResources() {
   }
 }
 
-bool AwRenderThreadContextProvider::DestroyedOnMainThread() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  return destroyed_;
-}
-
 void AwRenderThreadContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {
   lost_context_callback_ = lost_context_callback;
@@ -183,10 +176,6 @@ void AwRenderThreadContextProvider::SetLostContextCallback(
 
 void AwRenderThreadContextProvider::OnLostContext() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  if (destroyed_)
-    return;
-  destroyed_ = true;
 
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();

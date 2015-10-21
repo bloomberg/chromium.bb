@@ -45,7 +45,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   Capabilities ContextCapabilities() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
-  bool DestroyedOnMainThread() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
@@ -71,9 +70,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   std::string debug_name_;
 
   LostContextCallback lost_context_callback_;
-
-  base::Lock main_thread_lock_;
-  bool destroyed_;
 
   base::Lock context_lock_;
 

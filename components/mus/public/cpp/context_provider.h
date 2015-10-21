@@ -29,7 +29,6 @@ class ContextProvider : public cc::ContextProvider {
   Capabilities ContextCapabilities() override;
   void VerifyContexts() override {}
   void DeleteCachedResources() override {}
-  bool DestroyedOnMainThread() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override {}
 

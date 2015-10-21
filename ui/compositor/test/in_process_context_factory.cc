@@ -178,8 +178,9 @@ void InProcessContextFactory::RemoveReflector(Reflector* reflector) {
 
 scoped_refptr<cc::ContextProvider>
 InProcessContextFactory::SharedMainThreadContextProvider() {
-  if (shared_main_thread_contexts_.get() &&
-      !shared_main_thread_contexts_->DestroyedOnMainThread())
+  if (shared_main_thread_contexts_ &&
+      shared_main_thread_contexts_->ContextGL()->GetGraphicsResetStatusKHR() ==
+          GL_NO_ERROR)
     return shared_main_thread_contexts_;
 
   shared_main_thread_contexts_ = InProcessContextProvider::CreateOffscreen(

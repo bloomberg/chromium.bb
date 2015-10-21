@@ -1391,7 +1391,8 @@ scoped_refptr<cc_blink::ContextProviderWebContext>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
   if (!shared_main_thread_contexts_.get() ||
-      shared_main_thread_contexts_->DestroyedOnMainThread()) {
+      shared_main_thread_contexts_->ContextGL()->GetGraphicsResetStatusKHR() !=
+          GL_NO_ERROR) {
     shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
         CreateOffscreenContext3d(), RENDERER_MAINTHREAD_CONTEXT);
     if (shared_main_thread_contexts_.get() &&

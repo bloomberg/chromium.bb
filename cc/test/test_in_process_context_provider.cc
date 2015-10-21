@@ -163,8 +163,6 @@ void TestInProcessContextProvider::DeleteCachedResources() {
     gr_context_->freeGpuResources();
 }
 
-bool TestInProcessContextProvider::DestroyedOnMainThread() { return false; }
-
 void TestInProcessContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {}
 

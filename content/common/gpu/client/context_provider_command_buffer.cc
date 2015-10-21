@@ -49,8 +49,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     CommandBufferContextType type)
     : context3d_(context3d.Pass()),
       context_type_(type),
-      debug_name_(CommandBufferContextTypeToString(type)),
-      destroyed_(false) {
+      debug_name_(CommandBufferContextTypeToString(type)) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
@@ -59,8 +58,6 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
 ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
-
-  base::AutoLock lock(main_thread_lock_);
 
   // Destroy references to the context3d_ before leaking it.
   if (context3d_->GetCommandBufferProxy())
@@ -178,12 +175,7 @@ void ContextProviderCommandBuffer::DeleteCachedResources() {
 
 void ContextProviderCommandBuffer::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  {
-    base::AutoLock lock(main_thread_lock_);
-    if (destroyed_)
-      return;
-    destroyed_ = true;
-  }
+
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();
   if (gr_context_)
@@ -200,13 +192,6 @@ void ContextProviderCommandBuffer::InitializeCapabilities() {
       ? std::numeric_limits<size_t>::max() : mapped_memory_limit;
 
   capabilities_ = caps;
-}
-
-bool ContextProviderCommandBuffer::DestroyedOnMainThread() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  base::AutoLock lock(main_thread_lock_);
-  return destroyed_;
 }
 
 void ContextProviderCommandBuffer::SetLostContextCallback(

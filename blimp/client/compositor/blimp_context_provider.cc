@@ -150,13 +150,6 @@ void BlimpContextProvider::DeleteCachedResources() {
     gr_context_->freeGpuResources();
 }
 
-bool BlimpContextProvider::DestroyedOnMainThread() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  base::AutoLock lock(destroyed_lock_);
-  return destroyed_;
-}
-
 void BlimpContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -165,14 +158,6 @@ void BlimpContextProvider::SetLostContextCallback(
 
 void BlimpContextProvider::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  {
-    base::AutoLock lock(destroyed_lock_);
-    if (destroyed_)
-      return;
-    destroyed_ = true;
-  }
-
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();
   if (gr_context_)

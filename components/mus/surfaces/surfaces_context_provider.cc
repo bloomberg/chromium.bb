@@ -88,10 +88,6 @@ base::Lock* SurfacesContextProvider::GetLock() {
   return &context_lock_;
 }
 
-bool SurfacesContextProvider::DestroyedOnMainThread() {
-  return !command_buffer_local_;
-}
-
 void SurfacesContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {
   lost_context_callback_ = lost_context_callback;

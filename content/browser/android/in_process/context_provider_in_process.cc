@@ -50,7 +50,6 @@ ContextProviderInProcess::ContextProviderInProcess(
     scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
     const std::string& debug_name)
     : context3d_(context3d.Pass()),
-      destroyed_(false),
       debug_name_(debug_name) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
@@ -176,23 +175,10 @@ void ContextProviderInProcess::DeleteCachedResources() {
 
 void ContextProviderInProcess::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  {
-    base::AutoLock lock(destroyed_lock_);
-    if (destroyed_)
-      return;
-    destroyed_ = true;
-  }
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();
   if (gr_context_)
     gr_context_->OnLostContext();
-}
-
-bool ContextProviderInProcess::DestroyedOnMainThread() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  base::AutoLock lock(destroyed_lock_);
-  return destroyed_;
 }
 
 void ContextProviderInProcess::SetLostContextCallback(

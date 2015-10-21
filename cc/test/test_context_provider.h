@@ -42,7 +42,6 @@ class TestContextProvider : public ContextProvider {
   base::Lock* GetLock() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
-  bool DestroyedOnMainThread() override;
   void SetLostContextCallback(const LostContextCallback& cb) override;
 
   TestWebGraphicsContext3D* TestContext3d();
@@ -72,9 +71,6 @@ class TestContextProvider : public ContextProvider {
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
-
-  base::Lock destroyed_lock_;
-  bool destroyed_;
 
   base::Lock context_lock_;
 

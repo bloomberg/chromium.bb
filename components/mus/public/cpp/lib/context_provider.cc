@@ -55,10 +55,6 @@ base::Lock* ContextProvider::GetLock() {
   return &context_lock_;
 }
 
-bool ContextProvider::DestroyedOnMainThread() {
-  return !context_;
-}
-
 ContextProvider::~ContextProvider() {
   context_gl_.reset();
   if (context_)

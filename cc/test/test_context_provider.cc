@@ -48,7 +48,6 @@ TestContextProvider::TestContextProvider(
     : context3d_(context.Pass()),
       context_gl_(new TestGLES2Interface(context3d_.get())),
       bound_(false),
-      destroyed_(false),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
@@ -69,8 +68,6 @@ bool TestContextProvider::BindToCurrentThread() {
     return true;
 
   if (context_gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-    base::AutoLock lock(destroyed_lock_);
-    destroyed_ = true;
     return false;
   }
   bound_ = true;
@@ -143,31 +140,13 @@ base::Lock* TestContextProvider::GetLock() {
 void TestContextProvider::VerifyContexts() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-    base::AutoLock lock(destroyed_lock_);
-    destroyed_ = true;
-  }
 }
 
 void TestContextProvider::DeleteCachedResources() {
 }
 
-bool TestContextProvider::DestroyedOnMainThread() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  base::AutoLock lock(destroyed_lock_);
-  return destroyed_;
-}
-
 void TestContextProvider::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  {
-    base::AutoLock lock(destroyed_lock_);
-    if (destroyed_)
-      return;
-    destroyed_ = true;
-  }
   if (!lost_context_callback_.is_null())
     base::ResetAndReturn(&lost_context_callback_).Run();
   if (gr_context_)
