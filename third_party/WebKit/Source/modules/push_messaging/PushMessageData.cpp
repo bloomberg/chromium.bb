@@ -33,7 +33,7 @@ PushMessageData* PushMessageData::create(const ArrayBufferOrArrayBufferViewOrUSV
     }
 
     if (messageData.isUSVString()) {
-        CString encodedString = UTF8Encoding().normalizeAndEncode(messageData.getAsUSVString(), WTF::EntitiesForUnencodables);
+        CString encodedString = UTF8Encoding().encode(messageData.getAsUSVString(), WTF::EntitiesForUnencodables);
         return new PushMessageData(encodedString.data(), encodedString.length());
     }
 

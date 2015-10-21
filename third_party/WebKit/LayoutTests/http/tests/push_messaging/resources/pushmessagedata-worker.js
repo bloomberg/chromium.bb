@@ -125,3 +125,10 @@ test(function() {
     assert_throws(null, () => new PushMessageData(new ArrayBuffer(8)));
 
 }, 'PushMessageData should not be constructable.');
+
+test(function() {
+    var s = "e\u0328"; // 'e' + COMBINING OGONEK
+    var data = createPushMessageData(s);
+    assert_equals(data.text(), s, 'String should not be NFC-normalized.');
+
+}, 'PushEventInit data is not normalized');
