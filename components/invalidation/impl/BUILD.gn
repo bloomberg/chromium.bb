@@ -116,6 +116,7 @@ source_set("unit_tests") {
       "gcm_network_channel_unittest.cc",
       "invalidation_notifier_unittest.cc",
       "invalidator_registrar_unittest.cc",
+      "invalidator_storage_unittest.cc",
       "non_blocking_invalidator_unittest.cc",
       "object_id_invalidation_map_unittest.cc",
       "p2p_invalidator_unittest.cc",

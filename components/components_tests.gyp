@@ -293,6 +293,7 @@
       'invalidation/impl/invalidation_logger_unittest.cc',
       'invalidation/impl/invalidation_notifier_unittest.cc',
       'invalidation/impl/invalidator_registrar_unittest.cc',
+      'invalidation/impl/invalidator_storage_unittest.cc',
       'invalidation/impl/non_blocking_invalidator_unittest.cc',
       'invalidation/impl/object_id_invalidation_map_unittest.cc',
       'invalidation/impl/p2p_invalidator_unittest.cc',

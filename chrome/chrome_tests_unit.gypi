@@ -124,7 +124,6 @@
       'browser/install_verification/win/module_verification_test.h',
       'browser/interests/interests_fetcher_unittest.cc',
       'browser/internal_auth_unittest.cc',
-      'browser/invalidation/invalidator_storage_unittest.cc',
       'browser/io_thread_unittest.cc',
       'browser/logging_chrome_unittest.cc',
       'browser/mac/keystone_glue_unittest.mm',

@@ -7,7 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
-#include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -21,7 +21,7 @@ class InvalidatorStorageTest : public testing::Test {
   }
 
  protected:
-  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  user_prefs::TestingPrefServiceSyncable pref_service_;
 };
 
 // Clearing the storage should erase all version map entries, bootstrap data,
