@@ -850,7 +850,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
     position = gfx::PointF(50.f, 10.f);
     bounds = gfx::Size(50, 50);
     gfx::Transform translate_z;
-    translate_z.Translate3d(0, 0, -10.f);
+    translate_z.Translate3d(0, 0, 10.f);
     SetLayerPropertiesForTesting(child2.get(), translate_z, transform_origin,
                                  position, bounds, true, false, false);
     child2->SetDrawsContent(true);
@@ -903,32 +903,32 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(2, result_layer->id());
 
-  // At (51, 20), child1 and child2 overlap. child2 is expected to be on top.
-  // (because 3 is transformed to the back).
+  // At (51, 20), child1 and child2 overlap. child2 is expected to be on top,
+  // as it was transformed to the foreground.
   test_point = gfx::PointF(51.f, 20.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(2, result_layer->id());
+  EXPECT_EQ(3, result_layer->id());
 
-  // 3 Would have been on top if it hadn't been transformed to the background.
-  // Make sure that it isn't hit.
+  // At (80, 51), child2 and grand_child1 overlap. child2 is expected to
+  // be on top, as it was transformed to the foreground.
   test_point = gfx::PointF(80.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(4, result_layer->id());
+  EXPECT_EQ(3, result_layer->id());
 
-  // 3 Would have been on top if it hadn't been transformed to the background.
-  // Make sure that it isn't hit.
+  // At (51, 51), child1, child2 and grand_child1 overlap. child2 is expected to
+  // be on top, as it was transformed to the foreground.
   test_point = gfx::PointF(51.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(4, result_layer->id());
+  EXPECT_EQ(3, result_layer->id());
 
   // At (20, 51), child1 and grand_child1 overlap. grand_child1 is expected to
-  // be on top.
+  // be on top, as it descends from child1.
   test_point = gfx::PointF(20.f, 51.f);
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
