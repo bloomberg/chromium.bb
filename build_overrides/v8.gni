@@ -9,7 +9,11 @@ if (is_android) {
 # TODO(sky): nuke this. Temporary while sorting out http://crbug.com/465456.
 enable_correct_v8_arch = false
 
-v8_use_external_startup_data = !(is_chromeos || is_win || is_ios)
+# TODO: Set v8_use_external_startup_data to true on Windows and iOS to match
+# GYP.
+# Windows - http://crbug.com/545641
+# iOS - http://crbug.com/545676
+v8_use_external_startup_data = !(is_win || is_ios)
 
 # V8 extras
 # Adding V8 extras files requires API owners review
