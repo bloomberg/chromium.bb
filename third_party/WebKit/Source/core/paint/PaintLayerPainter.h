@@ -17,6 +17,10 @@ class PaintLayer;
 class GraphicsContext;
 class LayoutPoint;
 
+// This class is responsible for painting self-painting PaintLayer.
+//
+// See PainterLayer SELF-PAINTING LAYER section about what 'self-painting'
+// means and how it impacts this class.
 class CORE_EXPORT PaintLayerPainter {
     STACK_ALLOCATED();
 public:
