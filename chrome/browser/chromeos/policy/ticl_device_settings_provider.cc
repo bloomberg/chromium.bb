@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/policy/ticl_device_settings_provider.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 
 namespace policy {
 
@@ -17,7 +17,7 @@ TiclDeviceSettingsProvider::~TiclDeviceSettingsProvider() {
 
 bool TiclDeviceSettingsProvider::UseGCMChannel() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kInvalidationUseGCMChannel);
+      invalidation::switches::kInvalidationUseGCMChannel);
 }
 
 }  // namespace policy
