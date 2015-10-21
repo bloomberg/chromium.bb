@@ -1924,8 +1924,6 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
-  renderer_scheduler_->OnRendererHidden();
-
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
@@ -1933,8 +1931,6 @@ void RenderThreadImpl::OnRendererHidden() {
 }
 
 void RenderThreadImpl::OnRendererVisible() {
-  renderer_scheduler_->OnRendererVisible();
-
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
 

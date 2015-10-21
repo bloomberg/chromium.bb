@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/child_scheduler.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
+#include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -16,6 +17,8 @@ struct BeginFrameArgs;
 }
 
 namespace scheduler {
+
+class RenderWidgetSchedulingState;
 
 class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
  public:
@@ -54,6 +57,11 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Returns a new timer task runner. This queue is intended for DOM Timers.
   virtual scoped_refptr<TaskQueue> NewTimerTaskRunner(const char* name) = 0;
 
+  // Returns a new RenderWidgetSchedulingState.  The signals from this will be
+  // used to make scheduling decisions.
+  virtual scoped_ptr<RenderWidgetSchedulingState>
+  NewRenderWidgetSchedulingState() = 0;
+
   // Called to notify about the start of an extended period where no frames
   // need to be drawn. Must be called from the main thread.
   virtual void BeginFrameNotExpectedSoon() = 0;
@@ -90,17 +98,6 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Tells the scheduler that the system is displaying an input animation (e.g.
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread() = 0;
-
-  // Tells the scheduler that all render widgets managed by this renderer
-  // process have been hidden. The renderer is assumed to be visible when the
-  // scheduler is constructed. Must be called on the main thread.
-  virtual void OnRendererHidden() = 0;
-
-  // Tells the scheduler that at least one render widget managed by this
-  // renderer process has become visible and the renderer is no longer hidden.
-  // The renderer is assumed to be visible when the scheduler is constructed.
-  // Must be called on the main thread.
-  virtual void OnRendererVisible() = 0;
 
   // Tells the scheduler that the renderer process has been backgrounded, i.e.,
   // there are no critical, user facing activities (visual, audio, etc...)

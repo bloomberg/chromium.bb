@@ -48,6 +48,7 @@ source_set("unit_tests") {
     "child/webthread_impl_for_worker_scheduler_unittest.cc",
     "child/worker_scheduler_impl_unittest.cc",
     "renderer/deadline_task_runner_unittest.cc",
+    "renderer/render_widget_signals_unittest.cpp",
     "renderer/renderer_scheduler_impl_unittest.cc",
     "renderer/task_cost_estimator_unittest.cc",
     "renderer/user_model_unittest.cc",

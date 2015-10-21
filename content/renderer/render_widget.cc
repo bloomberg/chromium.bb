@@ -22,6 +22,7 @@
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -529,6 +530,15 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
 #if defined(OS_ANDROID)
   text_input_info_history_.push_back(blink::WebTextInputInfo());
 #endif
+
+  // In tests there may not be a RenderThreadImpl.
+  if (RenderThreadImpl::current()) {
+    render_widget_scheduling_state_ = RenderThreadImpl::current()
+                                          ->GetRendererScheduler()
+                                          ->NewRenderWidgetSchedulingState()
+                                          .Pass();
+    render_widget_scheduling_state_->SetHidden(is_hidden_);
+  }
 }
 
 RenderWidget::~RenderWidget() {
@@ -1830,6 +1840,9 @@ void RenderWidget::SetHidden(bool hidden) {
     RenderThreadImpl::current()->WidgetHidden();
   else
     RenderThreadImpl::current()->WidgetRestored();
+
+  if (render_widget_scheduling_state_)
+    render_widget_scheduling_state_->SetHidden(hidden);
 }
 
 void RenderWidget::DidToggleFullscreen() {
@@ -2239,6 +2252,8 @@ void RenderWidget::ObserveWheelEventAndResult(
 }
 
 void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
+  if (render_widget_scheduling_state_)
+    render_widget_scheduling_state_->SetHasTouchHandler(has_handlers);
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 

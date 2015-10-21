@@ -35,6 +35,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                    "RendererSchedulerIdlePeriod",
                    base::TimeDelta()),
+      render_widget_scheduler_signals_(this),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(
           helper_.NewTaskQueue(TaskQueue::Spec("compositor_tq")
@@ -111,7 +112,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       loading_tasks_seem_expensive(false),
       timer_tasks_seem_expensive(false),
       touchstart_expected_soon(false),
-      have_seen_a_begin_main_frame(false) {}
+      have_seen_a_begin_main_frame(false),
+      has_visible_render_widget_with_touch_handler(false) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -181,6 +183,11 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
   timer_task_queue->AddTaskObserver(
       &MainThreadOnly().timer_task_cost_estimator);
   return timer_task_queue;
+}
+
+scoped_ptr<RenderWidgetSchedulingState>
+RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
+  return render_widget_scheduler_signals_.NewRenderWidgetSchedulingState();
 }
 
 void RendererSchedulerImpl::OnUnregisterTaskQueue(
@@ -260,43 +267,52 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   }
 }
 
-void RendererSchedulerImpl::OnRendererHidden() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnRendererHidden");
+void RendererSchedulerImpl::SetAllRenderWidgetsHidden(bool hidden) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::SetAllRenderWidgetsHidden", "hidden",
+               hidden);
+
   helper_.CheckOnValidThread();
-  if (helper_.IsShutdown() || MainThreadOnly().renderer_hidden)
+
+  if (helper_.IsShutdown() || MainThreadOnly().renderer_hidden == hidden)
     return;
 
-  idle_helper_.EnableLongIdlePeriod();
-
-  // Ensure that we stop running idle tasks after a few seconds of being hidden.
   end_renderer_hidden_idle_period_closure_.Cancel();
-  base::TimeDelta end_idle_when_hidden_delay =
-      base::TimeDelta::FromMilliseconds(kEndIdleWhenHiddenDelayMillis);
-  control_task_runner_->PostDelayedTask(
-      FROM_HERE, end_renderer_hidden_idle_period_closure_.callback(),
-      end_idle_when_hidden_delay);
-  MainThreadOnly().renderer_hidden = true;
 
+  if (hidden) {
+    idle_helper_.EnableLongIdlePeriod();
+
+    // Ensure that we stop running idle tasks after a few seconds of being
+    // hidden.
+    base::TimeDelta end_idle_when_hidden_delay =
+        base::TimeDelta::FromMilliseconds(kEndIdleWhenHiddenDelayMillis);
+    control_task_runner_->PostDelayedTask(
+        FROM_HERE, end_renderer_hidden_idle_period_closure_.callback(),
+        end_idle_when_hidden_delay);
+    MainThreadOnly().renderer_hidden = true;
+  } else {
+    MainThreadOnly().renderer_hidden = false;
+    EndIdlePeriod();
+  }
+
+  // TODO(alexclarke): Should we update policy here?
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this, AsValue(helper_.Now()));
 }
 
-void RendererSchedulerImpl::OnRendererVisible() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnRendererVisible");
+void RendererSchedulerImpl::SetHasVisibleRenderWidgetWithTouchHandler(
+    bool has_visible_render_widget_with_touch_handler) {
   helper_.CheckOnValidThread();
-  if (helper_.IsShutdown() || !MainThreadOnly().renderer_hidden)
+  if (has_visible_render_widget_with_touch_handler ==
+      MainThreadOnly().has_visible_render_widget_with_touch_handler)
     return;
 
-  end_renderer_hidden_idle_period_closure_.Cancel();
-  MainThreadOnly().renderer_hidden = false;
-  EndIdlePeriod();
+  MainThreadOnly().has_visible_render_widget_with_touch_handler =
+      has_visible_render_widget_with_touch_handler;
 
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
-      this, AsValue(helper_.Now()));
+  base::AutoLock lock(any_thread_lock_);
+  UpdatePolicyLocked(UpdateType::FORCE_UPDATE);
 }
 
 void RendererSchedulerImpl::OnRendererBackgrounded() {
@@ -548,13 +564,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   UseCase use_case = ComputeCurrentUseCase(now, &expected_use_case_duration);
   MainThreadOnly().current_use_case = use_case;
 
-  // TODO(alexclarke): We should wire up a signal from blink to let us know if
-  // there are any touch handlers registerd or not, and only call
-  // TouchStartExpectedSoon if there is at least one.  NOTE a TouchStart will
-  // only actually get sent if there is a touch handler.
   base::TimeDelta touchstart_expected_flag_valid_for_duration;
-  bool touchstart_expected_soon = AnyThread().user_model.IsGestureExpectedSoon(
-      use_case, now, &touchstart_expected_flag_valid_for_duration);
+  bool touchstart_expected_soon = false;
+  if (MainThreadOnly().has_visible_render_widget_with_touch_handler) {
+    touchstart_expected_soon = AnyThread().user_model.IsGestureExpectedSoon(
+        use_case, now, &touchstart_expected_flag_valid_for_duration);
+  }
   MainThreadOnly().touchstart_expected_soon = touchstart_expected_soon;
 
   base::TimeDelta expected_idle_duration =
@@ -805,6 +820,9 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
 
+  state->SetBoolean(
+      "has_visible_render_widget_with_touch_handler",
+      MainThreadOnly().has_visible_render_widget_with_touch_handler);
   state->SetString("current_use_case",
                    UseCaseToString(MainThreadOnly().current_use_case));
   state->SetBoolean("loading_tasks_seem_expensive",
@@ -857,6 +875,7 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
           .InMillisecondsF());
   state->SetBoolean("in_idle_period", AnyThread().in_idle_period);
   AnyThread().user_model.AsValueInto(state.get());
+  render_widget_scheduler_signals_.AsValueInto(state.get());
 
   return state;
 }

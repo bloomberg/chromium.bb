@@ -75,6 +75,10 @@ namespace gfx {
 class Range;
 }
 
+namespace scheduler {
+class RenderWidgetSchedulingState;
+}
+
 namespace content {
 class CompositorDependencies;
 class ExternalPopupMenu;
@@ -788,6 +792,9 @@ class CONTENT_EXPORT RenderWidget
   ui::MenuSourceType context_menu_source_type_;
   bool has_host_context_menu_location_;
   gfx::Point host_context_menu_location_;
+
+  scoped_ptr<scheduler::RenderWidgetSchedulingState>
+      render_widget_scheduling_state_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

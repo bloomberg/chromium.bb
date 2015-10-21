@@ -45,6 +45,11 @@ scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::NewTimerTaskRunner(
   return nullptr;
 }
 
+scoped_ptr<scheduler::RenderWidgetSchedulingState>
+FakeRendererScheduler::NewRenderWidgetSchedulingState() {
+  return nullptr;
+}
+
 void FakeRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
@@ -68,12 +73,6 @@ void FakeRendererScheduler::DidAnimateForInputOnCompositorThread() {
 
 bool FakeRendererScheduler::IsHighPriorityWorkAnticipated() {
   return false;
-}
-
-void FakeRendererScheduler::OnRendererHidden() {
-}
-
-void FakeRendererScheduler::OnRendererVisible() {
 }
 
 void FakeRendererScheduler::OnRendererBackgrounded() {

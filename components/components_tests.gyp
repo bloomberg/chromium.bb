@@ -592,6 +592,7 @@
       'scheduler/renderer/deadline_task_runner_unittest.cc',
       'scheduler/renderer/idle_time_estimator_unittest.cc',
       'scheduler/renderer/renderer_scheduler_impl_unittest.cc',
+      'scheduler/renderer/render_widget_signals_unittest.cpp',
       'scheduler/renderer/task_cost_estimator_unittest.cc',
       'scheduler/renderer/user_model_unittest.cc',
       'scheduler/renderer/web_frame_host_scheduler_impl_unittest.cc',

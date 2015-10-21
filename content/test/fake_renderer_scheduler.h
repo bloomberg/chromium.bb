@@ -25,6 +25,8 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
       const char* name) override;
   scoped_refptr<scheduler::TaskQueue> NewTimerTaskRunner(
       const char* name) override;
+  scoped_ptr<scheduler::RenderWidgetSchedulingState>
+  NewRenderWidgetSchedulingState() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
@@ -34,8 +36,6 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void DidHandleInputEventOnMainThread(
       const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
-  void OnRendererHidden() override;
-  void OnRendererVisible() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
   void AddPendingNavigation() override;
