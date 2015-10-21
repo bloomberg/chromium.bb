@@ -83,7 +83,6 @@ class NET_EXPORT URLRequestContextBuilder {
     std::string trusted_spdy_proxy;
     bool use_alternative_services;
     bool enable_quic;
-    bool enable_insecure_quic;
     QuicTagVector quic_connection_options;
   };
 
@@ -182,10 +181,6 @@ class NET_EXPORT URLRequestContextBuilder {
   // Adjust |http_network_session_params_.next_protos| to enable SPDY and QUIC.
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
-
-  void set_enable_insecure_quic(bool enable_insecure_quic) {
-    http_network_session_params_.enable_insecure_quic = enable_insecure_quic;
-  }
 
   void set_quic_connection_options(
       const QuicTagVector& quic_connection_options) {

@@ -66,16 +66,6 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
       session_->net_log().source().ToEventParametersCallback());
 
-  if (request_info->url.SchemeIsCryptographic()) {
-    SSLInfo ssl_info;
-    bool secure_session =
-        session_->GetSSLInfo(&ssl_info) && ssl_info.cert.get();
-    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SecureResourceSecureSession",
-                          secure_session);
-    if (!secure_session)
-      return ERR_REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC;
-  }
-
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
   request_time_ = base::Time::Now();

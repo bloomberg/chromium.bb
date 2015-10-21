@@ -626,8 +626,9 @@ NET_ERROR(RESPONSE_HEADERS_TRUNCATED, -357)
 // to read any requests sent, so they may be resent.
 NET_ERROR(QUIC_HANDSHAKE_FAILED, -358)
 
-// An https resource was requested over an insecure QUIC connection.
-NET_ERROR(REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC, -359)
+// Obsolete.  Kept here to avoid reuse, as the old error can still appear on
+// histograms.
+// NET_ERROR(REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC, -359)
 
 // Transport security is inadequate for the SPDY version.
 NET_ERROR(SPDY_INADEQUATE_TRANSPORT_SECURITY, -360)

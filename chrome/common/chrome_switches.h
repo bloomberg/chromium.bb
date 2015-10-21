@@ -125,7 +125,6 @@ extern const char kEnableExperimentalHotwordHardware[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
-extern const char kEnableInsecureQuic[];
 extern const char kEnableMaterialDesignDownloads[];
 extern const char kEnableMaterialDesignExtensions[];
 extern const char kEnableMaterialDesignPolicyPage[];

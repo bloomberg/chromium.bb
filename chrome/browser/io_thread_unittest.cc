@@ -154,7 +154,6 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
-  EXPECT_FALSE(params.enable_insecure_quic);
   EXPECT_TRUE(params.enable_quic_for_proxies);
   EXPECT_EQ(1350u, params.quic_max_packet_length);
   EXPECT_EQ(1.0, params.alternative_service_probability_threshold);
@@ -247,26 +246,6 @@ TEST_F(IOThreadTest, EnableAlternativeServicesFromCommandLineWithQuicEnabled) {
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
   EXPECT_TRUE(params.use_alternative_services);
-}
-
-TEST_F(IOThreadTest, EnableInsecureQuicFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["enable_insecure_quic"] = "true";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_insecure_quic);
-}
-
-TEST_F(IOThreadTest, EnableInsecureQuicCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitch("enable-insecure-quic");
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_insecure_quic);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromCommandLine) {

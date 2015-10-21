@@ -113,8 +113,6 @@ class NET_EXPORT HttpNetworkSession
 
     // Enables QUIC support.
     bool enable_quic;
-    // Enables insecure QUIC (http:// URLs) support, if enable_quic is true.
-    bool enable_insecure_quic;
     // Enables QUIC for proxies.
     bool enable_quic_for_proxies;
     // Instruct QUIC to use consistent ephemeral ports when talking to

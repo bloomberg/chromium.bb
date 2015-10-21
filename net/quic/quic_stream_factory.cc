@@ -124,29 +124,6 @@ QuicPacketWriter* DefaultPacketWriterFactory::Create(
 
 }  // namespace
 
-QuicStreamFactory::IpAliasKey::IpAliasKey() {}
-
-QuicStreamFactory::IpAliasKey::IpAliasKey(IPEndPoint ip_endpoint,
-                                          bool is_https)
-    : ip_endpoint(ip_endpoint),
-      is_https(is_https) {}
-
-QuicStreamFactory::IpAliasKey::~IpAliasKey() {}
-
-bool QuicStreamFactory::IpAliasKey::operator<(
-    const QuicStreamFactory::IpAliasKey& other) const {
-  if (!(ip_endpoint == other.ip_endpoint)) {
-    return ip_endpoint < other.ip_endpoint;
-  }
-  return is_https < other.is_https;
-}
-
-bool QuicStreamFactory::IpAliasKey::operator==(
-    const QuicStreamFactory::IpAliasKey& other) const {
-  return is_https == other.is_https &&
-      ip_endpoint == other.ip_endpoint;
-};
-
 // Responsible for creating a new QUIC session to the specified server, and
 // for notifying any associated requests when complete.
 class QuicStreamFactory::Job {
@@ -155,7 +132,6 @@ class QuicStreamFactory::Job {
       HostResolver* host_resolver,
       const HostPortPair& host_port_pair,
       bool server_and_origin_have_same_host,
-      bool is_https,
       bool was_alternative_service_recently_broken,
       PrivacyMode privacy_mode,
       int cert_verify_flags,
@@ -232,7 +208,6 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             HostResolver* host_resolver,
                             const HostPortPair& host_port_pair,
                             bool server_and_origin_have_same_host,
-                            bool is_https,
                             bool was_alternative_service_recently_broken,
                             PrivacyMode privacy_mode,
                             int cert_verify_flags,
@@ -242,7 +217,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
     : io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
       host_resolver_(host_resolver),
-      server_id_(host_port_pair, is_https, privacy_mode),
+      server_id_(host_port_pair, /*is_https=*/true, privacy_mode),
       cert_verify_flags_(cert_verify_flags),
       server_and_origin_have_same_host_(server_and_origin_have_same_host),
       is_post_(is_post),
@@ -252,8 +227,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       started_another_job_(false),
       net_log_(net_log),
       session_(nullptr),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             HostResolver* host_resolver,
@@ -516,7 +490,6 @@ QuicStreamRequest::~QuicStreamRequest() {
 }
 
 int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
-                               bool is_https,
                                PrivacyMode privacy_mode,
                                int cert_verify_flags,
                                base::StringPiece origin_host,
@@ -528,12 +501,10 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
   DCHECK(factory_);
   origin_host_ = origin_host.as_string();
   privacy_mode_ = privacy_mode;
-  int rv =
-      factory_->Create(host_port_pair, is_https, privacy_mode,
-                       cert_verify_flags, origin_host, method, net_log, this);
+  int rv = factory_->Create(host_port_pair, privacy_mode, cert_verify_flags,
+                            origin_host, method, net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
-    is_https_ = is_https;
     net_log_ = net_log;
     callback_ = callback;
   } else {
@@ -558,7 +529,7 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   if (!factory_)
     return base::TimeDelta();
   return factory_->GetTimeDelayForWaitingJob(
-      QuicServerId(host_port_pair_, is_https_, privacy_mode_));
+      QuicServerId(host_port_pair_, /*is_https=*/true, privacy_mode_));
 }
 
 scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
@@ -718,14 +689,13 @@ void QuicStreamFactory::set_quic_server_info_factory(
 }
 
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
-                              bool is_https,
                               PrivacyMode privacy_mode,
                               int cert_verify_flags,
                               base::StringPiece origin_host,
                               base::StringPiece method,
                               const BoundNetLog& net_log,
                               QuicStreamRequest* request) {
-  QuicServerId server_id(host_port_pair, is_https, privacy_mode);
+  QuicServerId server_id(host_port_pair, /*is_https=*/true, privacy_mode);
   SessionMap::iterator it = active_sessions_.find(server_id);
   if (it != active_sessions_.end()) {
     QuicChromiumClientSession* session = it->second;
@@ -762,11 +732,10 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   }
 
   bool server_and_origin_have_same_host = host_port_pair.host() == origin_host;
-  scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair,
-                              server_and_origin_have_same_host, is_https,
-                              WasQuicRecentlyBroken(server_id), privacy_mode,
-                              cert_verify_flags, method == "POST" /* is_post */,
-                              quic_server_info, net_log));
+  scoped_ptr<Job> job(new Job(
+      this, host_resolver_, host_port_pair, server_and_origin_have_same_host,
+      WasQuicRecentlyBroken(server_id), privacy_mode, cert_verify_flags,
+      method == "POST" /* is_post */, quic_server_info, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -791,11 +760,10 @@ void QuicStreamFactory::CreateAuxilaryJob(const QuicServerId server_id,
                                           bool server_and_origin_have_same_host,
                                           bool is_post,
                                           const BoundNetLog& net_log) {
-  Job* aux_job =
-      new Job(this, host_resolver_, server_id.host_port_pair(),
-              server_and_origin_have_same_host, server_id.is_https(),
-              WasQuicRecentlyBroken(server_id), server_id.privacy_mode(),
-              cert_verify_flags, is_post, nullptr, net_log);
+  Job* aux_job = new Job(
+      this, host_resolver_, server_id.host_port_pair(),
+      server_and_origin_have_same_host, WasQuicRecentlyBroken(server_id),
+      server_id.privacy_mode(), cert_verify_flags, is_post, nullptr, net_log);
   active_jobs_[server_id].insert(aux_job);
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&QuicStreamFactory::Job::RunAuxilaryJob,
@@ -810,11 +778,10 @@ bool QuicStreamFactory::OnResolution(
     return false;
   }
   for (const IPEndPoint& address : address_list) {
-    const IpAliasKey ip_alias_key(address, server_id.is_https());
-    if (!ContainsKey(ip_aliases_, ip_alias_key))
+    if (!ContainsKey(ip_aliases_, address))
       continue;
 
-    const SessionSet& sessions = ip_aliases_[ip_alias_key];
+    const SessionSet& sessions = ip_aliases_[address];
     for (QuicChromiumClientSession* session : sessions) {
       if (!session->CanPool(server_id.host(), server_id.privacy_mode()))
         continue;
@@ -993,11 +960,10 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   }
   ProcessGoingAwaySession(session, all_sessions_[session], false);
   if (!aliases.empty()) {
-    const IpAliasKey ip_alias_key(session->connection()->peer_address(),
-                                  aliases.begin()->is_https());
-    ip_aliases_[ip_alias_key].erase(session);
-    if (ip_aliases_[ip_alias_key].empty()) {
-      ip_aliases_.erase(ip_alias_key);
+    const IPEndPoint peer_address = session->connection()->peer_address();
+    ip_aliases_[peer_address].erase(session);
+    if (ip_aliases_[peer_address].empty()) {
+      ip_aliases_.erase(peer_address);
     }
   }
   session_aliases_.erase(session);
@@ -1083,11 +1049,10 @@ void QuicStreamFactory::OnSessionConnectTimeout(
     return;
   }
 
-  const IpAliasKey ip_alias_key(session->connection()->peer_address(),
-                                aliases.begin()->is_https());
-  ip_aliases_[ip_alias_key].erase(session);
-  if (ip_aliases_[ip_alias_key].empty()) {
-    ip_aliases_.erase(ip_alias_key);
+  const IPEndPoint peer_address = session->connection()->peer_address();
+  ip_aliases_[peer_address].erase(session);
+  if (ip_aliases_[peer_address].empty()) {
+    ip_aliases_.erase(peer_address);
   }
   QuicServerId server_id = *aliases.begin();
   session_aliases_.erase(session);
@@ -1267,7 +1232,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
 
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), packet_writer_factory,
-      true /* owns_writer */, Perspective::IS_CLIENT, server_id.is_https(),
+      true /* owns_writer */, Perspective::IS_CLIENT, /*is_https=*/true,
       supported_versions_);
   connection->SetMaxPacketLength(max_packet_length_);
 
@@ -1330,10 +1295,9 @@ void QuicStreamFactory::ActivateSession(const QuicServerId& server_id,
   UMA_HISTOGRAM_COUNTS("Net.QuicActiveSessions", active_sessions_.size());
   active_sessions_[server_id] = session;
   session_aliases_[session].insert(server_id);
-  const IpAliasKey ip_alias_key(session->connection()->peer_address(),
-                                server_id.is_https());
-  DCHECK(!ContainsKey(ip_aliases_[ip_alias_key], session));
-  ip_aliases_[ip_alias_key].insert(session);
+  const IPEndPoint peer_address = session->connection()->peer_address();
+  DCHECK(!ContainsKey(ip_aliases_[peer_address], session));
+  ip_aliases_[peer_address].insert(session);
 }
 
 int64 QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
@@ -1383,17 +1347,10 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
                           server_info->state().server_config.empty());
   }
 
-  if (!cached->Initialize(server_info->state().server_config,
-                          server_info->state().source_address_token,
-                          server_info->state().certs,
-                          server_info->state().server_config_sig,
-                          clock_->WallNow()))
-    return;
-
-  if (!server_id.is_https()) {
-    // Don't check the certificates for insecure QUIC.
-    cached->SetProofValid();
-  }
+  cached->Initialize(server_info->state().server_config,
+                     server_info->state().source_address_token,
+                     server_info->state().certs,
+                     server_info->state().server_config_sig, clock_->WallNow());
 }
 
 void QuicStreamFactory::MaybeInitialize() {

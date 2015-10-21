@@ -77,7 +77,7 @@ using std::endl;
 // The IP or hostname the quic client will connect to.
 string FLAGS_host = "";
 // The port to connect to.
-int32 FLAGS_port = 80;
+int32 FLAGS_port = 0;
 // If set, send a POST with this body.
 string FLAGS_body = "";
 // A semicolon separated list of key:value pairs to add to request headers.
@@ -182,12 +182,14 @@ int main(int argc, char *argv[]) {
   // Determine IP address to connect to from supplied hostname.
   net::IPAddressNumber ip_addr;
 
-  // TODO(rtenneti): GURL's doesn't support default_protocol argument, thus
-  // protocol is required in the URL.
   GURL url(urls[0]);
   string host = FLAGS_host;
   if (host.empty()) {
     host = url.host();
+  }
+  int port = FLAGS_port;
+  if (port == 0) {
+    port = url.EffectiveIntPort();
   }
   if (!net::ParseIPLiteralToNumber(host, &ip_addr)) {
     net::AddressList addresses;
@@ -200,19 +202,19 @@ int main(int argc, char *argv[]) {
     ip_addr = addresses[0].address();
   }
 
-  string host_port = net::IPAddressToStringWithPort(ip_addr, FLAGS_port);
+  string host_port = net::IPAddressToStringWithPort(ip_addr, port);
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
   net::EpollServer epoll_server;
-  net::QuicServerId server_id(url.host(), FLAGS_port, /*is_https=*/true,
-                              net::PRIVACY_MODE_DISABLED);
+  net::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
+                              /*is_https=*/true, net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::QuicSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
     versions.push_back(static_cast<net::QuicVersion>(FLAGS_quic_version));
   }
-  net::tools::QuicClient client(net::IPEndPoint(ip_addr, FLAGS_port), server_id,
+  net::tools::QuicClient client(net::IPEndPoint(ip_addr, port), server_id,
                                 versions, &epoll_server);
   scoped_ptr<CertVerifier> cert_verifier;
   scoped_ptr<TransportSecurityState> transport_security_state;

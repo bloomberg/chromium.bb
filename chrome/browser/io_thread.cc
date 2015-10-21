@@ -1053,7 +1053,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->alternative_service_probability_threshold);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
-  globals.enable_insecure_quic.CopyToIfSet(&params->enable_insecure_quic);
   globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
       &params->quic_always_require_handshake_confirmation);
@@ -1179,8 +1178,6 @@ void IOThread::ConfigureQuicGlobals(
   globals->use_alternative_services.set(
       ShouldQuicEnableAlternativeServices(command_line, quic_trial_params));
   if (enable_quic) {
-    globals->enable_insecure_quic.set(
-        ShouldEnableInsecureQuic(command_line, quic_trial_params));
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
     globals->quic_disable_connection_pooling.set(
@@ -1288,17 +1285,6 @@ bool IOThread::ShouldEnableQuicForDataReductionProxy() {
     return false;
 
   return data_reduction_proxy::params::IsIncludedInQuicFieldTrial();
-}
-
-bool IOThread::ShouldEnableInsecureQuic(
-    const base::CommandLine& command_line,
-    const VariationParameters& quic_trial_params) {
-  if (command_line.HasSwitch(switches::kEnableInsecureQuic))
-    return true;
-
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_insecure_quic"),
-      "true");
 }
 
 bool IOThread::ShouldEnableQuicPortSelection(

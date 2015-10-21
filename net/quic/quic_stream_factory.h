@@ -61,11 +61,9 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   explicit QuicStreamRequest(QuicStreamFactory* factory);
   ~QuicStreamRequest();
 
-  // For http, |is_https| is false.
   // |cert_verify_flags| is bitwise OR'd of CertVerifier::VerifyFlags and it is
   // passed to CertVerifier::Verify.
   int Request(const HostPortPair& host_port_pair,
-              bool is_https,
               PrivacyMode privacy_mode,
               int cert_verify_flags,
               base::StringPiece origin_host,
@@ -93,7 +91,6 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicStreamFactory* factory_;
   HostPortPair host_port_pair_;
   std::string origin_host_;
-  bool is_https_;
   PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
@@ -144,12 +141,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   ~QuicStreamFactory() override;
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be
-  // owned by |request|. |is_https| specifies if the protocol is https or not.
+  // owned by |request|.
   // If a matching session already exists, this method will return OK.  If no
   // matching session exists, this will return ERR_IO_PENDING and will invoke
   // OnRequestComplete asynchronously.
   int Create(const HostPortPair& host_port_pair,
-             bool is_https,
              PrivacyMode privacy_mode,
              int cert_verify_flags,
              base::StringPiece origin_host,
@@ -257,27 +253,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   friend class test::QuicStreamFactoryPeer;
   FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad);
 
-  // The key used to find session by ip. Includes
-  // the ip address, port, and scheme.
-  struct NET_EXPORT_PRIVATE IpAliasKey {
-    IpAliasKey();
-    IpAliasKey(IPEndPoint ip_endpoint, bool is_https);
-    ~IpAliasKey();
-
-    IPEndPoint ip_endpoint;
-    bool is_https;
-
-    // Needed to be an element of std::set.
-    bool operator<(const IpAliasKey &other) const;
-    bool operator==(const IpAliasKey &other) const;
-  };
-
   typedef std::map<QuicServerId, QuicChromiumClientSession*> SessionMap;
   typedef std::map<QuicChromiumClientSession*, QuicServerId> SessionIdMap;
   typedef std::set<QuicServerId> AliasSet;
   typedef std::map<QuicChromiumClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicChromiumClientSession*> SessionSet;
-  typedef std::map<IpAliasKey, SessionSet> IPAliasMap;
+  typedef std::map<IPEndPoint, SessionSet> IPAliasMap;
   typedef std::map<QuicServerId, QuicCryptoClientConfig*> CryptoConfigMap;
   typedef std::set<Job*> JobSet;
   typedef std::map<QuicServerId, JobSet> JobMap;

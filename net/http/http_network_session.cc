@@ -94,7 +94,6 @@ HttpNetworkSession::Params::Params()
       use_alternative_services(false),
       alternative_service_probability_threshold(1),
       enable_quic(false),
-      enable_insecure_quic(false),
       enable_quic_for_proxies(false),
       enable_quic_port_selection(true),
       quic_always_require_handshake_confirmation(false),

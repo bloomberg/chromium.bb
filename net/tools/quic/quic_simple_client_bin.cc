@@ -78,7 +78,7 @@ using std::endl;
 // The IP or hostname the quic client will connect to.
 string FLAGS_host = "";
 // The port to connect to.
-int32 FLAGS_port = 80;
+int32 FLAGS_port = 0;
 // If set, send a POST with this body.
 string FLAGS_body = "";
 // A semicolon separated list of key:value pairs to add to request headers.
@@ -190,6 +190,10 @@ int main(int argc, char *argv[]) {
   if (host.empty()) {
     host = url.host();
   }
+  int port = FLAGS_port;
+  if (port == 0) {
+    port = url.EffectiveIntPort();
+  }
   if (!net::ParseIPLiteralToNumber(host, &ip_addr)) {
     net::AddressList addresses;
     int rv = net::tools::SynchronousHostResolver::Resolve(host, &addresses);
@@ -205,15 +209,15 @@ int main(int argc, char *argv[]) {
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
-  net::QuicServerId server_id(host, FLAGS_port, /*is_https=*/true,
-                              net::PRIVACY_MODE_DISABLED);
+  net::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
+                              /*is_https=*/true, net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::QuicSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
     versions.push_back(static_cast<net::QuicVersion>(FLAGS_quic_version));
   }
-  net::tools::QuicSimpleClient client(net::IPEndPoint(ip_addr, FLAGS_port),
-                                      server_id, versions);
+  net::tools::QuicSimpleClient client(net::IPEndPoint(ip_addr, port), server_id,
+                                      versions);
   scoped_ptr<CertVerifier> cert_verifier;
   scoped_ptr<TransportSecurityState> transport_security_state;
   client.set_initial_max_packet_length(
