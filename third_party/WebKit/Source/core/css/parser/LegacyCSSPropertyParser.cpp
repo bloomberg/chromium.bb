@@ -663,14 +663,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FPercent | unitless);
         break;
 
-    case CSSPropertyOrphans: // <integer> | inherit | auto (We've added support for auto for backwards compatibility)
-    case CSSPropertyWidows: // <integer> | inherit | auto (Ditto)
-        if (id == CSSValueAuto)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FPositiveInteger);
-        break;
-
     case CSSPropertyZIndex: // auto | <integer> | inherit
         if (id == CSSValueAuto) {
             validPrimitive = true;
@@ -1253,6 +1245,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
     case CSSPropertyTransitionProperty:
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
         validPrimitive = false;
         break;
 

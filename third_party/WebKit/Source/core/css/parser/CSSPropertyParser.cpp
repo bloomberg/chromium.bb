@@ -1202,6 +1202,14 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSProp
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeWidowsOrOrphans(CSSParserTokenRange& range)
+{
+    // Support for auto is non-standard and for backwards compatibility.
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumePositiveInteger(range);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1296,6 +1304,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
         return consumeAnimationPropertyList(property, m_range, m_context, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
+        return consumeWidowsOrOrphans(m_range);
     default:
         return nullptr;
     }
