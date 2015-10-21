@@ -262,6 +262,8 @@ public:
     // Used by the MemoryCache to reduce the memory consumption of the entry.
     void prune();
 
+    virtual void onMemoryDump(WebProcessMemoryDump*) const;
+
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
@@ -344,6 +346,9 @@ protected:
 
     virtual bool isSafeToUnlock() const { return false; }
     virtual void destroyDecodedDataIfPossible() { }
+
+    // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
+    String getMemoryDumpName() const;
 
     ResourceRequest m_resourceRequest;
     AtomicString m_accept;

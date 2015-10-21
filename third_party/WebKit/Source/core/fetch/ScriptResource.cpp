@@ -33,6 +33,7 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
+#include "public/platform/WebProcessMemoryDump.h"
 
 namespace blink {
 
@@ -70,6 +71,15 @@ void ScriptResource::appendData(const char* data, unsigned length)
     ResourceClientWalker<ScriptResourceClient> walker(m_clients);
     while (ScriptResourceClient* client = walker.next())
         client->notifyAppendData(this);
+}
+
+void ScriptResource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
+{
+    Resource::onMemoryDump(memoryDump);
+    const String name = getMemoryDumpName() + "/decoded_script";
+    auto dump = memoryDump->createMemoryAllocatorDump(name);
+    dump->AddScalar("size", "bytes", m_script.string().sizeInBytes());
+    memoryDump->AddSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
 AtomicString ScriptResource::mimeType() const

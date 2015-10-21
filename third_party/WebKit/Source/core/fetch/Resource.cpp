@@ -39,6 +39,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -715,6 +716,33 @@ void Resource::prune()
 {
     destroyDecodedDataIfPossible();
     unlock();
+}
+
+void Resource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
+{
+    const String dumpName = getMemoryDumpName();
+    WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
+    dump->AddScalar("encoded_size", "bytes", m_encodedSize);
+    if (canDelete()) {
+        dump->AddScalar("dead_size", "bytes", m_encodedSize);
+    } else {
+        dump->AddScalar("live_size", "bytes", m_encodedSize);
+    }
+
+    if (m_data) {
+        dump->AddScalar("purgeable_size", "bytes", isPurgeable() && !wasPurged() ? encodedSize() + overheadSize() : 0);
+        m_data->onMemoryDump(dumpName, memoryDump);
+    }
+
+    const String overheadName = dumpName + "/metadata";
+    WebMemoryAllocatorDump* overheadDump = memoryDump->createMemoryAllocatorDump(overheadName);
+    overheadDump->AddScalar("size", "bytes", overheadSize());
+    memoryDump->AddSuballocation(overheadDump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+}
+
+String Resource::getMemoryDumpName() const
+{
+    return String::format("web_cache/%s_resources/%ld", resourceTypeToString(type(), options().initiatorInfo), m_identifier);
 }
 
 void Resource::setResourceToRevalidate(Resource* resource)

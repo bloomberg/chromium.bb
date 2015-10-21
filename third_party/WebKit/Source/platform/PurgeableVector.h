@@ -39,6 +39,7 @@
 namespace blink {
 
 class WebDiscardableMemory;
+class WebProcessMemoryDump;
 
 // A simple vector implementation that supports purgeable memory. The vector is
 // already locked at construction and locking uses an internal counter which
@@ -89,6 +90,8 @@ public:
     // it can result in O(N^2) append(). If you don't exactly know what you are
     // doing then you should probably not call this method.
     void reserveCapacity(size_t capacity);
+
+    void onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump*) const;
 
 private:
     enum PurgeableAllocationStrategy {

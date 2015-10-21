@@ -1513,6 +1513,8 @@
             'fetch/TextResource.h',
             'fetch/UniqueIdentifier.cpp',
             'fetch/UniqueIdentifier.h',
+            'fetch/WebCacheMemoryDumpProvider.cpp',
+            'fetch/WebCacheMemoryDumpProvider.h',
             'fetch/XSLStyleSheetResource.cpp',
             'fetch/XSLStyleSheetResource.h',
             'fileapi/Blob.cpp',

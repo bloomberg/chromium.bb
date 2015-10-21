@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
+#include "public/platform/WebMemoryDumpProvider.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
@@ -232,6 +233,9 @@ public:
     void pruneAll();
 
     void updateFramePaintTimestamp();
+
+    // Take memory usage snapshot for tracing.
+    void onMemoryDump(WebProcessMemoryDump*);
 
 private:
     enum PruneStrategy {

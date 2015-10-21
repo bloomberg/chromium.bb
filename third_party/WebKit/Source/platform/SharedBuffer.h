@@ -37,6 +37,8 @@
 
 namespace blink {
 
+class WebProcessMemoryDump;
+
 class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 public:
     enum : unsigned { kSegmentSize = 0x1000 };
@@ -101,6 +103,8 @@ public:
     void unlock();
 
     bool isLocked() const;
+
+    void onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump*) const;
 
 private:
     SharedBuffer();

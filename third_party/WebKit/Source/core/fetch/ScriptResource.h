@@ -57,6 +57,8 @@ public:
     void didAddClient(ResourceClient*) override;
     void appendData(const char*, unsigned) override;
 
+    void onMemoryDump(WebProcessMemoryDump*) const override;
+
     const String& script();
 
     AtomicString mimeType() const;

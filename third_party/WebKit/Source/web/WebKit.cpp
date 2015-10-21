@@ -38,6 +38,7 @@
 #include "core/Init.h"
 #include "core/animation/AnimationClock.h"
 #include "core/dom/Microtask.h"
+#include "core/fetch/WebCacheMemoryDumpProvider.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
@@ -121,6 +122,9 @@ void initialize(Platform* platform)
         ASSERT(!s_endOfTaskRunner);
         s_endOfTaskRunner = new EndOfTaskRunner;
         currentThread->addTaskObserver(s_endOfTaskRunner);
+
+        // Register web cache dump provider for tracing.
+        platform->registerMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());
     }
 }
 
@@ -198,15 +202,14 @@ void shutdown()
 {
     // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
+        Platform::current()->unregisterMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());
+
         // We don't need to (cannot) remove s_endOfTaskRunner from the current
         // message loop, because the message loop is already destructed before
         // the shutdown() is called.
         delete s_endOfTaskRunner;
         s_endOfTaskRunner = 0;
-    }
 
-    // currentThread() is null if we are running on a thread without a message loop.
-    if (Platform::current()->currentThread()) {
         ASSERT(s_pendingGCRunner);
         delete s_pendingGCRunner;
         s_pendingGCRunner = 0;

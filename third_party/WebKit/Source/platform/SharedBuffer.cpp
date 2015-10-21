@@ -27,6 +27,7 @@
 #include "config.h"
 #include "platform/SharedBuffer.h"
 
+#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/text/UTF8.h"
 #include "wtf/text/Unicode.h"
 
@@ -412,6 +413,20 @@ void SharedBuffer::unlock()
 bool SharedBuffer::isLocked() const
 {
     return m_buffer.isLocked();
+}
+
+void SharedBuffer::onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump* memoryDump) const
+{
+    if (m_buffer.size()) {
+        m_buffer.onMemoryDump(dumpPrefix + "/shared_buffer", memoryDump);
+    } else {
+        // If there is data in the segments, then it should have been allocated
+        // using fastMalloc.
+        const String dataDumpName = dumpPrefix + "/segments";
+        auto dump = memoryDump->createMemoryAllocatorDump(dataDumpName);
+        dump->AddScalar("size", "bytes", m_size);
+        memoryDump->AddSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    }
 }
 
 } // namespace blink

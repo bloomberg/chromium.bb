@@ -33,6 +33,7 @@
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebDiscardableMemory.h"
+#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -77,6 +78,19 @@ void PurgeableVector::reserveCapacity(size_t capacity)
     }
 
     moveDataFromDiscardableToVector();
+}
+
+void PurgeableVector::onMemoryDump(const String& dumpName, WebProcessMemoryDump* memoryDump) const
+{
+    ASSERT(!(m_discardable && m_vector.size()));
+    if (m_discardable) {
+        WebMemoryAllocatorDump* dump = m_discardable->createMemoryAllocatorDump(dumpName, memoryDump);
+        dump->AddScalar("discardable_size", "bytes", m_discardableSize);
+    } else if (m_vector.size()) {
+        WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
+        dump->AddScalar("size", "bytes", m_vector.size());
+        memoryDump->AddSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    }
 }
 
 void PurgeableVector::moveDataFromDiscardableToVector()

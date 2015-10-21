@@ -24,6 +24,7 @@
 #include "core/fetch/MemoryCache.h"
 
 #include "core/fetch/ResourcePtr.h"
+#include "core/fetch/WebCacheMemoryDumpProvider.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -65,6 +66,7 @@ MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache)
     memoryCache();
     MemoryCache* oldCache = gMemoryCache->release();
     *gMemoryCache = cache;
+    WebCacheMemoryDumpProvider::instance()->setMemoryCache(cache);
     return oldCache;
 }
 
@@ -105,6 +107,7 @@ inline MemoryCache::MemoryCache()
     , m_statsTimer(this, &MemoryCache::dumpStats)
 #endif
 {
+    WebCacheMemoryDumpProvider::instance()->setMemoryCache(this);
 #ifdef MEMORY_CACHE_STATS
     const double statsIntervalInSeconds = 15;
     m_statsTimer.startRepeating(statsIntervalInSeconds, BLINK_FROM_HERE);
@@ -778,6 +781,16 @@ void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy)
 void MemoryCache::updateFramePaintTimestamp()
 {
     m_lastFramePaintTimeStamp = currentTime();
+}
+
+void MemoryCache::onMemoryDump(WebProcessMemoryDump* memoryDump)
+{
+    for (const auto& resourceMapIter : m_resourceMaps) {
+        for (const auto& resourceIter : *resourceMapIter.value) {
+            Resource* resource = resourceIter.value->m_resource.get();
+            resource->onMemoryDump(memoryDump);
+        }
+    }
 }
 
 void MemoryCache::registerLiveResource(Resource& resource)
