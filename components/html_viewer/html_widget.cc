@@ -123,9 +123,10 @@ blink::WebLayerTreeView* HTMLWidgetRootLocal::layerTreeView() {
   return web_layer_tree_view_impl_.get();
 }
 
-void HTMLWidgetRootLocal::didFirstVisuallyNonEmptyLayout() {
+void HTMLWidgetRootLocal::didMeaningfulLayout(
+    blink::WebMeaningfulLayout layout_type) {
   static bool called = false;
-  if (!called) {
+  if (!called && layout_type == blink::WebMeaningfulLayout::VisuallyNonEmpty) {
     const int64 time = base::Time::Now().ToInternalValue();
     tracing::StartupPerformanceDataCollectorPtr collector =
         StatsCollectionController::ConnectToDataCollector(app_);
