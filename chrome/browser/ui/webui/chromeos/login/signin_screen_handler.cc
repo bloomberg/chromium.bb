@@ -1031,11 +1031,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   args->GetString(0, &email);
 
   gaia_screen_handler_->set_populated_email(email);
-  // Load auth extension. Parameters are: force reload, do not load extension in
-  // background, use offline version.
-  gaia_screen_handler_->LoadAuthExtension(true /* force */,
-                                          false /* silent_load */,
-                                          true /* offline */);
+  gaia_screen_handler_->LoadAuthExtension(true /* force */, true /* offline */);
   UpdateUIState(UI_STATE_GAIA_SIGNIN, nullptr);
 }
 

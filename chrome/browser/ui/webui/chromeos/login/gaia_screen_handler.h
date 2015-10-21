@@ -188,11 +188,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void ShowGaiaScreenIfReady();
 
   // Tells webui to load authentication extension. |force| is used to force the
-  // extension reloading, if it has already been loaded. |silent_load| is true
-  // for cases when extension should be loaded in the background and it
-  // shouldn't grab the focus. |offline| is true when offline version of the
-  // extension should be used.
-  void LoadAuthExtension(bool force, bool silent_load, bool offline);
+  // extension reloading, if it has already been loaded. |offline| is true when
+  // offline version of the extension should be used.
+  void LoadAuthExtension(bool force, bool offline);
 
   // TODO (antrim@): GaiaScreenHandler should implement
   // NetworkStateInformer::Observer.

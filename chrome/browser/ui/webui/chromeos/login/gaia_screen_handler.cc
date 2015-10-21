@@ -361,8 +361,7 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
     return;
 
   captive_portal_status_ = status;
-  LoadAuthExtension(true /* force */, true /* silent_load */,
-                    false /* offline */);
+  LoadAuthExtension(true /* force */, false /* offline */);
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(
@@ -539,8 +538,7 @@ void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
 
 void GaiaScreenHandler::HandleToggleEasyBootstrap() {
   use_easy_bootstrap_ = !use_easy_bootstrap_;
-  LoadAuthExtension(true /* force */, true /* silent_load */,
-                    false /* offline */);
+  LoadAuthExtension(true /* force */, false /* offline */);
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {
@@ -765,8 +763,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     }
   }
 
-  LoadAuthExtension(!gaia_silent_load_ /* force */, false /* silent_load */,
-                    false /* offline */);
+  LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);
   signin_screen_handler_->UpdateUIState(
       SigninScreenHandler::UI_STATE_GAIA_SIGNIN, nullptr);
 
@@ -808,8 +805,7 @@ void GaiaScreenHandler::MaybePreloadAuthExtension() {
       network_state_informer_->state() == NetworkStateInformer::ONLINE) {
     gaia_silent_load_ = true;
     gaia_silent_load_network_ = network_state_informer_->network_path();
-    LoadAuthExtension(true /* force */, true /* silent_load */,
-                      false /* offline */);
+    LoadAuthExtension(true /* force */, false /* offline */);
   }
 }
 
@@ -823,10 +819,8 @@ void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force,
-                                          bool silent_load,
                                           bool offline) {
   VLOG(1) << "LoadAuthExtension, force: " << force
-          << ", silent_load: " << silent_load
           << ", offline: " << offline;
   GaiaContext context;
   context.force_reload = force;
