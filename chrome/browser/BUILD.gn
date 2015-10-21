@@ -765,7 +765,7 @@ source_set("browser") {
     ]
     deps += [
       ":chrome_process_finder",
-      "//chrome/common:version_header",
+      "//chrome:version_header",
       "//chrome/installer/util:strings",
       "//chrome_elf",
       "//chrome_elf:constants",

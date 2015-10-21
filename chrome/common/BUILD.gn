@@ -36,7 +36,7 @@ if (enable_extensions) {
   }
 }
 
-# GYP version: chrome/chrome_common.gypi:common
+# GYP version: chrome/chrome_common.gyp:common
 static_library("common") {
   sources = rebase_path(gypi_values.chrome_common_sources, ".", "//chrome")
   defines = []
@@ -269,20 +269,12 @@ static_library("common") {
   }
 }
 
-# GYP version: chrome/common_constants.gyp:version_header
-process_version("version_header") {
-  # TODO(brettw) this should have more reduced visibility, but chrome/browser
-  # currently depends on this.
-  #visibility = [ ":*" ]
-
-  # This one just uses the custom template and no separate sources.
-  sources = []
-  template_file = "chrome_version.h.in"
-
-  output = "$target_gen_dir/chrome_version.h"
+process_version("make_chrome_version") {
+  template_file = "chrome_version.cc.version"
+  output = "$target_gen_dir/chrome_version.cc"
 }
 
-# GYP version: chrome/common_constants.gyp:common_constants
+# GN version: chrome/common_constants.gyp:common_constants
 static_library("constants") {
   sources = [
     "chrome_constants.cc",
@@ -311,7 +303,7 @@ static_library("constants") {
     "//content/public/common:result_codes",
   ]
   deps = [
-    ":version_header",
+    ":make_chrome_version",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/common",

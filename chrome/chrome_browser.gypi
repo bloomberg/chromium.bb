@@ -3729,7 +3729,7 @@
             'chrome_process_finder',
             'chrome_watcher_client',
             'installer_util_strings',
-            '../chrome/common_constants.gyp:version_header',
+            '../chrome/chrome.gyp:chrome_version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
             '../chrome_elf/chrome_elf.gyp:dll_hash',
