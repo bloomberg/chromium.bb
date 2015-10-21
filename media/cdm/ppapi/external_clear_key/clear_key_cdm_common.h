@@ -5,7 +5,7 @@
 #ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_COMMON_H_
 #define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_COMMON_H_
 
-#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/api/content_decryption_module.h"
 
 namespace media {
 

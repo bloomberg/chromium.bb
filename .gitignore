@@ -178,7 +178,7 @@ v8.log
 /ios/third_party/gcdwebserver/src
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
-/media/cdm/ppapi/api
+/media/cdm/api
 /media/media_asm.xml
 /media/media_mojo_bindings.xml
 /media/test/data/internal

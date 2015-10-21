@@ -5,7 +5,7 @@
 #ifndef MEDIA_CDM_PPAPI_SUPPORTED_CDM_VERSIONS_H_
 #define MEDIA_CDM_PPAPI_SUPPORTED_CDM_VERSIONS_H_
 
-#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/api/content_decryption_module.h"
 
 namespace media {
 

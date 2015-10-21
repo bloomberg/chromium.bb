@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
 #include "media/cdm/ppapi/supported_cdm_versions.h"
 #include "ppapi/cpp/logging.h"

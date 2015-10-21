@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 
 struct vpx_codec_ctx;

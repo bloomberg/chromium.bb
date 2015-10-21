@@ -6,7 +6,7 @@
 #define MEDIA_CDM_STUB_STUB_CDM_H_
 
 #include "base/basictypes.h"
-#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/api/content_decryption_module.h"
 
 namespace media {
 

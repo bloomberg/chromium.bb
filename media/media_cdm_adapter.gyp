@@ -22,7 +22,7 @@
           'type': 'none',
           'direct_dependent_settings': {
             'sources': [
-              'cdm/ppapi/api/content_decryption_module.h',
+              'cdm/api/content_decryption_module.h',
               'cdm/ppapi/cdm_adapter.cc',
               'cdm/ppapi/cdm_adapter.h',
               'cdm/ppapi/cdm_file_io_impl.cc',

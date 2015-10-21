@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
-#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/api/content_decryption_module.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/dev/buffer_dev.h"

@@ -18,7 +18,7 @@ template("cdm_adapter") {
     forward_variables_from(invoker, "*")
 
     sources += [
-      "//media/cdm/ppapi/api/content_decryption_module.h",
+      "//media/cdm/api/content_decryption_module.h",
       "//media/cdm/ppapi/cdm_adapter.cc",
       "//media/cdm/ppapi/cdm_adapter.h",
       "//media/cdm/ppapi/cdm_file_io_impl.cc",
