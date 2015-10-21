@@ -6,7 +6,7 @@
 // from the settings UI.
 namespace settingsPrivate {
   // Type of a pref.
-  enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST };
+  enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST, DICTIONARY };
 
   // Source of a restricted pref, either by policy or other source.
   enum PolicySource {

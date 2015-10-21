@@ -60,4 +60,43 @@ var prefsTestCases = [{
      {some: 2.2,
       dictionary: 4.4}]
   ],
+}, {
+  key: 'content_settings.exceptions.notifications',
+  type: chrome.settingsPrivate.PrefType.DICTIONARY,
+  values: [{
+    'https:\/\/foo.com,*': {
+      last_used: 1442486000.4000,
+      'setting': 0,
+    },
+    'https:\/\/bar.com,*': {
+      'last_used': 1442487000.3000,
+      'setting': 1,
+    },
+    'https:\/\/baz.com,*': {
+      'last_used': 1442482000.8000,
+      'setting': 2,
+    },
+  }, {
+    'https:\/\/foo.com,*': {
+      last_used: 1442486000.4000,
+      'setting': 0,
+    },
+    'https:\/\/example.com,*': {
+      'last_used': 1442489000.1000,
+      'setting': 2,
+    },
+    'https:\/\/baz.com,*': {
+      'last_used': 1442484000.9000,
+      'setting': 1,
+    },
+  }, {
+    'https:\/\/foo.com,*': {
+      last_used: 1442488000.8000,
+      'setting': 1,
+    },
+    'https:\/\/example.com,*': {
+      'last_used': 1442489000.1000,
+      'setting': 2,
+    },
+  }],
 }];
