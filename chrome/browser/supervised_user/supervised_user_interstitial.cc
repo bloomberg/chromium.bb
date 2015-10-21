@@ -61,7 +61,20 @@ std::string BuildAvatarImageUrl(const std::string& url, int size) {
 }
 
 class TabCloser : public content::WebContentsUserData<TabCloser> {
-  // To use, call TabCloser::CreateForWebContents.
+ public:
+  static void MaybeClose(WebContents* web_contents) {
+    // Close the tab if there is no history entry to go back to and there is a
+    // browser for the tab (which is not the case for example in a <webview>).
+    if (!web_contents->GetController().IsInitialBlankNavigation())
+      return;
+
+#if !defined(OS_ANDROID)
+    if (!chrome::FindBrowserWithWebContents(web_contents))
+      return;
+#endif
+    TabCloser::CreateForWebContents(web_contents);
+  }
+
  private:
   friend class content::WebContentsUserData<TabCloser>;
 
@@ -305,10 +318,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     DCHECK(web_contents->GetController().GetTransientEntry());
     interstitial_page_->DontProceed();
 
-    // Close the tab if there is no history entry to go back to.
-    if (web_contents->GetController().IsInitialBlankNavigation())
-      TabCloser::CreateForWebContents(web_contents);
-
+    TabCloser::MaybeClose(web_contents);
     return;
   }
 
