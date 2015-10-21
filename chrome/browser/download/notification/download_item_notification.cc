@@ -675,8 +675,13 @@ base::string16 DownloadItemNotification::GetTitle() const {
       item_->GetFileNameToReportUser().LossyDisplayName();
   switch (item_->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
-      title_text = l10n_util::GetStringFUTF16(
-          IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE, file_name);
+      if (!item_->IsPaused()) {
+        title_text = l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE, file_name);
+      } else {
+        title_text = l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_PAUSED_TITLE, file_name);
+      }
       break;
     case content::DownloadItem::COMPLETE:
       title_text = l10n_util::GetStringFUTF16(

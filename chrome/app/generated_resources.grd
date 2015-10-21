@@ -1803,6 +1803,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                  desc="The title of a download notification: the current download status is in progress.">
                  Downloading <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
         </message>
+        <message name="IDS_DOWNLOAD_STATUS_PAUSED_TITLE"
+                 desc="The title of a download notification: the current download status is in progress.">
+                 Paused <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
+        </message>
         <message name="IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE"
                  desc="The title of a download notification: the current download status is finished successufully.">
                  <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> downloaded
