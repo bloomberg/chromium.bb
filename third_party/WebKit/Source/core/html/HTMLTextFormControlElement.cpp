@@ -189,6 +189,7 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 
 void HTMLTextFormControlElement::select(NeedToDispatchSelectEvent eventBehaviour)
 {
+    // We have to update layout here to use isFocusable().
     document().updateLayoutIgnorePendingStylesheets();
     setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, eventBehaviour, isFocusable() ? ChangeSelectionAndFocus : NotChangeSelection);
 }
@@ -353,6 +354,10 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
 {
     if (openShadowRoot() || !isTextFormControl() || !inDocument())
         return;
+
+    // We need to update layout here so that we have proper types for both dom tree and composed tree selection.
+    // See https://codereview.chromium.org/1377963004/
+    document().updateLayoutIgnorePendingStylesheets();
 
     const int editorValueLength = static_cast<int>(innerEditorValue().length());
     ASSERT(editorValueLength >= 0);
