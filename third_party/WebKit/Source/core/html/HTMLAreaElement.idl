@@ -25,7 +25,8 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute DOMString coords;
     [Reflect] attribute DOMString shape;
     [Reflect] attribute DOMString target;
-    [PutForwards=value] attribute DOMSettableTokenList ping;
+    // FIXME: ping should be a DOMSettableTokenList.
+    [Reflect] attribute DOMString ping;
     // FIXME: download, rel, relList, hreflang and type are missing.
 
     // obsolete members

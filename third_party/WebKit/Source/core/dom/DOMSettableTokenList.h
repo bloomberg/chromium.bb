@@ -35,7 +35,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT DOMSettableTokenListObserver : public WillBeGarbageCollectedMixin {
+class DOMSettableTokenListObserver : public WillBeGarbageCollectedMixin {
 public:
     virtual void valueChanged() = 0;
 

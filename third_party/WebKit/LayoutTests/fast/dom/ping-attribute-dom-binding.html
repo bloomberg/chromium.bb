@@ -9,38 +9,24 @@
 description('Tests the DOM bindings for the ping attribute');
 
 var anchor = document.createElement('a');
-shouldBe('anchor.ping', '[]');
+shouldBeEqualToString('anchor.ping', '');
 anchor.setAttribute('ping', 'p1');
-shouldBe('anchor.ping', '["p1"]');
+shouldBeEqualToString('anchor.ping', 'p1');
 anchor.ping = 'p2';
 shouldBeEqualToString('anchor.getAttribute("ping")', 'p2');
-anchor.ping.add('p3');
-shouldBe('anchor.ping', '["p2","p3"]');
-anchor.ping.add('p3');
-shouldBe('anchor.ping', '["p2","p3"]');
-shouldBeTrue('anchor.ping.contains("p3")');
-anchor.ping.remove('p2');
-shouldBe('anchor.ping', '["p3"]');
 anchor.ping = null;
 shouldBeEqualToString('anchor.getAttribute("ping")', 'null');
-shouldBe('anchor.ping', '["null"]');
+shouldBeEqualToString('anchor.ping', 'null');
 
 var area = document.createElement('area');
-shouldBe('area.ping', '[]');
+shouldBeEqualToString('area.ping', '');
 area.setAttribute('ping', 'p1');
-shouldBe('area.ping', '["p1"]');
+shouldBeEqualToString('area.ping', 'p1');
 area.ping = 'p2';
 shouldBeEqualToString('area.getAttribute("ping")', 'p2');
-area.ping.add('p3');
-shouldBe('area.ping', '["p2","p3"]');
-area.ping.add('p3');
-shouldBe('area.ping', '["p2","p3"]');
-shouldBeTrue('area.ping.contains("p3")');
-area.ping.remove('p2');
-shouldBe('area.ping', '["p3"]');
 area.ping = null;
 shouldBeEqualToString('area.getAttribute("ping")', 'null');
-shouldBe('area.ping', '["null"]');
+shouldBeEqualToString('area.ping', 'null');
 
 </script>
 </body>

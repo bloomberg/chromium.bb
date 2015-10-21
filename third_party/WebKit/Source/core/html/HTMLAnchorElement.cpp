@@ -53,13 +53,6 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& doc
 {
 }
 
-DEFINE_TRACE(HTMLAnchorElement)
-{
-    visitor->trace(m_ping);
-    HTMLElement::trace(visitor);
-    DOMSettableTokenListObserver::trace(visitor);
-}
-
 PassRefPtrWillBeRawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& document)
 {
     return adoptRefWillBeNoop(new HTMLAnchorElement(aTag, document));
@@ -67,10 +60,6 @@ PassRefPtrWillBeRawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& do
 
 HTMLAnchorElement::~HTMLAnchorElement()
 {
-#if !ENABLE(OILPAN)
-    if (m_ping)
-        m_ping->setObserver(nullptr);
-#endif
 }
 
 bool HTMLAnchorElement::supportsFocus() const
@@ -231,8 +220,6 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
         // Do nothing.
     } else if (name == relAttr) {
         setRel(value);
-    } else if (name == pingAttr) {
-        ping()->setValue(value);
     } else {
         HTMLElement::parseAttribute(name, value);
     }
@@ -333,22 +320,15 @@ bool HTMLAnchorElement::isLiveLink() const
 
 void HTMLAnchorElement::sendPings(const KURL& destinationURL) const
 {
-    if (!m_ping || m_ping->value().isNull() || !document().settings() || !document().settings()->hyperlinkAuditingEnabled())
+    const AtomicString& pingValue = getAttribute(pingAttr);
+    if (pingValue.isNull() || !document().settings() || !document().settings()->hyperlinkAuditingEnabled())
         return;
 
     UseCounter::count(document(), UseCounter::HTMLAnchorElementPingAttribute);
 
-    const SpaceSplitString& pingURLs = m_ping->tokens();
+    SpaceSplitString pingURLs(pingValue, SpaceSplitString::ShouldNotFoldCase);
     for (unsigned i = 0; i < pingURLs.size(); i++)
         PingLoader::sendLinkAuditPing(document().frame(), document().completeURL(pingURLs[i]), destinationURL);
-}
-
-DOMSettableTokenList* HTMLAnchorElement::ping()
-{
-    if (!m_ping)
-        m_ping = DOMSettableTokenList::create(this);
-
-    return m_ping.get();
 }
 
 void HTMLAnchorElement::handleClick(Event* event)
@@ -391,11 +371,6 @@ void HTMLAnchorElement::handleClick(Event* event)
             frameRequest.setShouldSendReferrer(NeverSendReferrer);
         frame->loader().load(frameRequest);
     }
-}
-
-void HTMLAnchorElement::valueChanged()
-{
-    setSynchronizedLazyAttribute(pingAttr, m_ping->value());
 }
 
 bool isEnterKeyKeydownEvent(Event* event)
