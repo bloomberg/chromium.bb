@@ -64,7 +64,7 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
           continue;
         }
         gfx::Transform clip_to_target;
-        success = transform_tree.ComputeTransformWithDestinationSublayerScale(
+        success = transform_tree.ComputeTransform(
             clip_node->data.target_id, target_node->id, &clip_to_target);
         if (!success) {
           // An animated singular transform may become non-singular during the
