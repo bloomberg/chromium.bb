@@ -19,6 +19,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 
+namespace libgtk2ui {
 
 namespace {
 
@@ -77,11 +78,6 @@ SkColor SelectedURLColor(SkColor foreground, SkColor background) {
   return color_utils::HSLToSkColor(output, 255);
 }
 
-}  // namespace
-
-
-namespace libgtk2ui {
-
 enum WidgetState {
   NORMAL = 0,
   ACTIVE = 1,
@@ -89,6 +85,12 @@ enum WidgetState {
   SELECTED = 3,
   INSENSITIVE = 4,
 };
+
+#if GTK_MAJOR_VERSION == 2
+const WidgetState kTextboxInactiveState = ACTIVE;
+#else
+const WidgetState kTextboxInactiveState = SELECTED;
+#endif
 
 #if GTK_MAJOR_VERSION == 2
 // Same order as enum WidgetState above
@@ -99,7 +101,6 @@ const GtkStateType stateMap[] = {
   GTK_STATE_SELECTED,
   GTK_STATE_INSENSITIVE,
 };
-
 
 SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
   return GdkColorToSkColor(gtk_rc_get_style(widget)->fg[stateMap[state]]);
@@ -118,7 +119,6 @@ SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
   return GdkColorToSkColor(gtk_rc_get_style(widget)->base[stateMap[state]]);
 }
 
-
 #else
 // Same order as enum WidgetState above
 const GtkStateFlags stateMap[] = {
@@ -128,7 +128,6 @@ const GtkStateFlags stateMap[] = {
   GTK_STATE_FLAG_SELECTED,
   GTK_STATE_FLAG_INSENSITIVE,
 };
-
 
 SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
   GdkRGBA color;
@@ -160,7 +159,10 @@ SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
 SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
   return GetBGColor(widget, state);
 }
+
 #endif
+
+}  // namespace
 
 // static
 NativeThemeGtk2* NativeThemeGtk2::instance() {
@@ -315,9 +317,9 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_TextfieldDefaultBackground:
       return GetBaseColor(GetEntry(), NORMAL);
     case kColorId_TextfieldReadOnlyColor:
-      return GetTextColor(GetEntry(), INSENSITIVE);
+      return GetTextColor(GetEntry(), kTextboxInactiveState);
     case kColorId_TextfieldReadOnlyBackground:
-      return GetBaseColor(GetEntry(), INSENSITIVE);
+      return GetBaseColor(GetEntry(), kTextboxInactiveState);
     case kColorId_TextfieldSelectionColor:
       return GetTextColor(GetEntry(), SELECTED);
     case kColorId_TextfieldSelectionBackgroundFocused:

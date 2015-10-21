@@ -1013,9 +1013,12 @@ void Gtk2UI::LoadGtkValues() {
   active_selection_fg_color_ =
       theme->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldSelectionColor);
-
-  inactive_selection_bg_color_ = active_selection_bg_color_;
-  inactive_selection_fg_color_ = active_selection_fg_color_;
+  inactive_selection_bg_color_ =
+      theme->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldReadOnlyBackground);
+  inactive_selection_fg_color_ =
+      theme->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
 
   colors_[ThemeProperties::COLOR_THROBBER_SPINNING] =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ThrobberSpinningColor);
