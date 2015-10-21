@@ -12,6 +12,7 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/vibration/NavigatorVibration.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {
@@ -70,31 +71,34 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
         webData.data = serializedData;
     }
 
-    Vector<WebNotificationAction> actions;
+    // Ignore experimental NotificationOptions members if the flag is not set.
+    if (RuntimeEnabledFeatures::notificationExperimentalEnabled()) {
+        Vector<WebNotificationAction> actions;
 
-    const size_t maxActions = Notification::maxActions();
-    for (const NotificationAction& action : options.actions()) {
-        if (action.action().isEmpty()) {
-            exceptionState.throwTypeError("NotificationAction `action` must not be empty.");
-            return WebNotificationData();
+        const size_t maxActions = Notification::maxActions();
+        for (const NotificationAction& action : options.actions()) {
+            if (action.action().isEmpty()) {
+                exceptionState.throwTypeError("NotificationAction `action` must not be empty.");
+                return WebNotificationData();
+            }
+
+            if (action.title().isEmpty()) {
+                exceptionState.throwTypeError("NotificationAction `title` must not be empty.");
+                return WebNotificationData();
+            }
+
+            if (actions.size() >= maxActions)
+                continue;
+
+            WebNotificationAction webAction;
+            webAction.action = action.action();
+            webAction.title = action.title();
+
+            actions.append(webAction);
         }
 
-        if (action.title().isEmpty()) {
-            exceptionState.throwTypeError("NotificationAction `title` must not be empty.");
-            return WebNotificationData();
-        }
-
-        if (actions.size() >= maxActions)
-            continue;
-
-        WebNotificationAction webAction;
-        webAction.action = action.action();
-        webAction.title = action.title();
-
-        actions.append(webAction);
+        webData.actions = actions;
     }
-
-    webData.actions = actions;
 
     return webData;
 }
