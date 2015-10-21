@@ -319,11 +319,20 @@ bool HttpNetworkSession::IsProtocolEnabled(AlternateProtocol protocol) const {
       protocol - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION];
 }
 
-void HttpNetworkSession::GetNextProtos(NextProtoVector* next_protos) const {
+void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
   if (HttpStreamFactory::spdy_enabled()) {
-    *next_protos = next_protos_;
+    *alpn_protos = next_protos_;
   } else {
-    next_protos->clear();
+    alpn_protos->clear();
+  }
+}
+
+void HttpNetworkSession::GetNpnProtos(NextProtoVector* npn_protos) const {
+  if (HttpStreamFactory::spdy_enabled()) {
+    *npn_protos = next_protos_;
+    DisableHTTP2(npn_protos);
+  } else {
+    npn_protos->clear();
   }
 }
 

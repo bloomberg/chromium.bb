@@ -243,8 +243,11 @@ class NET_EXPORT HttpNetworkSession
 
   bool IsProtocolEnabled(AlternateProtocol protocol) const;
 
-  // Populates |*next_protos| with protocols.
-  void GetNextProtos(NextProtoVector* next_protos) const;
+  // Populates |*alpn_protos| with protocols to be used with ALPN.
+  void GetAlpnProtos(NextProtoVector* alpn_protos) const;
+
+  // Populates |*npn_protos| with protocols to be used with NPN.
+  void GetNpnProtos(NextProtoVector* npn_protos) const;
 
   // Convenience function for searching through |params_| for
   // |forced_spdy_exclusions|.

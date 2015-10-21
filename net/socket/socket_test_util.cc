@@ -802,11 +802,11 @@ scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
   SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
   if (!next_ssl_data->next_protos_expected_in_ssl_config.empty()) {
     EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.size(),
-              ssl_config.next_protos.size());
+              ssl_config.alpn_protos.size());
     EXPECT_TRUE(
         std::equal(next_ssl_data->next_protos_expected_in_ssl_config.begin(),
                    next_ssl_data->next_protos_expected_in_ssl_config.end(),
-                   ssl_config.next_protos.begin()));
+                   ssl_config.alpn_protos.begin()));
   }
   return scoped_ptr<SSLClientSocket>(new MockSSLClientSocket(
       transport_socket.Pass(), host_and_port, ssl_config, next_ssl_data));

@@ -2584,6 +2584,10 @@ TEST_F(SSLClientSocketTest, RequireECDHE) {
   EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
 }
 
+// In tests requiring NPN, client_config.alpn_protos and
+// client_config.npn_protos both need to be set when using NSS, otherwise NPN is
+// disabled due to quirks of the implementation.
+
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   // False Start requires NPN/ALPN, ECDHE, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;
@@ -2593,7 +2597,10 @@ TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, true));
 }
@@ -2606,7 +2613,8 @@ TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   SSLConfig client_config;
-  client_config.next_protos.clear();
+  client_config.alpn_protos.clear();
+  client_config.npn_protos.clear();
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
 }
@@ -2620,7 +2628,10 @@ TEST_F(SSLClientSocketFalseStartTest, RSA) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
 }
@@ -2634,7 +2645,10 @@ TEST_F(SSLClientSocketFalseStartTest, DHE_RSA) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
 }
 
@@ -2647,7 +2661,10 @@ TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
 }
 
@@ -2661,7 +2678,10 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
 
   // Let a full handshake complete with False Start.
   ASSERT_NO_FATAL_FAILURE(
@@ -2691,7 +2711,10 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
@@ -2745,7 +2768,10 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
@@ -2891,8 +2917,12 @@ TEST_F(SSLClientSocketTest, NPN) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP2);
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP2);
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP2);
+  client_config.npn_protos.push_back(kProtoHTTP11);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
@@ -2911,8 +2941,12 @@ TEST_F(SSLClientSocketTest, NPNNoOverlap) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoSPDY31);
-  client_config.next_protos.push_back(kProtoHTTP2);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoSPDY31);
+  client_config.alpn_protos.push_back(kProtoHTTP2);
+#endif
+  client_config.npn_protos.push_back(kProtoSPDY31);
+  client_config.npn_protos.push_back(kProtoHTTP2);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
@@ -2932,8 +2966,12 @@ TEST_F(SSLClientSocketTest, NPNServerPreference) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP2);
-  client_config.next_protos.push_back(kProtoSPDY31);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP2);
+  client_config.alpn_protos.push_back(kProtoSPDY31);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP2);
+  client_config.npn_protos.push_back(kProtoSPDY31);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
@@ -2965,7 +3003,10 @@ TEST_F(SSLClientSocketTest, NPNServerDisabled) {
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
+#if !defined(USE_OPENSSL)
+  client_config.alpn_protos.push_back(kProtoHTTP11);
+#endif
+  client_config.npn_protos.push_back(kProtoHTTP11);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));

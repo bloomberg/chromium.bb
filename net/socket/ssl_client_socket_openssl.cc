@@ -928,7 +928,7 @@ int SSLClientSocketOpenSSL::Init() {
     SSL_enable_tls_channel_id(ssl_);
   }
 
-  if (!ssl_config_.next_protos.empty()) {
+  if (!ssl_config_.alpn_protos.empty()) {
     // Get list of ciphers that are enabled.
     STACK_OF(SSL_CIPHER)* enabled_ciphers = SSL_get_ciphers(ssl_);
     DCHECK(enabled_ciphers);
@@ -939,12 +939,12 @@ int SSLClientSocketOpenSSL::Init() {
       enabled_ciphers_vector.push_back(id);
     }
 
-    NextProtoVector next_protos = ssl_config_.next_protos;
+    NextProtoVector alpn_protos = ssl_config_.alpn_protos;
     if (!HasCipherAdequateForHTTP2(enabled_ciphers_vector) ||
         !IsTLSVersionAdequateForHTTP2(ssl_config_)) {
-      DisableHTTP2(&next_protos);
+      DisableHTTP2(&alpn_protos);
     }
-    std::vector<uint8_t> wire_protos = SerializeNextProtos(next_protos);
+    std::vector<uint8_t> wire_protos = SerializeNextProtos(alpn_protos);
     SSL_set_alpn_protos(ssl_, wire_protos.empty() ? NULL : &wire_protos[0],
                         wire_protos.size());
   }
@@ -1893,7 +1893,7 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
                                                     unsigned char* outlen,
                                                     const unsigned char* in,
                                                     unsigned int inlen) {
-  if (ssl_config_.next_protos.empty()) {
+  if (ssl_config_.npn_protos.empty()) {
     *out = reinterpret_cast<uint8*>(
         const_cast<char*>(kDefaultSupportedNPNProtocol));
     *outlen = arraysize(kDefaultSupportedNPNProtocol) - 1;
@@ -1906,7 +1906,7 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
 
   // For each protocol in server preference order, see if we support it.
   for (unsigned int i = 0; i < inlen; i += in[i] + 1) {
-    for (NextProto next_proto : ssl_config_.next_protos) {
+    for (NextProto next_proto : ssl_config_.npn_protos) {
       const std::string proto = NextProtoToString(next_proto);
       if (in[i] == proto.size() &&
           memcmp(&in[i + 1], proto.data(), in[i]) == 0) {
@@ -1924,7 +1924,7 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
   // If we didn't find a protocol, we select the last one from our list.
   if (npn_status_ == kNextProtoNoOverlap) {
     // NextProtoToString returns a pointer to a static string.
-    const char* proto = NextProtoToString(ssl_config_.next_protos.back());
+    const char* proto = NextProtoToString(ssl_config_.npn_protos.back());
     *out = reinterpret_cast<unsigned char*>(const_cast<char*>(proto));
     *outlen = strlen(proto);
   }

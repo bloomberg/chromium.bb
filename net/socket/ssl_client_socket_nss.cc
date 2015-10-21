@@ -841,15 +841,18 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
 
   SECStatus rv = SECSuccess;
 
-  if (!ssl_config_.next_protos.empty()) {
-    NextProtoVector next_protos = ssl_config_.next_protos;
+  if (!ssl_config_.alpn_protos.empty()) {
+    NextProtoVector alpn_protos = ssl_config_.alpn_protos;
     // TODO(bnc): Check ssl_config_.disabled_cipher_suites.
     if (!IsTLSVersionAdequateForHTTP2(ssl_config_))
-      DisableHTTP2(&next_protos);
+      DisableHTTP2(&alpn_protos);
     // |ssl_config_| has fallback protocol at the end of the list, but NSS
     // expects fallback at the first place, thus protocols need to be reordered.
-    ReorderNextProtos(&next_protos);
-    std::vector<uint8_t> wire_protos = SerializeNextProtos(next_protos);
+    ReorderNextProtos(&alpn_protos);
+    // NSS only supports a single protocol vector to be used with ALPN and NPN.
+    // Because of this limitation, |alpn_prototos| will be used for both.
+    // However, it is possible to enable ALPN and NPN separately.
+    std::vector<uint8_t> wire_protos = SerializeNextProtos(alpn_protos);
     rv = SSL_SetNextProtoNego(
         nss_fd_, wire_protos.empty() ? NULL : &wire_protos[0],
         wire_protos.size());
@@ -858,9 +861,11 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
     rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_ALPN, PR_TRUE);
     if (rv != SECSuccess)
       LogFailedNSSFunction(*weak_net_log_, "SSL_OptionSet", "SSL_ENABLE_ALPN");
-    rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_NPN, PR_TRUE);
-    if (rv != SECSuccess)
-      LogFailedNSSFunction(*weak_net_log_, "SSL_OptionSet", "SSL_ENABLE_NPN");
+    if (!ssl_config_.npn_protos.empty()) {
+      rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_NPN, PR_TRUE);
+      if (rv != SECSuccess)
+        LogFailedNSSFunction(*weak_net_log_, "SSL_OptionSet", "SSL_ENABLE_NPN");
+    }
   }
 
   rv = SSL_AuthCertificateHook(

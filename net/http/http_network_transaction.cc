@@ -154,7 +154,8 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       establishing_tunnel_(false),
       websocket_handshake_stream_base_create_helper_(NULL) {
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
-  session->GetNextProtos(&server_ssl_config_.next_protos);
+  session->GetAlpnProtos(&server_ssl_config_.alpn_protos);
+  session->GetNpnProtos(&server_ssl_config_.npn_protos);
   proxy_ssl_config_ = server_ssl_config_;
 }
 

@@ -420,16 +420,28 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
         "use_alternative_services",
         http_network_session->params().use_alternative_services);
 
-    NextProtoVector next_protos;
-    http_network_session->GetNextProtos(&next_protos);
-    if (!next_protos.empty()) {
+    NextProtoVector alpn_protos;
+    http_network_session->GetAlpnProtos(&alpn_protos);
+    if (!alpn_protos.empty()) {
       std::string next_protos_string;
-      for (const NextProto proto : next_protos) {
+      for (NextProto proto : alpn_protos) {
         if (!next_protos_string.empty())
           next_protos_string.append(",");
         next_protos_string.append(SSLClientSocket::NextProtoToString(proto));
       }
-      status_dict->SetString("next_protos", next_protos_string);
+      status_dict->SetString("alpn_protos", next_protos_string);
+    }
+
+    NextProtoVector npn_protos;
+    http_network_session->GetNpnProtos(&npn_protos);
+    if (!npn_protos.empty()) {
+      std::string next_protos_string;
+      for (NextProto proto : npn_protos) {
+        if (!next_protos_string.empty())
+          next_protos_string.append(",");
+        next_protos_string.append(SSLClientSocket::NextProtoToString(proto));
+      }
+      status_dict->SetString("npn_protos", next_protos_string);
     }
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_STATUS),

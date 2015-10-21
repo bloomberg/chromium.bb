@@ -1466,7 +1466,8 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   // Preconnect a socket.
   SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  session->GetNextProtos(&ssl_config.next_protos);
+  session->GetAlpnProtos(&ssl_config.alpn_protos);
+  session->GetNpnProtos(&ssl_config.npn_protos);
   session->http_stream_factory()->PreconnectStreams(1, request, ssl_config,
                                                     ssl_config);
   // Wait for the preconnect to complete.

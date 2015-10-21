@@ -103,7 +103,8 @@ void PreconnectOnIOThread(const GURL& url,
   // Setup the SSL Configuration.
   net::SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  session->GetNextProtos(&ssl_config.next_protos);
+  session->GetAlpnProtos(&ssl_config.alpn_protos);
+  session->GetNpnProtos(&ssl_config.npn_protos);
 
   // All preconnects should perform EV certificate verification.
   ssl_config.verify_ev_cert = true;
