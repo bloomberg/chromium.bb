@@ -267,7 +267,7 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 
   scoped_ptr<PageLoadTracker> finished_nav(
       provisional_loads_.take_and_erase(navigation_handle));
-  DCHECK(finished_nav);
+  CHECK(finished_nav);
 
   // Handle a pre-commit error here. Navigations that result in an error page
   // will be ignored. Note that downloads/204s will result in HasCommitted()
