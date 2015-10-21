@@ -329,12 +329,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       // Indicates end-of-header-block.
       headers_.clear();
       CHECK(header_buffer_valid_);
-      size_t parsed_length = framer_.ParseHeaderBlockInBuffer(
-          header_buffer_.get(), header_buffer_length_, &headers_);
-      LOG_IF(DFATAL, header_buffer_length_ != parsed_length)
-          << "Check failed: header_buffer_length_ == parsed_length "
-          << "(" << header_buffer_length_ << " vs. " << parsed_length << ")";
-      return true;
+      return framer_.ParseHeaderBlockInBuffer(header_buffer_.get(),
+                                              header_buffer_length_, &headers_);
     }
     const size_t available = header_buffer_size_ - header_buffer_length_;
     if (len > available) {

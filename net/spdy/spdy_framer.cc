@@ -2216,7 +2216,7 @@ size_t SpdyFramer::ProcessIgnoredControlFramePayload(/*const char* data,*/
   return original_len - len;
 }
 
-size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
+bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                                           size_t header_length,
                                           SpdyHeaderBlock* block) const {
   SpdyFrameReader reader(header_data, header_length);
@@ -2227,13 +2227,13 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     uint16 temp;
     if (!reader.ReadUInt16(&temp)) {
       DVLOG(1) << "Unable to read number of headers.";
-      return 0;
+      return false;
     }
     num_headers = temp;
   } else {
     if (!reader.ReadUInt32(&num_headers)) {
       DVLOG(1) << "Unable to read number of headers.";
-      return 0;
+      return false;
     }
   }
 
@@ -2246,7 +2246,7 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                             : !reader.ReadStringPiece32(&temp)) {
       DVLOG(1) << "Unable to read header name (" << index + 1 << " of "
                << num_headers << ").";
-      return 0;
+      return false;
     }
     std::string name = temp.as_string();
 
@@ -2255,7 +2255,7 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                             : !reader.ReadStringPiece32(&temp)) {
       DVLOG(1) << "Unable to read header value (" << index + 1 << " of "
                << num_headers << ").";
-      return 0;
+      return false;
     }
     std::string value = temp.as_string();
 
@@ -2263,13 +2263,20 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     if (block->find(name) != block->end()) {
       DVLOG(1) << "Duplicate header '" << name << "' (" << index + 1 << " of "
                << num_headers << ").";
-      return 0;
+      return false;
     }
 
     // Store header.
     (*block)[name] = value;
   }
-  return reader.GetBytesConsumed();
+  if (reader.GetBytesConsumed() != header_length) {
+    LOG(DFATAL) << "Buffer expected to consist entirely of headers, but only "
+                << reader.GetBytesConsumed() << " bytes consumed, from "
+                << header_length;
+    return false;
+  }
+
+  return true;
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeData(

@@ -127,11 +127,8 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
     CHECK(header_buffer_valid_);
 
     SpdyHeaderBlock headers;
-    size_t parsed_len = spdy_framer_.ParseHeaderBlockInBuffer(
-        header_buffer_, header_buffer_used_, &headers);
-    // TODO(rch): this really should be checking parsed_len != len,
-    // but a bunch of tests fail.  Need to figure out why.
-    if (parsed_len == 0) {
+    if (!spdy_framer_.ParseHeaderBlockInBuffer(header_buffer_,
+                                               header_buffer_used_, &headers)) {
       visitor_->OnStreamError(
           stream_id, "Could not parse Spdy Control Frame Header.");
       return false;

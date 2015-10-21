@@ -150,15 +150,14 @@ void QuicReliableClientStream::NotifyDelegateOfHeadersComplete(
   size_t headers_len = decompressed_headers().length();
   SpdyHeaderBlock headers;
   SpdyFramer framer(HTTP2);
-  size_t len = framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
-                                               headers_len, &headers);
-  MarkHeadersConsumed(headers_len);
-  headers_delivered_ = true;
-  if (len == 0 || len != headers_len) {
+  if (!framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
+                                       headers_len, &headers)) {
     DLOG(WARNING) << "Invalid headers";
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
+  MarkHeadersConsumed(headers_len);
+  headers_delivered_ = true;
 
   delegate_->OnHeadersAvailable(headers, frame_len);
 }

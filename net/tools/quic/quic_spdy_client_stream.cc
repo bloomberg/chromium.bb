@@ -81,17 +81,11 @@ bool QuicSpdyClientStream::ParseResponseHeaders(const char* data,
                                                 uint32 data_len) {
   DCHECK(headers_decompressed());
   SpdyFramer framer(HTTP2);
-  size_t len = framer.ParseHeaderBlockInBuffer(data,
-                                               data_len,
-                                               &response_headers_);
-  DCHECK_LE(len, data_len);
-  if (len == 0 || response_headers_.empty()) {
+  if (!framer.ParseHeaderBlockInBuffer(data, data_len, &response_headers_) ||
+      response_headers_.empty()) {
     return false;  // Headers were invalid.
   }
 
-  if (data_len > len) {
-    data_.append(data + len, data_len - len);
-  }
   if (ContainsKey(response_headers_, "content-length") &&
       !StringToInt(StringPiece(response_headers_["content-length"]),
                    &content_length_)) {
