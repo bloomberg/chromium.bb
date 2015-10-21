@@ -7,6 +7,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLScriptElement.h"
@@ -106,44 +107,41 @@ protected:
 
     void expectParse(const char* integrityAttribute, const char* expectedDigest, HashAlgorithm expectedAlgorithm)
     {
-        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
+        IntegrityMetadataSet metadataSet;
 
-        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
-        EXPECT_EQ(1u, metadataList.size());
-        if (metadataList.size() > 0) {
-            EXPECT_EQ(expectedDigest, metadataList[0].digest);
-            EXPECT_EQ(expectedAlgorithm, metadataList[0].algorithm);
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataSet));
+        EXPECT_EQ(1u, metadataSet.size());
+        if (metadataSet.size() > 0) {
+            IntegrityMetadata metadata = *metadataSet.begin();
+            EXPECT_EQ(expectedDigest, metadata.digest());
+            EXPECT_EQ(expectedAlgorithm, metadata.algorithm());
         }
     }
 
-    void expectParseMultipleHashes(const char* integrityAttribute, const SubresourceIntegrity::IntegrityMetadata expectedMetadataArray[], size_t expectedMetadataArraySize)
+    void expectParseMultipleHashes(const char* integrityAttribute, const IntegrityMetadata expectedMetadataArray[], size_t expectedMetadataArraySize)
     {
-        Vector<SubresourceIntegrity::IntegrityMetadata> expectedMetadataList;
-        expectedMetadataList.append(expectedMetadataArray, expectedMetadataArraySize);
-        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
-        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
-        EXPECT_EQ(expectedMetadataList.size(), metadataList.size());
-        if (expectedMetadataList.size() == metadataList.size()) {
-            for (size_t i = 0; i < metadataList.size(); i++) {
-                EXPECT_EQ(expectedMetadataList[i].digest, metadataList[i].digest);
-                EXPECT_EQ(expectedMetadataList[i].algorithm, metadataList[i].algorithm);
-            }
+        IntegrityMetadataSet expectedMetadataSet;
+        for (size_t i = 0; i < expectedMetadataArraySize; i++) {
+            expectedMetadataSet.add(expectedMetadataArray[i].toPair());
         }
+        IntegrityMetadataSet metadataSet;
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataSet));
+        EXPECT_TRUE(IntegrityMetadata::setsEqual(expectedMetadataSet, metadataSet));
     }
 
     void expectParseFailure(const char* integrityAttribute)
     {
-        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
+        IntegrityMetadataSet metadataSet;
 
-        EXPECT_EQ(SubresourceIntegrity::IntegrityParseNoValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseNoValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataSet));
     }
 
     void expectEmptyParseResult(const char* integrityAttribute)
     {
-        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
+        IntegrityMetadataSet metadataSet;
 
-        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
-        EXPECT_EQ(0u, metadataList.size());
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataSet));
+        EXPECT_EQ(0u, metadataSet.size());
     }
 
     enum CorsStatus {
@@ -311,7 +309,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
     expectParseMultipleHashes("", 0, 0);
     expectParseMultipleHashes("    ", 0, 0);
 
-    const SubresourceIntegrity::IntegrityMetadata kValidSha384AndSha512[] = {
+    const IntegrityMetadata kValidSha384AndSha512[] = {
         {"XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr", HashAlgorithmSha384},
         {"tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==", HashAlgorithmSha512}
     };
@@ -320,7 +318,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         kValidSha384AndSha512,
         ARRAY_SIZE(kValidSha384AndSha512));
 
-    const SubresourceIntegrity::IntegrityMetadata kValidSha256AndSha256[] = {
+    const IntegrityMetadata kValidSha256AndSha256[] = {
         {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256},
         {"deadbeef", HashAlgorithmSha256}
     };
@@ -329,7 +327,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         kValidSha256AndSha256,
         ARRAY_SIZE(kValidSha256AndSha256));
 
-    const SubresourceIntegrity::IntegrityMetadata kValidSha256AndInvalidSha256[] = {
+    const IntegrityMetadata kValidSha256AndInvalidSha256[] = {
         {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256}
     };
     expectParseMultipleHashes(
@@ -337,7 +335,7 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         kValidSha256AndInvalidSha256,
         ARRAY_SIZE(kValidSha256AndInvalidSha256));
 
-    const SubresourceIntegrity::IntegrityMetadata kInvalidSha256AndValidSha256[] = {
+    const IntegrityMetadata kInvalidSha256AndValidSha256[] = {
         {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256}
     };
     expectParseMultipleHashes(

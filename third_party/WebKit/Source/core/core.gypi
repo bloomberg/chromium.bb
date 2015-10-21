@@ -1490,6 +1490,8 @@
             'fetch/FontResource.h',
             'fetch/ImageResource.cpp',
             'fetch/ImageResource.h',
+            'fetch/IntegrityMetadata.cpp',
+            'fetch/IntegrityMetadata.h',
             'fetch/LinkFetchResource.cpp',
             'fetch/LinkFetchResource.h',
             'fetch/MemoryCache.cpp',

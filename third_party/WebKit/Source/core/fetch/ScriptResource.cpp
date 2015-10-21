@@ -28,6 +28,7 @@
 #include "core/fetch/ScriptResource.h"
 
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/MIMETypeRegistry.h"
@@ -115,9 +116,7 @@ bool ScriptResource::mustRefetchDueToIntegrityMetadata(const FetchRequest& reque
     if (request.integrityMetadata().isEmpty())
         return false;
 
-    // TODO(jww) this integrity metadata should actually be
-    // normalized so that order doesn't matter.
-    return m_integrityMetadata != request.integrityMetadata();
+    return !IntegrityMetadata::setsEqual(m_integrityMetadata, request.integrityMetadata());
 }
 
 } // namespace blink

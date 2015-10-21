@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
@@ -91,8 +92,8 @@ public:
     void setCrossOriginAccessControl(SecurityOrigin*, const AtomicString& crossOriginMode);
     OriginRestriction originRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
-    String integrityMetadata() const { return m_integrityMetadata; }
-    void setIntegrityMetadata(const String& metadata) { m_integrityMetadata = metadata; }
+    const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }
+    void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }
 
 private:
     ResourceRequest m_resourceRequest;
@@ -104,7 +105,7 @@ private:
     OriginRestriction m_originRestriction;
     ResourceWidth m_resourceWidth;
     ClientHintsPreferences m_clientHintPreferences;
-    String m_integrityMetadata;
+    IntegrityMetadataSet m_integrityMetadata;
 };
 
 } // namespace blink

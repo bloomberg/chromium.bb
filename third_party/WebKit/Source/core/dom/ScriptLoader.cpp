@@ -301,12 +301,15 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
         request.setDefer(defer);
 
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
-        if (!integrityAttr.isEmpty())
-            request.setIntegrityMetadata(integrityAttr);
+        IntegrityMetadataSet metadataSet;
+        if (!integrityAttr.isEmpty()) {
+            SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet, elementDocument.get());
+            request.setIntegrityMetadata(metadataSet);
+        }
 
         m_resource = ScriptResource::fetch(request, elementDocument->fetcher());
         if (m_resource && !integrityAttr.isEmpty())
-            m_resource->setIntegrityMetadata(integrityAttr);
+            m_resource->setIntegrityMetadata(metadataSet);
 
         m_isExternalScript = true;
     }

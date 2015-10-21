@@ -27,6 +27,7 @@
 #define ScriptResource_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/TextResource.h"
 
@@ -65,8 +66,8 @@ public:
 
     bool mimeTypeAllowedByNosniff() const;
 
-    void setIntegrityMetadata(const String& metadata) { m_integrityMetadata = metadata; }
-    String integrityMetadata() const { return m_integrityMetadata; }
+    void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }
+    const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }
     void setIntegrityAlreadyChecked(bool checked) { m_integrityChecked = checked; }
     bool integrityAlreadyChecked() { return m_integrityChecked; }
     bool mustRefetchDueToIntegrityMetadata(const FetchRequest&) const override;
@@ -84,7 +85,7 @@ private:
     };
 
     bool m_integrityChecked;
-    String m_integrityMetadata;
+    IntegrityMetadataSet m_integrityMetadata;
 
     AtomicString m_script;
 };

@@ -157,16 +157,16 @@ void PendingScript::notifyFinished(Resource* resource)
         ASSERT(resource->type() == Resource::Script);
         ScriptResource* scriptResource = toScriptResource(resource);
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
+
+        // It is possible to get back a script resource with integrity metadata
+        // for a request with an empty integrity attribute. In that case, the
+        // integrity check should be skipped, so this check ensures that the
+        // integrity attribute isn't empty in addition to checking if the
+        // resource has empty integrity metadata.
         if (!integrityAttr.isEmpty() && !scriptResource->integrityMetadata().isEmpty()) {
-            if (scriptResource->integrityAlreadyChecked()) {
-                if (scriptResource->integrityMetadata() != integrityAttr)
-                    m_integrityFailure = true;
-            } else if (resource->resourceBuffer()) {
+            if (!scriptResource->integrityAlreadyChecked() && resource->resourceBuffer()) {
                 scriptResource->setIntegrityAlreadyChecked(true);
-                m_integrityFailure = !SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, resource->resourceBuffer()->data(), resource->resourceBuffer()->size(), resource->url(), *resource);
-                // TODO(jww) this integrity metadata should actually be
-                // normalized so that order doesn't matter.
-                scriptResource->setIntegrityMetadata(integrityAttr);
+                m_integrityFailure = !SubresourceIntegrity::CheckSubresourceIntegrity(scriptResource->integrityMetadata(), *m_element, resource->resourceBuffer()->data(), resource->resourceBuffer()->size(), resource->url(), *resource);
             }
         }
     }

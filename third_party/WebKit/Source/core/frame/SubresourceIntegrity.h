@@ -6,12 +6,10 @@
 #define SubresourceIntegrity_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "platform/Crypto.h"
 #include "wtf/Allocator.h"
-
-namespace WTF {
-class String;
-};
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -28,8 +26,18 @@ public:
         IntegrityParseNoValidResult
     };
 
+    // The versions with the IntegrityMetadataSet passed as the first argument
+    // assume that the integrity attribute has already been parsed, and the
+    // IntegrityMetadataSet represents the result of that parsing.
     static bool CheckSubresourceIntegrity(const Element&, const char* content, size_t, const KURL& resourceUrl, const Resource&);
+    static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&, const Element&, const char* content, size_t, const KURL& resourceUrl, const Resource&);
     static bool CheckSubresourceIntegrity(const String&, const char*, size_t, const KURL& resourceUrl, Document&, WTF::String&);
+    static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&, const char*, size_t, const KURL& resourceUrl, Document&, WTF::String&);
+
+    // The IntegrityMetadataSet arguments are out parameters which contain the
+    // set of all valid, parsed metadata from |attribute|.
+    static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, IntegrityMetadataSet&);
+    static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, IntegrityMetadataSet&, Document*);
 
 private:
     // FIXME: After the merge with the Chromium repo, this should be refactored
@@ -45,16 +53,9 @@ private:
         AlgorithmUnknown
     };
 
-    struct IntegrityMetadata {
-        WTF::String digest;
-        HashAlgorithm algorithm;
-    };
-
     static HashAlgorithm getPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
     static AlgorithmParseResult parseAlgorithm(const UChar*& begin, const UChar* end, HashAlgorithm&);
     static bool parseDigest(const UChar*& begin, const UChar* end, String& digest);
-
-    static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, WTF::Vector<IntegrityMetadata>& metadataList, Document&);
 };
 
 } // namespace blink
