@@ -109,7 +109,6 @@
     heuristic type: <ph name="HEURISTIC_TYPE">$3<ex>NAME_FIRST</ex></ph>
     field signature: <ph name="FIELD_SIGNATURE">$4<ex>12345678</ex></ph>
     form signature: <ph name="FORM_SIGNATURE">$5<ex>1234567812345678</ex></ph>
-    experiment id: "<ph name="EXPERIMENT_ID">$6<ex>ar1</ex></ph>"
   </message>
 
   <!-- Autofill dialog: legal documents -->

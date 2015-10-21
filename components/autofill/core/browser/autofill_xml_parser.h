@@ -57,7 +57,7 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
 // The XML parse handler for parsing Autofill query responses.  A typical
 // response looks like:
 //
-// <autofillqueryresponse experimentid="1">
+// <autofillqueryresponse>
 //   <field autofilltype="0" />
 //   <field autofilltype="1" />
 //   <field autofilltype="3" />
@@ -68,7 +68,6 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
 // autofilltype: The server's guess at what type of field this is.  0
 // is unknown, other types are documented in
 // components/autofill/core/browser/field_types.h.
-// Experiment ids are currently ignored.
 class AutofillQueryXmlParser : public AutofillXmlParser {
  public:
   AutofillQueryXmlParser(std::vector<AutofillServerFieldInfo>* field_infos,

@@ -19,8 +19,6 @@ struct FormDataPredictions {
   FormData data;
   // The form signature for communication with the crowdsourcing server.
   std::string signature;
-  // The experiment id for the server predictions.
-  std::string experiment_id;
   // The form fields and their predicted field types.
   std::vector<FormFieldDataPredictions> fields;
 

@@ -292,15 +292,13 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
       continue;
     }
 
-    std::vector<base::string16> replacements;
-    replacements.push_back(base::UTF8ToUTF16(form.fields[i].overall_type));
-    replacements.push_back(base::UTF8ToUTF16(form.fields[i].server_type));
-    replacements.push_back(base::UTF8ToUTF16(form.fields[i].heuristic_type));
-    replacements.push_back(base::UTF8ToUTF16(form.fields[i].signature));
-    replacements.push_back(base::UTF8ToUTF16(form.signature));
-    replacements.push_back(base::UTF8ToUTF16(form.experiment_id));
     base::string16 title = l10n_util::GetStringFUTF16(
-        IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE, replacements, NULL);
+        IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE,
+        base::UTF8ToUTF16(form.fields[i].overall_type),
+        base::UTF8ToUTF16(form.fields[i].server_type),
+        base::UTF8ToUTF16(form.fields[i].heuristic_type),
+        base::UTF8ToUTF16(form.fields[i].signature),
+        base::UTF8ToUTF16(form.signature));
     element.setAttribute("title", WebString(title));
   }
 
