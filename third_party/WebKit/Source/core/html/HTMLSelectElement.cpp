@@ -421,7 +421,6 @@ void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
 
 void HTMLSelectElement::optionElementChildrenChanged()
 {
-    setRecalcListItems();
     setNeedsValidityCheck();
 
     if (layoutObject()) {
