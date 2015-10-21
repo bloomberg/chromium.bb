@@ -493,17 +493,17 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 
 const TreeScope* TreeScope::commonAncestorTreeScope(const TreeScope& other) const
 {
-    Vector<const TreeScope*, 16> thisChain;
+    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> thisChain;
     for (const TreeScope* tree = this; tree; tree = tree->parentTreeScope())
         thisChain.append(tree);
 
-    Vector<const TreeScope*, 16> otherChain;
+    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> otherChain;
     for (const TreeScope* tree = &other; tree; tree = tree->parentTreeScope())
         otherChain.append(tree);
 
     // Keep popping out the last elements of these chains until a mismatched pair is found. If |this| and |other|
     // belong to different documents, null will be returned.
-    const TreeScope* lastAncestor = 0;
+    const TreeScope* lastAncestor = nullptr;
     while (!thisChain.isEmpty() && !otherChain.isEmpty() && thisChain.last() == otherChain.last()) {
         lastAncestor = thisChain.last();
         thisChain.removeLast();
