@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/glue/browser_thread_model_worker.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -13,14 +15,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "components/sync_driver/glue/browser_thread_model_worker.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Thread;
 using base::TimeDelta;
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -28,11 +26,8 @@ namespace {
 
 class SyncBrowserThreadModelWorkerTest : public testing::Test {
  public:
-  SyncBrowserThreadModelWorkerTest() :
-      did_do_work_(false),
-      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP |
-                     content::TestBrowserThreadBundle::REAL_DB_THREAD),
-      weak_factory_(this) {}
+  SyncBrowserThreadModelWorkerTest()
+      : db_thread_("DB_Thread"), did_do_work_(false), weak_factory_(this) {}
 
   bool did_do_work() { return did_do_work_; }
   BrowserThreadModelWorker* worker() { return worker_.get(); }
@@ -44,24 +39,20 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   // Schedule DoWork to be executed on the DB thread and have the test fail if
   // DoWork hasn't executed within action_timeout().
   void ScheduleWork() {
-   // We wait until the callback is done. So it is safe to use unretained.
-    syncer::WorkCallback c =
-        base::Bind(&SyncBrowserThreadModelWorkerTest::DoWork,
-                   base::Unretained(this));
-    timer()->Start(
-        FROM_HERE,
-        TestTimeouts::action_timeout(),
-        this,
-        &SyncBrowserThreadModelWorkerTest::Timeout);
+    // We wait until the callback is done. So it is safe to use unretained.
+    syncer::WorkCallback c = base::Bind(
+        &SyncBrowserThreadModelWorkerTest::DoWork, base::Unretained(this));
+    timer()->Start(FROM_HERE, TestTimeouts::action_timeout(), this,
+                   &SyncBrowserThreadModelWorkerTest::Timeout);
     worker()->DoWorkAndWaitUntilDone(c);
   }
 
   // This is the work that will be scheduled to be done on the DB thread.
   syncer::SyncerError DoWork() {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    EXPECT_TRUE(db_thread_.task_runner()->BelongsToCurrentThread());
     timer_.Stop();  // Stop the failure timer so the test succeeds.
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::MessageLoop::QuitWhenIdleClosure());
+    main_message_loop_.PostTask(FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure());
     did_do_work_ = true;
     return syncer::SYNCER_OK;
   }
@@ -70,27 +61,28 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   // DoWork is called first.
   void Timeout() {
     ADD_FAILURE() << "Timed out waiting for work to be done on the DB thread.";
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::MessageLoop::QuitWhenIdleClosure());
+    main_message_loop_.PostTask(FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure());
   }
 
  protected:
   void SetUp() override {
-    worker_ = new BrowserThreadModelWorker(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        syncer::GROUP_DB, NULL);
+    db_thread_.Start();
+    worker_ = new BrowserThreadModelWorker(db_thread_.task_runner(),
+                                           syncer::GROUP_DB, NULL);
   }
 
   virtual void Teardown() {
     worker_ = NULL;
+    db_thread_.Stop();
   }
 
  private:
+  base::MessageLoop main_message_loop_;
+  Thread db_thread_;
   bool did_do_work_;
   scoped_refptr<BrowserThreadModelWorker> worker_;
   base::OneShotTimer timer_;
-
-  content::TestBrowserThreadBundle thread_bundle_;
 
   base::WeakPtrFactory<SyncBrowserThreadModelWorkerTest> weak_factory_;
 };
