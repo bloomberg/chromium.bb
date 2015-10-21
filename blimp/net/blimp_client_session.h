@@ -6,10 +6,11 @@
 #define BLIMP_NET_BLIMP_CLIENT_SESSION_H_
 
 #include "base/macros.h"
+#include "blimp/net/blimp_net_export.h"
 
 namespace blimp {
 
-class BlimpClientSession {
+class BLIMP_NET_EXPORT BlimpClientSession {
  public:
   BlimpClientSession();
   ~BlimpClientSession();
