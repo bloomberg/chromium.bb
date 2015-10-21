@@ -824,7 +824,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
         // If the start is in non-editable content that is inside the base's editable root, put it
         // at the first editable position after start inside the base's editable root.
         if (startRoot != baseRoot) {
-            const VisiblePositionTemplate<Strategy> first = firstEditableVisiblePositionAfterPositionInRoot(m_start, baseRoot);
+            const VisiblePositionTemplate<Strategy> first = firstEditableVisiblePositionAfterPositionInRoot(m_start, *baseRoot);
             m_start = first.deepEquivalent();
             if (m_start.isNull()) {
                 ASSERT_NOT_REACHED();
@@ -835,7 +835,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
         // If the end is in non-editable content that is inside the base's root, put it
         // at the last editable position before the end inside the base's root.
         if (endRoot != baseRoot) {
-            const VisiblePositionTemplate<Strategy> last = lastEditableVisiblePositionBeforePositionInRoot(m_end, baseRoot);
+            const VisiblePositionTemplate<Strategy> last = lastEditableVisiblePositionBeforePositionInRoot(m_end, *baseRoot);
             m_end = last.deepEquivalent();
             if (m_end.isNull())
                 m_end = m_start;

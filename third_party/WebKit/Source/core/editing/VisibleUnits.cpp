@@ -191,7 +191,7 @@ static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(con
 
     // Return the last position before |pos| that is in the same editable region
     // as this position
-    return lastEditablePositionBeforePositionInRoot(pos.position(), highestRoot);
+    return lastEditablePositionBeforePositionInRoot(pos.position(), *highestRoot);
 }
 
 template <typename Strategy>
@@ -229,7 +229,7 @@ static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const Vis
 
     // Return the next position after |pos| that is in the same editable region
     // as this position
-    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
+    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), *highestRoot);
 }
 
 static Node* previousLeafWithSameEditability(Node* node, EditableType editableType)
@@ -2763,7 +2763,8 @@ static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const Visibl
 
     // That must mean that |pos| is not editable. Return the next position after
     // |pos| that is in the same editable region as this position
-    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
+    ASSERT(highestRoot);
+    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), *highestRoot);
 }
 
 template <typename Strategy>
@@ -3214,7 +3215,8 @@ static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const Visi
 
     // That must mean that |pos| is not editable. Return the last position
     // before |pos| that is in the same editable region as this position
-    return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
+    ASSERT(highestRoot);
+    return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), *highestRoot);
 }
 
 template <typename Strategy>

@@ -167,10 +167,14 @@ void DeleteSelectionCommand::initializePositionData()
 {
     Position start, end;
     initializeStartEnd(start, end);
-
+    ASSERT(start.isNotNull());
+    ASSERT(end.isNotNull());
     ASSERT(isEditablePosition(start, ContentIsEditable, DoNotUpdateStyle));
-    if (!isEditablePosition(end, ContentIsEditable, DoNotUpdateStyle))
-        end = lastEditablePositionBeforePositionInRoot(end, highestEditableRoot(start));
+    if (!isEditablePosition(end, ContentIsEditable, DoNotUpdateStyle)) {
+        Node* highestRoot = highestEditableRoot(start);
+        ASSERT(highestRoot);
+        end = lastEditablePositionBeforePositionInRoot(end, *highestRoot);
+    }
 
     m_upstreamStart = mostBackwardCaretPosition(start);
     m_downstreamStart = mostForwardCaretPosition(start);

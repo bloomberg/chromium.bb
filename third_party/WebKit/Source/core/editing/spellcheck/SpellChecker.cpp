@@ -194,7 +194,9 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         // when spell checking the whole document before sending the message.
         // In that case the document might not be editable, but there are editable pockets that need to be spell checked.
 
-        position = firstEditableVisiblePositionAfterPositionInRoot(position, frame().document()->documentElement()).deepEquivalent();
+        if (!frame().document()->documentElement())
+            return;
+        position = firstEditableVisiblePositionAfterPositionInRoot(position, *frame().document()->documentElement()).deepEquivalent();
         if (position.isNull())
             return;
 
