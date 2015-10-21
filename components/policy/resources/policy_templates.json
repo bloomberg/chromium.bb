@@ -4186,7 +4186,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com'],
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/good_path', 'https://server:8080/path', '.exact.hostname.com'],
       'id': 104,
       'caption': '''Allows access to a list of URLs''',
       'tags': [],
