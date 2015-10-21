@@ -82,122 +82,49 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   static bool IsGuest(content::WebContents* web_contents);
 
+  // Returns the name of the derived type of this GuestView.
   virtual const char* GetViewType() const = 0;
-
-  // This method is called after the guest has been attached to an embedder and
-  // suspended resource loads have been resumed.
-  //
-  // This method can be overriden by subclasses. This gives the derived class
-  // an opportunity to perform setup actions after attachment.
-  virtual void DidAttachToEmbedder() {}
-
-  // This method is called after this GuestViewBase has been initiated.
-  //
-  // This gives the derived class an opportunity to perform additional
-  // initialization.
-  virtual void DidInitialize(const base::DictionaryValue& create_params) {}
-
-  // This method is called when the initial set of frames within the page have
-  // completed loading.
-  virtual void GuestViewDidStopLoading() {}
-
-  // This method is called when the embedder's zoom changes.
-  virtual void EmbedderZoomChanged(double old_zoom_level,
-                                   double new_zoom_level) {}
-
-  // This method is called when the guest WebContents has been destroyed. This
-  // object will be destroyed after this call returns.
-  //
-  // This gives the derived class an opportunity to perform some cleanup.
-  virtual void GuestDestroyed() {}
-
-  // This method is invoked when the guest RenderView is ready, e.g. because we
-  // recreated it after a crash or after reattachment.
-  //
-  // This gives the derived class an opportunity to perform some initialization
-  // work.
-  virtual void GuestReady() {}
-
-  // This method is called when the guest's zoom changes.
-  virtual void GuestZoomChanged(double old_zoom_level, double new_zoom_level) {}
-
-  // This method is called when embedder WebContents's fullscreen is toggled.
-  //
-  // If the guest asked the embedder to enter fullscreen, the guest uses this
-  // signal to exit fullscreen state.
-  virtual void EmbedderFullscreenToggled(bool entered_fullscreen) {}
-
-  // This method is invoked when the contents auto-resized to give the container
-  // an opportunity to match it if it wishes.
-  //
-  // This gives the derived class an opportunity to inform its container element
-  // or perform other actions.
-  virtual void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
-                                             const gfx::Size& new_size) {}
 
   // This method queries whether autosize is supported for this particular view.
   // By default, autosize is not supported. Derived classes can override this
   // behavior to support autosize.
   virtual bool IsAutoSizeSupported() const;
 
-  // This method is invoked when the contents preferred size changes. This will
-  // only ever fire if IsPreferredSizeSupported returns true.
-  virtual void OnPreferredSizeChanged(const gfx::Size& pref_size) {}
-
   // This method queries whether preferred size events are enabled for this
   // view. By default, preferred size events are disabled, since they add a
   // small amount of overhead.
   virtual bool IsPreferredSizeModeEnabled() const;
 
-  // This method is called immediately before suspended resource loads have been
-  // resumed on attachment to an embedder.
-  //
-  // This method can be overriden by subclasses. This gives the derived class
-  // an opportunity to perform setup actions before attachment.
-  virtual void WillAttachToEmbedder() {}
-
-  // This method is called when the guest WebContents is about to be destroyed.
-  //
-  // This gives the derived class an opportunity to perform some cleanup prior
-  // to destruction.
-  virtual void WillDestroy() {}
-
-  // This method is to be implemented by the derived class. This indicates
-  // whether zoom should propagate from the embedder to the guest content.
+  // This indicates whether zoom should propagate from the embedder to the guest
+  // content.
   virtual bool ZoomPropagatesFromEmbedderToGuest() const;
 
-  // This method is to be implemented by the derived class. Access to guest
-  // views are determined by the availability of the internal extension API
-  // used to implement the guest view.
+  // Access to guest views are determined by the availability of the internal
+  // extension API used to implement the guest view.
   //
   // This should be the name of the API as it appears in the _api_features.json
   // file.
   virtual const char* GetAPINamespace() const = 0;
 
-  // This method is to be implemented by the derived class. This method is the
-  // task prefix to show for a task produced by this GuestViewBase's derived
-  // type.
+  // This method is the task prefix to show for a task produced by this
+  // GuestViewBase's derived type.
   virtual int GetTaskPrefix() const = 0;
 
-  // This method is to be implemented by the derived class. Given a set of
-  // initialization parameters, a concrete subclass of GuestViewBase can
-  // create a specialized WebContents that it returns back to GuestViewBase.
-  using WebContentsCreatedCallback =
-      base::Callback<void(content::WebContents*)>;
-  virtual void CreateWebContents(
-      const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback) = 0;
+  // Dispatches an event to the guest proxy.
+  void DispatchEventToGuestProxy(GuestViewEvent* event);
+
+  // Dispatches an event to the view.
+  void DispatchEventToView(GuestViewEvent* event);
 
   // This creates a WebContents and initializes |this| GuestViewBase to use the
   // newly created WebContents.
+  using WebContentsCreatedCallback =
+      base::Callback<void(content::WebContents*)>;
   void Init(const base::DictionaryValue& create_params,
             const WebContentsCreatedCallback& callback);
 
   void InitWithWebContents(const base::DictionaryValue& create_params,
                            content::WebContents* guest_web_contents);
-
-  void LoadURLWithParams(
-      const content::NavigationController::LoadURLParams& load_params);
 
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
@@ -271,36 +198,115 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetAttachParams(const base::DictionaryValue& params);
   void SetOpener(GuestViewBase* opener);
 
-  content::WebContents* CreateNewGuestWindow(
-      const content::WebContents::CreateParams& create_params) final;
-  void DidAttach(int guest_proxy_routing_id) final;
-  void DidDetach() final;
-  content::WebContents* GetOwnerWebContents() const final;
-  bool Find(int request_id,
-            const base::string16& search_text,
-            const blink::WebFindOptions& options) final;
-  bool StopFinding(content::StopFindAction action) final;
-  void GuestSizeChanged(const gfx::Size& new_size) final;
-  void SetGuestHost(content::GuestHost* guest_host) final;
-  void WillAttach(content::WebContents* embedder_web_contents,
-                  int browser_plugin_instance_id,
-                  bool is_full_page_plugin,
-                  const base::Closure& callback) final;
-
-  // ui_zoom::ZoomObserver implementation.
-  void OnZoomChanged(
-      const ui_zoom::ZoomController::ZoomChangedEventData& data) final;
-
-  // Dispatches an event to the guest proxy.
-  void DispatchEventToGuestProxy(GuestViewEvent* event);
-
-  // Dispatches an event to the view.
-  void DispatchEventToView(GuestViewEvent* event);
-
  protected:
   explicit GuestViewBase(content::WebContents* owner_web_contents);
 
   ~GuestViewBase() override;
+
+  // BrowserPluginGuestDelegate implementation.
+  void SetContextMenuPosition(const gfx::Point& position) override;
+
+  // WebContentsDelegate implementation.
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
+  void FindReply(content::WebContents* source,
+                 int request_id,
+                 int number_of_matches,
+                 const gfx::Rect& selection_rect,
+                 int active_match_ordinal,
+                 bool final_update) override;
+
+  // WebContentsObserver implementation.
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+
+  // Given a set of initialization parameters, a concrete subclass of
+  // GuestViewBase can create a specialized WebContents that it returns back to
+  // GuestViewBase.
+  virtual void CreateWebContents(
+      const base::DictionaryValue& create_params,
+      const WebContentsCreatedCallback& callback) = 0;
+
+  // This method is called after the guest has been attached to an embedder and
+  // suspended resource loads have been resumed.
+  //
+  // This method can be overriden by subclasses. This gives the derived class
+  // an opportunity to perform setup actions after attachment.
+  virtual void DidAttachToEmbedder() {}
+
+  // This method is called after this GuestViewBase has been initiated.
+  //
+  // This gives the derived class an opportunity to perform additional
+  // initialization.
+  virtual void DidInitialize(const base::DictionaryValue& create_params) {}
+
+  // This method is called when embedder WebContents's fullscreen is toggled.
+  //
+  // If the guest asked the embedder to enter fullscreen, the guest uses this
+  // signal to exit fullscreen state.
+  virtual void EmbedderFullscreenToggled(bool entered_fullscreen) {}
+
+  // This method is called when the initial set of frames within the page have
+  // completed loading.
+  virtual void GuestViewDidStopLoading() {}
+
+  // This method is called when the guest WebContents has been destroyed. This
+  // object will be destroyed after this call returns.
+  //
+  // This gives the derived class an opportunity to perform some cleanup.
+  virtual void GuestDestroyed() {}
+
+  // This method is invoked when the guest RenderView is ready, e.g. because we
+  // recreated it after a crash or after reattachment.
+  //
+  // This gives the derived class an opportunity to perform some initialization
+  // work.
+  virtual void GuestReady() {}
+
+  // This method is called when the guest's zoom changes.
+  virtual void GuestZoomChanged(double old_zoom_level, double new_zoom_level) {}
+
+  // This method is invoked when the contents auto-resized to give the container
+  // an opportunity to match it if it wishes.
+  //
+  // This gives the derived class an opportunity to inform its container element
+  // or perform other actions.
+  virtual void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
+                                             const gfx::Size& new_size) {}
+
+  // This method is invoked when the contents preferred size changes. This will
+  // only ever fire if IsPreferredSizeSupported returns true.
+  virtual void OnPreferredSizeChanged(const gfx::Size& pref_size) {}
+
+  // Signals that the guest view is ready.  The default implementation signals
+  // immediately, but derived class can override this if they need to do
+  // asynchronous setup.
+  virtual void SignalWhenReady(const base::Closure& callback);
+
+  // Returns true if this guest should handle find requests for its
+  // embedder. This should generally be true for guests that make up the
+  // entirety of the embedder's content.
+  virtual bool ShouldHandleFindRequestsForEmbedder() const;
+
+  // This method is called immediately before suspended resource loads have been
+  // resumed on attachment to an embedder.
+  //
+  // This method can be overriden by subclasses. This gives the derived class
+  // an opportunity to perform setup actions before attachment.
+  virtual void WillAttachToEmbedder() {}
+
+  // This method is called when the guest WebContents is about to be destroyed.
+  //
+  // This gives the derived class an opportunity to perform some cleanup prior
+  // to destruction.
+  virtual void WillDestroy() {}
+
+  void LoadURLWithParams(
+      const content::NavigationController::LoadURLParams& load_params);
 
   // Convert sizes in pixels from logical to physical numbers of pixels.
   // Note that a size can consist of a fractional number of logical pixels
@@ -316,66 +322,61 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // is represented as an int).
   double PhysicalPixelsToLogicalPixels(int physical_pixels) const;
 
-  // WebContentsObserver implementation.
-  void DidStopLoading() final;
-  void RenderViewReady() final;
-  void WebContentsDestroyed() final;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void SetGuestZoomLevelToMatchEmbedder();
+
+ private:
+  friend class GuestViewMessageFilter;
+
+  class OwnerContentsObserver;
+  class OpenerLifetimeObserver;
+
+  // BrowserPluginGuestDelegate implementation.
+  content::WebContents* CreateNewGuestWindow(
+      const content::WebContents::CreateParams& create_params) final;
+  void DidAttach(int guest_proxy_routing_id) final;
+  void DidDetach() final;
+  content::WebContents* GetOwnerWebContents() const final;
+  bool HandleFindForEmbedder(int request_id,
+                             const base::string16& search_text,
+                             const blink::WebFindOptions& options) final;
+  bool HandleStopFindingForEmbedder(content::StopFindAction action) final;
+  void GuestSizeChanged(const gfx::Size& new_size) final;
+  void SetGuestHost(content::GuestHost* guest_host) final;
+  void WillAttach(content::WebContents* embedder_web_contents,
+                  int browser_plugin_instance_id,
+                  bool is_full_page_plugin,
+                  const base::Closure& callback) final;
 
   // WebContentsDelegate implementation.
   void ActivateContents(content::WebContents* contents) final;
   void ContentsMouseEvent(content::WebContents* source,
                           const gfx::Point& location,
-                          bool motion) override;
-  void ContentsZoomChange(bool zoom_in) override;
-  void HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) override;
+                          bool motion) final;
+  void ContentsZoomChange(bool zoom_in) final;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) final;
   content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
-      const std::vector<content::ColorSuggestion>& suggestions) override;
+      const std::vector<content::ColorSuggestion>& suggestions) final;
   void ResizeDueToAutoResize(content::WebContents* web_contents,
-                             const gfx::Size& new_size) override;
+                             const gfx::Size& new_size) final;
   void RunFileChooser(content::WebContents* web_contents,
-                      const content::FileChooserParams& params) override;
+                      const content::FileChooserParams& params) final;
   bool ShouldFocusPageAfterCrash() final;
-  bool PreHandleGestureEvent(content::WebContents* source,
-                             const blink::WebGestureEvent& event) override;
   void UpdatePreferredSize(content::WebContents* web_contents,
                            const gfx::Size& pref_size) final;
-  void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
-  bool ShouldResumeRequestsForCreatedWindow() override;
-  void FindReply(content::WebContents* source,
-                 int request_id,
-                 int number_of_matches,
-                 const gfx::Rect& selection_rect,
-                 int active_match_ordinal,
-                 bool final_update) override;
+  void UpdateTargetURL(content::WebContents* source, const GURL& url) final;
+  bool ShouldResumeRequestsForCreatedWindow() final;
 
-  void SetGuestZoomLevelToMatchEmbedder();
+  // WebContentsObserver implementation.
+  void DidStopLoading() final;
+  void RenderViewReady() final;
+  void WebContentsDestroyed() final;
 
-  // Signals that the guest view is ready.  The default implementation signals
-  // immediately, but derived class can override this if they need to do
-  // asynchronous setup.
-  virtual void SignalWhenReady(const base::Closure& callback);
-
-  // Returns true if this guest should handle find requests for its
-  // embedder. This should generally be true for guests that make up the
-  // entirety of the embedder's content.
-  virtual bool ShouldHandleFindRequestsForEmbedder() const;
-
-  // BrowserPluginGuestDelegate implementation.
-  void SetContextMenuPosition(const gfx::Point& position) override;
-
- private:
-  class OwnerContentsObserver;
-
-  class OpenerLifetimeObserver;
+  // ui_zoom::ZoomObserver implementation.
+  void OnZoomChanged(
+      const ui_zoom::ZoomController::ZoomChangedEventData& data) final;
 
   void SendQueuedEvents();
 

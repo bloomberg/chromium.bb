@@ -41,24 +41,6 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
 
   static std::vector<int> GetAllRegisteredInstanceIdsForTesting();
 
-  // content::WebContentsDelegate implementation.
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
-  void RequestMediaAccessPermission(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) override;
-  bool CheckMediaAccessPermission(content::WebContents* web_contents,
-                                  const GURL& security_origin,
-                                  content::MediaStreamType type) override;
-
-  // GuestViewBase implementation.
-  bool CanRunInDetachedState() const override;
-  void CreateWebContents(const base::DictionaryValue& create_params,
-                         const WebContentsCreatedCallback& callback) override;
-  void DidInitialize(const base::DictionaryValue& create_params) override;
-  const char* GetAPINamespace() const override;
-  int GetTaskPrefix() const override;
-
   // Sets the AppDelegate for this guest.
   void SetAppDelegateForTest(AppDelegate* delegate);
 
@@ -66,6 +48,24 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
   explicit AppViewGuest(content::WebContents* owner_web_contents);
 
   ~AppViewGuest() override;
+
+  // GuestViewBase implementation.
+  bool CanRunInDetachedState() const final;
+  void CreateWebContents(const base::DictionaryValue& create_params,
+                         const WebContentsCreatedCallback& callback) final;
+  void DidInitialize(const base::DictionaryValue& create_params) final;
+  const char* GetAPINamespace() const final;
+  int GetTaskPrefix() const final;
+
+  // content::WebContentsDelegate implementation.
+  bool HandleContextMenu(const content::ContextMenuParams& params) final;
+  void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) final;
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) final;
 
   void CompleteCreateWebContents(const GURL& url,
                                  const Extension* guest_extension,

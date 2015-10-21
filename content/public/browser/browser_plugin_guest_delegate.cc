@@ -20,13 +20,15 @@ WebContents* BrowserPluginGuestDelegate::GetOwnerWebContents() const {
   return nullptr;
 }
 
-bool BrowserPluginGuestDelegate::Find(int request_id,
-                                      const base::string16& search_text,
-                                      const blink::WebFindOptions& options) {
+bool BrowserPluginGuestDelegate::HandleFindForEmbedder(
+    int request_id,
+    const base::string16& search_text,
+    const blink::WebFindOptions& options) {
   return false;
 }
 
-bool BrowserPluginGuestDelegate::StopFinding(StopFindAction action) {
+bool BrowserPluginGuestDelegate::HandleStopFindingForEmbedder(
+    StopFindAction action) {
   return false;
 }
 

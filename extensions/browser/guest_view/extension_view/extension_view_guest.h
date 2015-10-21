@@ -27,27 +27,26 @@ class ExtensionViewGuest
   // Returns true if the navigation is successful.
   bool NavigateGuest(const std::string& src, bool force_navigation);
 
+ private:
+  ExtensionViewGuest(content::WebContents* owner_web_contents);
+  ~ExtensionViewGuest() override;
+
   // GuestViewBase implementation.
-  bool CanRunInDetachedState() const override;
+  bool CanRunInDetachedState() const final;
   void CreateWebContents(const base::DictionaryValue& create_params,
-                         const WebContentsCreatedCallback& callback) override;
-  void DidInitialize(const base::DictionaryValue& create_params) override;
-  void DidAttachToEmbedder() override;
-  const char* GetAPINamespace() const override;
-  int GetTaskPrefix() const override;
+                         const WebContentsCreatedCallback& callback) final;
+  void DidInitialize(const base::DictionaryValue& create_params) final;
+  void DidAttachToEmbedder() final;
+  const char* GetAPINamespace() const final;
+  int GetTaskPrefix() const final;
 
   // content::WebContentsObserver implementation.
   void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
-      ui::PageTransition transition_type) override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-
- private:
-  ExtensionViewGuest(content::WebContents* owner_web_contents);
-  ~ExtensionViewGuest() override;
+      ui::PageTransition transition_type) final;
+  void DidNavigateMainFrame(const content::LoadCommittedDetails& details,
+                            const content::FrameNavigateParams& params) final;
 
   // Applies attributes to the extensionview.
   void ApplyAttributes(const base::DictionaryValue& params);

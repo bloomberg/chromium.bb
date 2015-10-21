@@ -237,8 +237,9 @@ bool BrowserPluginEmbedder::FindInGuest(int request_id,
                                         const base::string16& search_text,
                                         const blink::WebFindOptions& options,
                                         WebContents* guest) {
-  if (static_cast<WebContentsImpl*>(guest)->GetBrowserPluginGuest()->Find(
-          request_id, search_text, options)) {
+  if (static_cast<WebContentsImpl*>(guest)
+          ->GetBrowserPluginGuest()
+          ->HandleFindForEmbedder(request_id, search_text, options)) {
     // There can only ever currently be one browser plugin that handles find so
     // we can break the iteration at this point.
     return true;
@@ -249,8 +250,9 @@ bool BrowserPluginEmbedder::FindInGuest(int request_id,
 // static
 bool BrowserPluginEmbedder::StopFindingInGuest(StopFindAction action,
                                                WebContents* guest) {
-  if (static_cast<WebContentsImpl*>(guest)->GetBrowserPluginGuest()
-      ->StopFinding(action)) {
+  if (static_cast<WebContentsImpl*>(guest)
+          ->GetBrowserPluginGuest()
+          ->HandleStopFindingForEmbedder(action)) {
     // There can only ever currently be one browser plugin that handles find so
     // we can break the iteration at this point.
     return true;

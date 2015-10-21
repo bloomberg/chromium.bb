@@ -23,24 +23,28 @@ class ExtensionOptionsGuest
   static guest_view::GuestViewBase* Create(
       content::WebContents* owner_web_contents);
 
+ private:
+  explicit ExtensionOptionsGuest(content::WebContents* owner_web_contents);
+  ~ExtensionOptionsGuest() override;
+
   // GuestViewBase implementation.
-  bool CanRunInDetachedState() const override;
+  bool CanRunInDetachedState() const final;
   void CreateWebContents(const base::DictionaryValue& create_params,
-                         const WebContentsCreatedCallback& callback) override;
-  void DidInitialize(const base::DictionaryValue& create_params) override;
-  void GuestViewDidStopLoading() override;
-  const char* GetAPINamespace() const override;
-  int GetTaskPrefix() const override;
-  bool IsPreferredSizeModeEnabled() const override;
-  void OnPreferredSizeChanged(const gfx::Size& pref_size) override;
-  bool ShouldHandleFindRequestsForEmbedder() const override;
+                         const WebContentsCreatedCallback& callback) final;
+  void DidInitialize(const base::DictionaryValue& create_params) final;
+  void GuestViewDidStopLoading() final;
+  const char* GetAPINamespace() const final;
+  int GetTaskPrefix() const final;
+  bool IsPreferredSizeModeEnabled() const final;
+  void OnPreferredSizeChanged(const gfx::Size& pref_size) final;
+  bool ShouldHandleFindRequestsForEmbedder() const final;
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) override;
-  void CloseContents(content::WebContents* source) override;
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+      const content::OpenURLParams& params) final;
+  void CloseContents(content::WebContents* source) final;
+  bool HandleContextMenu(const content::ContextMenuParams& params) final;
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,
@@ -49,16 +53,11 @@ class ExtensionOptionsGuest
       const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
-      content::SessionStorageNamespace* session_storage_namespace) override;
+      content::SessionStorageNamespace* session_storage_namespace) final;
 
   // content::WebContentsObserver implementation.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-
- private:
-  explicit ExtensionOptionsGuest(content::WebContents* owner_web_contents);
-  ~ExtensionOptionsGuest() override;
+  void DidNavigateMainFrame(const content::LoadCommittedDetails& details,
+                            const content::FrameNavigateParams& params) final;
 
   scoped_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;

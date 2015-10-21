@@ -251,10 +251,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Find the given |search_text| in the page. Returns true if the find request
   // is handled by this browser plugin guest.
-  bool Find(int request_id,
-            const base::string16& search_text,
-            const blink::WebFindOptions& options);
-  bool StopFinding(StopFindAction action);
+  bool HandleFindForEmbedder(int request_id,
+                             const base::string16& search_text,
+                             const blink::WebFindOptions& options);
+  bool HandleStopFindingForEmbedder(StopFindAction action);
 
   void ResendEventToEmbedder(const blink::WebInputEvent& event);
 

@@ -673,14 +673,14 @@ void WebViewGuest::Observe(int type,
   }
 }
 
-void WebViewGuest::StartFindInternal(
+void WebViewGuest::StartFind(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
     scoped_refptr<WebViewInternalFindFunction> find_function) {
   find_helper_.Find(web_contents(), search_text, options, find_function);
 }
 
-void WebViewGuest::StopFindingInternal(content::StopFindAction action) {
+void WebViewGuest::StopFinding(content::StopFindAction action) {
   find_helper_.CancelAllFindSessions();
   web_contents()->StopFinding(action);
 }

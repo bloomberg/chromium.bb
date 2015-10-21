@@ -642,7 +642,7 @@ bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
         params->options->match_case ? *params->options->match_case : false;
   }
 
-  guest->StartFindInternal(search_text, options, this);
+  guest->StartFind(search_text, options, this);
   return true;
 }
 
@@ -673,7 +673,7 @@ bool WebViewInternalStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
   }
 
-  guest->StopFindingInternal(action);
+  guest->StopFinding(action);
   return true;
 }
 

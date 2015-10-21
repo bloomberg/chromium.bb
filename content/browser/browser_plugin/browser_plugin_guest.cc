@@ -450,14 +450,15 @@ void BrowserPluginGuest::SetContentsOpaque(bool opaque) {
           browser_plugin_instance_id(), opaque));
 }
 
-bool BrowserPluginGuest::Find(int request_id,
-                              const base::string16& search_text,
-                              const blink::WebFindOptions& options) {
-  return delegate_->Find(request_id, search_text, options);
+bool BrowserPluginGuest::HandleFindForEmbedder(
+    int request_id,
+    const base::string16& search_text,
+    const blink::WebFindOptions& options) {
+  return delegate_->HandleFindForEmbedder(request_id, search_text, options);
 }
 
-bool BrowserPluginGuest::StopFinding(StopFindAction action) {
-  return delegate_->StopFinding(action);
+bool BrowserPluginGuest::HandleStopFindingForEmbedder(StopFindAction action) {
+  return delegate_->HandleStopFindingForEmbedder(action);
 }
 
 void BrowserPluginGuest::ResendEventToEmbedder(
