@@ -19,6 +19,22 @@
           ]
         }
       }
+    },
+    "memtrack_helper": {
+      "file_info": {
+        "android_armeabi-v7a": {
+          "local_paths": [
+            "../../../out/Debug/memtrack_helper",
+            "../../../out/Release/memtrack_helper"
+          ]
+        },
+        "arm64-v8a": {
+          "local_paths": [
+            "../../../out/Debug/memtrack_helper",
+            "../../../out/Release/memtrack_helper"
+          ]
+        }
+      }
     }
   }
 }

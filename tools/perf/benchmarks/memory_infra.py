@@ -34,7 +34,9 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     # the timeline markers used for mapping threads to tabs.
     trace_memory = tracing_category_filter.TracingCategoryFilter(
       filter_string='-*,blink.console,disabled-by-default-memory-infra')
-    return timeline_based_measurement.Options(overhead_level=trace_memory)
+    options = timeline_based_measurement.Options(overhead_level=trace_memory)
+    options.tracing_options.enable_android_graphics_memtrack = True
+    return options
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
