@@ -101,7 +101,7 @@ def gen_request_data(properties=None, **kwargs):
       'inputs_ref': None,
       'io_timeout_secs': 60,
     },
-    'tags': ['taga', 'tagb'],
+    'tags': ['tag:a', 'tag:b'],
     'user': 'joe@localhost',
   }
   out.update(kwargs)
@@ -234,7 +234,7 @@ class TestSwarmingTrigger(NetTestCase):
           idempotent=False,
           inputs_ref=None,
           io_timeout_secs=60),
-        tags=['taga', 'tagb'],
+        tags=['tag:a', 'tag:b'],
         user='joe@localhost')
 
     request_1 = swarming.task_request_to_raw_request(task_request)
@@ -300,7 +300,7 @@ class TestSwarmingTrigger(NetTestCase):
           idempotent=False,
           inputs_ref=None,
           io_timeout_secs=60),
-        tags=['taga', 'tagb'],
+        tags=['tag:a', 'tag:b'],
         user='joe@localhost')
 
     request = swarming.task_request_to_raw_request(task_request)
@@ -752,8 +752,8 @@ class TestMain(NetTestCase):
         '--dimension', 'os', 'Mac',
         '--expiration', '3600',
         '--user', 'joe@localhost',
-        '--tags', 'taga',
-        '--tags', 'tagb',
+        '--tags', 'tag:a',
+        '--tags', 'tag:b',
         '--hard-timeout', '60',
         '--io-timeout', '60',
         '--task-name', 'unit_tests',
@@ -815,8 +815,8 @@ class TestMain(NetTestCase):
         '--dimension', 'os', 'Mac',
         '--expiration', '3600',
         '--user', 'joe@localhost',
-        '--tags', 'taga',
-        '--tags', 'tagb',
+        '--tags', 'tag:a',
+        '--tags', 'tag:b',
         '--hard-timeout', '60',
         '--io-timeout', '60',
         '--idempotent',

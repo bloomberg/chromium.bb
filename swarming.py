@@ -76,6 +76,7 @@ def isolated_handle_options(options, args):
     tuple(command, inputs_ref).
   """
   isolated_cmd_args = []
+  is_file = False
   if not options.isolated:
     if '--' in args:
       index = args.index('--')
@@ -95,7 +96,6 @@ def isolated_handle_options(options, args):
     if not options.isolated:
       raise ValueError('Invalid argument %s' % args[0])
   elif args:
-    is_file = False
     if '--' in args:
       index = args.index('--')
       isolated_cmd_args = args[index+1:]
@@ -913,6 +913,8 @@ def process_trigger_options(parser, options, args):
       idempotent=options.idempotent,
       inputs_ref=inputs_ref,
       io_timeout_secs=options.io_timeout)
+  if not all(len(t.split(':', 1)) == 2 for t in options.tags):
+    parser.error('--tags must be in the format key:value')
   return NewTaskRequest(
       expiration_secs=options.expiration,
       name=options.task_name,
