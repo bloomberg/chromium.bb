@@ -15,10 +15,15 @@
 #include <set>
 #endif
 
-// Define DISCARDABLE_SHARED_MEMORY_SHRINKING if platform supports shrinking
-// of discardable shared memory segments.
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-#define DISCARDABLE_SHARED_MEMORY_SHRINKING
+// Linux (including Android) support the MADV_REMOVE argument with madvise()
+// which has the behavior of reliably causing zero-fill-on-demand pages to
+// be returned after a call. Here we define
+// DISCARDABLE_SHARED_MEMORY_ZERO_FILL_ON_DEMAND_PAGES_AFTER_PURGE on Linux
+// and Android to indicate that this type of behavior can be expected on
+// those platforms. Note that madvise() will still be used on other POSIX
+// platforms but doesn't provide the zero-fill-on-demand pages guarantee.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define DISCARDABLE_SHARED_MEMORY_ZERO_FILL_ON_DEMAND_PAGES_AFTER_PURGE
 #endif
 
 namespace base {
@@ -123,12 +128,6 @@ class BASE_EXPORT DiscardableSharedMemory {
                       SharedMemoryHandle* new_handle) {
     return shared_memory_.ShareToProcess(process_handle, new_handle);
   }
-
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-  // Release as much memory as possible to the OS. The change in size will
-  // be reflected by the return value of mapped_size().
-  void Shrink();
-#endif
 
  private:
   // Virtual for tests.

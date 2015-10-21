@@ -4,8 +4,9 @@
 
 #include "base/memory/discardable_shared_memory.h"
 
-#if defined(OS_POSIX)
-#include <unistd.h>
+#if defined(OS_POSIX) && !defined(OS_NACL)
+// For madvise() which is available on all POSIX compatible systems.
+#include <sys/mman.h>
 #endif
 
 #include <algorithm>
@@ -301,11 +302,7 @@ void* DiscardableSharedMemory::memory() const {
 bool DiscardableSharedMemory::Purge(Time current_time) {
   // Calls to this function must be synchronized properly.
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
-
-  // Early out if not mapped. This can happen if the segment was previously
-  // unmapped using a call to Close().
-  if (!shared_memory_.memory())
-    return true;
+  DCHECK(shared_memory_.memory());
 
   SharedState old_state(SharedState::UNLOCKED, last_known_usage_);
   SharedState new_state(SharedState::UNLOCKED, Time());
@@ -325,6 +322,25 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
                             : result.GetTimestamp();
     return false;
   }
+
+#if defined(OS_POSIX) && !defined(OS_NACL)
+// Linux and Android provide MADV_REMOVE which is preferred as it has a
+// behavior that can be verified in tests. Other POSIX flavors (MacOSX, BSDs),
+// provide MADV_FREE which has the same result but memory is purged lazily.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define MADV_PURGE_ARGUMENT MADV_REMOVE
+#else
+#define MADV_PURGE_ARGUMENT MADV_FREE
+#endif
+  // Advise the kernel to remove resources associated with purged pages.
+  // Subsequent accesses of memory pages will succeed, but might result in
+  // zero-fill-on-demand pages.
+  if (madvise(reinterpret_cast<char*>(shared_memory_.memory()) +
+                  AlignToPageSize(sizeof(SharedState)),
+              AlignToPageSize(mapped_size_), MADV_PURGE_ARGUMENT)) {
+    DPLOG(ERROR) << "madvise() failed";
+  }
+#endif
 
   last_known_usage_ = Time();
   return true;
@@ -352,26 +368,6 @@ bool DiscardableSharedMemory::IsMemoryLocked() const {
 void DiscardableSharedMemory::Close() {
   shared_memory_.Close();
 }
-
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-void DiscardableSharedMemory::Shrink() {
-#if defined(OS_POSIX)
-  SharedMemoryHandle handle = shared_memory_.handle();
-  if (!SharedMemory::IsHandleValid(handle))
-    return;
-
-  // Truncate shared memory to size of SharedState.
-  if (HANDLE_EINTR(ftruncate(SharedMemory::GetFdFromSharedMemoryHandle(handle),
-                             AlignToPageSize(sizeof(SharedState)))) != 0) {
-    DPLOG(ERROR) << "ftruncate() failed";
-    return;
-  }
-  mapped_size_ = 0;
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-#endif
 
 Time DiscardableSharedMemory::Now() const {
   return Time::Now();

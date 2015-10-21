@@ -343,19 +343,44 @@ TEST(DiscardableSharedMemoryTest, Close) {
   memory.Unlock(0, 0);
 }
 
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-TEST(DiscardableSharedMemoryTest, Shrink) {
+// This test checks that zero-filled pages are returned after purging a segment
+// when DISCARDABLE_SHARED_MEMORY_ZERO_FILL_ON_DEMAND_PAGES_AFTER_PURGE is
+// defined and MADV_REMOVE is supported.
+#if defined(DISCARDABLE_SHARED_MEMORY_ZERO_FILL_ON_DEMAND_PAGES_AFTER_PURGE)
+TEST(DiscardableSharedMemoryTest, ZeroFilledPagesAfterPurge) {
   const uint32 kDataSize = 1024;
 
-  TestDiscardableSharedMemory memory;
-  bool rv = memory.CreateAndMap(kDataSize);
+  TestDiscardableSharedMemory memory1;
+  bool rv = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
 
-  EXPECT_NE(0u, memory.mapped_size());
+  SharedMemoryHandle shared_handle;
+  ASSERT_TRUE(
+      memory1.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+  ASSERT_TRUE(SharedMemory::IsHandleValid(shared_handle));
 
-  // Mapped size should be 0 after shrinking memory segment.
-  memory.Shrink();
-  EXPECT_EQ(0u, memory.mapped_size());
+  TestDiscardableSharedMemory memory2(shared_handle);
+  rv = memory2.Map(kDataSize);
+  ASSERT_TRUE(rv);
+
+  // Initialize all memory to '0xaa'.
+  memset(memory2.memory(), 0xaa, kDataSize);
+
+  // Unlock memory.
+  memory2.SetNow(Time::FromDoubleT(1));
+  memory2.Unlock(0, 0);
+  EXPECT_FALSE(memory1.IsMemoryLocked());
+
+  // Memory is unlocked, but our usage timestamp is incorrect.
+  rv = memory1.Purge(Time::FromDoubleT(2));
+  EXPECT_FALSE(rv);
+  rv = memory1.Purge(Time::FromDoubleT(3));
+  EXPECT_TRUE(rv);
+
+  // Check that reading memory after it has been purged is returning
+  // zero-filled pages.
+  uint8 expected_data[kDataSize] = {};
+  EXPECT_EQ(memcmp(memory2.memory(), expected_data, kDataSize), 0);
 }
 #endif
 
