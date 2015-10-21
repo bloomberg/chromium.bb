@@ -68,7 +68,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
                         -(m_layoutReplaced.paddingLeft() + m_layoutReplaced.borderLeft())),
                     true, true);
 
-                clipper.emplace(m_layoutReplaced, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayListIfEnabled);
+                clipper.emplace(m_layoutReplaced, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayList);
             }
         }
 

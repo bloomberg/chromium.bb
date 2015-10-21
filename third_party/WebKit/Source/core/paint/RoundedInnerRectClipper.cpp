@@ -15,7 +15,7 @@ namespace blink {
 RoundedInnerRectClipper::RoundedInnerRectClipper(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutRect& rect, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior behavior)
     : m_layoutObject(layoutObject)
     , m_paintInfo(paintInfo)
-    , m_usePaintController(behavior == ApplyToDisplayListIfEnabled)
+    , m_usePaintController(behavior == ApplyToDisplayList)
     , m_clipType(m_usePaintController ? m_paintInfo.displayItemTypeForClipping() : DisplayItem::ClipBoxPaintPhaseFirst)
 {
     Vector<FloatRoundedRect> roundedRectClips;

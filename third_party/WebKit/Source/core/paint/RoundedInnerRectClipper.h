@@ -16,7 +16,7 @@ class LayoutObject;
 struct PaintInfo;
 
 enum RoundedInnerRectClipperBehavior {
-    ApplyToDisplayListIfEnabled,
+    ApplyToDisplayList,
     ApplyToContext
 };
 

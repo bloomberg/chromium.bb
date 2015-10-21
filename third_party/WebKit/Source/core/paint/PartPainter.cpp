@@ -75,7 +75,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
                     -(m_layoutPart.paddingBottom() + m_layoutPart.borderBottom()),
                     -(m_layoutPart.paddingLeft() + m_layoutPart.borderLeft())),
                 true, true);
-            clipper.emplace(m_layoutPart, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayListIfEnabled);
+            clipper.emplace(m_layoutPart, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayList);
         }
 
         if (m_layoutPart.widget())
