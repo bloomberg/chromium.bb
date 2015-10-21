@@ -385,6 +385,27 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
               "SPECIFIC_HISTOGRAM_AND_VALUE\"}],\"mode\":\"PREEMPTIVE_TRACING_"
               "MODE\"}");
   }
+
+  {
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+
+    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    second_dict->SetString(
+        "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    second_dict->SetString("histogram_name", "foo");
+    second_dict->SetInteger("histogram_lower_value", 1);
+    second_dict->SetInteger("histogram_upper_value", 2);
+    second_dict->SetInteger("trigger_delay", 10);
+    config->AddPreemptiveRule(second_dict.get());
+
+    EXPECT_EQ(ConfigToString(config.get()),
+              "{\"category\":\"BENCHMARK\",\"configs\":[{\"histogram_lower_"
+              "value\":1,\"histogram_name\":\"foo\",\"histogram_repeat\":true,"
+              "\"histogram_upper_value\":2,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
+              "SPECIFIC_HISTOGRAM_AND_VALUE\",\"trigger_delay\":10}],\"mode\":"
+              "\"PREEMPTIVE_TRACING_MODE\"}");
+  }
 }
 
 TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {

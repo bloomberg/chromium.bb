@@ -6,8 +6,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
-#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -408,6 +408,71 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
         handle2,
         base::Bind(&StartedFinalizingCallback, base::Closure(), false));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
+// This tests that delayed histogram triggers triggers work as expected
+// with preemptive scenarios.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       CallPreemptiveTriggerWithDelay) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    base::DictionaryValue dict;
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
+
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString(
+          "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+      rules_dict->SetString("histogram_name", "fake");
+      rules_dict->SetInteger("histogram_value", 1);
+      rules_dict->SetInteger("trigger_delay", 10);
+      rules_list->Append(rules_dict.Pass());
+    }
+
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    EXPECT_TRUE(config);
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    base::RunLoop rule_triggered_runloop;
+    BackgroundTracingManagerImpl::GetInstance()
+        ->SetRuleTriggeredCallbackForTesting(
+            rule_triggered_runloop.QuitClosure());
+
+    // Our reference value is "1", so a value of "2" should trigger a trace.
+    LOCAL_HISTOGRAM_COUNTS("fake", 2);
+
+    rule_triggered_runloop.Run();
+
+    // Since we specified a delay in the scenario, we should still be tracing
+    // at this point.
+    EXPECT_TRUE(
+        BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
+
+    // Fake the timer firing.
+    BackgroundTracingManagerImpl::GetInstance()->FireTimerForTesting();
+    EXPECT_FALSE(
+        BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
 
     run_loop.Run();
 

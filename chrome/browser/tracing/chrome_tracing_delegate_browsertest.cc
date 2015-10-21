@@ -59,7 +59,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
         config.Pass(), receive_callback, data_filtering);
   }
 
-  void TriggerReactiveScenario(
+  void TriggerPreemptiveScenario(
       const base::Closure& on_started_finalization_callback) {
     on_started_finalization_callback_ = on_started_finalization_callback;
     trigger_handle_ =
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       wait_for_upload.QuitClosure(),
       content::BackgroundTracingManager::NO_DATA_FILTERING));
 
-  TriggerReactiveScenario(base::Closure());
+  TriggerPreemptiveScenario(base::Closure());
 
   wait_for_upload.Run();
 
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       wait_for_upload.QuitClosure(),
       content::BackgroundTracingManager::NO_DATA_FILTERING));
 
-  TriggerReactiveScenario(base::Closure());
+  TriggerPreemptiveScenario(base::Closure());
 
   wait_for_upload.Run();
 
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
   EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
 
   base::RunLoop wait_for_finalization_start;
-  TriggerReactiveScenario(wait_for_finalization_start.QuitClosure());
+  TriggerPreemptiveScenario(wait_for_finalization_start.QuitClosure());
   wait_for_finalization_start.Run();
 
   EXPECT_TRUE(get_started_finalizations() == 1);

@@ -25,7 +25,8 @@ class CONTENT_EXPORT BackgroundTracingRule {
   virtual BackgroundTracingConfigImpl::CategoryPreset GetCategoryPreset() const;
   virtual void OnHistogramTrigger(const std::string& histogram_name) const {}
 
-  virtual int GetReactiveTimeout() const;
+  // Seconds from the rule is triggered to finalization should start.
+  virtual int GetTraceTimeout() const;
 
   static scoped_ptr<BackgroundTracingRule> PreemptiveRuleFromDict(
       const base::DictionaryValue* dict);

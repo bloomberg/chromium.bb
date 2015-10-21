@@ -22,7 +22,7 @@ class TracingDelegate;
 
 class BackgroundTracingManagerImpl : public BackgroundTracingManager {
  public:
-  static BackgroundTracingManagerImpl* GetInstance();
+  static CONTENT_EXPORT BackgroundTracingManagerImpl* GetInstance();
 
   bool SetActiveScenario(scoped_ptr<BackgroundTracingConfig>,
                          const ReceiveCallback&,
@@ -32,15 +32,21 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void TriggerNamedEvent(TriggerHandle, StartedFinalizingCallback) override;
   TriggerHandle RegisterTriggerType(const char* trigger_name) override;
 
+  void OnHistogramTrigger(const std::string& histogram_name);
+
+  void OnRuleTriggered(const BackgroundTracingRule* triggered_rule,
+                       StartedFinalizingCallback callback);
+  void AbortScenario();
+
+  // For tests
   void InvalidateTriggerHandlesForTesting() override;
   void SetTracingEnabledCallbackForTesting(
       const base::Closure& callback) override;
+  CONTENT_EXPORT void SetRuleTriggeredCallbackForTesting(
+      const base::Closure& callback);
   void FireTimerForTesting() override;
   bool HasActiveScenarioForTesting() override;
-  void OnHistogramTrigger(const std::string& histogram_name);
-
-  void TriggerPreemptiveFinalization();
-  void AbortScenario();
+  CONTENT_EXPORT bool IsTracingForTesting();
 
  private:
   BackgroundTracingManagerImpl();
@@ -72,7 +78,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
     void StartTimer(int seconds);
     void CancelTimer();
-
     void FireTimerForTesting();
 
    private:
@@ -93,10 +98,11 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   bool requires_anonymized_data_;
   int trigger_handle_ids_;
 
-  TriggerHandle reactive_triggered_handle_;
+  TriggerHandle triggered_named_event_handle_;
 
   IdleCallback idle_callback_;
   base::Closure tracing_enabled_callback_for_testing_;
+  base::Closure rule_triggered_callback_for_testing_;
 
   friend struct base::DefaultLazyInstanceTraits<BackgroundTracingManagerImpl>;
 

@@ -110,7 +110,7 @@ BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
       is_tracing_(false),
       requires_anonymized_data_(true),
       trigger_handle_ids_(0),
-      reactive_triggered_handle_(-1) {}
+      triggered_named_event_handle_(-1) {}
 
 BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() {
   NOTREACHED();
@@ -120,33 +120,6 @@ void BackgroundTracingManagerImpl::WhenIdle(
     base::Callback<void()> idle_callback) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   idle_callback_ = idle_callback;
-}
-
-void BackgroundTracingManagerImpl::TriggerPreemptiveFinalization() {
-  CHECK(config_ &&
-        config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE);
-
-  if (!is_tracing_ || is_gathering_)
-    return;
-
-  RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
-  BeginFinalizing(StartedFinalizingCallback());
-}
-
-void BackgroundTracingManagerImpl::OnHistogramTrigger(
-    const std::string& histogram_name) {
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&BackgroundTracingManagerImpl::OnHistogramTrigger,
-                   base::Unretained(this), histogram_name));
-    return;
-  }
-
-  for (auto& rule : config_->rules()) {
-    if (rule->ShouldTriggerNamedEvent(histogram_name))
-      TriggerPreemptiveFinalization();
-  }
 }
 
 bool BackgroundTracingManagerImpl::SetActiveScenario(
@@ -202,6 +175,10 @@ bool BackgroundTracingManagerImpl::HasActiveScenarioForTesting() {
   return config_;
 }
 
+bool BackgroundTracingManagerImpl::IsTracingForTesting() {
+  return is_tracing_;
+}
+
 void BackgroundTracingManagerImpl::ValidateStartupScenario() {
   if (!config_ || !delegate_)
     return;
@@ -248,6 +225,22 @@ BackgroundTracingManagerImpl::GetRuleAbleToTriggerTracing(
   return nullptr;
 }
 
+void BackgroundTracingManagerImpl::OnHistogramTrigger(
+    const std::string& histogram_name) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&BackgroundTracingManagerImpl::OnHistogramTrigger,
+                   base::Unretained(this), histogram_name));
+    return;
+  }
+
+  for (const auto& rule : config_->rules()) {
+    if (rule->ShouldTriggerNamedEvent(histogram_name))
+      OnRuleTriggered(rule, StartedFinalizingCallback());
+  }
+}
+
 void BackgroundTracingManagerImpl::TriggerNamedEvent(
     BackgroundTracingManagerImpl::TriggerHandle handle,
     StartedFinalizingCallback callback) {
@@ -259,39 +252,74 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     return;
   }
 
-  BackgroundTracingRule* triggered_rule = GetRuleAbleToTriggerTracing(handle);
-  if (!triggered_rule) {
+  bool is_valid_trigger = true;
+
+  const BackgroundTracingRule* triggered_rule =
+      GetRuleAbleToTriggerTracing(handle);
+  if (!triggered_rule)
+    is_valid_trigger = false;
+
+  // A different reactive config than the running one tried to trigger.
+  if (!config_ ||
+      (config_->tracing_mode() == BackgroundTracingConfigImpl::REACTIVE &&
+       is_tracing_ && triggered_named_event_handle_ != handle)) {
+    is_valid_trigger = false;
+  }
+
+  if (!is_valid_trigger) {
     if (!callback.is_null())
       callback.Run(false);
     return;
   }
 
-  if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
-    RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
-    BeginFinalizing(callback);
+  triggered_named_event_handle_ = handle;
+  OnRuleTriggered(triggered_rule, callback);
+}
+
+void BackgroundTracingManagerImpl::OnRuleTriggered(
+    const BackgroundTracingRule* triggered_rule,
+    StartedFinalizingCallback callback) {
+  CHECK(config_);
+
+  int trace_timeout = triggered_rule->GetTraceTimeout();
+
+  if (config_->tracing_mode() == BackgroundTracingConfigImpl::REACTIVE) {
+    // In reactive mode, a trigger starts tracing, or finalizes tracing
+    // immediately if it's already running.
+    RecordBackgroundTracingMetric(REACTIVE_TRIGGERED);
+
+    if (!is_tracing_) {
+      // It was not already tracing, start a new trace.
+      EnableRecording(GetCategoryFilterStringForCategoryPreset(
+                          triggered_rule->GetCategoryPreset()),
+                      base::trace_event::RECORD_UNTIL_FULL);
+    } else {
+      // Reactive configs that trigger again while tracing should just
+      // end right away (to not capture multiple navigations, for example).
+      trace_timeout = -1;
+    }
   } else {
-    // A different reactive config tried to trigger.
-    if (is_tracing_ && handle != reactive_triggered_handle_) {
+    // In preemptive mode, a trigger starts finalizing a trace if one is
+    // running and we're not got a finalization timer running,
+    // otherwise we do nothing.
+    if (!is_tracing_ || is_gathering_ || tracing_timer_) {
       if (!callback.is_null())
         callback.Run(false);
       return;
     }
 
-    RecordBackgroundTracingMetric(REACTIVE_TRIGGERED);
-    if (is_tracing_) {
-      tracing_timer_->CancelTimer();
-      BeginFinalizing(callback);
-      return;
-    }
-
-    // It was not already tracing, start a new trace.
-    EnableRecording(GetCategoryFilterStringForCategoryPreset(
-                        triggered_rule->GetCategoryPreset()),
-                    base::trace_event::RECORD_UNTIL_FULL);
-    tracing_timer_.reset(new TracingTimer(callback));
-    tracing_timer_->StartTimer(triggered_rule->GetReactiveTimeout());
-    reactive_triggered_handle_ = handle;
+    RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
   }
+
+  if (trace_timeout < 0) {
+    BeginFinalizing(callback);
+  } else {
+    tracing_timer_.reset(new TracingTimer(callback));
+    tracing_timer_->StartTimer(trace_timeout);
+  }
+
+  if (!rule_triggered_callback_for_testing_.is_null())
+    rule_triggered_callback_for_testing_.Run();
 }
 
 BackgroundTracingManagerImpl::TriggerHandle
@@ -326,7 +354,13 @@ void BackgroundTracingManagerImpl::SetTracingEnabledCallbackForTesting(
   tracing_enabled_callback_for_testing_ = callback;
 };
 
+void BackgroundTracingManagerImpl::SetRuleTriggeredCallbackForTesting(
+    const base::Closure& callback) {
+  rule_triggered_callback_for_testing_ = callback;
+};
+
 void BackgroundTracingManagerImpl::FireTimerForTesting() {
+  DCHECK(tracing_timer_);
   tracing_timer_->FireTimerForTesting();
 }
 
@@ -459,7 +493,8 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
     StartedFinalizingCallback callback) {
   is_gathering_ = true;
   is_tracing_ = false;
-  reactive_triggered_handle_ = -1;
+  triggered_named_event_handle_ = -1;
+  tracing_timer_.reset();
 
   bool is_allowed_finalization =
       !delegate_ || (config_ &&
@@ -491,8 +526,9 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
 
 void BackgroundTracingManagerImpl::AbortScenario() {
   is_tracing_ = false;
-  reactive_triggered_handle_ = -1;
+  triggered_named_event_handle_ = -1;
   config_.reset();
+  tracing_timer_.reset();
 
   content::TracingController::GetInstance()->DisableRecording(nullptr);
 }
