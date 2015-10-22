@@ -85,6 +85,7 @@ ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InputDeviceCapabilities status=stable
 InputModeAttribute status=experimental
+IterableCollections status=experimental
 KeyboardEventCode status=experimental
 KeyboardEventKey status=experimental
 LangAttributeAwareFormControlUI

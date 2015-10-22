@@ -286,6 +286,7 @@ class IdlInterface(object):
         self.serializer = None
         self.stringifier = None
         self.iterable = None
+        self.has_indexed_elements = False
         self.maplike = None
         self.setlike = None
         self.original_interface = None
@@ -301,11 +302,17 @@ class IdlInterface(object):
         self.name = node.GetName()
         self.idl_type = IdlType(self.name)
 
+        has_indexed_property_getter = False
+        has_integer_typed_length = False
+
         children = node.GetChildren()
         for child in children:
             child_class = child.GetClass()
             if child_class == 'Attribute':
-                self.attributes.append(IdlAttribute(idl_name, child))
+                attr = IdlAttribute(idl_name, child)
+                if attr.idl_type.is_integer_type and attr.name == 'length':
+                    has_integer_typed_length = True
+                self.attributes.append(attr)
             elif child_class == 'Const':
                 self.constants.append(IdlConstant(idl_name, child))
             elif child_class == 'ExtAttributes':
@@ -315,7 +322,10 @@ class IdlInterface(object):
                 clear_constructor_attributes(extended_attributes)
                 self.extended_attributes = extended_attributes
             elif child_class == 'Operation':
-                self.operations.append(IdlOperation(idl_name, child))
+                op = IdlOperation(idl_name, child)
+                if 'getter' in op.specials and str(op.arguments[0].idl_type) == 'unsigned long':
+                    has_indexed_property_getter = True
+                self.operations.append(op)
             elif child_class == 'Inherit':
                 self.parent = child.GetName()
             elif child_class == 'Serializer':
@@ -335,6 +345,9 @@ class IdlInterface(object):
 
         if len(filter(None, [self.iterable, self.maplike, self.setlike])) > 1:
             raise ValueError('Interface can only have one of iterable<>, maplike<> and setlike<>.')
+
+        if has_integer_typed_length and has_indexed_property_getter:
+            self.has_indexed_elements = True
 
     def accept(self, visitor):
         visitor.visit_interface(self)

@@ -348,6 +348,15 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% if has_access_check_callbacks %}
     instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
+    {% if has_array_iterator %}
+    {% filter runtime_enabled('RuntimeEnabledFeatures::iterableCollectionsEnabled') %}
+    {% if is_global %}
+    instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
+    {% else %}
+    prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
+    {% endif %}
+    {% endfilter %}{# runtime_enabled() #}
+    {% endif %}
     {% for attribute in attributes
        if attribute.runtime_enabled_function and
           not attribute.exposed_test %}

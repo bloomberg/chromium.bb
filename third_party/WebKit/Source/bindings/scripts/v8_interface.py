@@ -353,13 +353,15 @@ def interface_context(interface):
 
     # [Iterable], iterable<>, maplike<> and setlike<>
     iterator_method = None
+    has_array_iterator = False
+
     # FIXME: support Iterable in partial interfaces. However, we don't
     # need to support iterator overloads between interface and
     # partial interface definitions.
     # http://heycam.github.io/webidl/#idl-overloading
     if (not interface.is_partial
         and (interface.iterable or interface.maplike or interface.setlike
-             or 'Iterable' in extended_attributes)):
+             or interface.has_indexed_elements or 'Iterable' in extended_attributes)):
 
         used_extended_attributes = {}
 
@@ -392,7 +394,10 @@ def interface_context(interface):
                 extended_attributes=used_extended_attributes,
                 implemented_as=implemented_as)
 
-        iterator_method = generated_iterator_method('iterator', implemented_as='iterator')
+        if interface.iterable or interface.maplike or interface.setlike or 'Iterable' in extended_attributes:
+            iterator_method = generated_iterator_method('iterator', implemented_as='iterator')
+        elif interface.has_indexed_elements:
+            has_array_iterator = True
 
         if interface.iterable or interface.maplike or interface.setlike:
             implicit_methods = [
@@ -565,6 +570,7 @@ def interface_context(interface):
         'has_private_script': any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
             any(method['is_implemented_in_private_script'] for method in methods),
         'iterator_method': iterator_method,
+        'has_array_iterator': has_array_iterator,
         'method_configuration_methods': method_configuration_methods,
         'methods': methods,
     })
