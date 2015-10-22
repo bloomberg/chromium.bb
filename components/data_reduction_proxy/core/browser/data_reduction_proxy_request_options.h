@@ -94,12 +94,14 @@ class DataReductionProxyRequestOptions {
   void Init();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
-  // proxy authentication credentials. Only adds this header if the provided
-  // |proxy_server| is a data reduction proxy and not the data reduction proxy's
-  // CONNECT server. Must be called on the IO thread.
+  // proxy authentication credentials. If |is_using_lofi_mode| is true
+  // adds the "q=low" directive to the header. Only adds this header if the
+  // provided |proxy_server| is a data reduction proxy and not the data
+  // reduction proxy's CONNECT server.
   void MaybeAddRequestHeader(net::URLRequest* request,
                              const net::ProxyServer& proxy_server,
-                             net::HttpRequestHeaders* request_headers);
+                             net::HttpRequestHeaders* request_headers,
+                             bool is_using_lofi_mode);
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
   // proxy authentication credentials. Only adds this header if the provided
@@ -137,7 +139,8 @@ class DataReductionProxyRequestOptions {
 
  protected:
   void SetHeader(const net::URLRequest* request,
-                 net::HttpRequestHeaders* headers);
+                 net::HttpRequestHeaders* headers,
+                 bool is_using_lofi_mode);
 
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
@@ -173,7 +176,7 @@ class DataReductionProxyRequestOptions {
   void UpdateVersion();
 
   // May regenerate the Chrome Proxy header based on changes in Lo-Fi status.
-  void MayRegenerateHeaderBasedOnLoFi(const net::URLRequest* request);
+  void MayRegenerateHeaderBasedOnLoFi(bool is_using_lofi_mode);
 
   // Update the value of the experiments to be run and regenerate the header if
   // necessary.
@@ -191,11 +194,13 @@ class DataReductionProxyRequestOptions {
   // Adds authentication headers only if |expects_ssl| is true and
   // |proxy_server| is a data reduction proxy used for ssl tunneling via
   // HTTP CONNECT, or |expect_ssl| is false and |proxy_server| is a data
-  // reduction proxy for HTTP traffic.
+  // reduction proxy for HTTP traffic. If |is_using_lofi_mode| is true adds the
+  // "q=low" directive to the header.
   void MaybeAddRequestHeaderImpl(const net::URLRequest* request,
                                  const net::HostPortPair& proxy_server,
                                  bool expect_ssl,
-                                 net::HttpRequestHeaders* request_headers);
+                                 net::HttpRequestHeaders* request_headers,
+                                 bool is_using_lofi_mode);
 
   // Regenerates the |header_value_| string which is concatenated to the
   // Chrome-proxy header.

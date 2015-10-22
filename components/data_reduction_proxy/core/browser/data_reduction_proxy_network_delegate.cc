@@ -16,6 +16,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -26,8 +27,6 @@
 #include "net/url_request/url_request_status.h"
 
 namespace {
-
-class NetworkQualityEstimator;
 
 // |lofi_low_header_added| is set to true iff Lo-Fi "q=low" request header can
 // be added to the Chrome proxy headers.
@@ -175,25 +174,23 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
 
-  // TODO(bengr): Investigate a better approach to update the network
-  // quality so that state of Lo-Fi is stored per page.
-  net::NetworkQualityEstimator* network_quality_estimator = nullptr;
-  if (request && request->context())
-    network_quality_estimator = request->context()->network_quality_estimator();
+  bool is_using_lofi_mode = false;
 
-  if (request && ((request->load_flags() & net::LOAD_MAIN_FRAME) != 0)) {
-    data_reduction_proxy_config_->UpdateLoFiStatusOnMainFrameRequest(
-        ((request->load_flags() & net::LOAD_BYPASS_CACHE) != 0),
-        network_quality_estimator);
-    if (data_reduction_proxy_io_data_) {
+  if (data_reduction_proxy_io_data_ &&
+      data_reduction_proxy_io_data_->lofi_decider() && request) {
+    LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
+    is_using_lofi_mode = lofi_decider->IsUsingLoFiMode(*request);
+
+    if ((request->load_flags() & net::LOAD_MAIN_FRAME) != 0) {
+      // TODO(megjablon): Need to switch to per page.
       data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
-          data_reduction_proxy_config_->ShouldUseLoFiHeaderForRequests());
+          is_using_lofi_mode);
     }
   }
 
   if (data_reduction_proxy_request_options_) {
     data_reduction_proxy_request_options_->MaybeAddRequestHeader(
-        request, proxy_info.proxy_server(), headers);
+        request, proxy_info.proxy_server(), headers, is_using_lofi_mode);
   }
 }
 
@@ -256,13 +253,13 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
 
     DCHECK(data_reduction_proxy_config_);
 
-    // TODO(bengr): Investigate a better approach to record the Lo-Fi
-    // histogram. State of Lo-Fi should be stored per page.
     RecordContentLengthHistograms(
         // |data_reduction_proxy_io_data_| can be NULL for Webview.
         data_reduction_proxy_io_data_ &&
             data_reduction_proxy_io_data_->IsEnabled() &&
-            data_reduction_proxy_config_->ShouldUseLoFiHeaderForRequests(),
+            data_reduction_proxy_io_data_->lofi_decider() &&
+            data_reduction_proxy_io_data_->lofi_decider()->IsUsingLoFiMode(
+                *request),
         received_content_length, original_content_length, freshness_lifetime);
     experiments_stats_->RecordBytes(request->request_time(), request_type,
                                     received_content_length,

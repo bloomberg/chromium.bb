@@ -24,6 +24,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -31,9 +32,6 @@
 using base::FieldTrialList;
 
 namespace {
-
-const char kEnabled[] = "Enabled";
-const char kControl[] = "Control";
 
 // Values of the UMA DataReductionProxy.NetworkChangeEvents histograms.
 // This enum must remain synchronized with the enum of the same
@@ -79,10 +77,8 @@ bool FindProxyInList(const std::vector<net::ProxyServer>& proxy_list,
 
 // Following UMA is plotted to measure how frequently Lo-Fi state changes.
 // Too frequent changes are undesirable.
-void RecordAutoLoFiRequestHeaderStateChange(
-    net::NetworkChangeNotifier::ConnectionType connection_type,
-    bool previous_header_low,
-    bool current_header_low) {
+void RecordAutoLoFiRequestHeaderStateChange(bool previous_header_low,
+                                            bool current_header_low) {
   // Auto Lo-Fi request header state changes.
   // Possible Lo-Fi header directives are empty ("") and low ("q=low").
   // This enum must remain synchronized with the enum of the same name in
@@ -96,6 +92,9 @@ void RecordAutoLoFiRequestHeaderStateChange(
   };
 
   AutoLoFiRequestHeaderState state;
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      net::NetworkChangeNotifier::GetConnectionType();
+
   if (!previous_header_low) {
     if (current_header_low)
       state = AUTO_LOFI_REQUEST_HEADER_STATE_EMPTY_TO_LOW;
@@ -239,13 +238,13 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       auto_lofi_minimum_rtt_(base::TimeDelta::Max()),
       auto_lofi_maximum_kbps_(0),
       auto_lofi_hysteresis_(base::TimeDelta::Max()),
-      network_quality_last_updated_(base::TimeTicks()),
+      network_quality_last_checked_(base::TimeTicks()),
       network_prohibitively_slow_(false),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
-      lofi_status_(LOFI_STATUS_TEMPORARILY_OFF),
-      last_main_frame_request_(base::TimeTicks::Now()),
-      network_quality_at_last_main_frame_request_(
-          NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_UNKNOWN) {
+      lofi_off_(false),
+      last_query_(base::TimeTicks::Now()),
+      network_quality_at_last_query_(NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN),
+      previous_state_lofi_on_(false) {
   DCHECK(configurator);
   DCHECK(event_creator);
   if (params::IsLoFiDisabledViaFlags())
@@ -392,8 +391,8 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
 bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
     const net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsIncludedInLoFiEnabledFieldTrial() ||
-         IsIncludedInLoFiControlFieldTrial() ||
+  DCHECK(params::IsIncludedInLoFiEnabledFieldTrial() ||
+         params::IsIncludedInLoFiControlFieldTrial() ||
          params::IsLoFiSlowConnectionsOnlyViaFlags());
 
   if (!network_quality_estimator)
@@ -426,89 +425,26 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
     is_network_currently_slow =
         kbps < auto_lofi_maximum_kbps_ || rtt > auto_lofi_minimum_rtt_;
 
-    network_quality_at_last_main_frame_request_ =
-        is_network_currently_slow
-            ? NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_SLOW
-            : NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_NOT_SLOW;
+    network_quality_at_last_query_ =
+        is_network_currently_slow ? NETWORK_QUALITY_AT_LAST_QUERY_SLOW
+                                  : NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW;
   }
 
   // Return the cached entry if the last update was within the hysteresis
   // duration and if the connection type has not changed.
-  if (!network_type_changed && !network_quality_last_updated_.is_null() &&
-      base::TimeTicks::Now() - network_quality_last_updated_ <=
+  if (!network_type_changed && !network_quality_last_checked_.is_null() &&
+      base::TimeTicks::Now() - network_quality_last_checked_ <=
           auto_lofi_hysteresis_) {
     return network_prohibitively_slow_;
   }
 
-  network_quality_last_updated_ = base::TimeTicks::Now();
+  network_quality_last_checked_ = base::TimeTicks::Now();
 
   if (!is_network_quality_available)
     return false;
 
   network_prohibitively_slow_ = is_network_currently_slow;
   return network_prohibitively_slow_;
-}
-
-bool DataReductionProxyConfig::IsIncludedInLoFiEnabledFieldTrial() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return FieldTrialList::FindFullName(params::GetLoFiFieldTrialName()) ==
-         kEnabled;
-}
-
-bool DataReductionProxyConfig::IsIncludedInLoFiControlFieldTrial() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return FieldTrialList::FindFullName(params::GetLoFiFieldTrialName()) ==
-         kControl;
-}
-
-LoFiStatus DataReductionProxyConfig::GetLoFiStatus() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return lofi_status_;
-}
-
-// static
-bool DataReductionProxyConfig::ShouldUseLoFiHeaderForRequests(
-    LoFiStatus lofi_status) {
-  switch (lofi_status) {
-    case LOFI_STATUS_OFF:
-    case LOFI_STATUS_TEMPORARILY_OFF:
-    case LOFI_STATUS_ACTIVE_CONTROL:
-    case LOFI_STATUS_INACTIVE_CONTROL:
-    case LOFI_STATUS_INACTIVE:
-      return false;
-    // Lo-Fi header can be used only if Lo-Fi is not temporarily off and either
-    // the user has enabled Lo-Fi through flags, or session is in Lo-Fi enabled
-    // group with network quality prohibitively slow.
-    case LOFI_STATUS_ACTIVE_FROM_FLAGS:
-    case LOFI_STATUS_ACTIVE:
-      return true;
-    default:
-      NOTREACHED() << lofi_status;
-  }
-  return false;
-}
-
-bool DataReductionProxyConfig::ShouldUseLoFiHeaderForRequests() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return ShouldUseLoFiHeaderForRequests(lofi_status_);
-}
-
-bool DataReductionProxyConfig::IsInLoFiActiveControlExperiment() const {
-  switch (lofi_status_) {
-    case LOFI_STATUS_OFF:
-    case LOFI_STATUS_TEMPORARILY_OFF:
-    case LOFI_STATUS_INACTIVE_CONTROL:
-    case LOFI_STATUS_INACTIVE:
-    case LOFI_STATUS_ACTIVE_FROM_FLAGS:
-    case LOFI_STATUS_ACTIVE:
-      return false;
-    case LOFI_STATUS_ACTIVE_CONTROL:
-      DCHECK(IsIncludedInLoFiControlFieldTrial());
-      return true;
-    default:
-      NOTREACHED() << lofi_status_;
-  }
-  return false;
 }
 
 void DataReductionProxyConfig::PopulateAutoLoFiParams() {
@@ -522,8 +458,8 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
     field_trial = params::GetLoFiFlagFieldTrialName();
   }
 
-  if (!IsIncludedInLoFiControlFieldTrial() &&
-      !IsIncludedInLoFiEnabledFieldTrial() &&
+  if (!params::IsIncludedInLoFiControlFieldTrial() &&
+      !params::IsIncludedInLoFiEnabledFieldTrial() &&
       !params::IsLoFiSlowConnectionsOnlyViaFlags()) {
     return;
   }
@@ -778,25 +714,25 @@ void DataReductionProxyConfig::SecureProxyCheck(
 
 void DataReductionProxyConfig::SetLoFiModeOff() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  lofi_status_ = LOFI_STATUS_OFF;
+  lofi_off_ = true;
 }
 
 void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
     const net::NetworkQualityEstimator* network_quality_estimator) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(network_quality_estimator);
-  DCHECK(IsIncludedInLoFiEnabledFieldTrial());
-  DCHECK_NE(network_quality_at_last_main_frame_request_,
-            NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_UNKNOWN);
+  DCHECK(params::IsIncludedInLoFiEnabledFieldTrial());
+  DCHECK_NE(network_quality_at_last_query_,
+            NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN);
 
   base::TimeDelta rtt_since_last_page_load;
   if (!network_quality_estimator->GetRecentMedianRTT(
-          last_main_frame_request_, &rtt_since_last_page_load)) {
+          last_query_, &rtt_since_last_page_load)) {
     return;
   }
   int32_t downstream_throughput_kbps;
   if (!network_quality_estimator->GetRecentMedianDownlinkThroughputKbps(
-          last_main_frame_request_, &downstream_throughput_kbps)) {
+          last_query_, &downstream_throughput_kbps)) {
     return;
   }
 
@@ -818,21 +754,19 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
   AutoLoFiAccuracy accuracy = AUTO_LOFI_ACCURACY_INDEX_BOUNDARY;
 
   if (should_have_used_lofi) {
-    if (network_quality_at_last_main_frame_request_ ==
-        NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_SLOW) {
+    if (network_quality_at_last_query_ == NETWORK_QUALITY_AT_LAST_QUERY_SLOW) {
       accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_SLOW_ACTUAL_SLOW;
-    } else if (network_quality_at_last_main_frame_request_ ==
-               NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_NOT_SLOW) {
+    } else if (network_quality_at_last_query_ ==
+               NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW) {
       accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_NOT_SLOW_ACTUAL_SLOW;
     } else {
       NOTREACHED();
     }
   } else {
-    if (network_quality_at_last_main_frame_request_ ==
-        NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_SLOW) {
+    if (network_quality_at_last_query_ == NETWORK_QUALITY_AT_LAST_QUERY_SLOW) {
       accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_SLOW_ACTUAL_NOT_SLOW;
-    } else if (network_quality_at_last_main_frame_request_ ==
-               NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_NOT_SLOW) {
+    } else if (network_quality_at_last_query_ ==
+               NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW) {
       accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_NOT_SLOW_ACTUAL_NOT_SLOW;
     } else {
       NOTREACHED();
@@ -878,8 +812,27 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
   }
 }
 
-void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
-    bool user_temporarily_disabled_lofi,
+bool DataReductionProxyConfig::ShouldEnableLoFiMode(
+    const net::URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  net::NetworkQualityEstimator* network_quality_estimator;
+  network_quality_estimator =
+      request.context() ? request.context()->network_quality_estimator()
+                        : nullptr;
+
+  bool enable_lofi = ShouldEnableLoFiModeInternal(network_quality_estimator);
+
+  if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
+      params::IsIncludedInLoFiEnabledFieldTrial()) {
+    RecordAutoLoFiRequestHeaderStateChange(previous_state_lofi_on_,
+                                           enable_lofi);
+    previous_state_lofi_on_ = enable_lofi;
+  }
+
+  return enable_lofi;
+}
+
+bool DataReductionProxyConfig::ShouldEnableLoFiModeInternal(
     const net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -887,87 +840,36 @@ void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
   // field trial, and the user has not enabled Lo-Fi on slow connections
   // via flags.
   if (network_quality_estimator &&
-      network_quality_at_last_main_frame_request_ !=
-          NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_UNKNOWN &&
-      IsIncludedInLoFiEnabledFieldTrial() &&
+      network_quality_at_last_query_ != NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN &&
+      params::IsIncludedInLoFiEnabledFieldTrial() &&
       !params::IsLoFiSlowConnectionsOnlyViaFlags()) {
     RecordAutoLoFiAccuracyRate(network_quality_estimator);
   }
-  last_main_frame_request_ = base::TimeTicks::Now();
-  network_quality_at_last_main_frame_request_ =
-      NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_UNKNOWN;
+  last_query_ = base::TimeTicks::Now();
+  network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
-  // If Lo-Fi has been permanently turned off, its status can't change.
-  if (lofi_status_ == LOFI_STATUS_OFF)
-    return;
+  // If Lo-Fi has been turned off, its status can't change.
+  if (lofi_off_)
+    return false;
 
-  // If the user has temporarily disabled Lo-Fi on a main frame request, it will
-  // remain disabled until next main frame request.
-  if (user_temporarily_disabled_lofi) {
-    switch (lofi_status_) {
-      // Turn off Lo-Fi temporarily (until next main frame request) if it was
-      // enabled from flags or because the session is in Lo-Fi enabled group.
-      case LOFI_STATUS_ACTIVE_FROM_FLAGS:
-      case LOFI_STATUS_ACTIVE:
-      case LOFI_STATUS_INACTIVE:
-        lofi_status_ = LOFI_STATUS_TEMPORARILY_OFF;
-        return;
-      // Lo-Fi is already temporarily off, so no need to change state.
-      case LOFI_STATUS_TEMPORARILY_OFF:
-      // If the current session does not have Lo-Fi switch, is not in Auto Lo-Fi
-      // enabled group and is in Auto Lo-Fi control group, then we do not need
-      // to temporarily disable Lo-Fi because it would never be used.
-      case LOFI_STATUS_ACTIVE_CONTROL:
-      case LOFI_STATUS_INACTIVE_CONTROL:
-        return;
-
-      default:
-        NOTREACHED() << "Unexpected Lo-Fi status = " << lofi_status_;
-    }
-  }
-
-  if (params::IsLoFiAlwaysOnViaFlags()) {
-    lofi_status_ = LOFI_STATUS_ACTIVE_FROM_FLAGS;
-    return;
-  }
+  if (params::IsLoFiAlwaysOnViaFlags())
+    return true;
 
   if (params::IsLoFiCellularOnlyViaFlags()) {
-    if (net::NetworkChangeNotifier::IsConnectionCellular(
-            net::NetworkChangeNotifier::GetConnectionType())) {
-      lofi_status_ = LOFI_STATUS_ACTIVE_FROM_FLAGS;
-      return;
-    }
-    lofi_status_ = LOFI_STATUS_TEMPORARILY_OFF;
-    return;
+    return net::NetworkChangeNotifier::IsConnectionCellular(
+        net::NetworkChangeNotifier::GetConnectionType());
   }
-
-  // Store the previous state of Lo-Fi, so that change in Lo-Fi status can be
-  // recorded properly. This is not needed for the control group, because it
-  // is only used to report changes in request headers, and the request headers
-  // are never modified in the control group.
-  LoFiStatus previous_lofi_status = lofi_status_;
 
   if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
-      IsIncludedInLoFiEnabledFieldTrial()) {
-    lofi_status_ = IsNetworkQualityProhibitivelySlow(network_quality_estimator)
-                       ? LOFI_STATUS_ACTIVE
-                       : LOFI_STATUS_INACTIVE;
-    RecordAutoLoFiRequestHeaderStateChange(
-        connection_type_, ShouldUseLoFiHeaderForRequests(previous_lofi_status),
-        ShouldUseLoFiHeaderForRequests(lofi_status_));
-    return;
-  }
-
-  if (IsIncludedInLoFiControlFieldTrial()) {
-    lofi_status_ = IsNetworkQualityProhibitivelySlow(network_quality_estimator)
-                       ? LOFI_STATUS_ACTIVE_CONTROL
-                       : LOFI_STATUS_INACTIVE_CONTROL;
-    return;
+      params::IsIncludedInLoFiEnabledFieldTrial() ||
+      params::IsIncludedInLoFiControlFieldTrial()) {
+    return IsNetworkQualityProhibitivelySlow(network_quality_estimator);
   }
 
   // If Lo-Fi is not enabled through command line and the user is not in
-  // Lo-Fi field trials, we set Lo-Fi to permanent off.
-  lofi_status_ = LOFI_STATUS_OFF;
+  // Lo-Fi field trials, set Lo-Fi to off.
+  lofi_off_ = true;
+  return false;
 }
 
 void DataReductionProxyConfig::GetNetworkList(

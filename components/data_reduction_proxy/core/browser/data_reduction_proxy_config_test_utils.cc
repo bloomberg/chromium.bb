@@ -43,8 +43,6 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
                                config_values.Pass(),
                                configurator,
                                event_creator),
-      auto_lofi_enabled_group_(false),
-      auto_lofi_control_group_(false),
       network_quality_prohibitively_slow_(false) {
   network_interfaces_.reset(new net::NetworkInterfaceList());
 }
@@ -96,25 +94,7 @@ void TestDataReductionProxyConfig::SetStateForTest(
 }
 
 void TestDataReductionProxyConfig::ResetLoFiStatusForTest() {
-  lofi_status_ = LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF;
-}
-
-bool TestDataReductionProxyConfig::IsIncludedInLoFiEnabledFieldTrial() const {
-  return auto_lofi_enabled_group_;
-}
-
-bool TestDataReductionProxyConfig::IsIncludedInLoFiControlFieldTrial() const {
-  return auto_lofi_control_group_;
-}
-
-void TestDataReductionProxyConfig::SetIncludedInLoFiEnabledFieldTrial(
-    bool auto_lofi_enabled_group) {
-  auto_lofi_enabled_group_ = auto_lofi_enabled_group;
-}
-
-void TestDataReductionProxyConfig::SetIncludedInLoFiControlFieldTrial(
-    bool auto_lofi_control_group) {
-  auto_lofi_control_group_ = auto_lofi_control_group;
+  lofi_off_ = false;
 }
 
 void TestDataReductionProxyConfig::SetNetworkProhibitivelySlow(
@@ -143,7 +123,7 @@ void MockDataReductionProxyConfig::UpdateConfigurator(
 }
 
 void MockDataReductionProxyConfig::ResetLoFiStatusForTest() {
-  lofi_status_ = LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF;
+  lofi_off_ = false;
 }
 
 }  // namespace data_reduction_proxy

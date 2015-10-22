@@ -207,7 +207,7 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
     prefs_->SetInteger(prefs::kLoFiImplicitOptOutEpoch,
                        lo_fi_implicit_opt_out_epoch);
     settings_->RecordLoFiImplicitOptOutAction(LO_FI_OPT_OUT_ACTION_NEXT_EPOCH);
-  } else if (!params::IsLoFiAlwaysOnViaFlags() &&
+  } else if (!params::IsLoFiOnViaFlags() &&
              (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
               lo_fi_consecutive_session_disables)) {
     // If Lo-Fi isn't always on and and the number of

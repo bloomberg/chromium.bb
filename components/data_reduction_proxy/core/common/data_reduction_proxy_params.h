@@ -43,6 +43,26 @@ bool IsIncludedInHoldbackFieldTrial();
 // a promotion for the data reduction proxy on Android One devices.
 bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint);
 
+// Returns the name of the Lo-Fi field trial.
+std::string GetLoFiFieldTrialName();
+
+// Returns the name of the Lo-Fi field trial that configures LoFi flags when it
+// is force enabled through flags.
+std::string GetLoFiFlagFieldTrialName();
+
+// Returns true if this client is part of the "Enabled" group of the Lo-Fi field
+// trial.
+bool IsIncludedInLoFiEnabledFieldTrial();
+
+// Returns true if this client is part of the "Control" group of the Lo-Fi field
+// trial.
+bool IsIncludedInLoFiControlFieldTrial();
+
+// Returns true if this client has any of the values to enable Lo-Fi mode for
+// the "data-reduction-proxy-lo-fi" command line switch. This includes the
+// "always-on", "cellular-only", and "slow-connections-only" values.
+bool IsLoFiOnViaFlags();
+
 // Returns true if this client has the command line switch to enable Lo-Fi
 // mode always on.
 bool IsLoFiAlwaysOnViaFlags();
@@ -70,13 +90,6 @@ bool IsIncludedInQuicFieldTrial();
 // Returns true if dev rollout is enabled on this client either through command
 // line switch or as a part of field trial.
 bool IsDevRolloutEnabled();
-
-// Returns the name of the Lo-Fi field trial.
-std::string GetLoFiFieldTrialName();
-
-// Returns the name of the Lo-Fi field trial that configures LoFi flags when it
-// is force enabled through flags.
-std::string GetLoFiFlagFieldTrialName();
 
 std::string GetQuicFieldTrialName();
 

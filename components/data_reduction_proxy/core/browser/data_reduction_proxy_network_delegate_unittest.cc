@@ -23,6 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -69,6 +70,23 @@ const Client kClient = Client::CHROME_QNX;
 const Client kClient = Client::UNKNOWN;
 #endif
 
+class TestLoFiDecider : public LoFiDecider {
+ public:
+  TestLoFiDecider() : should_request_lofi_resource_(false) {}
+  ~TestLoFiDecider() override {}
+
+  bool IsUsingLoFiMode(const net::URLRequest& request) const override {
+    return should_request_lofi_resource_;
+  }
+
+  void SetIsUsingLoFiMode(bool should_request_lofi_resource) {
+    should_request_lofi_resource_ = should_request_lofi_resource;
+  }
+
+ private:
+  bool should_request_lofi_resource_;
+};
+
 }  // namespace
 
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
@@ -96,11 +114,13 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
     data_reduction_proxy_network_delegate_->InitIODataAndUMA(
         test_context_->io_data(), bypass_stats_.get());
+
+    scoped_ptr<TestLoFiDecider> lofi_decider(new TestLoFiDecider());
+    lofi_decider_ = lofi_decider.get();
+    io_data()->set_lofi_decider(lofi_decider.Pass());
   }
 
-  const net::ProxyConfig& GetProxyConfig() const {
-    return config_;
-  }
+  const net::ProxyConfig& GetProxyConfig() const { return config_; }
 
   MockDataReductionProxyConfig* config() const {
     return test_context_->mock_config();
@@ -178,9 +198,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return test_context_->io_data();
   }
 
-  TestDataReductionProxyConfig* config() {
-    return test_context_->config();
-  }
+  TestDataReductionProxyConfig* config() { return test_context_->config(); }
+
+  TestLoFiDecider* lofi_decider() { return lofi_decider_; }
 
   scoped_ptr<DataReductionProxyNetworkDelegate>
       data_reduction_proxy_network_delegate_;
@@ -193,6 +213,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   net::ProxyConfig config_;
   net::NetworkDelegate* network_delegate_;
+  TestLoFiDecider* lofi_decider_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyBypassStats> bypass_stats_;
 };
@@ -226,14 +247,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     bool auto_lofi_enabled;
   } tests[] = {
       {
-       // Lo-Fi enabled through switch.
-       false,
-       true,
+          // Lo-Fi enabled through switch.
+          true, false,
       },
       {
-       // Lo-Fi enabled through field trial.
-       true,
-       false,
+          // Lo-Fi enabled through field trial.
+          false, true,
       },
   };
 
@@ -243,7 +262,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           switches::kDataReductionProxyLoFi,
           switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
-    config()->SetIncludedInLoFiEnabledFieldTrial(tests[i].auto_lofi_enabled);
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].auto_lofi_enabled) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Enabled");
+    }
     config()->SetNetworkProhibitivelySlow(tests[i].auto_lofi_enabled);
 
     net::ProxyInfo data_reduction_proxy_info;
@@ -258,6 +281,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       scoped_ptr<net::URLRequest> fake_request(
           FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      lofi_decider()->SetIsUsingLoFiMode(
+          config()->ShouldEnableLoFiMode(*fake_request.get()));
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(true, headers);
@@ -265,11 +290,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     }
 
     {
-      // Bypass cache flag used. Lo-Fi should not be used.
+      // Lo-Fi is already off. Lo-Fi should not be used.
       net::HttpRequestHeaders headers;
       scoped_ptr<net::URLRequest> fake_request(
           FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+      lofi_decider()->SetIsUsingLoFiMode(false);
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
@@ -279,11 +304,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     }
 
     {
-      // Bypass cache flag not used. Lo-Fi should be used.
+      // Lo-Fi is already on. Lo-Fi should be used.
       net::HttpRequestHeaders headers;
       scoped_ptr<net::URLRequest> fake_request(
           FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
 
+      lofi_decider()->SetIsUsingLoFiMode(true);
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(true, headers);
@@ -293,26 +319,15 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     }
 
     {
-      // Bypass cache flag used. Lo-Fi should not be used.
-      net::HttpRequestHeaders headers;
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
-      data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
-          fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(false, headers);
-      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
-      // true.
-      VerifyWasLoFiModeActiveOnMainFrame(true);
-    }
-
-    {
-      // Main frame request with bypass cache flag. Lo-Fi should not be used.
+      // TODO(megjablon): Can remove the cases below once
+      // WasLoFiModeActiveOnMainFrame is fixed to be per-page.
+      // Main frame request with Lo-Fi off. Lo-Fi should not be used.
       // State of Lo-Fi should persist until next page load.
       net::HttpRequestHeaders headers;
       scoped_ptr<net::URLRequest> fake_request(
           FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
-      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME | net::LOAD_BYPASS_CACHE);
+      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      lofi_decider()->SetIsUsingLoFiMode(false);
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
@@ -320,10 +335,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     }
 
     {
-      // Bypass cache flag not used. Lo-Fi is still not used.
+      // Lo-Fi is off. Lo-Fi is still not used.
       net::HttpRequestHeaders headers;
       scoped_ptr<net::URLRequest> fake_request(
           FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      lofi_decider()->SetIsUsingLoFiMode(false);
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
@@ -338,6 +354,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       scoped_ptr<net::URLRequest> fake_request(
           FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      lofi_decider()->SetIsUsingLoFiMode(
+          config()->ShouldEnableLoFiMode(*fake_request.get()));
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(true, headers);
@@ -427,38 +445,34 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
 
   } tests[] = {
       {
-       // Lo-Fi disabled.
-       false,
-       false,
-       0,
+          // Lo-Fi disabled.
+          false, false, 0,
       },
       {
-       // Auto Lo-Fi enabled.
-       // This should populate Lo-Fi content length histogram.
-       false,
-       true,
-       1,
+          // Auto Lo-Fi enabled.
+          // This should populate Lo-Fi content length histogram.
+          false, true, 1,
       },
       {
-       // Lo-Fi enabled through switch.
-       // This should populate Lo-Fi content length histogram.
-       true,
-       false,
-       1,
+          // Lo-Fi enabled through switch.
+          // This should populate Lo-Fi content length histogram.
+          true, false, 1,
       },
       {
-       // Lo-Fi enabled through switch and Auto Lo-Fi also enabled.
-       // This should populate Lo-Fi content length histogram.
-       true,
-       true,
-       1,
+          // Lo-Fi enabled through switch and Auto Lo-Fi also enabled.
+          // This should populate Lo-Fi content length histogram.
+          true, true, 1,
       },
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     config()->ResetLoFiStatusForTest();
-    config()->SetIncludedInLoFiEnabledFieldTrial(tests[i].auto_lofi_enabled);
     config()->SetNetworkProhibitivelySlow(tests[i].auto_lofi_enabled);
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].auto_lofi_enabled) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Enabled");
+    }
 
     if (tests[i].lofi_enabled_through_switch) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -466,7 +480,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
           switches::kDataReductionProxyLoFiValueAlwaysOn);
     }
 
-    config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+    lofi_decider()->SetIsUsingLoFiMode(
+        config()->ShouldEnableLoFiMode(*fake_request.get()));
 
     fake_request = (FetchURLRequest(GURL("http://www.example.com/"),
                                     response_headers, kResponseContentLength));
@@ -538,8 +553,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   retry_info.current_delay = base::TimeDelta::FromSeconds(1000);
   retry_info.bad_until = base::TimeTicks().Now() + retry_info.current_delay;
   retry_info.try_while_bad = false;
-  data_reduction_proxy_retry_info[
-     data_reduction_proxy_info.proxy_server().ToURI()] = retry_info;
+  data_reduction_proxy_retry_info[data_reduction_proxy_info.proxy_server()
+                                      .ToURI()] = retry_info;
 
   net::ProxyInfo result;
   // Another proxy is used. It should be used afterwards.
@@ -583,13 +598,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   // Without DataCompressionProxyCriticalBypass Finch trial set, the
   // BYPASS_DATA_REDUCTION_PROXY load flag should be ignored.
   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(),
-                        &result);
+                        empty_proxy_retry_info, config(), &result);
   EXPECT_FALSE(result.is_direct());
 
   OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info,
-                        config(), &other_proxy_info);
+                        empty_proxy_retry_info, config(), &other_proxy_info);
   EXPECT_FALSE(other_proxy_info.is_direct());
 }
 

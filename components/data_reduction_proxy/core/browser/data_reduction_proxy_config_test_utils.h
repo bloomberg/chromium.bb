@@ -70,16 +70,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Resets the Lo-Fi status to default state.
   void ResetLoFiStatusForTest();
 
-  bool IsIncludedInLoFiEnabledFieldTrial() const override;
-
-  // Allows tests to set the session as part of Lo-Fi enabled field trial.
-  void SetIncludedInLoFiEnabledFieldTrial(bool included_in_lofi_enabled);
-
-  bool IsIncludedInLoFiControlFieldTrial() const override;
-
-  // Allows tests to set the session as part of Lo-Fi control field trial.
-  void SetIncludedInLoFiControlFieldTrial(bool included_in_lofi_control);
-
   // Allows tests to mark the network as prohibitively slow.
   void SetNetworkProhibitivelySlow(bool network_quality_prohibitively_slow);
 
@@ -92,12 +82,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
  private:
   scoped_ptr<net::NetworkInterfaceList> network_interfaces_;
-
-  // True if this session is part of Auto Lo-Fi enabled field trial.
-  bool auto_lofi_enabled_group_;
-
-  // True if this session is part of Auto Lo-Fi control field trial.
-  bool auto_lofi_control_group_;
 
   // True if network quality is slow enough to turn Auto Lo-Fi ON.
   bool network_quality_prohibitively_slow_;
@@ -139,8 +123,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   MOCK_METHOD1(
       IsNetworkQualityProhibitivelySlow,
       bool(const net::NetworkQualityEstimator* network_quality_estimator));
-  MOCK_CONST_METHOD0(IsIncludedInLoFiEnabledFieldTrial, bool());
-  MOCK_CONST_METHOD0(IsIncludedInLoFiControlFieldTrial, bool());
 
   void UpdateConfigurator(bool enabled, bool restricted) override;
 

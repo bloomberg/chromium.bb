@@ -548,7 +548,7 @@ void ChromeContentClient::AddAdditionalSchemes(
 
 bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
   return message->type() ==
-         DataReductionProxyViewHostMsg_DataReductionProxyStatus::ID;
+         DataReductionProxyViewHostMsg_IsDataReductionProxy::ID;
 }
 
 std::string ChromeContentClient::GetProduct() const {

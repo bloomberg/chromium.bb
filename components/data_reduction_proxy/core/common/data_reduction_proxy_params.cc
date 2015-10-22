@@ -26,6 +26,7 @@ using base::FieldTrialList;
 namespace {
 
 const char kEnabled[] = "Enabled";
+const char kControl[] = "Control";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
 const char kDefaultQuicOrigin[] = "quic://proxy.googlezip.net:443";
 // A one-off change, until the Data Reduction Proxy configuration service is
@@ -79,6 +80,19 @@ std::string GetLoFiFieldTrialName() {
 
 std::string GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
+}
+
+bool IsIncludedInLoFiEnabledFieldTrial() {
+  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kEnabled;
+}
+
+bool IsIncludedInLoFiControlFieldTrial() {
+  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kControl;
+}
+
+bool IsLoFiOnViaFlags() {
+  return IsLoFiAlwaysOnViaFlags() || IsLoFiCellularOnlyViaFlags() ||
+         IsLoFiSlowConnectionsOnlyViaFlags();
 }
 
 bool IsLoFiAlwaysOnViaFlags() {

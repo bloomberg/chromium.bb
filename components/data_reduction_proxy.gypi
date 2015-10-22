@@ -180,6 +180,8 @@
         '..',
       ],
       'sources': [
+        'data_reduction_proxy/content/browser/content_lofi_decider.cc',
+        'data_reduction_proxy/content/browser/content_lofi_decider.h',
         'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.cc',
         'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h',
       ],

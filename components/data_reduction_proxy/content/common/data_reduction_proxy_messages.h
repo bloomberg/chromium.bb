@@ -3,18 +3,13 @@
 // found in the LICENSE file.
 
 // Multiply-included file, no traditional include guard.
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/host_port_pair.h"
 
 #define IPC_MESSAGE_START DataReductionProxyStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(data_reduction_proxy::LoFiStatus,
-                          data_reduction_proxy::LOFI_STATUS_LAST);
-
-IPC_SYNC_MESSAGE_CONTROL1_2(
-    DataReductionProxyViewHostMsg_DataReductionProxyStatus,
+IPC_SYNC_MESSAGE_CONTROL1_1(
+    DataReductionProxyViewHostMsg_IsDataReductionProxy,
     net::HostPortPair /* proxy server */,
-    bool /* true iff the proxy server is a Data Reduction Proxy */,
-    data_reduction_proxy::LoFiStatus /* current LoFi status */)
+    bool /* true iff the proxy server is a Data Reduction Proxy */)

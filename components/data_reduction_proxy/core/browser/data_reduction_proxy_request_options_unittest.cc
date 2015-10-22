@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -154,12 +155,13 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     request_options_->Init();
   }
 
-  void CreateRequest(int load_flags) {
+  void CreateRequest() {
     net::URLRequestContext* context =
         test_context_->request_context_getter()->GetURLRequestContext();
     request_ = context->CreateRequest(GURL(), net::DEFAULT_PRIORITY, nullptr);
-    request_->SetLoadFlags(load_flags);
   }
+
+  const net::URLRequest& request() { return *request_.get(); }
 
   TestDataReductionProxyParams* params() {
     return test_context_->config()->test_params();
@@ -170,7 +172,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   }
 
   void VerifyExpectedHeader(const std::string& proxy_uri,
-                            const std::string& expected_header) {
+                            const std::string& expected_header,
+                            bool should_request_lofi_resource) {
     test_context_->RunUntilIdle();
     net::HttpRequestHeaders headers;
     request_options_->MaybeAddRequestHeader(
@@ -178,7 +181,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
         proxy_uri.empty() ? net::ProxyServer()
                           : net::ProxyServer::FromURI(
                                 proxy_uri, net::ProxyServer::SCHEME_HTTP),
-        &headers);
+        &headers, should_request_lofi_resource);
     if (expected_header.empty()) {
       EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
       return;
@@ -225,16 +228,16 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   request_options()->SetKeyOnIO(kTestKey2);
 
   // Don't write headers if the proxy is invalid.
-  VerifyExpectedHeader(std::string(), std::string());
+  VerifyExpectedHeader(std::string(), std::string(), false);
 
   // Don't write headers with a valid proxy, that's not a data reduction proxy.
-  VerifyExpectedHeader(kOtherProxy, std::string());
+  VerifyExpectedHeader(kOtherProxy, std::string(), false);
 
   // Don't write headers with a valid data reduction ssl proxy.
-  VerifyExpectedHeader(params()->DefaultSSLOrigin(), std::string());
+  VerifyExpectedHeader(params()->DefaultSSLOrigin(), std::string(), false);
 
   // Write headers with a valid data reduction proxy.
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 
   // Write headers with a valid data reduction ssl proxy when one is expected.
   net::HttpRequestHeaders ssl_headers;
@@ -250,11 +253,11 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
 
   // Fast forward 24 hours. The header should be the same.
   request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 
   // Fast forward one more second. The header should be new.
   request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header2);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header2, false);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
@@ -264,12 +267,12 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
                         std::string(), std::vector<std::string>(),
                         &expected_header);
   CreateRequestOptions(kVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 
   // Now set an empty key. The auth handler should ignore that, and the key
   // remains |kTestKey|.
   request_options()->SetKeyOnIO(std::string());
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
@@ -282,7 +285,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
 
   // Now set a key.
   request_options()->SetKeyOnIO(kTestKey2);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, LoFiOnThroughCommandLineSwitch) {
@@ -291,10 +294,11 @@ TEST_F(DataReductionProxyRequestOptionsTest, LoFiOnThroughCommandLineSwitch) {
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, std::string(), std::string(), std::string(),
                         std::vector<std::string>(), &expected_header);
-
-  test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+  CreateRequest();
   CreateRequestOptions(kBogusVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(
+      params()->DefaultOrigin(), expected_header,
+      test_context_->config()->ShouldEnableLoFiMode(request()));
 
   test_context_->config()->ResetLoFiStatusForTest();
   // Add the LoFi command line switch.
@@ -306,9 +310,10 @@ TEST_F(DataReductionProxyRequestOptionsTest, LoFiOnThroughCommandLineSwitch) {
                         kClientStr, std::string(), std::string(), "low",
                         std::vector<std::string>(), &expected_header);
 
-  test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
   CreateRequestOptions(kBogusVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(
+      params()->DefaultOrigin(), expected_header,
+      test_context_->config()->ShouldEnableLoFiMode(request()));
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
@@ -354,18 +359,27 @@ TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
       expected_header = expected_header.append(", exp=");
       expected_header = expected_header.append(kLoFiExperimentID);
     }
-    test_context_->config()->SetIncludedInLoFiEnabledFieldTrial(
-        tests[i].auto_lofi_enabled_group);
-    test_context_->config()->SetIncludedInLoFiControlFieldTrial(
-        tests[i].auto_lofi_control_group);
+
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].auto_lofi_enabled_group) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Enabled");
+    }
+
+    if (tests[i].auto_lofi_control_group) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Control");
+    }
+
     test_context_->config()->SetNetworkProhibitivelySlow(
         tests[i].network_prohibitively_slow);
 
-    // Force update Lo-Fi status.
-    test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+    CreateRequest();
 
     CreateRequestOptions(kBogusVersion);
-    VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+    VerifyExpectedHeader(
+        params()->DefaultOrigin(), expected_header,
+        test_context_->config()->ShouldEnableLoFiMode(request()));
   }
 }
 
@@ -433,17 +447,21 @@ TEST_F(DataReductionProxyRequestOptionsTest, SlowConnectionsFlag) {
           switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
     }
 
-    test_context_->config()->SetIncludedInLoFiEnabledFieldTrial(
-        tests[i].auto_lofi_enabled_group);
+    base::FieldTrialList field_trial_list(nullptr);
+    if (tests[i].auto_lofi_enabled_group) {
+      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                             "Enabled");
+    }
 
     test_context_->config()->SetNetworkProhibitivelySlow(
         tests[i].network_prohibitively_slow);
 
-    // Force update Lo-Fi status.
-    test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+    CreateRequest();
 
     CreateRequestOptions(kBogusVersion);
-    VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+    VerifyExpectedHeader(
+        params()->DefaultOrigin(), expected_header,
+        test_context_->config()->ShouldEnableLoFiMode(request()));
   }
 }
 
@@ -455,7 +473,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
 
   CreateRequestOptions(kBogusVersion);
   request_options()->SetSecureSession(kSecureSession);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
@@ -471,7 +489,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
                         expected_experiments, &expected_header);
 
   CreateRequestOptions(kBogusVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header, false);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseLocalSessionKey) {

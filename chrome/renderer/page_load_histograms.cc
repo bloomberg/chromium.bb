@@ -20,8 +20,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/url_pattern.h"
@@ -223,7 +225,8 @@ int GetQueryStringBasedExperiment(const GURL& referrer) {
 void DumpHistograms(const WebPerformance& performance,
                     DocumentState* document_state,
                     bool data_reduction_proxy_was_used,
-                    data_reduction_proxy::LoFiStatus lofi_status,
+                    bool lofi_active_for_page,  // LoFi was used, unless part of
+                                                // the control group.
                     bool came_from_websearch,
                     int websearch_chrome_joint_experiment_id,
                     bool is_preview,
@@ -415,6 +418,12 @@ void DumpHistograms(const WebPerformance& performance,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
     if (data_reduction_proxy_was_used) {
+      // TODO(megjablon): Move these repetitive cases into an anonymous
+      // function.
+      bool in_lofi_enabled_group =
+          data_reduction_proxy::params::IsIncludedInLoFiEnabledFieldTrial();
+      bool in_lofi_control_group =
+          data_reduction_proxy::params::IsIncludedInLoFiControlFieldTrial();
       if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
         PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy",
                       load_event_end - begin);
@@ -424,7 +433,7 @@ void DumpHistograms(const WebPerformance& performance,
                       load_event_end - navigation_start);
         PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
                       load_event_end - request_start);
-        if (lofi_status == data_reduction_proxy::LOFI_STATUS_ACTIVE) {
+        if (lofi_active_for_page && in_lofi_enabled_group) {
           PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOn",
                         load_event_end - begin);
           PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy_AutoLoFiOn",
@@ -437,8 +446,7 @@ void DumpHistograms(const WebPerformance& performance,
             PLT_HISTOGRAM("PLT.BeginToFirstPaint_DataReductionProxy_AutoLoFiOn",
                           first_paint - begin);
           }
-        } else if (lofi_status ==
-                   data_reduction_proxy::LOFI_STATUS_ACTIVE_CONTROL) {
+        } else if (lofi_active_for_page && in_lofi_control_group) {
           PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOff",
                         load_event_end - begin);
           PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy_AutoLoFiOff",
@@ -462,7 +470,7 @@ void DumpHistograms(const WebPerformance& performance,
                       load_event_end - navigation_start);
         PLT_HISTOGRAM("PLT.PT_StartToFinish_HTTPS_DataReductionProxy",
                       load_event_end - request_start);
-        if (lofi_status == data_reduction_proxy::LOFI_STATUS_ACTIVE) {
+        if (lofi_active_for_page && in_lofi_enabled_group) {
           PLT_HISTOGRAM(
               "PLT.PT_BeginToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
               load_event_end - begin);
@@ -480,8 +488,7 @@ void DumpHistograms(const WebPerformance& performance,
                 "PLT.BeginToFirstPaint_HTTPS_DataReductionProxy_AutoLoFiOn",
                 first_paint - begin);
           }
-        } else if (lofi_status ==
-                   data_reduction_proxy::LOFI_STATUS_ACTIVE_CONTROL) {
+        } else if (lofi_active_for_page && in_lofi_control_group) {
           PLT_HISTOGRAM(
               "PLT.PT_BeginToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
               load_event_end - begin);
@@ -528,15 +535,18 @@ void DumpHistograms(const WebPerformance& performance,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
     if (data_reduction_proxy_was_used) {
+      bool in_lofi_enabled_group =
+          data_reduction_proxy::params::IsIncludedInLoFiEnabledFieldTrial();
+      bool in_lofi_control_group =
+          data_reduction_proxy::params::IsIncludedInLoFiControlFieldTrial();
       if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
         PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_DataReductionProxy",
                       dom_content_loaded_start - navigation_start);
-        if (lofi_status == data_reduction_proxy::LOFI_STATUS_ACTIVE) {
+        if (lofi_active_for_page && in_lofi_enabled_group) {
           PLT_HISTOGRAM(
               "PLT.PT_RequestToDomContentLoaded_DataReductionProxy_AutoLoFiOn",
               dom_content_loaded_start - navigation_start);
-        } else if (lofi_status ==
-                   data_reduction_proxy::LOFI_STATUS_ACTIVE_CONTROL) {
+        } else if (lofi_active_for_page && in_lofi_control_group) {
           PLT_HISTOGRAM(
               "PLT.PT_RequestToDomContentLoaded_DataReductionProxy_AutoLoFiOff",
               dom_content_loaded_start - navigation_start);
@@ -545,13 +555,12 @@ void DumpHistograms(const WebPerformance& performance,
         PLT_HISTOGRAM(
             "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy",
             dom_content_loaded_start - navigation_start);
-        if (lofi_status == data_reduction_proxy::LOFI_STATUS_ACTIVE) {
+        if (lofi_active_for_page && in_lofi_enabled_group) {
           PLT_HISTOGRAM(
               "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy_"
               "AutoLoFiOn",
               dom_content_loaded_start - navigation_start);
-        } else if (lofi_status ==
-                   data_reduction_proxy::LOFI_STATUS_ACTIVE_CONTROL) {
+        } else if (lofi_active_for_page && in_lofi_control_group) {
           PLT_HISTOGRAM(
               "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy_"
               "AutoLoFiOff",
@@ -890,13 +899,10 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       DocumentState::FromDataSource(frame->dataSource());
 
   bool data_reduction_proxy_was_used = false;
-  data_reduction_proxy::LoFiStatus lofi_status =
-      data_reduction_proxy::LOFI_STATUS_TEMPORARILY_OFF;
   if (!document_state->proxy_server().IsEmpty()) {
     bool handled =
-        Send(new DataReductionProxyViewHostMsg_DataReductionProxyStatus(
-            document_state->proxy_server(), &data_reduction_proxy_was_used,
-            &lofi_status));
+        Send(new DataReductionProxyViewHostMsg_IsDataReductionProxy(
+            document_state->proxy_server(), &data_reduction_proxy_was_used));
     // If the IPC call is not handled, then |data_reduction_proxy_was_used|
     // should remain |false|.
     DCHECK(handled || !data_reduction_proxy_was_used);
@@ -917,10 +923,10 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // Metrics based on the timing information recorded for the Navigation Timing
   // API - http://www.w3.org/TR/navigation-timing/.
-  DumpHistograms(frame->performance(), document_state,
-                 data_reduction_proxy_was_used, lofi_status,
-                 came_from_websearch, websearch_chrome_joint_experiment_id,
-                 is_preview, scheme_type);
+  DumpHistograms(
+      frame->performance(), document_state, data_reduction_proxy_was_used,
+      false /* TODO: render_frame->IsUsingLoFi() */, came_from_websearch,
+      websearch_chrome_joint_experiment_id, is_preview, scheme_type);
 
   // Old metrics based on the timing information stored in DocumentState. These
   // are deprecated and should go away.

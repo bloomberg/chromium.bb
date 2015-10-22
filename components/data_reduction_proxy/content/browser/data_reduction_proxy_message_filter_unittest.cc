@@ -46,114 +46,23 @@ class DataReductionProxyMessageFilterTest : public testing::Test {
   scoped_refptr<DataReductionProxyMessageFilter> message_filter_;
 };
 
-TEST_F(DataReductionProxyMessageFilterTest, TestOnDataReductionProxyStatus) {
+TEST_F(DataReductionProxyMessageFilterTest, TestOnIsDataReductionProxy) {
   net::HostPortPair proxy_server =
       net::HostPortPair::FromString("www.google.com:443");
+  bool is_data_reduction_proxy = false;
+  EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, nullptr))
+      .Times(1)
+      .WillOnce(testing::Return(true));
+  message_filter()->OnIsDataReductionProxy(proxy_server,
+                                           &is_data_reduction_proxy);
+  EXPECT_TRUE(is_data_reduction_proxy);
 
-  const struct {
-    bool lofi_on_through_switch;
-    bool data_reduction_proxy_used;
-    bool auto_lofi_enabled_field_trial_group;
-    bool auto_lofi_control_field_trial_group;
-    bool network_quality_prohibitively_slow;
-    bool expected_data_reduction_proxy;
-    LoFiStatus expected_lofi_status;
-
-  } tests[] = {
-      {
-       // In Enabled field trial group and the network is prohibitively slow.
-       false,
-       true,
-       true,
-       false,
-       true,
-       true,
-       LOFI_STATUS_ACTIVE,
-      },
-      {
-       // In Enabled field trial group but the network is not prohibitively
-       // slow.
-       false,
-       true,
-       true,
-       false,
-       false,
-       true,
-       LOFI_STATUS_INACTIVE,
-      },
-      {
-       // In Control field trial group and the network is prohibitively slow.
-       false,
-       true,
-       false,
-       true,
-       true,
-       true,
-       LOFI_STATUS_ACTIVE_CONTROL,
-      },
-      {
-       // In Control field trial group but the network is not prohibitively
-       // slow.
-       false,
-       true,
-       false,
-       true,
-       false,
-       true,
-       LOFI_STATUS_INACTIVE_CONTROL,
-      },
-      {
-       // Not a data reduction proxy server.
-       false,
-       false,
-       true,
-       false,
-       true,
-       false,
-       LOFI_STATUS_TEMPORARILY_OFF,
-      },
-      {
-       // Enabled through command line switch.
-       true,
-       true,
-       true,
-       false,
-       true,
-       true,
-       LOFI_STATUS_ACTIVE_FROM_FLAGS,
-      },
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    bool is_data_reduction_proxy = false;
-
-    if (tests[i].lofi_on_through_switch) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kDataReductionProxyLoFi,
-          switches::kDataReductionProxyLoFiValueAlwaysOn);
-    }
-
-    EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, nullptr))
-        .WillOnce(testing::Return(tests[i].data_reduction_proxy_used));
-
-    EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(testing::_))
-        .WillRepeatedly(
-            testing::Return(tests[i].network_quality_prohibitively_slow));
-
-    EXPECT_CALL(*config(), IsIncludedInLoFiEnabledFieldTrial())
-        .WillRepeatedly(
-            testing::Return(tests[i].auto_lofi_enabled_field_trial_group));
-    EXPECT_CALL(*config(), IsIncludedInLoFiControlFieldTrial())
-        .WillRepeatedly(
-            testing::Return(tests[i].auto_lofi_control_field_trial_group));
-    config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
-    LoFiStatus lofi_status;
-    message_filter()->OnDataReductionProxyStatus(
-        proxy_server, &is_data_reduction_proxy, &lofi_status);
-    EXPECT_EQ(tests[i].expected_data_reduction_proxy, is_data_reduction_proxy)
-        << i;
-    EXPECT_EQ(tests[i].expected_lofi_status, lofi_status) << i;
-  }
+  EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, nullptr))
+      .Times(1)
+      .WillOnce(testing::Return(false));
+  message_filter()->OnIsDataReductionProxy(proxy_server,
+                                           &is_data_reduction_proxy);
+  EXPECT_FALSE(is_data_reduction_proxy);
 }
 
 }  // namespace data_reduction_proxy

@@ -262,6 +262,15 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
+bool DataReductionProxyIOData::ShouldEnableLoFiMode(
+    const net::URLRequest& request) {
+  if (!config_ || (config_->IsBypassedByDataReductionProxyLocalRules(
+                      request, configurator_->GetProxyConfig()))) {
+    return false;
+  }
+  return config_->ShouldEnableLoFiMode(request);
+}
+
 void DataReductionProxyIOData::SetLoFiModeOff() {
   config_->SetLoFiModeOff();
 }

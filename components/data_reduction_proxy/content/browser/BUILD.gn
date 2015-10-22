@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "content_lofi_decider.cc",
+    "content_lofi_decider.h",
     "data_reduction_proxy_message_filter.cc",
     "data_reduction_proxy_message_filter.h",
   ]
