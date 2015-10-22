@@ -202,134 +202,6 @@
     return String(elements);
   }
 
-  function serializeSVGPathSegList(pathSegList) {
-    var elements = [];
-    for (var index = 0; index < pathSegList.numberOfItems; ++index) {
-      var pathSeg = pathSegList.getItem(index);
-      switch (pathSeg.pathSegType) {
-      case SVGPathSeg.PATHSEG_CLOSEPATH:
-        elements.push('z');
-        break;
-      case SVGPathSeg.PATHSEG_MOVETO_ABS:
-        elements.push('M');
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_MOVETO_REL:
-        elements.push('m');
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_LINETO_ABS:
-        elements.push('L');
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_LINETO_REL:
-        elements.push('l');
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS:
-        elements.push('C');
-        elements.push(pathSeg.x1);
-        elements.push(pathSeg.y1);
-        elements.push(pathSeg.x2);
-        elements.push(pathSeg.y2);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL:
-        elements.push('c');
-        elements.push(pathSeg.x1);
-        elements.push(pathSeg.y1);
-        elements.push(pathSeg.x2);
-        elements.push(pathSeg.y2);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS:
-        elements.push('Q');
-        elements.push(pathSeg.x1);
-        elements.push(pathSeg.y1);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL:
-        elements.push('q');
-        elements.push(pathSeg.x1);
-        elements.push(pathSeg.y1);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_ARC_ABS:
-        elements.push('A');
-        elements.push(pathSeg.r1);
-        elements.push(pathSeg.r2);
-        elements.push(pathSeg.angle);
-        elements.push(pathSeg.largeArcFlag);
-        elements.push(pathSeg.sweepFlag);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_ARC_REL:
-        elements.push('a');
-        elements.push(pathSeg.r1);
-        elements.push(pathSeg.r2);
-        elements.push(pathSeg.angle);
-        elements.push(pathSeg.largeArcFlag);
-        elements.push(pathSeg.sweepFlag);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS:
-        elements.push('H');
-        elements.push(pathSeg.x);
-        break;
-      case SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL:
-        elements.push('h');
-        elements.push(pathSeg.x);
-        break;
-      case SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS:
-        elements.push('V');
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL:
-        elements.push('v');
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS:
-        elements.push('S');
-        elements.push(pathSeg.x2);
-        elements.push(pathSeg.y2);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL:
-        elements.push('s');
-        elements.push(pathSeg.x2);
-        elements.push(pathSeg.y2);
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS:
-        elements.push('T');
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      case SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL:
-        elements.push('t');
-        elements.push(pathSeg.x);
-        elements.push(pathSeg.y);
-        break;
-      default:
-        console.log('Invalid path segment type ' + pathSeg.pathSegType);
-        return null;
-      }
-    }
-    return elements.join(' ').replace('false', '0').replace('true', '1');
-  }
-
   function serializeSVGPointList(pointList) {
     var elements = [];
     for (var index = 0; index < pointList.numberOfItems; ++index) {
@@ -402,7 +274,7 @@
 
     var result;
     if (attributeName === 'd')
-      result = element['animatedPathSegList'];
+      result = element.getAttribute('d');
     else if (attributeName === 'points')
       result = element['animatedPoints'];
     else
@@ -424,8 +296,6 @@
       result = serializeSVGLengthList(result);
     else if (result instanceof SVGNumberList)
       result = serializeSVGNumberList(result);
-    else if (result instanceof SVGPathSegList)
-      result = serializeSVGPathSegList(result);
     else if (result instanceof SVGPointList)
       result = serializeSVGPointList(result);
     else if (result instanceof SVGPreserveAspectRatio)
@@ -445,7 +315,7 @@
   function setAttributeValue(element, attributeName, expectation) {
     if (!element[attributeName]
         && attributeName !== 'class'
-        && (attributeName !== 'd' || !element['pathSegList'])
+        && attributeName !== 'd'
         && (attributeName !== 'in' || !element['in1'])
         && (attributeName !== 'orient' || !element['orientType'])
         && (animatedNumberOptionalNumberAttributes.indexOf(attributeName) === -1 || !element[attributeName + 'X'])) {
