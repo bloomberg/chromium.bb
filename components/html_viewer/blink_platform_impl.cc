@@ -172,14 +172,15 @@ blink::WebGraphicsContext3D*
 BlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context) {
-  return createOffscreenGraphicsContext3D(attributes, share_context, nullptr);
+  blink::WebGraphicsContext3D::WebGraphicsInfo gl_info;
+  return createOffscreenGraphicsContext3D(attributes, share_context, &gl_info);
 }
 
 blink::WebGraphicsContext3D*
 BlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
-    blink::WebGLInfo* gl_info) {
+    blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
   // TODO(penghuang): Use the app from the right HTMLDocument.
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
       global_state_, app_, GURL(attributes.topDocumentURL), attributes,

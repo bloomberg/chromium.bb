@@ -150,7 +150,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context,
-      blink::WebGLInfo* gl_info) override;
+      blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) override;
   blink::WebGraphicsContext3DProvider*
   createSharedOffscreenGraphicsContext3DProvider() override;
   blink::WebCompositorSupport* compositorSupport() override;

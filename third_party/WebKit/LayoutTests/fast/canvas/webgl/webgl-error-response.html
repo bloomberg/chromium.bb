@@ -21,19 +21,25 @@ function initTest() {
 }
 
 function onContextCreationError(e) {
+  if (e.statusMessage.length == 0) {
+    testFailed("webglcontextcreationerror test failed");
+    return;
+  }
   var splitStatus = e.statusMessage.split(",");
-  var stringLocator = 1;
-  var status = true;
-  // Start iterating from 1 as , the initial message has no data.
+  var error =  "";
   for (var i = 1; i < splitStatus.length; i++) {
     var gpuInfoStr = splitStatus[i].split(" = ");
-    if (gpuInfoStr[stringLocator] == "")
-      status = false;
+    var key = gpuInfoStr[0].trim();
+    var value = gpuInfoStr[1];
+    if (key == "DEVICE" && (value == "0x0000" || value == ""))
+      error = error + "DeviceID is null.";
+    if (key == "VENDOR" && (value == "0x0000" || value == ""))
+      error = error + "VendorID is null.";
   }
-  if(status)
-    testPassed("Status message displayed for webglcontextcreationerror");
+  if (error.length)
+    testFailed("webglcontextcreationerror test failed " + error);
   else
-    testFailed("Context creation error test failed");
+    testPassed("Status message displayed for webglcontextcreationerror");
 }
 main();
 </script>

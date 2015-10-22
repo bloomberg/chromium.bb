@@ -973,45 +973,64 @@ blink::WebGraphicsContext3D*
 RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context) {
-  return createOffscreenGraphicsContext3D(attributes, share_context, NULL);
+  blink::WebGraphicsContext3D::WebGraphicsInfo gl_info;
+  return createOffscreenGraphicsContext3D(attributes, share_context, &gl_info);
+}
+
+static void Collect3DContextInformationOnFailure(
+    blink::WebGraphicsContext3D* share_context,
+    blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info,
+    GpuChannelHost* host) {
+  DCHECK(gl_info);
+  std::string error_message("OffscreenContext Creation failed, ");
+  if (host) {
+    const gpu::GPUInfo& gpu_info = host->gpu_info();
+    gl_info->vendorId = gpu_info.gpu.vendor_id;
+    gl_info->deviceId = gpu_info.gpu.device_id;
+    switch (gpu_info.context_info_state) {
+      case gpu::kCollectInfoSuccess:
+      case gpu::kCollectInfoNonFatalFailure:
+        gl_info->rendererInfo = WebString::fromUTF8(gpu_info.gl_renderer);
+        gl_info->vendorInfo = WebString::fromUTF8(gpu_info.gl_vendor);
+        gl_info->driverVersion = WebString::fromUTF8(gpu_info.driver_version);
+        gl_info->resetNotificationStrategy =
+            gpu_info.gl_reset_notification_strategy;
+        gl_info->sandboxed = gpu_info.sandboxed;
+        gl_info->processCrashCount = gpu_info.process_crash_count;
+        gl_info->amdSwitchable = gpu_info.amd_switchable;
+        gl_info->optimus = gpu_info.optimus;
+        break;
+      case gpu::kCollectInfoFatalFailure:
+      case gpu::kCollectInfoNone:
+        error_message.append(
+            "Failed to collect gpu information, GLSurface or GLContext "
+            "creation failed");
+        gl_info->errorMessage = WebString::fromUTF8(error_message);
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else {
+    error_message.append("GpuChannelHost creation failed");
+    gl_info->errorMessage = WebString::fromUTF8(error_message);
+  }
 }
 
 blink::WebGraphicsContext3D*
 RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
-    blink::WebGLInfo* gl_info) {
-  if (!RenderThreadImpl::current())
+    blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
+  DCHECK(gl_info);
+  if (!RenderThreadImpl::current()) {
+    std::string error_message("Failed to run in Current RenderThreadImpl");
+    gl_info->errorMessage = WebString::fromUTF8(error_message);
     return NULL;
+  }
 
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-
-  if (gpu_channel_host.get() && gl_info) {
-    const gpu::GPUInfo& gpu_info = gpu_channel_host->gpu_info();
-    switch (gpu_info.context_info_state) {
-      case gpu::kCollectInfoSuccess:
-      case gpu::kCollectInfoNonFatalFailure:
-        gl_info->vendorInfo.assign(
-            blink::WebString::fromUTF8(gpu_info.gl_vendor));
-        gl_info->rendererInfo.assign(
-            blink::WebString::fromUTF8(gpu_info.gl_renderer));
-        gl_info->driverVersion.assign(
-            blink::WebString::fromUTF8(gpu_info.driver_version));
-        gl_info->vendorId = gpu_info.gpu.vendor_id;
-        gl_info->deviceId = gpu_info.gpu.device_id;
-        break;
-      case gpu::kCollectInfoFatalFailure:
-      case gpu::kCollectInfoNone:
-        gl_info->contextInfoCollectionFailure.assign(blink::WebString::fromUTF8(
-            "GPUInfoCollectionFailure: GPU initialization Failed. GPU "
-            "Info not Collected."));
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
 
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
   bool lose_context_when_out_of_memory = false;
@@ -1026,8 +1045,14 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
 
   // Most likely the GPU process exited and the attempt to reconnect to it
   // failed. Need to try to restore the context again later.
-  if (!context || !context->InitializeOnCurrentThread())
+  if (!context || !context->InitializeOnCurrentThread() ||
+      gl_info->testFailContext) {
+    // Collect Graphicsinfo if there is a context failure or it is failed
+    // purposefully in case of layout tests.
+    Collect3DContextInformationOnFailure(share_context, gl_info,
+                                         gpu_channel_host.get());
       return NULL;
+  }
   return context.release();
 }
 

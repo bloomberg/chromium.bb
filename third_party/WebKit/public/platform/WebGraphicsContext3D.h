@@ -63,15 +63,6 @@ typedef struct __WGC3Dsync *WGC3Dsync;
 // Typedef for server-side objects like OpenGL textures and program objects.
 typedef WGC3Duint WebGLId;
 
-struct WebGLInfo {
-    WGC3Duint vendorId;
-    WGC3Duint deviceId;
-    WebString vendorInfo;
-    WebString rendererInfo;
-    WebString driverVersion;
-    WebString contextInfoCollectionFailure;
-};
-
 // This interface abstracts the operations performed by the
 // GraphicsContext3D in order to implement WebGL. Nearly all of the
 // methods exposed on this interface map directly to entry points in
@@ -121,6 +112,21 @@ public:
         // possible to pass a WebURL by value across the WebKit API boundary.
         // See https://bugs.webkit.org/show_bug.cgi?id=103793#c13 .
         WebString topDocumentURL;
+    };
+
+    struct WebGraphicsInfo {
+        unsigned vendorId = 0;
+        unsigned deviceId = 0;
+        unsigned processCrashCount = 0;
+        unsigned resetNotificationStrategy = 0;
+        bool sandboxed = false;
+        bool testFailContext = false;
+        bool amdSwitchable = false;
+        bool optimus = false;
+        WebString vendorInfo;
+        WebString rendererInfo;
+        WebString driverVersion;
+        WebString errorMessage;
     };
 
     class WebGraphicsContextLostCallback {

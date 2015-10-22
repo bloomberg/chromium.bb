@@ -83,7 +83,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context,
-      blink::WebGLInfo* gl_info);
+      blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info);
   virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes);
   virtual blink::WebGraphicsContext3DProvider*

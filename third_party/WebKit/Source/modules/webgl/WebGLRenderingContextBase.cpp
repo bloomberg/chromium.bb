@@ -526,6 +526,30 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
+static void formatWebGLStatusString(const String& glInfo, const String& infostring, String& statusMessage)
+{
+    if (!infostring.isEmpty())
+        statusMessage.append(", " + glInfo + " = " + infostring);
+}
+
+static String extractWebGLContextCreationError(const WebGraphicsContext3D::WebGraphicsInfo& info)
+{
+    String statusMessage("Could not create a WebGL context");
+    formatWebGLStatusString("VENDOR", info.vendorId ? String::format("0x%04x", info.vendorId).utf8().data() : "0xffff", statusMessage);
+    formatWebGLStatusString("DEVICE", info.deviceId ? String::format("0x%04x", info.deviceId).utf8().data() : "0xffff", statusMessage);
+    formatWebGLStatusString("GL_VENDOR", info.vendorInfo.utf8().data(), statusMessage);
+    formatWebGLStatusString("GL_RENDERER", info.rendererInfo.utf8().data(), statusMessage);
+    formatWebGLStatusString("GL_VERSION", info.driverVersion.utf8().data(), statusMessage);
+    formatWebGLStatusString("Sandboxed", info.sandboxed ? "yes" : "no", statusMessage);
+    formatWebGLStatusString("Optimus", info.optimus ? "yes" : "no", statusMessage);
+    formatWebGLStatusString("AMD switchable", info.amdSwitchable ? "yes" : "no", statusMessage);
+    formatWebGLStatusString("Reset notification strategy", String::format("0x%04x", info.resetNotificationStrategy).utf8().data(), statusMessage);
+    formatWebGLStatusString("GPU process crash count", String::number(info.processCrashCount).utf8().data(), statusMessage);
+    formatWebGLStatusString("ErrorMessage", info.errorMessage.utf8().data(), statusMessage);
+    statusMessage.append(".");
+    return statusMessage;
+}
+
 PassOwnPtr<WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsContext3D(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     Document& document = canvas->document();
@@ -544,47 +568,12 @@ PassOwnPtr<WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsCon
     }
 
     WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().string(), settings, webGLVersion);
-    WebGLInfo glInfo;
+    WebGraphicsContext3D::WebGraphicsInfo glInfo;
+    glInfo.testFailContext = shouldFailContextCreationForTesting;
     OwnPtr<WebGraphicsContext3D> context = adoptPtr(Platform::current()->createOffscreenGraphicsContext3D(wgc3dAttributes, 0, &glInfo));
     if (!context || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
-        String statusMessage;
-        if (!glInfo.contextInfoCollectionFailure.isEmpty()) {
-            statusMessage.append("Could not create a WebGL context. ");
-            statusMessage.append(glInfo.contextInfoCollectionFailure);
-            String vendorId = String::number(glInfo.vendorId);
-            String deviceId = String::number(glInfo.deviceId);
-            if (vendorId.isEmpty())
-                statusMessage.append("VendorId = Not Available");
-            else
-                statusMessage.append("VendorId = " + vendorId);
-            if (deviceId.isEmpty())
-                statusMessage.append(", DeviceId = Not Available");
-            else
-                statusMessage.append(", DeviceId = " + deviceId);
-        } else {
-            statusMessage.append("Could not create a WebGL context");
-            if (!glInfo.vendorInfo.isEmpty()) {
-                statusMessage.append(", VendorInfo = ");
-                statusMessage.append(glInfo.vendorInfo);
-            } else {
-                statusMessage.append(", VendorInfo = Not Available");
-            }
-            if (!glInfo.rendererInfo.isEmpty()) {
-                statusMessage.append(", RendererInfo = ");
-                statusMessage.append(glInfo.rendererInfo);
-            } else {
-                statusMessage.append(", RendererInfo = Not Available");
-            }
-            if (!glInfo.driverVersion.isEmpty()) {
-                statusMessage.append(", DriverInfo = ");
-                statusMessage.append(glInfo.driverVersion);
-            } else {
-                statusMessage.append(", DriverInfo = Not Available");
-            }
-            statusMessage.append(".");
-        }
-        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, statusMessage));
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
         return nullptr;
     }
 
@@ -986,7 +975,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
-    
+
 #define ADD_VALUES_TO_SET(set, values) \
     for (size_t i = 0; i < arraysize(values); ++i) {   \
         set.insert(values[i]);                         \

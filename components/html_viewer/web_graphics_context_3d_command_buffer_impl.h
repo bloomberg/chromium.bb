@@ -36,7 +36,7 @@ class WebGraphicsContext3DCommandBufferImpl
       const GURL& active_url,
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context,
-      blink::WebGLInfo* gl_info);
+      blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info);
 
  private:
   WebGraphicsContext3DCommandBufferImpl(

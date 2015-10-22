@@ -25,7 +25,8 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     const GURL& active_url,
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
-    blink::WebGLInfo* gl_info) {
+    blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
+  DCHECK(gl_info);
   const mus::mojom::GpuInfo* gpu_info = global_state->GetGpuInfo();
   gl_info->vendorId = gpu_info->vendor_id;
   gl_info->deviceId = gpu_info->device_id;
