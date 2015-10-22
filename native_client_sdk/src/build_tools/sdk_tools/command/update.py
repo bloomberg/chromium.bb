@@ -74,7 +74,7 @@ class RealUpdateDelegate(UpdateDelegate):
           archive.size, filename))
       return False
     sha1_hash = hashlib.sha1()
-    with open(filename) as f:
+    with open(filename, 'rb') as f:
       sha1_hash.update(f.read())
     if sha1_hash.hexdigest() != archive.GetChecksum():
       logging.info('File hash does not match: %s.' % filename)
