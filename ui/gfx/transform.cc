@@ -24,8 +24,7 @@ namespace gfx {
 
 namespace {
 
-// Taken from SkMatrix44.
-const SkMScalar kEpsilon = 1e-8f;
+const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
 
 SkMScalar TanDegrees(double degrees) {
   double radians = degrees * M_PI / 180;
@@ -270,7 +269,7 @@ bool Transform::IsBackFaceVisible() const {
   double determinant = matrix_.determinant();
 
   // If matrix was not invertible, then just assume back face is not visible.
-  if (std::abs(determinant) <= kEpsilon)
+  if (determinant == 0)
     return false;
 
   // Compute the cofactor of the 3rd row, 3rd column.
@@ -303,7 +302,7 @@ bool Transform::IsBackFaceVisible() const {
   // Technically the transformed z component is cofactor33 / determinant.  But
   // we can avoid the costly division because we only care about the resulting
   // +/- sign; we can check this equivalently by multiplication.
-  return cofactor33 * determinant < 0;
+  return cofactor33 * determinant < -kEpsilon;
 }
 
 bool Transform::GetInverse(Transform* transform) const {

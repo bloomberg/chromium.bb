@@ -202,6 +202,10 @@ static bool HasSingularTransform(LayerType* layer, const TransformTree& tree) {
 template <typename LayerType>
 static bool IsLayerBackFaceVisible(LayerType* layer,
                                    const TransformTree& tree) {
+  // A layer with singular transform is not drawn. So, we can assume that its
+  // backface is not visible.
+  if (HasSingularTransform(layer, tree))
+    return false;
   // The current W3C spec on CSS transforms says that backface visibility should
   // be determined differently depending on whether the layer is in a "3d
   // rendering context" or not. For Chromium code, we can determine whether we
@@ -218,6 +222,8 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
 template <typename LayerType>
 static bool IsSurfaceBackFaceVisible(LayerType* layer,
                                      const TransformTree& tree) {
+  if (HasSingularTransform(layer, tree))
+    return false;
   if (LayerIsInExisting3DRenderingContext(layer)) {
     const TransformNode* node = tree.Node(layer->transform_tree_index());
     // Draw transform as a contributing render surface.
