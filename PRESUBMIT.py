@@ -1506,7 +1506,7 @@ def _CheckSingletonInHeaders(input_api, output_api):
         f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
       contents = input_api.ReadFile(f)
       for line in contents.splitlines(False):
-        if (not input_api.re.match(r'//', line) and # Strip C++ comment.
+        if (not line.lstrip().startswith('//') and # Strip C++ comment.
             pattern.search(line)):
           files.append(f)
           break
@@ -1532,6 +1532,8 @@ def _CheckBaseMacrosInHeaders(input_api, output_api):
     if not f.LocalPath().endswith('.h'):
       continue
     for line_num, line in f.ChangedContents():
+      if line.lstrip().startswith('//'):  # Strip C++ comment.
+        continue
       if any(d in line for d in disallows):
         contents = input_api.ReadFile(f)
         if not (macros in contents or basictypes in contents):

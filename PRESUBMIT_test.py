@@ -392,15 +392,18 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
                         'base::Singleton<Type, Traits, DifferentiatingType>::']
     diff_foo_h = ['// base::Singleton<Foo> in comment.',
                   'friend class base::Singleton<Foo>']
+    diff_foo2_h = ['  //Foo* bar = base::Singleton<Foo>::get();']
     diff_bad_h = ['Foo* foo = base::Singleton<Foo>::get();']
     mock_input_api = MockInputApi()
     mock_input_api.files = [MockAffectedFile('base/memory/singleton.h',
                                      diff_singleton_h),
                             MockAffectedFile('foo.h', diff_foo_h),
+                            MockAffectedFile('foo2.h', diff_foo2_h),
                             MockAffectedFile('bad.h', diff_bad_h)]
     warnings = PRESUBMIT._CheckSingletonInHeaders(mock_input_api,
                                                   MockOutputApi())
     self.assertEqual(1, len(warnings))
+    self.assertEqual(2, len(warnings[0].items))
     self.assertEqual('error', warnings[0].type)
     self.assertTrue('Found base::Singleton<T>' in warnings[0].message)
 
@@ -414,15 +417,15 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
 
 
 class CheckBaseMacrosInHeadersTest(unittest.TestCase):
-  def _make_h(self, macro, header):
+  def _make_h(self, macro, header, line_prefix=''):
     return ("""
 #include "base/%s.h"
 
 class Thing {
  private:
-  DISALLOW_%s(Thing);
+%sDISALLOW_%s(Thing);
 };
-""" % (macro, header)).splitlines()
+""" % (macro, line_prefix, header)).splitlines()
 
   def testBaseMacrosInHeadersBad(self):
     mock_input_api = MockInputApi()
@@ -444,6 +447,8 @@ class Thing {
       MockAffectedFile('bar.h', self._make_h('macros', 'COPY')),
       MockAffectedFile('baz.h', self._make_h('macros', 'COPY_AND_ASSIGN')),
       MockAffectedFile('qux.h', self._make_h('macros', 'EVIL')),
+      MockAffectedFile('foz.h', self._make_h('not_macros', 'ASSIGN', '//')),
+      MockAffectedFile('foz.h', self._make_h('not_macros', 'ASSIGN', '  //')),
     ]
     warnings = PRESUBMIT._CheckBaseMacrosInHeaders(mock_input_api,
                                                    MockOutputApi())
