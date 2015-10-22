@@ -71,7 +71,7 @@ paper-slider.readonly {
 }
 
 /* Invisible div used to compute the width required for the elapsed time. */
-.time-controls > .time > .duration {
+.time-controls > .time > .spacer {
   color: transparent;
 }
 
@@ -84,7 +84,6 @@ paper-slider.readonly {
   height: 100%;
   position: absolute;
   right: 0;
-  top: -1px;
 }
 
 /* Progress slider. */

@@ -39,12 +39,6 @@ function MediaControls(containerElement, onMediaError) {
   this.progressSlider_ = null;
 
   /**
-   * @type {HTMLElement}
-   * @private
-   */
-  this.duration_ = null;
-
-  /**
    * @type {PaperSliderElement}
    * @private
    */
@@ -73,6 +67,12 @@ function MediaControls(containerElement, onMediaError) {
    * @private
    */
   this.currentTime_ = null;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.currentTimeSpacer_ = null;
 
   /**
    * @private {boolean}
@@ -249,11 +249,10 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
 
   var timeBox = this.createControl('time media-control', timeControls);
 
-  this.duration_ = this.createControl('duration', timeBox);
-  // Set the initial width to the minimum to reduce the flicker.
-  this.duration_.textContent = MediaControls.formatTime_(0);
-
+  this.currentTimeSpacer_ = this.createControl('spacer', timeBox);
   this.currentTime_ = this.createControl('current', timeBox);
+  // Set the initial width to the minimum to reduce the flicker.
+  this.updateTimeLabel_(0, 0);
 
   this.progressSlider_ = /** @type {!PaperSliderElement} */ (
       document.createElement('paper-slider'));
@@ -278,7 +277,7 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
 MediaControls.prototype.displayProgress_ = function(current, duration) {
   var ratio = current / duration;
   this.progressSlider_.value = ratio * this.progressSlider_.max;
-  this.currentTime_.textContent = MediaControls.formatTime_(current);
+  this.updateTimeLabel_(current);
 };
 
 /**
@@ -298,7 +297,7 @@ MediaControls.prototype.onProgressChange_ = function(value) {
 
   var current = this.media_.duration * value;
   this.media_.currentTime = current;
-  this.currentTime_.textContent = MediaControls.formatTime_(current);
+  this.updateTimeLabel_(current);
 };
 
 /**
@@ -315,7 +314,7 @@ MediaControls.prototype.onProgressDrag_ = function() {
     var immediateRatio =
         this.progressSlider_.immediateValue / this.progressSlider_.max;
     var current = this.media_.duration * immediateRatio;
-    this.currentTime_.textContent = MediaControls.formatTime_(current);
+    this.updateTimeLabel_(current);
   }
 };
 
@@ -344,6 +343,33 @@ MediaControls.prototype.setSeeking_ = function(seeking) {
     this.resumeAfterDrag_ = false;
   }
   this.updatePlayButtonState_(this.isPlaying());
+};
+
+
+/**
+ * Update the label for current playing position and video duration.
+ * The label should be like "0:00 / 6:20".
+ * @param {number} current Current playing position.
+ * @param {number=} opt_duration Video's duration.
+ * @private
+ */
+MediaControls.prototype.updateTimeLabel_ = function(current, opt_duration) {
+  var duration = opt_duration;
+  if (duration === undefined)
+    duration = this.media_ ? this.media_.duration : 0;
+  // media's duration and currentTime can be NaN. Default to 0.
+  if (isNaN(duration))
+    duration = 0;
+  if (isNaN(current))
+    current = 0;
+
+  this.currentTime_.textContent =
+      MediaControls.formatTime_(current) + ' / ' +
+      MediaControls.formatTime_(duration);
+  // Keep the maximum space to prevent time label from moving while playing.
+  this.currentTimeSpacer_.textContent =
+      MediaControls.formatTime_(duration) + ' / ' +
+      MediaControls.formatTime_(duration);
 };
 
 /*
@@ -512,12 +538,7 @@ MediaControls.prototype.onMediaDuration_ = function() {
   else
     this.progressSlider_.classList.add('readonly');
 
-  var valueToString = function(value) {
-    var duration = this.media_ ? this.media_.duration : 0;
-    return MediaControls.formatTime_(this.media_.duration * value);
-  }.bind(this);
-
-  this.duration_.textContent = valueToString(1);
+  this.updateTimeLabel_(this.media_.currentTime, this.media_.duration);
 
   if (this.media_.seekable)
     this.restorePlayState();
