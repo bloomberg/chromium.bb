@@ -28,7 +28,7 @@ namespace blink {
 class GraphicsLayer;
 class GraphicsContext;
 
-static const size_t kInitialDisplayItemListCapacity = 64;
+static const size_t kInitialDisplayItemListCapacityBytes = 512;
 
 // Responsible for processing display items as they are produced, and producing
 // a final paint artifact when complete. This class includes logic for caching,
@@ -162,7 +162,7 @@ public:
 
 protected:
     PaintController()
-        : m_newDisplayItemList(kInitialDisplayItemListCapacity * kMaximumDisplayItemSize)
+        : m_newDisplayItemList(kInitialDisplayItemListCapacityBytes)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_textPainted(false)
