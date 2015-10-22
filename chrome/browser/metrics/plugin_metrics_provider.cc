@@ -217,21 +217,19 @@ void PluginMetricsProvider::RecordCurrentState() {
 
     base::DictionaryValue* plugin_dict =
         static_cast<base::DictionaryValue*>(*value_iter);
-    std::string plugin_name;
+    base::string16 plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     if (plugin_name.empty()) {
       NOTREACHED();
       continue;
     }
 
-    // TODO(viettrungluu): remove conversions
-    base::string16 name16 = base::UTF8ToUTF16(plugin_name);
-    if (child_process_stats_buffer_.find(name16) ==
+    if (child_process_stats_buffer_.find(plugin_name) ==
         child_process_stats_buffer_.end()) {
       continue;
     }
 
-    ChildProcessStats stats = child_process_stats_buffer_[name16];
+    ChildProcessStats stats = child_process_stats_buffer_[plugin_name];
     if (stats.process_launches) {
       int launches = 0;
       plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
@@ -259,13 +257,12 @@ void PluginMetricsProvider::RecordCurrentState() {
                               loading_errors);
     }
 
-    child_process_stats_buffer_.erase(name16);
+    child_process_stats_buffer_.erase(plugin_name);
   }
 
   // Now go through and add dictionaries for plugins that didn't already have
   // reports in Local State.
-  for (std::map<base::string16, ChildProcessStats>::iterator cache_iter =
-           child_process_stats_buffer_.begin();
+  for (auto cache_iter = child_process_stats_buffer_.begin();
        cache_iter != child_process_stats_buffer_.end(); ++cache_iter) {
     ChildProcessStats stats = cache_iter->second;
 
@@ -273,12 +270,9 @@ void PluginMetricsProvider::RecordCurrentState() {
     if (!IsPluginProcess(stats.process_type))
       continue;
 
-    // TODO(viettrungluu): remove conversion
-    std::string plugin_name = base::UTF16ToUTF8(cache_iter->first);
-
     base::DictionaryValue* plugin_dict = new base::DictionaryValue;
 
-    plugin_dict->SetString(prefs::kStabilityPluginName, plugin_name);
+    plugin_dict->SetString(prefs::kStabilityPluginName, cache_iter->first);
     plugin_dict->SetInteger(prefs::kStabilityPluginLaunches,
                             stats.process_launches);
     plugin_dict->SetInteger(prefs::kStabilityPluginCrashes,
