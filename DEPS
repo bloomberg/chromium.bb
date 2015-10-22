@@ -190,7 +190,7 @@ deps = {
    Var('chromium_git') + '/webm/libvpx.git' + '@' +  'b44c5cf639d179eb5016a226fba06a16216f72a0',
 
   'src/third_party/ffmpeg':
-   Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '525a71ab8ee3b61da48138f7e1c406989d2879fc',
+   Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'd2733b2c43f65f0e779d5d014777fb8ea1e89873',
 
   'src/third_party/libjingle/source/talk':
     Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + 'c7dd2388ade059d7207a81df1d1670b0993eebe5', # commit position 10352
