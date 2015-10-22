@@ -112,6 +112,8 @@ protected:
     { }
 
 protected:
+    // LayoutObjects are fully owned by their DOM node. See LayoutObject's
+    // LIFETIME documentation section.
     LayoutObject* m_layoutObject;
 };
 
@@ -126,6 +128,8 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
 #define NODE_BASE_CLASSES public EventTarget, public TreeShared<Node>
 #endif
 
+// This class represents a DOM node in the DOM tree.
+// https://dom.spec.whatwg.org/#interface-node
 class CORE_EXPORT Node : NODE_BASE_CLASSES {
 #if !ENABLE(OILPAN)
     DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<Node>);
@@ -813,6 +817,8 @@ private:
     // When a node has rare data we move the layoutObject into the rare data.
     union DataUnion {
         DataUnion() : m_layoutObject(nullptr) { }
+        // LayoutObjects are fully owned by their DOM node. See LayoutObject's
+        // LIFETIME documentation section.
         LayoutObject* m_layoutObject;
         NodeRareDataBase* m_rareData;
     } m_data;

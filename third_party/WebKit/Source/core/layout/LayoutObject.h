@@ -157,6 +157,30 @@ const int showTreeCharacterOffset = 39;
 // - image (LayoutImage, LayoutSVGImage) or video (LayoutVideo) objects that are placeholders for
 //   displaying them.
 //
+//
+// ***** LIFETIME *****
+//
+// LayoutObjects are fully owned by their associated DOM node. In other words,
+// it's the DOM node's responsibility to free its LayoutObject, this is why
+// LayoutObjects are not and SHOULD NOT be RefCounted.
+//
+// LayoutObjects are created during the DOM attachment. This phase computes
+// the style and create the LayoutObject associated with the Node (see
+// Node::attach). LayoutObjects are destructed during detachment (see
+// Node::detach), which can happen when the DOM node is removed from the
+// DOM tree, during page tear down or when the style is changed to contain
+// 'display: none'.
+//
+// Anonymous LayoutObjects are owned by their enclosing DOM node. This means
+// that if the DOM node is detached, it has to destroy any anonymous
+// descendants. This is done in LayoutObject::destroy().
+//
+// Note that for correctness, destroy() is expected to clean any anonymous
+// wrappers as sequences of insertion / removal could make them visible to
+// the page. This is done by LayoutObject::destroyAndCleanupAnonymousWrappers()
+// which is the preferred way to destroy an object.
+//
+//
 // ***** INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS *****
 // The preferred logical widths are the intrinsic sizes of this element
 // (https://drafts.csswg.org/css-sizing-3/#intrinsic). Intrinsic sizes depend
