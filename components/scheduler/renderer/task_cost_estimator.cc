@@ -27,11 +27,11 @@ void TaskCostEstimator::DidProcessTask(const base::PendingTask& pending_task) {
   if (--outstanding_task_count_ == 0) {
     base::TimeDelta duration = time_source_->NowTicks() - task_start_time_;
     rolling_time_delta_history_.InsertSample(duration);
-
-    // TODO(skyostil): Should we do this less often?
-    expected_task_duration_ =
-        rolling_time_delta_history_.Percentile(estimation_percentile_);
   }
+}
+
+base::TimeDelta TaskCostEstimator::expected_task_duration() const {
+  return rolling_time_delta_history_.Percentile(estimation_percentile_);
 }
 
 void TaskCostEstimator::Clear() {

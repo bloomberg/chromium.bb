@@ -23,9 +23,7 @@ class SCHEDULER_EXPORT TaskCostEstimator
   TaskCostEstimator(int sample_count, double estimation_percentile);
   ~TaskCostEstimator() override;
 
-  base::TimeDelta expected_task_duration() const {
-    return expected_task_duration_;
-  }
+  base::TimeDelta expected_task_duration() const;
 
   // TaskObserver implementation:
   void WillProcessTask(const base::PendingTask& pending_task) override;
