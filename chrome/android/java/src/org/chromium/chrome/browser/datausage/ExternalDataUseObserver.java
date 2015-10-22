@@ -27,6 +27,15 @@ public class ExternalDataUseObserver {
     }
 
     /**
+     * Creates an instance of {@link #ExternalDataUseObserver}.
+     * @param nativePtr pointer to the native ExternalDataUseObserver object.
+     */
+    public ExternalDataUseObserver(long nativePtr) {
+        mNativeExternalDataUseObserver = nativePtr;
+        assert mNativeExternalDataUseObserver != 0;
+    }
+
+    /**
      * Notification that the native object has been destroyed.
      */
     @CalledByNative
@@ -34,14 +43,30 @@ public class ExternalDataUseObserver {
         mNativeExternalDataUseObserver = 0;
     }
 
+    /**
+    * Fetches matching rules asynchronously. While an asynchronous fetch is underway, it is illegal
+    * to make calls to this method.
+    * @return true if {@link #nativeFetchMatchingRulesCallback} will eventually be called with
+    * matching rules, and false if matching rules cannot be retrieved.
+    */
     @CalledByNative
-    protected void onDataUse(String tag, long bytesDownloaded, long bytesUploaded) {}
+    protected boolean fetchMatchingRules() {
+        return false;
+    }
 
     /**
-     * Creates an instance of {@link #ExternalDataUseObserver}.
+     * Submits a data use report asynchronously.
+     * @param tag tag of the report.
+     * @param bytesDownloaded number of bytes downloaded by Chromium.
+     * @param bytesUploaded number of bytes uploaded by Chromium.
+     * The result of this request is returned asynchronously via
+     * {@link #nativeOnDataUseCallback}. A new report should be submitted only after the result
+     * has been returned via {@link #nativeOnDataUseCallback}.
      */
-    public ExternalDataUseObserver(long nativePtr) {
-        mNativeExternalDataUseObserver = nativePtr;
-        assert mNativeExternalDataUseObserver != 0;
-    }
+    @CalledByNative
+    protected void submitDataUseReport(String tag, long bytesDownloaded, long bytesUploaded) {}
+
+    public native void nativeFetchMatchingRulesCallback(long nativeExternalDataUseObserver);
+
+    public native void nativeSubmitDataUseReportCallback(long nativeExternalDataUseObserver);
 }

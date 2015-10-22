@@ -40,17 +40,42 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
       data_usage::DataUseAggregator* data_use_aggregator);
   ~ExternalDataUseObserver() override;
 
+  // Called by Java when new matching rules have been fetched.
+  void FetchMatchingRulesCallback(JNIEnv* env, jobject obj);
+
+  // Called by Java when the sending of data usage report has finished.
+  void SubmitDataUseReportCallback(JNIEnv* env, jobject obj);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, SingleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, TwoRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleRegex);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ChangeRegex);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           AtMostOneDataUseSubmitRequest);
+
+  // Data report that is sent to the external observer.
+  struct DataReport {
+    DataReport(const std::string& tag,
+               int64_t bytes_downloaded,
+               int64_t bytes_uploaded)
+        : tag(tag),
+          bytes_downloaded(bytes_downloaded),
+          bytes_uploaded(bytes_uploaded) {}
+    std::string tag;
+    int64_t bytes_downloaded;
+    int64_t bytes_uploaded;
+  };
+
+  // Maximum buffer size. If an entry needs to be added to the buffer that has
+  // size |kMaxBufferSize|, then the oldest entry will be removed.
+  static const size_t kMaxBufferSize = 100;
 
   // data_usage::DataUseAggregator::Observer implementation:
   void OnDataUse(
       const std::vector<data_usage::DataUse>& data_use_sequence) override;
 
-  // Called by |j_external_data_use_observer_| to register multiple
+  // Called by FetchMatchingRulesCallback to register multiple
   // case-insensitive regular expressions. If the url of the data use request
   // matches any of the regular expression, the observation is passed to the
   // Java listener.
@@ -67,8 +92,21 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // data use is notified to |j_external_data_use_observer_|.
   base::android::ScopedJavaGlobalRef<jobject> j_external_data_use_observer_;
 
+  // True if callback from |FetchMatchingRulesCallback| is currently pending.
+  bool matching_rules_fetch_pending_;
+
+  // True if callback from |SubmitDataUseReportCallback| is currently pending.
+  bool submit_data_report_pending_;
+
   // Registered RE2 patterns that are matched against the URLs.
   ScopedVector<re2::RE2> url_patterns_;
+
+  // Buffered data reports that need to be submitted to the Java data use
+  // observer.
+  std::vector<DataReport> buffered_data_reports_;
+
+  // True if |this| is currently registered as a data use observer.
+  bool registered_as_observer_;
 
   base::ThreadChecker thread_checker_;
 
