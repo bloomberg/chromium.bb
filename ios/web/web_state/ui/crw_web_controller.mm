@@ -1599,7 +1599,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 // displayed.
 - (void)reloadInternal {
   // Clear last user interaction.
-  // TODO(jyquinn): Move to after the load commits, in the subclass
+  // TODO(crbug.com/546337): Move to after the load commits, in the subclass
   // implementation. This will be inaccurate if the reload fails or is
   // cancelled.
   _lastUserInteraction.reset();

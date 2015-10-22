@@ -1047,7 +1047,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message {
   // Broken out into separate method to catch errors.
-  // TODO(jyquinn): Evaluate whether this is necessary for WKWebView.
   if (![self respondToWKScriptMessage:message]) {
     DLOG(WARNING) << "Message from JS not handled due to invalid format";
   }
@@ -1363,15 +1362,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // been registered, do so. loadPhase check is necessary because
   // lastRegisteredRequestURL may be the same as the webViewURL on a new tab
   // created by window.open (default is about::blank).
-  // TODO(jyquinn): Audit [CRWWebController loadWithParams] for other tasks that
-  // should be performed here.
   if (self.lastRegisteredRequestURL != webViewURL ||
       self.loadPhase != web::LOAD_REQUESTED) {
     // Reset current WebUI if one exists.
     [self clearWebUI];
     // Restart app specific URL loads to properly capture state.
-    // TODO(jyquinn): Extract necessary tasks for app specific URL navigation
-    // rather than restarting the load.
+    // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
+    // navigation rather than restarting the load.
     if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
       [self abortWebLoad];
       web::WebLoadParams params(webViewURL);
@@ -1465,8 +1462,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     didFinishNavigation:(WKNavigation *)navigation {
   DCHECK(!self.isHalted);
   // Trigger JavaScript driven post-document-load-completion tasks.
-  // TODO(jyquinn): Investigate using WKUserScriptInjectionTimeAtDocumentEnd to
-  // inject this material at the appropriate time rather than invoking here.
+  // TODO(crbug.com/546350): Investigate using
+  // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
+  // appropriate time rather than invoking here.
   web::EvaluateJavaScript(webView,
                           @"__gCrWeb.didFinishNavigation()", nil);
   [self didFinishNavigation];

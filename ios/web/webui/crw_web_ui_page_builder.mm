@@ -280,8 +280,8 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 - (void)flattenHTML:(NSMutableString*)HTML
     withSubresources:(const std::map<GURL, std::string>&)subresources {
   // Add core.js script to resources.
-  // TODO(jyquinn): Move inclusion of this resource into WebUI implementation
-  // rather than forking each HTML file (crbug.com/487000).
+  // TODO(crbug.com/487000): Move inclusion of this resource into WebUI
+  // implementation rather than forking each HTML file.
   GURL webUIJSURL("chrome://resources/js/ios/web_ui.js");
   std::map<GURL, std::string> resources(subresources);
   resources[webUIJSURL] = base::SysNSStringToUTF8([self webUIJavaScript]);

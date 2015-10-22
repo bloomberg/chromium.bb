@@ -238,8 +238,6 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
 
   NSString* mimeType = [response MIMEType];
 
-  // TODO(jyquinn): WebKit has a DOM for any XML document. Should we inject
-  // JavaScript into them and not limit to html and xhtml?
   if ([mimeType isEqualToString:@"text/html"])
     return YES;
 
