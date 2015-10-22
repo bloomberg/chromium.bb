@@ -70,10 +70,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationOwnerhip) {
             other_provider.GetWebViewConfiguration().processPool);
 }
 
-// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
-// (crbug.com/523365).
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
-
 // Tests Non-OffTheRecord configuration.
 TEST_F(WKWebViewConfigurationProviderTest, NoneOffTheRecordConfiguration) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
@@ -97,9 +93,6 @@ TEST_F(WKWebViewConfigurationProviderTest, OffTheRecordConfiguration) {
   ASSERT_TRUE(config);
   EXPECT_FALSE(config.websiteDataStore.persistent);
 }
-
-#endif  // defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >=
-        // __IPHONE_9_0
 
 // Tests that internal configuration object can not be changed by clients.
 TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {

@@ -22,9 +22,6 @@
 namespace {
 BOOL gAllowWKProcessPoolCreation = NO;
 
-// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
-// (crbug.com/523365).
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 // By default WKProcessPool creation is not allowed by embedder to prevent
 // issues with browsing data clearing. However some iOS system methods do create
 // WKProcessPool inside, which is perfectly fine and should be allowed. This
@@ -46,7 +43,6 @@ void AllowWKProcessPoolCreation(Class klass, SEL selector) {
 
   method_setImplementation(method, safeImp);
 }
-#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 }
 
 @interface WKProcessPool (CRWAdditions)
@@ -68,9 +64,6 @@ void AllowWKProcessPoolCreation(Class klass, SEL selector) {
   };
   web::AddAllocWithZoneMethod([WKProcessPool class], allocator);
 
-// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
-// (crbug.com/523365).
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
   if (!base::ios::IsRunningOnIOS9OrLater())
     return;
 
@@ -85,7 +78,6 @@ void AllowWKProcessPoolCreation(Class klass, SEL selector) {
   AllowWKProcessPoolCreation(
       [WKWebsiteDataStore class],
       @selector(removeDataOfTypes:modifiedSince:completionHandler:));
-#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 }
 
 @end
@@ -136,16 +128,11 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   DCHECK([NSThread isMainThread]);
   if (!configuration_) {
     configuration_.reset([[WKWebViewConfiguration alloc] init]);
-// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
-// (crbug.com/523365).
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
     if (is_off_the_record_ && base::ios::IsRunningOnIOS9OrLater()) {
       // WKWebsiteDataStore is iOS9 only.
       [configuration_
           setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
     }
-#endif  // defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >=
-        // __IPHONE_9_0
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
     [[configuration_ userContentController] addUserScript:GetEarlyPageScript()];
