@@ -6,15 +6,15 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 218x18
           text run at (0,0) width 218 LTR override: "This tests for a regression against "
-        LayoutInline {I} at (0,0) size 720x36
-          LayoutInline {A} at (0,0) size 350x18 [color=#0000EE]
-            LayoutText {#text} at (217,0) size 350x18
-              text run at (217,0) width 350 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6334"
-          LayoutText {#text} at (566,0) size 720x36
-            text run at (566,0) width 154 LTR override: " REGRESSION: <input"
-            text run at (0,18) width 371 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
-        LayoutText {#text} at (370,18) size 5x18
-          text run at (370,18) width 5 LTR override: "."
+        LayoutInline {I} at (0,0) size 722x36
+          LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
+            LayoutText {#text} at (217,0) size 354x18
+              text run at (217,0) width 354 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6334"
+          LayoutText {#text} at (570,0) size 722x36
+            text run at (570,0) width 152 LTR override: " REGRESSION: <input"
+            text run at (0,18) width 374 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
+        LayoutText {#text} at (373,18) size 5x18
+          text run at (373,18) width 5 LTR override: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,70) size 784x19
         LayoutText {#text} at (0,1) size 310x18

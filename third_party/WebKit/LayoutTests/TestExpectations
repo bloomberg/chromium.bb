@@ -775,8 +775,6 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [
 crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ Failure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ Failure ]
 
-crbug.com/545555 [ Mac ] fast/css/rtl-ordering.html [ NeedsRebaseline ]
-
 crbug.com/515454 [ Mac Win7 Win10 Android Linux ] css3/fonts/font-style-matching.html [ Slow ]
 crbug.com/523021 [ XP ] css3/fonts/font-style-matching.html [ Failure Slow ]
 
