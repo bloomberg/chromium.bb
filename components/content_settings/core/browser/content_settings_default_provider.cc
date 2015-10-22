@@ -37,6 +37,9 @@ const char kObsoleteMigratedDefaultContentSettings[] =
     "profile.migrated_default_content_settings";
 const char kObsoleteMigratedDefaultMediaStreamSetting[] =
     "profile.migrated_default_media_stream_content_settings";
+// TODO(msramek): Remove this cleanup code after two releases (i.e. in M50).
+const char kObsoleteMetroSwitchToDesktopSetting[] =
+    "profile.default_content_setting_values.metro_switch_to_desktop";
 
 ContentSetting GetDefaultValue(const WebsiteSettingsInfo* info) {
   const base::Value* initial_default = info->initial_default_value();
@@ -111,6 +114,12 @@ void DefaultProvider::RegisterProfilePrefs(
   // migrated into microphone and camera default settings.
   registry->RegisterBooleanPref(kObsoleteMigratedDefaultMediaStreamSetting,
                                 false);
+
+  // The removed content settings type METRO_SWITCH_TO_DESKTOP.
+  registry->RegisterIntegerPref(
+      kObsoleteMetroSwitchToDesktopSetting,
+      0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -361,6 +370,7 @@ void DefaultProvider::DiscardObsoletePreferences() {
   prefs_->ClearPref(kObsoleteDefaultContentSettings);
   prefs_->ClearPref(kObsoleteMigratedDefaultContentSettings);
   prefs_->ClearPref(kObsoleteMigratedDefaultMediaStreamSetting);
+  prefs_->ClearPref(kObsoleteMetroSwitchToDesktopSetting);
 }
 
 }  // namespace content_settings
