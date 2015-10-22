@@ -342,6 +342,75 @@ class Tab::TabCloseButton : public views::ImageButton,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// ThrobberView
+//
+// A Layer-backed view for updating a waiting or loading tab throbber.
+class Tab::ThrobberView : public views::View {
+ public:
+  explicit ThrobberView(Tab* owner);
+
+  // Resets the times tracking when the throbber changes state.
+  void ResetStartTimes();
+
+ private:
+  // views::View:
+  bool CanProcessEventsWithinSubtree() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  Tab* owner_;  // Weak. Owns |this|.
+
+  // The point in time when the tab icon was first painted in the waiting state.
+  base::TimeTicks waiting_start_time_;
+
+  // The point in time when the tab icon was first painted in the loading state.
+  base::TimeTicks loading_start_time_;
+
+  // Paint state for the throbber after the most recent waiting paint.
+  gfx::ThrobberWaitingState waiting_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThrobberView);
+};
+
+Tab::ThrobberView::ThrobberView(Tab* owner) : owner_(owner) {}
+
+void Tab::ThrobberView::ResetStartTimes() {
+  waiting_start_time_ = base::TimeTicks();
+  loading_start_time_ = base::TimeTicks();
+  waiting_state_ = gfx::ThrobberWaitingState();
+}
+
+bool Tab::ThrobberView::CanProcessEventsWithinSubtree() const {
+  return false;
+}
+
+void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
+  const TabRendererData::NetworkState state = owner_->data().network_state;
+  if (state == TabRendererData::NETWORK_STATE_NONE)
+    return;
+
+  ui::ThemeProvider* tp = GetThemeProvider();
+  const gfx::Rect bounds = GetLocalBounds();
+  if (state == TabRendererData::NETWORK_STATE_WAITING) {
+    if (waiting_start_time_ == base::TimeTicks())
+      waiting_start_time_ = base::TimeTicks::Now();
+
+    waiting_state_.elapsed_time = base::TimeTicks::Now() - waiting_start_time_;
+    gfx::PaintThrobberWaiting(
+        canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
+        waiting_state_.elapsed_time);
+  } else {
+    if (loading_start_time_ == base::TimeTicks())
+      loading_start_time_ = base::TimeTicks::Now();
+
+    waiting_state_.color =
+        tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING);
+    gfx::PaintThrobberSpinningAfterWaiting(
+        canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_SPINNING),
+        base::TimeTicks::Now() - loading_start_time_, &waiting_state_);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ImageCacheEntry
 
 Tab::ImageCacheEntry::ImageCacheEntry()
@@ -372,6 +441,7 @@ Tab::Tab(TabController* controller)
       favicon_hiding_offset_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
+      throbber_(nullptr),
       media_indicator_button_(nullptr),
       close_button_(nullptr),
       title_(new views::Label()),
@@ -401,6 +471,10 @@ Tab::Tab(TabController* controller)
 
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+
+  throbber_ = new ThrobberView(this);
+  throbber_->SetVisible(false);
+  AddChildView(throbber_);
 
   media_indicator_button_ = new MediaIndicatorButton(this);
   AddChildView(media_indicator_button_);
@@ -456,6 +530,7 @@ void Tab::SetData(const TabRendererData& data) {
     return;
 
   TabRendererData old(data_);
+  UpdateLoadingAnimation(data.network_state);
   data_ = data;
 
   base::string16 title = data_.title;
@@ -515,9 +590,8 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
     return;
   }
 
-  TabRendererData::NetworkState old_state = data_.network_state;
   data_.network_state = state;
-  AdvanceLoadingAnimation(old_state, state);
+  AdvanceLoadingAnimation();
 }
 
 void Tab::StartPulse() {
@@ -797,6 +871,7 @@ void Tab::Layout() {
     favicon_bounds_.set_y(lb.y() + (lb.height() - gfx::kFaviconSize + 1) / 2);
     MaybeAdjustLeftForPinnedTab(&favicon_bounds_);
   }
+  throbber_->SetBoundsRect(favicon_bounds_);
 
   showing_close_button_ = ShouldShowCloseBox();
   if (showing_close_button_) {
@@ -1353,28 +1428,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     return;
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
-    // Paint network activity (aka throbber) animation frame.
-    ui::ThemeProvider* tp = GetThemeProvider();
-    if (data().network_state == TabRendererData::NETWORK_STATE_WAITING) {
-      if (waiting_start_time_ == base::TimeTicks())
-        waiting_start_time_ = base::TimeTicks::Now();
-
-      waiting_state_.elapsed_time =
-          base::TimeTicks::Now() - waiting_start_time_;
-      gfx::PaintThrobberWaiting(
-          canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
-          waiting_state_.elapsed_time);
-    } else {
-      if (loading_start_time_ == base::TimeTicks())
-        loading_start_time_ = base::TimeTicks::Now();
-
-      waiting_state_.color =
-          tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING);
-      gfx::PaintThrobberSpinningAfterWaiting(
-          canvas, bounds,
-          tp->GetColor(ThemeProperties::COLOR_THROBBER_SPINNING),
-          base::TimeTicks::Now() - loading_start_time_, &waiting_state_);
-    }
+    // Throbber will do its own painting.
   } else {
     const gfx::ImageSkia& favicon = should_display_crashed_favicon_ ?
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -1388,27 +1442,46 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   }
 }
 
-void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
-                                  TabRendererData::NetworkState state) {
-  if (state == TabRendererData::NETWORK_STATE_WAITING) {
-    // Waiting steps backwards.
-    immersive_loading_step_ =
-        (immersive_loading_step_ - 1 + kImmersiveLoadingStepCount) %
-            kImmersiveLoadingStepCount;
-  } else if (state == TabRendererData::NETWORK_STATE_LOADING) {
-    immersive_loading_step_ = (immersive_loading_step_ + 1) %
-        kImmersiveLoadingStepCount;
-  } else {
-    waiting_start_time_ = base::TimeTicks();
-    loading_start_time_ = base::TimeTicks();
-    waiting_state_ = gfx::ThrobberWaitingState();
-    immersive_loading_step_ = 0;
-  }
+void Tab::AdvanceLoadingAnimation() {
+  const TabRendererData::NetworkState state = data().network_state;
   if (controller_->IsImmersiveStyle()) {
+    if (state == TabRendererData::NETWORK_STATE_WAITING) {
+      // Waiting steps backwards.
+      immersive_loading_step_ =
+          (immersive_loading_step_ - 1 + kImmersiveLoadingStepCount) %
+          kImmersiveLoadingStepCount;
+    } else if (state == TabRendererData::NETWORK_STATE_LOADING) {
+      immersive_loading_step_ =
+          (immersive_loading_step_ + 1) % kImmersiveLoadingStepCount;
+    } else {
+      immersive_loading_step_ = 0;
+    }
+
     SchedulePaintInRect(GetImmersiveBarRect());
-  } else {
-    ScheduleIconPaint();
+    return;
   }
+
+  if (state == TabRendererData::NETWORK_STATE_NONE) {
+    throbber_->ResetStartTimes();
+    throbber_->SetVisible(false);
+    ScheduleIconPaint();
+    return;
+  }
+
+  // Since the throbber can animate for a long time, paint to a separate layer
+  // when possible to reduce repaint overhead.
+  const bool paint_to_layer = controller_->CanPaintThrobberToLayer();
+  if (paint_to_layer != !!throbber_->layer()) {
+    throbber_->SetPaintToLayer(paint_to_layer);
+    throbber_->SetFillsBoundsOpaquely(false);
+    if (paint_to_layer)
+      ScheduleIconPaint();  // Ensure the non-layered throbber goes away.
+  }
+  if (!throbber_->visible()) {
+    ScheduleIconPaint();  // Repaint the icon area to hide the favicon.
+    throbber_->SetVisible(true);
+  }
+  throbber_->SchedulePaint();
 }
 
 int Tab::IconCapacity() const {

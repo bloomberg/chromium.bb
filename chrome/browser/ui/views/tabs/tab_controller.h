@@ -93,6 +93,11 @@ class TabController {
   // set to the clip (if |clip| is empty means no clip).
   virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) = 0;
 
+  // Returns true if tab loading throbbers can be painted to a composited layer.
+  // This can only be done when the TabController can guarantee that nothing
+  // in the same window will redraw on top of the the favicon area of any tab.
+  virtual bool CanPaintThrobberToLayer() const = 0;
+
   // Returns true if tabs painted in the rectangular light-bar style.
   virtual bool IsImmersiveStyle() const = 0;
 
