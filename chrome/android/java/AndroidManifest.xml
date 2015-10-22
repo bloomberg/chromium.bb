@@ -640,7 +640,7 @@ by a child template that "extends" this file.
 
         <service android:name="org.chromium.chrome.browser.media.MediaCaptureNotificationService"
             android:exported="false"/>
-        <service android:name="org.chromium.chrome.browser.media.ui.NotificationMediaPlaybackControls$ListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$ListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />

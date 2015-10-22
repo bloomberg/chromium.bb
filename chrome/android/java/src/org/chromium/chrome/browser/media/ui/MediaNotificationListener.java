@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.media.ui;
 /**
  * Interface for classes that need to be notified about media events.
  */
-public interface MediaPlaybackListener {
+public interface MediaNotificationListener {
     /**
      * Called when the user wants to resume the playback.
      */

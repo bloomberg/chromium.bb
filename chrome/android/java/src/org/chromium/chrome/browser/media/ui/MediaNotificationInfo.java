@@ -38,7 +38,7 @@ public class MediaNotificationInfo {
     /**
      * The listener for the control events.
      */
-    public final MediaPlaybackListener listener;
+    public final MediaNotificationListener listener;
 
     /**
      * Create a new MediaNotificationInfo.
@@ -54,7 +54,7 @@ public class MediaNotificationInfo {
             String origin,
             int tabId,
             boolean isPrivate,
-            MediaPlaybackListener listener) {
+            MediaNotificationListener listener) {
         this.title = title;
         this.isPaused = isPaused;
         this.origin = origin;

@@ -27,7 +27,7 @@ public class MediaSessionTabHelper {
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
 
-    private MediaPlaybackListener mControlsListener = new MediaPlaybackListener() {
+    private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
         public void onPlay() {
             assert mWebContents != null;
@@ -52,9 +52,9 @@ public class MediaSessionTabHelper {
             @Override
             public void destroy() {
                 if (mTab == null) {
-                    NotificationMediaPlaybackControls.clear();
+                    MediaNotificationManager.clear();
                 } else {
-                    NotificationMediaPlaybackControls.hide(mTab.getId());
+                    MediaNotificationManager.hide(mTab.getId());
                 }
                 super.destroy();
             }
@@ -63,7 +63,7 @@ public class MediaSessionTabHelper {
             public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
                 assert mTab != null;
                 if (!isControllable) {
-                    NotificationMediaPlaybackControls.hide(mTab.getId());
+                    MediaNotificationManager.hide(mTab.getId());
                     return;
                 }
                 String origin = mTab.getUrl();
@@ -73,7 +73,7 @@ public class MediaSessionTabHelper {
                     Log.e(TAG, "Unable to parse the origin from the URL. "
                             + "Showing the full URL instead.");
                 }
-                NotificationMediaPlaybackControls.show(
+                MediaNotificationManager.show(
                         ApplicationStatus.getApplicationContext(),
                         new MediaNotificationInfo(
                                 mTab.getTitle(),
@@ -114,7 +114,7 @@ public class MediaSessionTabHelper {
 
             cleanupWebContents();
 
-            NotificationMediaPlaybackControls.hide(mTab.getId());
+            MediaNotificationManager.hide(mTab.getId());
             mTab.removeObserver(this);
             mTab = null;
         }

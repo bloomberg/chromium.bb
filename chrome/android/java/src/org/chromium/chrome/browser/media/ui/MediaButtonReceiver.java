@@ -22,7 +22,7 @@ import java.util.List;
 public class MediaButtonReceiver extends BroadcastReceiver {
     private static final String LISTENER_SERVICE_CLASS_NAME =
             "org.chromium.chrome.browser.media.ui"
-            + "NotificationMediaPlaybackControls$ListenerService";
+            + "MediaNotificationManager$ListenerService";
 
     @Override
     public void onReceive(Context context, Intent intent) {

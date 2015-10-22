@@ -32,14 +32,14 @@ import org.chromium.chrome.browser.tab.Tab;
 /**
  * A class for notifications that provide information and optional media controls for a given media.
  * Internally implements a Service for transforming notification Intents into
- * {@link MediaPlaybackListener} calls for all registered listeners.
+ * {@link MediaNotificationListener} calls for all registered listeners.
  */
-public class NotificationMediaPlaybackControls {
+public class MediaNotificationManager {
     private static final int PLAYBACK_STATE_PAUSED = 0;
     private static final int PLAYBACK_STATE_PLAYING = 1;
 
     private static final Object LOCK = new Object();
-    private static NotificationMediaPlaybackControls sInstance;
+    private static MediaNotificationManager sInstance;
 
     /**
      * Service used to transform intent requests triggered from the notification into
@@ -172,7 +172,7 @@ public class NotificationMediaPlaybackControls {
                             MediaNotificationInfo mediaNotificationInfo) {
         synchronized (LOCK) {
             if (sInstance == null) {
-                sInstance = new NotificationMediaPlaybackControls(applicationContext);
+                sInstance = new MediaNotificationManager(applicationContext);
             }
         }
         sInstance.showNotification(mediaNotificationInfo);
@@ -258,7 +258,7 @@ public class NotificationMediaPlaybackControls {
                 }
     };
 
-    private NotificationMediaPlaybackControls(Context context) {
+    private MediaNotificationManager(Context context) {
         mContext = context;
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
