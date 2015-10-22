@@ -166,6 +166,7 @@ void NativeWidgetViewManager::CenterWindow(const gfx::Size& size) {
 }
 
 void NativeWidgetViewManager::SetBounds(const gfx::Rect& bounds) {
+  NativeWidgetAura::SetBounds(bounds);
   if (!window_manager_)
     return;
   window_manager_->SetBounds(window_->id(), mojo::Rect::From(bounds),
@@ -173,6 +174,7 @@ void NativeWidgetViewManager::SetBounds(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetViewManager::SetSize(const gfx::Size& size) {
+  NativeWidgetAura::SetSize(size);
   if (!window_manager_)
     return;
   mojo::RectPtr bounds(mojo::Rect::New());
