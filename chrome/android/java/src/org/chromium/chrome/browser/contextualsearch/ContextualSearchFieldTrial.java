@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
@@ -11,6 +12,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.variations.VariationsAssociatedData;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Provides Field Trial support for the Contextual Search application within Chrome for Android.
@@ -51,16 +53,17 @@ public class ContextualSearchFieldTrial {
     /**
      * Checks the current Variations parameters associated with the active group as well as the
      * Chrome preference to determine if the service is enabled.
+     * @param context Context used to determine whether the device is a tablet or a phone.
      * @return Whether Contextual Search is enabled or not.
      */
-    public static boolean isEnabled() {
+    public static boolean isEnabled(Context context) {
         if (sEnabled == null) {
-            sEnabled = detectEnabled();
+            sEnabled = detectEnabled(context);
         }
         return sEnabled.booleanValue();
     }
 
-    private static boolean detectEnabled() {
+    private static boolean detectEnabled(Context context) {
         if (SysUtils.isLowEndDevice()) {
             return false;
         }
@@ -79,10 +82,13 @@ public class ContextualSearchFieldTrial {
             return false;
         }
 
-        // Allow this user-flippable flag to override disabling due to language.
+        // Allow this user-flippable flag to enable the feature.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CONTEXTUAL_SEARCH)) {
             return true;
         }
+
+        // Enable contextual search for phones.
+        if (!DeviceFormFactor.isTablet(context)) return true;
 
         if (ChromeVersionInfo.isLocalBuild()) return true;
 
