@@ -9,9 +9,10 @@
 #include "net/ftp/ftp_directory_listing_parser.h"
 
 // Entry point for LibFuzzer.
-extern "C" void LLVMFuzzerTestOneInput(const unsigned char* data,
-                                       unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
+                                      unsigned long size) {
   std::string buffer(reinterpret_cast<const char*>(data), size);
   std::vector<net::FtpDirectoryListingEntry> entries;
   net::ParseFtpDirectoryListing(buffer, base::Time::Now(), &entries);
+  return 0;
 }

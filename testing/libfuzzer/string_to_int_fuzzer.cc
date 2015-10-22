@@ -10,8 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 
 // Entry point for LibFuzzer.
-extern "C" void LLVMFuzzerTestOneInput(const unsigned char* data,
-                                       unsigned long size) {
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
+                                      unsigned long size) {
   std::string input(reinterpret_cast<const char*>(data), size);
   int out_int;
   base::StringToInt(input, &out_int);
@@ -34,4 +34,5 @@ extern "C" void LLVMFuzzerTestOneInput(const unsigned char* data,
   base::HexStringToBytes(input, &out_bytes);
 
   base::HexEncode(data, size);
+  return 0;
 }

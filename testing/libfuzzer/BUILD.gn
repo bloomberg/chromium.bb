@@ -7,6 +7,7 @@
 #
 # To enable libfuzzer, 'use_libfuzzer' GN option should be set to true.
 
+import("//build/config/features.gni")
 import("//testing/test.gni")
 
 static_library("libfuzzer_main") {
@@ -36,6 +37,17 @@ test("brotli_fuzzer") {
   deps = [
     ":libfuzzer_main",
     "//third_party/brotli:brotli",
+  ]
+}
+
+test("courgette_fuzzer") {
+  sources = [
+    "courgette_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//base",
+    "//courgette:courgette_lib",
   ]
 }
 
@@ -72,6 +84,28 @@ test("ftp_directory_listing_fuzzer") {
   ]
 }
 
+test("language_detection_fuzzer") {
+  sources = [
+    "language_detection_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//components/translate/core/language_detection:language_detection",
+  ]
+}
+
+if (proprietary_codecs) {
+  test("mp4_box_reader_fuzzer") {
+    sources = [
+      "mp4_box_reader_fuzzer.cc",
+    ]
+    deps = [
+      ":libfuzzer_main",
+      "//media",
+    ]
+  }
+}
+
 test("snappy_fuzzer") {
   sources = [
     "snappy_fuzzer.cc",
@@ -99,5 +133,15 @@ test("url_parse_fuzzer") {
   deps = [
     ":libfuzzer_main",
     "//url:url",
+  ]
+}
+
+test("vp9_parser_fuzzer") {
+  sources = [
+    "vp9_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":libfuzzer_main",
+    "//media",
   ]
 }

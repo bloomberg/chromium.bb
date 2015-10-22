@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
-#include "net/dns/dns_response.h"
+#include "media/filters/vp9_parser.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data,
                                       unsigned long size) {
-  std::string out;
-  net::DnsRecordParser parser(data, size, 0);
-  if (!parser.IsValid()) {
-    return 0;
-  }
-  net::DnsResourceRecord record;
-  while (parser.ReadRecord(&record)) {
+  media::Vp9Parser parser;
+  parser.SetStream(data, size);
+  while (true) {
+    media::Vp9FrameHeader fhdr;
+    if (media::Vp9Parser::kOk != parser.ParseNextFrame(&fhdr)) {
+      break;
+    }
   }
   return 0;
 }
