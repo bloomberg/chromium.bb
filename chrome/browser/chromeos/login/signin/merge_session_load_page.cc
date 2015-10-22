@@ -55,7 +55,7 @@ namespace chromeos {
 MergeSessionLoadPage::MergeSessionLoadPage(
     WebContents* web_contents,
     const GURL& url,
-    const MergeSessionThrottle::CompletionCallback& callback)
+    const merge_session_throttling_utils::CompletionCallback& callback)
     : callback_(callback),
       proceeded_(false),
       web_contents_(web_contents),
@@ -133,14 +133,15 @@ void MergeSessionLoadPage::CommandReceived(const std::string& cmd) {
 }
 
 void MergeSessionLoadPage::NotifyBlockingPageComplete() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OAuth2LoginManager* manager = GetOAuth2LoginManager();
   if (manager)
     manager->RemoveObserver(this);
 
-  if (!callback_.is_null()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, callback_);
-  }
+  // Tell the MergeSessionNavigationThrottle to resume the navigation on the UI
+  // thread.
+  if (!callback_.is_null())
+    callback_.Run();
 }
 
 OAuth2LoginManager* MergeSessionLoadPage::GetOAuth2LoginManager() {

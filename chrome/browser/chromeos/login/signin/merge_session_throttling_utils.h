@@ -1,0 +1,46 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_THROTTLING_UTILS_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_THROTTLING_UTILS_H_
+
+#include "base/atomic_ref_count.h"
+#include "net/base/completion_callback.h"
+
+class GURL;
+class Profile;
+
+namespace content {
+class WebContents;
+}
+
+// A set of helper functions used by the MergeSessionNavigationThrottle and the
+// MergeSessionResourceThrottle to determine if an interstitial page should be
+// shown for a request when the merge session process (cookie reconstruction
+// from OAuth2 refresh token in ChromeOS login) is still in progress.
+namespace merge_session_throttling_utils {
+
+// Passed a boolean indicating whether or not it is OK to proceed with the
+// page load.
+using CompletionCallback = base::Closure;
+
+// Checks if session is already merged. This is safe to call on all threads.
+bool AreAllSessionMergedAlready();
+
+// Adds/removes |profile| to/from the blocking profiles set. This should be
+// called on the UI thread.
+void BlockProfile(Profile* profile);
+void UnblockProfile(Profile* profile);
+
+// Whether requests from |web_contents| should currently be delayed. This
+// should be called on the UI thread.
+bool ShouldDelayRequest(content::WebContents* web_contents);
+
+// True if the load of |url| should be delayed. The function is safe to be
+// called on any thread.
+bool ShouldDelayUrl(const GURL& url);
+
+}  // namespace merge_session_throttling_utils
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_MERGE_SESSION_THROTTLING_UTILS_H_

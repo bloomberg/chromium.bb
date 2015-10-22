@@ -169,6 +169,8 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_navigation_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -2651,6 +2653,21 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(url_to_app_throttle.Pass());
   }
 #endif
+
+#if defined(OS_CHROMEOS)
+  // Check if we need to add merge session throttle. This throttle will postpone
+  // loading of main frames.
+  if (handle->IsInMainFrame()) {
+    // Add interstitial page while merge session process (cookie reconstruction
+    // from OAuth2 refresh token in ChromeOS login) is still in progress while
+    // we are attempting to load a google property.
+    if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
+        handle->GetURL().SchemeIsHTTPOrHTTPS()) {
+      throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
+    }
+  }
+#endif
+
   return throttles.Pass();
 }
 

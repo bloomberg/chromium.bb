@@ -23,6 +23,14 @@ namespace {
 typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
     UIChecksPerformedCallback;
 
+void SendCheckResultToIOThread(UIChecksPerformedCallback callback,
+                               NavigationThrottle::ThrottleCheckResult result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  CHECK(result != NavigationThrottle::DEFER);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, result));
+}
+
 void CheckWillStartRequestOnUIThread(UIChecksPerformedCallback callback,
                                      int render_process_id,
                                      int render_frame_host_id,
@@ -32,20 +40,23 @@ void CheckWillStartRequestOnUIThread(UIChecksPerformedCallback callback,
                                      ui::PageTransition transition,
                                      bool is_external_protocol) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::PROCEED;
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (render_frame_host) {
-    NavigationHandleImpl* navigation_handle =
-        render_frame_host->navigation_handle();
-    if (navigation_handle) {
-      result = navigation_handle->WillStartRequest(is_post, sanitized_referrer,
-                                                   has_user_gesture, transition,
-                                                   is_external_protocol);
-    }
+  if (!render_frame_host) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+    return;
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, result));
+
+  NavigationHandleImpl* navigation_handle =
+      render_frame_host->navigation_handle();
+  if (!navigation_handle) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+    return;
+  }
+
+  navigation_handle->WillStartRequest(
+      is_post, sanitized_referrer, has_user_gesture, transition,
+      is_external_protocol, base::Bind(&SendCheckResultToIOThread, callback));
 }
 
 void CheckWillRedirectRequestOnUIThread(UIChecksPerformedCallback callback,
@@ -56,24 +67,29 @@ void CheckWillRedirectRequestOnUIThread(UIChecksPerformedCallback callback,
                                         const GURL& new_referrer_url,
                                         bool new_is_external_protocol) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::PROCEED;
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (render_frame_host) {
-    NavigationHandleImpl* navigation_handle =
-        render_frame_host->navigation_handle();
-    if (navigation_handle) {
-      RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-      GURL new_validated_url = new_url;
-      rph->FilterURL(false, &new_validated_url);
-      result = navigation_handle->WillRedirectRequest(
-          new_validated_url, new_method_is_post, new_referrer_url,
-          new_is_external_protocol);
-    }
+  if (!render_frame_host) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+    return;
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, result));
+
+  NavigationHandleImpl* navigation_handle =
+      render_frame_host->navigation_handle();
+  if (!navigation_handle) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+    return;
+  }
+
+  GURL new_validated_url(new_url);
+  RenderProcessHost::FromID(render_process_id)
+      ->FilterURL(false, &new_validated_url);
+  navigation_handle->WillRedirectRequest(
+      new_validated_url, new_method_is_post, new_referrer_url,
+      new_is_external_protocol,
+      base::Bind(&SendCheckResultToIOThread, callback));
 }
+
 }  // namespace
 
 NavigationResourceThrottle::NavigationResourceThrottle(net::URLRequest* request)

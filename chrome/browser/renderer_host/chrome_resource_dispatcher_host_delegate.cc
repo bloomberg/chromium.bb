@@ -96,7 +96,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/signin/merge_session_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_resource_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #endif
 
 using content::BrowserThread;
@@ -345,15 +346,14 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
 #if defined(OS_CHROMEOS)
   // Check if we need to add merge session throttle. This throttle will postpone
-  // loading of main frames and XHR request.
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
-      resource_type == content::RESOURCE_TYPE_XHR) {
+  // loading of XHR requests.
+  if (resource_type == content::RESOURCE_TYPE_XHR) {
     // Add interstitial page while merge session process (cookie
     // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
     // progress while we are attempting to load a google property.
-    if (!MergeSessionThrottle::AreAllSessionMergedAlready() &&
+    if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
         request->url().SchemeIsHTTPOrHTTPS()) {
-      throttles->push_back(new MergeSessionThrottle(request, resource_type));
+      throttles->push_back(new MergeSessionResourceThrottle(request));
     }
   }
 #endif

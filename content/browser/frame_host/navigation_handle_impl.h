@@ -7,6 +7,7 @@
 
 #include "content/public/browser/navigation_handle.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -73,6 +74,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSamePage() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  void Resume() override;
   void RegisterThrottleForTesting(
       scoped_ptr<NavigationThrottle> navigation_throttle) override;
   NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting(
@@ -102,20 +104,27 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     is_transferring_ = is_transferring;
   }
 
-  // Called when the URLRequest will start in the network stack.
-  NavigationThrottle::ThrottleCheckResult WillStartRequest(
-      bool is_post,
-      const Referrer& sanitized_referrer,
-      bool has_user_gesture,
-      ui::PageTransition transition,
-      bool is_external_protocol);
+  typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
+      ThrottleChecksFinishedCallback;
+
+  // Called when the URLRequest will start in the network stack.  |callback|
+  // will be called when all throttle checks have completed. This will allow
+  // the caller to cancel the navigation or let it proceed.
+  void WillStartRequest(bool is_post,
+                        const Referrer& sanitized_referrer,
+                        bool has_user_gesture,
+                        ui::PageTransition transition,
+                        bool is_external_protocol,
+                        const ThrottleChecksFinishedCallback& callback);
 
   // Called when the URLRequest will be redirected in the network stack.
-  NavigationThrottle::ThrottleCheckResult WillRedirectRequest(
-      const GURL& new_url,
-      bool new_method_is_post,
-      const GURL& new_referrer_url,
-      bool new_is_external_protocol);
+  // |callback| will be called when all throttles check have completed. This
+  // will allow the caller to cancel the navigation or let it proceed.
+  void WillRedirectRequest(const GURL& new_url,
+                           bool new_method_is_post,
+                           const GURL& new_referrer_url,
+                           bool new_is_external_protocol,
+                           const ThrottleChecksFinishedCallback& callback);
 
   // Called when the navigation was redirected. This will update the |url_| and
   // inform the delegate.
@@ -132,10 +141,15 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                            RenderFrameHostImpl* render_frame_host);
 
  private:
+  friend class NavigationHandleImplTest;
+
   // Used to track the state the navigation is currently in.
   enum State {
     INITIAL = 0,
     WILL_SEND_REQUEST,
+    DEFERRING_START,
+    WILL_REDIRECT_REQUEST,
+    DEFERRING_REDIRECT,
     READY_TO_COMMIT,
     DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,
@@ -143,6 +157,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigationHandleImpl(const GURL& url,
                        FrameTreeNode* frame_tree_node);
+
+  NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
+  NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
+
+  // Used in tests.
+  State state() const { return state_; }
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;
@@ -167,6 +187,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // A list of Throttles registered for this navigation.
   ScopedVector<NavigationThrottle> throttles_;
+
+  // The index of the next throttle to check.
+  size_t next_index_;
+
+  // This callback will be run when all throttle checks have been performed.
+  ThrottleChecksFinishedCallback complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

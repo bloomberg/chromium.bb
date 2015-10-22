@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/signin/merge_session_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 
@@ -23,7 +23,7 @@ class MergeSessionXHRRequestWaiter : public OAuth2LoginManager::Observer {
  public:
   MergeSessionXHRRequestWaiter(
       Profile* profile,
-      const MergeSessionThrottle::CompletionCallback& callback);
+      const merge_session_throttling_utils::CompletionCallback& callback);
   ~MergeSessionXHRRequestWaiter() override;
 
   // Starts waiting for merge session completion for |profile_|.
@@ -42,7 +42,7 @@ class MergeSessionXHRRequestWaiter : public OAuth2LoginManager::Observer {
   void NotifyBlockingDone();
 
   Profile* profile_;
-  MergeSessionThrottle::CompletionCallback callback_;
+  merge_session_throttling_utils::CompletionCallback callback_;
   base::WeakPtrFactory<MergeSessionXHRRequestWaiter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionXHRRequestWaiter);

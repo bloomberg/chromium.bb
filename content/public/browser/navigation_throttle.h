@@ -18,6 +18,7 @@ class CONTENT_EXPORT NavigationThrottle {
   // proceed, or to cancel it.
   enum ThrottleCheckResult {
     PROCEED,
+    DEFER,
     CANCEL_AND_IGNORE,
   };
 

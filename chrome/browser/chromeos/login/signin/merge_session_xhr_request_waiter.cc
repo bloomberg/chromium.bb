@@ -26,11 +26,8 @@ const int kMaxRequestWaitTimeMS = 10000;
 
 MergeSessionXHRRequestWaiter::MergeSessionXHRRequestWaiter(
     Profile* profile,
-    const MergeSessionThrottle::CompletionCallback& callback)
-   : profile_(profile),
-     callback_(callback),
-     weak_ptr_factory_(this) {
-}
+    const merge_session_throttling_utils::CompletionCallback& callback)
+    : profile_(profile), callback_(callback), weak_ptr_factory_(this) {}
 
 MergeSessionXHRRequestWaiter::~MergeSessionXHRRequestWaiter() {
   chromeos::OAuth2LoginManager* manager =

@@ -35,11 +35,11 @@ namespace chromeos {
 // An MergeSessionLoadPage class that does not create windows.
 class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
  public:
-  TestMergeSessionLoadPage(WebContents* web_contents,
-                           const GURL& url)
-    : MergeSessionLoadPage(web_contents,
-                           url,
-                           MergeSessionThrottle::CompletionCallback()) {
+  TestMergeSessionLoadPage(WebContents* web_contents, const GURL& url)
+      : MergeSessionLoadPage(
+            web_contents,
+            url,
+            merge_session_throttling_utils::CompletionCallback()) {
     interstitial_page_->DontCreateViewForTesting();
   }
 

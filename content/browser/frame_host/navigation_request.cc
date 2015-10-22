@@ -14,7 +14,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_client.h"
 #include "net/base/load_flags.h"
@@ -189,30 +188,23 @@ NavigationRequest::NavigationRequest(
 NavigationRequest::~NavigationRequest() {
 }
 
-bool NavigationRequest::BeginNavigation() {
+void NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   state_ = STARTED;
 
   if (ShouldMakeNetworkRequestForURL(common_params_.url)) {
+    // It's safe to use base::Unretained because this NavigationRequest owns
+    // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the real value for |is_external_protocol| if needed.
-    NavigationThrottle::ThrottleCheckResult result =
-        navigation_handle_->WillStartRequest(
-            begin_params_.method == "POST",
-            Referrer::SanitizeForRequest(common_params_.url,
-                                         common_params_.referrer),
-            begin_params_.has_user_gesture, common_params_.transition, false);
-
-    // Abort the request if needed. This will destroy the NavigationRequest.
-    if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
-      frame_tree_node_->ResetNavigationRequest(false);
-      return false;
-    }
-
-    loader_ = NavigationURLLoader::Create(
-        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-        info_.Pass(), this);
-    return true;
+    navigation_handle_->WillStartRequest(
+        begin_params_.method == "POST",
+        Referrer::SanitizeForRequest(common_params_.url,
+                                     common_params_.referrer),
+        begin_params_.has_user_gesture, common_params_.transition, false,
+        base::Bind(&NavigationRequest::OnStartChecksComplete,
+                   base::Unretained(this)));
+    return;
   }
 
   // There is no need to make a network request for this navigation, so commit
@@ -220,10 +212,6 @@ bool NavigationRequest::BeginNavigation() {
   state_ = RESPONSE_STARTED;
   frame_tree_node_->navigator()->CommitNavigation(
       frame_tree_node_, nullptr, scoped_ptr<StreamHandle>());
-  return false;
-
-  // TODO(davidben): Fire (and add as necessary) observer methods such as
-  // DidStartProvisionalLoadForFrame for the navigation.
 }
 
 void NavigationRequest::CreateNavigationHandle() {
@@ -247,21 +235,15 @@ void NavigationRequest::OnRequestRedirected(
 
   // TODO(clamy): Have CSP + security upgrade checks here.
   // TODO(clamy): Kill the renderer if FilterURL fails?
+
+  // It's safe to use base::Unretained because this NavigationRequest owns the
+  // NavigationHandle where the callback will be stored.
   // TODO(clamy): pass the real value for |is_external_protocol| if needed.
-  NavigationThrottle::ThrottleCheckResult result =
-      navigation_handle_->WillRedirectRequest(
-          common_params_.url, begin_params_.method == "POST",
-          common_params_.referrer.url, false);
-
-  // Abort the request if needed. This will destroy the NavigationRequest.
-  if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
-    frame_tree_node_->ResetNavigationRequest(false);
-    return;
-  }
-
-  loader_->FollowRedirect();
-
-  navigation_handle_->DidRedirectNavigation(redirect_info.new_url);
+  navigation_handle_->WillRedirectRequest(
+      common_params_.url, begin_params_.method == "POST",
+      common_params_.referrer.url, false,
+      base::Bind(&NavigationRequest::OnRedirectChecksComplete,
+                 base::Unretained(this)));
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -285,6 +267,35 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
   frame_tree_node_->navigator()->LogResourceRequestTime(timestamp,
                                                         common_params_.url);
+}
+
+void NavigationRequest::OnStartChecksComplete(
+    NavigationThrottle::ThrottleCheckResult result) {
+  CHECK(result != NavigationThrottle::DEFER);
+
+  // Abort the request if needed. This will destroy the NavigationRequest.
+  if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
+  loader_ = NavigationURLLoader::Create(
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+      info_.Pass(), this);
+}
+
+void NavigationRequest::OnRedirectChecksComplete(
+    NavigationThrottle::ThrottleCheckResult result) {
+  CHECK(result != NavigationThrottle::DEFER);
+
+  // Abort the request if needed. This will destroy the NavigationRequest.
+  if (result == NavigationThrottle::CANCEL_AND_IGNORE) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
+  loader_->FollowRedirect();
+  navigation_handle_->DidRedirectNavigation(common_params_.url);
 }
 
 }  // namespace content

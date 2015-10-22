@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
+#include "content/public/browser/navigation_throttle.h"
 
 namespace content {
 
@@ -71,6 +72,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Creates a request for a renderer-intiated navigation.
   // Note: |body| is sent to the IO thread when calling BeginNavigation, and
   // should no longer be manipulated afterwards on the UI thread.
+  // TODO(clamy): see if ResourceRequestBody could be un-refcounted to avoid
+  // threading subtleties.
   static scoped_ptr<NavigationRequest> CreateRendererInitiated(
       FrameTreeNode* frame_tree_node,
       const CommonNavigationParams& common_params,
@@ -81,11 +84,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   ~NavigationRequest() override;
 
-  // Called on the UI thread by the Navigator to start the navigation. Returns
-  // whether a request was made on the IO thread.
-  // TODO(clamy): see if ResourceRequestBody could be un-refcounted to avoid
-  // threading subtleties.
-  bool BeginNavigation();
+  // Called on the UI thread by the Navigator to start the navigation.
+  void BeginNavigation();
 
   const CommonNavigationParams& common_params() const { return common_params_; }
 
@@ -156,6 +156,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                          scoped_ptr<StreamHandle> body) override;
   void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
+
+  // Called when the NavigationThrottles have been checked by the
+  // NavigationHandle.
+  void OnStartChecksComplete(NavigationThrottle::ThrottleCheckResult result);
+  void OnRedirectChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
   FrameTreeNode* frame_tree_node_;
 

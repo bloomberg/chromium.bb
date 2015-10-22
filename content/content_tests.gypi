@@ -437,6 +437,7 @@
       'browser/frame_host/frame_tree_unittest.cc',
       'browser/frame_host/navigation_controller_impl_unittest.cc',
       'browser/frame_host/navigation_entry_impl_unittest.cc',
+      'browser/frame_host/navigation_handle_impl_unittest.cc',
       'browser/frame_host/navigator_impl_unittest.cc',
       'browser/frame_host/render_frame_host_manager_unittest.cc',
       'browser/frame_host/render_widget_host_view_child_frame_unittest.cc',

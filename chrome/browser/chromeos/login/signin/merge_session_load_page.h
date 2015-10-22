@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/signin/merge_session_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -42,7 +42,7 @@ class MergeSessionLoadPage
   MergeSessionLoadPage(
       content::WebContents* web_contents,
       const GURL& url,
-      const MergeSessionThrottle::CompletionCallback& callback);
+      const merge_session_throttling_utils::CompletionCallback& callback);
 
   void Show();
 
@@ -69,7 +69,7 @@ class MergeSessionLoadPage
   // Helper function to get OAuth2LoginManager out of |web_contents_|.
   OAuth2LoginManager* GetOAuth2LoginManager();
 
-  MergeSessionThrottle::CompletionCallback callback_;
+  merge_session_throttling_utils::CompletionCallback callback_;
 
   // True if the proceed is chosen.
   bool proceeded_;

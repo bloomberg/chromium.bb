@@ -13,6 +13,16 @@
 
 namespace content {
 
+namespace {
+
+void UpdateThrottleCheckResult(
+    NavigationThrottle::ThrottleCheckResult* to_update,
+    NavigationThrottle::ThrottleCheckResult result) {
+  *to_update = result;
+}
+
+}  // namespace
+
 // static
 scoped_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
@@ -33,7 +43,8 @@ NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
       is_same_page_(false),
       state_(INITIAL),
       is_transferring_(false),
-      frame_tree_node_(frame_tree_node) {
+      frame_tree_node_(frame_tree_node),
+      next_index_(0) {
   GetDelegate()->DidStartNavigation(this);
 }
 
@@ -109,6 +120,19 @@ bool NavigationHandleImpl::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
+void NavigationHandleImpl::Resume() {
+  CHECK(state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT);
+  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  if (state_ == DEFERRING_START) {
+    result = CheckWillStartRequest();
+  } else {
+    result = CheckWillRedirectRequest();
+  }
+
+  if (result != NavigationThrottle::DEFER)
+    complete_callback_.Run(result);
+}
+
 void NavigationHandleImpl::RegisterThrottleForTesting(
     scoped_ptr<NavigationThrottle> navigation_throttle) {
   throttles_.push_back(navigation_throttle.Pass());
@@ -121,8 +145,14 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol) {
-  return WillStartRequest(is_post, sanitized_referrer, has_user_gesture,
-                          transition, is_external_protocol);
+  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  WillStartRequest(is_post, sanitized_referrer, has_user_gesture, transition,
+                   is_external_protocol,
+                   base::Bind(&UpdateThrottleCheckResult, &result));
+
+  // Reset the callback to ensure it will not be called later.
+  complete_callback_.Reset();
+  return result;
 }
 
 NavigationThrottle::ThrottleCheckResult
@@ -131,16 +161,23 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
     bool new_method_is_post,
     const GURL& new_referrer_url,
     bool new_is_external_protocol) {
-  return WillRedirectRequest(new_url, new_method_is_post, new_referrer_url,
-                             new_is_external_protocol);
+  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  WillRedirectRequest(new_url, new_method_is_post, new_referrer_url,
+                      new_is_external_protocol,
+                      base::Bind(&UpdateThrottleCheckResult, &result));
+
+  // Reset the callback to ensure it will not be called later.
+  complete_callback_.Reset();
+  return result;
 }
 
-NavigationThrottle::ThrottleCheckResult NavigationHandleImpl::WillStartRequest(
+void NavigationHandleImpl::WillStartRequest(
     bool is_post,
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
     ui::PageTransition transition,
-    bool is_external_protocol) {
+    bool is_external_protocol,
+    const ThrottleChecksFinishedCallback& callback) {
   // Update the navigation parameters.
   is_post_ = is_post;
   sanitized_referrer_ = sanitized_referrer;
@@ -149,6 +186,7 @@ NavigationThrottle::ThrottleCheckResult NavigationHandleImpl::WillStartRequest(
   is_external_protocol_ = is_external_protocol;
 
   state_ = WILL_SEND_REQUEST;
+  complete_callback_ = callback;
 
   // Register the navigation throttles. The ScopedVector returned by
   // GetNavigationThrottles is not assigned to throttles_ directly because it
@@ -163,20 +201,19 @@ NavigationThrottle::ThrottleCheckResult NavigationHandleImpl::WillStartRequest(
   }
 
   // Notify each throttle of the request.
-  for (NavigationThrottle* throttle : throttles_) {
-    NavigationThrottle::ThrottleCheckResult result =
-        throttle->WillStartRequest();
-    if (result == NavigationThrottle::CANCEL_AND_IGNORE)
-      return NavigationThrottle::CANCEL_AND_IGNORE;
-  }
-  return NavigationThrottle::PROCEED;
+  NavigationThrottle::ThrottleCheckResult result = CheckWillStartRequest();
+
+  // If the navigation is not deferred, run the callback.
+  if (result != NavigationThrottle::DEFER)
+    complete_callback_.Run(result);
 }
 
-NavigationThrottle::ThrottleCheckResult
-NavigationHandleImpl::WillRedirectRequest(const GURL& new_url,
-                                          bool new_method_is_post,
-                                          const GURL& new_referrer_url,
-                                          bool new_is_external_protocol) {
+void NavigationHandleImpl::WillRedirectRequest(
+    const GURL& new_url,
+    bool new_method_is_post,
+    const GURL& new_referrer_url,
+    bool new_is_external_protocol,
+    const ThrottleChecksFinishedCallback& callback) {
   // Update the navigation parameters.
   url_ = new_url;
   is_post_ = new_method_is_post;
@@ -184,14 +221,15 @@ NavigationHandleImpl::WillRedirectRequest(const GURL& new_url,
   sanitized_referrer_ = Referrer::SanitizeForRequest(url_, sanitized_referrer_);
   is_external_protocol_ = new_is_external_protocol;
 
-  // Have each throttle be notified of the request.
-  for (NavigationThrottle* throttle : throttles_) {
-    NavigationThrottle::ThrottleCheckResult result =
-        throttle->WillRedirectRequest();
-    if (result == NavigationThrottle::CANCEL_AND_IGNORE)
-      return NavigationThrottle::CANCEL_AND_IGNORE;
-  }
-  return NavigationThrottle::PROCEED;
+  state_ = WILL_REDIRECT_REQUEST;
+  complete_callback_ = callback;
+
+  // Notify each throttle of the request.
+  NavigationThrottle::ThrottleCheckResult result = CheckWillRedirectRequest();
+
+  // If the navigation is not deferred, run the callback.
+  if (result != NavigationThrottle::DEFER)
+    complete_callback_.Run(result);
 }
 
 void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
@@ -214,6 +252,64 @@ void NavigationHandleImpl::DidCommitNavigation(
   is_same_page_ = same_page;
   render_frame_host_ = render_frame_host;
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
+}
+
+NavigationThrottle::ThrottleCheckResult
+NavigationHandleImpl::CheckWillStartRequest() {
+  DCHECK(state_ == WILL_SEND_REQUEST || state_ == DEFERRING_START);
+  DCHECK_IMPLIES(state_ == WILL_SEND_REQUEST, next_index_ == 0);
+  DCHECK_IMPLIES(state_ == DEFERRING_START, next_index_ != 0);
+  for (size_t i = next_index_; i < throttles_.size(); ++i) {
+    NavigationThrottle::ThrottleCheckResult result =
+        throttles_[i]->WillStartRequest();
+    switch (result) {
+      case NavigationThrottle::PROCEED:
+        continue;
+
+      case NavigationThrottle::CANCEL_AND_IGNORE:
+        return result;
+
+      case NavigationThrottle::DEFER:
+        state_ = DEFERRING_START;
+        next_index_ = i + 1;
+        return result;
+
+      default:
+        NOTREACHED();
+    }
+  }
+  next_index_ = 0;
+  state_ = WILL_SEND_REQUEST;
+  return NavigationThrottle::PROCEED;
+}
+
+NavigationThrottle::ThrottleCheckResult
+NavigationHandleImpl::CheckWillRedirectRequest() {
+  DCHECK(state_ == WILL_REDIRECT_REQUEST || state_ == DEFERRING_REDIRECT);
+  DCHECK_IMPLIES(state_ == WILL_REDIRECT_REQUEST, next_index_ == 0);
+  DCHECK_IMPLIES(state_ == DEFERRING_REDIRECT, next_index_ != 0);
+  for (size_t i = next_index_; i < throttles_.size(); ++i) {
+    NavigationThrottle::ThrottleCheckResult result =
+        throttles_[i]->WillRedirectRequest();
+    switch (result) {
+      case NavigationThrottle::PROCEED:
+        continue;
+
+      case NavigationThrottle::CANCEL_AND_IGNORE:
+        return result;
+
+      case NavigationThrottle::DEFER:
+        state_ = DEFERRING_REDIRECT;
+        next_index_ = i + 1;
+        return result;
+
+      default:
+        NOTREACHED();
+    }
+  }
+  next_index_ = 0;
+  state_ = WILL_REDIRECT_REQUEST;
+  return NavigationThrottle::PROCEED;
 }
 
 }  // namespace content
