@@ -85,6 +85,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../components/components.gyp:password_manager_core_browser_test_support',
         '../../components/components.gyp:signin_ios_browser_test_support',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
