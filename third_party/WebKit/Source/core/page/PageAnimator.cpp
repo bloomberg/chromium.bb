@@ -53,7 +53,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
                 // Iterate over a copy, since ScrollableAreas may deregister
                 // themselves during the iteration.
-                Vector<ScrollableArea*> animatingScrollableAreasCopy;
+                WillBeHeapVector<RawPtrWillBeMember<ScrollableArea>> animatingScrollableAreasCopy;
                 copyToVector(*animatingScrollableAreas, animatingScrollableAreasCopy);
                 for (ScrollableArea* scrollableArea : animatingScrollableAreasCopy)
                     scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
