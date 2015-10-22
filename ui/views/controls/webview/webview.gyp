@@ -33,7 +33,6 @@
         # Note: file list duplicated in GN build.
         'unhandled_keyboard_event_handler.cc',
         'unhandled_keyboard_event_handler.h',
-        'unhandled_keyboard_event_handler_linux.cc',
         'unhandled_keyboard_event_handler_mac.mm',
         'unhandled_keyboard_event_handler_win.cc',
         'web_dialog_view.cc',
@@ -41,6 +40,11 @@
         'webview.cc',
         'webview.h',
         'webview_export.h',
+      ],
+      'conditions': [
+        ['OS=="linux" or OS=="android"', {
+          'sources': [ 'unhandled_keyboard_event_handler_default.cc', ],
+        }],
       ],
     },
   ],
