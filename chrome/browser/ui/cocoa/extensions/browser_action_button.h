@@ -73,6 +73,9 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
 - (BOOL)isAnimating;
 
+// Stops any currently running animation. The button's frame is unchanged.
+- (void)stopAnimation;
+
 // Returns the frame the button will occupy once animation is complete, or its
 // current frame if it is not animating.
 - (NSRect)frameAfterAnimation;

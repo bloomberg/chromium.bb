@@ -434,6 +434,16 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   return [moveAnimation_ isAnimating];
 }
 
+- (void)stopAnimation {
+  // Stopping an in-progress NSViewAnimation sets the view's frame to the end
+  // frame of the animation. We want animation to stop in-place, so re-set the
+  // frame to what it is currently.
+  NSRect frame = [self frame];
+  if ([moveAnimation_ isAnimating])
+    [moveAnimation_ stopAnimation];
+  [self setFrame:frame];
+}
+
 - (NSRect)frameAfterAnimation {
   if ([moveAnimation_ isAnimating]) {
     NSRect endFrame = [[[[moveAnimation_ viewAnimations] objectAtIndex:0]

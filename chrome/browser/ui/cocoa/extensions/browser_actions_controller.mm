@@ -910,8 +910,13 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   // the container change).
   if ((currentX == NSMinX(buttonFrame) ||
        currentX == NSWidth([containerView_ frame]) - xLeft) &&
-      NSMinY([button frame]) == NSMinY(buttonFrame))
+      NSMinY([button frame]) == NSMinY(buttonFrame)) {
+    // If the button is in the right place, but animating, we need to stop the
+    // animation.
+    if ([button isAnimating])
+      [button stopAnimation];
     return;
+  }
 
   // It's possible the button is already animating to the right place. Don't
   // call move again, because it will stop the current animation.
