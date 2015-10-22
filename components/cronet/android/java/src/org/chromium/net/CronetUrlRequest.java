@@ -376,7 +376,8 @@ final class CronetUrlRequest implements UrlRequest {
         }
     }
 
-    private UrlResponseInfo prepareResponseInfoOnNetworkThread(int httpStatusCode) {
+    private UrlResponseInfo prepareResponseInfoOnNetworkThread(
+            int httpStatusCode, String[] headers) {
         long urlRequestAdapter;
         synchronized (mUrlRequestAdapterLock) {
             if (mUrlRequestAdapter == 0) {
@@ -388,8 +389,12 @@ final class CronetUrlRequest implements UrlRequest {
             // safe to preserve and use urlRequestAdapter outside the lock.
             urlRequestAdapter = mUrlRequestAdapter;
         }
+
         HeadersList headersList = new HeadersList();
-        nativePopulateResponseHeaders(urlRequestAdapter, headersList);
+        for (int i = 0; i < headers.length; i += 2) {
+            headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
+                    headers[i], headers[i + 1]));
+        }
 
         UrlResponseInfo responseInfo = new UrlResponseInfo(new ArrayList<String>(mUrlChain),
                 httpStatusCode, nativeGetHttpStatusText(urlRequestAdapter), headersList,
@@ -495,14 +500,18 @@ final class CronetUrlRequest implements UrlRequest {
      * @param newLocation Location where request is redirected.
      * @param httpStatusCode from redirect response
      * @param receivedBytesCount count of bytes received for redirect response
+     * @param headers an array of response headers with keys at the even indices
+     *         followed by the corresponding values at the odd indices.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onReceivedRedirect(
-            final String newLocation, int httpStatusCode, long receivedBytesCount) {
-        final UrlResponseInfo responseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode);
+    private void onReceivedRedirect(final String newLocation, int httpStatusCode, String[] headers,
+            long receivedBytesCount) {
+        final UrlResponseInfo responseInfo =
+                prepareResponseInfoOnNetworkThread(httpStatusCode, headers);
         mReceivedBytesCountFromRedirects += receivedBytesCount;
         responseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects);
+
         // Have to do this after creating responseInfo.
         mUrlChain.add(newLocation);
 
@@ -532,8 +541,8 @@ final class CronetUrlRequest implements UrlRequest {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onResponseStarted(int httpStatusCode) {
-        mResponseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode);
+    private void onResponseStarted(int httpStatusCode, String[] headers) {
+        mResponseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode, headers);
         Runnable task = new Runnable() {
             public void run() {
                 synchronized (mUrlRequestAdapterLock) {
@@ -661,16 +670,6 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     /**
-     * Appends header |name| with value |value| to |headersList|.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onAppendResponseHeader(HeadersList headersList,
-            String name, String value) {
-        headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(name, value));
-    }
-
-    /**
      * Called by the native code when request status is fetched from the
      * native stack.
      */
@@ -712,9 +711,6 @@ final class CronetUrlRequest implements UrlRequest {
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native void nativeDestroy(long nativePtr, boolean sendOnCanceled);
-
-    @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native void nativePopulateResponseHeaders(long nativePtr, HeadersList headers);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native String nativeGetHttpStatusText(long nativePtr);

@@ -5,6 +5,7 @@
 #include "cronet_url_request_adapter.h"
 
 #include <limits>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -209,27 +210,6 @@ void CronetURLRequestAdapter::Destroy(JNIEnv* env,
                             base::Unretained(this), jsend_on_canceled));
 }
 
-void CronetURLRequestAdapter::PopulateResponseHeaders(JNIEnv* env,
-                                                      jobject jurl_request,
-                                                      jobject jheaders_list) {
-  DCHECK(context_->IsOnNetworkThread());
-  const net::HttpResponseHeaders* headers = url_request_->response_headers();
-  if (headers == nullptr)
-    return;
-
-  void* iter = nullptr;
-  std::string header_name;
-  std::string header_value;
-  while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {
-    base::android::ScopedJavaLocalRef<jstring> name =
-        ConvertUTF8ToJavaString(env, header_name);
-    base::android::ScopedJavaLocalRef<jstring> value =
-        ConvertUTF8ToJavaString(env, header_value);
-    Java_CronetUrlRequest_onAppendResponseHeader(
-        env, jurl_request, jheaders_list, name.obj(), value.obj());
-  }
-}
-
 base::android::ScopedJavaLocalRef<jstring>
 CronetURLRequestAdapter::GetHttpStatusText(JNIEnv* env, jobject jcaller) const {
   DCHECK(context_->IsOnNetworkThread());
@@ -268,10 +248,12 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
   DCHECK(context_->IsOnNetworkThread());
   DCHECK(request->status().is_success());
   JNIEnv* env = base::android::AttachCurrentThread();
+
   cronet::Java_CronetUrlRequest_onReceivedRedirect(
       env, owner_.obj(),
       ConvertUTF8ToJavaString(env, redirect_info.new_url.spec()).obj(),
-      redirect_info.status_code, request->GetTotalReceivedBytes());
+      redirect_info.status_code, GetResponseHeaders(env).obj(),
+      request->GetTotalReceivedBytes());
   *defer_redirect = true;
 }
 
@@ -294,8 +276,9 @@ void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
   if (MaybeReportError(request))
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  cronet::Java_CronetUrlRequest_onResponseStarted(env, owner_.obj(),
-                                                  request->GetResponseCode());
+  cronet::Java_CronetUrlRequest_onResponseStarted(
+      env, owner_.obj(), request->GetResponseCode(),
+      GetResponseHeaders(env).obj());
 }
 
 void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
@@ -342,6 +325,25 @@ void CronetURLRequestAdapter::GetStatusOnNetworkThread(
   cronet::Java_CronetUrlRequest_onStatus(env, owner_.obj(),
                                          status_listener_ref.obj(),
                                          url_request_->GetLoadState().state);
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray>
+CronetURLRequestAdapter::GetResponseHeaders(JNIEnv* env) {
+  DCHECK(context_->IsOnNetworkThread());
+
+  std::vector<std::string> response_headers;
+  const net::HttpResponseHeaders* headers = url_request_->response_headers();
+  // Returns an empty array if |headers| is nullptr.
+  if (headers != nullptr) {
+    void* iter = nullptr;
+    std::string header_name;
+    std::string header_value;
+    while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {
+      response_headers.push_back(header_name);
+      response_headers.push_back(header_value);
+    }
+  }
+  return base::android::ToJavaArrayOfStrings(env, response_headers);
 }
 
 void CronetURLRequestAdapter::FollowDeferredRedirectOnNetworkThread() {
