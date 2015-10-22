@@ -34,9 +34,11 @@
 
 namespace blink {
 
-// A Position iterator with constant-time
+// A Position iterator with nearly constant-time
 // increment, decrement, and several predicates on the Position it is at.
-// Conversion to/from Position is O(n) in the offset.
+// Conversion from Position is O(n) in the depth.
+// Conversion to Position is O(1).
+// PositionIteratorAlgorithm must be used without DOM tree change.
 template <typename Strategy>
 class PositionIteratorAlgorithm {
     STACK_ALLOCATED();
@@ -49,7 +51,14 @@ public:
     PositionTemplate<Strategy> deprecatedComputePosition() const;
     PositionTemplate<Strategy> computePosition() const;
 
+    // increment() takes O(1) other than incrementing to a element that has
+    // new parent.
+    // In the later case, it takes time of O(<number of childlen>) but the case
+    // happens at most depth-of-the-tree times over whole tree traversal.
     void increment();
+    // decrement() takes O(1) other than decrement into new node that has
+    // childlen.
+    // In the later case, it takes time of O(<number of childlen>).
     void decrement();
 
     Node* node() const { return m_anchorNode; }
@@ -63,9 +72,17 @@ public:
 private:
     PositionIteratorAlgorithm(Node* anchorNode, int offsetInAnchorNode);
 
+    bool isValid() const { return !m_anchorNode || m_domTreeVersion == m_anchorNode->document().domTreeVersion(); }
+
     RawPtrWillBeMember<Node> m_anchorNode;
     RawPtrWillBeMember<Node> m_nodeAfterPositionInAnchor; // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
     int m_offsetInAnchor;
+    size_t m_depthToAnchorNode;
+    // If |m_nodeAfterPositionInAnchor| is not null,
+    // m_offsetsInAnchorNode[m_depthToAnchorNode] ==
+    //    Strategy::index(m_nodeAfterPositionInAnchor).
+    Vector<int> m_offsetsInAnchorNode;
+    uint64_t m_domTreeVersion;
 };
 
 extern template class PositionIteratorAlgorithm<EditingStrategy>;
