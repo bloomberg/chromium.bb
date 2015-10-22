@@ -153,10 +153,10 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
         return true;
 
     // All text related properties influence layout.
-    if (svg_inherited_flags._textAnchor != other->svg_inherited_flags._textAnchor
+    if (svg_inherited_flags.textAnchor != other->svg_inherited_flags.textAnchor
         || svg_inherited_flags.dominantBaseline != other->svg_inherited_flags.dominantBaseline
-        || svg_noninherited_flags.f._alignmentBaseline != other->svg_noninherited_flags.f._alignmentBaseline
-        || svg_noninherited_flags.f._baselineShift != other->svg_noninherited_flags.f._baselineShift)
+        || svg_noninherited_flags.f.alignmentBaseline != other->svg_noninherited_flags.f.alignmentBaseline
+        || svg_noninherited_flags.f.baselineShift != other->svg_noninherited_flags.f.baselineShift)
         return true;
 
     // Text related properties influence layout.
@@ -164,12 +164,12 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(const SVGComputedStyl
         return true;
 
     // These properties affect the cached stroke bounding box rects.
-    if (svg_inherited_flags._capStyle != other->svg_inherited_flags._capStyle
-        || svg_inherited_flags._joinStyle != other->svg_inherited_flags._joinStyle)
+    if (svg_inherited_flags.capStyle != other->svg_inherited_flags.capStyle
+        || svg_inherited_flags.joinStyle != other->svg_inherited_flags.joinStyle)
         return true;
 
     // vector-effect changes require a re-layout.
-    if (svg_noninherited_flags.f._vectorEffect != other->svg_noninherited_flags.f._vectorEffect)
+    if (svg_noninherited_flags.f.vectorEffect != other->svg_noninherited_flags.f.vectorEffect)
         return true;
 
     // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
@@ -229,12 +229,12 @@ bool SVGComputedStyle::diffNeedsPaintInvalidation(const SVGComputedStyle* other)
         return true;
 
     // Changes of these flags only cause paint invalidations.
-    if (svg_inherited_flags._colorRendering != other->svg_inherited_flags._colorRendering
-        || svg_inherited_flags._shapeRendering != other->svg_inherited_flags._shapeRendering
-        || svg_inherited_flags._clipRule != other->svg_inherited_flags._clipRule
-        || svg_inherited_flags._fillRule != other->svg_inherited_flags._fillRule
-        || svg_inherited_flags._colorInterpolation != other->svg_inherited_flags._colorInterpolation
-        || svg_inherited_flags._colorInterpolationFilters != other->svg_inherited_flags._colorInterpolationFilters
+    if (svg_inherited_flags.colorRendering != other->svg_inherited_flags.colorRendering
+        || svg_inherited_flags.shapeRendering != other->svg_inherited_flags.shapeRendering
+        || svg_inherited_flags.clipRule != other->svg_inherited_flags.clipRule
+        || svg_inherited_flags.fillRule != other->svg_inherited_flags.fillRule
+        || svg_inherited_flags.colorInterpolation != other->svg_inherited_flags.colorInterpolation
+        || svg_inherited_flags.colorInterpolationFilters != other->svg_inherited_flags.colorInterpolationFilters
         || svg_inherited_flags.paintOrder != other->svg_inherited_flags.paintOrder)
         return true;
 
