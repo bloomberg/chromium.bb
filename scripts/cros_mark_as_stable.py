@@ -79,12 +79,8 @@ def CleanStalePackages(srcroot, boards, package_atoms):
 # TODO(build): This code needs to be gutted and rebased to cros_build_lib.
 def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
   """Returns true if there are local commits."""
-  current_branch = git.GetCurrentBranch(cwd)
-
-  if current_branch != stable_branch:
-    return False
   output = git.RunGit(
-      cwd, ['rev-parse', 'HEAD', tracking_branch]).output.split()
+      cwd, ['rev-parse', stable_branch, tracking_branch]).output.split()
   return output[0] != output[1]
 
 
@@ -115,7 +111,9 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   # For the commit queue, our local branch may contain commits that were
   # just tested and pushed during the CommitQueueCompletion stage. Sync
   # and rebase our local branch on top of the remote commits.
-  remote_ref = git.GetTrackingBranch(cwd, for_push=True)
+  remote_ref = git.GetTrackingBranch(cwd,
+                                     branch=stable_branch,
+                                     for_push=True)
   git.SyncPushBranch(cwd, remote_ref.remote, remote_ref.ref)
 
   # Check whether any local changes remain after the sync.

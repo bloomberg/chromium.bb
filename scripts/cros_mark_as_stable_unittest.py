@@ -72,14 +72,12 @@ class NonClassTests(cros_test_lib.MockTestCase):
       git_mock.AddCmdResult(['commit', '-m', fake_description])
       git_mock.AddCmdResult(['config', 'push.default', 'tracking'])
 
-    try:
-      cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
-                                     False, '.')
-    finally:
-      sync_mock.assert_called_with('.', 'gerrit', 'refs/remotes/gerrit/master')
-      if not bad_cls:
-        push_mock.assert_called_with('merge_branch', '.', dryrun=False)
-        create_mock.assert_called_with('merge_branch', '.')
+    cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
+                                   False, '.')
+    sync_mock.assert_called_with('.', 'gerrit', 'refs/remotes/gerrit/master')
+    if not bad_cls:
+      push_mock.assert_called_with('merge_branch', '.', dryrun=False)
+      create_mock.assert_called_with('merge_branch', '.')
 
   def testPushChange(self):
     """Verify pushing changes works."""
