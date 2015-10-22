@@ -33,7 +33,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
 
  private:
   bool ShouldAddToScriptCache(const GURL& url);
-  bool ShouldReadFromScriptCache(const GURL& url, int64* response_id_out);
+  bool ShouldReadFromScriptCache(const GURL& url, int64* resource_id_out);
 
   scoped_refptr<ServiceWorkerVersion> version_;
 

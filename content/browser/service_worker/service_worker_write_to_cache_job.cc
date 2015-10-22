@@ -58,14 +58,14 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerVersion* version,
     int extra_load_flags,
-    int64 response_id,
-    int64 incumbent_response_id)
+    int64 resource_id,
+    int64 incumbent_resource_id)
     : net::URLRequestJob(request, network_delegate),
       resource_type_(resource_type),
       context_(context),
       url_(request->url()),
-      response_id_(response_id),
-      incumbent_response_id_(incumbent_response_id),
+      resource_id_(resource_id),
+      incumbent_resource_id_(incumbent_resource_id),
       version_(version),
       has_been_killed_(false),
       did_notify_started_(false),
@@ -96,8 +96,7 @@ void ServiceWorkerWriteToCacheJob::Start() {
                  base::Unretained(this)),
       base::Bind(&ServiceWorkerWriteToCacheJob::CreateCacheResponseWriter,
                  base::Unretained(this))));
-  version_->script_cache_map()->NotifyStartedCaching(
-      url_, response_id_);
+  version_->script_cache_map()->NotifyStartedCaching(url_, resource_id_);
   did_notify_started_ = true;
   StartNetRequest();
 }
@@ -495,16 +494,16 @@ void ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
 
 scoped_ptr<ServiceWorkerResponseReader>
 ServiceWorkerWriteToCacheJob::CreateCacheResponseReader() {
-  if (incumbent_response_id_ == kInvalidServiceWorkerResponseId ||
+  if (incumbent_resource_id_ == kInvalidServiceWorkerResourceId ||
       version_->skip_script_comparison()) {
     return nullptr;
   }
-  return context_->storage()->CreateResponseReader(incumbent_response_id_);
+  return context_->storage()->CreateResponseReader(incumbent_resource_id_);
 }
 
 scoped_ptr<ServiceWorkerResponseWriter>
 ServiceWorkerWriteToCacheJob::CreateCacheResponseWriter() {
-  return context_->storage()->CreateResponseWriter(response_id_);
+  return context_->storage()->CreateResponseWriter(resource_id_);
 }
 
 }  // namespace content

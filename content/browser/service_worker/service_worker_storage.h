@@ -142,11 +142,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
                           const StatusCallback& callback);
 
   scoped_ptr<ServiceWorkerResponseReader> CreateResponseReader(
-      int64 response_id);
+      int64 resource_id);
   scoped_ptr<ServiceWorkerResponseWriter> CreateResponseWriter(
-      int64 response_id);
+      int64 resource_id);
   scoped_ptr<ServiceWorkerResponseMetadataWriter> CreateResponseMetadataWriter(
-      int64 response_id);
+      int64 resource_id);
 
   // Adds |resource_id| to the set of resources that are in the disk cache
   // but not yet stored with a registration.

@@ -519,25 +519,25 @@ void ServiceWorkerStorage::DeleteRegistration(
 }
 
 scoped_ptr<ServiceWorkerResponseReader>
-ServiceWorkerStorage::CreateResponseReader(int64 response_id) {
+ServiceWorkerStorage::CreateResponseReader(int64 resource_id) {
   return make_scoped_ptr(
-      new ServiceWorkerResponseReader(response_id, disk_cache()));
+      new ServiceWorkerResponseReader(resource_id, disk_cache()));
 }
 
 scoped_ptr<ServiceWorkerResponseWriter>
-ServiceWorkerStorage::CreateResponseWriter(int64 response_id) {
+ServiceWorkerStorage::CreateResponseWriter(int64 resource_id) {
   return make_scoped_ptr(
-      new ServiceWorkerResponseWriter(response_id, disk_cache()));
+      new ServiceWorkerResponseWriter(resource_id, disk_cache()));
 }
 
 scoped_ptr<ServiceWorkerResponseMetadataWriter>
-ServiceWorkerStorage::CreateResponseMetadataWriter(int64 response_id) {
+ServiceWorkerStorage::CreateResponseMetadataWriter(int64 resource_id) {
   return make_scoped_ptr(
-      new ServiceWorkerResponseMetadataWriter(response_id, disk_cache()));
+      new ServiceWorkerResponseMetadataWriter(resource_id, disk_cache()));
 }
 
 void ServiceWorkerStorage::StoreUncommittedResourceId(int64 resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResponseId, resource_id);
+  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id);
   DCHECK_EQ(INITIALIZED, state_);
 
   if (!has_checked_for_stale_resources_)
@@ -553,7 +553,7 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(int64 resource_id) {
 }
 
 void ServiceWorkerStorage::DoomUncommittedResource(int64 resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResponseId, resource_id);
+  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id);
   DoomUncommittedResources(std::set<int64>(&resource_id, &resource_id + 1));
 }
 

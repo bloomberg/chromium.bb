@@ -28,12 +28,12 @@ ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
     ResourceType resource_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     const scoped_refptr<ServiceWorkerVersion>& version,
-    int64 response_id)
+    int64 resource_id)
     : net::URLRequestJob(request, network_delegate),
       resource_type_(resource_type),
       context_(context),
       version_(version),
-      response_id_(response_id),
+      resource_id_(resource_id),
       has_been_killed_(false),
       weak_factory_(this) {}
 
@@ -55,7 +55,7 @@ void ServiceWorkerReadFromCacheJob::Start() {
   // we'll continue when thats done.
   if (is_main_script())
     version_->embedded_worker()->OnScriptReadStarted();
-  reader_ = context_->storage()->CreateResponseReader(response_id_);
+  reader_ = context_->storage()->CreateResponseReader(resource_id_);
   http_info_io_buffer_ = new HttpResponseInfoIOBuffer;
   reader_->ReadInfo(
       http_info_io_buffer_.get(),

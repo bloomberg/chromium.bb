@@ -33,7 +33,7 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
       ResourceType resource_type,
       base::WeakPtr<ServiceWorkerContextCore> context,
       const scoped_refptr<ServiceWorkerVersion>& version,
-      int64 response_id);
+      int64 resource_id);
 
  private:
   ~ServiceWorkerReadFromCacheJob() override;
@@ -66,7 +66,7 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
   ResourceType resource_type_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  int64 response_id_;
+  int64 resource_id_;
   scoped_ptr<ServiceWorkerResponseReader> reader_;
   scoped_refptr<HttpResponseInfoIOBuffer> http_info_io_buffer_;
   scoped_ptr<net::HttpResponseInfo> http_info_;

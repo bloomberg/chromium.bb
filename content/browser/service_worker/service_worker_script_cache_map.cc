@@ -27,20 +27,20 @@ ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
 int64 ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   ResourceMap::const_iterator found = resource_map_.find(url);
   if (found == resource_map_.end())
-    return kInvalidServiceWorkerResponseId;
+    return kInvalidServiceWorkerResourceId;
   return found->second.resource_id;
 }
 
 int64 ServiceWorkerScriptCacheMap::LookupResourceSize(const GURL& url) {
   ResourceMap::const_iterator found = resource_map_.find(url);
   if (found == resource_map_.end())
-    return kInvalidServiceWorkerResponseId;
+    return kInvalidServiceWorkerResourceId;
   return found->second.size_bytes;
 }
 
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
     const GURL& url, int64 resource_id) {
-  DCHECK_EQ(kInvalidServiceWorkerResponseId, LookupResourceId(url));
+  DCHECK_EQ(kInvalidServiceWorkerResourceId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING)
       << owner_->status();
@@ -56,7 +56,7 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     int64 size_bytes,
     const net::URLRequestStatus& status,
     const std::string& status_message) {
-  DCHECK_NE(kInvalidServiceWorkerResponseId, LookupResourceId(url));
+  DCHECK_NE(kInvalidServiceWorkerResourceId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING ||
          owner_->status() == ServiceWorkerVersion::REDUNDANT);
@@ -100,7 +100,7 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
     const net::CompletionCallback& callback) {
   ResourceMap::iterator found = resource_map_.find(url);
   if (found == resource_map_.end() ||
-      found->second.resource_id == kInvalidServiceWorkerResponseId) {
+      found->second.resource_id == kInvalidServiceWorkerResourceId) {
     callback.Run(net::ERR_FILE_NOT_FOUND);
     return;
   }

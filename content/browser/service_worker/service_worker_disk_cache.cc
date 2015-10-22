@@ -23,19 +23,18 @@ ServiceWorkerDiskCache::ServiceWorkerDiskCache(bool use_simple_cache)
 }
 
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
-    int64 response_id, ServiceWorkerDiskCache* disk_cache)
-    : AppCacheResponseReader(response_id, 0, disk_cache) {
-}
+    int64 resource_id,
+    ServiceWorkerDiskCache* disk_cache)
+    : AppCacheResponseReader(resource_id, 0, disk_cache) {}
 
 ServiceWorkerResponseWriter::ServiceWorkerResponseWriter(
-    int64 response_id, ServiceWorkerDiskCache* disk_cache)
-    : AppCacheResponseWriter(response_id, 0, disk_cache) {
-}
+    int64 resource_id,
+    ServiceWorkerDiskCache* disk_cache)
+    : AppCacheResponseWriter(resource_id, 0, disk_cache) {}
 
 ServiceWorkerResponseMetadataWriter::ServiceWorkerResponseMetadataWriter(
-    int64 response_id,
+    int64 resource_id,
     ServiceWorkerDiskCache* disk_cache)
-    : AppCacheResponseMetadataWriter(response_id, 0, disk_cache) {
-}
+    : AppCacheResponseMetadataWriter(resource_id, 0, disk_cache) {}
 
 }  // namespace content

@@ -35,9 +35,8 @@ class CONTENT_EXPORT ServiceWorkerResponseReader
   friend class ServiceWorkerDiskCacheMigrator;
   friend class ServiceWorkerDiskCacheMigratorTest;
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseReader(
-      int64 response_id,
-      ServiceWorkerDiskCache* disk_cache);
+  ServiceWorkerResponseReader(int64 resource_id,
+                              ServiceWorkerDiskCache* disk_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseWriter
@@ -47,9 +46,8 @@ class CONTENT_EXPORT ServiceWorkerResponseWriter
   friend class ServiceWorkerDiskCacheMigrator;
   friend class ServiceWorkerDiskCacheMigratorTest;
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseWriter(
-      int64 response_id,
-      ServiceWorkerDiskCache* disk_cache);
+  ServiceWorkerResponseWriter(int64 resource_id,
+                              ServiceWorkerDiskCache* disk_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
@@ -59,7 +57,7 @@ class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
   friend class ServiceWorkerDiskCacheMigrator;
   friend class ServiceWorkerDiskCacheMigratorTest;
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseMetadataWriter(int64 response_id,
+  ServiceWorkerResponseMetadataWriter(int64 resource_id,
                                       ServiceWorkerDiskCache* disk_cache);
 };
 

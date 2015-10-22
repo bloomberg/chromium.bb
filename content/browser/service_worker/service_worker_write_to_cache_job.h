@@ -49,8 +49,8 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
                                base::WeakPtr<ServiceWorkerContextCore> context,
                                ServiceWorkerVersion* version,
                                int extra_load_flags,
-                               int64 response_id,
-                               int64 incumbent_response_id);
+                               int64 resource_id,
+                               int64 incumbent_resource_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
@@ -130,8 +130,8 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   int io_buffer_bytes_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   GURL url_;
-  int64 response_id_;
-  int64 incumbent_response_id_;
+  int64 resource_id_;
+  int64 incumbent_resource_id_;
   scoped_ptr<net::URLRequest> net_request_;
   scoped_ptr<net::HttpResponseInfo> http_info_;
   scoped_ptr<ServiceWorkerResponseWriter> writer_;

@@ -50,7 +50,6 @@ static const int kInvalidServiceWorkerProviderId = -1;
 static const int64 kInvalidServiceWorkerRegistrationId = -1;
 static const int64 kInvalidServiceWorkerVersionId = -1;
 static const int64 kInvalidServiceWorkerResourceId = -1;
-static const int64 kInvalidServiceWorkerResponseId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
 static const int kInvalidServiceWorkerClientId = 0;
 

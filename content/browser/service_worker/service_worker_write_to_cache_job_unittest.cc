@@ -350,7 +350,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
     int incumbent_resource_id =
         version_->script_cache_map()->LookupResourceId(script_url_);
-    EXPECT_NE(kInvalidServiceWorkerResponseId, incumbent_resource_id);
+    EXPECT_NE(kInvalidServiceWorkerResourceId, incumbent_resource_id);
 
     registration_->SetActiveVersion(version_);
 
@@ -436,7 +436,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Normal) {
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
-  EXPECT_NE(kInvalidServiceWorkerResponseId,
+  EXPECT_NE(kInvalidServiceWorkerResourceId,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
@@ -447,7 +447,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, InvalidMimeType) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
   EXPECT_EQ(net::ERR_INSECURE_RESPONSE, request_->status().error());
-  EXPECT_EQ(kInvalidServiceWorkerResponseId,
+  EXPECT_EQ(kInvalidServiceWorkerResourceId,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
@@ -458,7 +458,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, SSLCertificateError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
   EXPECT_EQ(net::ERR_INSECURE_RESPONSE, request_->status().error());
-  EXPECT_EQ(kInvalidServiceWorkerResponseId,
+  EXPECT_EQ(kInvalidServiceWorkerResourceId,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
@@ -469,7 +469,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, CertStatusError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
   EXPECT_EQ(net::ERR_INSECURE_RESPONSE, request_->status().error());
-  EXPECT_EQ(kInvalidServiceWorkerResponseId,
+  EXPECT_EQ(kInvalidServiceWorkerResourceId,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
@@ -477,7 +477,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
   scoped_refptr<ServiceWorkerVersion> version = UpdateScript(response);
-  EXPECT_EQ(kInvalidServiceWorkerResponseId, GetResourceId(version.get()));
+  EXPECT_EQ(kInvalidServiceWorkerResourceId, GetResourceId(version.get()));
 }
 
 TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameSizeScript) {
@@ -584,7 +584,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_EmptyScript) {
 
   // Update from empty to empty.
   version = UpdateScript(std::string());
-  EXPECT_EQ(kInvalidServiceWorkerResponseId, GetResourceId(version.get()));
+  EXPECT_EQ(kInvalidServiceWorkerResourceId, GetResourceId(version.get()));
 }
 
 TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
@@ -594,7 +594,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
   EXPECT_EQ(net::ERR_FAILED, request_->status().error());
-  EXPECT_EQ(kInvalidServiceWorkerResponseId,
+  EXPECT_EQ(kInvalidServiceWorkerResourceId,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
