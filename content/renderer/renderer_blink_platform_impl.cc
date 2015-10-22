@@ -53,6 +53,7 @@
 #include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
+#include "content/renderer/device_sensors/device_orientation_absolute_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
@@ -1169,6 +1170,8 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
       return new DeviceMotionEventPump(thread);
     case blink::WebPlatformEventTypeDeviceOrientation:
       return new DeviceOrientationEventPump(thread);
+    case blink::WebPlatformEventTypeDeviceOrientationAbsolute:
+      return new DeviceOrientationAbsoluteEventPump(thread);
     case blink::WebPlatformEventTypeDeviceLight:
       return new DeviceLightEventPump(thread);
     case blink::WebPlatformEventTypeGamepad:
@@ -1227,6 +1230,7 @@ void RendererBlinkPlatformImpl::startListening(
       RenderThreadImpl::current()->layout_test_mode() &&
       (type == blink::WebPlatformEventTypeDeviceMotion ||
        type == blink::WebPlatformEventTypeDeviceOrientation ||
+       type == blink::WebPlatformEventTypeDeviceOrientationAbsolute ||
        type == blink::WebPlatformEventTypeDeviceLight)) {
     SendFakeDeviceEventDataForTesting(type);
   }
@@ -1245,6 +1249,7 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
       data = &g_test_device_motion_data.Get();
     break;
   case blink::WebPlatformEventTypeDeviceOrientation:
+  case blink::WebPlatformEventTypeDeviceOrientationAbsolute:
     if (!(g_test_device_orientation_data == 0))
       data = &g_test_device_orientation_data.Get();
     break;

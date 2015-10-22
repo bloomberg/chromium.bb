@@ -51,6 +51,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/device_sensors/device_light_message_filter.h"
 #include "content/browser/device_sensors/device_motion_message_filter.h"
+#include "content/browser/device_sensors/device_orientation_absolute_message_filter.h"
 #include "content/browser/device_sensors/device_orientation_message_filter.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
@@ -929,6 +930,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new DeviceLightMessageFilter());
   AddFilter(new DeviceMotionMessageFilter());
   AddFilter(new DeviceOrientationMessageFilter());
+  AddFilter(new DeviceOrientationAbsoluteMessageFilter());
   AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   AddFilter(new HistogramMessageFilter());
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))

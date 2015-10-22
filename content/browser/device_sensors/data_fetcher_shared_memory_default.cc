@@ -46,6 +46,7 @@ namespace content {
 DataFetcherSharedMemory::DataFetcherSharedMemory()
     : motion_buffer_(nullptr),
       orientation_buffer_(nullptr),
+      orientation_absolute_buffer_(nullptr),
       light_buffer_(nullptr) {
 }
 
@@ -66,6 +67,10 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       UMA_HISTOGRAM_BOOLEAN("InertialSensor.OrientationDefaultAvailable",
           false);
       return SetOrientationBuffer(orientation_buffer_, true);
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
+      orientation_absolute_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      return SetOrientationBuffer(orientation_absolute_buffer_, true);
     case CONSUMER_TYPE_LIGHT:
       light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
       return SetLightBuffer(light_buffer_,
@@ -82,6 +87,8 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       return SetMotionBuffer(motion_buffer_, false);
     case CONSUMER_TYPE_ORIENTATION:
       return SetOrientationBuffer(orientation_buffer_, false);
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
+      return SetOrientationBuffer(orientation_absolute_buffer_, false);
     case CONSUMER_TYPE_LIGHT:
       return SetLightBuffer(light_buffer_, -1);
     default:
