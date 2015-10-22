@@ -92,7 +92,7 @@ static_library("gcm_driver") {
 }
 
 # GYP version: components/gcm_driver.gypi:gcm_driver_test_support
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "fake_gcm_app_handler.cc",
@@ -105,8 +105,10 @@ static_library("test_support") {
     "fake_gcm_driver.h",
   ]
 
-  deps = [
+  public_deps = [
     ":gcm_driver",
+  ]
+  deps = [
     "//base",
     "//google_apis/gcm:test_support",
     "//testing/gtest",

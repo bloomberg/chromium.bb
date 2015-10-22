@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "content_settings_binary_value_map.cc",
     "content_settings_binary_value_map.h",
@@ -57,6 +57,7 @@ static_library("browser") {
     "//base",
     "//base:prefs",
     "//components/content_settings/core/common",
+    "//components/keyed_service/core",
     "//components/pref_registry:pref_registry",
     "//components/url_formatter",
     "//net",
@@ -92,8 +93,12 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
+    "//base:prefs",
+    "//base/test:test_support",
     "//components/content_settings/core/common",
     "//components/content_settings/core/test:test_support",
+    "//components/plugins/common",
+    "//components/pref_registry:test_support",
     "//testing/gtest",
     "//url",
   ]

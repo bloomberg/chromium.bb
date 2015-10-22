@@ -102,17 +102,20 @@ source_set("drive") {
     "sync_client.h",
   ]
   deps = [
-    "//base:base",
+    "//base",
+    "//base:i18n",
+    "//base:prefs",
     "//components/invalidation/public",
+    "//components/keyed_service/core",
 
     # TODO(lukasza): Remove this dependency (see DEPS file for more info).
-    "//content/public/browser:browser",
+    "//content/public/browser",
 
     "//google_apis:google_apis",
     "//net:net",
-    "//third_party/cacheinvalidation:cacheinvalidation",
-    "//third_party/leveldatabase:leveldatabase",
-    "//third_party/re2:re2",
+    "//third_party/cacheinvalidation",
+    "//third_party/leveldatabase",
+    "//third_party/re2",
   ]
   public_deps = [
     ":proto",

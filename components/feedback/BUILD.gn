@@ -28,9 +28,11 @@ source_set("feedback") {
 
   deps = [
     "//base",
-    "//components/keyed_service/core:core",
+    "//components/keyed_service/core",
+    "//components/keyed_service/content",
     "//components/feedback/proto",
     "//components/variations/net",
+    "//content/public/browser",
     "//content/public/common",
     "//net",
     "//third_party/zlib:zip",

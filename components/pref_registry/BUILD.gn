@@ -23,8 +23,11 @@ source_set("test_support") {
     "testing_pref_service_syncable.h",
   ]
 
-  deps = [
+  public_deps = [
     ":pref_registry",
+  ]
+
+  deps = [
     "//base",
     "//base:prefs",
     "//base:prefs_test_support",

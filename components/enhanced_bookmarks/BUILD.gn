@@ -42,15 +42,22 @@ source_set("enhanced_bookmarks") {
 
   deps = [
     "//base",
+    "//base:prefs",
     "//components/bookmarks/browser",
     "//components/enhanced_bookmarks/proto",
+    "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/pref_registry",
     "//components/signin/core/browser",
     "//components/sync_driver",
     "//components/variations",
+    "//google_apis",
+    "//net",
     "//skia",
     "//sql",
+    "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/geometry",
     "//url",
   ]
 

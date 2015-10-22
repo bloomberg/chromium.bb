@@ -19,6 +19,7 @@ source_set("external_video_surface") {
       ":jni_headers",
       "//base",
       "//content/public/browser",
+      "//ui/gfx/geometry",
     ]
   }
 }

@@ -40,8 +40,11 @@ source_set("copresence") {
     "//base",
     "//components/audio_modem",
     "//components/copresence/proto",
+    "//components/gcm_driver",
     "//content",
+    "//google_apis",
     "//media",
+    "//media:shared_memory_support",
     "//net",
   ]
 }
@@ -72,8 +75,12 @@ source_set("unit_tests") {
   ]
   deps = [
     ":test_support",
+    "//base",
+    "//base/test:test_support",
     "//components/audio_modem:test_support",
     "//components/copresence/proto",
+    "//components/gcm_driver:test_support",
+    "//net:test_support",
     "//testing/gtest",
     "//testing/gmock",
   ]

@@ -12,4 +12,9 @@ source_set("flags_ui") {
     "pref_service_flags_storage.cc",
     "pref_service_flags_storage.h",
   ]
+
+  deps = [
+    "//base",
+    "//base:prefs",
+  ]
 }
