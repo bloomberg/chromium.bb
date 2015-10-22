@@ -546,14 +546,25 @@
             '../third_party/icu/icu.gyp:icudata',
             '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
           ],
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)/assets',
-            'files': [
+          'variables': {
+            'dest_path': '<(PRODUCT_DIR)/assets',
+            'src_files': [
               '<(PRODUCT_DIR)/icudtl.dat',
+            ],
+            'renaming_sources': [
               '<(PRODUCT_DIR)/natives_blob.bin',
               '<(PRODUCT_DIR)/snapshot_blob.bin',
             ],
-          }],
+            'renaming_destinations': [
+              'natives_blob_<(arch_suffix).bin',
+              'snapshot_blob_<(arch_suffix).bin',
+            ],
+            'clear': 1,
+          },
+          'includes': [
+            '../build/android/copy_ex.gypi',
+            '../build/android/v8_external_startup_data_arch_suffix.gypi',
+          ],
         },
         {
           'target_name': 'libcast_shell_android',

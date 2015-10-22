@@ -22,3 +22,21 @@ v8_use_external_startup_data = !(is_win || is_ios)
 v8_extra_library_files = []
 v8_experimental_extra_library_files =
     [ "../third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js" ]
+
+if (is_android) {
+  v8_external_startup_data_renaming_sources = [
+    "$root_build_dir/natives_blob.bin",
+    "$root_build_dir/snapshot_blob.bin",
+  ]
+  if (current_cpu == "arm" || current_cpu == "x86" || current_cpu == "mipsel") {
+    v8_external_startup_data_renaming_destinations = [
+      "natives_blob_32.bin",
+      "snapshot_blob_32.bin",
+    ]
+  } else {
+    v8_external_startup_data_renaming_destinations = [
+      "natives_blob_64.bin",
+      "snapshot_blob_64.bin",
+    ]
+  }
+}
