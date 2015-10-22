@@ -45,6 +45,9 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
 class MemoryHealthPlan(_MemoryInfra):
   """Timeline based benchmark for the Memory Health Plan."""
 
+  _PREFIX_WHITELIST = ('memory_allocator_', 'memory_android_memtrack_',
+                       'memory_mmaps_')
+
   page_set = page_sets.MemoryHealthStory
 
   @classmethod
@@ -54,8 +57,7 @@ class MemoryHealthPlan(_MemoryInfra):
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     return (value.tir_label in ['foreground', 'background']
-            and value.name.startswith('memory_')
-            and not 'allocated_objects_' in value.name)
+            and any(value.name.startswith(p) for p in cls._PREFIX_WHITELIST))
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
