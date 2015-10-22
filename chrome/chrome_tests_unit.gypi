@@ -997,7 +997,6 @@
       'browser/safe_browsing/local_database_manager_unittest.cc',
       'browser/safe_browsing/local_two_phase_testserver.cc',
       'browser/safe_browsing/path_sanitizer_unittest.cc',
-      'browser/safe_browsing/prefix_set_unittest.cc',
       'browser/safe_browsing/protocol_manager_unittest.cc',
       'browser/safe_browsing/protocol_parser_unittest.cc',
       'browser/safe_browsing/safe_browsing_database_unittest.cc',

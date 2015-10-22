@@ -121,6 +121,7 @@
         'navigation_interception.gypi',
         'page_load_metrics.gypi',
         'power.gypi',
+        'safe_browsing_db.gypi',
         'safe_json.gypi',
         'visitedlink.gypi',
         'web_cache.gypi',

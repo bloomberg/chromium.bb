@@ -1568,6 +1568,7 @@ if (!is_android) {
         "//components/data_reduction_proxy/core/browser:test_support",
         "//components/data_use_measurement/core",
         "//components/metrics/proto",
+        "//components/safe_browsing_db",
         "//components/safe_json:test_support",
         "//components/webdata_services:test_support",
         "//components/strings",
