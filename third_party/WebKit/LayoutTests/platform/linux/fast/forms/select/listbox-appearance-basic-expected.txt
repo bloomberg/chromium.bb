@@ -51,26 +51,26 @@ layer at (12,12) size 38x70 clip at (13,13) size 21x68
         text run at (2,0) width 17: "foo"
 layer at (62,12) size 71x70 clip at (63,13) size 54x68
   LayoutListBox {SELECT} at (54,4) size 71x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutBlockFlow {OPTION} at (1,1) size 54x17 [color=#FFFFCC] [bgcolor=#0000FF]
+    LayoutBlockFlow {OPTION} at (1,1) size 54x17 [bgcolor=#1E90FF]
       LayoutText {#text} at (2,0) size 17x16
         text run at (2,0) width 17: "foo"
     LayoutBlockFlow {OPTION} at (1,18) size 54x17
       LayoutText {#text} at (2,0) size 18x16
         text run at (2,0) width 18: "bar"
-    LayoutBlockFlow {OPTION} at (1,35) size 54x17 [color=#808080] [bgcolor=#999999]
+    LayoutBlockFlow {OPTION} at (1,35) size 54x17 [color=#808080] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 50x16
         text run at (2,0) width 50: "Disabled"
 layer at (145,12) size 39x70 clip at (146,13) size 22x68
   LayoutListBox {SELECT} at (137,4) size 39x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutBlockFlow {OPTION} at (1,1) size 22x17 [color=#FFFFFF] [bgcolor=#999999]
+    LayoutBlockFlow {OPTION} at (1,1) size 22x17 [color=#323232] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 17x16
         text run at (2,0) width 17: "foo"
-    LayoutBlockFlow {OPTION} at (1,18) size 22x17 [color=#808080] [bgcolor=#999999]
+    LayoutBlockFlow {OPTION} at (1,18) size 22x17 [color=#808080] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 18x16
         text run at (2,0) width 18: "bar"
 layer at (196,12) size 58x70 clip at (197,13) size 41x68
   LayoutListBox {SELECT} at (188,4) size 58x70 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutBlockFlow {OPTION} at (1,1) size 41x17 [bgcolor=#999999]
+    LayoutBlockFlow {OPTION} at (1,1) size 41x17 [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 17x16
         text run at (2,0) width 17: "foo"
     LayoutBlockFlow {OPTION} at (1,18) size 41x17
@@ -78,14 +78,14 @@ layer at (196,12) size 58x70 clip at (197,13) size 41x68
         text run at (2,0) width 18: "bar"
     LayoutBlockFlow {OPTGROUP} at (1,35) size 41x34
       LayoutBlockFlow {DIV} at (0,0) size 41x17
-      LayoutBlockFlow {OPTION} at (0,17) size 41x17 [bgcolor=#999999]
+      LayoutBlockFlow {OPTION} at (0,17) size 41x17 [bgcolor=#C8C8C8]
         LayoutInline {<pseudo:before>} at (0,0) size 16x16
           LayoutTextFragment (anonymous) at (2,0) size 16x16
             text run at (2,0) width 16: "    "
         LayoutText {#text} at (18,0) size 21x16
           text run at (18,0) width 21: "baz"
 layer at (266,63) size 45x19 clip at (267,64) size 28x17 scrollHeight 68
-  LayoutListBox {SELECT} at (258,55) size 45x19 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+  LayoutListBox {SELECT} at (258,55) size 45x19 [bgcolor=#DDDDDD] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 28x17
       LayoutText {#text} at (2,0) size 24x16
         text run at (2,0) width 24: "foo1"
