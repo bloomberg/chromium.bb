@@ -45,6 +45,7 @@ struct ShortcutInfo {
   Source source;
   int64_t theme_color;
   int64_t background_color;
+  bool is_icon_generated;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

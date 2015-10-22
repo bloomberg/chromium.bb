@@ -235,9 +235,11 @@ void AddToHomescreenDataFetcher::CreateLauncherIcon(
                           &icon_bitmap);
   }
 
+  bool is_generated = false;
   if (weak_observer_) {
     icon_bitmap = weak_observer_->FinalizeLauncherIcon(icon_bitmap,
-                                                       shortcut_info_.url);
+                                                       shortcut_info_.url,
+                                                       &is_generated);
   }
 
   content::BrowserThread::PostTask(
@@ -245,7 +247,8 @@ void AddToHomescreenDataFetcher::CreateLauncherIcon(
       FROM_HERE,
       base::Bind(&AddToHomescreenDataFetcher::NotifyObserver,
                  this,
-                 icon_bitmap));
+                 icon_bitmap,
+                 is_generated));
 }
 
 void AddToHomescreenDataFetcher::OnManifestIconFetched(const SkBitmap& icon) {
@@ -253,16 +256,18 @@ void AddToHomescreenDataFetcher::OnManifestIconFetched(const SkBitmap& icon) {
     FetchFavicon();
     return;
   }
-  NotifyObserver(icon);
+  NotifyObserver(icon, false);
 }
 
-void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& bitmap) {
+void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& bitmap,
+                                                bool is_generated) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_contents() || !weak_observer_ || is_icon_saved_)
     return;
 
   is_icon_saved_ = true;
   shortcut_icon_ = bitmap;
+  shortcut_info_.is_icon_generated = is_generated;
   is_ready_ = true;
   weak_observer_->OnDataAvailable(shortcut_info_, shortcut_icon_);
 }

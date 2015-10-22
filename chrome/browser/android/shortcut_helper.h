@@ -53,6 +53,13 @@ class ShortcutHelper {
   static void StoreWebappData(const std::string& webapp_id,
                               const SkBitmap& splash_image);
 
+  // Modify the given icon to matche the launcher requirements, then returns the
+  // new icon. It might generate an entirely new icon, in which case,
+  // |is_generated| will be set to |true|.
+  static SkBitmap FinalizeLauncherIcon(const SkBitmap& icon,
+                                       const GURL& url,
+                                       bool* is_generated);
+
  private:
   ShortcutHelper() = delete;
   ~ShortcutHelper() = delete;

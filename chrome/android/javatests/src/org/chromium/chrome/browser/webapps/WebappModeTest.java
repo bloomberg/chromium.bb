@@ -100,7 +100,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         WebappInfo webappInfo = WebappInfo.create(id, url, icon, title, null,
                 ScreenOrientationValues.PORTRAIT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         webappInfo.setWebappIntentExtras(intent);
 
         getInstrumentation().getTargetContext().startActivity(intent);

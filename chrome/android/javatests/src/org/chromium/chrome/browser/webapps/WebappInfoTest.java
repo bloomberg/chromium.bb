@@ -28,7 +28,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertNotNull(info);
     }
 
@@ -43,7 +43,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertNotNull(info);
     }
 
@@ -148,7 +148,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         assertEquals(ShortcutSource.UNKNOWN, info.source());
     }
@@ -165,7 +165,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                themeColor, backgroundColor);
+                themeColor, backgroundColor, false);
         assertEquals(info.themeColor(), themeColor);
         assertEquals(info.backgroundColor(), backgroundColor);
     }
@@ -181,7 +181,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertEquals(info.themeColor(), ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
         assertEquals(info.backgroundColor(), ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
     }
@@ -203,5 +203,61 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(info.themeColor(), themeColor);
         assertEquals(info.backgroundColor(), backgroundColor);
+    }
+
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testIntentGeneratedIcon() {
+        String id = "webapp id";
+        String name = "longName";
+        String shortName = "name";
+        String url = "about:blank";
+
+        // Default value.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+
+            assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+        }
+
+        // Set to true.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, true);
+
+            assertTrue(name, WebappInfo.create(intent).isIconGenerated());
+        }
+
+        // Set to false.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, false);
+
+            assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+        }
+
+        // Set to something else than a boolean.
+        {
+            Intent intent = new Intent();
+            intent.putExtra(ShortcutHelper.EXTRA_ID, id);
+            intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
+            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+            intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, "true");
+
+            assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+        }
     }
 }

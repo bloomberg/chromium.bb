@@ -85,32 +85,11 @@ void AddToHomescreenDialogHelper::Destroy(JNIEnv* env, jobject obj) {
 
 SkBitmap AddToHomescreenDialogHelper::FinalizeLauncherIcon(
       const SkBitmap& bitmap,
-      const GURL& url) {
+      const GURL& url,
+      bool* is_generated) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // Determine a single color to use for the favicon if the favicon that is
-  // returned it is too low quality.
-  SkColor color = color_utils::CalculateKMeanColorOfBitmap(bitmap);
-  int dominant_red = SkColorGetR(color);
-  int dominant_green = SkColorGetG(color);
-  int dominant_blue = SkColorGetB(color);
-
-  // Make the icon acceptable for the Android launcher.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  ScopedJavaLocalRef<jobject> java_bitmap;
-  if (bitmap.getSize())
-    java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
-
-  base::android::ScopedJavaLocalRef<jobject> ref =
-      Java_AddToHomescreenDialogHelper_finalizeLauncherIcon(env,
-                                                      java_url.obj(),
-                                                      java_bitmap.obj(),
-                                                      dominant_red,
-                                                      dominant_green,
-                                                      dominant_blue);
-  return gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(ref.obj()));
+  return ShortcutHelper::FinalizeLauncherIcon(bitmap, url, is_generated);
 }
 
 void AddToHomescreenDialogHelper::AddShortcut(JNIEnv* env,

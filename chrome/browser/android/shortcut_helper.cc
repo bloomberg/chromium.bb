@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/ShortcutHelper_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/color_analysis.h"
 #include "url/gurl.h"
 
 using content::Manifest;
@@ -27,6 +28,8 @@ static int kIdealHomescreenIconSize = -1;
 static int kMinimumHomescreenIconSize = -1;
 static int kIdealSplashImageSize = -1;
 static int kMinimumSplashImageSize = -1;
+
+static int kDefaultRGBIconValue = 145;
 
 // Retrieves and caches the ideal and minimum sizes of the Home screen icon
 // and the splash screen image.
@@ -91,7 +94,8 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       info.orientation,
       info.source,
       info.theme_color,
-      info.background_color);
+      info.background_color,
+      info.is_icon_generated);
 }
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInDp() {
@@ -153,6 +157,44 @@ void ShortcutHelper::StoreWebappData(
       base::android::GetApplicationContext(),
       java_webapp_id.obj(),
       java_splash_image.obj());
+}
+
+// static
+SkBitmap ShortcutHelper::FinalizeLauncherIcon(const SkBitmap& bitmap,
+                                              const GURL& url,
+                                              bool* is_generated) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> result;
+  *is_generated = false;
+
+  if (!bitmap.isNull()) {
+    ScopedJavaLocalRef<jobject> java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
+    if (Java_ShortcutHelper_isIconLargeEnoughForLauncher(
+        env, base::android::GetApplicationContext(), java_bitmap.obj())) {
+      result = Java_ShortcutHelper_modifyIconForLauncher(
+          env, base::android::GetApplicationContext(), java_bitmap.obj());
+    }
+  }
+
+  if (result.is_null()) {
+    ScopedJavaLocalRef<jstring> java_url =
+        base::android::ConvertUTF8ToJavaString(env, url.spec());
+    SkColor mean_color = SkColorSetRGB(
+        kDefaultRGBIconValue, kDefaultRGBIconValue, kDefaultRGBIconValue);
+
+    if (!bitmap.isNull())
+      mean_color = color_utils::CalculateKMeanColorOfBitmap(bitmap);
+
+    *is_generated = true;
+    result = Java_ShortcutHelper_generateLauncherIcon(
+        env, base::android::GetApplicationContext(), java_url.obj(),
+        SkColorGetR(mean_color), SkColorGetG(mean_color),
+        SkColorGetB(mean_color));
+  }
+
+  return gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(result.obj()));
 }
 
 bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {

@@ -10,7 +10,8 @@ ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
       orientation(blink::WebScreenOrientationLockDefault),
       source(SOURCE_ADD_TO_HOMESCREEN),
       theme_color(content::Manifest::kInvalidOrMissingColor),
-      background_color(content::Manifest::kInvalidOrMissingColor) {
+      background_color(content::Manifest::kInvalidOrMissingColor),
+      is_icon_generated(false) {
 }
 
 ShortcutInfo::~ShortcutInfo() {

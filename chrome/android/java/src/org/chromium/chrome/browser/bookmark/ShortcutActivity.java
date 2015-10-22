@@ -71,9 +71,15 @@ public class ShortcutActivity extends AsyncInitializationActivity implements
 
     @Override
     public void onBookmarkSelected(String url, String title, Bitmap favicon) {
-        int dominantColor = FaviconHelper.getDominantColorForBitmap(favicon);
-        Bitmap launcherIcon = ShortcutHelper.createLauncherIcon(this, favicon, url,
-                Color.red(dominantColor), Color.green(dominantColor), Color.blue(dominantColor));
+        Bitmap launcherIcon;
+        if (ShortcutHelper.isIconLargeEnoughForLauncher(this, favicon)) {
+            launcherIcon = ShortcutHelper.modifyIconForLauncher(this, favicon);
+        } else {
+            int dominantColor = FaviconHelper.getDominantColorForBitmap(favicon);
+            launcherIcon = ShortcutHelper.generateLauncherIcon(this, url, Color.red(dominantColor),
+                    Color.green(dominantColor), Color.blue(dominantColor));
+        }
+
         Intent intent = ShortcutHelper.createAddToHomeIntent(url, title, launcherIcon);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.BOOKMARK_SHORTCUT_WIDGET);
         setResult(RESULT_OK, intent);

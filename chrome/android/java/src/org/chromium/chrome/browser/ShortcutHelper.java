@@ -64,17 +64,19 @@ public class ShortcutHelper {
     public static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
     public static final String EXTRA_BACKGROUND_COLOR =
             "org.chromium.chrome.browser.background_color";
+    public static final String EXTRA_IS_ICON_GENERATED =
+            "org.chromium.chrome.browser.is_icon_generated";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
 
     // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
     public static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
 
-    private static final String TAG = "cr.Shortcuts";
+    private static final String TAG = "ShortcutHelper";
+
     // There is no public string defining this intent so if Home changes the value, we
     // have to update this string.
     private static final String INSTALL_SHORTCUT = "com.android.launcher.action.INSTALL_SHORTCUT";
-    private static final int DEFAULT_RGB_VALUE = 145;
     private static final int INSET_DIMENSION_FOR_TOUCHICON = 1;
     private static final int TOUCHICON_BORDER_RADII_DP = 4;
     private static final int GENERATED_ICON_SIZE_DP = 40;
@@ -120,7 +122,7 @@ public class ShortcutHelper {
     @CalledByNative
     private static void addShortcut(Context context, String id, String url, final String userTitle,
             String name, String shortName, Bitmap icon, boolean isWebappCapable, int orientation,
-            int source, long themeColor, long backgroundColor) {
+            int source, long themeColor, long backgroundColor, boolean isIconGenerated) {
         Intent shortcutIntent;
         if (isWebappCapable) {
             // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
@@ -128,16 +130,17 @@ public class ShortcutHelper {
 
             // Add the shortcut as a launcher icon for a full-screen Activity.
             shortcutIntent = new Intent();
-            shortcutIntent.setAction(sDelegate.getFullscreenAction());
-            shortcutIntent.putExtra(EXTRA_ICON, encodedIcon);
-            shortcutIntent.putExtra(EXTRA_ID, id);
-            shortcutIntent.putExtra(EXTRA_NAME, name);
-            shortcutIntent.putExtra(EXTRA_SHORT_NAME, shortName);
-            shortcutIntent.putExtra(EXTRA_URL, url);
-            shortcutIntent.putExtra(EXTRA_ORIENTATION, orientation);
-            shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
-            shortcutIntent.putExtra(EXTRA_THEME_COLOR, themeColor);
-            shortcutIntent.putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor);
+            shortcutIntent.setAction(sDelegate.getFullscreenAction())
+                    .putExtra(EXTRA_ICON, encodedIcon)
+                    .putExtra(EXTRA_ID, id)
+                    .putExtra(EXTRA_NAME, name)
+                    .putExtra(EXTRA_SHORT_NAME, shortName)
+                    .putExtra(EXTRA_URL, url)
+                    .putExtra(EXTRA_ORIENTATION, orientation)
+                    .putExtra(EXTRA_MAC, getEncodedMac(context, url))
+                    .putExtra(EXTRA_THEME_COLOR, themeColor)
+                    .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)
+                    .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated);
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.
             shortcutIntent = createShortcutIntent(url);
@@ -232,17 +235,54 @@ public class ShortcutHelper {
     }
 
     /**
-     * Creates an icon to be associated with this shortcut. If available, the touch icon
-     * will be used, else we draw our own.
+     * Returns whether the given icon matches the size requirements to be used on the homescreen.
      * @param context Context used to create the intent.
      * @param icon Image representing the shortcut.
+     * @return whether the given icon matches the size requirements to be used on the homescreen.
+     */
+    @CalledByNative
+    public static boolean isIconLargeEnoughForLauncher(Context context, Bitmap icon) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final int minimalSize = am.getLauncherLargeIconSize() / 2;
+        return icon.getWidth() >= minimalSize && icon.getHeight() >= minimalSize;
+    }
+
+    /**
+     * Returns the given icon after applying same changes to match the launcher design
+     * requirements.
+     * @param context Context used to create the intent.
+     * @param icon Image representing the shortcut.
+     * @return Bitmap Either the touch-icon or the newly created favicon.
+     */
+    @CalledByNative
+    public static Bitmap modifyIconForLauncher(Context context, Bitmap icon) {
+        assert isIconLargeEnoughForLauncher(context, icon);
+
+        Bitmap bitmap = null;
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final int iconSize = am.getLauncherLargeIconSize();
+        try {
+            bitmap = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            drawTouchIconToCanvas(context, icon, canvas);
+            canvas.setBitmap(null);
+        } catch (OutOfMemoryError e) {
+            Log.w(TAG, "OutOfMemoryError while trying to draw bitmap on canvas.");
+        }
+        return bitmap;
+    }
+
+    /**
+     * Generates an icon to be used on the launcher.
+     * @param context Context used to create the intent.
      * @param url URL of the shortcut.
      * @param rValue Red component of the dominant icon color.
      * @param gValue Green component of the dominant icon color.
      * @param bValue Blue component of the dominant icon color.
      * @return Bitmap Either the touch-icon or the newly created favicon.
      */
-    public static Bitmap createLauncherIcon(Context context, Bitmap icon, String url, int rValue,
+    @CalledByNative
+    public static Bitmap generateLauncherIcon(Context context, String url, int rValue,
             int gValue, int bValue) {
         Bitmap bitmap = null;
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -251,17 +291,8 @@ public class ShortcutHelper {
         try {
             bitmap = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
-            if (icon == null) {
-                icon = getBitmapFromResourceId(context, R.drawable.globe_favicon, iconDensity);
-                rValue = gValue = bValue = DEFAULT_RGB_VALUE;
-            }
-            final int smallestSide = iconSize;
-            if (icon.getWidth() >= smallestSide / 2 && icon.getHeight() >= smallestSide / 2) {
-                drawTouchIconToCanvas(context, icon, canvas);
-            } else {
-                drawWidgetBackgroundToCanvas(context, canvas, iconDensity, url,
-                        Color.rgb(rValue, gValue, bValue));
-            }
+            drawWidgetBackgroundToCanvas(context, canvas, iconDensity, url,
+                    Color.rgb(rValue, gValue, bValue));
             canvas.setBitmap(null);
         } catch (OutOfMemoryError e) {
             Log.w(TAG, "OutOfMemoryError while trying to draw bitmap on canvas.");
