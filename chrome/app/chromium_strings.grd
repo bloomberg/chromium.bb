@@ -865,9 +865,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_TITLE" desc="Title text of the new credit card bubble informing a user their billing information has been saved in chrome.">
         Your billing details have been saved in Chromium.
       </message>
-      <message name="IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR" desc="Text explaining that user must upgrade Chrome to use Wallet.">
-        You must upgrade Chromium to use Google Wallet [<ph name="ERROR_CODE">$1<ex>54</ex></ph>].
-      </message>
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
         Copied to Chromium
       </message>
