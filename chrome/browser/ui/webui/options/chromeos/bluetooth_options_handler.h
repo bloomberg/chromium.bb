@@ -43,8 +43,10 @@ class BluetoothOptionsHandler
   // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the Bluetooth device.
   // |params| is an optional set of parameters.
+  // |pairing| is an optional pairing command.
   void SendDeviceNotification(const device::BluetoothDevice* device,
-                              base::DictionaryValue* params);
+                              base::DictionaryValue* params,
+                              std::string pairing);
 
   // device::BluetoothDevice::PairingDelegate override.
   //

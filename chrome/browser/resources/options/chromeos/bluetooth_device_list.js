@@ -8,11 +8,7 @@
  *            paired: boolean,
  *            connected: boolean,
  *            connecting: boolean,
- *            connectable: boolean,
- *            pairing: (string|undefined),
- *            passkey: (number|undefined),
- *            pincode: (string|undefined),
- *            entered: (number|undefined)}}
+ *            connectable: boolean}}
  */
 var BluetoothDevice;
 
@@ -130,17 +126,7 @@ cr.define('options.system.bluetooth', function() {
      * Adds a bluetooth device to the list of available devices. A check is
      * made to see if the device is already in the list, in which case the
      * existing device is updated.
-     * @param {{name: string,
-     *          address: string,
-     *          paired: boolean,
-     *          connected: boolean,
-     *          connecting: boolean,
-     *          connectable: boolean,
-     *          pairing: (string|undefined),
-     *          passkey: (number|undefined),
-     *          pincode: (string|undefined),
-     *          entered: (number|undefined)}} device
-     *     Description of the bluetooth device.
+     * @param {!BluetoothDevice} device
      * @return {boolean} True if the devies was successfully added or updated.
      */
     appendDevice: function(device) {

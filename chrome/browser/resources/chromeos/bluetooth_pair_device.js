@@ -63,15 +63,17 @@ function load() {
 
   chrome.send('coreOptionsInitialize');
 
-  var fakeParent = new Page('bluetooth', '', 'bluetooth-container');
-  PageManager.register(fakeParent);
-  PageManager.registerOverlay(BluetoothPairing.getInstance(), fakeParent);
+  var pairingPage = new Page('bluetooth', '', 'bluetooth-container');
+  PageManager.register(pairingPage);
+  PageManager.registerOverlay(BluetoothPairing.getInstance(), pairingPage);
 
-  var device = {};
   var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
-  device = args;
-  device.pairing = 'bluetoothStartConnecting';
-  BluetoothPairing.showDialog(device);
+  var device = /** @type {!BluetoothDevice} */ (args);
+  var event = /** @type {!BluetoothPairingEvent} */ ({
+    pairing: BluetoothPairingEventType.STARTUP,
+    device: device
+  });
+  BluetoothPairing.showDialog(event);
   chrome.send('updateBluetoothDevice', [device.address, 'connect']);
 }
 

@@ -28,21 +28,15 @@ cr.define('options', function() {
   };
 
   /**
-   * Handles addBluetoothDevice call, display the Bluetooth pairing overlay
+   * Handles bluetoothPairingEvent call, display the Bluetooth pairing overlay
    * for the pairing device.
-   * @param {{name: string,
-   *          address: string,
-   *          paired: boolean,
-   *          pairing: string | undefined
-   *          pincode: string | undefined
-   *          passkey: number | undefined
-   *          connected: boolean}} device
+   * @param {!BluetoothPairingEvent} event
    */
-  BrowserOptions.addBluetoothDevice = function(device) {
+  BrowserOptions.bluetoothPairingEvent = function(event) {
     // One device can be in the process of pairing.  If found, display
     // the Bluetooth pairing overlay.
-    if (device.pairing)
-      BluetoothPairing.showDialog(device);
+    if (event.pairing)
+      BluetoothPairing.showDialog(event);
   };
 
   BrowserOptions.removeBluetoothDevice = function(address) {

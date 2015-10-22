@@ -2063,16 +2063,16 @@ cr.define('options', function() {
     },
 
     /**
-     * Adds an element to the list of available Bluetooth devices. If an element
-     * with a matching address is found, the existing element is updated.
-     * @param {{name: string,
-     *          address: string,
-     *          paired: boolean,
-     *          connected: boolean}} device
-     *     Decription of the Bluetooth device.
+     * Process a bluetooth pairing event. event.device will be added to the list
+     * of available Bluetooth devices or updated if a device with a matching
+     * |address| property exists. If event.pairing is defined and not empty, the
+     * pairing dialog will be shown (if not already visible) and the event will
+     * be processed.
+     * @param {!BluetoothPairingEvent} event
      * @private
      */
-    addBluetoothDevice_: function(device) {
+    bluetoothPairingEvent_: function(event) {
+      var device = event.device;
       var list = $('bluetooth-unpaired-devices-list');
       // Display the "connecting" (already paired or not yet paired) and the
       // paired devices in the same list.
@@ -2094,8 +2094,8 @@ cr.define('options', function() {
 
       // One device can be in the process of pairing.  If found, display
       // the Bluetooth pairing overlay.
-      if (device.pairing)
-        BluetoothPairing.showDialog(device);
+      if (event.pairing)
+        BluetoothPairing.showDialog(event);
     },
 
     /**
@@ -2165,9 +2165,9 @@ cr.define('options', function() {
     },
   };
 
-  //Forward public APIs to private implementations.
+  // Forward public APIs to private implementations.
   cr.makePublic(BrowserOptions, [
-    'addBluetoothDevice',
+    'bluetoothPairingEvent',
     'deleteCurrentProfile',
     'enableCertificateButton',
     'enableDisplaySettings',

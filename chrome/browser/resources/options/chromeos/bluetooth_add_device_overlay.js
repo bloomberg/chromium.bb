@@ -47,8 +47,11 @@ cr.define('options', function() {
         var device = self.deviceList_.selectedItem;
         var address = device.address;
         PageManager.closeOverlay();
-        device.pairing = 'bluetoothStartConnecting';
-        options.BluetoothPairing.showDialog(device);
+        var pairingEvent = /** @type {!BluetoothPairingEvent} */ ({
+          pairing: BluetoothPairingEventType.STARTUP,
+          device: device
+        });
+        options.BluetoothPairing.showDialog(pairingEvent);
         chrome.send('updateBluetoothDevice', [address, 'connect']);
       };
 
