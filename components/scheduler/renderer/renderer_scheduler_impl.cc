@@ -15,8 +15,12 @@
 
 namespace scheduler {
 namespace {
-const int kLoadingTaskEstimationSampleCount = 200;
-const double kLoadingTaskEstimationPercentile = 90;
+// The run time of loading tasks is strongly bimodal.  The vast majority are
+// very cheap, but there are usually a handful of very expensive tasks (e.g ~1
+// second on a mobile device) so we take a very pesimistic view when estimating
+// the cost of loading tasks.
+const int kLoadingTaskEstimationSampleCount = 1000;
+const double kLoadingTaskEstimationPercentile = 98;
 const int kTimerTaskEstimationSampleCount = 200;
 const double kTimerTaskEstimationPercentile = 90;
 const int kShortIdlePeriodDurationSampleCount = 10;
