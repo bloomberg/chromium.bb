@@ -14,23 +14,6 @@
 
 namespace extensions {
 
-class PasswordsPrivateCanPasswordAccountBeManagedFunction :
-    public UIThreadExtensionFunction {
- public:
-  PasswordsPrivateCanPasswordAccountBeManagedFunction() {}
-  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.canPasswordAccountBeManaged",
-                             PASSWORDSPRIVATE_CANPASSWORDACCOUNTBEMANAGED);
-
- protected:
-  ~PasswordsPrivateCanPasswordAccountBeManagedFunction() override;
-
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateCanPasswordAccountBeManagedFunction);
-};
-
 class PasswordsPrivateRemoveSavedPasswordFunction :
     public UIThreadExtensionFunction {
  public:

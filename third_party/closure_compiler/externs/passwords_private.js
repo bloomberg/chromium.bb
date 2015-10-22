@@ -38,15 +38,6 @@ var PasswordUiEntry;
 var PlaintextPasswordEventParameters;
 
 /**
- * Determines whether account's passwords can be managed via
- * https://passwords.google.com/settings/passwords.
- * @param {function(boolean):void} callback Callback which will be passed the
- *     boolean of whether the     account can be managed.
- * @see https://developer.chrome.com/extensions/passwordsPrivate#method-canPasswordAccountBeManaged
- */
-chrome.passwordsPrivate.canPasswordAccountBeManaged = function(callback) {};
-
-/**
  * Removes the saved password corresponding to |loginPair|. If no saved password
  * for this pair exists, this function is a no-op.
  * @param {LoginPair} loginPair The LoginPair corresponding to the entry to

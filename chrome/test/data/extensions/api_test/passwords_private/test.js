@@ -7,15 +7,6 @@
 // and failures are detected.
 
 var availableTests = [
-  function canPasswordAccountBeManaged() {
-    var callback = function() {
-      // Ensure that the callback is invoked.
-      chrome.test.succeed();
-    };
-
-    chrome.passwordsPrivate.canPasswordAccountBeManaged(callback);
-  },
-
   function removeSavedPassword() {
     var numCalls = 0;
     var numSavedPasswords;

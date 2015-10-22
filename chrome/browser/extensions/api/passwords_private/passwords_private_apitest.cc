@@ -178,10 +178,6 @@ TestDelegate* PasswordsPrivateApiTest::s_test_delegate_ = nullptr;
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, CanPasswordAccountBeManaged) {
-  EXPECT_TRUE(RunPasswordsSubtest("canPasswordAccountBeManaged")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RemoveSavedPassword) {
   EXPECT_TRUE(RunPasswordsSubtest("removeSavedPassword")) << message_;
 }
