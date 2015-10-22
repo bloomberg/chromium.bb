@@ -43,6 +43,11 @@ function DimmableUIController(container) {
   /**
    * @private {boolean}
    */
+  this.loading_ = false;
+
+  /**
+   * @private {boolean}
+   */
   this.disabled_ = false;
 
   /**
@@ -91,6 +96,18 @@ DimmableUIController.prototype.setCurrentMode = function(mode, subMode) {
       (subMode === Gallery.SubMode.BROWSE ||
        subMode === Gallery.SubMode.SLIDESHOW);
 
+  this.updateAvailability_();
+};
+
+/**
+ * Sets whether gallery is currently loading an image or not.
+ * @param {boolean} loading
+ */
+DimmableUIController.prototype.setLoading = function(loading) {
+  if (this.loading_ === loading)
+    return;
+
+  this.loading_ = loading;
   this.updateAvailability_();
 };
 
@@ -292,7 +309,9 @@ DimmableUIController.prototype.kick = function(opt_timeout) {
  * @private
  */
 DimmableUIController.prototype.updateAvailability_ = function() {
-  var disabled = !this.isInAvailableMode_ || this.spokenFeedbackEnabled_;
+  var disabled = !this.isInAvailableMode_ ||
+      this.spokenFeedbackEnabled_ ||
+      this.loading_;
 
   if (this.disabled_ === disabled)
     return;

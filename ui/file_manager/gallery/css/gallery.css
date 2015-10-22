@@ -1104,6 +1104,12 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
   display: none;
 }
 
+#progress-bar {
+  position: absolute;
+  top: 48px; /* toolbar height */
+  width: 100%;
+}
+
 .gallery .error-banner {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;

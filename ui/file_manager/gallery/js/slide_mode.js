@@ -210,6 +210,16 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.slideShowTimeout_ = null;
 
   /**
+   * @private {string|undefined}
+   */
+  this.loadingItemUrl_ = undefined;
+
+  /**
+   * @private {number}
+   */
+  this.progressBarTimer_ = 0;
+
+  /**
    * @type {?number}
    * @private
    */
@@ -332,6 +342,15 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
       this.topToolbar_);
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+
+  /**
+   * @private {!PaperProgressElement}
+   * @const
+   */
+  this.progressBar_ = /** @type {!PaperProgressElement} */
+      (queryRequiredElement('#progress-bar', document));
+  chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
+      this.updateProgressBar_.bind(this));
 
   /**
    * @type {!HTMLElement}
@@ -958,7 +977,7 @@ SlideMode.prototype.selectLast = function() {
  */
 SlideMode.prototype.loadItem_ = function(
     item, effect, displayCallback, loadCallback) {
-  this.showSpinner_(true);
+  this.showProgressBar_(item);
 
   var loadDone = this.itemLoaded_.bind(this, item, loadCallback);
 
@@ -989,7 +1008,8 @@ SlideMode.prototype.itemLoaded_ = function(
     item, loadCallback, loadType, delay, opt_error) {
   var entry = item.getEntry();
 
-  this.showSpinner_(false);
+  this.hideProgressBar_();
+
   if (loadType === ImageView.LoadType.ERROR) {
     // if we have a specific error, then display it
     if (opt_error) {
@@ -1670,6 +1690,66 @@ SlideMode.prototype.setOverwriteBubbleCount_ = function(value) {
 SlideMode.prototype.print_ = function() {
   cr.dispatchSimpleEvent(this, 'useraction');
   window.print();
+};
+
+/**
+ * Shows progress bar.
+ * @param {!GalleryItem} item
+ * @private
+ */
+SlideMode.prototype.showProgressBar_ = function(item) {
+  this.dimmableUIController_.setLoading(true);
+  this.loadingItemUrl_ = item.getEntry().toURL();
+
+  if (this.progressBarTimer_ !== 0) {
+    clearTimeout(this.progressBarTimer_);
+    this.progressBarTimer_ = 0;
+  }
+
+  this.progressBar_.setAttribute('indeterminate', true);
+
+  this.progressBarTimer_ = setTimeout(function() {
+    this.progressBar_.hidden = false;
+  }.bind(this), 1000);
+};
+
+/**
+ * Hides progress bar.
+ * @private
+ */
+SlideMode.prototype.hideProgressBar_ = function() {
+  this.dimmableUIController_.setLoading(false);
+
+  if (this.progressBarTimer_ !== 0) {
+    clearTimeout(this.progressBarTimer_);
+    this.progressBarTimer_ = 0;
+  }
+
+  this.loadingItemUrl_ = undefined;
+
+  this.progressBar_.hidden = true;
+};
+
+/**
+ * Updates progress bar.
+ * @param {!FileTransferStatus} status
+ * @private
+ */
+SlideMode.prototype.updateProgressBar_ = function(status) {
+  if (status.fileUrl !== this.loadingItemUrl_ ||
+      status.num_total_jobs !== 1) {
+    // If user starts to download another image (or file), we cannot show
+    // determinate progress bar anymore since total and processed are for all
+    // current downloads.
+    this.progressBar_.setAttribute('indeterminate', true);
+    return;
+  }
+
+  // Progress begins from 5%.
+  var progress = 5 + (95 * status.processed / status.total);
+
+  this.progressBar_.removeAttribute('indeterminate');
+  this.progressBar_.value = progress;
 };
 
 /**

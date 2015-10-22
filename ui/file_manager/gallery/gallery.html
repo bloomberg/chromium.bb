@@ -18,6 +18,7 @@
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toast.html">
@@ -45,6 +46,10 @@
       --paper-slider-active-color: white;
       --paper-slider-knob-color: white;
       --paper-slider-secondary-color: transparent;
+    }
+    paper-progress {
+      --paper-progress-container-color: rgba(0, 0, 0, 0.3);
+      --paper-progress-active-color: #1AC222;
     }
   </style>
 </head>
@@ -97,6 +102,7 @@
                       disabled></paper-button>
       </div>
     </div>
+    <paper-progress id="progress-bar" min="0" max="100" hidden></paper-progress>
     <div id="bottom-toolbar" class="toolbar bottom tool dimmable">
       <div class="slide-mode-toolbar">
         <div class="ribbon-spacer"></div>
