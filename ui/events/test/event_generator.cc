@@ -62,9 +62,15 @@ class TestTouchEvent : public ui::TouchEvent {
                  int touch_id,
                  int flags,
                  base::TimeDelta timestamp)
-      : TouchEvent(type, root_location, flags, touch_id, timestamp,
-                   1.0f, 1.0f, 0.0f, 0.0f) {
-  }
+      : TouchEvent(type,
+                   gfx::PointF(root_location),
+                   flags,
+                   touch_id,
+                   timestamp,
+                   1.0f,
+                   1.0f,
+                   0.0f,
+                   0.0f) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTouchEvent);
@@ -158,7 +164,7 @@ void EventGenerator::ReleaseRightButton() {
 }
 
 void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
-  gfx::Point location = GetLocationInCurrentRoot();
+  auto location = gfx::PointF(GetLocationInCurrentRoot());
   ui::MouseEvent mouseev(ui::ET_MOUSEWHEEL, location, location,
                          ui::EventTimeForNow(), flags_, 0);
   ui::MouseWheelEvent wheelev(mouseev, delta_x, delta_y);

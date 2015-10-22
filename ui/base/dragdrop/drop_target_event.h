@@ -13,8 +13,8 @@ namespace ui {
 class UI_BASE_EXPORT DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const OSExchangeData& data,
-                  const gfx::Point& location,
-                  const gfx::Point& root_location,
+                  const gfx::PointF& location,
+                  const gfx::PointF& root_location,
                   int source_operations);
 
   const OSExchangeData& data() const { return data_; }

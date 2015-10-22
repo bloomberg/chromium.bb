@@ -12,8 +12,8 @@ namespace ui {
 // DropTargetEvent
 
 DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
-                                 const gfx::Point& location,
-                                 const gfx::Point& root_location,
+                                 const gfx::PointF& location,
+                                 const gfx::PointF& root_location,
                                  int source_operations)
     : LocatedEvent(ET_DROP_TARGET_EVENT,
                    location,
@@ -21,8 +21,7 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
                    EventTimeForNow(),
                    0),
       data_(data),
-      source_operations_(source_operations) {
-}
+      source_operations_(source_operations) {}
 
 }  // namespace ui
 

@@ -1987,7 +1987,7 @@ bool View::ConvertPointForAncestor(const View* ancestor,
   gfx::Transform trans;
   // TODO(sad): Have some way of caching the transformation results.
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  gfx::Point3F p(*point);
+  auto p = gfx::Point3F(gfx::PointF(*point));
   trans.TransformPoint(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
@@ -1997,7 +1997,7 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
                                     gfx::Point* point) const {
   gfx::Transform trans;
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  gfx::Point3F p(*point);
+  auto p = gfx::Point3F(gfx::PointF(*point));
   trans.TransformPointReverse(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;

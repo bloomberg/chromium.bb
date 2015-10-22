@@ -21,6 +21,10 @@ namespace base {
 class TickClock;
 }
 
+namespace gfx {
+class PointF;
+}
+
 namespace ui {
 class Event;
 class EventProcessor;
