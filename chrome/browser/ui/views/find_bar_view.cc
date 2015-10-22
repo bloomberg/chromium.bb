@@ -257,6 +257,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_previous_button_ = new FindBarButton(this);
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
   find_previous_button_->SetFocusable(true);
+  find_previous_button_->set_request_focus_on_press(false);
   find_previous_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
   find_previous_button_->SetAccessibleName(
@@ -266,6 +267,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_next_button_ = new FindBarButton(this);
   find_next_button_->set_tag(FIND_NEXT_TAG);
   find_next_button_->SetFocusable(true);
+  find_next_button_->set_request_focus_on_press(false);
   find_next_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
   find_next_button_->SetAccessibleName(
@@ -275,12 +277,17 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_ = new FindBarButton(this);
   close_button_->set_tag(CLOSE_TAG);
   close_button_->SetFocusable(true);
+  close_button_->set_request_focus_on_press(false);
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   close_button_->SetAnimationDuration(0);
   AddChildView(close_button_);
+
+  // Create a focus forwarder view which sends focus to find_text_.
+  focus_forwarder_view_ = new FocusForwarderView(find_text_);
+  AddChildView(focus_forwarder_view_);
 
   EnableCanvasFlippingForRTLUI(true);
 
@@ -420,65 +427,67 @@ void FindBarView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void FindBarView::Layout() {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return views::View::Layout();
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    views::View::Layout();
+  } else {
+    int panel_width = GetPreferredSize().width();
 
-  int panel_width = GetPreferredSize().width();
+    // Stay within view bounds.
+    int view_width = width();
+    if (view_width && view_width < panel_width)
+      panel_width = view_width;
 
-  // Stay within view bounds.
-  int view_width = width();
-  if (view_width && view_width < panel_width)
-    panel_width = view_width;
+    // First we draw the close button on the far right.
+    gfx::Size sz = close_button_->GetPreferredSize();
+    close_button_->SetBounds(panel_width - sz.width() -
+                                 kMarginRightOfCloseButton,
+                             (height() - sz.height()) / 2,
+                             sz.width(),
+                             sz.height());
+    // Set the color.
+    OnThemeChanged();
 
-  // First we draw the close button on the far right.
-  gfx::Size sz = close_button_->GetPreferredSize();
-  close_button_->SetBounds(panel_width - sz.width() -
-                               kMarginRightOfCloseButton,
-                           (height() - sz.height()) / 2,
-                           sz.width(),
-                           sz.height());
-  // Set the color.
-  OnThemeChanged();
+    // Next, the FindNext button to the left the close button.
+    sz = find_next_button_->GetPreferredSize();
+    find_next_button_->SetBounds(close_button_->x() -
+                                     find_next_button_->width() -
+                                     kMarginLeftOfCloseButton,
+                                 (height() - sz.height()) / 2,
+                                  sz.width(),
+                                  sz.height());
 
-  // Next, the FindNext button to the left the close button.
-  sz = find_next_button_->GetPreferredSize();
-  find_next_button_->SetBounds(close_button_->x() -
-                                   find_next_button_->width() -
-                                   kMarginLeftOfCloseButton,
-                               (height() - sz.height()) / 2,
-                                sz.width(),
-                                sz.height());
+    // Then, the FindPrevious button to the left the FindNext button.
+    sz = find_previous_button_->GetPreferredSize();
+    find_previous_button_->SetBounds(find_next_button_->x() -
+                                         find_previous_button_->width(),
+                                     (height() - sz.height()) / 2,
+                                     sz.width(),
+                                     sz.height());
 
-  // Then, the FindPrevious button to the left the FindNext button.
-  sz = find_previous_button_->GetPreferredSize();
-  find_previous_button_->SetBounds(find_next_button_->x() -
-                                       find_previous_button_->width(),
-                                   (height() - sz.height()) / 2,
-                                   sz.width(),
-                                   sz.height());
+    // Then the label showing the match count number.
+    sz = match_count_text_->GetPreferredSize();
+    // We extend the label bounds a bit to give the background highlighting a
+    // bit of breathing room (margins around the text).
+    sz.Enlarge(kMatchCountExtraWidth, 0);
+    sz.SetToMax(gfx::Size(kMatchCountMinWidth, 0));
+    const int match_count_x =
+        find_previous_button_->x() - kMarginRightOfMatchCountLabel - sz.width();
+    const int find_text_y = kMarginVerticalFindTextfield;
+    const gfx::Insets find_text_insets(find_text_->GetInsets());
+    match_count_text_->SetBounds(match_count_x,
+                                 find_text_y - find_text_insets.top() +
+                                     find_text_->GetBaseline() -
+                                     match_count_text_->GetBaseline(),
+                                 sz.width(), sz.height());
 
-  // Then the label showing the match count number.
-  sz = match_count_text_->GetPreferredSize();
-  // We extend the label bounds a bit to give the background highlighting a bit
-  // of breathing room (margins around the text).
-  sz.Enlarge(kMatchCountExtraWidth, 0);
-  sz.SetToMax(gfx::Size(kMatchCountMinWidth, 0));
-  const int match_count_x =
-      find_previous_button_->x() - kMarginRightOfMatchCountLabel - sz.width();
-  const int find_text_y = kMarginVerticalFindTextfield;
-  const gfx::Insets find_text_insets(find_text_->GetInsets());
-  match_count_text_->SetBounds(match_count_x,
-                               find_text_y - find_text_insets.top() +
-                                   find_text_->GetBaseline() -
-                                   match_count_text_->GetBaseline(),
-                               sz.width(), sz.height());
-
-  // Fill the remaining width and available height with the textfield.
-  const int left_margin = kMarginLeftOfFindTextfield - find_text_insets.left();
-  const int find_text_width = std::max(0, match_count_x - left_margin -
-      kMarginLeftOfMatchCountLabel + find_text_insets.right());
-  find_text_->SetBounds(left_margin, find_text_y, find_text_width,
-                        height() - 2 * kMarginVerticalFindTextfield);
+    // Fill the remaining width and available height with the textfield.
+    const int left_margin =
+        kMarginLeftOfFindTextfield - find_text_insets.left();
+    const int find_text_width = std::max(0, match_count_x - left_margin -
+        kMarginLeftOfMatchCountLabel + find_text_insets.right());
+    find_text_->SetBounds(left_margin, find_text_y, find_text_width,
+                          height() - 2 * kMarginVerticalFindTextfield);
+  }
 
   // The focus forwarder view is a hidden view that should cover the area
   // between the find text box and the find button so that when the user clicks
@@ -594,10 +603,6 @@ views::View* FindBarView::TargetForRect(View* root, const gfx::Rect& rect) {
 void FindBarView::InitViewsForNonMaterial() {
   match_count_text_ = new views::Label();
   AddChildView(match_count_text_);
-
-  // Create a focus forwarder view which sends focus to find_text_.
-  focus_forwarder_view_ = new FocusForwarderView(find_text_);
-  AddChildView(focus_forwarder_view_);
 
   // The find bar textfield has a background image instead of a border.
   find_text_->SetBorder(views::Border::NullBorder());
