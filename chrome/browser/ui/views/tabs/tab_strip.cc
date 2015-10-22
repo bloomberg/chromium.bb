@@ -1220,13 +1220,6 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
   return true;
 }
 
-bool TabStrip::CanPaintThrobberToLayer() const {
-  // Disable layer-painting of throbbers if dragging, if any tab animation is in
-  // progress, or if stacked tabs are enabled.
-  const bool dragging = drag_controller_ && drag_controller_->started_drag();
-  return !touch_layout_ && !dragging && !IsAnimating();
-}
-
 bool TabStrip::IsImmersiveStyle() const {
   return immersive_style_;
 }
