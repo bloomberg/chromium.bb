@@ -273,7 +273,10 @@ class Executive(object):
     def process_dump(self):
         ps_process = None
         if sys.platform in ("win32", "cygwin"):
-            ps_process = self.popen(['tasklist', '/v'], stdout=self.PIPE, stderr=self.PIPE)
+            ps_process = self.popen(
+                ['wmic', 'process', 'get',
+                 'ProcessId,ParentProcessId,CommandLine'],
+                stdout=self.PIPE, stderr=self.PIPE)
         else:
             ps_process = self.popen(['ps', 'aux'], stdout=self.PIPE, stderr=self.PIPE)
 
