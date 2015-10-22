@@ -103,6 +103,10 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed() override;
 
+  // Returns true if the process has successfully launched. Must only be called
+  // on the IO thread.
+  bool IsProcessLaunched() const;
+
 #if defined(OS_WIN)
   // ObjectWatcher::Delegate implementation.
   void OnObjectSignaled(HANDLE object) override;
@@ -122,6 +126,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // IPC channel.
   base::win::ObjectWatcher early_exit_watcher_;
 #endif
+
+  bool is_channel_connected_;
 };
 
 }  // namespace content

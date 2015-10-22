@@ -44,6 +44,11 @@ static base::LazyInstance<BrowserChildProcessHostImpl::BrowserChildProcessList>
 base::LazyInstance<base::ObserverList<BrowserChildProcessObserver>>
     g_observers = LAZY_INSTANCE_INITIALIZER;
 
+void NotifyProcessLaunchedAndConnected(const ChildProcessData& data) {
+  FOR_EACH_OBSERVER(BrowserChildProcessObserver, g_observers.Get(),
+                    BrowserChildProcessLaunchedAndConnected(data));
+}
+
 void NotifyProcessHostConnected(const ChildProcessData& data) {
   FOR_EACH_OBSERVER(BrowserChildProcessObserver, g_observers.Get(),
                     BrowserChildProcessHostConnected(data));
@@ -114,7 +119,8 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     BrowserChildProcessHostDelegate* delegate)
     : data_(process_type),
       delegate_(delegate),
-      power_monitor_message_broadcaster_(this) {
+      power_monitor_message_broadcaster_(this),
+      is_channel_connected_(false) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_.reset(ChildProcessHost::Create(this));
@@ -253,17 +259,26 @@ bool BrowserChildProcessHostImpl::OnMessageReceived(
 }
 
 void BrowserChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  is_channel_connected_ = true;
+
 #if defined(OS_WIN)
   // From this point onward, the exit of the child process is detected by an
   // error on the IPC channel.
   early_exit_watcher_.StopWatching();
 #endif
 
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&NotifyProcessHostConnected, data_));
 
   delegate_->OnChannelConnected(peer_pid);
+
+  if (IsProcessLaunched()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&NotifyProcessLaunchedAndConnected,
+                                       data_));
+  }
 }
 
 void BrowserChildProcessHostImpl::OnChannelError() {
@@ -365,6 +380,8 @@ void BrowserChildProcessHostImpl::OnProcessLaunchFailed() {
 }
 
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -385,6 +402,18 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   // TODO(rvargas) crbug.com/417532: Don't store a handle.
   data_.handle = process.Handle();
   delegate_->OnProcessLaunched();
+
+  if (is_channel_connected_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&NotifyProcessLaunchedAndConnected,
+                                       data_));
+  }
+}
+
+bool BrowserChildProcessHostImpl::IsProcessLaunched() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  return child_process_.get() && child_process_->GetProcess().IsValid();
 }
 
 #if defined(OS_WIN)

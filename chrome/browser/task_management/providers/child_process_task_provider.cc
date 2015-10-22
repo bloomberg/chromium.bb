@@ -63,8 +63,8 @@ Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
   return itr->second;
 }
 
-void ChildProcessTaskProvider::BrowserChildProcessHostConnected(
-    const content::ChildProcessData& data) {
+void ChildProcessTaskProvider::BrowserChildProcessLaunchedAndConnected(
+      const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (data.handle == base::kNullProcessHandle)
     return;
@@ -125,8 +125,8 @@ void ChildProcessTaskProvider::CreateTask(
     const content::ChildProcessData& data) {
   if (tasks_by_handle_.find(data.handle) != tasks_by_handle_.end()) {
     // This case can happen when some of the child process data we collect upon
-    // StartUpdating() might be of BrowserChildProcessHosts whose channels
-    // hadn't connected yet. So we just return.
+    // StartUpdating() might be of BrowserChildProcessHosts whose process
+    // hadn't launched yet. So we just return.
     return;
   }
 

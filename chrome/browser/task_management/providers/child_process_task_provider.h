@@ -35,7 +35,7 @@ class ChildProcessTaskProvider
                             int route_id) override;
 
   // content::BrowserChildProcessObserver:
-  void BrowserChildProcessHostConnected(
+  void BrowserChildProcessLaunchedAndConnected(
       const content::ChildProcessData& data) override;
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
