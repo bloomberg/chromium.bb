@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/dim_window.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -17,19 +18,25 @@ namespace test {
 
 class ScreenDimmerTest : public AshTestBase {
  public:
-  ScreenDimmerTest() : dimmer_(NULL) {}
+  ScreenDimmerTest() : dimmer_(nullptr) {}
   ~ScreenDimmerTest() override {}
 
   void SetUp() override {
     AshTestBase::SetUp();
-    dimmer_ = Shell::GetPrimaryRootWindowController()->screen_dimmer();
-    test_api_.reset(new ScreenDimmer::TestApi(dimmer_));
+    dimmer_ = ScreenDimmer::GetForRoot();
+  }
+
+  aura::Window* GetDimWindow() {
+    return DimWindow::Get(Shell::GetPrimaryRootWindow());
+  }
+
+  ui::Layer* GetDimWindowLayer() {
+    aura::Window* window = GetDimWindow();
+    return window ? window->layer() : nullptr;
   }
 
  protected:
   ScreenDimmer* dimmer_;  // not owned
-
-  scoped_ptr<ScreenDimmer::TestApi> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmerTest);
@@ -37,33 +44,30 @@ class ScreenDimmerTest : public AshTestBase {
 
 TEST_F(ScreenDimmerTest, DimAndUndim) {
   // Don't create a layer until we need to.
-  EXPECT_TRUE(test_api_->layer() == NULL);
+  EXPECT_EQ(nullptr, GetDimWindowLayer());
   dimmer_->SetDimming(false);
-  EXPECT_TRUE(test_api_->layer() == NULL);
+  EXPECT_EQ(nullptr, GetDimWindowLayer());
 
   // When we enable dimming, the layer should be created and stacked at the top
   // of the root's children.
   dimmer_->SetDimming(true);
-  ASSERT_TRUE(test_api_->layer() != NULL);
+  ASSERT_NE(nullptr, GetDimWindowLayer());
   ui::Layer* root_layer = Shell::GetPrimaryRootWindow()->layer();
   ASSERT_TRUE(!root_layer->children().empty());
-  EXPECT_EQ(test_api_->layer(), root_layer->children().back());
-  EXPECT_TRUE(test_api_->layer()->visible());
-  EXPECT_GT(test_api_->layer()->GetTargetOpacity(), 0.0f);
+  EXPECT_EQ(GetDimWindowLayer(), root_layer->children().back());
+  EXPECT_TRUE(GetDimWindowLayer()->visible());
+  EXPECT_GT(GetDimWindowLayer()->GetTargetOpacity(), 0.0f);
 
-  // When we disable dimming, the layer should be animated back to full
-  // transparency.
+  // When we disable dimming, the layer should be removed.
   dimmer_->SetDimming(false);
-  ASSERT_TRUE(test_api_->layer() != NULL);
-  EXPECT_TRUE(test_api_->layer()->visible());
-  EXPECT_FLOAT_EQ(0.0f, test_api_->layer()->GetTargetOpacity());
+  ASSERT_EQ(nullptr, GetDimWindowLayer());
 }
 
 TEST_F(ScreenDimmerTest, ResizeLayer) {
   // The dimming layer should be initially sized to cover the root window.
   dimmer_->SetDimming(true);
-  ui::Layer* dimming_layer = test_api_->layer();
-  ASSERT_TRUE(dimming_layer != NULL);
+  ui::Layer* dimming_layer = GetDimWindowLayer();
+  ASSERT_TRUE(dimming_layer != nullptr);
   ui::Layer* root_layer = Shell::GetPrimaryRootWindow()->layer();
   EXPECT_EQ(gfx::Rect(root_layer->bounds().size()).ToString(),
             dimming_layer->bounds().ToString());
@@ -73,6 +77,13 @@ TEST_F(ScreenDimmerTest, ResizeLayer) {
   gfx::Rect kNewBounds(400, 300);
   Shell::GetPrimaryRootWindow()->GetHost()->SetBounds(kNewBounds);
   EXPECT_EQ(kNewBounds.ToString(), dimming_layer->bounds().ToString());
+}
+
+TEST_F(ScreenDimmerTest, RootDimmer) {
+  ScreenDimmer* root_dimmer = ScreenDimmer::GetForRoot();
+  // -100 is the magic number for root window.
+  EXPECT_EQ(root_dimmer, ScreenDimmer::FindForTest(-100));
+  EXPECT_EQ(nullptr, ScreenDimmer::FindForTest(-1));
 }
 
 }  // namespace test

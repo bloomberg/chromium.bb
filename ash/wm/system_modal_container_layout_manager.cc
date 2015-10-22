@@ -9,35 +9,26 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/system_modal_container_event_filter.h"
-#include "ash/wm/window_animations.h"
+#include "ash/wm/dim_window.h"
 #include "ash/wm/window_util.h"
-#include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animator.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/events/event.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/views/background.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-#include "ui/wm/core/compound_event_filter.h"
 
 namespace ash {
+namespace {
 
+// The center point of the window can diverge this much from the center point
 // If this is set to true, the window will get centered.
 DEFINE_WINDOW_PROPERTY_KEY(bool, kCenteredKey, false);
 
 // The center point of the window can diverge this much from the center point
 // of the container to be kept centered upon resizing operations.
 const int kCenterPixelDelta = 32;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, public:
@@ -46,8 +37,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
     : SnapToPixelLayoutManager(container),
       container_(container),
-      modal_background_(NULL) {
-}
+      modal_background_(nullptr) {}
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
 }
@@ -56,17 +46,12 @@ SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
 // SystemModalContainerLayoutManager, aura::LayoutManager implementation:
 
 void SystemModalContainerLayoutManager::OnWindowResized() {
-  if (modal_background_) {
-    // Note: we have to set the entire bounds with the screen offset.
-    modal_background_->SetBounds(
-        Shell::GetScreen()->GetDisplayNearestWindow(container_).bounds());
-  }
   PositionDialogsAfterWorkAreaResize();
 }
 
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
-  DCHECK((modal_background_ && child == modal_background_->GetNativeView()) ||
+  DCHECK(child == modal_background_ ||
          child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
          child->type() == ui::wm::WINDOW_TYPE_POPUP);
   DCHECK(
@@ -112,10 +97,10 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 
 void SystemModalContainerLayoutManager::OnWindowDestroying(
     aura::Window* window) {
-  if (modal_background_ && modal_background_->GetNativeView() == window) {
+  if (modal_background_ == window) {
     if (keyboard::KeyboardController::GetInstance())
       keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    modal_background_ = NULL;
+    modal_background_ = nullptr;
   }
 }
 
@@ -155,32 +140,14 @@ bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
 
 void SystemModalContainerLayoutManager::CreateModalBackground() {
   if (!modal_background_) {
-    modal_background_ = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-    params.parent = container_;
-    params.bounds = Shell::GetScreen()->GetDisplayNearestWindow(
-        container_).bounds();
-    modal_background_->Init(params);
-    modal_background_->GetNativeView()->SetName(
+    modal_background_ = new DimWindow(container_);
+    modal_background_->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
-    views::View* contents_view = new views::View();
-    // TODO(jamescook): This could be SK_ColorWHITE for the new dialog style.
-    contents_view->set_background(
-        views::Background::CreateSolidBackground(SK_ColorBLACK));
-    modal_background_->SetContentsView(contents_view);
-    modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
     // There isn't always a keyboard controller.
     if (keyboard::KeyboardController::GetInstance())
       keyboard::KeyboardController::GetInstance()->AddObserver(this);
   }
-
-  ui::ScopedLayerAnimationSettings settings(
-      modal_background_->GetNativeView()->layer()->GetAnimator());
-  // Show should not be called with a target opacity of 0. We therefore start
-  // the fade to show animation before Show() is called.
-  modal_background_->GetNativeView()->layer()->SetOpacity(0.5f);
   modal_background_->Show();
-  container_->StackChildAtTop(modal_background_->GetNativeView());
 }
 
 void SystemModalContainerLayoutManager::DestroyModalBackground() {
@@ -189,11 +156,11 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
   if (modal_background_) {
     if (keyboard::KeyboardController::GetInstance())
       keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    ::wm::ScopedHidingAnimationSettings settings(
-        modal_background_->GetNativeView());
-    modal_background_->Close();
-    modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
-    modal_background_ = NULL;
+    modal_background_->Hide();
+    // Explicitly delete instead of using scoped_ptr as the owner of the
+    // window is its parent.
+    delete modal_background_;
+    modal_background_ = nullptr;
   }
 }
 
@@ -207,8 +174,7 @@ bool SystemModalContainerLayoutManager::IsModalBackground(
   SystemModalContainerLayoutManager* layout_manager =
       static_cast<SystemModalContainerLayoutManager*>(
           window->parent()->layout_manager());
-  return layout_manager->modal_background_ &&
-      layout_manager->modal_background_->GetNativeWindow() == window;
+  return layout_manager->modal_background_ == window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
