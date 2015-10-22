@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
 namespace blink {
-class WebServiceWorker;
 class WebServiceWorkerRegistrationProxy;
 }
 
@@ -21,8 +20,16 @@ namespace content {
 
 class ServiceWorkerRegistrationHandleReference;
 class ThreadSafeSender;
+class WebServiceWorkerImpl;
 struct ServiceWorkerObjectInfo;
 
+// Each instance corresponds to one ServiceWorkerRegistration object in JS
+// context, and is held by ServiceWorkerRegistration object in Blink's C++ layer
+// via WebServiceWorkerRegistration::Handle.
+//
+// Each instance holds one ServiceWorkerRegistrationHandleReference so that
+// corresponding ServiceWorkerRegistrationHandle doesn't go away in the browser
+// process while the ServiceWorkerRegistration object is alive.
 class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerRegistration),
       public base::RefCounted<WebServiceWorkerRegistrationImpl> {
@@ -30,9 +37,9 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   explicit WebServiceWorkerRegistrationImpl(
       scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
 
-  void SetInstalling(blink::WebServiceWorker* service_worker);
-  void SetWaiting(blink::WebServiceWorker* service_worker);
-  void SetActive(blink::WebServiceWorker* service_worker);
+  void SetInstalling(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
+  void SetWaiting(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
+  void SetActive(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
 
   void OnUpdateFound();
 
@@ -51,14 +58,16 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       blink::WebServiceWorkerRegistration::Handle;
 
   // Creates WebServiceWorkerRegistrationHandle object that owns a reference to
-  // this WebServiceWorkerRegistrationImpl object.
-  blink::WebPassOwnPtr<WebServiceWorkerRegistrationHandle> CreateHandle();
+  // the given WebServiceWorkerRegistrationImpl object.
+  static blink::WebPassOwnPtr<WebServiceWorkerRegistrationHandle> CreateHandle(
+      const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration);
 
   // Same with CreateHandle(), but returns a raw pointer to the handle w/ its
   // ownership instead. The caller must manage the ownership. This function must
   // be used only for passing the handle to Blink API that does not support
   // blink::WebPassOwnPtr.
-  WebServiceWorkerRegistrationHandle* CreateLeakyHandle();
+  static WebServiceWorkerRegistrationHandle* CreateLeakyHandle(
+      const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration);
 
  private:
   friend class base::RefCounted<WebServiceWorkerRegistrationImpl>;
@@ -73,13 +82,13 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   struct QueuedTask {
     QueuedTask(QueuedTaskType type,
-               blink::WebServiceWorker* worker);
+               const scoped_refptr<WebServiceWorkerImpl>& worker);
+    ~QueuedTask();
     QueuedTaskType type;
-    blink::WebServiceWorker* worker;
+    scoped_refptr<WebServiceWorkerImpl> worker;
   };
 
   void RunQueuedTasks();
-  void ClearQueuedTasks();
 
   scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref_;
   blink::WebServiceWorkerRegistrationProxy* proxy_;

@@ -42,9 +42,9 @@ public:
 
     // WebServiceWorkerRegistrationProxy overrides.
     void dispatchUpdateFoundEvent() override;
-    void setInstalling(WebServiceWorker*) override;
-    void setWaiting(WebServiceWorker*) override;
-    void setActive(WebServiceWorker*) override;
+    void setInstalling(WebPassOwnPtr<WebServiceWorker::Handle>) override;
+    void setWaiting(WebPassOwnPtr<WebServiceWorker::Handle>) override;
+    void setActive(WebPassOwnPtr<WebServiceWorker::Handle>) override;
 
     // Returns an existing registration object for the handle if it exists.
     // Otherwise, returns a new registration object.

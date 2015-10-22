@@ -690,7 +690,8 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
       dispatcher->GetOrCreateRegistration(info, attrs));
 
-  proxy_->setRegistration(registration->CreateHandle());
+  proxy_->setRegistration(
+      WebServiceWorkerRegistrationImpl::CreateHandle(registration));
 }
 
 void ServiceWorkerContextClient::OnActivateEvent(int request_id) {

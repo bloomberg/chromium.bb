@@ -45,6 +45,16 @@ typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
 class WebServiceWorker {
 public:
+    // The handle interface that retains a reference to the implementation of
+    // WebServiceWorker in the embedder and is owned by ServiceWorker object in
+    // Blink. The embedder must keep the service worker representation while
+    // Blink is owning this handle.
+    class Handle {
+    public:
+        virtual ~Handle() {}
+        virtual WebServiceWorker* serviceWorker() { return nullptr; }
+    };
+
     virtual ~WebServiceWorker() { }
 
     // Sets ServiceWorkerProxy, with which callee can start making upcalls

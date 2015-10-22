@@ -21,6 +21,20 @@ namespace content {
 
 namespace {
 
+class HandleImpl : public blink::WebServiceWorker::Handle {
+ public:
+  explicit HandleImpl(const scoped_refptr<WebServiceWorkerImpl>& worker)
+      : worker_(worker) {}
+  ~HandleImpl() override {}
+
+  blink::WebServiceWorker* serviceWorker() override { return worker_.get(); }
+
+ private:
+  scoped_refptr<WebServiceWorkerImpl> worker_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleImpl);
+};
+
 void SendPostMessageToWorkerOnMainThread(
     ThreadSafeSender* thread_safe_sender,
     int handle_id,
@@ -39,20 +53,12 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
     : handle_ref_(handle_ref.Pass()),
       state_(handle_ref_->state()),
       thread_safe_sender_(thread_safe_sender),
-      proxy_(NULL) {
+      proxy_(nullptr) {
+  DCHECK_NE(kInvalidServiceWorkerHandleId, handle_ref_->handle_id());
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->AddServiceWorker(handle_ref_->handle_id(), this);
-}
-
-WebServiceWorkerImpl::~WebServiceWorkerImpl() {
-  if (handle_ref_->handle_id() == kInvalidServiceWorkerHandleId)
-    return;
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  if (dispatcher)
-    dispatcher->RemoveServiceWorker(handle_ref_->handle_id());
 }
 
 void WebServiceWorkerImpl::OnStateChanged(
@@ -103,6 +109,22 @@ void WebServiceWorkerImpl::postMessage(const WebString& message,
 void WebServiceWorkerImpl::terminate() {
   thread_safe_sender_->Send(
       new ServiceWorkerHostMsg_TerminateWorker(handle_ref_->handle_id()));
+}
+
+// static
+blink::WebPassOwnPtr<blink::WebServiceWorker::Handle>
+WebServiceWorkerImpl::CreateHandle(
+    const scoped_refptr<WebServiceWorkerImpl>& worker) {
+  if (!worker)
+    return nullptr;
+  return blink::adoptWebPtr(new HandleImpl(worker));
+}
+
+WebServiceWorkerImpl::~WebServiceWorkerImpl() {
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  if (dispatcher)
+    dispatcher->RemoveServiceWorker(handle_ref_->handle_id());
 }
 
 }  // namespace content

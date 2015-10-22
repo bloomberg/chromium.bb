@@ -5,6 +5,8 @@
 #ifndef WebServiceWorkerRegistrationProxy_h
 #define WebServiceWorkerRegistrationProxy_h
 
+#include "public/platform/WebPassOwnPtr.h"
+
 namespace blink {
 
 class WebServiceWorker;
@@ -19,9 +21,9 @@ public:
     // WebServiceWorkerRegistration.installing.
     virtual void dispatchUpdateFoundEvent() = 0;
 
-    virtual void setInstalling(WebServiceWorker*) = 0;
-    virtual void setWaiting(WebServiceWorker*) = 0;
-    virtual void setActive(WebServiceWorker*) = 0;
+    virtual void setInstalling(WebPassOwnPtr<WebServiceWorker::Handle>) = 0;
+    virtual void setWaiting(WebPassOwnPtr<WebServiceWorker::Handle>) = 0;
+    virtual void setActive(WebPassOwnPtr<WebServiceWorker::Handle>) = 0;
 
 protected:
     virtual ~WebServiceWorkerRegistrationProxy() { }

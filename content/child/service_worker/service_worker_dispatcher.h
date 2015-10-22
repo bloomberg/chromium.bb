@@ -116,22 +116,17 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
                          blink::WebServiceWorkerProviderClient* client);
   void RemoveProviderClient(int provider_id);
 
-  // If an existing WebServiceWorkerImpl exists for the Service
-  // Worker, it is returned; otherwise a WebServiceWorkerImpl is
-  // created and its ownership is transferred to the caller. If
-  // |adopt_handle| is true, a ServiceWorkerHandleReference will be
-  // adopted for the specified Service Worker.
-  //
-  // TODO(dominicc): The lifetime of WebServiceWorkerImpl is too tricky; this
-  // method can return an existing WebServiceWorkerImpl, in which case
-  // it is owned by a WebCore::ServiceWorker and the lifetime is not
-  // being transferred to the owner; or it can create a
-  // WebServiceWorkerImpl, in which case ownership is transferred to
-  // the caller who must bounce it to a method that will associate it
-  // with a WebCore::ServiceWorker.
-  WebServiceWorkerImpl* GetServiceWorker(
-      const ServiceWorkerObjectInfo& info,
-      bool adopt_handle);
+  // Returns the existing service worker or a newly created one. When a new one
+  // is created, increments an interprocess reference to the service worker via
+  // ServiceWorkerHandleReference. Returns nullptr if the given info is invalid.
+  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
+      const ServiceWorkerObjectInfo& info);
+
+  // Returns the existing service worker or a newly created one. Always adopts
+  // an interprocess reference to the service worker via
+  // ServiceWorkerHandleReference. Returns nullptr if the given info is invalid.
+  scoped_refptr<WebServiceWorkerImpl> GetOrAdoptServiceWorker(
+      const ServiceWorkerObjectInfo& info);
 
   // Returns the existing registration or a newly created one. When a new one is
   // created, increments interprocess references to the registration and its

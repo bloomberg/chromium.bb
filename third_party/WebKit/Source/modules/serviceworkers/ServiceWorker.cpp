@@ -54,7 +54,7 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
     OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
-    if (m_outerWorker->state() == WebServiceWorkerStateRedundant) {
+    if (m_handle->serviceWorker()->state() == WebServiceWorkerStateRedundant) {
         exceptionState.throwDOMException(InvalidStateError, "ServiceWorker is in redundant state.");
         return;
     }
@@ -64,12 +64,12 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
 
     WebString messageString = message->toWireString();
     OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
-    m_outerWorker->postMessage(messageString, webChannels.leakPtr());
+    m_handle->serviceWorker()->postMessage(messageString, webChannels.leakPtr());
 }
 
 void ServiceWorker::internalsTerminate()
 {
-    m_outerWorker->terminate();
+    m_handle->serviceWorker()->terminate();
 }
 
 void ServiceWorker::dispatchStateChangeEvent()
@@ -79,12 +79,12 @@ void ServiceWorker::dispatchStateChangeEvent()
 
 String ServiceWorker::scriptURL() const
 {
-    return m_outerWorker->url().string();
+    return m_handle->serviceWorker()->url().string();
 }
 
 String ServiceWorker::state() const
 {
-    switch (m_outerWorker->state()) {
+    switch (m_handle->serviceWorker()->state()) {
     case WebServiceWorkerStateUnknown:
         // The web platform should never see this internal state
         ASSERT_NOT_REACHED();
@@ -105,9 +105,9 @@ String ServiceWorker::state() const
     }
 }
 
-ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, WebServiceWorker* worker)
+ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    return getOrCreate(executionContext, worker);
+    return getOrCreate(executionContext, handle);
 }
 
 bool ServiceWorker::hasPendingActivity() const
@@ -116,7 +116,7 @@ bool ServiceWorker::hasPendingActivity() const
         return true;
     if (m_wasStopped)
         return false;
-    return m_outerWorker->state() != WebServiceWorkerStateRedundant;
+    return m_handle->serviceWorker()->state() != WebServiceWorkerStateRedundant;
 }
 
 void ServiceWorker::stop()
@@ -124,29 +124,29 @@ void ServiceWorker::stop()
     m_wasStopped = true;
 }
 
-ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, WebServiceWorker* outerWorker)
+ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    if (!outerWorker)
+    if (!handle)
         return nullptr;
 
-    ServiceWorker* existingServiceWorker = static_cast<ServiceWorker*>(outerWorker->proxy());
-    if (existingServiceWorker) {
-        ASSERT(existingServiceWorker->executionContext() == executionContext);
-        return existingServiceWorker;
+    ServiceWorker* existingWorker = static_cast<ServiceWorker*>(handle->serviceWorker()->proxy());
+    if (existingWorker) {
+        ASSERT(existingWorker->executionContext() == executionContext);
+        return existingWorker;
     }
 
-    ServiceWorker* worker = new ServiceWorker(executionContext, adoptPtr(outerWorker));
-    worker->suspendIfNeeded();
-    return worker;
+    ServiceWorker* newWorker = new ServiceWorker(executionContext, handle);
+    newWorker->suspendIfNeeded();
+    return newWorker;
 }
 
-ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker> worker)
+ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
     : AbstractWorker(executionContext)
-    , m_outerWorker(worker)
+    , m_handle(handle)
     , m_wasStopped(false)
 {
-    ASSERT(m_outerWorker);
-    m_outerWorker->setProxy(this);
+    ASSERT(m_handle);
+    m_handle->serviceWorker()->setProxy(this);
 }
 
 ServiceWorker::~ServiceWorker()

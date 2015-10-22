@@ -48,7 +48,7 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ServiceWorker* from(ExecutionContext*, WebServiceWorker*);
+    static ServiceWorker* from(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
 
     ~ServiceWorker() override;
 
@@ -72,14 +72,15 @@ public:
 
     void internalsTerminate();
 private:
-    static ServiceWorker* getOrCreate(ExecutionContext*, WebServiceWorker*);
-    ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
+    static ServiceWorker* getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
+    ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
 
     // ActiveDOMObject overrides.
     bool hasPendingActivity() const override;
     void stop() override;
 
-    OwnPtr<WebServiceWorker> m_outerWorker;
+    // A handle to the service worker representation in the embedder.
+    OwnPtr<WebServiceWorker::Handle> m_handle;
     bool m_wasStopped;
 };
 

@@ -33,6 +33,8 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebPassOwnPtr.h"
+#include "public/platform/modules/serviceworker/WebServiceWorker.h"
 
 namespace blink {
 
@@ -45,9 +47,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerProviderClient {
 public:
     virtual ~WebServiceWorkerProviderClient() { }
 
-    virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) = 0;
+    virtual void setController(WebPassOwnPtr<WebServiceWorker::Handle>, bool shouldNotifyControllerChange) = 0;
 
-    virtual void dispatchMessageEvent(WebServiceWorker*, const WebString& message, const WebMessagePortChannelArray& channels) = 0;
+    virtual void dispatchMessageEvent(WebPassOwnPtr<WebServiceWorker::Handle>, const WebString& message, const WebMessagePortChannelArray& channels) = 0;
 };
 
 } // namespace blink

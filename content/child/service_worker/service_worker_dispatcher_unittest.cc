@@ -82,9 +82,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
   CreateObjectInfoAndVersionAttributes(&info, &attrs);
 
   // Should return a worker object newly created with incrementing refcount.
-  bool adopt_handle = false;
-  scoped_ptr<WebServiceWorkerImpl> worker(
-      dispatcher()->GetServiceWorker(attrs.installing, adopt_handle));
+  scoped_refptr<WebServiceWorkerImpl> worker(
+      dispatcher()->GetOrCreateServiceWorker(attrs.installing));
   EXPECT_TRUE(worker);
   EXPECT_TRUE(ContainsServiceWorker(attrs.installing.handle_id));
   EXPECT_EQ(1UL, ipc_sink()->message_count());
@@ -94,16 +93,13 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
   ipc_sink()->ClearMessages();
 
   // Should return the existing worker object.
-  adopt_handle = false;
-  WebServiceWorkerImpl* existing_worker =
-      dispatcher()->GetServiceWorker(attrs.installing, adopt_handle);
+  scoped_refptr<WebServiceWorkerImpl> existing_worker =
+      dispatcher()->GetOrCreateServiceWorker(attrs.installing);
   EXPECT_EQ(worker, existing_worker);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Should return the existing worker object with adopting refcount.
-  adopt_handle = true;
-  existing_worker =
-      dispatcher()->GetServiceWorker(attrs.installing, adopt_handle);
+  existing_worker = dispatcher()->GetOrAdoptServiceWorker(attrs.installing);
   EXPECT_EQ(worker, existing_worker);
   ASSERT_EQ(1UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
@@ -112,23 +108,20 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
   ipc_sink()->ClearMessages();
 
   // Should return another worker object newly created with adopting refcount.
-  adopt_handle = true;
-  scoped_ptr<WebServiceWorkerImpl> another_worker(
-      dispatcher()->GetServiceWorker(attrs.waiting, adopt_handle));
+  scoped_refptr<WebServiceWorkerImpl> another_worker(
+      dispatcher()->GetOrAdoptServiceWorker(attrs.waiting));
   EXPECT_NE(worker.get(), another_worker.get());
   EXPECT_TRUE(ContainsServiceWorker(attrs.waiting.handle_id));
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
-  // Should return nullptr when a given object info is invalid.
-  adopt_handle = false;
-  WebServiceWorkerImpl* invalid_worker =
-      dispatcher()->GetServiceWorker(ServiceWorkerObjectInfo(), adopt_handle);
+  // Should return nullptr when a given object is invalid.
+  scoped_refptr<WebServiceWorkerImpl> invalid_worker =
+      dispatcher()->GetOrCreateServiceWorker(ServiceWorkerObjectInfo());
   EXPECT_FALSE(invalid_worker);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
-  adopt_handle = true;
   invalid_worker =
-      dispatcher()->GetServiceWorker(ServiceWorkerObjectInfo(), adopt_handle);
+      dispatcher()->GetOrAdoptServiceWorker(ServiceWorkerObjectInfo());
   EXPECT_FALSE(invalid_worker);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 }
