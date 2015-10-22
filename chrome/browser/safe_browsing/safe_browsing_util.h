@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_
 
 #include <cstring>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
-#include "components/safe_browsing_db/safe_browsing_db_util.h"
 
 namespace safe_browsing {
 class ChunkData;
@@ -24,11 +24,31 @@ class ChunkData;
 
 class GURL;
 
+// A truncated hash's type.
+typedef uint32 SBPrefix;
+
 // Container for holding a chunk URL and the list it belongs to.
 struct ChunkUrl {
   std::string url;
   std::string list_name;
 };
+
+// A full hash.
+union SBFullHash {
+  char full_hash[32];
+  SBPrefix prefix;
+};
+
+inline bool SBFullHashEqual(const SBFullHash& a, const SBFullHash& b) {
+  return !memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash));
+}
+
+inline bool SBFullHashLess(const SBFullHash& a, const SBFullHash& b) {
+  return memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash)) < 0;
+}
+
+// Generate full hash for the given string.
+SBFullHash SBFullHashForString(const base::StringPiece& str);
 
 // Data for an individual chunk sent from the server.
 class SBChunkData {
@@ -102,6 +122,35 @@ struct SBChunkDelete {
   std::vector<ChunkRange> chunk_del;
 };
 
+// Different types of threats that SafeBrowsing protects against.
+enum SBThreatType {
+  // No threat at all.
+  SB_THREAT_TYPE_SAFE,
+
+  // The URL is being used for phishing.
+  SB_THREAT_TYPE_URL_PHISHING,
+
+  // The URL hosts malware.
+  SB_THREAT_TYPE_URL_MALWARE,
+
+  // The URL hosts unwanted programs.
+  SB_THREAT_TYPE_URL_UNWANTED,
+
+  // The download URL is malware.
+  SB_THREAT_TYPE_BINARY_MALWARE_URL,
+
+  // Url detected by the client-side phishing model.  Note that unlike the
+  // above values, this does not correspond to a downloaded list.
+  SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+
+  // The Chrome extension or app (given by its ID) is malware.
+  SB_THREAT_TYPE_EXTENSION,
+
+  // Url detected by the client-side malware IP list. This IP list is part
+  // of the client side detection model.
+  SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+};
+
 // Utility functions -----------------------------------------------------------
 
 namespace safe_browsing_util {
@@ -173,6 +222,10 @@ void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths);
 
 // Given a URL, returns all the patterns we need to check.
 void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls);
+
+GURL GeneratePhishingReportUrl(const std::string& report_page,
+                               const std::string& url_to_report,
+                               bool is_client_side_detection);
 
 SBFullHash StringToSBFullHash(const std::string& hash_in);
 std::string SBFullHashToString(const SBFullHash& hash_out);

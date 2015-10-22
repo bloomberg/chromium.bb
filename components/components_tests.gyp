@@ -571,10 +571,6 @@
     'rlz_unittest_sources': [
       'rlz/rlz_tracker_unittest.cc',
     ],
-    'safe_browsing_db_unittest_sources': [
-      'safe_browsing_db/prefix_set_unittest.cc',
-      'safe_browsing_db/safe_browsing_db_util_unittest.cc',
-    ],
     'safe_json_unittest_sources': [
       'safe_json/json_sanitizer_unittest.cc',
     ],
@@ -1099,7 +1095,6 @@
             '<@(network_hints_unittest_sources)',
             '<@(page_load_metrics_unittest_sources)',
             '<@(power_unittest_sources)',
-            '<@(safe_browsing_db_unittest_sources)',
             '<@(safe_json_unittest_sources)',
             '<@(scheduler_unittest_sources)',
             '<@(storage_monitor_unittest_sources)',
@@ -1139,7 +1134,6 @@
             'components.gyp:password_manager_content_common',
             'components.gyp:power',
             'components.gyp:precache_content',
-            'components.gyp:safe_browsing_db',
             'components.gyp:safe_json',
             'components.gyp:safe_json_test_support',
             'components.gyp:sessions_content',

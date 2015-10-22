@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing_db/prefix_set.h"
+#include "chrome/browser/safe_browsing/prefix_set.h"
 
 #include <algorithm>
 #include <iterator>
@@ -19,7 +19,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "components/safe_browsing_db/safe_browsing_db_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -176,20 +176,14 @@ class PrefixSetTest : public PlatformTest {
     ASSERT_EQ(new_size_64, size_64);
   }
 
-  base::FilePath TestFilePath() {
-    base::FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    return path.AppendASCII("components")
-        .AppendASCII("test")
-        .AppendASCII("data")
-        .AppendASCII("SafeBrowsingDb");
-  }
-
   // Fill |prefixes| with values read from a reference file.  The reference file
   // was generated from a specific |shared_prefixes_|.
   bool ReadReferencePrefixes(std::vector<SBPrefix>* prefixes) {
     const char kRefname[] = "PrefixSetRef";
-    base::FilePath ref_path = TestFilePath();
+    base::FilePath ref_path;
+    if (!PathService::Get(chrome::DIR_TEST_DATA, &ref_path))
+      return false;
+    ref_path = ref_path.AppendASCII("SafeBrowsing");
     ref_path = ref_path.AppendASCII(kRefname);
 
     base::ScopedFILE file(base::OpenFile(ref_path, "r"));
@@ -691,7 +685,9 @@ TEST_F(PrefixSetTest, Version2) {
   ASSERT_TRUE(ReadReferencePrefixes(&ref_prefixes));
 
   const char kBasename[] = "PrefixSetVersion2";
-  base::FilePath golden_path = TestFilePath();
+  base::FilePath golden_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  golden_path = golden_path.AppendASCII("SafeBrowsing");
   golden_path = golden_path.AppendASCII(kBasename);
 
   scoped_ptr<const PrefixSet> prefix_set(PrefixSet::LoadFile(golden_path));
@@ -708,7 +704,9 @@ TEST_F(PrefixSetTest, Version3) {
   ASSERT_TRUE(ReadReferencePrefixes(&ref_prefixes));
 
   const char kBasename[] = "PrefixSetVersion3";
-  base::FilePath golden_path = TestFilePath();
+  base::FilePath golden_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &golden_path));
+  golden_path = golden_path.AppendASCII("SafeBrowsing");
   golden_path = golden_path.AppendASCII(kBasename);
 
   scoped_ptr<const PrefixSet> prefix_set(PrefixSet::LoadFile(golden_path));

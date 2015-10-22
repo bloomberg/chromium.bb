@@ -46,16 +46,15 @@
 //     m * 2 byte |&deltas_[0]..&deltas_[m]|
 //        16 byte digest
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_PREFIX_SET_H_
-#define COMPONENTS_SAFE_BROWSING_DB_PREFIX_SET_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_
+#define CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_
 
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/safe_browsing_db/safe_browsing_db_util.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 namespace base {
 class FilePath;
@@ -184,4 +183,4 @@ class PrefixSetBuilder {
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_DB_PREFIX_SET_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_PREFIX_SET_H_

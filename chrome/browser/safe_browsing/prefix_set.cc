@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing_db/prefix_set.h"
+#include "chrome/browser/safe_browsing/prefix_set.h"
 
 #include <algorithm>
 
@@ -353,8 +353,7 @@ void PrefixSet::AddRun(SBPrefix index_prefix,
     deltas_.reserve(EstimateFinalCount(index_prefix, deltas_.size()));
   }
 
-  index_.push_back(
-      std::make_pair(index_prefix, static_cast<uint32>(deltas_.size())));
+  index_.push_back(std::make_pair(index_prefix, deltas_.size()));
   deltas_.insert(deltas_.end(), run_begin, run_end);
 }
 

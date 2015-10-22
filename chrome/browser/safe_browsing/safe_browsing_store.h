@@ -13,11 +13,8 @@
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/time/time.h"
+#include "chrome/browser/safe_browsing/prefix_set.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-
-namespace safe_browsing {
-class PrefixSetBuilder;
-};
 
 namespace base {
 class FilePath;

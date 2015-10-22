@@ -320,4 +320,20 @@ TEST(SafeBrowsingUtilTest, StringToSBFullHashAndSBFullHashToString) {
   EXPECT_EQ(hash_in, hash_final);
 }
 
+TEST(SafeBrowsingUtilTest, FullHashOperators) {
+  const SBFullHash kHash1 = SBFullHashForString("one");
+  const SBFullHash kHash2 = SBFullHashForString("two");
+
+  EXPECT_TRUE(SBFullHashEqual(kHash1, kHash1));
+  EXPECT_TRUE(SBFullHashEqual(kHash2, kHash2));
+  EXPECT_FALSE(SBFullHashEqual(kHash1, kHash2));
+  EXPECT_FALSE(SBFullHashEqual(kHash2, kHash1));
+
+  EXPECT_FALSE(SBFullHashLess(kHash1, kHash2));
+  EXPECT_TRUE(SBFullHashLess(kHash2, kHash1));
+
+  EXPECT_FALSE(SBFullHashLess(kHash1, kHash1));
+  EXPECT_FALSE(SBFullHashLess(kHash2, kHash2));
+}
+
 }  // namespace

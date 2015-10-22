@@ -298,7 +298,6 @@ source_set("browser") {
       "//components/plugins/common",
       "//components/proxy_config",
       "//components/resources",
-      "//components/safe_browsing_db",
       "//components/safe_json",
       "//components/sessions",
       "//components/ssl_config",
