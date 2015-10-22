@@ -3197,6 +3197,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.EntryPoint" enum="BookmarksEntryPoint">
+  <owner>ianwen@chromium.org</owner>
+  <summary>How users add a new bookmark.</summary>
+</histogram>
+
 <histogram name="Bookmarks.LaunchDepth">
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -3204,6 +3209,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     bookmark is launched. Depth indicates how many levels below a permanent
     bookmark folder the bookmark was found in (e.g. a bookmark immediately in
     the bookmark bar has depth 1).
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.LaunchLocation" enum="BookmarkLaunchLocation">
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Logs every time a bookmark is launched from an assortment of different UI
+    surfaces.
   </summary>
 </histogram>
 
@@ -53667,6 +53680,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="Authentication timed out"/>
   <int value="7" label="Unsupported device"/>
   <int value="8" label="Unknown or unhandler error"/>
+</enum>
+
+<enum name="BookmarkLaunchLocation" type="int">
+  <int value="0" label="Attached bookmark bar"/>
+  <int value="1" label="Detached (floating) bookmark bar"/>
+  <int value="2" label="Bookmark bar subfolder"/>
+  <int value="3" label="Context menu"/>
+  <int value="4" label="Wrench menu"/>
+  <int value="5" label="Bookmark manager"/>
+  <int value="6" label="Omnibox suggestion"/>
+</enum>
+
+<enum name="BookmarksEntryPoint" type="int">
+  <int value="0" label="Accelerator(Ctrl+D)"/>
+  <int value="1" label="Gesture"/>
+  <int value="2" label="Space or Enter"/>
+  <int value="3" label="Mouse click"/>
 </enum>
 
 <enum name="BookmarksExperimentState" type="int">
