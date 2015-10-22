@@ -10,12 +10,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
+#include "ui/ozone/platform/drm/test/mock_buffer_generator.h"
 #include "ui/ozone/platform/drm/test/mock_drm_device.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -64,7 +64,7 @@ class DrmWindowTest : public testing::Test {
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<ui::MockDrmDevice> drm_;
-  scoped_ptr<ui::DrmBufferGenerator> buffer_generator_;
+  scoped_ptr<ui::MockBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
 
@@ -75,7 +75,7 @@ class DrmWindowTest : public testing::Test {
 void DrmWindowTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   drm_ = new ui::MockDrmDevice();
-  buffer_generator_.reset(new ui::DrmBufferGenerator());
+  buffer_generator_.reset(new ui::MockBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(

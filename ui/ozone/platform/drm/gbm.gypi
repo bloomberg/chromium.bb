@@ -176,6 +176,8 @@
           'gpu/screen_manager_unittest.cc',
           'test/mock_drm_device.cc',
           'test/mock_drm_device.h',
+          'test/mock_buffer_generator.cc',
+          'test/mock_buffer_generator.h',
         ],
       },
     },

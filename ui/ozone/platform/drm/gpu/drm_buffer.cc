@@ -131,22 +131,4 @@ bool DrmBuffer::RequiresGlFinish() const {
   return false;
 }
 
-DrmBufferGenerator::DrmBufferGenerator() {
-}
-
-DrmBufferGenerator::~DrmBufferGenerator() {
-}
-
-scoped_refptr<ScanoutBuffer> DrmBufferGenerator::Create(
-    const scoped_refptr<DrmDevice>& drm,
-    gfx::BufferFormat format,
-    const gfx::Size& size) {
-  scoped_refptr<DrmBuffer> buffer(new DrmBuffer(drm));
-  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-  if (!buffer->Initialize(info, true /* should_register_framebuffer */))
-    return NULL;
-
-  return buffer;
-}
-
 }  // namespace ui

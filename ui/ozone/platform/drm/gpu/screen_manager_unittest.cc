@@ -4,12 +4,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
-#include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
+#include "ui/ozone/platform/drm/test/mock_buffer_generator.h"
 #include "ui/ozone/platform/drm/test/mock_drm_device.h"
 
 namespace {
@@ -46,7 +46,7 @@ class ScreenManagerTest : public testing::Test {
   void SetUp() override {
     drm_ = new ui::MockDrmDevice();
     device_manager_.reset(new ui::DrmDeviceManager(nullptr));
-    buffer_generator_.reset(new ui::DrmBufferGenerator());
+    buffer_generator_.reset(new ui::MockBufferGenerator());
     screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   }
   void TearDown() override {
@@ -57,7 +57,7 @@ class ScreenManagerTest : public testing::Test {
  protected:
   scoped_refptr<ui::MockDrmDevice> drm_;
   scoped_ptr<ui::DrmDeviceManager> device_manager_;
-  scoped_ptr<ui::DrmBufferGenerator> buffer_generator_;
+  scoped_ptr<ui::MockBufferGenerator> buffer_generator_;
   scoped_ptr<ui::ScreenManager> screen_manager_;
 
  private:

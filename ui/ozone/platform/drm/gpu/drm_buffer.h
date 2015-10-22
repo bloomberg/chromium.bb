@@ -67,20 +67,6 @@ class OZONE_EXPORT DrmBuffer : public ScanoutBuffer {
   DISALLOW_COPY_AND_ASSIGN(DrmBuffer);
 };
 
-class OZONE_EXPORT DrmBufferGenerator : public ScanoutBufferGenerator {
- public:
-  DrmBufferGenerator();
-  ~DrmBufferGenerator() override;
-
-  // ScanoutBufferGenerator:
-  scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
-                                      gfx::BufferFormat format,
-                                      const gfx::Size& size) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DrmBufferGenerator);
-};
-
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_BUFFER_H_

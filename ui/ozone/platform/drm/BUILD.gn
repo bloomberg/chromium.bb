@@ -155,6 +155,8 @@ source_set("gbm_unittests") {
     "gpu/hardware_display_controller_unittest.cc",
     "gpu/hardware_display_plane_manager_unittest.cc",
     "gpu/screen_manager_unittest.cc",
+    "test/mock_buffer_generator.cc",
+    "test/mock_buffer_generator.h",
     "test/mock_drm_device.cc",
     "test/mock_drm_device.h",
   ]
