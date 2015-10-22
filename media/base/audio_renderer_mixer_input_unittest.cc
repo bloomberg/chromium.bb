@@ -30,19 +30,19 @@ class AudioRendererMixerInputTest : public testing::Test {
         AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
         kBitsPerChannel, kBufferSize);
 
-    CreateMixerInput();
+    CreateMixerInput(kDefaultDeviceId);
     fake_callback_.reset(new FakeAudioRenderCallback(0));
     mixer_input_->Initialize(audio_parameters_, fake_callback_.get());
     audio_bus_ = AudioBus::Create(audio_parameters_);
   }
 
-  void CreateMixerInput() {
+  void CreateMixerInput(const std::string& device_id) {
     mixer_input_ = new AudioRendererMixerInput(
         base::Bind(&AudioRendererMixerInputTest::GetMixer,
                    base::Unretained(this)),
         base::Bind(&AudioRendererMixerInputTest::RemoveMixer,
                    base::Unretained(this)),
-        kDefaultDeviceId, kDefaultSecurityOrigin);
+        device_id, kDefaultSecurityOrigin);
   }
 
   AudioRendererMixer* GetMixer(const AudioParameters& params,
@@ -142,7 +142,7 @@ TEST_F(AudioRendererMixerInputTest, StopBeforeInitializeOrStart) {
   mixer_input_->Stop();
 
   // Verify Stop() works without Initialize() or Start().
-  CreateMixerInput();
+  CreateMixerInput(kDefaultDeviceId);
   mixer_input_->Stop();
 }
 
@@ -189,7 +189,7 @@ TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceToSameDevice) {
   mixer_input_->Stop();
 }
 
-// Test SwitchOutputDevice() to a nonexistent device
+// Test that SwitchOutputDevice() to a nonexistent device fails.
 TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceToNonexistentDevice) {
   mixer_input_->Start();
   EXPECT_CALL(*this,
@@ -203,7 +203,7 @@ TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceToNonexistentDevice) {
   mixer_input_->Stop();
 }
 
-// Test SwitchOutputDevice() to an unauthorized device
+// Test that SwitchOutputDevice() to an unauthorized device fails.
 TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceToUnauthorizedDevice) {
   mixer_input_->Start();
   EXPECT_CALL(*this,
@@ -217,17 +217,54 @@ TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceToUnauthorizedDevice) {
   mixer_input_->Stop();
 }
 
-// Test that calling SwitchOutputDevice() before Start() fails.
+// Test that calling SwitchOutputDevice() before Start() is resolved after
+// a call to Start().
 TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceBeforeStart) {
-  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
   base::RunLoop run_loop;
   mixer_input_->SwitchOutputDevice(
-      std::string(), url::Origin(),
+      kDefaultDeviceId, kDefaultSecurityOrigin,
       base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
                  base::Unretained(this), &run_loop));
-  run_loop.Run();
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
   mixer_input_->Start();
+  run_loop.Run();
   mixer_input_->Stop();
+}
+
+// Test that calling SwitchOutputDevice() without ever calling Start() fails
+// cleanly after calling Stop().
+TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceWithoutStart) {
+  base::RunLoop run_loop;
+  mixer_input_->SwitchOutputDevice(
+      kDefaultDeviceId, kDefaultSecurityOrigin,
+      base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
+                 base::Unretained(this), &run_loop));
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
+  mixer_input_->Stop();
+  run_loop.Run();
+}
+
+// Test creation with an invalid device. OnRenderError() should be called.
+// Play() and Pause() should not cause crashes, even if they have no effect.
+// SwitchOutputDevice() should fail.
+TEST_F(AudioRendererMixerInputTest, CreateWithInvalidDevice) {
+  // |mixer_input_| was initialized during construction.
+  mixer_input_->Stop();
+
+  CreateMixerInput(kNonexistentDeviceId);
+  EXPECT_CALL(*fake_callback_, OnRenderError());
+  mixer_input_->Initialize(audio_parameters_, fake_callback_.get());
+  mixer_input_->Start();
+  mixer_input_->Play();
+  mixer_input_->Pause();
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
+  mixer_input_->SwitchOutputDevice(
+      kDefaultDeviceId, kDefaultSecurityOrigin,
+      base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
+                 base::Unretained(this), &run_loop));
+  mixer_input_->Stop();
+  run_loop.Run();
 }
 
 }  // namespace media

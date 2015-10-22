@@ -72,8 +72,8 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   // Callbacks provided during construction which allow AudioRendererMixerInput
   // to retrieve a mixer during Initialize() and notify when it's done with it.
-  GetMixerCB get_mixer_cb_;
-  RemoveMixerCB remove_mixer_cb_;
+  const GetMixerCB get_mixer_cb_;
+  const RemoveMixerCB remove_mixer_cb_;
 
   // AudioParameters received during Initialize().
   AudioParameters params_;
@@ -91,6 +91,12 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   // Error callback for handing to AudioRendererMixer.
   const base::Closure error_cb_;
+
+  // Pending switch-device callback, in case SwitchOutputDevice() is invoked
+  // before Start()
+  SwitchOutputDeviceCB pending_switch_callback_;
+  std::string pending_switch_device_id_;
+  url::Origin pending_switch_security_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };
