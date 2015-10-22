@@ -124,14 +124,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   EXPECT_FALSE(view->model()->popup_model()->IsOpen());
 }
 
-#if defined(OS_WIN)
-// flaky on Windows - http://crbug.com/523255
-#define MAYBE_SelectAllOnClick DISABLED_SelectAllOnClick
-#else
-#define MAYBE_SelectAllOnClick SelectAllOnClick
-#endif
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_SelectAllOnClick) {
+// If this flakes, disable and log details in http://crbug.com/523255.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));

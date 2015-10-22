@@ -478,18 +478,10 @@ void MenuViewDragAndDropForDropStayOpen::DoTestWithMenuOpen() {
   Done();
 }
 
-#if defined(OS_WIN)
-// flaky on Windows - http://crbug.com/523255
-#define MAYBE_MenuViewStaysOpenForNestedDrag DISABLED_MenuViewStaysOpenForNestedDrag
-#define MAYBE_MenuViewCancelsForOwnDrag DISABLED_MenuViewCancelsForOwnDrag
-#else
-#define MAYBE_MenuViewStaysOpenForNestedDrag MenuViewStaysOpenForNestedDrag
-#define MAYBE_MenuViewCancelsForOwnDrag MenuViewCancelsForOwnDrag
-#endif
 // Test that if a menu is opened for a drop which is handled by a child view
 // that the menu does not immediately try to close.
-VIEW_TEST(MenuViewDragAndDropForDropStayOpen,
-          MAYBE_MenuViewStaysOpenForNestedDrag)
+// If this flakes, disable and log details in http://crbug.com/523255.
+VIEW_TEST(MenuViewDragAndDropForDropStayOpen, MenuViewStaysOpenForNestedDrag)
 
 class MenuViewDragAndDropForDropCancel : public MenuViewDragAndDropTest {
  public:
@@ -520,4 +512,5 @@ void MenuViewDragAndDropForDropCancel::DoTestWithMenuOpen() {
 
 // Test that if a menu is opened for a drop handled entirely by menu code, the
 // menu will try to close if it does not receive any drag updates.
-VIEW_TEST(MenuViewDragAndDropForDropCancel, MAYBE_MenuViewCancelsForOwnDrag)
+// If this flakes, disable and log details in http://crbug.com/523255.
+VIEW_TEST(MenuViewDragAndDropForDropCancel, MenuViewCancelsForOwnDrag)

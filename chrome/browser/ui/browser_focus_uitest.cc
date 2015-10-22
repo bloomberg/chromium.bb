@@ -192,11 +192,11 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestInterstitialPage);
 };
 
-// Flaky on Mac (http://crbug.com/67301) and Windows
-// (http://crbug.com/523255).
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Flaky on Mac (http://crbug.com/67301).
+#if defined(OS_MACOSX)
 #define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
 #else
+// If this flakes, disable and log details in http://crbug.com/523255.
 #define MAYBE_ClickingMovesFocus ClickingMovesFocus
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
@@ -483,10 +483,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 }
 
 // Test that find-in-page UI can request focus, even when it is already open.
-// flaky on Windows - http://crbug.com/523255
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
 #define MAYBE_FindFocusTest DISABLED_FindFocusTest
 #else
+// If this flakes, disable and log details in http://crbug.com/523255.
 #define MAYBE_FindFocusTest FindFocusTest
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FindFocusTest) {
