@@ -5,7 +5,6 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_H_
 #define UI_COMPOSITOR_COMPOSITOR_H_
 
-#include <list>
 #include <string>
 
 #include "base/containers/hash_tables.h"
@@ -344,7 +343,8 @@ class COMPOSITOR_EXPORT Compositor
 
   base::ObserverList<CompositorObserver, true> observer_list_;
   base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
-  std::list<CompositorBeginFrameObserver*> begin_frame_observer_list_;
+  base::ObserverList<CompositorBeginFrameObserver, true>
+      begin_frame_observer_list_;
 
   gfx::AcceleratedWidget widget_;
   bool widget_valid_;

@@ -194,8 +194,6 @@ Compositor::~Compositor() {
   FOR_EACH_OBSERVER(CompositorAnimationObserver, animation_observer_list_,
                     OnCompositingShuttingDown(this));
 
-  DCHECK(begin_frame_observer_list_.empty());
-
   if (root_layer_)
     root_layer_->ResetCompositor();
 
@@ -359,30 +357,21 @@ bool Compositor::HasAnimationObserver(
 }
 
 void Compositor::AddBeginFrameObserver(CompositorBeginFrameObserver* observer) {
-  DCHECK(std::find(begin_frame_observer_list_.begin(),
-                   begin_frame_observer_list_.end(), observer) ==
-         begin_frame_observer_list_.end());
-
-  if (begin_frame_observer_list_.empty())
+  if (!begin_frame_observer_list_.might_have_observers())
     host_->SetChildrenNeedBeginFrames(true);
+
+  begin_frame_observer_list_.AddObserver(observer);
 
   if (missed_begin_frame_args_.IsValid())
     observer->OnSendBeginFrame(missed_begin_frame_args_);
-
-  begin_frame_observer_list_.push_back(observer);
 }
 
 void Compositor::RemoveBeginFrameObserver(
     CompositorBeginFrameObserver* observer) {
-  auto it = std::find(begin_frame_observer_list_.begin(),
-                      begin_frame_observer_list_.end(), observer);
-  DCHECK(it != begin_frame_observer_list_.end());
-  begin_frame_observer_list_.erase(it);
+  begin_frame_observer_list_.RemoveObserver(observer);
 
-  if (begin_frame_observer_list_.empty()) {
-    host_->SetChildrenNeedBeginFrames(false);
-    missed_begin_frame_args_ = cc::BeginFrameArgs();
-  }
+  // As this call may take place while iterating over observers, unsubscription
+  // from |host_| is performed after iteration in |SendBeginFramesToChildren()|.
 }
 
 void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
@@ -452,8 +441,18 @@ void Compositor::DidAbortSwapBuffers() {
 }
 
 void Compositor::SendBeginFramesToChildren(const cc::BeginFrameArgs& args) {
-  for (auto observer : begin_frame_observer_list_)
-    observer->OnSendBeginFrame(args);
+  FOR_EACH_OBSERVER(CompositorBeginFrameObserver, begin_frame_observer_list_,
+                    OnSendBeginFrame(args));
+
+  // Unsubscription is performed here, after iteration, to handle the case where
+  // the last BeginFrame observer is removed while iterating over the observers.
+  if (!begin_frame_observer_list_.might_have_observers()) {
+    host_->SetChildrenNeedBeginFrames(false);
+    // Unsubscription should reset |missed_begin_frame_args_|, avoiding stale
+    // BeginFrame dispatch when the next BeginFrame observer is added.
+    missed_begin_frame_args_ = cc::BeginFrameArgs();
+    return;
+  }
 
   missed_begin_frame_args_ = args;
   missed_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
