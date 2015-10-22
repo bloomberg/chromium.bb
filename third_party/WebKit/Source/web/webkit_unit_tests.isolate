@@ -6,6 +6,7 @@
     'files': [
       '<(PRODUCT_DIR)/content_shell.pak',
       'tests/data/',
+      '../core/paint/test_data/',
       # Required by some image decoder tests.
       '../platform/image-decoders/testing/',
       '../../LayoutTests/fast/images/resources/',

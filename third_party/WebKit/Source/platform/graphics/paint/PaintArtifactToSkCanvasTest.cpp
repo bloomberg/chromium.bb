@@ -125,10 +125,10 @@ TEST(PaintArtifactToSkCanvasTest, TransformCombining)
     TransformationMatrix matrix1;
     matrix1.scale(2);
     FloatPoint3D origin1(10, 10, 0);
-    RefPtr<TransformPaintPropertyNode> transform1 = adoptRef(new TransformPaintPropertyNode(matrix1, origin1));
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(matrix1, origin1);
     TransformationMatrix matrix2;
     matrix2.translate(5, 5);
-    RefPtr<TransformPaintPropertyNode> transform2 = adoptRef(new TransformPaintPropertyNode(matrix2, FloatPoint3D(), transform1.get()));
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(matrix2, FloatPoint3D(), transform1.get());
 
     // Build a two-chunk artifact directly.
     PaintArtifact artifact;

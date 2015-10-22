@@ -29,19 +29,31 @@ public:
         return adoptPtr(new ObjectPaintProperties());
     }
 
-    bool hasTransform() const { return m_transform; }
+    // The hierarchy of transform subtree created by a LayoutObject.
+    // [ paintOffsetTranslation ]           Normally paint offset is accumulated without creating a node
+    // |                                    until we see, for example, transform or position:fixed.
+    // +---[ transform ]                    The space created by CSS transform.
+    //     +---[ perspective ]              The space created by CSS perspective.
+    //         +---[ scrollTranslation ]    The space created by overflow clip.
+    void setPaintOffsetTranslation(PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation) { m_paintOffsetTranslation = paintOffsetTranslation; }
+    const TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
+
     void setTransform(PassRefPtr<TransformPaintPropertyNode> transform) { m_transform = transform; }
     const TransformPaintPropertyNode* transform() const { return m_transform.get(); }
 
-    bool hasPerspective() const { return m_perspective; }
     void setPerspective(PassRefPtr<TransformPaintPropertyNode> perspective) { m_perspective = perspective; }
     const TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
+
+    void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> scrollTranslation) { m_scrollTranslation = scrollTranslation; }
+    const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
 private:
     ObjectPaintProperties() { }
 
+    RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;
     RefPtr<TransformPaintPropertyNode> m_perspective;
+    RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
 };
 
 } // namespace blink

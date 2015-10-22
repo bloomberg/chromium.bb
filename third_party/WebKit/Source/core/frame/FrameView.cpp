@@ -76,6 +76,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/PaintPropertyTreeBuilder.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -2479,7 +2480,7 @@ void FrameView::updatePaintProperties()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties); });
-    // TODO(pdr): Calculate the paint properties by walking the layout tree.
+    PaintPropertyTreeBuilder().buildPropertyTrees(*this);
     forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean); });
 }
 

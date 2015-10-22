@@ -37,6 +37,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
@@ -570,6 +571,13 @@ public:
     bool canThrottleRendering() const;
     bool isHiddenForThrottling() const { return m_hiddenForThrottling; }
 
+    // Paint properties for SPv2 Only.
+    void setPreTranslation(PassRefPtr<TransformPaintPropertyNode> preTranslation) { m_preTranslation = preTranslation; }
+    const TransformPaintPropertyNode* preTranslation() const { return m_preTranslation.get(); }
+
+    void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> scrollTranslation) { m_scrollTranslation = scrollTranslation; }
+    const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -867,6 +875,13 @@ private:
     // notifications, i.e., not in the middle of the lifecycle.
     bool m_hiddenForThrottling;
     bool m_crossOriginForThrottling;
+
+    // Paint properties for SPv2 Only.
+    // The hierarchy of transform subtree created by a FrameView.
+    // [ preTranslation ]               The offset from Widget::frameRect. Establishes viewport.
+    //     +---[ scrollTranslation ]    Frame scrolling. This is going away in favor of Settings::rootLayerScrolls.
+    RefPtr<TransformPaintPropertyNode> m_preTranslation;
+    RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

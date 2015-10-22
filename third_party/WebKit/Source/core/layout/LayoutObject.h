@@ -60,14 +60,15 @@ class Document;
 class HitTestLocation;
 class HitTestResult;
 class InlineBox;
-class PseudoStyleRequest;
 class LayoutBoxModelObject;
 class LayoutBlock;
 class LayoutFlowThread;
 class LayoutGeometryMap;
-class PaintLayer;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
+class ObjectPaintProperties;
+class PaintLayer;
+class PseudoStyleRequest;
 class TransformState;
 
 struct PaintInfo;
@@ -352,6 +353,14 @@ public:
 
     // Sets the parent of this object but doesn't add it as a child of the parent.
     void setDangerousOneWayParent(LayoutObject*);
+
+    // For SPv2 only. The ObjectPaintProperties structure holds references to the
+    // property tree nodes that are created by the layout object for painting.
+    // The property nodes are only updated during InUpdatePaintProperties phase
+    // of the document lifecycle and shall remain immutable during other phases.
+    ObjectPaintProperties* objectPaintProperties() const;
+    ObjectPaintProperties& ensureObjectPaintProperties();
+    void clearObjectPaintProperties();
 
 private:
     //////////////////////////////////////////

@@ -43,5 +43,12 @@ void RenderingTest::SetUp()
     document().view()->updateAllLifecyclePhases();
 }
 
+void RenderingTest::TearDown()
+{
+    // We need to destroy most of the Blink structure here because derived tests may restore
+    // RuntimeEnabledFeatures setting during teardown, which happens before our destructor
+    // getting invoked, breaking the assumption that REF can't change during Blink lifetime.
+    m_pageHolder = nullptr;
+}
 
 } // namespace blink

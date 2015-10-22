@@ -86,13 +86,13 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging)
     chunker.incrementDisplayItemIndex();
 
     PaintChunkProperties simpleTransform;
-    simpleTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    simpleTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
 
     chunker.updateCurrentPaintChunkProperties(simpleTransform);
     chunker.incrementDisplayItemIndex();
 
     PaintChunkProperties anotherTransform;
-    anotherTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    anotherTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
     chunker.updateCurrentPaintChunkProperties(anotherTransform);
     chunker.incrementDisplayItemIndex();
 
@@ -114,7 +114,7 @@ TEST_F(PaintChunkerTest, BuildLinearChunksFromNestedTransforms)
     chunker.incrementDisplayItemIndex();
 
     PaintChunkProperties simpleTransform;
-    simpleTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    simpleTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
     chunker.updateCurrentPaintChunkProperties(simpleTransform);
     chunker.incrementDisplayItemIndex();
     chunker.incrementDisplayItemIndex();
@@ -138,11 +138,11 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems)
     chunker.incrementDisplayItemIndex();
 
     PaintChunkProperties firstTransform;
-    firstTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7)));
+    firstTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
     chunker.updateCurrentPaintChunkProperties(firstTransform);
 
     PaintChunkProperties secondTransform;
-    secondTransform.transform = adoptRef(new TransformPaintPropertyNode(TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1)));
+    secondTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1));
     chunker.updateCurrentPaintChunkProperties(secondTransform);
 
     chunker.incrementDisplayItemIndex();

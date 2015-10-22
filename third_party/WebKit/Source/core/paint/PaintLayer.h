@@ -66,7 +66,6 @@ class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
-class ObjectPaintProperties;
 class PaintLayerCompositor;
 class CompositedLayerMapping;
 class ComputedStyle;
@@ -620,12 +619,6 @@ public:
     // For subsequence display items.
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 
-    // Paint properties encode the hierarchical transform, clip, scroll, and
-    // effect information used for painting. Properties should only be changed
-    // during UpdatePaintProperties, and should only be used during Paint.
-    ObjectPaintProperties& mutablePaintProperties();
-    const ObjectPaintProperties* paintProperties() const;
-
 private:
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;
@@ -809,11 +802,6 @@ private:
     PaintLayerClipper m_clipper; // FIXME: Lazily allocate?
     OwnPtr<PaintLayerStackingNode> m_stackingNode;
     OwnPtr<PaintLayerReflectionInfo> m_reflectionInfo;
-
-    // Lazily-allocated paint properties for m_layoutObject, stored here to
-    // reduce memory usage as PaintLayers are created for all paint property
-    // layout objects.
-    OwnPtr<ObjectPaintProperties> m_paintProperties;
 
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
 

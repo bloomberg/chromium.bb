@@ -23,6 +23,7 @@ public:
 
 protected:
     void SetUp() override;
+    void TearDown() override;
 
     Document& document() const { return m_pageHolder->document(); }
 

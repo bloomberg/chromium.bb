@@ -74,6 +74,7 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -147,6 +148,15 @@ bool LayoutObject::s_affectsParentBlock = false;
 
 typedef HashMap<const LayoutObject*, LayoutRect> SelectionPaintInvalidationMap;
 static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = nullptr;
+
+// The pointer to paint properties is implemented as a global hash map temporarily,
+// to avoid memory regression during the transition towards SPv2.
+typedef HashMap<const LayoutObject*, OwnPtr<ObjectPaintProperties>> ObjectPaintPropertiesMap;
+static ObjectPaintPropertiesMap& objectPaintPropertiesMap()
+{
+    DEFINE_STATIC_LOCAL(ObjectPaintPropertiesMap, staticObjectPaintPropertiesMap, ());
+    return staticObjectPaintPropertiesMap;
+}
 
 void* LayoutObject::operator new(size_t sz)
 {
@@ -2516,6 +2526,9 @@ void LayoutObject::willBeDestroyed()
     if (selectionPaintInvalidationMap)
         selectionPaintInvalidationMap->remove(this);
 
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        clearObjectPaintProperties();
+
     clearLayoutRootIfNeeded();
 
     if (m_style) {
@@ -3459,6 +3472,26 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(bool isBackgroundAttachm
         frameView()->addBackgroundAttachmentFixedObject(this);
     else
         frameView()->removeBackgroundAttachmentFixedObject(this);
+}
+
+ObjectPaintProperties* LayoutObject::objectPaintProperties() const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    return objectPaintPropertiesMap().get(this);
+}
+
+ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    if (ObjectPaintProperties* properties = objectPaintProperties())
+        return *properties;
+    return *objectPaintPropertiesMap().set(this, ObjectPaintProperties::create()).storedValue->value.get();
+}
+
+void LayoutObject::clearObjectPaintProperties()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    objectPaintPropertiesMap().remove(this);
 }
 
 } // namespace blink
