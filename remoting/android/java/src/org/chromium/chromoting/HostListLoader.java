@@ -7,8 +7,8 @@ package org.chromium.chromoting;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +38,8 @@ public class HostListLoader {
         void onHostListReceived(HostInfo[] hosts);
         void onError(Error error);
     }
+
+    private static final String TAG = "Chromoting";
 
     /** Path from which to download a user's host list JSON object. */
     private static final String HOST_LIST_PATH =
@@ -107,7 +109,6 @@ public class HostListLoader {
 
             StringBuilder responseBuilder = new StringBuilder();
             Scanner incoming = new Scanner(link.getInputStream());
-            Log.i("auth", "Successfully authenticated to directory server");
             while (incoming.hasNext()) {
                 responseBuilder.append(incoming.nextLine());
             }
@@ -115,7 +116,7 @@ public class HostListLoader {
             incoming.close();
         } catch (MalformedURLException ex) {
             // This should never happen.
-            throw new RuntimeException("Unexpected error while fetching host list: " + ex);
+            throw new RuntimeException("Unexpected error while fetching host list: ", ex);
         } catch (IOException ex) {
             postError(callback, Error.NETWORK_ERROR);
             return;
@@ -131,7 +132,6 @@ public class HostListLoader {
             JSONObject data = new JSONObject(response).getJSONObject("data");
             if (data.has("items")) {
                 JSONArray hostsJson = data.getJSONArray("items");
-                Log.i("hostlist", "Received host listing from directory server");
 
                 int index = 0;
                 while (!hostsJson.isNull(index)) {
@@ -147,7 +147,8 @@ public class HostListLoader {
                 }
             }
         } catch (JSONException ex) {
-            Log.e("hostlist", "Error parsing host list response: ", ex);
+            // Logging the exception stack trace may be too spammy.
+            Log.e(TAG, "Error parsing host list response: %s", ex.getMessage());
             postError(callback, Error.UNEXPECTED_RESPONSE);
             return;
         }

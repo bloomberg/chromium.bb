@@ -6,7 +6,8 @@ package org.chromium.chromoting;
 
 import android.app.Activity;
 import android.text.TextUtils;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import java.util.List;
  * different capabilities at different stages of the application.
  */
 public class CapabilityManager {
+    private static final String TAG = "Chromoting";
 
     /** Lazily-initialized singleton object that can be used from different Activities. */
     private static CapabilityManager sInstance;
@@ -143,13 +145,13 @@ public class CapabilityManager {
             Class<?> cls = Class.forName("org.chromium.chromoting.CastExtensionHandler");
             return (ClientExtension) cls.newInstance();
         } catch (ClassNotFoundException e) {
-            Log.w("CapabilityManager", "Failed to create CastExtensionHandler.");
+            Log.w(TAG, "Failed to create CastExtensionHandler.");
             return new DummyClientExtension();
         } catch (InstantiationException e) {
-            Log.w("CapabilityManager", "Failed to create CastExtensionHandler.");
+            Log.w(TAG, "Failed to create CastExtensionHandler.");
             return new DummyClientExtension();
         } catch (IllegalAccessException e) {
-            Log.w("CapabilityManager", "Failed to create CastExtensionHandler.");
+            Log.w(TAG, "Failed to create CastExtensionHandler.");
             return new DummyClientExtension();
         }
     }

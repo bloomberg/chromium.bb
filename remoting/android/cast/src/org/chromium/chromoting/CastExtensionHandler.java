@@ -12,7 +12,6 @@ import android.support.v7.app.MediaRouteActionProvider;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -29,6 +28,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import org.chromium.base.Log;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class CastExtensionHandler implements ClientExtension, ActivityLifecycleL
     public static final String EXTENSION_MSG_TYPE = "cast_message";
 
     /** Tag used for logging. */
-    private static final String TAG = "CastExtensionHandler";
+    private static final String TAG = "Chromoting";
 
     /** Application Id of the Cast Receiver App that will be run on the Cast device. */
     private static final String RECEIVER_APP_ID = "8A1211E3";
@@ -178,11 +178,9 @@ public class CastExtensionHandler implements ClientExtension, ActivityLifecycleL
     private class ConnectionFailedListener implements GoogleApiClient.OnConnectionFailedListener {
         @Override
         public void onConnectionFailed(ConnectionResult result) {
-            Log.e(TAG, String.format("Google Play Service connection failed: %s", result));
-
+            Log.e(TAG, "Google Play Service connection failed: %s", result);
             tearDown();
         }
-
     }
 
     /**
@@ -227,7 +225,7 @@ public class CastExtensionHandler implements ClientExtension, ActivityLifecycleL
         @Override
         public void onApplicationDisconnected(int errorCode) {
             if (errorCode != CastStatusCodes.SUCCESS) {
-                Log.e(TAG, String.format("Application disconnected with: %d", errorCode));
+                Log.e(TAG, "Application disconnected with: %d", errorCode);
             }
             tearDown();
         }

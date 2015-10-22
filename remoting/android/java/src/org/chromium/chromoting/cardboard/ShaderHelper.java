@@ -12,7 +12,7 @@ import org.chromium.base.Log;
  * Helper class for working with OpenGL shaders and programs.
  */
 public class ShaderHelper {
-    private static final String TAG = "cr.ShaderHelper";
+    private static final String TAG = "Cardboard";
 
     /**
      * Compile a shader.
@@ -37,7 +37,7 @@ public class ShaderHelper {
 
             // If the compilation failed, delete the shader.
             if (compileStatus[0] == 0) {
-                Log.e(TAG, "Error compiling shader: " + GLES20.glGetShaderInfoLog(shaderHandle));
+                Log.e(TAG, "Error compiling shader: %s", GLES20.glGetShaderInfoLog(shaderHandle));
                 GLES20.glDeleteShader(shaderHandle);
                 shaderHandle = 0;
             }
@@ -87,7 +87,8 @@ public class ShaderHelper {
 
             // If the link failed, delete the program.
             if (linkStatus[0] == 0) {
-                Log.e(TAG, "Error compiling program: " + GLES20.glGetProgramInfoLog(programHandle));
+                Log.e(TAG, "Error compiling program: %s",
+                        GLES20.glGetProgramInfoLog(programHandle));
                 GLES20.glDeleteProgram(programHandle);
                 programHandle = 0;
             }

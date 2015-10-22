@@ -8,8 +8,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Looper;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromoting.CapabilityManager;
@@ -25,6 +25,8 @@ import java.nio.ByteOrder;
  */
 @JNINamespace("remoting")
 public class JniInterface {
+    private static final String TAG = "Chromoting";
+
     /*
      * Library-loading state machine.
      */
@@ -368,7 +370,7 @@ public class JniInterface {
      */
     public static Bitmap getVideoFrame() {
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            Log.w("jniiface", "Canvas being redrawn on UI thread");
+            Log.w(TAG, "Canvas being redrawn on UI thread");
         }
 
         synchronized (sFrameLock) {
@@ -382,7 +384,7 @@ public class JniInterface {
     @CalledByNative
     private static void setVideoFrame(Bitmap bitmap) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            Log.w("jniiface", "Video frame updated on UI thread");
+            Log.w(TAG, "Video frame updated on UI thread");
         }
 
         synchronized (sFrameLock) {

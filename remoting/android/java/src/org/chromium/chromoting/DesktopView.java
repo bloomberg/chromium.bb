@@ -16,7 +16,6 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.InputType;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -24,6 +23,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import org.chromium.base.Log;
 import org.chromium.chromoting.jni.JniInterface;
 
 /**
@@ -34,6 +34,8 @@ import org.chromium.chromoting.jni.JniInterface;
 /** GUI element that holds the drawing canvas. */
 public class DesktopView extends SurfaceView implements DesktopViewInterface,
         SurfaceHolder.Callback {
+    private static final String TAG = "Chromoting";
+
     private final RenderData mRenderData;
     private TouchInputHandler mInputHandler;
 
@@ -157,7 +159,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         long startTimeMs = SystemClock.uptimeMillis();
 
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            Log.w("deskview", "Canvas being redrawn on UI thread");
+            Log.w(TAG, "Canvas being redrawn on UI thread");
         }
 
         Bitmap image = JniInterface.getVideoFrame();

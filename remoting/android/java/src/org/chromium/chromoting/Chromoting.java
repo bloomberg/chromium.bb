@@ -17,7 +17,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.chromium.base.Log;
 import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
 import org.chromium.chromoting.jni.JniInterface;
@@ -40,6 +40,8 @@ import java.util.Arrays;
  */
 public class Chromoting extends AppCompatActivity implements JniInterface.ConnectionListener,
         AccountSwitcher.Callback, HostListLoader.Callback, View.OnClickListener {
+    private static final String TAG = "Chromoting";
+
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
 
@@ -497,15 +499,13 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
         if (!mTriedNewAuthToken) {
             // This was our first connection attempt.
             mTriedNewAuthToken = true;
-
-            Log.w("auth", "Requesting renewal of rejected auth token");
             requestAuthToken(true);
 
             // We're not in an error state *yet*.
             return;
         } else {
             // Authentication truly failed.
-            Log.e("auth", "Fresh auth token was also rejected");
+            Log.e(TAG, "Fresh auth token was rejected.");
             explanation = getString(R.string.error_authentication_failed);
             Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
             setHostListProgressVisible(false);
@@ -520,7 +520,6 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
             mRefreshButton.setEnabled(mAccount != null);
         }
         ArrayAdapter<HostInfo> displayer = new HostListAdapter(this, mHosts);
-        Log.i("hostlist", "About to populate host list display");
         mHostListView.setAdapter(displayer);
     }
 

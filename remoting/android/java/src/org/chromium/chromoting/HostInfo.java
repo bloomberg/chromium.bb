@@ -23,7 +23,7 @@ import java.util.TimeZone;
 
 /** Class to represent a Host returned by {@link HostListLoader}. */
 public class HostInfo {
-    private static final String TAG = "cr.Chromoting";
+    private static final String TAG = "Chromoting";
 
     public final String name;
     public final String id;

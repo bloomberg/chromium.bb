@@ -24,7 +24,7 @@ import java.nio.ShortBuffer;
  * Cardboard Activity photosphere, which is used to draw the activity environment.
  */
 public class Photosphere {
-    private static final String TAG = "cr.Photosphere";
+    private static final String TAG = "Cardboard";
 
     private static final String VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
