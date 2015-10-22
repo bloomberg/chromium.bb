@@ -34,9 +34,8 @@ class NET_EXPORT_PRIVATE QuicFecGroup : public QuicFecGroupInterface {
   size_t Revive(QuicPacketHeader* header,
                 char* decrypted_payload,
                 size_t decrypted_payload_len) override;
-  bool ProtectsPacketsBefore(QuicPacketNumber num) const override;
+  bool IsWaitingForPacketBefore(QuicPacketNumber num) const override;
   const base::StringPiece PayloadParity() const override;
-  QuicPacketNumber MinProtectedPacket() const override;
   QuicPacketCount NumReceivedPackets() const override;
   EncryptionLevel EffectiveEncryptionLevel() const override;
 

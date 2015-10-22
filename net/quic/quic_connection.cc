@@ -1367,9 +1367,7 @@ bool QuicConnection::ProcessValidatedPacket() {
              << old_peer_address.ToString() << " to "
              << peer_address_.ToString() << ", migrating connection.";
 
-    if (FLAGS_send_goaway_after_client_migration) {
-      visitor_->OnConnectionMigration();
-    }
+    visitor_->OnConnectionMigration();
   }
 
   time_of_last_received_packet_ = clock_->Now();
@@ -2020,7 +2018,7 @@ void QuicConnection::CloseFecGroupsBefore(QuicPacketNumber packet_number) {
     // If this is the current group or the group doesn't protect this packet
     // we can ignore it.
     if (last_header_.fec_group == it->first ||
-        !it->second->ProtectsPacketsBefore(packet_number)) {
+        !it->second->IsWaitingForPacketBefore(packet_number)) {
       ++it;
       continue;
     }

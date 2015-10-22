@@ -14,13 +14,14 @@ namespace net {
 namespace test {
 
 // static
-QuicStreamId QuicSessionPeer::GetNextStreamId(QuicSession* session) {
-  return session->GetNextStreamId();
+QuicStreamId QuicSessionPeer::GetNextOutgoingStreamId(QuicSession* session) {
+  return session->GetNextOutgoingStreamId();
 }
 
 // static
-void QuicSessionPeer::SetNextStreamId(QuicSession* session, QuicStreamId id) {
-  session->next_stream_id_ = id;
+void QuicSessionPeer::SetNextOutgoingStreamId(QuicSession* session,
+                                              QuicStreamId id) {
+  session->next_outgoing_stream_id_ = id;
 }
 
 // static
@@ -90,9 +91,9 @@ bool QuicSessionPeer::IsStreamAvailable(QuicSession* session, QuicStreamId id) {
 // static
 bool QuicSessionPeer::IsStreamUncreated(QuicSession* session, QuicStreamId id) {
   DCHECK_NE(0u, id);
-  if (id % 2 == session->next_stream_id_ % 2) {
+  if (id % 2 == session->next_outgoing_stream_id_ % 2) {
     // locally-created stream.
-    return id >= session->next_stream_id_;
+    return id >= session->next_outgoing_stream_id_;
   } else {
     // peer-created stream.
     return id > session->largest_peer_created_stream_id_;

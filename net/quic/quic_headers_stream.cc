@@ -25,7 +25,7 @@ const QuicStreamId kInvalidStreamId = 0;
 }  // namespace
 
 // A SpdyFramer visitor which passed SYN_STREAM and SYN_REPLY frames to
-// the QuicDataStream, and closes the connection if any unexpected frames
+// the QuicSpdyStream, and closes the connection if any unexpected frames
 // are received.
 class QuicHeadersStream::SpdyFramerVisitor
     : public SpdyFramerVisitorInterface,

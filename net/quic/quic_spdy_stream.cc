@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_spdy_stream.h"
 
 #include "base/logging.h"
 #include "net/quic/quic_spdy_session.h"
@@ -14,10 +14,6 @@ using std::min;
 
 namespace net {
 
-#define ENDPOINT                                                               \
-  (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client:" \
-                                                                     " ")
-
 namespace {
 
 // This is somewhat arbitrary.  It's possible, but unlikely, we will either fail
@@ -28,7 +24,7 @@ QuicPriority kDefaultPriority = 3;
 
 }  // namespace
 
-QuicDataStream::QuicDataStream(QuicStreamId id, QuicSpdySession* spdy_session)
+QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
     : ReliableQuicStream(id, spdy_session),
       spdy_session_(spdy_session),
       visitor_(nullptr),
@@ -40,10 +36,9 @@ QuicDataStream::QuicDataStream(QuicStreamId id, QuicSpdySession* spdy_session)
   sequencer()->SetBlockedUntilFlush();
 }
 
-QuicDataStream::~QuicDataStream() {
-}
+QuicSpdyStream::~QuicSpdyStream() {}
 
-size_t QuicDataStream::WriteHeaders(
+size_t QuicSpdyStream::WriteHeaders(
     const SpdyHeaderBlock& header_block,
     bool fin,
     QuicAckListenerInterface* ack_notifier_delegate) {
@@ -57,58 +52,58 @@ size_t QuicDataStream::WriteHeaders(
   return bytes_written;
 }
 
-size_t QuicDataStream::Readv(const struct iovec* iov, size_t iov_len) {
+size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {
   DCHECK(FinishedReadingHeaders());
   return sequencer()->Readv(iov, iov_len);
 }
 
-int QuicDataStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
+int QuicSpdyStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
   DCHECK(FinishedReadingHeaders());
   return sequencer()->GetReadableRegions(iov, iov_len);
 }
 
-void QuicDataStream::MarkConsumed(size_t num_bytes) {
+void QuicSpdyStream::MarkConsumed(size_t num_bytes) {
   DCHECK(FinishedReadingHeaders());
   return sequencer()->MarkConsumed(num_bytes);
 }
 
-bool QuicDataStream::IsDoneReading() const {
+bool QuicSpdyStream::IsDoneReading() const {
   if (!headers_decompressed_ || !decompressed_headers_.empty()) {
     return false;
   }
   return sequencer()->IsClosed();
 }
 
-bool QuicDataStream::HasBytesToRead() const {
+bool QuicSpdyStream::HasBytesToRead() const {
   return !decompressed_headers_.empty() || sequencer()->HasBytesToRead();
 }
 
-void QuicDataStream::MarkHeadersConsumed(size_t bytes_consumed) {
+void QuicSpdyStream::MarkHeadersConsumed(size_t bytes_consumed) {
   decompressed_headers_.erase(0, bytes_consumed);
   if (FinishedReadingHeaders()) {
     sequencer()->SetUnblocked();
   }
 }
 
-void QuicDataStream::set_priority(QuicPriority priority) {
+void QuicSpdyStream::set_priority(QuicPriority priority) {
   DCHECK_EQ(0u, stream_bytes_written());
   priority_ = priority;
 }
 
-QuicPriority QuicDataStream::EffectivePriority() const {
+QuicPriority QuicSpdyStream::EffectivePriority() const {
   return priority();
 }
 
-void QuicDataStream::OnStreamHeaders(StringPiece headers_data) {
+void QuicSpdyStream::OnStreamHeaders(StringPiece headers_data) {
   headers_data.AppendToString(&decompressed_headers_);
 }
 
-void QuicDataStream::OnStreamHeadersPriority(QuicPriority priority) {
+void QuicSpdyStream::OnStreamHeadersPriority(QuicPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   set_priority(priority);
 }
 
-void QuicDataStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
+void QuicSpdyStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
   headers_decompressed_ = true;
   if (fin) {
     OnStreamFrame(QuicStreamFrame(id(), fin, 0, StringPiece()));
@@ -118,7 +113,7 @@ void QuicDataStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
   }
 }
 
-void QuicDataStream::OnClose() {
+void QuicSpdyStream::OnClose() {
   ReliableQuicStream::OnClose();
 
   if (visitor_) {
@@ -130,7 +125,7 @@ void QuicDataStream::OnClose() {
   }
 }
 
-bool QuicDataStream::FinishedReadingHeaders() const {
+bool QuicSpdyStream::FinishedReadingHeaders() const {
   return headers_decompressed_ && decompressed_headers_.empty();
 }
 

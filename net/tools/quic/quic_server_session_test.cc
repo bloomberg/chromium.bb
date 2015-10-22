@@ -13,10 +13,10 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_data_stream_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/quic/test_tools/quic_spdy_stream_peer.h"
 #include "net/quic/test_tools/quic_sustained_bandwidth_recorder_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
@@ -30,7 +30,7 @@ using net::test::MockConnection;
 using net::test::MockHelper;
 using net::test::QuicConfigPeer;
 using net::test::QuicConnectionPeer;
-using net::test::QuicDataStreamPeer;
+using net::test::QuicSpdyStreamPeer;
 using net::test::QuicSentPacketManagerPeer;
 using net::test::QuicSessionPeer;
 using net::test::QuicSpdySessionPeer;

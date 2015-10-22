@@ -321,14 +321,14 @@ QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
   return header.entropy_flag << (header.packet_number % 8);
 }
 
-QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
-                                        const QuicFrames& frames,
-                                        char* buffer,
-                                        size_t packet_length) {
+size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
+                                   const QuicFrames& frames,
+                                   char* buffer,
+                                   size_t packet_length) {
   QuicDataWriter writer(packet_length, buffer);
   if (!AppendPacketHeader(header, &writer)) {
     LOG(DFATAL) << "AppendPacketHeader failed";
-    return nullptr;
+    return 0;
   }
 
   size_t i = 0;
@@ -339,7 +339,7 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         (i == frames.size() - 1);
     if (!AppendTypeByte(frame, no_stream_frame_length, &writer)) {
       LOG(DFATAL) << "AppendTypeByte failed";
-      return nullptr;
+      return 0;
     }
 
     switch (frame.type) {
@@ -350,21 +350,21 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         if (!AppendStreamFrame(
             *frame.stream_frame, no_stream_frame_length, &writer)) {
           LOG(DFATAL) << "AppendStreamFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       case ACK_FRAME:
         if (!AppendAckFrameAndTypeByte(
                 header, *frame.ack_frame, &writer)) {
           LOG(DFATAL) << "AppendAckFrameAndTypeByte failed";
-          return nullptr;
+          return 0;
         }
         break;
       case STOP_WAITING_FRAME:
         if (!AppendStopWaitingFrame(
                 header, *frame.stop_waiting_frame, &writer)) {
           LOG(DFATAL) << "AppendStopWaitingFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       case MTU_DISCOVERY_FRAME:
@@ -375,49 +375,43 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
       case RST_STREAM_FRAME:
         if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
           LOG(DFATAL) << "AppendRstStreamFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       case CONNECTION_CLOSE_FRAME:
         if (!AppendConnectionCloseFrame(
                 *frame.connection_close_frame, &writer)) {
           LOG(DFATAL) << "AppendConnectionCloseFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       case GOAWAY_FRAME:
         if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
           LOG(DFATAL) << "AppendGoAwayFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       case WINDOW_UPDATE_FRAME:
         if (!AppendWindowUpdateFrame(*frame.window_update_frame, &writer)) {
           LOG(DFATAL) << "AppendWindowUpdateFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       case BLOCKED_FRAME:
         if (!AppendBlockedFrame(*frame.blocked_frame, &writer)) {
           LOG(DFATAL) << "AppendBlockedFrame failed";
-          return nullptr;
+          return 0;
         }
         break;
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
         LOG(DFATAL) << "QUIC_INVALID_FRAME_DATA";
-        return nullptr;
+        return 0;
     }
     ++i;
   }
 
-  QuicPacket* packet =
-      new QuicPacket(writer.data(), writer.length(), false,
-                     header.public_header.connection_id_length,
-                     header.public_header.version_flag,
-                     header.public_header.packet_number_length);
-
-  return packet;
+  return writer.length();
 }
 
 QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,

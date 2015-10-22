@@ -118,13 +118,31 @@ size_t QuicFecGroup::Revive(QuicPacketHeader* header,
   return payload_parity_len_;
 }
 
-bool QuicFecGroup::ProtectsPacketsBefore(QuicPacketNumber num) const {
-  if (has_received_fec_packet()) {
-    return max_protected_packet_ < num;
+bool QuicFecGroup::IsWaitingForPacketBefore(QuicPacketNumber num) const {
+  // Entire range is larger than the threshold.
+  if (min_protected_packet_ >= num) {
+    return false;
   }
-  // Since we might not yet have received the FEC packet, we must check
-  // the packets we have received.
-  return *received_packets_.begin() < num;
+
+  // Entire range is smaller than the threshold.
+  if (received_packets_.size() > 0 ? *received_packets_.rbegin() + 1 < num
+                                   : min_protected_packet_ < num) {
+    return true;
+  }
+
+  // Range spans the threshold so look for a missing packet below the threshold.
+  QuicPacketNumber target = min_protected_packet_;
+  for (QuicPacketNumber packet : received_packets_) {
+    if (target++ != packet) {
+      return true;
+    }
+    if (target >= num) {
+      return false;
+    }
+  }
+
+  // No missing packets below the threshold.
+  return false;
 }
 
 bool QuicFecGroup::UpdateParity(StringPiece payload) {
@@ -162,10 +180,6 @@ QuicPacketCount QuicFecGroup::NumMissingPackets() const {
 
 const StringPiece QuicFecGroup::PayloadParity() const {
   return StringPiece(payload_parity_, payload_parity_len_);
-}
-
-QuicPacketNumber QuicFecGroup::MinProtectedPacket() const {
-  return min_protected_packet_;
 }
 
 QuicPacketCount QuicFecGroup::NumReceivedPackets() const {

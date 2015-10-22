@@ -58,7 +58,7 @@ QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream() {
 }
 
 QuicSpdyClientStream* QuicClientSession::CreateClientStream() {
-  return new QuicSpdyClientStream(GetNextStreamId(), this);
+  return new QuicSpdyClientStream(GetNextOutgoingStreamId(), this);
 }
 
 QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
@@ -74,7 +74,7 @@ int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
-QuicDataStream* QuicClientSession::CreateIncomingDynamicStream(
+QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
   return nullptr;

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_spdy_stream.h"
 #include "net/spdy/spdy_framer.h"
 
 namespace net {
@@ -24,12 +24,12 @@ class QuicSpdyServerStreamPeer;
 
 // All this does right now is aggregate data, and on fin, send an HTTP
 // response.
-class QuicSpdyServerStream : public QuicDataStream {
+class QuicSpdyServerStream : public QuicSpdyStream {
  public:
   QuicSpdyServerStream(QuicStreamId id, QuicSpdySession* session);
   ~QuicSpdyServerStream() override;
 
-  // QuicDataStream
+  // QuicSpdyStream
   void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
 
   // ReliableQuicStream implementation called by the sequencer when there is

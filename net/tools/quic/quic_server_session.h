@@ -104,8 +104,8 @@ class QuicServerSession : public QuicSpdySession {
 
  protected:
   // QuicSession methods:
-  QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
-  QuicDataStream* CreateOutgoingDynamicStream() override;
+  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicSpdyStream* CreateOutgoingDynamicStream() override;
   QuicCryptoServerStream* GetCryptoStream() override;
 
   // If we should create an incoming stream, returns true. Otherwise

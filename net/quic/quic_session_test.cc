@@ -19,10 +19,10 @@
 #include "net/quic/reliable_quic_stream.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_data_stream_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/quic/test_tools/quic_spdy_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/spdy/spdy_framer.h"
@@ -83,10 +83,10 @@ class TestHeadersStream : public QuicHeadersStream {
   MOCK_METHOD0(OnCanWrite, void());
 };
 
-class TestStream : public QuicDataStream {
+class TestStream : public QuicSpdyStream {
  public:
   TestStream(QuicStreamId id, QuicSpdySession* session)
-      : QuicDataStream(id, session) {}
+      : QuicSpdyStream(id, session) {}
 
   using ReliableQuicStream::CloseWriteSide;
 
@@ -128,7 +128,7 @@ class TestSession : public QuicSpdySession {
   TestCryptoStream* GetCryptoStream() override { return &crypto_stream_; }
 
   TestStream* CreateOutgoingDynamicStream() override {
-    TestStream* stream = new TestStream(GetNextStreamId(), this);
+    TestStream* stream = new TestStream(GetNextOutgoingStreamId(), this);
     ActivateStream(stream);
     return stream;
   }

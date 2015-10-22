@@ -54,7 +54,7 @@ class QuicClientSession : public QuicClientSessionBase {
 
  protected:
   // QuicSession methods:
-  QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
 
   // Unlike CreateOutgoingDynamicStream, which applies a bunch of sanity checks,
   // this simply returns a new QuicSpdyClientStream. This may be used by

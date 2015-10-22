@@ -103,7 +103,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       visitor_shim_(new VisitorShim(this)),
       config_(config),
       max_open_streams_(config_.MaxStreamsPerConnection()),
-      next_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 3),
+      next_outgoing_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 3),
       largest_peer_created_stream_id_(
           perspective() == Perspective::IS_SERVER ? 1 : 0),
       error_(QUIC_NO_ERROR),
@@ -113,8 +113,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
                        kMinimumFlowControlSendWindow,
                        config_.GetInitialSessionFlowControlWindowToSend(),
                        false),
-      has_pending_handshake_(false) {
-}
+      has_pending_handshake_(false) {}
 
 void QuicSession::Initialize() {
   connection_->set_visitor(visitor_shim_.get());
@@ -171,7 +170,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
 }
 
 void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
-  DCHECK(frame.last_good_stream_id < next_stream_id_);
+  DCHECK(frame.last_good_stream_id < next_outgoing_stream_id_);
 }
 
 void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
@@ -560,9 +559,9 @@ void QuicSession::ActivateStream(ReliableQuicStream* stream) {
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
 }
 
-QuicStreamId QuicSession::GetNextStreamId() {
-  QuicStreamId id = next_stream_id_;
-  next_stream_id_ += 2;
+QuicStreamId QuicSession::GetNextOutgoingStreamId() {
+  QuicStreamId id = next_outgoing_stream_id_;
+  next_outgoing_stream_id_ += 2;
   return id;
 }
 
@@ -603,7 +602,7 @@ ReliableQuicStream* QuicSession::GetDynamicStream(
     return nullptr;
   }
 
-  if (stream_id % 2 == next_stream_id_ % 2) {
+  if (stream_id % 2 == next_outgoing_stream_id_ % 2) {
     // We've received a frame for a locally-created stream that is not
     // currently active.  This is an error.
     CloseConnection(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
@@ -718,10 +717,10 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
     // Stream is active
     return false;
   }
-  if (id % 2 == next_stream_id_ % 2) {
+  if (id % 2 == next_outgoing_stream_id_ % 2) {
     // Locally created streams are strictly in-order.  If the id is in the
     // range of created streams and it's not active, it must have been closed.
-    return id < next_stream_id_;
+    return id < next_outgoing_stream_id_;
   }
   // For peer created streams, we also need to consider available streams.
   return id <= largest_peer_created_stream_id_ &&

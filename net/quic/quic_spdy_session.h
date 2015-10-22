@@ -5,11 +5,9 @@
 #ifndef NET_QUIC_QUIC_SPDY_SESSION_H_
 #define NET_QUIC_QUIC_SPDY_SESSION_H_
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_headers_stream.h"
 #include "net/quic/quic_session.h"
+#include "net/quic/quic_spdy_stream.h"
 
 namespace net {
 
@@ -55,12 +53,12 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
  protected:
   // Override CreateIncomingDynamicStream() and CreateOutgoingDynamicStream()
-  // with QuicDataStream return type to make sure that all data streams are
-  // QuicDataStreams.
-  QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override = 0;
-  QuicDataStream* CreateOutgoingDynamicStream() override = 0;
+  // with QuicSpdyStream return type to make sure that all data streams are
+  // QuicSpdyStreams.
+  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override = 0;
+  QuicSpdyStream* CreateOutgoingDynamicStream() override = 0;
 
-  QuicDataStream* GetSpdyDataStream(const QuicStreamId stream_id);
+  QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
 
  private:
   friend class test::QuicSpdySessionPeer;

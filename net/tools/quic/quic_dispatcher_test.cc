@@ -55,8 +55,8 @@ class TestQuicSpdyServerSession : public QuicServerSession {
   ~TestQuicSpdyServerSession() override{};
 
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
 
   void SetCryptoStream(QuicCryptoServerStream* crypto_stream) {
     crypto_stream_ = crypto_stream;

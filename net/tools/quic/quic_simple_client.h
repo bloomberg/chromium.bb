@@ -18,8 +18,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
 #include "net/quic/quic_config.h"
-#include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_packet_reader.h"
+#include "net/quic/quic_spdy_stream.h"
 #include "net/tools/quic/quic_client_base.h"
 
 namespace net {
@@ -35,7 +35,7 @@ class QuicClientPeer;
 }  // namespace test
 
 class QuicSimpleClient : public QuicClientBase,
-                         public QuicDataStream::Visitor,
+                         public QuicSpdyStream::Visitor,
                          public QuicPacketReader::Visitor {
  public:
   class ResponseListener {
@@ -130,8 +130,8 @@ class QuicSimpleClient : public QuicClientBase,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
 
-  // QuicDataStream::Visitor
-  void OnClose(QuicDataStream* stream) override;
+  // QuicSpdyStream::Visitor
+  void OnClose(QuicSpdyStream* stream) override;
 
   // If the crypto handshake has not yet been confirmed, adds the data to the
   // queue of data to resend if the client receives a stateless reject.

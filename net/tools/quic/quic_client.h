@@ -16,7 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_config.h"
-#include "net/quic/quic_data_stream.h"
+#include "net/quic/quic_spdy_stream.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_base.h"
@@ -35,7 +35,7 @@ class QuicClientPeer;
 
 class QuicClient : public QuicClientBase,
                    public EpollCallbackInterface,
-                   public QuicDataStream::Visitor {
+                   public QuicSpdyStream::Visitor {
  public:
   class ResponseListener {
    public:
@@ -132,8 +132,8 @@ class QuicClient : public QuicClientBase,
   void OnUnregistration(int fd, bool replaced) override {}
   void OnShutdown(EpollServer* eps, int fd) override {}
 
-  // QuicDataStream::Visitor
-  void OnClose(QuicDataStream* stream) override;
+  // QuicSpdyStream::Visitor
+  void OnClose(QuicSpdyStream* stream) override;
 
   // If the crypto handshake has not yet been confirmed, adds the data to the
   // queue of data to resend if the client receives a stateless reject.

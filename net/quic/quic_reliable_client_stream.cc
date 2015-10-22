@@ -18,7 +18,7 @@ namespace net {
 QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
                                                    QuicSpdySession* session,
                                                    const BoundNetLog& net_log)
-    : QuicDataStream(id, session),
+    : QuicSpdyStream(id, session),
       net_log_(net_log),
       delegate_(nullptr),
       headers_delivered_(false),
@@ -31,7 +31,7 @@ QuicReliableClientStream::~QuicReliableClientStream() {
 
 void QuicReliableClientStream::OnStreamHeadersComplete(bool fin,
                                                        size_t frame_len) {
-  QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
+  QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
   // The delegate will read the headers via a posted task.
   NotifyDelegateOfHeadersCompleteLater(frame_len);
 }
@@ -72,7 +72,7 @@ void QuicReliableClientStream::OnCanWrite() {
 
 QuicPriority QuicReliableClientStream::EffectivePriority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
-    return QuicDataStream::EffectivePriority();
+    return QuicSpdyStream::EffectivePriority();
   }
   return QuicWriteBlockedList::kHighestPriority;
 }

@@ -334,7 +334,7 @@ bool QuicSimpleClient::MigrateSocket(const IPAddressNumber& new_host) {
   return true;
 }
 
-void QuicSimpleClient::OnClose(QuicDataStream* stream) {
+void QuicSimpleClient::OnClose(QuicSpdyStream* stream) {
   DCHECK(stream != nullptr);
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);

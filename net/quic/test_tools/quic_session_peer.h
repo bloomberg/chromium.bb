@@ -15,17 +15,17 @@
 namespace net {
 
 class QuicCryptoStream;
-class QuicDataStream;
 class QuicHeadersStream;
 class QuicSession;
+class QuicSpdyStream;
 class ReliableQuicStream;
 
 namespace test {
 
 class QuicSessionPeer {
  public:
-  static QuicStreamId GetNextStreamId(QuicSession* session);
-  static void SetNextStreamId(QuicSession* session, QuicStreamId id);
+  static QuicStreamId GetNextOutgoingStreamId(QuicSession* session);
+  static void SetNextOutgoingStreamId(QuicSession* session, QuicStreamId id);
   static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
   static QuicCryptoStream* GetCryptoStream(QuicSession* session);
   static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);

@@ -34,9 +34,10 @@ class CustomStreamSession : public QuicServerSession {
                       const QuicCryptoServerConfig* crypto_config,
                       QuicTestServer::StreamCreationFunction creator)
       : QuicServerSession(config, connection, visitor, crypto_config),
+        // TODO(rtenneti): use std::move when chromium supports it.
         stream_creator_(creator) {}
 
-  QuicSpdyServerStream* CreateIncomingDynamicStream(QuicStreamId id) override {
+  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
     }

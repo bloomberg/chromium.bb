@@ -166,21 +166,26 @@ void QuicTimeWaitListManager::ProcessPacket(
   // Increment the received packet count.
   ConnectionIdData* connection_data = &it->second;
   ++(connection_data->num_packets);
+
   if (!ShouldSendResponse(connection_data->num_packets)) {
     return;
   }
+
   if (connection_data->close_packet) {
     QueuedPacket* queued_packet = new QueuedPacket(
         server_address, client_address, connection_data->close_packet->Clone());
     // Takes ownership of the packet.
     SendOrQueuePacket(queued_packet);
-  } else if (!connection_data->connection_rejected_statelessly) {
-    SendPublicReset(server_address, client_address, connection_id,
-                    packet_number);
-  } else {
+    return;
+  }
+
+  if (connection_data->connection_rejected_statelessly) {
     DVLOG(3) << "Time wait list not sending response for connection "
              << connection_id << " due to previous stateless reject.";
+    return;
   }
+
+  SendPublicReset(server_address, client_address, connection_id, packet_number);
 }
 
 // Returns true if the number of packets received for this connection_id is a

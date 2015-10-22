@@ -221,8 +221,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Adds 'stream' to the active stream map.
   virtual void ActivateStream(ReliableQuicStream* stream);
 
-  // Returns the stream id for a new stream.
-  QuicStreamId GetNextStreamId();
+  // Returns the stream ID for a new outgoing stream, and increments the
+  // underlying counter.
+  QuicStreamId GetNextOutgoingStreamId();
 
   ReliableQuicStream* GetIncomingDynamicStream(QuicStreamId stream_id);
 
@@ -307,7 +308,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Map from StreamId to pointers to streams that are owned by the caller.
   StreamMap dynamic_stream_map_;
-  QuicStreamId next_stream_id_;
+
+  // The ID to use for the next outgoing stream.
+  QuicStreamId next_outgoing_stream_id_;
 
   // Set of stream ids that are less than the largest stream id that has been
   // received, but are nonetheless available to be created.

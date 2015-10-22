@@ -164,10 +164,9 @@ vector<TestParams> GetTestParams() {
       for (const QuicVersionVector& client_versions : client_version_buckets) {
         // A number of end to end tests fail when stateless rejects are enabled
         // *and* there are more than two QUIC versions.
-        // TODO(b/23745998) Re-enable client stateless reject support.
-        for (bool client_supports_stateless_rejects : {false}) {
-          // TODO(b/23745998) Re-enable server stateless reject support.
-          for (bool server_uses_stateless_rejects_if_peer_supported : {false}) {
+        for (bool client_supports_stateless_rejects : {true, false}) {
+          for (bool server_uses_stateless_rejects_if_peer_supported :
+               {true, false}) {
             for (bool auto_tune_flow_control_window : {true, false}) {
               CHECK(!client_versions.empty());
               // Add an entry for server and client supporting all versions.
@@ -177,6 +176,12 @@ vector<TestParams> GetTestParams() {
                   client_supports_stateless_rejects,
                   server_uses_stateless_rejects_if_peer_supported,
                   congestion_control_tag, auto_tune_flow_control_window));
+              if (client_supports_stateless_rejects &&
+                  server_uses_stateless_rejects_if_peer_supported) {
+                // TODO(b/23745998) Make stateless reject work with version
+                // negotiation.
+                continue;
+              }
 
               // Test client supporting all versions and server supporting 1
               // version. Simulate an old server and exercise version downgrade
@@ -498,6 +503,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   // Must be called before Initialize to have effect.
   void SetSpdyStreamCreator(QuicTestServer::StreamCreationFunction function) {
+    // TODO(rtenneti) use std::move when supported.
     stream_creator_ = function;
   }
 
@@ -1045,7 +1051,7 @@ TEST_P(EndToEndTest, InvalidStream) {
   request.AddBody(body, true);
   // Force the client to write with a stream ID belonging to a nonexistent
   // server-side stream.
-  QuicSessionPeer::SetNextStreamId(client_->client()->session(), 2);
+  QuicSessionPeer::SetNextOutgoingStreamId(client_->client()->session(), 2);
 
   client_->SendCustomSynchronousRequest(request);
   // EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());

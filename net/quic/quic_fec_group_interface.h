@@ -50,15 +50,12 @@ class NET_EXPORT_PRIVATE QuicFecGroupInterface {
                         char* decrypted_payload,
                         size_t decrypted_payload_len) = 0;
 
-  // Returns true of this FEC group protects any packets with sequence
-  // numbers less than |num|.
-  virtual bool ProtectsPacketsBefore(QuicPacketNumber num) const = 0;
+  // Returns true if the group is waiting for any packets with sequence numbers
+  // less than |num|.
+  virtual bool IsWaitingForPacketBefore(QuicPacketNumber num) const = 0;
 
   // The FEC data in the FEC packet.
   virtual const base::StringPiece PayloadParity() const = 0;
-
-  // The FEC group number to be used on the FEC packet.
-  virtual QuicPacketNumber MinProtectedPacket() const = 0;
 
   // Number of packets in the group.
   virtual QuicPacketCount NumReceivedPackets() const = 0;

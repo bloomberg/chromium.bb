@@ -286,13 +286,13 @@ class NET_EXPORT_PRIVATE QuicFramer {
       bool includes_version,
       QuicPacketNumberLength packet_number_length);
 
-  // Returns a QuicPacket* that is owned by the caller, is created from
-  // |frames|.  Returns nullptr if the packet could not be created.
-  // The packet must be of size |packet_size|.
-  QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
-                              const QuicFrames& frames,
-                              char* buffer,
-                              size_t packet_length);
+  // Serializes a packet containing |frames| into |buffer|.
+  // Returns the length of the packet, which must not be longer than
+  // |packet_length|.  Returns 0 if it fails to serialize.
+  size_t BuildDataPacket(const QuicPacketHeader& header,
+                         const QuicFrames& frames,
+                         char* buffer,
+                         size_t packet_length);
 
   // Returns a QuicPacket* that is owned by the caller, and is populated with
   // the fields in |header| and |fec|.  Returns nullptr if the packet could

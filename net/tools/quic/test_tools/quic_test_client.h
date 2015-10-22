@@ -65,8 +65,7 @@ class MockableQuicClient : public QuicClient {
 };
 
 // A toy QUIC client used for testing, mostly following the SimpleClient APIs.
-class QuicTestClient : public SimpleClient,
-                       public QuicDataStream::Visitor {
+class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
  public:
   QuicTestClient(IPEndPoint server_address,
                  const std::string& server_hostname,
@@ -139,8 +138,8 @@ class QuicTestClient : public SimpleClient,
   const IPEndPoint& address() const override;
   size_t requests_sent() const override;
 
-  // From QuicDataStream::Visitor
-  void OnClose(QuicDataStream* stream) override;
+  // From QuicSpdyStream::Visitor
+  void OnClose(QuicSpdyStream* stream) override;
 
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.

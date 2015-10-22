@@ -172,7 +172,7 @@ TEST_F(QuicFecGroupTest, UpdateFecIfReceivedPacketIsNotCovered) {
   ASSERT_FALSE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header, redundancy));
 }
 
-TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
+TEST_F(QuicFecGroupTest, IsWaitingForPacketBefore) {
   QuicPacketHeader header;
   header.fec_group = 3;
   header.packet_number = 3;
@@ -180,15 +180,15 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
   QuicFecGroup group(3);
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  EXPECT_FALSE(group.ProtectsPacketsBefore(1));
-  EXPECT_FALSE(group.ProtectsPacketsBefore(2));
-  EXPECT_FALSE(group.ProtectsPacketsBefore(3));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(4));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(5));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(50));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(1));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(2));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(3));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(4));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(5));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(50));
 }
 
-TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithSeveralPackets) {
+TEST_F(QuicFecGroupTest, IsWaitingForPacketBeforeWithSeveralPackets) {
   QuicPacketHeader header;
   header.fec_group = 3;
   header.packet_number = 3;
@@ -202,31 +202,53 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithSeveralPackets) {
   header.packet_number = 5;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  EXPECT_FALSE(group.ProtectsPacketsBefore(1));
-  EXPECT_FALSE(group.ProtectsPacketsBefore(2));
-  EXPECT_FALSE(group.ProtectsPacketsBefore(3));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(4));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(5));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(6));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(7));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(8));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(9));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(50));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(1));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(2));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(3));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(4));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(5));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(6));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(7));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(8));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(9));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(50));
 }
 
-TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
-  QuicFecGroup group(2);
+TEST_F(QuicFecGroupTest, IsWaitingForPacketBeforeWithFecData1) {
+  QuicFecGroup group(3);
+
   QuicPacketHeader header;
-  header.fec_group = 2;
-  header.packet_number = 3;
+  header.fec_group = 3;
+  header.packet_number = 4;
   ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  EXPECT_FALSE(group.ProtectsPacketsBefore(1));
-  EXPECT_FALSE(group.ProtectsPacketsBefore(2));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(3));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(4));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(5));
-  EXPECT_TRUE(group.ProtectsPacketsBefore(50));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(1));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(2));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(3));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(4));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(5));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(6));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(50));
+}
+
+TEST_F(QuicFecGroupTest, IsWaitingForPacketBeforeWithFecData2) {
+  QuicFecGroup group(3);
+
+  QuicPacketHeader header;
+  header.fec_group = 3;
+  header.packet_number = 3;
+  ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
+
+  header.packet_number = 5;
+  ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
+
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(1));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(2));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(3));
+  EXPECT_FALSE(group.IsWaitingForPacketBefore(4));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(5));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(6));
+  EXPECT_TRUE(group.IsWaitingForPacketBefore(50));
 }
 
 TEST_F(QuicFecGroupTest, EffectiveEncryptionLevel) {

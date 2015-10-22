@@ -21,7 +21,7 @@ namespace tools {
 
 QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
                                            QuicClientSession* session)
-    : QuicDataStream(id, session),
+    : QuicSpdyStream(id, session),
       content_length_(-1),
       response_code_(0),
       header_bytes_read_(0),
@@ -37,13 +37,13 @@ void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
              << "Aborting request.";
     CloseWriteSide();
   }
-  QuicDataStream::OnStreamFrame(frame);
+  QuicSpdyStream::OnStreamFrame(frame);
 }
 
 void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
                                                    size_t frame_len) {
   header_bytes_read_ = frame_len;
-  QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
+  QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
   if (!ParseResponseHeaders(decompressed_headers().data(),
                             decompressed_headers().length())) {
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);

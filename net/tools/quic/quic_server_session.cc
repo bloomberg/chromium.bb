@@ -196,7 +196,7 @@ bool QuicServerSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-QuicDataStream* QuicServerSession::CreateIncomingDynamicStream(
+QuicSpdyStream* QuicServerSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
@@ -205,7 +205,7 @@ QuicDataStream* QuicServerSession::CreateIncomingDynamicStream(
   return new QuicSpdyServerStream(id, this);
 }
 
-QuicDataStream* QuicServerSession::CreateOutgoingDynamicStream() {
+QuicSpdyStream* QuicServerSession::CreateOutgoingDynamicStream() {
   DLOG(ERROR) << "Server push not yet supported";
   return nullptr;
 }

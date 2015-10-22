@@ -48,19 +48,23 @@ class QuicCryptoServerConfigPeer {
 // Run tests with both parities of
 // FLAGS_use_early_return_when_verifying_chlo.
 struct TestParams {
-  explicit TestParams(bool use_early_return_when_verifying_chlo,
-                      bool enable_stateless_rejects,
-                      bool use_stateless_rejects)
+  TestParams(bool use_early_return_when_verifying_chlo,
+             bool enable_stateless_rejects,
+             bool use_stateless_rejects,
+             QuicVersionVector supported_versions)
       : use_early_return_when_verifying_chlo(
             use_early_return_when_verifying_chlo),
         enable_stateless_rejects(enable_stateless_rejects),
-        use_stateless_rejects(use_stateless_rejects) {}
+        use_stateless_rejects(use_stateless_rejects),
+        supported_versions(supported_versions) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ use_early_return_when_verifying_chlo: "
        << p.use_early_return_when_verifying_chlo << endl;
     os << "  enable_stateless_rejects: " << p.enable_stateless_rejects << endl;
-    os << "  use_stateless_rejects: " << p.use_stateless_rejects << " }";
+    os << "  use_stateless_rejects: " << p.use_stateless_rejects << endl;
+    os << "  versions: " << QuicVersionVectorToString(p.supported_versions)
+       << " }";
     return os;
   }
 
@@ -72,6 +76,8 @@ struct TestParams {
   // rejecting messages.  This should be a no-op if
   // enable_stateless_rejects is false.
   bool use_stateless_rejects;
+  // Versions supported by client and server.
+  QuicVersionVector supported_versions;
 };
 
 // Constructs various test permutations.
@@ -81,8 +87,14 @@ vector<TestParams> GetTestParams() {
   for (bool use_early_return : kTrueFalse) {
     for (bool enable_stateless_rejects : kTrueFalse) {
       for (bool use_stateless_rejects : kTrueFalse) {
-        params.push_back(TestParams(use_early_return, enable_stateless_rejects,
-                                    use_stateless_rejects));
+        // Start with all versions, remove highest on each iteration.
+        QuicVersionVector supported_versions = QuicSupportedVersions();
+        while (!supported_versions.empty()) {
+          params.push_back(
+              TestParams(use_early_return, enable_stateless_rejects,
+                         use_stateless_rejects, supported_versions));
+          supported_versions.erase(supported_versions.begin());
+        }
       }
     }
   }
@@ -100,7 +112,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 #else
     config_.SetProofSource(CryptoTestUtils::FakeProofSourceForTesting());
 #endif
-    supported_versions_ = QuicSupportedVersions();
+    supported_versions_ = GetParam().supported_versions;
     client_version_ = supported_versions_.front();
     client_version_string_ =
         QuicUtils::TagToString(QuicVersionToQuicTag(client_version_));
@@ -204,9 +216,9 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     const QuicTag* versions;
     size_t num_versions;
     server_hello.GetTaglist(kVER, &versions, &num_versions);
-    ASSERT_EQ(QuicSupportedVersions().size(), num_versions);
+    ASSERT_EQ(supported_versions_.size(), num_versions);
     for (size_t i = 0; i < num_versions; ++i) {
-      EXPECT_EQ(QuicVersionToQuicTag(QuicSupportedVersions()[i]), versions[i]);
+      EXPECT_EQ(QuicVersionToQuicTag(supported_versions_[i]), versions[i]);
     }
 
     StringPiece address;
@@ -431,15 +443,9 @@ TEST_P(CryptoServerTest, DefaultCert) {
   EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
   EXPECT_NE(0u, cert.size());
   EXPECT_NE(0u, proof.size());
-  if (client_version_ <= QUIC_VERSION_26) {
-    const HandshakeFailureReason kRejectReasons[] = {
-        CLIENT_NONCE_INVALID_TIME_FAILURE};
-    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
-  } else {
-    const HandshakeFailureReason kRejectReasons[] = {
-        SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-    CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
-  }
+  const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, TooSmall) {
@@ -671,6 +677,10 @@ TEST_P(CryptoServerTest, ReplayProtection) {
 }
 
 TEST_P(CryptoServerTest, RejectInvalidXlct) {
+  if (client_version_ <= QUIC_VERSION_25) {
+    // XLCT tag introduced in QUIC_VERSION_26.
+    return;
+  }
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
       "CHLO",

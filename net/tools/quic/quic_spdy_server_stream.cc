@@ -9,9 +9,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_session.h"
+#include "net/quic/quic_spdy_stream.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -25,14 +25,13 @@ namespace tools {
 
 QuicSpdyServerStream::QuicSpdyServerStream(QuicStreamId id,
                                            QuicSpdySession* session)
-    : QuicDataStream(id, session), content_length_(-1) {
-}
+    : QuicSpdyStream(id, session), content_length_(-1) {}
 
 QuicSpdyServerStream::~QuicSpdyServerStream() {
 }
 
 void QuicSpdyServerStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
-  QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
+  QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
   if (!ParseRequestHeaders(decompressed_headers().data(),
                            decompressed_headers().length())) {
     DVLOG(1) << "Invalid headers";

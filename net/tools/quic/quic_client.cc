@@ -392,7 +392,7 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   }
 }
 
-void QuicClient::OnClose(QuicDataStream* stream) {
+void QuicClient::OnClose(QuicSpdyStream* stream) {
   DCHECK(stream != nullptr);
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);

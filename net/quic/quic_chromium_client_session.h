@@ -219,7 +219,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
  protected:
   // QuicSession methods:
-  QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
 
  private:
   friend class test::QuicChromiumClientSessionPeer;

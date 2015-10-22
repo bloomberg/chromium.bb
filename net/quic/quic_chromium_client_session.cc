@@ -445,7 +445,7 @@ QuicReliableClientStream*
 QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
   DCHECK(connection()->connected());
   QuicReliableClientStream* stream =
-      new QuicReliableClientStream(GetNextStreamId(), this, net_log_);
+      new QuicReliableClientStream(GetNextOutgoingStreamId(), this, net_log_);
   ActivateStream(stream);
   ++num_total_streams_;
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams", GetNumOpenStreams());
@@ -570,7 +570,7 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
                               server_id_.host(), hostname);
 }
 
-QuicDataStream* QuicChromiumClientSession::CreateIncomingDynamicStream(
+QuicSpdyStream* QuicChromiumClientSession::CreateIncomingDynamicStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
   return nullptr;

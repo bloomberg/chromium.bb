@@ -78,8 +78,11 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // automatically when the FIN is consumed (which may be immediately).
   void StopReading();
 
-  size_t num_bytes_buffered() const { return num_bytes_buffered_; }
-  QuicStreamOffset num_bytes_consumed() const { return num_bytes_consumed_; }
+  // Number of bytes in the buffer right now.
+  size_t NumBytesBuffered() const;
+
+  // Number of bytes has been consumed.
+  QuicStreamOffset NumBytesConsumed() const;
 
   int num_frames_received() const { return num_frames_received_; }
 
@@ -105,18 +108,11 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // the stream of FIN, and clear buffers.
   bool MaybeCloseStream();
 
-  // Called whenever bytes are consumed by the stream. Updates
-  // num_bytes_consumed_ and num_bytes_buffered_.
-  void RecordBytesConsumed(size_t bytes_consumed);
-
   // The stream which owns this sequencer.
   ReliableQuicStream* stream_;
 
-  // The last data consumed by the stream.
-  QuicStreamOffset num_bytes_consumed_;
-
-  // Stores buffered frames in offset order.
-  QuicFrameList buffered_frames_;
+  // Stores received data in offset order.
+  scoped_ptr<QuicStreamSequencerBufferInterface> buffered_frames_;
 
   // The offset, if any, we got a stream termination for.  When this many bytes
   // have been processed, the sequencer will be closed.
@@ -125,9 +121,6 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // If true, the sequencer is blocked from passing data to the stream and will
   // buffer all new incoming data until FlushBufferedFrames is called.
   bool blocked_;
-
-  // Tracks how many bytes the sequencer has buffered.
-  size_t num_bytes_buffered_;
 
   // Count of the number of frames received.
   int num_frames_received_;

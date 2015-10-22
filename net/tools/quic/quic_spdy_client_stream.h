@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
-#include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_spdy_stream.h"
 #include "net/spdy/spdy_framer.h"
 
 namespace net {
@@ -21,7 +21,7 @@ class QuicClientSession;
 
 // All this does right now is send an SPDY request, and aggregate the
 // SPDY response.
-class QuicSpdyClientStream : public QuicDataStream {
+class QuicSpdyClientStream : public QuicSpdyStream {
  public:
   QuicSpdyClientStream(QuicStreamId id, QuicClientSession* session);
   ~QuicSpdyClientStream() override;
@@ -65,7 +65,7 @@ class QuicSpdyClientStream : public QuicDataStream {
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
-  using QuicDataStream::set_priority;
+  using QuicSpdyStream::set_priority;
 
   void set_allow_bidirectional_data(bool value) {
     allow_bidirectional_data_ = value;

@@ -456,35 +456,43 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   // TODO(rtenneti): Change the default 64 alignas value (used the default
   // value from CACHELINE_SIZE).
   ALIGNAS(64) char buffer[kMaxPacketSize];
-  scoped_ptr<QuicPacket> packet;
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
   scoped_ptr<char[]> large_buffer;
-  if (packet_size_ <= kMaxPacketSize) {
-    packet.reset(
-        framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_));
+  size_t length = 0;
+  const bool use_stack_buffer = packet_size_ <= kMaxPacketSize;
+  if (use_stack_buffer) {
+    length =
+        framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_);
   } else {
     large_buffer.reset(new char[packet_size_]);
-    packet.reset(framer_->BuildDataPacket(header, queued_frames_,
-                                          large_buffer.get(), packet_size_));
+    length = framer_->BuildDataPacket(header, queued_frames_,
+                                      large_buffer.get(), packet_size_);
   }
-  if (packet == nullptr) {
+  if (length == 0) {
     LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
                 << " frames.";
     return NoPacket();
   }
 
-  OnBuiltFecProtectedPayload(header, packet->FecProtectedData());
+  // TODO(ianswett) Consider replacing QuicPacket with something else,
+  // since it's only used to provide convenience methods to FEC and encryption.
+  QuicPacket packet(use_stack_buffer ? buffer : large_buffer.get(), length,
+                    /* owns_buffer */ false,
+                    header.public_header.connection_id_length,
+                    header.public_header.version_flag,
+                    header.public_header.packet_number_length);
+  OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
 
   // Because of possible truncation, we can't be confident that our
   // packet size calculation worked correctly.
   if (!possibly_truncated_by_length) {
-    DCHECK_EQ(packet_size_, packet->length());
+    DCHECK_EQ(packet_size_, length);
   }
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // packet number multiple times.
   QuicEncryptedPacket* encrypted =
-      framer_->EncryptPayload(encryption_level_, packet_number_, *packet,
+      framer_->EncryptPayload(encryption_level_, packet_number_, packet,
                               encrypted_buffer, encrypted_buffer_len);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
@@ -531,8 +539,7 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   fec_group_.reset(nullptr);
   packet_size_ = 0;
   LOG_IF(DFATAL, packet == nullptr)
-      << "Failed to serialize fec packet for group:"
-      << fec_group_->MinProtectedPacket();
+      << "Failed to serialize fec packet for group:" << fec_group_number_;
   DCHECK_GE(max_packet_length_, packet->length());
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // packet number multiple times.

@@ -439,8 +439,8 @@ class MockQuicSpdySession : public QuicSpdySession {
   QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
 
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
                                 const QuicIOVector& data,
@@ -475,8 +475,8 @@ class TestQuicSpdyServerSession : public QuicSpdySession {
                             const QuicCryptoServerConfig* crypto_config);
   ~TestQuicSpdyServerSession() override;
 
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
 
   QuicCryptoServerStream* GetCryptoStream() override;
 
@@ -501,8 +501,8 @@ class TestQuicSpdyClientSession : public QuicClientSessionBase {
                void(const ProofVerifyDetails& verify_details));
 
   // TestQuicSpdyClientSession
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicDataStream*());
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
 
   QuicCryptoClientStream* GetCryptoStream() override;
 

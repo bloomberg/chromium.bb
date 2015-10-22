@@ -86,11 +86,10 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicFrames& frames,
                                    size_t packet_size) {
   char* buffer = new char[packet_size];
-  scoped_ptr<QuicPacket> packet(
-      framer->BuildDataPacket(header, frames, buffer, packet_size));
-  DCHECK(packet.get() != nullptr);
-  // Now I have to re-construct the data packet with data ownership.
-  return new QuicPacket(buffer, packet->length(), true,
+  size_t length = framer->BuildDataPacket(header, frames, buffer, packet_size);
+  DCHECK_NE(0u, length);
+  // Re-construct the data packet with data ownership.
+  return new QuicPacket(buffer, length, /* owns_buffer */ true,
                         header.public_header.connection_id_length,
                         header.public_header.version_flag,
                         header.public_header.packet_number_length);

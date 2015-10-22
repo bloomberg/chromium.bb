@@ -57,7 +57,7 @@ QuicP2PStream* QuicP2PSession::CreateIncomingDynamicStream(QuicStreamId id) {
 }
 
 QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream() {
-  QuicP2PStream* stream = new QuicP2PStream(GetNextStreamId(), this);
+  QuicP2PStream* stream = new QuicP2PStream(GetNextOutgoingStreamId(), this);
   if (stream) {
     ActivateStream(stream);
   }

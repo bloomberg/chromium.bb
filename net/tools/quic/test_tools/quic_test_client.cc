@@ -534,7 +534,7 @@ size_t QuicTestClient::bytes_written() const {
   return bytes_written_;
 }
 
-void QuicTestClient::OnClose(QuicDataStream* stream) {
+void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   if (stream != nullptr) {
     // Always close the stream, regardless of whether it was the last stream
     // written.
