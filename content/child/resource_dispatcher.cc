@@ -346,8 +346,6 @@ void ResourceDispatcher::OnRequestComplete(
   request_info->received_data_factory = nullptr;
   request_info->buffer_size = 0;
 
-  RequestPeer* peer = request_info->peer;
-
   if (delegate_) {
     RequestPeer* new_peer =
         delegate_->OnRequestComplete(
@@ -373,12 +371,12 @@ void ResourceDispatcher::OnRequestComplete(
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
-  peer->OnCompletedRequest(request_complete_data.error_code,
-                           request_complete_data.was_ignored_by_handler,
-                           request_complete_data.exists_in_cache,
-                           request_complete_data.security_info,
-                           renderer_completion_time,
-                           request_complete_data.encoded_data_length);
+  request_info->peer->OnCompletedRequest(
+      request_complete_data.error_code,
+      request_complete_data.was_ignored_by_handler,
+      request_complete_data.exists_in_cache,
+      request_complete_data.security_info, renderer_completion_time,
+      request_complete_data.encoded_data_length);
 }
 
 void ResourceDispatcher::CompletedRequestAfterBackgroundThreadFlush(
