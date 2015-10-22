@@ -154,7 +154,7 @@ void FilterTargetsByPatterns(const std::vector<const Target*>& input,
     "          Prints the label of the target.\n"\
     "      output\n"\
     "          Prints the first output file for the target relative to the\n"\
-    "          current directory.\n"
+    "          root build directory.\n"
 #define TARGET_TYPE_FILTER_COMMAND_LINE_HELP \
     "  --type=(action|copy|executable|group|loadable_module|shared_library|\n"\
     "          source_set|static_library)\n"\
