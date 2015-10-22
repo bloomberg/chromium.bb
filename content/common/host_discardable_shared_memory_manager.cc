@@ -325,6 +325,9 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
     return;
   }
 
+  // Close file descriptor to avoid running out.
+  memory->Close();
+
   base::CheckedNumeric<size_t> checked_bytes_allocated = bytes_allocated_;
   checked_bytes_allocated += memory->mapped_size();
   if (!checked_bytes_allocated.IsValid()) {
@@ -334,11 +337,6 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
 
   bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
   BytesAllocatedChanged(bytes_allocated_);
-
-#if !defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-  // Close file descriptor to avoid running out.
-  memory->Close();
-#endif
 
   scoped_refptr<MemorySegment> segment(new MemorySegment(memory.Pass()));
   process_segments[id] = segment.get();
@@ -429,17 +427,14 @@ void HostDiscardableSharedMemoryManager::ReduceMemoryUsageUntilWithinLimit(
     scoped_refptr<MemorySegment> segment = segments_.back();
     segments_.pop_back();
 
+    // Simply drop the reference and continue if memory has already been
+    // unmapped. This happens when a memory segment has been deleted by
+    // the client.
+    if (!segment->memory()->mapped_size())
+      continue;
+
     // Attempt to purge LRU segment. When successful, released the memory.
     if (segment->memory()->Purge(current_time)) {
-#if defined(DISCARDABLE_SHARED_MEMORY_SHRINKING)
-      size_t size = segment->memory()->mapped_size();
-      DCHECK_GE(bytes_allocated_, size);
-      bytes_allocated_ -= size;
-      // Shrink memory segment. This will immediately release the memory to
-      // the OS.
-      segment->memory()->Shrink();
-      DCHECK_EQ(segment->memory()->mapped_size(), 0u);
-#endif
       ReleaseMemory(segment->memory());
       continue;
     }

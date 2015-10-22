@@ -190,5 +190,47 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
   EXPECT_EQ(base::DiscardableSharedMemory::FAILED, memory.Lock(0, 0));
 }
 
+TEST_F(HostDiscardableSharedMemoryManagerTest,
+       ReduceMemoryAfterSegmentHasBeenDeleted) {
+  const int kDataSize = 1024;
+
+  base::SharedMemoryHandle shared_handle1;
+  manager_->AllocateLockedDiscardableSharedMemoryForChild(
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 1, &shared_handle1);
+  ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
+
+  TestDiscardableSharedMemory memory1(shared_handle1);
+  bool rv = memory1.Map(kDataSize);
+  ASSERT_TRUE(rv);
+
+  base::SharedMemoryHandle shared_handle2;
+  manager_->AllocateLockedDiscardableSharedMemoryForChild(
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 2, &shared_handle2);
+  ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
+
+  TestDiscardableSharedMemory memory2(shared_handle2);
+  rv = memory2.Map(kDataSize);
+  ASSERT_TRUE(rv);
+
+  // Unlock and delete segment 1.
+  memory1.SetNow(base::Time::FromDoubleT(1));
+  memory1.Unlock(0, 0);
+  memory1.Unmap();
+  memory1.Close();
+  manager_->ChildDeletedDiscardableSharedMemory(
+      1, ChildProcessHost::kInvalidUniqueID);
+
+  // Make sure the manager is able to reduce memory after the segment 1 was
+  // deleted.
+  manager_->SetNow(base::Time::FromDoubleT(2));
+  manager_->SetMemoryLimit(0);
+
+  // Unlock segment 2.
+  memory2.SetNow(base::Time::FromDoubleT(3));
+  memory2.Unlock(0, 0);
+}
+
 }  // namespace
 }  // namespace content
