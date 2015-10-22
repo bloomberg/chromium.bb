@@ -26,6 +26,11 @@ function FullWindowVideoControls(
 
   this.updateStyle();
   window.addEventListener('resize', this.updateStyle.wrap(this));
+  var currentWindow = chrome.app.window.current();
+  currentWindow.onFullscreened.addListener(
+      this.onFullScreenChanged_.bind(this, true));
+  currentWindow.onRestored.addListener(
+      this.onFullScreenChanged_.bind(this, false));
   document.addEventListener('keydown', function(e) {
     switch (util.getKeyModifiers(e) + e.keyIdentifier) {
       // Handle debug shortcut keys.
@@ -160,6 +165,19 @@ FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
 FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
   var appWindow = chrome.app.window.current();
   util.toggleFullScreen(appWindow, !util.isFullScreen(appWindow));
+};
+
+/**
+ * Updates video control when the window is fullscreened or restored.
+ * @param {boolean} fullscreen True if the window gets fullscreened.
+ * @private
+ */
+FullWindowVideoControls.prototype.onFullScreenChanged_ = function(fullscreen) {
+  if (fullscreen) {
+    this.playerContainer_.setAttribute('fullscreen', '');
+  } else {
+    this.playerContainer_.removeAttribute('fullscreen');
+  }
 };
 
 /**
