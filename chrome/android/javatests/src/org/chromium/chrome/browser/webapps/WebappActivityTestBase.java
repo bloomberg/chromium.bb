@@ -173,7 +173,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         return CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
-                    return !getActivity().isSplashScreenVisibleForTest();
+                    return !getActivity().isSplashScreenVisibleForTests();
                 }
             });
     }

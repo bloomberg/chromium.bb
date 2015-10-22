@@ -196,7 +196,8 @@ public class WebappActivity extends FullScreenActivity {
                 ApiCompatibilityUtils.getColor(getResources(), R.color.webapp_default_bg));
 
         ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-        mSplashScreen = createSplashScreen(contentView);
+        mSplashScreen = (ViewGroup) LayoutInflater.from(this).inflate(
+                R.layout.webapp_splash_screen, contentView, false);
         mSplashScreen.setBackgroundColor(backgroundColor);
         contentView.addView(mSplashScreen);
 
@@ -212,7 +213,32 @@ public class WebappActivity extends FullScreenActivity {
                 .getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
                     @Override
                     public void onDataRetrieved(Bitmap splashIcon) {
-                        setSplashScreenIconAndText(mSplashScreen, splashIcon, backgroundColor);
+                        Bitmap displayIcon = splashIcon == null ? mWebappInfo.icon() : splashIcon;
+                        if (displayIcon == null || displayIcon.getWidth() < getResources()
+                                .getDimensionPixelSize(R.dimen.webapp_splash_image_min_size)) {
+                            mWebappUma.recordSplashscreenIconType(
+                                    WebappUma.SPLASHSCREEN_ICON_TYPE_NONE);
+                            return;
+                        }
+
+                        mWebappUma.recordSplashscreenIconType(splashIcon != null
+                                ? WebappUma.SPLASHSCREEN_ICON_TYPE_CUSTOM
+                                : WebappUma.SPLASHSCREEN_ICON_TYPE_FALLBACK);
+                        mWebappUma.recordSplashscreenIconSize(
+                                Math.round((float) displayIcon.getWidth()
+                                        / getResources().getDisplayMetrics().density));
+
+                        TextView appNameView = (TextView) mSplashScreen.findViewById(
+                                R.id.webapp_splash_screen_name);
+                        ImageView splashIconView = (ImageView) mSplashScreen.findViewById(
+                                R.id.webapp_splash_screen_icon);
+                        appNameView.setText(mWebappInfo.name());
+                        splashIconView.setImageBitmap(displayIcon);
+
+                        if (ColorUtils.shoudUseLightForegroundOnBackground(backgroundColor)) {
+                            appNameView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
+                                    R.color.webapp_splash_title_light));
+                        }
                     }
                 });
     }
@@ -374,42 +400,6 @@ public class WebappActivity extends FullScreenActivity {
         return mDirectoryManager.getWebappDirectory(this, getId());
     }
 
-    @VisibleForTesting
-    ViewGroup createSplashScreen(ViewGroup parentView) {
-        return (ViewGroup) LayoutInflater.from(this)
-                .inflate(R.layout.webapp_splash_screen, parentView, false);
-    }
-
-    @VisibleForTesting
-    void setSplashScreenIconAndText(View splashScreen, Bitmap splashIcon, int backgroundColor) {
-        if (splashScreen == null) return;
-
-        Bitmap displayIcon = splashIcon == null ? mWebappInfo.icon() : splashIcon;
-        if (displayIcon == null || displayIcon.getWidth() < getResources()
-                .getDimensionPixelSize(R.dimen.webapp_splash_image_min_size)) {
-            mWebappUma.recordSplashscreenIconType(WebappUma.SPLASHSCREEN_ICON_TYPE_NONE);
-            return;
-        }
-
-        mWebappUma.recordSplashscreenIconType(splashIcon != null
-                ? WebappUma.SPLASHSCREEN_ICON_TYPE_CUSTOM
-                : WebappUma.SPLASHSCREEN_ICON_TYPE_FALLBACK);
-        mWebappUma.recordSplashscreenIconSize(Math.round(
-                (float) displayIcon.getWidth() / getResources().getDisplayMetrics().density));
-
-        TextView appNameView = (TextView) splashScreen.findViewById(
-                R.id.webapp_splash_screen_name);
-        ImageView splashIconView = (ImageView) splashScreen.findViewById(
-                R.id.webapp_splash_screen_icon);
-        appNameView.setText(mWebappInfo.name());
-        splashIconView.setImageBitmap(displayIcon);
-
-        if (ColorUtils.shoudUseLightForegroundOnBackground(backgroundColor)) {
-            appNameView.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.webapp_splash_title_light));
-        }
-    }
-
     private void hideSplashScreen(final int reason) {
         if (mSplashScreen == null) return;
 
@@ -429,8 +419,13 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @VisibleForTesting
-    boolean isSplashScreenVisibleForTest() {
+    boolean isSplashScreenVisibleForTests() {
         return mSplashScreen != null;
+    }
+
+    @VisibleForTesting
+    ViewGroup getSplashScreenForTests() {
+        return mSplashScreen;
     }
 
     @VisibleForTesting

@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
@@ -25,11 +27,14 @@ public class WebappSplashScreenBackgroundColorTest extends WebappActivityTestBas
         return intent;
     }
 
-    // TODO(mlamouri): test that the background color is actually shown.
-
     @SmallTest
     @Feature({"Webapps"})
-    public void testUmaBackgroundColorCustom() {
+    public void testShowBackgroundColorAndRecordUma() {
+        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
+
+        assertEquals(Color.GREEN, background.getColor());
+
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                 WebappUma.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
                 WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM));

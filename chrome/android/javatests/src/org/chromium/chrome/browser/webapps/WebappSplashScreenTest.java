@@ -5,20 +5,20 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.annotation.TargetApi;
-import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
  * Tests for splash screens.
@@ -44,54 +44,16 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         return false;
     }
 
-    private void setActivityWebappInfoFromBitmap(Bitmap image) {
-        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, "about:blank",
-                ShortcutHelper.encodeBitmapAsString(image), null, null,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        getActivity().getWebappInfo().copy(mockInfo);
-    }
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testDefaultBackgroundColor() {
+        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 
-    // TODO(mlamouri): disabling them because they hit an UMA assert. These
-    // tests are being replaced by better other tests in:
-    // https://codereview.chromium.org/1414873004
-    //
-    // @UiThreadTest
-    // @SmallTest
-    // @Feature({"Webapps"})
-    // public void testDoesntUseSmallWebappInfoIcons() {
-    //     int smallSize = getActivity().getResources().getDimensionPixelSize(
-    //             R.dimen.webapp_splash_image_min_size) - 1;
-    //     Bitmap image = Bitmap.createBitmap(smallSize, smallSize, Bitmap.Config.ARGB_8888);
-    //     setActivityWebappInfoFromBitmap(image);
-    //
-    //     ViewGroup splashScreen = getActivity().createSplashScreen(null);
-    //     getActivity().setSplashScreenIconAndText(splashScreen, null, Color.WHITE);
-    //
-    //     ImageView splashImage = (ImageView) splashScreen.findViewById(
-    //             R.id.webapp_splash_screen_icon);
-    //     assertNull(splashImage.getDrawable());
-    // }
-    //
-    // @UiThreadTest
-    // @SmallTest
-    // @Feature({"Webapps"})
-    // public void testUsesMinWebappInfoIcons() {
-    //     int minSizePx = getActivity().getResources().getDimensionPixelSize(
-    //             R.dimen.webapp_splash_image_min_size);
-    //     Bitmap image = Bitmap.createBitmap(minSizePx, minSizePx, Bitmap.Config.ARGB_8888);
-    //     setActivityWebappInfoFromBitmap(image);
-    //
-    //     ViewGroup splashScreen = getActivity().createSplashScreen(null);
-    //     getActivity().setSplashScreenIconAndText(splashScreen, null, Color.WHITE);
-    //
-    //     ImageView splashImage = (ImageView) splashScreen.findViewById(
-    //             R.id.webapp_splash_screen_icon);
-    //     BitmapDrawable drawable = (BitmapDrawable) splashImage.getDrawable();
-    //     assertEquals(minSizePx, drawable.getBitmap().getWidth());
-    //     assertEquals(minSizePx, drawable.getBitmap().getHeight());
-    // }
+        assertEquals(ApiCompatibilityUtils.getColor(getActivity().getResources(),
+                                                    R.color.webapp_default_bg),
+                background.getColor());
+    }
 
     @SmallTest
     @Feature({"Webapps"})
@@ -105,7 +67,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @SmallTest
     @Feature({"Webapps"})
     public void testHidesAfterFirstPaint() throws InterruptedException {
-        assertTrue(getActivity().isSplashScreenVisibleForTest());
+        assertTrue(getActivity().isSplashScreenVisibleForTests());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -124,7 +86,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @SmallTest
     @Feature({"Webapps"})
     public void testHidesAfterCrash() throws InterruptedException {
-        assertTrue(getActivity().isSplashScreenVisibleForTest());
+        assertTrue(getActivity().isSplashScreenVisibleForTests());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -143,7 +105,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @SmallTest
     @Feature({"Webapps"})
     public void testHidesAfterLoadCompletes() throws InterruptedException {
-        assertTrue(getActivity().isSplashScreenVisibleForTest());
+        assertTrue(getActivity().isSplashScreenVisibleForTests());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -162,7 +124,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @SmallTest
     @Feature({"Webapps"})
     public void testHidesAfterLoadFails() throws InterruptedException {
-        assertTrue(getActivity().isSplashScreenVisibleForTest());
+        assertTrue(getActivity().isSplashScreenVisibleForTests());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -181,7 +143,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @SmallTest
     @Feature({"Webapps"})
     public void testHidesAfterMultipleEvents() throws InterruptedException {
-        assertTrue(getActivity().isSplashScreenVisibleForTest());
+        assertTrue(getActivity().isSplashScreenVisibleForTests());
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override

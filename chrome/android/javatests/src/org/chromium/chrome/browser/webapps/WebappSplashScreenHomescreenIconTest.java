@@ -6,10 +6,14 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.metrics.WebappUma;
 
@@ -25,7 +29,17 @@ public class WebappSplashScreenHomescreenIconTest extends WebappActivityTestBase
         return intent;
     }
 
-    // TODO(mlamouri): test that we actually show the icon.
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testShowFallbackIcon() {
+        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        ImageView splashImage = (ImageView) splashScreen.findViewById(
+                R.id.webapp_splash_screen_icon);
+        BitmapDrawable drawable = (BitmapDrawable) splashImage.getDrawable();
+
+        assertEquals(192, drawable.getBitmap().getWidth());
+        assertEquals(192, drawable.getBitmap().getHeight());
+    }
 
     @SmallTest
     @Feature({"Webapps"})
