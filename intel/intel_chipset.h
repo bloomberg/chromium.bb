@@ -177,9 +177,13 @@
 #define PCI_CHIP_SKYLAKE_HALO_GT3	0x192B
 #define PCI_CHIP_SKYLAKE_HALO_GT1 	0x190B
 #define PCI_CHIP_SKYLAKE_SRV_GT2	0x191A
-#define PCI_CHIP_SKYLAKE_SRV_GT3	0x192A
 #define PCI_CHIP_SKYLAKE_SRV_GT1	0x190A
 #define PCI_CHIP_SKYLAKE_WKS_GT2 	0x191D
+#define PCI_CHIP_SKYLAKE_SRV_GT4	0x192A
+#define PCI_CHIP_SKYLAKE_DT_GT4		0x1932
+#define PCI_CHIP_SKYLAKE_SRV_GT4X	0x193A
+#define PCI_CHIP_SKYLAKE_H_GT4		0x193B
+#define PCI_CHIP_SKYLAKE_WKS_GT4	0x193D
 
 #define PCI_CHIP_BROXTON_0		0x0A84
 #define PCI_CHIP_BROXTON_1		0x1A84
@@ -359,12 +363,18 @@
 				 (devid) == PCI_CHIP_SKYLAKE_WKS_GT2)
 
 #define IS_SKL_GT3(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT3	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT3	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT3)
+				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT3)
+
+#define IS_SKL_GT4(devid)	((devid) == PCI_CHIP_SKYLAKE_SRV_GT4	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_DT_GT4	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT4X	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_H_GT4	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_WKS_GT4)
 
 #define IS_SKYLAKE(devid)	(IS_SKL_GT1(devid) || \
 				 IS_SKL_GT2(devid) || \
-				 IS_SKL_GT3(devid))
+				 IS_SKL_GT3(devid) || \
+				 IS_SKL_GT4(devid))
 
 #define IS_BROXTON(devid)	((devid) == PCI_CHIP_BROXTON_0	|| \
 				 (devid) == PCI_CHIP_BROXTON_1	|| \
