@@ -55,7 +55,7 @@ dependencies.
 Using the tarfile you can create a Docker image:
 
 ```bash
-docker build -t blimp_engine - < ./out-linux/Debug/blimp_engine_deps.tar
+docker build -t blimp_engine - < ./out-linux/Debug/blimp_engine_bundle.tar
 ```
 
 ## Create Docker Container
