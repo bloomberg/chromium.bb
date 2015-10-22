@@ -414,6 +414,19 @@ TEST_P(InputHandlerProxyTest, MouseWheelWithPreciseScrollingDeltas) {
   VERIFY_AND_RESET_MOCKS();
 }
 
+TEST_P(InputHandlerProxyTest, MouseWheelScrollIgnored) {
+  SetSmoothScrollEnabled(true);
+  expected_disposition_ = InputHandlerProxy::DROP_EVENT;
+  WebMouseWheelEvent wheel;
+  wheel.type = WebInputEvent::MouseWheel;
+
+  EXPECT_CALL(mock_input_handler_, ScrollAnimated(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::SCROLL_IGNORED));
+
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
+  VERIFY_AND_RESET_MOCKS();
+}
+
 TEST_P(InputHandlerProxyTest, GestureScrollStarted) {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;

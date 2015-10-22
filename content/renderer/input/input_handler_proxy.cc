@@ -372,6 +372,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
         break;
       case cc::InputHandler::SCROLL_IGNORED:
         result = DROP_EVENT;
+        break;
       default:
         result = DID_NOT_HANDLE;
         break;
