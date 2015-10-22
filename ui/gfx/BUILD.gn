@@ -507,6 +507,8 @@ action("aggregate_vector_icons") {
     "vector_icons/warning.icon",
     "vector_icons/warning_badge.icon",
     "vector_icons/web.icon",
+    "vector_icons/zoom_minus.icon",
+    "vector_icons/zoom_plus.icon",
   ]
   outputs = [
     vector_icons_cc_file,

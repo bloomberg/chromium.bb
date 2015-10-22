@@ -1018,9 +1018,11 @@
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_24" file="google_chrome/webstore_icon_24.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_32" file="google_chrome/webstore_icon_32.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_ZOOM_MINUS" file="common/zoom_minus.png" />
-      <structure type="chrome_scaled_image" name="IDR_ZOOM_PLUS" file="common/zoom_plus.png" />
-      <structure type="chrome_scaled_image" name="IDR_ZOOM_NORMAL" file="common/zoom_reset.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_ZOOM_MINUS" file="legacy/zoom_minus.png" />
+        <structure type="chrome_scaled_image" name="IDR_ZOOM_PLUS" file="legacy/zoom_plus.png" />
+        <structure type="chrome_scaled_image" name="IDR_ZOOM_NORMAL" file="legacy/zoom_reset.png" />
+      </if>
 
       <!-- People search images -->
       <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_EMAIL" file="common/mail.png" />
