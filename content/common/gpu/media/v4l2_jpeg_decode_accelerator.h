@@ -75,19 +75,17 @@ class CONTENT_EXPORT V4L2JpegDecodeAccelerator
   bool CreateOutputBuffers();
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
-  void ResetQueues();
 
   // Return the number of input/output buffers enqueued to the device.
   size_t InputBufferQueuedCount();
   size_t OutputBufferQueuedCount();
 
-  // Return true if input buffer should be re-created.
+  // Return true if input buffer size is not enough.
   bool ShouldRecreateInputBuffers();
-  // Return true if output buffer should be re-created.
-  bool ShouldRecreateOutputBuffers();
-  // Create input and output buffer if needed. Return false means that an error
-  // has happened.
-  bool CreateBuffersIfNecessary();
+  // Destroy and create input buffers. Return false on error.
+  bool RecreateInputBuffers();
+  // Destroy and create output buffers. Return false on error.
+  bool RecreateOutputBuffers();
 
   void VideoFrameReady(int32_t bitstream_buffer_id);
   void NotifyError(int32_t bitstream_buffer_id, Error error);
@@ -97,8 +95,12 @@ class CONTENT_EXPORT V4L2JpegDecodeAccelerator
   void DecodeTask(scoped_ptr<JobRecord> job_record);
 
   // Run on |decoder_thread_| to dequeue last frame and enqueue next frame.
-  // This task is triggered by DevicePollTask.
-  void ServiceDeviceTask();
+  // This task is triggered by DevicePollTask. |event_pending| means that device
+  // has resolution change event or pixelformat change event.
+  void ServiceDeviceTask(bool event_pending);
+
+  // Dequeue source change event. Return false on error.
+  bool DequeueSourceChangeEvent();
 
   // Start/Stop |device_poll_thread_|.
   void StartDevicePoll();
@@ -113,12 +115,11 @@ class CONTENT_EXPORT V4L2JpegDecodeAccelerator
   // The number of input buffers and output buffers.
   const size_t kBufferCount = 2;
 
-  // Current image size used for checking the size is changed.
-  gfx::Size image_coded_size_;
+  // Coded size of output buffer.
+  gfx::Size output_buffer_coded_size_;
 
-  // Set true when input or output buffers have to be re-allocated.
-  bool recreate_input_buffers_pending_;
-  bool recreate_output_buffers_pending_;
+  // Pixel format of output buffer.
+  uint32_t output_buffer_pixelformat_;
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
