@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/extension_process_policy.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -61,6 +63,11 @@ bool CrossesExtensionProcessBoundary(
   }
 
   return old_url_extension != new_url_extension;
+}
+
+bool IsIsolateExtensionsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIsolateExtensions);
 }
 
 }  // namespace extensions

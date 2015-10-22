@@ -191,8 +191,7 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
   if (effective_site_url.SchemeIs(extensions::kExtensionScheme)) {
     // --isolate-extensions should isolate extensions, except for hosted apps.
     // Isolating hosted apps is a good idea, but ought to be a separate knob.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kIsolateExtensions)) {
+    if (IsIsolateExtensionsEnabled()) {
       const Extension* extension =
           ExtensionRegistry::Get(browser_context)
               ->enabled_extensions()

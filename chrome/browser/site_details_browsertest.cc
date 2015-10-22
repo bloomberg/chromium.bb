@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -182,8 +183,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
 MATCHER_P(EqualsIfExtensionsIsolated, expected, "") {
   if (content::AreAllSitesIsolatedForTesting())
     return arg >= expected;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIsolateExtensions))
+  if (extensions::IsIsolateExtensionsEnabled())
     return arg == expected;
   return true;
 }

@@ -62,6 +62,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature_provider.h"
 #endif
@@ -629,6 +630,9 @@ void ChromeContentClient::AddServiceWorkerSchemes(
 }
 
 bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIsolateExtensions);
+#if defined(ENABLE_EXTENSIONS)
+  return extensions::IsIsolateExtensionsEnabled();
+#else
+  return false;
+#endif
 }

@@ -29,6 +29,9 @@ bool CrossesExtensionProcessBoundary(
     const GURL& new_url,
     bool should_consider_workaround);
 
+// Check if extensions are running in Site Isolation mode.
+bool IsIsolateExtensionsEnabled();
+
 }  // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_

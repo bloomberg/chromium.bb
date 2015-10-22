@@ -93,8 +93,7 @@ bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
     // |opener_frame|/its ancestors.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSitePerProcess) ||
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIsolateExtensions))
+        extensions::IsIsolateExtensionsEnabled())
       old_url = opener_frame->document().url();
     else
       old_url = opener_frame->top()->document().url();
