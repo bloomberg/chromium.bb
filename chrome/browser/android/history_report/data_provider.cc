@@ -22,6 +22,8 @@
 using bookmarks::BookmarkModel;
 
 namespace {
+static bool g_is_debug = false;
+
 typedef base::hash_map<std::string, BookmarkModel::URLAndTitle*> BookmarkMap;
 
 struct Context {
@@ -45,8 +47,8 @@ void UpdateUrl(Context* context,
   history_report::DeltaFileEntryWithData* entry = &((*urls)[position]);
   if (success) {
     entry->SetData(url);
-  } else {
-    LOG(WARNING) << "No data for url " << entry->Url();
+  } else if (g_is_debug){
+    LOG(WARNING) << "DB not initialized or no data for url " << entry->Url();
   }
   if (position + 1 == urls->size()) {
     context->finished.Signal();
