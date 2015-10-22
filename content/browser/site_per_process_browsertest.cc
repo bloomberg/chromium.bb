@@ -476,11 +476,9 @@ class RenderWidgetHostMouseEventMonitor {
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
-#if defined(OS_ANDROID) || defined(THREAD_SANITIZER) || defined(OS_LINUX)
+#if defined(OS_ANDROID)
 // Browser process hit testing is not implemented on Android.
 // https://crbug.com/491334
-// Test fails under TSAN, see https://crbug.com/527618
-// Test is flaky under Linux, see https://crbug.com/528189
 #define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
 #else
 #define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
@@ -541,10 +539,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_SurfaceHitTestTest) {
   child_event.x = 75;
   child_event.y = 75;
   child_event.clickCount = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &child_event);
 
-  if (!child_frame_monitor.EventWasReceived()) {
-    main_frame_monitor.ResetEventReceived();
+  while (!child_frame_monitor.EventWasReceived()) {
     // This is working around a big synchronization problem. It is very
     // difficult to know if we have received a compositor frame from the
     // main frame renderer *after* it received the child frame's surface
@@ -559,6 +558,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_SurfaceHitTestTest) {
           base::TimeDelta::FromMilliseconds(10));
       run_loop.Run();
     }
+    cur_render_frame_number = root_view->RendererFrameNumber();
+    child_event.type = blink::WebInputEvent::MouseDown;
+    child_event.button = blink::WebPointerProperties::ButtonLeft;
+    child_event.x = 75;
+    child_event.y = 75;
+    child_event.clickCount = 1;
+    main_frame_monitor.ResetEventReceived();
+    child_frame_monitor.ResetEventReceived();
     router->RouteMouseEvent(root_view, &child_event);
   }
 
