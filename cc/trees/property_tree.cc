@@ -24,7 +24,9 @@ PropertyTree<T>::~PropertyTree() {
 }
 
 TransformTree::TransformTree()
-    : source_to_parent_updates_allowed_(true), page_scale_factor_(1.f) {}
+    : source_to_parent_updates_allowed_(true),
+      page_scale_factor_(1.f),
+      device_scale_factor_(1.f) {}
 
 TransformTree::~TransformTree() {
 }
@@ -71,7 +73,7 @@ TransformNodeData::TransformNodeData()
       affected_by_inner_viewport_bounds_delta_y(false),
       affected_by_outer_viewport_bounds_delta_x(false),
       affected_by_outer_viewport_bounds_delta_y(false),
-      layer_scale_factor(1.0f),
+      in_subtree_of_page_scale_layer(false),
       post_local_scale_factor(1.0f),
       local_maximum_animation_target_scale(0.f),
       local_starting_animation_scale(0.f),
@@ -388,11 +390,16 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
 
 void TransformTree::UpdateSublayerScale(TransformNode* node) {
   // The sublayer scale depends on the screen space transform, so update it too.
-  node->data.sublayer_scale =
-      node->data.needs_sublayer_scale
-          ? MathUtil::ComputeTransform2dScaleComponents(
-                node->data.to_screen, node->data.layer_scale_factor)
-          : gfx::Vector2dF(1.0f, 1.0f);
+  if (!node->data.needs_sublayer_scale) {
+    node->data.sublayer_scale = gfx::Vector2dF(1.0f, 1.0f);
+    return;
+  }
+
+  float layer_scale_factor = device_scale_factor_;
+  if (node->data.in_subtree_of_page_scale_layer)
+    layer_scale_factor *= page_scale_factor_;
+  node->data.sublayer_scale = MathUtil::ComputeTransform2dScaleComponents(
+      node->data.to_screen, layer_scale_factor);
 }
 
 void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,

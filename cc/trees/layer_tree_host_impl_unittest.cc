@@ -8882,5 +8882,31 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 2.f);
 }
 
+TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
+  // Checks that the sublayer scale of a transform node in the subtree of the
+  // page scale layer is updated without a property tree rebuild.
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 3.f);
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), gfx::Size(100, 100));
+  LayerImpl* page_scale_layer = host_impl_->active_tree()->PageScaleLayer();
+  page_scale_layer->AddChild(LayerImpl::Create(host_impl_->active_tree(), 100));
+
+  LayerImpl* in_subtree_of_page_scale_layer =
+      host_impl_->active_tree()->LayerById(100);
+  in_subtree_of_page_scale_layer->SetHasRenderSurface(true);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  DrawFrame();
+  TransformNode* node =
+      host_impl_->active_tree()->property_trees()->transform_tree.Node(
+          in_subtree_of_page_scale_layer->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
+  DrawFrame();
+  in_subtree_of_page_scale_layer = host_impl_->active_tree()->LayerById(100);
+  node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
+      in_subtree_of_page_scale_layer->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+}
+
 }  // namespace
 }  // namespace cc

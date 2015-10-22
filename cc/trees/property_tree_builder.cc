@@ -38,7 +38,6 @@ struct DataForRecursion {
   const LayerType* inner_viewport_scroll_layer;
   const LayerType* outer_viewport_scroll_layer;
   float page_scale_factor;
-  float device_scale_factor;
   bool in_subtree_of_page_scale_layer;
   bool affected_by_inner_viewport_bounds_delta;
   bool affected_by_outer_viewport_bounds_delta;
@@ -306,6 +305,8 @@ bool AddTransformNodeIfNeeded(
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;
+  node->data.in_subtree_of_page_scale_layer =
+      data_for_children->in_subtree_of_page_scale_layer;
 
   // Surfaces inherently flatten transforms.
   data_for_children->should_flatten =
@@ -340,7 +341,8 @@ bool AddTransformNodeIfNeeded(
   float post_local_scale_factor = 1.0f;
   if (is_root) {
     node->data.post_local = *data_from_ancestor.device_transform;
-    post_local_scale_factor = data_from_ancestor.device_scale_factor;
+    post_local_scale_factor =
+        data_for_children->transform_tree->device_scale_factor();
   }
 
   if (is_page_scale_layer) {
@@ -349,12 +351,8 @@ bool AddTransformNodeIfNeeded(
         data_from_ancestor.page_scale_factor);
   }
 
-  if (has_surface && !is_root) {
+  if (has_surface && !is_root)
     node->data.needs_sublayer_scale = true;
-    node->data.layer_scale_factor = data_from_ancestor.device_scale_factor;
-    if (data_from_ancestor.in_subtree_of_page_scale_layer)
-      node->data.layer_scale_factor *= data_from_ancestor.page_scale_factor;
-  }
 
   node->data.source_node_id = source_index;
   if (is_root) {
@@ -557,7 +555,6 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
   data_for_recursion.page_scale_factor = page_scale_factor;
-  data_for_recursion.device_scale_factor = device_scale_factor;
   data_for_recursion.in_subtree_of_page_scale_layer = false;
   data_for_recursion.affected_by_inner_viewport_bounds_delta = false;
   data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
@@ -569,6 +566,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.clip_tree->clear();
   data_for_recursion.effect_tree->clear();
   data_for_recursion.sequence_number = property_trees->sequence_number;
+  data_for_recursion.transform_tree->set_device_scale_factor(
+      device_scale_factor);
 
   ClipNode root_clip;
   root_clip.data.resets_clip = true;

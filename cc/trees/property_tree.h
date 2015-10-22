@@ -100,9 +100,11 @@ struct CC_EXPORT TransformNodeData {
   bool affected_by_outer_viewport_bounds_delta_x : 1;
   bool affected_by_outer_viewport_bounds_delta_y : 1;
 
-  // This is used as a fallback when we either cannot adjust raster scale or if
-  // the raster scale cannot be extracted from the screen space transform.
-  float layer_scale_factor;
+  // Layer scale factor is used as a fallback when we either cannot adjust
+  // raster scale or if the raster scale cannot be extracted from the screen
+  // space transform. For layers in the subtree of the page scale layer, the
+  // layer scale factor should include the page scale factor.
+  bool in_subtree_of_page_scale_layer : 1;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
   float post_local_scale_factor;
@@ -321,6 +323,11 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   float page_scale_factor() const { return page_scale_factor_; }
 
+  void set_device_scale_factor(float device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
+  }
+  float device_scale_factor() const { return device_scale_factor_; }
+
   void SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta);
   gfx::Vector2dF inner_viewport_bounds_delta() const {
     return inner_viewport_bounds_delta_;
@@ -374,6 +381,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   bool source_to_parent_updates_allowed_;
   float page_scale_factor_;
+  float device_scale_factor_;
   gfx::Vector2dF inner_viewport_bounds_delta_;
   gfx::Vector2dF outer_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;
