@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -79,6 +80,19 @@ namespace {
 // the norms, we think 1/16x to 16x is a safe and useful range for now.
 const double kMinRate = 0.0625;
 const double kMaxRate = 16.0;
+
+void SetSinkIdOnMediaThread(
+    scoped_refptr<media::WebAudioSourceProviderImpl> sink,
+    const std::string& device_id,
+    const url::Origin& security_origin,
+    const media::SwitchOutputDeviceCB& callback) {
+  if (sink->GetOutputDevice()) {
+    sink->GetOutputDevice()->SwitchOutputDevice(device_id, security_origin,
+                                                callback);
+  } else {
+    callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+  }
+}
 
 }  // namespace
 
@@ -397,21 +411,20 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   pipeline_.SetVolume(volume);
 }
 
-void WebMediaPlayerImpl::setSinkId(const blink::WebString& device_id,
-                                   WebSetSinkIdCB* web_callback) {
+void WebMediaPlayerImpl::setSinkId(
+    const blink::WebString& sink_id,
+    const blink::WebSecurityOrigin& security_origin,
+    blink::WebSetSinkIdCallbacks* web_callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
+
   media::SwitchOutputDeviceCB callback =
       media::ConvertToSwitchOutputDeviceCB(web_callback);
-  OutputDevice* output_device = audio_source_provider_->GetOutputDevice();
-  if (output_device) {
-    std::string device_id_str(device_id.utf8());
-    url::Origin security_origin(
-        GURL(frame_->securityOrigin().toString().utf8()));
-    output_device->SwitchOutputDevice(device_id_str, security_origin, callback);
-  } else {
-    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
-  }
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SetSinkIdOnMediaThread, audio_source_provider_,
+                 sink_id.utf8(), static_cast<url::Origin>(security_origin),
+                 callback));
 }
 
 #define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \

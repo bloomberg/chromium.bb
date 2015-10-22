@@ -215,7 +215,7 @@
       "platform/WebServiceWorkerResponseType.h",
       "platform/WebServiceWorkerSkipWaitingCallbacks.h",
       "platform/WebServiceWorkerState.h",
-      "platform/WebSetSinkIdError.h",
+      "platform/WebSetSinkIdCallbacks.h",
       "platform/WebSize.h",
       "platform/WebSocketHandle.h",
       "platform/WebSocketHandleClient.h",

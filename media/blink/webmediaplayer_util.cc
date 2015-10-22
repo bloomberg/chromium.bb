@@ -178,9 +178,9 @@ blink::WebEncryptedMediaInitDataType ConvertToWebInitDataType(
 }
 
 namespace {
-// This class wraps a scoped WebSetSinkIdCB pointer such that
+// This class wraps a scoped blink::WebSetSinkIdCallbacks pointer such that
 // copying objects of this class actually performs moving, thus
-// maintaining clear ownership of the WebSetSinkIdCB pointer.
+// maintaining clear ownership of the blink::WebSetSinkIdCallbacks pointer.
 // The rationale for this class is that the SwichOutputDevice method
 // can make a copy of its base::Callback parameter, which implies
 // copying its bound parameters.
@@ -193,7 +193,7 @@ namespace {
 
 class SetSinkIdCallback {
  public:
-  explicit SetSinkIdCallback(WebSetSinkIdCB* web_callback)
+  explicit SetSinkIdCallback(blink::WebSetSinkIdCallbacks* web_callback)
       : web_callback_(web_callback) {}
   SetSinkIdCallback(const SetSinkIdCallback& other)
       : web_callback_(other.web_callback_.Pass()) {}
@@ -204,12 +204,11 @@ class SetSinkIdCallback {
  private:
   // Mutable is required so that Pass() can be called in the copy
   // constructor.
-  mutable scoped_ptr<WebSetSinkIdCB> web_callback_;
+  mutable scoped_ptr<blink::WebSetSinkIdCallbacks> web_callback_;
 };
 
 void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
                           OutputDeviceStatus result) {
-  DVLOG(1) << __FUNCTION__;
   if (!callback.web_callback_)
     return;
 
@@ -218,18 +217,13 @@ void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
       callback.web_callback_->onSuccess();
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND:
-      callback.web_callback_->onError(new blink::WebSetSinkIdError(
-          blink::WebSetSinkIdError::ErrorTypeNotFound, "Device not found"));
+      callback.web_callback_->onError(blink::WebSetSinkIdError::NotFound);
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED:
-      callback.web_callback_->onError(new blink::WebSetSinkIdError(
-          blink::WebSetSinkIdError::ErrorTypeSecurity,
-          "No permission to access device"));
+      callback.web_callback_->onError(blink::WebSetSinkIdError::NotAuthorized);
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_INTERNAL:
-      callback.web_callback_->onError(new blink::WebSetSinkIdError(
-          blink::WebSetSinkIdError::ErrorTypeAbort,
-          "The requested operation could be performed and was aborted"));
+      callback.web_callback_->onError(blink::WebSetSinkIdError::Aborted);
       break;
     default:
       NOTREACHED();
@@ -241,7 +235,7 @@ void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
 }  // namespace
 
 SwitchOutputDeviceCB ConvertToSwitchOutputDeviceCB(
-    WebSetSinkIdCB* web_callbacks) {
+    blink::WebSetSinkIdCallbacks* web_callbacks) {
   return media::BindToCurrentLoop(
       base::Bind(RunSetSinkIdCallback, SetSinkIdCallback(web_callbacks)));
 }

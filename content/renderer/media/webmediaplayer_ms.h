@@ -85,7 +85,8 @@ class WebMediaPlayerMS
   void setRate(double rate) override;
   void setVolume(double volume) override;
   void setSinkId(const blink::WebString& sink_id,
-                 media::WebSetSinkIdCB* web_callback) override;
+                 const blink::WebSecurityOrigin& security_origin,
+                 blink::WebSetSinkIdCallbacks* web_callback) override;
   void setPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges buffered() const override;
   blink::WebTimeRanges seekable() const override;

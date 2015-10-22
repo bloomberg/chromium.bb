@@ -44,6 +44,7 @@
 #include "media/base/video_frame.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_delegate.h"
+#include "media/blink/webmediaplayer_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -477,12 +478,12 @@ void WebMediaPlayerAndroid::setVolume(double volume) {
 }
 
 void WebMediaPlayerAndroid::setSinkId(
-    const blink::WebString& device_id,
-    media::WebSetSinkIdCB* raw_web_callbacks) {
+    const blink::WebString& sink_id,
+    const blink::WebSecurityOrigin& security_origin,
+    blink::WebSetSinkIdCallbacks* web_callback) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_ptr<media::WebSetSinkIdCB> web_callbacks(raw_web_callbacks);
-  web_callbacks->onError(new blink::WebSetSinkIdError(
-      blink::WebSetSinkIdError::ErrorTypeNotSupported, "Not Supported"));
+  scoped_ptr<blink::WebSetSinkIdCallbacks> callback(web_callback);
+  callback->onError(blink::WebSetSinkIdError::NotSupported);
 }
 
 bool WebMediaPlayerAndroid::hasVideo() const {

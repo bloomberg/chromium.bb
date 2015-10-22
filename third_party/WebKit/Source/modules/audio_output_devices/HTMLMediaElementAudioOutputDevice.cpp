@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/audio_output_devices/SetSinkIdCallbacks.h"
-#include "platform/Logging.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
 
@@ -31,12 +31,17 @@ void HTMLMediaElementAudioOutputDevice::setSinkId(const String& sinkId)
 
 ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(ScriptState* scriptState, HTMLMediaElement& element, const String& sinkId)
 {
+    ASSERT(scriptState);
+
     WebMediaPlayer* webMediaPlayer = element.webMediaPlayer();
     if (!webMediaPlayer)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No media player available"));
 
+    ExecutionContext* context = scriptState->executionContext();
+    ASSERT(context && context->isDocument());
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    webMediaPlayer->setSinkId(sinkId, new SetSinkIdCallbacks(resolver, element, sinkId));
+    webMediaPlayer->setSinkId(sinkId, WebSecurityOrigin(context->securityOrigin()), new SetSinkIdCallbacks(resolver, element, sinkId));
     return resolver->promise();
 }
 

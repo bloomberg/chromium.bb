@@ -29,10 +29,10 @@
 #include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/proxy_decryptor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -115,8 +115,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual void setSinkId(const blink::WebString& device_id,
-                         media::WebSetSinkIdCB* raw_web_callbacks);
+  virtual void setSinkId(const blink::WebString& sink_id,
+                         const blink::WebSecurityOrigin& security_origin,
+                         blink::WebSetSinkIdCallbacks* web_callback);
   virtual void requestRemotePlayback();
   virtual void requestRemotePlaybackControl();
   virtual blink::WebTimeRanges buffered() const;

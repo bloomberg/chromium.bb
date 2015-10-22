@@ -198,21 +198,20 @@ void WebMediaPlayerMS::setVolume(double volume) {
     audio_renderer_->SetVolume(volume);
 }
 
-void WebMediaPlayerMS::setSinkId(const blink::WebString& sink_id,
-                                 media::WebSetSinkIdCB* web_callback) {
+void WebMediaPlayerMS::setSinkId(
+    const blink::WebString& sink_id,
+    const blink::WebSecurityOrigin& security_origin,
+    blink::WebSetSinkIdCallbacks* web_callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   const media::SwitchOutputDeviceCB callback =
       media::ConvertToSwitchOutputDeviceCB(web_callback);
-  if (audio_renderer_.get()) {
-    media::OutputDevice* output_device = audio_renderer_->GetOutputDevice();
-    if (output_device) {
-      output_device->SwitchOutputDevice(sink_id.utf8(),
-                                        frame_->securityOrigin(), callback);
-      return;
-    }
+  if (audio_renderer_ && audio_renderer_->GetOutputDevice()) {
+    audio_renderer_->GetOutputDevice()->SwitchOutputDevice(
+        sink_id.utf8(), security_origin, callback);
+  } else {
+    callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }
-  callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 }
 
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {

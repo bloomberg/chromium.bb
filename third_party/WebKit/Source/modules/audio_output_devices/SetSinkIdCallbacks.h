@@ -7,7 +7,7 @@
 
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCallbacks.h"
+#include "public/platform/WebSetSinkIdCallbacks.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
@@ -15,9 +15,8 @@ namespace blink {
 
 class HTMLMediaElement;
 class ScriptPromiseResolver;
-struct WebSetSinkIdError;
 
-class SetSinkIdCallbacks final : public WebCallbacks<void, WebSetSinkIdError*> {
+class SetSinkIdCallbacks final : public WebSetSinkIdCallbacks {
     // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
     // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
     WTF_MAKE_FAST_ALLOCATED(SetSinkIdCallbacks);
@@ -27,7 +26,7 @@ public:
     ~SetSinkIdCallbacks() override;
 
     void onSuccess() override;
-    void onError(WebSetSinkIdError*) override;
+    void onError(WebSetSinkIdError) override;
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;

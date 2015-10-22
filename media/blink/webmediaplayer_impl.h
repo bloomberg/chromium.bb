@@ -91,8 +91,9 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   void seek(double seconds) override;
   void setRate(double rate) override;
   void setVolume(double volume) override;
-  void setSinkId(const blink::WebString& device_id,
-                 WebSetSinkIdCB* web_callbacks) override;
+  void setSinkId(const blink::WebString& sink_id,
+                 const blink::WebSecurityOrigin& security_origin,
+                 blink::WebSetSinkIdCallbacks* web_callback) override;
   void setPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges buffered() const override;
   blink::WebTimeRanges seekable() const override;
