@@ -526,6 +526,7 @@ test("components_browsertests") {
       "dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc",
       "dom_distiller/content/browser/test/dom_distiller_js_browsertest.cc",
       "password_manager/content/renderer/credential_manager_client_browsertest.cc",
+      "tracing/child_trace_message_filter_browsertest.cc",
     ]
 
     data = [
@@ -564,6 +565,7 @@ test("components_browsertests") {
       "password_manager/content/browser",
       "password_manager/content/common",
       "password_manager/content/renderer",
+      "//components/tracing",
       "//content/test:browsertest_support",
       "//content/test:test_support",
       "//device/bluetooth",

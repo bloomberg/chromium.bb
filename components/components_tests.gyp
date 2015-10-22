@@ -1659,6 +1659,7 @@
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
             'components_tests_pak',
+            'tracing.gyp:tracing',
           ],
           'include_dirs': [
             '..',
@@ -1674,6 +1675,7 @@
             'dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc',
             'dom_distiller/content/browser/test/dom_distiller_js_browsertest.cc',
             'password_manager/content/renderer/credential_manager_client_browsertest.cc',
+            'tracing/child_trace_message_filter_browsertest.cc',
           ],
           'conditions': [
             ['OS == "android"', {

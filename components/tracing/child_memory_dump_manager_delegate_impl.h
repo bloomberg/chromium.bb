@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "components/tracing/tracing_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -25,7 +26,7 @@ class ChildTraceMessageFilter;
 // and long lived. CTMF, instead, can be torn down during browser shutdown.
 // This class is registered as MDM delegate in child processes and handles
 // gracefully (and thread-safely) failures in the case of a lack of the CTMF.
-class ChildMemoryDumpManagerDelegateImpl
+class TRACING_EXPORT ChildMemoryDumpManagerDelegateImpl
     : public base::trace_event::MemoryDumpManagerDelegate {
  public:
   static ChildMemoryDumpManagerDelegateImpl* GetInstance();
