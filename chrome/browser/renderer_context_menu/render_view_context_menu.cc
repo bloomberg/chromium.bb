@@ -1983,8 +1983,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
-  DevToolsWindow::InspectElement(
-      WebContents::FromRenderFrameHost(render_frame_host), x, y);
+  DevToolsWindow::InspectElement(render_frame_host, x, y);
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {

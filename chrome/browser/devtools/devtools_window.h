@@ -19,6 +19,7 @@ class DevToolsEventForwarder;
 namespace content {
 class DevToolsAgentHost;
 struct NativeWebKeyboardEvent;
+class RenderFrameHost;
 class RenderViewHost;
 }
 
@@ -108,7 +109,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       Profile* profile,
       const scoped_refptr<content::DevToolsAgentHost>& worker_agent);
 
-  static void InspectElement(content::WebContents* inspected_web_contents,
+  static void InspectElement(content::RenderFrameHost* inspected_frame_host,
                              int x,
                              int y);
 

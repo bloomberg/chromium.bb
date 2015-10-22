@@ -511,17 +511,22 @@ void DevToolsWindow::ToggleDevToolsWindow(
 
 // static
 void DevToolsWindow::InspectElement(
-    content::WebContents* inspected_web_contents,
+    content::RenderFrameHost* inspected_frame_host,
     int x,
     int y) {
   scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(inspected_web_contents));
+      DevToolsAgentHost::GetOrCreateFor(inspected_frame_host));
   agent->InspectElement(x, y);
   bool should_measure_time = FindDevToolsWindow(agent.get()) == NULL;
   base::TimeTicks start_time = base::TimeTicks::Now();
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
-  OpenDevToolsWindow(inspected_web_contents);
+  if (agent->GetType() == content::DevToolsAgentHost::TYPE_WEB_CONTENTS) {
+    OpenDevToolsWindow(agent->GetWebContents());
+  } else {
+    OpenDevToolsWindow(Profile::FromBrowserContext(agent->GetBrowserContext()),
+                       agent);
+  }
 
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
   if (should_measure_time && window)

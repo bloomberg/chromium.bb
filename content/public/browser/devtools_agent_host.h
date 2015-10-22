@@ -28,6 +28,7 @@ namespace content {
 
 class BrowserContext;
 class DevToolsExternalAgentProxyDelegate;
+class RenderFrameHost;
 class WebContents;
 
 // Describes interface for managing devtools agents from browser process.
@@ -64,9 +65,18 @@ class CONTENT_EXPORT DevToolsAgentHost
   static scoped_refptr<DevToolsAgentHost> GetForId(const std::string& id);
 
   // Returns DevToolsAgentHost that can be used for inspecting |web_contents|.
-  // New DevToolsAgentHost will be created if it does not exist.
+  // A new DevToolsAgentHost will be created if it does not exist.
   static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
       WebContents* web_contents);
+
+  // Returns DevToolsAgentHost that can be used for inspecting |frame_host|.
+  // A new DevToolsAgentHost will be created if it does not exist.
+  // For main frame cases, prefer using the above method which takes WebContents
+  // instead.
+  // TODO(dgozman): this is a temporary measure until we can inspect
+  // cross-process subframes within a single agent.
+  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
+      RenderFrameHost* frame_host);
 
   // Returns true iff an instance of DevToolsAgentHost for the |web_contents|
   // does exist.

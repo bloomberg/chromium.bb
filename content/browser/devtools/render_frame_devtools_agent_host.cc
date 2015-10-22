@@ -221,6 +221,19 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Resume() {
 // RenderFrameDevToolsAgentHost ------------------------------------------------
 
 scoped_refptr<DevToolsAgentHost>
+DevToolsAgentHost::GetOrCreateFor(RenderFrameHost* frame_host) {
+  while (frame_host && !ShouldCreateDevToolsFor(frame_host))
+    frame_host = frame_host->GetParent();
+  DCHECK(frame_host);
+  RenderFrameDevToolsAgentHost* result = FindAgentHost(frame_host);
+  if (!result) {
+    result = new RenderFrameDevToolsAgentHost(
+        static_cast<RenderFrameHostImpl*>(frame_host));
+  }
+  return result;
+}
+
+scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
   RenderFrameDevToolsAgentHost* result = FindAgentHost(web_contents);
   if (!result) {
