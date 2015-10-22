@@ -25,12 +25,7 @@ AttachmentBroker* AttachmentBroker::GetGlobal() {
   return g_attachment_broker;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-AttachmentBroker::AttachmentBroker() : port_provider_(nullptr) {}
-#else
 AttachmentBroker::AttachmentBroker() {}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
 AttachmentBroker::~AttachmentBroker() {}
 
 bool AttachmentBroker::GetAttachmentWithId(

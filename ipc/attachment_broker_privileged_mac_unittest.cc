@@ -167,7 +167,7 @@ class AttachmentBrokerPrivilegedMacMultiProcessTest
 TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertRight) {
   SetUpChild("InsertRightClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
-  IPC::AttachmentBrokerPrivilegedMac broker;
+  IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
 
   // Create some shared memory.
   scoped_ptr<base::SharedMemory> shared_memory =
@@ -230,7 +230,7 @@ MULTIPROCESS_TEST_MAIN(InsertRightClient) {
 TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertSameRightTwice) {
   SetUpChild("InsertSameRightTwiceClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
-  IPC::AttachmentBrokerPrivilegedMac broker;
+  IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
 
   // Create some shared memory.
   scoped_ptr<base::SharedMemory> shared_memory =
@@ -322,7 +322,7 @@ MULTIPROCESS_TEST_MAIN(InsertSameRightTwiceClient) {
 TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertTwoRights) {
   SetUpChild("InsertTwoRightsClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
-  IPC::AttachmentBrokerPrivilegedMac broker;
+  IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
 
   for (int i = 0; i < 2; ++i) {
     // Create some shared memory.

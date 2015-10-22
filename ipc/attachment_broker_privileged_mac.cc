@@ -53,7 +53,10 @@ kern_return_t SendMachPort(mach_port_t endpoint,
 
 namespace IPC {
 
-AttachmentBrokerPrivilegedMac::AttachmentBrokerPrivilegedMac() {}
+AttachmentBrokerPrivilegedMac::AttachmentBrokerPrivilegedMac(
+    base::PortProvider* port_provider)
+    : port_provider_(port_provider) {}
+
 AttachmentBrokerPrivilegedMac::~AttachmentBrokerPrivilegedMac() {}
 
 bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
@@ -173,7 +176,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
     base::ProcessId pid,
     base::mac::ScopedMachSendRight port_to_insert) {
   DCHECK_NE(pid, base::GetCurrentProcId());
-  mach_port_t task_port = port_provider()->TaskForPid(pid);
+  mach_port_t task_port = port_provider_->TaskForPid(pid);
   if (task_port == MACH_PORT_NULL) {
     // TODO(erikchen): UMA metric.
     return MACH_PORT_NULL;
@@ -248,7 +251,7 @@ base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::AcquireSendRight(
     return base::mac::ScopedMachSendRight(named_right);
   }
 
-  mach_port_t task_port = port_provider()->TaskForPid(pid);
+  mach_port_t task_port = port_provider_->TaskForPid(pid);
   return ExtractNamedRight(task_port, named_right);
 }
 

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "ipc/ipc_endpoint.h"
 
@@ -19,6 +20,49 @@
 
 namespace IPC {
 
+namespace {
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// Passed as a constructor parameter to AttachmentBrokerPrivilegedMac.
+base::PortProvider* g_port_provider = nullptr;
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+// On platforms that support attachment brokering, returns a new instance of
+// a platform-specific attachment broker. Otherwise returns |nullptr|.
+// The caller takes ownership of the newly created instance, and is
+// responsible for ensuring that the attachment broker lives longer than
+// every IPC::Channel. The new instance automatically registers itself as the
+// global attachment broker.
+scoped_ptr<AttachmentBrokerPrivileged> CreateBroker() {
+#if defined(OS_WIN)
+  return scoped_ptr<AttachmentBrokerPrivileged>(
+      new IPC::AttachmentBrokerPrivilegedWin);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  return scoped_ptr<AttachmentBrokerPrivileged>(
+      new IPC::AttachmentBrokerPrivilegedMac(g_port_provider));
+#else
+  return nullptr;
+#endif
+}
+
+// This class is wrapped in a LazyInstance to ensure that its constructor is
+// only called once. The constructor creates an attachment broker and sets it as
+// the global broker.
+class AttachmentBrokerMakeOnce {
+ public:
+  AttachmentBrokerMakeOnce() {
+    attachment_broker_.reset(CreateBroker().release());
+  }
+
+ private:
+  scoped_ptr<IPC::AttachmentBrokerPrivileged> attachment_broker_;
+};
+
+base::LazyInstance<AttachmentBrokerMakeOnce>::Leaky
+    g_attachment_broker_make_once = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 AttachmentBrokerPrivileged::AttachmentBrokerPrivileged() {
   IPC::AttachmentBroker::SetGlobal(this);
 }
@@ -27,19 +71,19 @@ AttachmentBrokerPrivileged::~AttachmentBrokerPrivileged() {
   IPC::AttachmentBroker::SetGlobal(nullptr);
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 // static
-scoped_ptr<AttachmentBrokerPrivileged>
-AttachmentBrokerPrivileged::CreateBroker() {
-#if defined(OS_WIN)
-  return scoped_ptr<AttachmentBrokerPrivileged>(
-      new IPC::AttachmentBrokerPrivilegedWin);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  return scoped_ptr<AttachmentBrokerPrivileged>(
-      new IPC::AttachmentBrokerPrivilegedMac);
-#else
-  return nullptr;
-#endif
+void AttachmentBrokerPrivileged::CreateBrokerIfNeeded(
+    base::PortProvider* provider) {
+  g_port_provider = provider;
+  g_attachment_broker_make_once.Get();
 }
+#else
+// static
+void AttachmentBrokerPrivileged::CreateBrokerIfNeeded() {
+  g_attachment_broker_make_once.Get();
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
     Endpoint* endpoint) {

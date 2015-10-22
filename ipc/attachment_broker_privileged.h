@@ -11,6 +11,12 @@
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_export.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+namespace base {
+class PortProvider;
+}  // namespace base
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 namespace IPC {
 
 class Endpoint;
@@ -25,13 +31,14 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   AttachmentBrokerPrivileged();
   ~AttachmentBrokerPrivileged() override;
 
-   // On platforms that support attachment brokering, returns a new instance of
-   // a platform-specific attachment broker. Otherwise returns |nullptr|.
-   // The caller takes ownership of the newly created instance, and is
-   // responsible for ensuring that the attachment broker lives longer than
-   // every IPC::Channel. The new instance automatically registers itself as the
-   // global attachment broker.
-  static scoped_ptr<AttachmentBrokerPrivileged> CreateBroker();
+  // If there is no global attachment broker, makes a new
+  // AttachmentBrokerPrivileged and sets it as the global attachment broker.
+  // This method is thread safe.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  static void CreateBrokerIfNeeded(base::PortProvider* provider);
+#else
+  static void CreateBrokerIfNeeded();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // AttachmentBroker overrides.
   void RegisterCommunicationChannel(Endpoint* endpoint) override;

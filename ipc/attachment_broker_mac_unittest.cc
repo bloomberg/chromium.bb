@@ -466,7 +466,7 @@ using OnMessageReceivedCallback = void (*)(IPC::Sender* sender,
 // These objects are globally accessible, and are expected to outlive all IPC
 // Channels.
 struct ChildProcessGlobals {
-  IPC::AttachmentBrokerPrivilegedMac broker;
+  scoped_ptr<IPC::AttachmentBrokerPrivilegedMac> broker;
   MockPortProvider port_provider;
   base::mac::ScopedMachSendRight server_task_port;
 };
@@ -490,8 +490,9 @@ scoped_ptr<ChildProcessGlobals> CommonChildProcessSetUp() {
       IPC::ReceiveMachPort(client_port.get()));
 
   scoped_ptr<ChildProcessGlobals> globals(new ChildProcessGlobals);
+  globals->broker.reset(
+      new IPC::AttachmentBrokerPrivilegedMac(&globals->port_provider));
   globals->port_provider.InsertEntry(getppid(), server_task_port.get());
-  globals->broker.set_port_provider(&globals->port_provider);
   globals->server_task_port.reset(server_task_port.release());
   return globals;
 }
@@ -508,7 +509,7 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName(channel_name), &listener));
-  globals->broker.RegisterCommunicationChannel(channel.get());
+  globals->broker->RegisterCommunicationChannel(channel.get());
   CHECK(channel->Connect());
 
   while (true) {

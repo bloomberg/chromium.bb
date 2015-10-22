@@ -14,6 +14,10 @@
 #include "ipc/ipc_export.h"
 #include "ipc/mach_port_attachment_mac.h"
 
+namespace base {
+class PortProvider;
+}  // namespace base
+
 namespace IPC {
 
 // This class is a concrete subclass of AttachmentBrokerPrivileged for the
@@ -47,7 +51,7 @@ namespace IPC {
 class IPC_EXPORT AttachmentBrokerPrivilegedMac
     : public AttachmentBrokerPrivileged {
  public:
-  AttachmentBrokerPrivilegedMac();
+  explicit AttachmentBrokerPrivilegedMac(base::PortProvider* port_provider);
   ~AttachmentBrokerPrivilegedMac() override;
 
   // IPC::AttachmentBroker overrides.
@@ -117,6 +121,9 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   // Ownership of |wire_format.mach_port| is implicitly passed to the process
   // that receives the Chrome IPC message.
   void RouteWireFormatToAnother(const MachPortWireFormat& wire_format);
+
+  // The port provider must live at least as long as the AttachmentBroker.
+  base::PortProvider* port_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivilegedMac);
 };

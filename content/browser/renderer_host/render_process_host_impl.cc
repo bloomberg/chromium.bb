@@ -154,6 +154,8 @@
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "ipc/attachment_broker.h"
+#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
@@ -191,6 +193,7 @@
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/browser_io_surface_manager_mac.h"
+#include "content/browser/mach_broker_mac.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -550,6 +553,19 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   if (BootstrapSandboxManager::ShouldEnable())
     AddObserver(BootstrapSandboxManager::GetInstance());
 #endif
+
+#if USE_ATTACHMENT_BROKER
+  // Construct the privileged attachment broker early in the life cycle of a
+  // render process. This ensures that when a test is being run in one of the
+  // single process modes, the global attachment broker is the privileged
+  // attachment broker, rather than an unprivileged attachment broker.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded(
+      MachBroker::GetInstance());
+#else
+  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // USE_ATTACHMENT_BROKER
 }
 
 // static
@@ -652,6 +668,10 @@ bool RenderProcessHostImpl::Init() {
   const std::string channel_id =
       IPC::Channel::GenerateVerifiedChannelID(std::string());
   channel_ = CreateChannelProxy(channel_id);
+#if USE_ATTACHMENT_BROKER
+  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
+      channel_.get());
+#endif
 
   // Setup the Mojo channel.
   mojo_application_host_->Init();
@@ -1733,6 +1753,12 @@ void RenderProcessHostImpl::Cleanup() {
 #endif
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;
+
+#if USE_ATTACHMENT_BROKER
+    IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+        channel_.get());
+#endif
+
     // It's important not to wait for the DeleteTask to delete the channel
     // proxy. Kill it off now. That way, in case the profile is going away, the
     // rest of the objects attached to this RenderProcessHost start going

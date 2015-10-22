@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/hash.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
@@ -37,33 +36,6 @@
 #endif  // OS_LINUX
 
 namespace {
-
-#if USE_ATTACHMENT_BROKER
-// This class is wrapped in a singleton to ensure that its constructor is only
-// called once. The constructor creates an attachment broker and
-// sets it as the global broker.
-class AttachmentBrokerWrapper {
- public:
-  AttachmentBrokerWrapper() {
-    attachment_broker_.reset(
-        IPC::AttachmentBrokerPrivileged::CreateBroker().release());
-  }
-
-  IPC::AttachmentBrokerPrivileged* GetAttachmentBroker() {
-    return attachment_broker_.get();
-  }
-
- private:
-  scoped_ptr<IPC::AttachmentBrokerPrivileged> attachment_broker_;
-};
-
-base::LazyInstance<AttachmentBrokerWrapper>::Leaky
-    g_attachment_broker_wrapper = LAZY_INSTANCE_INITIALIZER;
-
-IPC::AttachmentBrokerPrivileged* GetAttachmentBroker() {
-  return g_attachment_broker_wrapper.Get().GetAttachmentBroker();
-}
-#endif  // USE_ATTACHMENT_BROKER
 
 // Global atomic to generate child process unique IDs.
 base::StaticAtomicSequenceNumber g_unique_id;
@@ -112,18 +84,12 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
 #endif
-#if USE_ATTACHMENT_BROKER
-  // Construct the privileged attachment broker early in the life cycle of a
-  // child process. This ensures that when a test is being run in one of the
-  // single process modes, the global attachment broker is the privileged
-  // attachment broker, rather than an unprivileged attachment broker.
-  GetAttachmentBroker();
-#endif
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
 #if USE_ATTACHMENT_BROKER
-  GetAttachmentBroker()->DeregisterCommunicationChannel(channel_.get());
+  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+      channel_.get());
 #endif
   for (size_t i = 0; i < filters_.size(); ++i) {
     filters_[i]->OnChannelClosing();
@@ -148,7 +114,8 @@ std::string ChildProcessHostImpl::CreateChannel() {
   if (!channel_->Connect())
     return std::string();
 #if USE_ATTACHMENT_BROKER
-  GetAttachmentBroker()->RegisterCommunicationChannel(channel_.get());
+  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
+      channel_.get());
 #endif
 
   for (size_t i = 0; i < filters_.size(); ++i)

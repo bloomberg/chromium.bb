@@ -30,6 +30,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
+#include "ipc/attachment_broker.h"
+#include "ipc/attachment_broker_privileged.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
@@ -122,6 +124,19 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
       power_monitor_message_broadcaster_(this),
       is_channel_connected_(false) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
+
+#if USE_ATTACHMENT_BROKER
+  // Construct the privileged attachment broker early in the life cycle of a
+  // child process. This ensures that when a test is being run in one of the
+  // single process modes, the global attachment broker is the privileged
+  // attachment broker, rather than an unprivileged attachment broker.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded(
+      MachBroker::GetInstance());
+#else
+  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // USE_ATTACHMENT_BROKER
 
   child_process_host_.reset(ChildProcessHost::Create(this));
   AddFilter(new TraceMessageFilter(data_.id));
