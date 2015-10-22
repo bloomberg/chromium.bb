@@ -53,6 +53,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/public/common/content_switches.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
@@ -377,7 +378,7 @@ void ChildThreadImpl::Init(const Options& options) {
   IPC::Logging::GetInstance();
 #endif
 
-#if defined(OS_WIN)
+#if USE_ATTACHMENT_BROKER
   // The only reason a global would already exist is if the thread is being run
   // in the browser process because of a command line switch.
   if (!IPC::AttachmentBroker::GetGlobal()) {
