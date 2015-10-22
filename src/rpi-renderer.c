@@ -1410,6 +1410,7 @@ rpi_renderer_repaint_output(struct weston_output *base,
 	/* The frame_signal is emitted in rpi_renderer_finish_frame(),
 	 * so that the firmware can capture the up-to-date contents.
 	 */
+	pixman_region32_copy(&base->previous_damage, output_damage);
 }
 
 static void
