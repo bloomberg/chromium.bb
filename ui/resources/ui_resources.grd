@@ -159,11 +159,11 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER" file="common/notification_do_not_disturb_hover.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED" file="common/notification_do_not_disturb_pressed.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_HOVER" file="common/notification_settings_hover.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_PRESSED" file="common/notification_settings_pressed.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON" file="common/notification_settings_button.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_HOVER" file="common/notification_settings_button_hover.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_PRESSED" file="common/notification_settings_button_pressed.png"/>
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_HOVER" file="common/notification_settings_hover.png"/>
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_PRESSED" file="common/notification_settings_pressed.png"/>
       </if>
       <!-- TODO(calamity): The 1x local ntp resources require a proper version.
            See crbug.com/363519. -->
