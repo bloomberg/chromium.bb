@@ -305,7 +305,8 @@ const CGFloat kLocationBarRightOffset = 35;
   output_.fullscreenExitButtonMaxY = maxY;
 
   if (parameters_.inAnyFullscreen &&
-      parameters_.slidingStyle == fullscreen_mac::OMNIBOX_TABS_HIDDEN) {
+      (parameters_.slidingStyle == fullscreen_mac::OMNIBOX_TABS_HIDDEN ||
+       parameters_.slidingStyle == fullscreen_mac::OMNIBOX_TABS_NONE)) {
     // If in presentation mode, reset |maxY| to top of screen, so that the
     // floating bar slides over the things which appear to be in the content
     // area.

@@ -539,7 +539,7 @@ willPositionSheet:(NSWindow*)sheet
                           regularWindow:[self window]
                        fullscreenWindow:fullscreenWindow_.get()];
 
-  fullscreen_mac::SlidingStyle style = fullscreen_mac::OMNIBOX_TABS_NONE;
+  fullscreen_mac::SlidingStyle style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   [self adjustUIForSlidingFullscreenStyle:style];
 
   // AppKit is helpful and prevents NSWindows from having the same height as
