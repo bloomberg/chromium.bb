@@ -89,16 +89,8 @@ enum VideoProfile {
 // create a new object to reset the configuration and use IsValidConfig() to
 // determine if the configuration is still valid or not.
 struct AudioConfig {
-  AudioConfig()
-      : id(kPrimary),
-        codec(kAudioCodecUnknown),
-        sample_format(kUnknownSampleFormat),
-        bytes_per_channel(0),
-        channel_number(0),
-        samples_per_second(0),
-        extra_data(nullptr),
-        extra_data_size(0),
-        is_encrypted(false) {}
+  AudioConfig();
+  ~AudioConfig();
 
   // Stream id.
   StreamId id;
@@ -112,28 +104,31 @@ struct AudioConfig {
   int channel_number;
   // Number of audio samples per second.
   int samples_per_second;
-  // Pointer to extra data buffer for certain codec initialization. The memory
-  // is allocated outside this structure. Consumers of the structure should make
-  // a copy if it is expected to be used beyond the function ends.
-  const uint8_t* extra_data;
-  // Size of extra data in bytes.
-  int extra_data_size;
+  // Extra data buffer for certain codec initialization.
+  std::vector<uint8_t> extra_data;
   // content is encrypted or not.
   bool is_encrypted;
 };
+
+inline AudioConfig::AudioConfig()
+    : id(kPrimary),
+      codec(kAudioCodecUnknown),
+      sample_format(kUnknownSampleFormat),
+      bytes_per_channel(0),
+      channel_number(0),
+      samples_per_second(0),
+      is_encrypted(false) {
+}
+
+inline AudioConfig::~AudioConfig() {
+}
 
 // TODO(erickung): Remove constructor once CMA backend implementation does't
 // create a new object to reset the configuration and use IsValidConfig() to
 // determine if the configuration is still valid or not.
 struct VideoConfig {
-  VideoConfig()
-    : id(kPrimary),
-      codec(kVideoCodecUnknown),
-      profile(kVideoProfileUnknown),
-      additional_config(nullptr),
-      extra_data(nullptr),
-      extra_data_size(0),
-      is_encrypted(false) {}
+  VideoConfig();
+  ~VideoConfig();
 
   // Stream Id.
   StreamId id;
@@ -141,19 +136,26 @@ struct VideoConfig {
   VideoCodec codec;
   // Video codec profile.
   VideoProfile profile;
-  // Both |additional_config| and |extra_data| are the pointers to the object
-  // memory that are allocated outside this structure. Consumers of the
-  // structure should make a copy if it is expected to be used beyond the
-  // function ends.
-  // Additional video config for the video stream if available.
+  // Additional video config for the video stream if available. Consumers of
+  // this structure should make an explicit copy of |additional_config| if it
+  // will be used after SetConfig() finishes.
   VideoConfig* additional_config;
-  // Pointer to extra data buffer for certain codec initialization.
-  const uint8_t* extra_data;
-  // Size of extra data in bytes.
-  int extra_data_size;
+  // Extra data buffer for certain codec initialization.
+  std::vector<uint8_t> extra_data;
   // content is encrypted or not.
   bool is_encrypted;
 };
+
+inline VideoConfig::VideoConfig()
+    : id(kPrimary),
+      codec(kVideoCodecUnknown),
+      profile(kVideoProfileUnknown),
+      additional_config(nullptr),
+      is_encrypted(false) {
+}
+
+inline VideoConfig::~VideoConfig() {
+}
 
 // TODO(erickung): Remove following two inline IsValidConfig() functions. These
 // are to keep existing CMA backend implementation consistent until the clean up
