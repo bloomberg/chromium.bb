@@ -39,30 +39,35 @@
 
 namespace blink {
 
-HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* ReferenceFilterBuilder::documentResourceReferences = nullptr;
+namespace {
+
+using ResourceReferenceMap = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const FilterOperation>, OwnPtr<DocumentResourceReference>>;
+
+ResourceReferenceMap& documentResourceReferences()
+{
+    DEFINE_STATIC_LOCAL(ResourceReferenceMap, documentResourceReferences, ());
+    return documentResourceReferences;
+}
+
+} // namespace
 
 DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(const FilterOperation* filterOperation)
 {
-    if (!documentResourceReferences)
-        return nullptr;
-
-    return documentResourceReferences->get(filterOperation);
+    return documentResourceReferences().get(filterOperation);
 }
 
 void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, PassOwnPtr<DocumentResourceReference> documentResourceReference)
 {
-    if (!documentResourceReferences)
-        documentResourceReferences = new HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>;
-    documentResourceReferences->add(filterOperation, documentResourceReference);
+    ASSERT(!documentResourceReferences().contains(filterOperation));
+    documentResourceReferences().add(filterOperation, documentResourceReference);
 }
 
+#if !ENABLE(OILPAN)
 void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperation* filterOperation)
 {
-    if (!documentResourceReferences)
-        return;
-
-    documentResourceReferences->remove(filterOperation);
+    documentResourceReferences().remove(filterOperation);
 }
+#endif
 
 PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation)
 {
