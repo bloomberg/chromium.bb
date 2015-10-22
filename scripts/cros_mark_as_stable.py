@@ -143,7 +143,9 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
        '%s..%s' % (remote_ref.ref, stable_branch)]).output
   description = '%s\n\n%s' % (GIT_COMMIT_SUBJECT, description)
   logging.info('For %s, using description %s', cwd, description)
-  git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
+  git.RunGit(cwd, ['checkout', stable_branch])
+  git.CreatePushBranch(constants.MERGE_BRANCH, cwd,
+                       remote_push_branch=remote_ref)
   git.RunGit(cwd, ['merge', '--squash', stable_branch])
   git.RunGit(cwd, ['commit', '-m', description])
   git.RunGit(cwd, ['config', 'push.default', 'tracking'])

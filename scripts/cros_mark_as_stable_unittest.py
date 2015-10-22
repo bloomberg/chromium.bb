@@ -57,6 +57,8 @@ class NonClassTests(cros_test_lib.MockTestCase):
     create_mock = self.PatchObject(git, 'CreatePushBranch')
     git_mock = self.StartPatcher(RunGitMock())
 
+    git_mock.AddCmdResult(['checkout', self._branch])
+
     cmd = ['log', '--format=short', '--perl-regexp', '--author',
            '^(?!chrome-bot)', 'refs/remotes/gerrit/master..%s' % self._branch]
 
@@ -78,7 +80,8 @@ class NonClassTests(cros_test_lib.MockTestCase):
     sync_mock.assert_called_with('.', 'gerrit', 'refs/remotes/gerrit/master')
     if not bad_cls:
       push_mock.assert_called_with('merge_branch', '.', dryrun=False)
-      create_mock.assert_called_with('merge_branch', '.')
+      create_mock.assert_called_with('merge_branch', '.',
+                                     remote_push_branch=mock.ANY)
 
   def testPushChange(self):
     """Verify pushing changes works."""
