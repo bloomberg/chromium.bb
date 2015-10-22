@@ -147,13 +147,22 @@ source_set("renderer") {
             content_renderer_gypi_values.private_renderer_webrtc_sources,
             ".",
             "//content")
+    if (is_android) {
+      sources -= [
+        "media/media_recorder_handler.cc",
+        "media/media_recorder_handler.h",
+        "media/video_track_recorder.cc",
+        "media/video_track_recorder.h",
+      ]
+    }
+
     deps += [
       "//crypto",
-      "//third_party/webrtc/modules/audio_device",
-      "//third_party/webrtc/modules/audio_processing",
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libjingle:libpeerconnection",
       "//third_party/libjingle:libstunprober",
+      "//third_party/webrtc/modules/audio_device",
+      "//third_party/webrtc/modules/audio_processing",
     ]
   } else {
     sources += [

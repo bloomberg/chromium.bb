@@ -619,6 +619,13 @@ test("content_unittests") {
       sources +=
           [ "../browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
     }
+
+    if (is_android) {
+      sources -= [
+        "../renderer/media/media_recorder_handler_unittest.cc",
+        "../renderer/media/video_track_recorder_unittest.cc",
+      ]
+    }
   }
 
   if (enable_web_speech) {
