@@ -2352,7 +2352,6 @@
     { "name": "ecake.in", "include_subdomains": true, "mode": "force-https" },
     { "name": "ego4u.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ego4u.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "etoprekrasno.ru", "include_subdomains": true, "mode": "force-https" },
     { "name": "fish-hook.ru", "include_subdomains": true, "mode": "force-https" },
     { "name": "fniephaus.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "forgix.com", "include_subdomains": true, "mode": "force-https" },
