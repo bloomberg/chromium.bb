@@ -384,8 +384,8 @@ source_set("browser") {
     sources +=
         rebase_path(gypi_values.chrome_browser_mac_sources, ".", "//chrome")
     deps += [
-      #"app_shim"  TODO(GYP) bug 512600
-      #"browser_app_shim"  TODO(GYP) bug 512600
+      "//chrome/app_shim",
+      "//chrome/browser/apps/app_shim",
     ]
   }
   if (is_mac || is_android) {

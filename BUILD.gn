@@ -495,46 +495,12 @@ group("both_gn_and_gyp") {
       "//third_party/molokocacao",
     ]
 
-    # TODO(GYP): Remove these when the targets below work and these
-    # are pulled in automatically.
-    deps += [
-      "//cc/blink",
-      "//components/ui/zoom",
-      "//content",
-      "//content/test:test_support",
-      "//device/battery",
-      "//device/bluetooth",
-      "//device/nfc",
-      "//device/usb",
-      "//device/vibration",
-      "//media/blink",
-      "//pdf",
-      "//storage/browser",
-      "//third_party/brotli",
-      "//third_party/flac",
-      "//third_party/hunspell",
-      "//third_party/iccjpeg",
-      "//third_party/libphonenumber",
-      "//third_party/ots",
-      "//third_party/qcms",
-      "//third_party/smhasher:murmurhash3",
-      "//third_party/webrtc/system_wrappers",
-      "//ui/app_list:app_list_unittests",
-      "//ui/gfx:gfx_unittests",
-      "//ui/native_theme",
-      "//ui/snapshot",
-      "//ui/surface",
-    ]
-
-    # TODO(dpranke): These are as-yet untriaged but need at least the above.
+    # TODO(GYP): These don't work on Mac yet.
     deps -= [
       "//chrome",  # TODO(GYP)
       "//chrome/test:browser_tests",  # TODO(GYP)
       "//chrome/test:interactive_ui_tests",  # TODO(GYP)
       "//chrome/test:sync_integration_tests",  # TODO(GYP)
-      "//chrome/test:unit_tests",  # TODO(GYP)
-      "//content/test:content_browsertests",  # TODO(GYP)
-      "//content/test:content_perftests",  # TODO(GYP)
       "//extensions:extensions_browsertests",  # TODO(GYP) Needs ContentMain
 
       # Mojo in GN contains some things which are never compiled in GYP on Mac,

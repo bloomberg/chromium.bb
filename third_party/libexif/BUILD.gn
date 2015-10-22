@@ -19,7 +19,7 @@ if (!is_linux || is_chromeos) {
     }
   }
 
-  shared_library("libexif") {
+  loadable_module("libexif") {
     sources = [
       "sources/libexif/canon/exif-mnote-data-canon.c",
       "sources/libexif/canon/mnote-canon-entry.c",

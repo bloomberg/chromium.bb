@@ -139,15 +139,16 @@ static_library("common") {
       "//extensions:extensions_resources",
       "//extensions/strings",
       "//media/cast:net",
-
-      # This dependency is for a header used only by extensions code.
-      "//ui/keyboard:keyboard_with_content",
     ]
     if (is_chromeos) {
       sources +=
           rebase_path(gypi_values.chrome_common_extensions_chromeos_sources,
                       ".",
                       "//chrome")
+    }
+    if (use_aura) {
+      # This dependency is for a header used only by extensions code.
+      public_deps += [ "//ui/keyboard:keyboard_with_content" ]
     }
   }
 

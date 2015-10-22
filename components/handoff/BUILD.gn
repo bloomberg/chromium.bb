@@ -9,4 +9,13 @@ source_set("handoff") {
       "handoff_utility.mm",
     ]
   }
+  if (is_mac) {
+    sources += [
+      "handoff_manager.h",
+      "handoff_manager.mm",
+    ]
+    deps = [
+      "//base",
+    ]
+  }
 }

@@ -7,6 +7,8 @@
     {
       # This is the part of the Chrome browser process responsible for launching
       # and communicating with app_shim processes on Mac.
+      #
+      # GN version: //chrome/browser/apps/app_shim
       'target_name': 'browser_app_shim',
       'type': 'static_library',
       'dependencies': [

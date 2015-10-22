@@ -269,6 +269,15 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_desktop_sources,
                            ".",
                            "//chrome")
+    if (is_mac && !mac_views_browser) {
+      sources -= [
+        # This is not explicitly excluded in GYP, but I think the static
+        # library linking rules means it's never referenced when compiling in
+        # non-Views mode on Mac. It appears not to link in that case.
+        "views/profiles/new_avatar_button.cc",
+        "views/profiles/new_avatar_button.h",
+      ]
+    }
   }
   if (use_aura) {
     sources +=
@@ -471,6 +480,16 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_media_router_sources,
                            ".",
                            "//chrome")
+    if (is_mac && !mac_views_browser) {
+      sources -= [
+        # This file is compiled on GYP but never referenced on Mac. Since it's
+        # in a static library, it never gets pulled in and we never try to link
+        # it (it doesn't link). In GN, source sets force us to get this rule
+        # correct.
+        "views/toolbar/media_router_action_platform_delegate_views.cc",
+        "views/toolbar/media_router_action_platform_delegate_views.h",
+      ]
+    }
     deps += [ "//chrome/browser/media/router" ]
   }
   if (enable_webrtc) {
@@ -539,11 +558,11 @@ source_set("test_support") {
     ]
   }
 
-  if (toolkit_views) {
-    sources += [ "views/find_bar_host_unittest_util_views.cc" ]
-    if (!is_mac) {
-      sources += [ "views/toolbar/browser_action_test_util_views.cc" ]
-    }
+  if (toolkit_views && (!is_mac || mac_views_browser)) {
+    sources += [
+      "views/find_bar_host_unittest_util_views.cc",
+      "views/toolbar/browser_action_test_util_views.cc",
+    ]
   }
 
   if (is_android) {

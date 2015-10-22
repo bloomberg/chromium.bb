@@ -181,7 +181,15 @@ source_set("test_support") {
     deps += [ "//crypto:platform" ]
   }
   if (is_mac) {
-    # deps += [ '../third_party/ocmock/ocmock.gyp:ocmock' ] TODO(GYP)
+    sources += [
+      "//chrome/app/chrome_crash_reporter_client.cc",
+      "//chrome/app/chrome_crash_reporter_client_mac.mm",
+    ]
+    deps += [
+      "//breakpad",
+      "//components/crash/content/app",
+      "//third_party/ocmock",
+    ]
   }
   if (is_win) {
     deps += [ "//third_party/wtl" ]
@@ -1873,7 +1881,13 @@ if (!is_android) {
               ".",
               "//chrome")
       sources -= [
+        # This tests the function GetSpellCheckLanguages which is not used on
+        # Mac.
+        "../browser/spellchecker/spellcheck_service_unittest.cc",
         "../browser/ui/tests/ui_gfx_image_unittest.cc",
+
+        # This tests Chrome's spellchecker which Mac doesn't use.
+        "../renderer/spellchecker/spellcheck_multilingual_unittest.cc",
         "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
         "../tools/convert_dict/convert_dict_unittest.cc",
       ]

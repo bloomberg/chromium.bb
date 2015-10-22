@@ -8,6 +8,8 @@
       # This is the part of the shim process compiled into Chrome. It runs only
       # in the shim process, after the shim finds and loads the Chrome
       # Framework bundle.
+      #
+      # GN version: //chrome/app_shim
       'target_name': 'app_shim',
       'type': 'static_library',
       'dependencies': [
