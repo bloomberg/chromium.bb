@@ -6,7 +6,7 @@
   display: inline-block;
 }
 
-#selectDiv {
+#selectTypeDiv {
   margin: 10px 0;
 }
 
@@ -16,6 +16,11 @@ select {
 
 span {
   margin: 5px;
+}
+
+cr-policy-network-indicator {
+  -webkit-margin-end: 10px;
+  mwrgin-bottom: 5px;
 }
 
 paper-checkbox {

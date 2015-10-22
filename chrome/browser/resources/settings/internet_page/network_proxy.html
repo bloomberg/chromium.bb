@@ -3,6 +3,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
 <link rel="import" href="network_property_list.html">
 <link rel="import" href="network_proxy_input.html">
 <link rel="import" href="network_proxy_exclusions.html">
@@ -12,8 +14,17 @@
   <template>
     <div id="outer" class="layout vertical flex">
       <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->
-      <div id="selectDiv">
-        <select id="selectType" on-change="onTypeChange_">
+      <div class="layout horizontal center" hidden$=
+          "[[!isNetworkPolicyControlled(networkProperties.ProxySettings.Type)]]">
+        <cr-policy-network-indicator
+            property="[[networkProperties.ProxySettings.Type]]">
+        </cr-policy-network-indicator>
+        <span>This proxy is enforced by your administrator.</span>
+      </div>
+
+      <div id="selectTypeDiv">
+        <select id="selectType" on-change="onTypeChange_"
+            disabled$="[[isNetworkPolicyEnforced(networkProperties.ProxySettings.Type)]]">
           <template is="dom-repeat" items="[[proxyTypes_]]">
             <option value="[[item]]">[[proxyTypeDesc_(item)]]</option>
           </template>
@@ -24,6 +35,7 @@
           class="layout horizontal">
         <span>Autoconfiguration URL:</span>
         <paper-input no-label-float class="flex" value="{{proxy.PAC}}"
+            disabled="[[isNetworkPolicyEnforced(networkProperties.ProxySettings.PAC)]]">
             on-blur="onProxyInputChange_">
         </paper-input>
       </div>
@@ -39,25 +51,30 @@
             Use the same proxy for all protocols
         </paper-checkbox>
         <div hidden$="[[!useSameProxy]]" class="layout vertical">
-          <network-proxy-input editable="[[editable]]"
+          <network-proxy-input
+              editable="[[isPropertyEditable_(editable, networkProperties, 'ProxySettings.Manual.HTTPProxy')]]"
               value="{{proxy.Manual.HTTPProxy}}"
               label="Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
         </div>
         <div hidden$="[[useSameProxy]]" class="layout vertical">
-          <network-proxy-input editable="[[editable]]"
+          <network-proxy-input
+              editable="[[isPropertyEditable_(editable, networkProperties, 'ProxySettings.Manual.HTTPProxy)')]]"
               value="{{proxy.Manual.HTTPProxy}}"
               label="HTTP Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
-          <network-proxy-input editable="[[editable]]"
+          <network-proxy-input
+              editable="[[isPropertyEditable_(editable, networkProperties, 'ProxySettings.Manual.SecureHTTPProxy)')]]"
               value="{{proxy.Manual.SecureHTTPProxy}}"
               label="Secure HTTP Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
-          <network-proxy-input editable="[[editable]]"
+          <network-proxy-input
+              editable="[[isPropertyEditable_(editable, networkProperties, 'ProxySettings.Manual.FTPProxy)')]]"
               value="{{proxy.Manual.FTPProxy}}"
               label="FTP Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
-          <network-proxy-input editable="[[editable]]"
+          <network-proxy-input
+              editable="[[isPropertyEditable_(editable, networkProperties, 'ProxySettings.Manual.SOCKS)')]]"
               value="{{proxy.Manual.SOCKS}}"
               label="SOCKS host" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>

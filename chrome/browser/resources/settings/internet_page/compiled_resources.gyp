@@ -23,6 +23,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/cr_elements/policy/cr_policy_network_behavior.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
@@ -88,6 +89,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/cr_elements/policy/cr_policy_network_behavior.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
@@ -101,6 +103,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '../../../../../ui/webui/resources/cr_elements/policy/cr_policy_network_behavior.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [

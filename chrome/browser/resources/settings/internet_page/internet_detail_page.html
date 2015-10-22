@@ -8,6 +8,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
 <link rel="import" href="network_apnlist.html">
 <link rel="import" href="network_ip_config.html">
 <link rel="import" href="network_nameservers.html">
@@ -41,7 +43,7 @@
         </div>
 
         <!-- Info and properties common to all networks. -->
-        <div id="infoDiv" class="layout vertical">
+        <div class="layout vertical">
           <div class="layout horizontal section" hidden$="[[!IPAddress]]">
             <span id="ipAddressLabel">IP Address:</span>
             <span>[[IPAddress]]</span>
@@ -53,17 +55,25 @@
           </div>
           <div class="layout horizontal center section"
               hidden$="[[!showPreferNetwork_(networkProperties)]]">
-            <paper-icon-button id="preferButton"
-                toggles active="{{preferNetwork}}"
+            <paper-icon-button id="preferButton" toggles
+                active="{{preferNetwork}}"
+                disabled=
+                    "[[isNetworkPolicyEnforced(networkProperties.Priority)]]"
                 icon="[[getPreferredIcon_(preferNetwork)]]">
             </paper-icon-button>
             <span>Prefer this network</span>
+            <cr-policy-network-indicator
+                property="[[networkProperties.Priority]]">
+            </cr-policy-network-indicator>
           </div>
-          <div class="section">
-            <paper-checkbox checked="{{autoConnect}}"
-                hidden$="[[!showAutoConnect_(networkProperties)]]">
+          <div class="layout horizontal center section"
+              hidden$="[[!showAutoConnect_(networkProperties)]]">
+            <paper-checkbox checked="{{autoConnect}}">
               Automatically connect to this network
             </paper-checkbox>
+            <cr-policy-network-indicator
+                property="[[getManagedAutoConnect_(networkProperties)]]">
+            </cr-policy-network-indicator>
           </div>
           <!-- Properties to always show if present. -->
           <div class="section">

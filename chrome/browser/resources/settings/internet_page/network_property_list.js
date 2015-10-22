@@ -14,6 +14,8 @@
 Polymer({
   is: 'network-property-list',
 
+  behaviors: [CrPolicyNetworkBehavior],
+
   properties: {
     /**
      * The dictionary containing the properties to display.
@@ -116,8 +118,11 @@ Polymer({
   showNoEdit_: function(propertyDict, editFieldTypes, key) {
     if (!this.hasPropertyValue_(propertyDict, key))
       return false;
-    var editType = editFieldTypes[key];
-    return !editType;
+    var property = /** @type {!CrOnc.ManagedProperty|undefined} */(
+      this.get(key, propertyDict));
+    if (this.isNetworkPolicyEnforced(property))
+      return true;
+    return !editFieldTypes[key];
   },
 
   /**
@@ -130,6 +135,12 @@ Polymer({
    * @private
    */
   showEdit_: function(propertyDict, editFieldTypes, key, type) {
+    if (!this.hasPropertyValue_(propertyDict, key))
+      return false;
+    var property = /** @type {!CrOnc.ManagedProperty|undefined} */(
+        this.get(key, propertyDict));
+    if (this.isNetworkPolicyEnforced(property))
+      return false;
     return editFieldTypes[key] == type;
   },
 

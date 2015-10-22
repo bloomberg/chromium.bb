@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
 
 <dom-module name="network-property-list">
   <link rel="import" type="css" href="network_property_list.css">
@@ -20,6 +22,8 @@
           <div class="layout horizontal"
               hidden$="[[!showNoEdit_(propertyDict, editFieldTypes, item)]]">
             <span>[[getPropertyValue_(propertyDict, item)]]</span>
+            <cr-policy-network-indicator property="[[propertyDict]]">
+            </cr-policy-network-indicator>
           </div>
           <div class="layout horizontal" hidden$=
                "[[!showEdit_(propertyDict, editFieldTypes, item, 'String')]]">

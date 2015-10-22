@@ -9,6 +9,8 @@
 Polymer({
   is: 'network-proxy',
 
+  behaviors: [CrPolicyNetworkBehavior],
+
   properties: {
     /**
      * The network properties dictionary containing the proxy properties to
@@ -253,6 +255,21 @@ Polymer({
     if (proxyType == CrOnc.ProxySettingsType.WPAD)
       return 'Web proxy autodiscovery';
     return 'Direct Internet connection';
+  },
+
+  /**
+   * @param {boolean} editable
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {string} key
+   * @return {boolean} Whether the property is editable.
+   * @private
+   */
+  isPropertyEditable_: function(editable, networkProperties, key) {
+    if (!editable)
+      return false;
+    var property = /** @type {!CrOnc.ManagedProperty|undefined} */(
+        this.get(key, networkProperties));
+    return !this.isNetworkPolicyEnforced(property);
   },
 
   /**

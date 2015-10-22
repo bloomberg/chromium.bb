@@ -7,6 +7,10 @@ span {
   margin-bottom: 5px;
 }
 
+cr-policy-network-indicator {
+  margin-bottom: 5px;
+}
+
 span.fill {
   border-bottom-color: grey;
   border-bottom-style: dotted;

@@ -18,6 +18,8 @@
 Polymer({
   is: 'settings-internet-detail-page',
 
+  behaviors: [CrPolicyNetworkBehavior],
+
   properties: {
     /**
      * The network GUID to display details for.
@@ -497,6 +499,15 @@ Polymer({
   showAutoConnect_: function(properties) {
     return properties.Type != CrOnc.Type.ETHERNET &&
            properties.Source != CrOnc.Source.NONE;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} properties
+   * @return {!CrOnc.ManagedProperty|undefined} Managed AutoConnect property.
+   * @private
+   */
+  getManagedAutoConnect_: function(properties) {
+    return CrOnc.getManagedAutoConnect(properties);
   },
 
   /**

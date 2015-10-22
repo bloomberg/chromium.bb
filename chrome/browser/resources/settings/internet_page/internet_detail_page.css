@@ -15,6 +15,10 @@ cr-network-icon {
   width: 32px;
 }
 
+cr-policy-network-indicator {
+  -webkit-margin-start: 10px;
+}
+
 #networkName,
 #networkState {
   -webkit-margin-start: 10px;
