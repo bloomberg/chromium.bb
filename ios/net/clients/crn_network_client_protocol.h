@@ -44,7 +44,6 @@ typedef base::Callback<void(bool auth_ok,
 // Corresponds to |-URLProtocol:didReceiveResponse:cacheStoragePolicy|.
 - (void)didReceiveResponse:(NSURLResponse*)response;
 // Corresponds to |-URLProtocol:wasRedirectedToRequest:redirectResponse|.
-// TODO(marq): make |nativeRequest| a const ref.
 - (void)wasRedirectedToRequest:(NSURLRequest*)request
                  nativeRequest:(net::URLRequest*)nativeRequest
               redirectResponse:(NSURLResponse*)redirectResponse;

@@ -71,9 +71,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // controller, or facade set, but which otherwise has the same state variables
   // as the calling object (including copies of the NavigationManager and its
   // attendant CRWSessionController).
-  // TODO(marq): Revisit this function and the ownership model described above;
-  // too this depends on and interacts directly with above-the-web-level
-  // information.
+  // TODO(crbug.com/546377): Clean up this method.
   WebStateImpl* CopyForSessionWindow();
 
   // Notifies the observers that a provisional navigation has started.

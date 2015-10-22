@@ -213,8 +213,6 @@ class WebpDecoderDelegate : public WebpDecoder::Delegate {
     // and call |-didReceiveResponse:|.
   } else {
     // If this isn't a WebP, pass the call up the chain.
-    // TODO(marq): It would be nice if at this point the client could remove
-    // itself from the client stack.
     [super didReceiveResponse:response];
   }
 }

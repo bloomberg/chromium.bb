@@ -51,8 +51,6 @@ struct DataReductionProxyTypeInfo;
 // Values of the UMA DataReductionProxy.ProbeURL histogram.
 // This enum must remain synchronized with
 // DataReductionProxyProbeURLFetchResult in metrics/histograms/histograms.xml.
-// TODO(marq): Rename these histogram buckets with s/DISABLED/RESTRICTED/, so
-//     their names match the behavior they track.
 enum SecureProxyCheckFetchResult {
   // The secure proxy check failed because the Internet was disconnected.
   INTERNET_DISCONNECTED = 0,

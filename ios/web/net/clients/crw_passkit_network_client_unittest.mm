@@ -34,8 +34,7 @@ class CRWPassKitNetworkClientTest : public testing::Test {
         niceMockForProtocol:@protocol(CRWPassKitDelegate)] retain]);
 
     // The request tracker needs to be set up with a unique tab id.
-    // TODO(marq): This can just be a mock or stub; it doesn't need to be a full
-    // RT instance.
+
     static int gcount = 0;
     request_group_id_.reset(
         [[NSString stringWithFormat:@"passkittest%d", gcount++] retain]);

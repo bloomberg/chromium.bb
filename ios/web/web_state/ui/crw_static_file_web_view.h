@@ -26,9 +26,6 @@ class BrowserState;
 
 // Returns whether the request should be allowed for rendering into a
 // special UIWebView that allows static file content.
-// TODO(marq): Since this is only used to inject a FileRequestVerfier into
-// HttpProtocolHandler, instead make this a method that returns a block of
-// that type.
 + (BOOL)isStaticFileRequest:(NSURLRequest*)request;
 
 @end

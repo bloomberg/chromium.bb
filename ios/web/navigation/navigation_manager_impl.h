@@ -90,14 +90,13 @@ class NavigationManagerImpl : public NavigationManager {
   // Convenience accessors to get the underlying NavigationItems from the
   // SessionEntries returned from |session_controller_|'s -lastUserEntry and
   // -previousEntry methods.
-  // TODO(marq):Evaluate the long-term utility of these methods.
+  // TODO(crbug.com/546365): Remove these methods.
   NavigationItem* GetLastUserItem() const;
   NavigationItem* GetPreviousItem() const;
 
   // Temporary method. Returns a vector of NavigationItems corresponding to
   // the SessionEntries of the uderlying CRWSessionController.
-  // TOOD(marq): Remove this method and unfork its caller,
-  //     TabRestoreServiceHelper::PopulateTab
+  // TODO(crbug.com/546365): Remove this method.
   std::vector<NavigationItem*> GetItems();
 
   // NavigationManager:
@@ -125,8 +124,6 @@ class NavigationManagerImpl : public NavigationManager {
   void RemoveTransientURLRewriters();
 
   // Copy state from |navigation_manager|, including a copy of that object's
-  // CRWSessionController.
-  // TODO(marq): This doesn't deep-copy the SessionEntries in the
   // CRWSessionController.
   void CopyState(NavigationManagerImpl* navigation_manager);
  private:

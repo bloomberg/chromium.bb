@@ -664,7 +664,6 @@ void RequestTrackerImpl::ErrorCallback(CRWSSLCarrier* carrier, bool allow) {
 
 #pragma mark Client utility methods.
 
-// TODO(marq): Convert all internal task-posting to use these.
 void RequestTrackerImpl::PostUITaskIfOpen(const base::Closure& task) {
   PostTask(task, web::WebThread::UI);
 }
@@ -766,8 +765,6 @@ void RequestTrackerImpl::Destruct() {
 }
 
 #pragma mark Other private methods
-// TODO(marq): Reorder method implementations to match header and add grouping
-// marks/comments.
 
 void RequestTrackerImpl::Notify() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);

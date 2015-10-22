@@ -26,10 +26,6 @@ class URLRequest;
 // The expectation is that subclasses of this class will not be derived from;
 // if this becomes necessary, the unit tests for this class should be updated.
 
-// TODO(marq): Investigate possible less bloated interfaces for this, where (for
-// example) all clients are added to each request, and then the clients opt-out
-// during the existing CRNNetworkClientProtocol calls.
-
 // Return a client to handle any request.
 // Factories should implement this method only if their clients need to be able
 // to handle didFailWithError: calls that might originate before the native
