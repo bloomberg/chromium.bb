@@ -33,6 +33,8 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/video/video_decode_accelerator.h"
+#include "third_party/angle/include/EGL/egl.h"
+#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -275,6 +277,63 @@ HRESULT CreateCOMObjectFromDll(HMODULE dll, const CLSID& clsid, const IID& iid,
   hr = factory->CreateInstance(NULL, iid, object);
   return hr;
 }
+
+// Helper function to query the ANGLE device object. The template argument T
+// identifies the device interface being queried. IDirect3DDevice9Ex for d3d9
+// and ID3D11Device for dx11.
+template<class T>
+base::win::ScopedComPtr<T> QueryDeviceObjectFromANGLE(int object_type) {
+  base::win::ScopedComPtr<T> device_object;
+
+  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
+  intptr_t egl_device = 0;
+  intptr_t device = 0;
+
+  RETURN_ON_FAILURE(
+      gfx::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"),
+      "EGL_EXT_device_query missing",
+      device_object);
+
+  PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT =
+      reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(eglGetProcAddress(
+        "eglQueryDisplayAttribEXT"));
+
+  RETURN_ON_FAILURE(
+      QueryDisplayAttribEXT,
+      "Failed to get the eglQueryDisplayAttribEXT function from ANGLE",
+      device_object);
+
+  PFNEGLQUERYDEVICEATTRIBEXTPROC QueryDeviceAttribEXT =
+      reinterpret_cast<PFNEGLQUERYDEVICEATTRIBEXTPROC>(eglGetProcAddress(
+          "eglQueryDeviceAttribEXT"));
+
+  RETURN_ON_FAILURE(
+      QueryDeviceAttribEXT,
+      "Failed to get the eglQueryDeviceAttribEXT function from ANGLE",
+      device_object);
+
+  RETURN_ON_FAILURE(
+      QueryDisplayAttribEXT(egl_display, EGL_DEVICE_EXT, &egl_device),
+      "The eglQueryDisplayAttribEXT function failed to get the EGL device",
+      device_object);
+
+  RETURN_ON_FAILURE(
+      egl_device,
+      "Failed to get the EGL device",
+      device_object);
+
+  RETURN_ON_FAILURE(
+      QueryDeviceAttribEXT(
+      reinterpret_cast<EGLDeviceEXT>(egl_device), object_type, &device),
+      "The eglQueryDeviceAttribEXT function failed to get the device",
+      device_object);
+
+  RETURN_ON_FAILURE(device, "Failed to get the ANGLE device", device_object);
+
+  device_object = reinterpret_cast<T*>(device);
+  return device_object;
+}
+
 
 // Maintains information about a DXVA picture buffer, i.e. whether it is
 // available for rendering, the texture information, etc.
@@ -661,32 +720,49 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   TRACE_EVENT0("gpu", "DXVAVideoDecodeAccelerator_CreateD3DDevManager");
 
-  HRESULT hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.Receive());
+  HRESULT hr = E_FAIL;
+
+  hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Direct3DCreate9Ex failed", false);
 
-  D3DPRESENT_PARAMETERS present_params = {0};
-  present_params.BackBufferWidth = 1;
-  present_params.BackBufferHeight = 1;
-  present_params.BackBufferFormat = D3DFMT_UNKNOWN;
-  present_params.BackBufferCount = 1;
-  present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-  present_params.hDeviceWindow = ::GetShellWindow();
-  present_params.Windowed = TRUE;
-  present_params.Flags = D3DPRESENTFLAG_VIDEO;
-  present_params.FullScreen_RefreshRateInHz = 0;
-  present_params.PresentationInterval = 0;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableD3D11)) {
+    base::win::ScopedComPtr<IDirect3DDevice9> angle_device =
+        QueryDeviceObjectFromANGLE<IDirect3DDevice9>(EGL_D3D9_DEVICE_ANGLE);
+    RETURN_ON_FAILURE(
+        angle_device.get(),
+        "Failed to query D3D9 device object from ANGLE",
+        false);
 
-  hr = d3d9_->CreateDeviceEx(D3DADAPTER_DEFAULT,
-                             D3DDEVTYPE_HAL,
-                             ::GetShellWindow(),
-                             D3DCREATE_FPU_PRESERVE |
-                             D3DCREATE_SOFTWARE_VERTEXPROCESSING |
-                             D3DCREATE_DISABLE_PSGP_THREADING |
-                             D3DCREATE_MULTITHREADED,
-                             &present_params,
-                             NULL,
-                             d3d9_device_ex_.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to create D3D device", false);
+    hr = d3d9_device_ex_.QueryFrom(angle_device.get());
+    RETURN_ON_HR_FAILURE(hr,
+        "QueryInterface for IDirect3DDevice9Ex from angle device failed",
+        false);
+  } else {
+    D3DPRESENT_PARAMETERS present_params = {0};
+    present_params.BackBufferWidth = 1;
+    present_params.BackBufferHeight = 1;
+    present_params.BackBufferFormat = D3DFMT_UNKNOWN;
+    present_params.BackBufferCount = 1;
+    present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    present_params.hDeviceWindow = ::GetShellWindow();
+    present_params.Windowed = TRUE;
+    present_params.Flags = D3DPRESENTFLAG_VIDEO;
+    present_params.FullScreen_RefreshRateInHz = 0;
+    present_params.PresentationInterval = 0;
+
+    hr = d3d9_->CreateDeviceEx(D3DADAPTER_DEFAULT,
+                               D3DDEVTYPE_HAL,
+                               ::GetShellWindow(),
+                               D3DCREATE_FPU_PRESERVE |
+                               D3DCREATE_HARDWARE_VERTEXPROCESSING |
+                               D3DCREATE_DISABLE_PSGP_THREADING |
+                               D3DCREATE_MULTITHREADED,
+                               &present_params,
+                               NULL,
+                               d3d9_device_ex_.Receive());
+    RETURN_ON_HR_FAILURE(hr, "Failed to create D3D device", false);
+  }
 
   hr = DXVA2CreateDirect3DDeviceManager9(&dev_manager_reset_token_,
                                          device_manager_.Receive());
@@ -710,36 +786,19 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
                                            d3d11_device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
 
-  // This array defines the set of DirectX hardware feature levels we support.
-  // The ordering MUST be preserved. All applications are assumed to support
-  // 9.1 unless otherwise stated by the application, which is not our case.
-  D3D_FEATURE_LEVEL feature_levels[] = {
-    D3D_FEATURE_LEVEL_11_1,
-    D3D_FEATURE_LEVEL_11_0,
-    D3D_FEATURE_LEVEL_10_1,
-    D3D_FEATURE_LEVEL_10_0,
-    D3D_FEATURE_LEVEL_9_3,
-    D3D_FEATURE_LEVEL_9_2,
-    D3D_FEATURE_LEVEL_9_1 };
+  base::win::ScopedComPtr<ID3D11Device> angle_device =
+      QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+  RETURN_ON_FAILURE(
+      angle_device.get(),
+      "Failed to query DX11 device object from ANGLE",
+      false);
 
-  UINT flags = D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
-
-#if defined _DEBUG
-  flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-
-  D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_0;
-  hr = D3D11CreateDevice(NULL,
-                         D3D_DRIVER_TYPE_HARDWARE,
-                         NULL,
-                         flags,
-                         feature_levels,
-                         arraysize(feature_levels),
-                         D3D11_SDK_VERSION,
-                         d3d11_device_.Receive(),
-                         &feature_level_out,
-                         d3d11_device_context_.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
+  d3d11_device_ = angle_device;
+  d3d11_device_->GetImmediateContext(d3d11_device_context_.Receive());
+  RETURN_ON_FAILURE(
+      d3d11_device_context_.get(),
+      "Failed to query DX11 device context from ANGLE device",
+      false);
 
   // Enable multithreaded mode on the context. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
