@@ -193,7 +193,7 @@ def _run_test_with_timeout(config, shell, args, apptest, env, seconds=10):
   output = ''
   error = []
   command = _build_command_line(config, args, apptest)
-  proc = subprocess42.Popen(command, stdout=subprocess42.PIPE,
+  proc = subprocess42.Popen(command, detached=True, stdout=subprocess42.PIPE,
                             stderr=subprocess42.STDOUT, env=env)
   try:
     output = proc.communicate(timeout=seconds)[0] or ''
