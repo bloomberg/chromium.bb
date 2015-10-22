@@ -1118,6 +1118,99 @@ TEST_F(FaviconHandlerTest, UpdateSameIconURLs) {
   EXPECT_EQ(history_handler, helper.history_handler());
 }
 
+// Fixes crbug.com/544560
+TEST_F(FaviconHandlerTest,
+       OnFaviconAvailableNotificationSentAfterIconURLChange) {
+  const GURL kPageURL("http://www.page_which_animates_favicon.com");
+  const GURL kIconURL1("http://wwww.page_which_animates_favicon.com/frame1.png");
+  const GURL kIconURL2("http://wwww.page_which_animates_favicon.com/frame2.png");
+
+  TestFaviconDriver driver;
+  TestFaviconHandler helper(kPageURL, &driver, FaviconHandler::FAVICON);
+
+  // Initial state:
+  // - The database does not know about |kPageURL|.
+  // - The page uses |kIconURL1| and |kIconURL2|.
+  // - The database knows about both |kIconURL1| and |kIconURl2|. Both icons
+  //   are expired in the database.
+  helper.FetchFavicon(kPageURL);
+  ASSERT_TRUE(helper.history_handler());
+  helper.history_handler()->InvokeCallback();
+  {
+    std::vector<FaviconURL> icon_urls;
+    icon_urls.push_back(
+        FaviconURL(kIconURL1, favicon_base::FAVICON, std::vector<gfx::Size>()));
+    icon_urls.push_back(
+        FaviconURL(kIconURL2, favicon_base::FAVICON, std::vector<gfx::Size>()));
+    helper.OnUpdateFaviconURL(kPageURL, icon_urls);
+  }
+
+  // FaviconHandler should request from history and download |kIconURL1| and
+  // |kIconURL2|. |kIconURL1| is the better match. A
+  // FaviconDriver::OnFaviconAvailable() notification should be sent for
+  // |kIconURL1|.
+
+  // Clear the favicon validity so that we can use it to detect whether
+  // OnFaviconAvailable() is invoked.
+  driver.SetActiveFaviconValidity(false);
+
+  ASSERT_TRUE(helper.history_handler());
+  SetFaviconRawBitmapResult(kIconURL1,
+                            favicon_base::FAVICON,
+                            true /* expired */,
+                            &helper.history_handler()->history_results_);
+  helper.history_handler()->InvokeCallback();
+  helper.set_history_handler(nullptr);
+  ASSERT_TRUE(helper.download_handler()->HasDownload());
+  helper.download_handler()->SetImageSizes(std::vector<int>(1u, 15));
+  helper.download_handler()->InvokeCallback();
+  helper.download_handler()->Reset();
+
+  ASSERT_TRUE(helper.history_handler());
+  helper.history_handler()->InvokeCallback();
+  SetFaviconRawBitmapResult(kIconURL2,
+                            favicon_base::FAVICON,
+                            true /* expired */,
+                            &helper.history_handler()->history_results_);
+  helper.history_handler()->InvokeCallback();
+  helper.set_history_handler(nullptr);
+  ASSERT_TRUE(helper.download_handler()->HasDownload());
+  helper.download_handler()->SetImageSizes(std::vector<int>(1u, 10));
+  helper.download_handler()->InvokeCallback();
+  helper.download_handler()->Reset();
+
+  ASSERT_TRUE(driver.GetActiveFaviconValidity());
+  ASSERT_EQ(kIconURL1, driver.GetActiveFaviconURL());
+
+  // Clear the history handler because SetHistoryFavicons() sets it.
+  helper.set_history_handler(nullptr);
+
+  // Simulate the page changing it's icon URL to just |kIconURL2| via
+  // Javascript.
+  helper.OnUpdateFaviconURL(
+      kPageURL,
+      std::vector<FaviconURL>(1u, FaviconURL(kIconURL2, favicon_base::FAVICON,
+                                             std::vector<gfx::Size>())));
+
+  // FaviconHandler should request from history and download |kIconURL2|. A
+  // FaviconDriver::OnFaviconAvailable() notification should be sent for
+  // |kIconURL2|.
+  driver.SetActiveFaviconValidity(false);
+
+  ASSERT_TRUE(helper.history_handler());
+  SetFaviconRawBitmapResult(kIconURL2,
+                            favicon_base::FAVICON,
+                            true /* expired */,
+                            &helper.history_handler()->history_results_);
+  helper.history_handler()->InvokeCallback();
+  helper.set_history_handler(nullptr);
+  ASSERT_TRUE(helper.download_handler()->HasDownload());
+  helper.download_handler()->InvokeCallback();
+  helper.download_handler()->Reset();
+  EXPECT_TRUE(driver.GetActiveFaviconValidity());
+  EXPECT_EQ(kIconURL2, driver.GetActiveFaviconURL());
+}
+
 // Test the favicon which is selected when the web page provides several
 // favicons and none of the favicons are cached in history.
 // The goal of this test is to be more of an integration test than

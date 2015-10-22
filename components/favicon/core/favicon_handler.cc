@@ -214,10 +214,11 @@ FaviconHandler::FaviconHandler(FaviconService* service,
                                FaviconDriver* driver,
                                Type handler_type)
     : got_favicon_from_history_(false),
-      favicon_expired_or_incomplete_(false),
+      initial_history_result_expired_or_incomplete_(false),
       icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
       download_largest_icon_(handler_type == LARGEST_FAVICON ||
                              handler_type == LARGEST_TOUCH),
+      notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
       driver_(driver),
       current_candidate_index_(0u) {
@@ -245,10 +246,12 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
 
   url_ = url;
 
-  favicon_expired_or_incomplete_ = got_favicon_from_history_ = false;
+  initial_history_result_expired_or_incomplete_ = false;
+  got_favicon_from_history_ = false;
   download_requests_.clear();
   image_urls_.clear();
-  history_results_.clear();
+  notification_icon_url_ = GURL();
+  notification_icon_type_ = favicon_base::INVALID_ICON;
   current_candidate_index_ = 0u;
   best_favicon_candidate_ = FaviconCandidate();
 
@@ -315,24 +318,29 @@ void FaviconHandler::SetFavicon(const GURL& icon_url,
   if (ShouldSaveFavicon())
     SetHistoryFavicons(url_, icon_url, icon_type, image);
 
-  NotifyFaviconAvailable(icon_url, image);
+  NotifyFaviconAvailable(icon_url, icon_type, image);
 }
 
 void FaviconHandler::NotifyFaviconAvailable(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
+  if (favicon_bitmap_results.empty())
+    return;
+
   gfx::Image resized_image = favicon_base::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
       favicon_base::GetFaviconScales(),
       preferred_icon_size());
-  // The history service sends back results for a single icon URL, so it does
-  // not matter which result we get the |icon_url| from.
-  const GURL icon_url = favicon_bitmap_results.empty() ?
-      GURL() : favicon_bitmap_results[0].icon_url;
-  NotifyFaviconAvailable(icon_url, resized_image);
+  // The history service sends back results for a single icon URL and icon
+  // type, so it does not matter which result we get |icon_url| and |icon_type|
+  // from.
+  const GURL icon_url = favicon_bitmap_results[0].icon_url;
+  favicon_base::IconType icon_type = favicon_bitmap_results[0].icon_type;
+  NotifyFaviconAvailable(icon_url, icon_type, resized_image);
 }
 
 void FaviconHandler::NotifyFaviconAvailable(const GURL& icon_url,
+                                            favicon_base::IconType icon_type,
                                             const gfx::Image& image) {
   gfx::Image image_with_adjusted_colorspace = image;
   favicon_base::SetFaviconColorSpace(&image_with_adjusted_colorspace);
@@ -341,6 +349,9 @@ void FaviconHandler::NotifyFaviconAvailable(const GURL& icon_url,
 
   driver_->OnFaviconAvailable(
       url_, icon_url, image_with_adjusted_colorspace, is_active_favicon);
+
+  notification_icon_url_ = icon_url;
+  notification_icon_type_ = icon_type;
 }
 
 void FaviconHandler::OnUpdateFaviconURL(
@@ -378,11 +389,14 @@ void FaviconHandler::OnUpdateFaviconURL(
 }
 
 void FaviconHandler::OnGotInitialHistoryDataAndIconURLCandidates() {
-  if (!favicon_expired_or_incomplete_ && HasValidResult(history_results_) &&
-      DoUrlsAndIconsMatch(*current_candidate(), history_results_)) {
-    // The data from history is valid and not expired. The icon URL of the
-    // history data matches one of the page's icon URLs. We are done. No
-    // additional downloads or history requests are needed.
+  if (!initial_history_result_expired_or_incomplete_ &&
+      DoUrlAndIconMatch(*current_candidate(), notification_icon_url_,
+                        notification_icon_type_)) {
+    // - The data from history is valid and not expired.
+    // - The icon URL of the history data matches one of the page's icon URLs.
+    // - The icon URL of the history data matches the icon URL of the last
+    //   OnFaviconAvailable() notification.
+    // We are done. No additional downloads or history requests are needed.
     // TODO: Store all of the icon URLs associated with a page in history so
     // that we can check whether the page's icon URLs match the page's icon URLs
     // at the time that the favicon data was stored to the history database.
@@ -558,9 +572,8 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
   got_favicon_from_history_ = true;
-  history_results_ = favicon_bitmap_results;
   bool has_results = !favicon_bitmap_results.empty();
-  favicon_expired_or_incomplete_ = HasExpiredOrIncompleteResult(
+  initial_history_result_expired_or_incomplete_ = HasExpiredOrIncompleteResult(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
 
@@ -577,7 +590,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
       // If |favicon_bitmap_results| does not have any valid results, treat the
       // favicon as if it's expired.
       // TODO(pkotwicz): Do something better.
-      favicon_expired_or_incomplete_ = true;
+      initial_history_result_expired_or_incomplete_ = true;
     }
   }
 
@@ -592,7 +605,7 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
   GURL icon_url = current_candidate()->icon_url;
   favicon_base::IconType icon_type = current_candidate()->icon_type;
 
-  if (favicon_expired_or_incomplete_) {
+  if (initial_history_result_expired_or_incomplete_) {
     // We have the mapping, but the favicon is out of date. Download it now.
     ScheduleDownload(icon_url, icon_type);
   } else {
@@ -624,7 +637,6 @@ void FaviconHandler::OnFaviconData(const std::vector<
   bool has_expired_or_incomplete_result = HasExpiredOrIncompleteResult(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
-  history_results_ = favicon_bitmap_results;
 
   if (has_valid_result) {
     // There is a valid favicon. Notify any observers. It is useful to notify
