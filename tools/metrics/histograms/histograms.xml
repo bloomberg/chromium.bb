@@ -50054,6 +50054,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>HTTP response codes seen by Wallet client.</summary>
 </histogram>
 
+<histogram name="Webapp.Splashscreen.BackgroundColor"
+    enum="SplashscreenColorStatus">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records the status of the splashscreen's background color (default or
+    custom).
+  </summary>
+</histogram>
+
+<histogram name="Webapp.Splashscreen.Duration" units="ms">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>Records the time during which the splashscreen was visible.</summary>
+</histogram>
+
+<histogram name="Webapp.Splashscreen.Hides" enum="SplashscreenHidesReason">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>Records the signal that was used to hide the splashscreen.</summary>
+</histogram>
+
+<histogram name="Webapp.Splashscreen.Icon.Size" units="dp">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records the size of the icon used to construct the splashscreen in device
+    pixels (ie. real size divided by device pixel density). This is only
+    recording one dimension, the icon being square.
+  </summary>
+</histogram>
+
+<histogram name="Webapp.Splashscreen.Icon.Type" enum="SplashscreenIconType">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records the origin of the icon used to construct the splashscreen.
+  </summary>
+</histogram>
+
+<histogram name="Webapp.Splashscreen.ThemeColor" enum="SplashscreenColorStatus">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records the status of the splashscreen's theme color (default or custom).
+  </summary>
+</histogram>
+
 <histogram name="WebController.ExternalURLRequestBlocking"
     enum="IOSExternalURLRequestStatus">
   <owner>jyquinn@chromium.org</owner>
@@ -72345,6 +72387,24 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SpeculativeRestoreTabStatus" type="int">
   <int value="0" label="Already loaded"/>
   <int value="1" label="Needs restore"/>
+</enum>
+
+<enum name="SplashscreenColorStatus" type="int">
+  <int value="0" label="Default color"/>
+  <int value="1" label="Custom color"/>
+</enum>
+
+<enum name="SplashscreenHidesReason" type="int">
+  <int value="0" label="First Paint"/>
+  <int value="1" label="Page Load Finished"/>
+  <int value="2" label="Page Load Failed"/>
+  <int value="3" label="Crash"/>
+</enum>
+
+<enum name="SplashscreenIconType" type="int">
+  <int value="0" label="No splashscreen icon"/>
+  <int value="1" label="Fallback icon"/>
+  <int value="2" label="Custom icon"/>
 </enum>
 
 <enum name="SqliteErrorCode" type="int">

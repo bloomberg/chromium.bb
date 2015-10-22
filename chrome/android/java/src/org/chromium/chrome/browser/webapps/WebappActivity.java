@@ -24,10 +24,10 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -60,6 +60,8 @@ public class WebappActivity extends FullScreenActivity {
     private boolean mIsInitialized;
     private Integer mBrandColor;
 
+    private WebappUma mWebappUma;
+
     /**
      * Construct all the variables that shouldn't change.  We do it here both to clarify when the
      * objects are created and to ensure that they exist throughout the parallelized initialization
@@ -68,6 +70,7 @@ public class WebappActivity extends FullScreenActivity {
     public WebappActivity() {
         mWebappInfo = WebappInfo.createEmpty();
         mDirectoryManager = new WebappDirectoryManager();
+        mWebappUma = new WebappUma();
     }
 
     @Override
@@ -161,6 +164,12 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @Override
+    public void onResumeWithNative() {
+        super.onResumeWithNative();
+        mWebappUma.commitMetrics();
+    }
+
+    @Override
     protected int getControlContainerLayoutId() {
         return R.layout.webapp_control_container;
     }
@@ -190,6 +199,14 @@ public class WebappActivity extends FullScreenActivity {
         mSplashScreen = createSplashScreen(contentView);
         mSplashScreen.setBackgroundColor(backgroundColor);
         contentView.addView(mSplashScreen);
+
+        mWebappUma.splashscreenVisible();
+        mWebappUma.recordSplashscreenBackgroundColor(mWebappInfo.hasValidBackgroundColor()
+                ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
+                : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
+        mWebappUma.recordSplashscreenThemeColor(mWebappInfo.hasValidThemeColor()
+                ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
+                : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
 
         WebappDataStorage.open(this, mWebappInfo.id())
                 .getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
@@ -285,22 +302,22 @@ public class WebappActivity extends FullScreenActivity {
 
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                hideSplashScreen();
+                hideSplashScreen(WebappUma.SPLASHSCREEN_HIDES_REASON_PAINT);
             }
 
             @Override
             public void onPageLoadFinished(Tab tab) {
-                hideSplashScreen();
+                hideSplashScreen(WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED);
             }
 
             @Override
             public void onPageLoadFailed(Tab tab, int errorCode) {
-                hideSplashScreen();
+                hideSplashScreen(WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FAILED);
             }
 
             @Override
             public void onCrash(Tab tab, boolean sadTabShown) {
-                hideSplashScreen();
+                hideSplashScreen(WebappUma.SPLASHSCREEN_HIDES_REASON_CRASH);
             }
         };
     }
@@ -320,8 +337,7 @@ public class WebappActivity extends FullScreenActivity {
             icon = getActivityTab().getFavicon();
         }
 
-        if (mBrandColor == null
-                && mWebappInfo.themeColor() != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
+        if (mBrandColor == null && mWebappInfo.hasValidThemeColor()) {
             mBrandColor = (int) mWebappInfo.themeColor();
         }
 
@@ -371,8 +387,15 @@ public class WebappActivity extends FullScreenActivity {
         Bitmap displayIcon = splashIcon == null ? mWebappInfo.icon() : splashIcon;
         if (displayIcon == null || displayIcon.getWidth() < getResources()
                 .getDimensionPixelSize(R.dimen.webapp_splash_image_min_size)) {
+            mWebappUma.recordSplashscreenIconType(WebappUma.SPLASHSCREEN_ICON_TYPE_NONE);
             return;
         }
+
+        mWebappUma.recordSplashscreenIconType(splashIcon != null
+                ? WebappUma.SPLASHSCREEN_ICON_TYPE_CUSTOM
+                : WebappUma.SPLASHSCREEN_ICON_TYPE_FALLBACK);
+        mWebappUma.recordSplashscreenIconSize(Math.round(
+                (float) displayIcon.getWidth() / getResources().getDisplayMetrics().density));
 
         TextView appNameView = (TextView) splashScreen.findViewById(
                 R.id.webapp_splash_screen_name);
@@ -387,7 +410,7 @@ public class WebappActivity extends FullScreenActivity {
         }
     }
 
-    private void hideSplashScreen() {
+    private void hideSplashScreen(final int reason) {
         if (mSplashScreen == null) return;
 
         mSplashScreen.animate()
@@ -400,6 +423,7 @@ public class WebappActivity extends FullScreenActivity {
                         if (mSplashScreen == null) return;
                         contentView.removeView(mSplashScreen);
                         mSplashScreen = null;
+                        mWebappUma.splashscreenHidden(reason);
                     }
                 });
     }

@@ -64,6 +64,16 @@ public class RecordHistogram {
 
     /**
      * Records a sample in a count histogram. This is the Java equivalent of the
+     * UMA_HISTOGRAM_COUNTS_1000 C++ macro.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least 1 and at most 999
+     */
+    public static void recordCount1000Histogram(String name, int sample) {
+        recordCustomCountHistogram(name, sample, 1, 1000, 50);
+    }
+
+    /**
+     * Records a sample in a count histogram. This is the Java equivalent of the
      * UMA_HISTOGRAM_CUSTOM_COUNTS C++ macro.
      * @param name name of the histogram
      * @param sample sample to be recorded, at least |min| and at most |max| - 1

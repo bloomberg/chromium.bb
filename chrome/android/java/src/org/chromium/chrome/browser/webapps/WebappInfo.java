@@ -176,6 +176,14 @@ public class WebappInfo {
     }
 
     /**
+     * Returns whether the theme color specified in the Intent is valid.
+     * A theme color isn't valid if its value is ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+     */
+    public boolean hasValidThemeColor() {
+        return mThemeColor != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+    }
+
+    /**
      * Background color is actually a 32 bit unsigned integer which encodes a color
      * in ARGB format. mBackgroundColor is a long because we also need to encode the
      * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
@@ -185,15 +193,20 @@ public class WebappInfo {
     }
 
     /**
-     * Returns the background color specified by {@link #backgroundColor()} if the value is
-     * not ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING. Returns the specified fallback color
-     * otherwise.
+     * Returns whether the background color specified in the Intent is valid.
+     * A background color isn't valid if its value is
+     * ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
+     */
+    public boolean hasValidBackgroundColor() {
+        return mBackgroundColor != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+    }
+
+    /**
+     * Returns the background color specified by {@link #backgroundColor()} if
+     * the value is valid. Returns the specified fallback color otherwise.
      */
     public int backgroundColor(int fallback) {
-        if (mBackgroundColor == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
-            return fallback;
-        }
-        return (int) mBackgroundColor;
+        return hasValidBackgroundColor() ? (int) mBackgroundColor : fallback;
     }
 
     // This is needed for clients that want to send the icon trough an intent.

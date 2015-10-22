@@ -12,15 +12,17 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
- * Tests for splashscreen.
+ * Tests for splash screens with EXTRA_THEME_COLOR specified in the Intent.
  */
 public class WebappSplashScreenThemeColorTest extends WebappActivityTestBase {
 
@@ -69,5 +71,13 @@ public class WebappSplashScreenThemeColorTest extends WebappActivityTestBase {
                             == ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
                 }
             }));
+    }
+
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testUmaThemeColorCustom() {
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                WebappUma.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
+                WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM));
     }
 }
