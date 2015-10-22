@@ -640,9 +640,7 @@ TEST_P(EndToEndTest, PostMissingBytes) {
   EXPECT_EQ(500u, client_->response_headers()->parsed_response_code());
 }
 
-// TODO(rtenneti): DISABLED_LargePostNoPacketLoss seems to be flaky.
-// http://crbug.com/297040.
-TEST_P(EndToEndTest, DISABLED_LargePostNoPacketLoss) {
+TEST_P(EndToEndTest, LargePostNoPacketLoss) {
   ASSERT_TRUE(Initialize());
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
