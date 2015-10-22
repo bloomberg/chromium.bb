@@ -856,6 +856,7 @@ public:
         CSSAtRuleSupports = 976,
         CSSAtRuleViewport = 977,
         CSSAtRuleWebkitKeyframes = 978,
+        V8HTMLFieldSetElement_Elements_AttributeGetter = 979,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
