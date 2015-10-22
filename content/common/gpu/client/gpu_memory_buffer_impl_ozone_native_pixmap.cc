@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 
 #include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -69,19 +70,31 @@ base::Closure GpuMemoryBufferImplOzoneNativePixmap::AllocateForTesting(
   return base::Bind(&FreeNativePixmapForTesting, pixmap);
 }
 
-bool GpuMemoryBufferImplOzoneNativePixmap::Map(void** data) {
-  *data = pixmap_->Map();
+bool GpuMemoryBufferImplOzoneNativePixmap::Map() {
+  DCHECK(!mapped_);
+  if (!pixmap_->Map())
+    return false;
   mapped_ = true;
   return mapped_;
 }
 
+void* GpuMemoryBufferImplOzoneNativePixmap::memory(size_t plane) {
+  DCHECK(mapped_);
+  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  return pixmap_->Map();
+}
+
 void GpuMemoryBufferImplOzoneNativePixmap::Unmap() {
+  DCHECK(mapped_);
   pixmap_->Unmap();
   mapped_ = false;
 }
 
-void GpuMemoryBufferImplOzoneNativePixmap::GetStride(int* stride) const {
-  pixmap_->GetStride(stride);
+int GpuMemoryBufferImplOzoneNativePixmap::stride(size_t plane) const {
+  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  int stride;
+  pixmap_->GetStride(&stride);
+  return stride;
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()

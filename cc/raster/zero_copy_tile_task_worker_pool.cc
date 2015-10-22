@@ -32,24 +32,23 @@ class RasterBufferImpl : public RasterBuffer {
                 uint64_t new_content_id,
                 float scale,
                 bool include_images) override {
-    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.GetGpuMemoryBuffer();
-    if (!gpu_memory_buffer)
+    gfx::GpuMemoryBuffer* buffer = lock_.GetGpuMemoryBuffer();
+    if (!buffer)
       return;
-    DCHECK_EQ(
-        1u, gfx::NumberOfPlanesForBufferFormat(gpu_memory_buffer->GetFormat()));
-    void* data = NULL;
-    bool rv = gpu_memory_buffer->Map(&data);
+
+    DCHECK_EQ(1u, gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
+    bool rv = buffer->Map();
     DCHECK(rv);
-    int stride;
-    gpu_memory_buffer->GetStride(&stride);
+    DCHECK(buffer->memory(0));
     // TileTaskWorkerPool::PlaybackToMemory only supports unsigned strides.
-    DCHECK_GE(stride, 0);
+    DCHECK_GE(buffer->stride(0), 0);
+
     // TODO(danakj): Implement partial raster with raster_dirty_rect.
     TileTaskWorkerPool::PlaybackToMemory(
-        data, resource_->format(), resource_->size(),
-        static_cast<size_t>(stride), raster_source, raster_full_rect,
-        raster_full_rect, scale, include_images);
-    gpu_memory_buffer->Unmap();
+        buffer->memory(0), resource_->format(), resource_->size(),
+        buffer->stride(0), raster_source, raster_full_rect, raster_full_rect,
+        scale, include_images);
+    buffer->Unmap();
   }
 
  private:

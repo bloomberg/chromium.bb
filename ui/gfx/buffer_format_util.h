@@ -15,26 +15,21 @@
 namespace gfx {
 
 // Returns a vector containing all buffer formats.
-GFX_EXPORT std::vector<BufferFormat> GetBufferFormats();
+GFX_EXPORT std::vector<BufferFormat> GetBufferFormatsForTesting();
 
 // Returns the number of planes for |format|.
 GFX_EXPORT size_t NumberOfPlanesForBufferFormat(BufferFormat format);
 
 // Returns the subsampling factor applied to the given zero-indexed |plane| of
 // |format| both horizontally and vertically.
-GFX_EXPORT size_t SubsamplingFactorForBufferFormat(
-    BufferFormat format, int plane);
+GFX_EXPORT size_t SubsamplingFactorForBufferFormat(BufferFormat format,
+                                                   int plane);
 
 // Returns the number of bytes used to store a row of the given zero-indexed
 // |plane| of |format|.
 GFX_EXPORT size_t RowSizeForBufferFormat(size_t width,
                                          BufferFormat format,
                                          int plane);
-GFX_EXPORT bool RowSizeForBufferFormatChecked(size_t width,
-                                              BufferFormat format,
-                                              int plane,
-                                              size_t* size_in_bytes)
-    WARN_UNUSED_RESULT;
 
 // Returns the number of bytes used to store all the planes of a given |format|.
 GFX_EXPORT size_t BufferSizeForBufferFormat(const Size& size,
@@ -43,6 +38,10 @@ GFX_EXPORT bool BufferSizeForBufferFormatChecked(const Size& size,
                                                  BufferFormat format,
                                                  size_t* size_in_bytes)
     WARN_UNUSED_RESULT;
+
+GFX_EXPORT int BufferOffsetForBufferFormat(const Size& size,
+                                           BufferFormat format,
+                                           size_t plane);
 
 }  // namespace gfx
 

@@ -42,9 +42,9 @@ class GpuMemoryBufferImplTest : public testing::Test {
 TYPED_TEST_CASE_P(GpuMemoryBufferImplTest);
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
-  gfx::Size buffer_size(8, 8);
+  const gfx::Size kBufferSize(8, 8);
 
-  for (auto format : gfx::GetBufferFormats()) {
+  for (auto format : gfx::GetBufferFormatsForTesting()) {
     gfx::BufferUsage usages[] = {gfx::BufferUsage::MAP,
                                  gfx::BufferUsage::PERSISTENT_MAP,
                                  gfx::BufferUsage::SCANOUT};
@@ -56,9 +56,9 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
       gfx::GpuMemoryBufferHandle handle;
       GpuMemoryBufferImpl::DestructionCallback destroy_callback =
           TestFixture::AllocateGpuMemoryBuffer(
-              buffer_size, format, gfx::BufferUsage::MAP, &handle, &destroyed);
+              kBufferSize, format, gfx::BufferUsage::MAP, &handle, &destroyed);
       scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
-          handle, buffer_size, format, usage, destroy_callback));
+          handle, kBufferSize, format, usage, destroy_callback));
       ASSERT_TRUE(buffer);
       EXPECT_EQ(buffer->GetFormat(), format);
 
@@ -71,50 +71,43 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
   // Use a multiple of 4 for both dimensions to support compressed formats.
-  gfx::Size buffer_size(4, 4);
+  const gfx::Size kBufferSize(4, 4);
 
-  for (auto format : gfx::GetBufferFormats()) {
+  for (auto format : gfx::GetBufferFormatsForTesting()) {
     if (!TypeParam::IsConfigurationSupported(format, gfx::BufferUsage::MAP))
       continue;
 
     gfx::GpuMemoryBufferHandle handle;
     GpuMemoryBufferImpl::DestructionCallback destroy_callback =
         TestFixture::AllocateGpuMemoryBuffer(
-            buffer_size, format, gfx::BufferUsage::MAP, &handle, nullptr);
+            kBufferSize, format, gfx::BufferUsage::MAP, &handle, nullptr);
     scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
-        handle, buffer_size, format, gfx::BufferUsage::MAP, destroy_callback));
+        handle, kBufferSize, format, gfx::BufferUsage::MAP, destroy_callback));
     ASSERT_TRUE(buffer);
 
-    size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+    const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
 
     // Map buffer into user space.
-    scoped_ptr<void* []> mapped_buffers(new void*[num_planes]);
-    bool rv = buffer->Map(mapped_buffers.get());
-    ASSERT_TRUE(rv);
-
-    // Get strides.
-    scoped_ptr<int[]> strides(new int[num_planes]);
-    buffer->GetStride(strides.get());
+    ASSERT_TRUE(buffer->Map());
 
     // Copy and compare mapped buffers.
     for (size_t plane = 0; plane < num_planes; ++plane) {
-      size_t row_size_in_bytes = 0;
-      EXPECT_TRUE(gfx::RowSizeForBufferFormatChecked(
-          buffer_size.width(), format, plane, &row_size_in_bytes));
+      const size_t row_size_in_bytes =
+          gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
       EXPECT_GT(row_size_in_bytes, 0u);
 
       scoped_ptr<char[]> data(new char[row_size_in_bytes]);
       memset(data.get(), 0x2a + plane, row_size_in_bytes);
 
-      size_t height = buffer_size.height() /
+      size_t height = kBufferSize.height() /
                       gfx::SubsamplingFactorForBufferFormat(format, plane);
       for (size_t y = 0; y < height; ++y) {
-        memcpy(static_cast<char*>(mapped_buffers[plane]) + y * strides[plane],
+        memcpy(static_cast<char*>(buffer->memory(plane)) +
+                   y * buffer->stride(plane),
                data.get(), row_size_in_bytes);
-        EXPECT_EQ(memcmp(static_cast<char*>(mapped_buffers[plane]) +
-                             y * strides[plane],
-                         data.get(), row_size_in_bytes),
-                  0);
+        EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
+                                y * buffer->stride(plane),
+                            data.get(), row_size_in_bytes));
       }
     }
 
@@ -124,9 +117,9 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
   // Use a multiple of 4 for both dimensions to support compressed formats.
-  gfx::Size buffer_size(4, 4);
+  const gfx::Size kBufferSize(4, 4);
 
-  for (auto format : gfx::GetBufferFormats()) {
+  for (auto format : gfx::GetBufferFormatsForTesting()) {
     if (!TypeParam::IsConfigurationSupported(
             format, gfx::BufferUsage::PERSISTENT_MAP)) {
       continue;
@@ -134,70 +127,57 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
 
     gfx::GpuMemoryBufferHandle handle;
     GpuMemoryBufferImpl::DestructionCallback destroy_callback =
-        TestFixture::AllocateGpuMemoryBuffer(buffer_size, format,
+        TestFixture::AllocateGpuMemoryBuffer(kBufferSize, format,
                                              gfx::BufferUsage::PERSISTENT_MAP,
                                              &handle, nullptr);
     scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
-        handle, buffer_size, format, gfx::BufferUsage::PERSISTENT_MAP,
+        handle, kBufferSize, format, gfx::BufferUsage::PERSISTENT_MAP,
         destroy_callback));
     ASSERT_TRUE(buffer);
 
-    size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-
     // Map buffer into user space.
-    scoped_ptr<void* []> mapped_buffers(new void*[num_planes]);
-    bool rv = buffer->Map(mapped_buffers.get());
-    ASSERT_TRUE(rv);
-
-    // Get strides.
-    scoped_ptr<int[]> strides(new int[num_planes]);
-    buffer->GetStride(strides.get());
+    ASSERT_TRUE(buffer->Map());
 
     // Copy and compare mapped buffers.
+    size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
     for (size_t plane = 0; plane < num_planes; ++plane) {
-      size_t row_size_in_bytes;
-      EXPECT_TRUE(gfx::RowSizeForBufferFormatChecked(
-          buffer_size.width(), format, plane, &row_size_in_bytes));
+      const size_t row_size_in_bytes =
+          gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
       EXPECT_GT(row_size_in_bytes, 0u);
 
       scoped_ptr<char[]> data(new char[row_size_in_bytes]);
       memset(data.get(), 0x2a + plane, row_size_in_bytes);
 
-      size_t height = buffer_size.height() /
+      size_t height = kBufferSize.height() /
                       gfx::SubsamplingFactorForBufferFormat(format, plane);
       for (size_t y = 0; y < height; ++y) {
-        memcpy(static_cast<char*>(mapped_buffers[plane]) + y * strides[plane],
+        memcpy(static_cast<char*>(buffer->memory(plane)) +
+                   y * buffer->stride(plane),
                data.get(), row_size_in_bytes);
-        EXPECT_EQ(memcmp(static_cast<char*>(mapped_buffers[plane]) +
-                             y * strides[plane],
-                         data.get(), row_size_in_bytes),
-                  0);
+        EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
+                                y * buffer->stride(plane),
+                            data.get(), row_size_in_bytes));
       }
     }
 
     buffer->Unmap();
 
     // Remap the buffer, and compare again. It should contain the same data.
-    rv = buffer->Map(mapped_buffers.get());
-    ASSERT_TRUE(rv);
-
-    buffer->GetStride(strides.get());
+    ASSERT_TRUE(buffer->Map());
 
     for (size_t plane = 0; plane < num_planes; ++plane) {
-      size_t row_size_in_bytes;
-      EXPECT_TRUE(gfx::RowSizeForBufferFormatChecked(
-          buffer_size.width(), format, plane, &row_size_in_bytes));
+      const size_t row_size_in_bytes =
+          gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);
 
       scoped_ptr<char[]> data(new char[row_size_in_bytes]);
       memset(data.get(), 0x2a + plane, row_size_in_bytes);
 
-      size_t height = buffer_size.height() /
+      size_t height = kBufferSize.height() /
                       gfx::SubsamplingFactorForBufferFormat(format, plane);
       for (size_t y = 0; y < height; ++y) {
-        EXPECT_EQ(memcmp(static_cast<char*>(mapped_buffers[plane]) +
-                             y * strides[plane],
-                         data.get(), row_size_in_bytes),
-                  0);
+        EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
+                                y * buffer->stride(plane),
+                            data.get(), row_size_in_bytes));
       }
     }
 

@@ -170,22 +170,17 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
       gfx::Size(kImageWidth, kImageHeight), GetParam()));
 
   // Map buffer for writing.
-  void* data;
-  bool rv = buffer->Map(&data);
-  DCHECK(rv);
-
-  uint8_t* mapped_buffer = static_cast<uint8_t*>(data);
-  ASSERT_TRUE(mapped_buffer != NULL);
-
+  ASSERT_TRUE(buffer->Map());
+  ASSERT_NE(nullptr, buffer->memory(0));
+  ASSERT_NE(0, buffer->stride(0));
   uint8_t pixel[] = {255u, 0u, 0u, 255u};
 
   // Assign a value to each pixel.
-  int stride = 0;
-  buffer->GetStride(&stride);
-  ASSERT_NE(stride, 0);
-  for (int y = 0; y < kImageHeight; ++y)
-    SetRow(GetParam(), mapped_buffer + y * stride, kImageWidth, pixel);
-
+  for (int y = 0; y < kImageHeight; ++y) {
+    SetRow(GetParam(),
+           static_cast<uint8_t*>(buffer->memory(0)) + y * buffer->stride(0),
+           kImageWidth, pixel);
+  }
   // Unmap the buffer.
   buffer->Unmap();
 

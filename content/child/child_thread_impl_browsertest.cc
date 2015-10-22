@@ -158,22 +158,17 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
   ASSERT_TRUE(buffer);
   EXPECT_EQ(format, buffer->GetFormat());
 
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-
   // Map buffer planes.
-  scoped_ptr<void* []> planes(new void* [num_planes]);
-  bool rv = buffer->Map(planes.get());
-  ASSERT_TRUE(rv);
-
-  // Get strides.
-  scoped_ptr<int[]> strides(new int[num_planes]);
-  buffer->GetStride(strides.get());
+  ASSERT_TRUE(buffer->Map());
 
   // Write to buffer and check result.
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   for (size_t plane = 0; plane < num_planes; ++plane) {
-    size_t row_size_in_bytes = 0;
-    EXPECT_TRUE(gfx::RowSizeForBufferFormatChecked(buffer_size.width(), format,
-                                                   plane, &row_size_in_bytes));
+    ASSERT_TRUE(buffer->memory(plane));
+    ASSERT_TRUE(buffer->stride(plane));
+    size_t row_size_in_bytes =
+        gfx::RowSizeForBufferFormat(buffer_size.width(), format, plane);
+    EXPECT_GT(row_size_in_bytes, 0u);
 
     scoped_ptr<char[]> data(new char[row_size_in_bytes]);
     memset(data.get(), 0x2a + plane, row_size_in_bytes);
@@ -181,11 +176,12 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
                     gfx::SubsamplingFactorForBufferFormat(format, plane);
     for (size_t y = 0; y < height; ++y) {
       // Copy |data| to row |y| of |plane| and verify result.
-      memcpy(static_cast<char*>(planes[plane]) + y * strides[plane], data.get(),
-             row_size_in_bytes);
-      EXPECT_EQ(memcmp(static_cast<char*>(planes[plane]) + y * strides[plane],
-                       data.get(), row_size_in_bytes),
-                0);
+      memcpy(
+          static_cast<char*>(buffer->memory(plane)) + y * buffer->stride(plane),
+          data.get(), row_size_in_bytes);
+      EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
+                              y * buffer->stride(plane),
+                          data.get(), row_size_in_bytes));
     }
   }
 
