@@ -446,9 +446,8 @@ public class NotificationUIManager {
                                       persistentNotificationId, origin, tag, actionIndex));
         }
         // Site settings button is always the last action button.
-        notificationBuilder.addAction(R.drawable.settings_cog,
-                                      // TODO(johnme): Use shorter string to avoid truncation.
-                                      res.getString(R.string.page_info_site_settings_button),
+        notificationBuilder.addAction(0 /* actionIcon */,
+                                      res.getString(R.string.notification_site_settings_button),
                                       pendingSettingsIntent);
 
         notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
