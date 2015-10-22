@@ -518,7 +518,10 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffersAsync(
 void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {
   if (!context_)
     return;
-  ui::ScopedMakeCurrent context(context_.get(), this);
+  scoped_refptr<gfx::GLContext> previous_context = gfx::GLContext::GetCurrent();
+  scoped_refptr<gfx::GLSurface> previous_surface = gfx::GLSurface::GetCurrent();
+  context_->MakeCurrent(this);
+
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
   if (fbo_) {
     glDeleteTextures(arraysize(textures_), textures_);
@@ -531,6 +534,12 @@ void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {
     if (image)
       image->Destroy(true);
   }
+
+  if (previous_context.get()) {
+    previous_context->MakeCurrent(previous_surface.get());
+  } else {
+    context_->ReleaseCurrent(this);
+  }
 }
 
 bool GLSurfaceOzoneSurfacelessSurfaceImpl::IsSurfaceless() const {
@@ -538,9 +547,7 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::IsSurfaceless() const {
 }
 
 GLSurfaceOzoneSurfacelessSurfaceImpl::~GLSurfaceOzoneSurfacelessSurfaceImpl() {
-  DCHECK(!fbo_);
-  for (size_t i = 0; i < arraysize(textures_); i++)
-    DCHECK(!textures_[i]) << "texture " << i << " not released";
+  Destroy();
 }
 
 void GLSurfaceOzoneSurfacelessSurfaceImpl::BindFramebuffer() {
