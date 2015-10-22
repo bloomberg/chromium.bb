@@ -92,17 +92,14 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("acceptSslCerts", true);
   caps->SetBoolean("nativeEvents", true);
   caps->SetBoolean("hasTouchScreen", chrome->HasTouchScreen());
-  scoped_ptr<base::DictionaryValue> chrome_caps(new base::DictionaryValue());
 
   ChromeDesktopImpl* desktop = NULL;
   Status status = chrome->GetAsDesktop(&desktop);
   if (status.IsOk()) {
-    chrome_caps->SetString(
-        "userDataDir",
-        desktop->command().GetSwitchValueNative("user-data-dir"));
+    caps->SetString("chrome.userDataDir",
+                    desktop->command().GetSwitchValueNative("user-data-dir"));
   }
 
-  caps->Set("chrome", chrome_caps.release());
   return caps.Pass();
 }
 
