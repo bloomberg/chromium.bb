@@ -919,7 +919,7 @@ static inline HTMLElement* elementToSplitToAvoidPastingIntoInlineElementsWithSty
 
 void ReplaceSelectionCommand::doApply()
 {
-    VisibleSelection selection = endingSelection();
+    const VisibleSelection selection = endingSelection();
     ASSERT(selection.isCaretOrRange());
     ASSERT(selection.start().anchorNode());
     if (!selection.isNonOrphanedCaretOrRange() || !selection.start().anchorNode())
@@ -942,17 +942,16 @@ void ReplaceSelectionCommand::doApply()
         m_insertionStyle->mergeTypingStyle(&document());
     }
 
-    VisiblePosition visibleStart = selection.visibleStart();
-    VisiblePosition visibleEnd = selection.visibleEnd();
+    const VisiblePosition visibleStart = selection.visibleStart();
+    const VisiblePosition visibleEnd = selection.visibleEnd();
 
-    bool selectionEndWasEndOfParagraph = isEndOfParagraph(visibleEnd);
-    bool selectionStartWasStartOfParagraph = isStartOfParagraph(visibleStart);
+    const bool selectionEndWasEndOfParagraph = isEndOfParagraph(visibleEnd);
+    const bool selectionStartWasStartOfParagraph = isStartOfParagraph(visibleStart);
 
     Element* enclosingBlockOfVisibleStart = enclosingBlock(visibleStart.deepEquivalent().anchorNode());
 
-    Position insertionPos = selection.start();
-    bool startIsInsideMailBlockquote = enclosingNodeOfType(insertionPos, isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
-    bool selectionIsPlainText = !selection.isContentRichlyEditable();
+    const bool startIsInsideMailBlockquote = enclosingNodeOfType(selection.start(), isMailHTMLBlockquoteElement, CanCrossEditingBoundary);
+    const bool selectionIsPlainText = !selection.isContentRichlyEditable();
     Element* currentRoot = selection.rootEditableElement();
 
     if ((selectionStartWasStartOfParagraph && selectionEndWasEndOfParagraph && !startIsInsideMailBlockquote)
@@ -973,43 +972,38 @@ void ReplaceSelectionCommand::doApply()
         // FIXME: We should only expand to include fully selected special elements if we are copying a
         // selection and pasting it on top of itself.
         deleteSelection(false, mergeBlocksAfterDelete, false);
-        visibleStart = endingSelection().visibleStart();
         if (fragment.hasInterchangeNewlineAtStart()) {
-            if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart)) {
-                if (!isEndOfEditableOrNonEditableContent(visibleStart))
-                    setEndingSelection(nextPositionOf(visibleStart));
-            } else {
+            VisiblePosition startAfterDelete = endingSelection().visibleStart();
+            if (isEndOfParagraph(startAfterDelete) && !isStartOfParagraph(startAfterDelete) && !isEndOfEditableOrNonEditableContent(startAfterDelete))
+                setEndingSelection(nextPositionOf(startAfterDelete));
+            else
                 insertParagraphSeparator();
-            }
         }
-        insertionPos = endingSelection().start();
     } else {
         ASSERT(selection.isCaret());
         if (fragment.hasInterchangeNewlineAtStart()) {
-            VisiblePosition next = nextPositionOf(visibleStart, CannotCrossEditingBoundary);
-            if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull()) {
+            const VisiblePosition next = nextPositionOf(visibleStart, CannotCrossEditingBoundary);
+            if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull())
                 setEndingSelection(next);
-            } else  {
+            else
                 insertParagraphSeparator();
-                visibleStart = endingSelection().visibleStart();
-            }
         }
         // We split the current paragraph in two to avoid nesting the blocks from the fragment inside the current block.
         // For example paste <div>foo</div><div>bar</div><div>baz</div> into <div>x^x</div>, where ^ is the caret.
         // As long as the  div styles are the same, visually you'd expect: <div>xbar</div><div>bar</div><div>bazx</div>,
         // not <div>xbar<div>bar</div><div>bazx</div></div>.
         // Don't do this if the selection started in a Mail blockquote.
-        if (m_preventNesting && !startIsInsideMailBlockquote && !isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart)) {
+        if (m_preventNesting && !startIsInsideMailBlockquote && !isEndOfParagraph(endingSelection().visibleStart()) && !isStartOfParagraph(endingSelection().visibleStart())) {
             insertParagraphSeparator();
             setEndingSelection(previousPositionOf(endingSelection().visibleStart()));
         }
-        insertionPos = endingSelection().start();
     }
 
+    Position insertionPos = endingSelection().start();
     // We don't want any of the pasted content to end up nested in a Mail blockquote, so first break
     // out of any surrounding Mail blockquotes. Unless we're inserting in a table, in which case
     // breaking the blockquote will prevent the content from actually being inserted in the table.
-    if (startIsInsideMailBlockquote && m_preventNesting && !(enclosingNodeOfType(insertionPos, &isTableStructureNode))) {
+    if (enclosingNodeOfType(insertionPos, isMailHTMLBlockquoteElement, CanCrossEditingBoundary) && m_preventNesting && !(enclosingNodeOfType(insertionPos, &isTableStructureNode))) {
         applyCommandToComposite(BreakBlockquoteCommand::create(document()));
         // This will leave a br between the split.
         Node* br = endingSelection().start().anchorNode();
