@@ -169,13 +169,14 @@ public class MediaNotificationManager {
      * @param mediaNotificationInfo information to show in the notification
      */
     public static void show(Context applicationContext,
-                            MediaNotificationInfo mediaNotificationInfo) {
+                            MediaNotificationInfo.Builder notificationInfoBuilder) {
         synchronized (LOCK) {
             if (sInstance == null) {
                 sInstance = new MediaNotificationManager(applicationContext);
             }
         }
-        sInstance.showNotification(mediaNotificationInfo);
+        sInstance.mNotificationInfoBuilder = notificationInfoBuilder;
+        sInstance.showNotification(notificationInfoBuilder.build());
     }
 
     /**
@@ -236,6 +237,7 @@ public class MediaNotificationManager {
     private final Bitmap mMediaSessionIcon;
 
     private MediaNotificationInfo mMediaNotificationInfo;
+    private MediaNotificationInfo.Builder mNotificationInfoBuilder;
 
     private MediaSessionCompat mMediaSession;
 
@@ -277,13 +279,9 @@ public class MediaNotificationManager {
 
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
-        mMediaNotificationInfo = new MediaNotificationInfo(
-                sanitizeMediaTitle(mediaNotificationInfo.title),
-                mediaNotificationInfo.isPaused,
-                mediaNotificationInfo.origin,
-                mediaNotificationInfo.tabId,
-                mediaNotificationInfo.isPrivate,
-                mediaNotificationInfo.listener);
+        mMediaNotificationInfo = mNotificationInfoBuilder
+                .setTitle(sanitizeMediaTitle(mediaNotificationInfo.title))
+                .build();
         updateNotification();
     }
 
@@ -309,13 +307,9 @@ public class MediaNotificationManager {
         assert mMediaNotificationInfo != null;
         assert playbackState == PLAYBACK_STATE_PLAYING || playbackState == PLAYBACK_STATE_PAUSED;
 
-        mMediaNotificationInfo = new MediaNotificationInfo(
-                mMediaNotificationInfo.title,
-                playbackState == PLAYBACK_STATE_PAUSED,
-                mMediaNotificationInfo.origin,
-                mMediaNotificationInfo.tabId,
-                mMediaNotificationInfo.isPrivate,
-                mMediaNotificationInfo.listener);
+        mMediaNotificationInfo = mNotificationInfoBuilder
+                .setPaused(playbackState == PLAYBACK_STATE_PAUSED)
+                .build();
         updateNotification();
 
         if (playbackState == PLAYBACK_STATE_PAUSED) {

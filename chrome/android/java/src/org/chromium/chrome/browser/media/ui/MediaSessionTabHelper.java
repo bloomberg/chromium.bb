@@ -75,13 +75,13 @@ public class MediaSessionTabHelper {
                 }
                 MediaNotificationManager.show(
                         ApplicationStatus.getApplicationContext(),
-                        new MediaNotificationInfo(
-                                mTab.getTitle(),
-                                isPaused,
-                                origin,
-                                mTab.getId(),
-                                mTab.isIncognito(),
-                                mControlsListener));
+                        new MediaNotificationInfo.Builder()
+                                .setTitle(mTab.getTitle())
+                                .setPaused(isPaused)
+                                .setOrigin(origin)
+                                .setTabId(mTab.getId())
+                                .setPrivate(mTab.isIncognito())
+                                .setListener(mControlsListener));
             }
         };
 

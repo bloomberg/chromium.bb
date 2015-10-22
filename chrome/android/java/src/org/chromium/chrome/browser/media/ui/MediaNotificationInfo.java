@@ -6,10 +6,69 @@ package org.chromium.chrome.browser.media.ui;
 
 import android.text.TextUtils;
 
+import org.chromium.chrome.browser.tab.Tab;
+
 /**
  * Exposes information about the current media notification to the external clients.
  */
 public class MediaNotificationInfo {
+    /**
+     * Use this class to construct an instance of {@link MediaNotificationInfo}.
+     */
+    public static final class Builder {
+        private String mTitle = "";
+        private boolean mIsPaused = false;
+        private String mOrigin = "";
+        private int mTabId = Tab.INVALID_TAB_ID;
+        private boolean mIsPrivate = true;
+        private MediaNotificationListener mListener = null;
+
+        /**
+         * Initializes the builder with the default values.
+         */
+        public Builder() {
+        }
+
+        public MediaNotificationInfo build() {
+            assert mTitle != null;
+            assert mOrigin != null;
+            assert mListener != null;
+
+            return new MediaNotificationInfo(mTitle, mIsPaused, mOrigin, mTabId, mIsPrivate,
+                    mListener);
+        }
+
+        public Builder setTitle(String title) {
+            mTitle = title;
+            return this;
+        }
+
+        public Builder setPaused(boolean isPaused) {
+            mIsPaused = isPaused;
+            return this;
+        }
+
+        public Builder setOrigin(String origin) {
+            mOrigin = origin;
+            return this;
+        }
+
+        public Builder setTabId(int tabId) {
+            mTabId = tabId;
+            return this;
+        }
+
+        public Builder setPrivate(boolean isPrivate) {
+            mIsPrivate = isPrivate;
+            return this;
+        }
+
+        public Builder setListener(MediaNotificationListener listener) {
+            mListener = listener;
+            return this;
+        }
+    }
+
     /**
      * The title of the media.
      */
@@ -18,7 +77,7 @@ public class MediaNotificationInfo {
     /**
      * The current state of the media, paused or not.
      */
-    public boolean isPaused;
+    public final boolean isPaused;
 
     /**
      * The origin of the tab containing the media.
@@ -42,13 +101,14 @@ public class MediaNotificationInfo {
 
     /**
      * Create a new MediaNotificationInfo.
-     * @param title
-     * @param state
-     * @param origin
-     * @param tabId
-     * @param listener
+     * @param title The title of the media.
+     * @param isPaused The current state of the media, paused or not.
+     * @param origin The origin of the tab containing the media.
+     * @param tabId The id of the tab containing the media.
+     * @param isPrivate Whether the media notification should be considered as private.
+     * @param listener The listener for the control events.
      */
-    public MediaNotificationInfo(
+    private MediaNotificationInfo(
             String title,
             boolean isPaused,
             String origin,
@@ -61,19 +121,6 @@ public class MediaNotificationInfo {
         this.tabId = tabId;
         this.isPrivate = isPrivate;
         this.listener = listener;
-    }
-
-    /**
-     * Copy a media info.
-     * @param other the source to copy from.
-     */
-    public MediaNotificationInfo(MediaNotificationInfo other) {
-        this(other.title,
-             other.isPaused,
-             other.origin,
-             other.tabId,
-             other.isPrivate,
-             other.listener);
     }
 
     @Override
