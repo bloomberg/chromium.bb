@@ -124,6 +124,9 @@ class ResourceRequestInfo {
   // Whether this is a download.
   virtual bool IsDownload() const = 0;
 
+  // Whether this request if using Lo-Fi mode.
+  virtual bool IsUsingLoFi() const = 0;
+
  protected:
   virtual ~ResourceRequestInfo() {}
 };

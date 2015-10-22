@@ -23,6 +23,18 @@ class RefCountedMemory;
 
 namespace content {
 
+// The LoFi state which determines whether to add the Lo-Fi header.
+enum LoFiState {
+  // Let the browser process decide whether or not to request the Lo-Fi version.
+  LOFI_UNSPECIFIED = 0,
+
+  // Request a normal (non-Lo-Fi) version of the resource.
+  LOFI_OFF,
+
+  // Request a Lo-Fi version of the resource.
+  LOFI_ON,
+};
+
 // PlzNavigate
 // Helper function to determine if the navigation to |url| should make a request
 // to the network stack. A request should not be sent for data URLs, JavaScript
@@ -47,7 +59,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          base::TimeTicks ui_timestamp,
                          FrameMsg_UILoadMetricsReportType::Value report_type,
                          const GURL& base_url_for_data_url,
-                         const GURL& history_url_for_data_url);
+                         const GURL& history_url_for_data_url,
+                         LoFiState lofi_state);
   ~CommonNavigationParams();
 
   // The URL to navigate to.
@@ -90,6 +103,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // History URL for use in Blink's SubstituteData.
   // Is only used with data: URLs.
   GURL history_url_for_data_url;
+
+  // Whether or not to request a LoFi version of the document or let the browser
+  // decide.
+  LoFiState lofi_state;
 };
 
 // Provided by the renderer ----------------------------------------------------

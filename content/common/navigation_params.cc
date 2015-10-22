@@ -29,7 +29,8 @@ CommonNavigationParams::CommonNavigationParams()
       navigation_type(FrameMsg_Navigate_Type::NORMAL),
       allow_download(true),
       should_replace_current_entry(false),
-      report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT) {
+      report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
+      lofi_state(LOFI_UNSPECIFIED) {
 }
 
 CommonNavigationParams::CommonNavigationParams(
@@ -42,7 +43,8 @@ CommonNavigationParams::CommonNavigationParams(
     base::TimeTicks ui_timestamp,
     FrameMsg_UILoadMetricsReportType::Value report_type,
     const GURL& base_url_for_data_url,
-    const GURL& history_url_for_data_url)
+    const GURL& history_url_for_data_url,
+    LoFiState lofi_state)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -52,7 +54,8 @@ CommonNavigationParams::CommonNavigationParams(
       ui_timestamp(ui_timestamp),
       report_type(report_type),
       base_url_for_data_url(base_url_for_data_url),
-      history_url_for_data_url(history_url_for_data_url) {
+      history_url_for_data_url(history_url_for_data_url),
+      lofi_state(lofi_state) {
 }
 
 CommonNavigationParams::~CommonNavigationParams() {

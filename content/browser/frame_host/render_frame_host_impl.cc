@@ -1748,7 +1748,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
+      LOFI_OFF);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     CommitNavigation(nullptr, nullptr, common_params,

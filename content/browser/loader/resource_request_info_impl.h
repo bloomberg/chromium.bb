@@ -65,7 +65,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       ResourceContext* context,
       base::WeakPtr<ResourceMessageFilter> filter,
       bool report_raw_headers,
-      bool is_async);
+      bool is_async,
+      bool is_using_lofi);
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
@@ -89,6 +90,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                                 int* render_frame_id) const override;
   bool IsAsync() const override;
   bool IsDownload() const override;
+  bool IsUsingLoFi() const override;
   bool ShouldReportRawHeaders() const;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
@@ -221,6 +223,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   base::WeakPtr<ResourceMessageFilter> filter_;
   bool report_raw_headers_;
   bool is_async_;
+  bool is_using_lofi_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };

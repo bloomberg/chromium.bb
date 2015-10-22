@@ -76,6 +76,9 @@ class ChromeResourceDispatcherHostDelegate
                            content::ResourceContext* resource_context,
                            content::ResourceResponse* response) override;
   void RequestComplete(net::URLRequest* url_request) override;
+  bool ShouldEnableLoFiMode(
+      const net::URLRequest& url_request,
+      content::ResourceContext* resource_context) override;
 
   // Called on the UI thread. Allows switching out the
   // ExternalProtocolHandler::Delegate for testing code.

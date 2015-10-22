@@ -446,7 +446,8 @@ void RenderViewTest::Reload(const GURL& url) {
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD,
       true, false, base::TimeTicks(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
+      LOFI_UNSPECIFIED);
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -578,7 +579,8 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   CommonNavigationParams common_params(
       GURL(), Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
       FrameMsg_Navigate_Type::NORMAL, true, false, base::TimeTicks(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
+      LOFI_UNSPECIFIED);
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.page_id = impl->page_id_ + offset;

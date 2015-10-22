@@ -94,6 +94,10 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->head.proxy_server = response_info.proxy_server;
   response->head.socket_address = request->GetSocketAddress();
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (request_info)
+    response->head.is_using_lofi = request_info->IsUsingLoFi();
   if (ServiceWorkerRequestHandler* handler =
           ServiceWorkerRequestHandler::GetHandler(request)) {
     handler->GetExtraResponseInfo(&response->head);

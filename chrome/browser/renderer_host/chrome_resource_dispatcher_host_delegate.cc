@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/variations/net/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
@@ -719,6 +720,18 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
                                        info->GetRouteID(),
                                        url_request->GetTotalReceivedBytes()));
   }
+}
+
+bool ChromeResourceDispatcherHostDelegate::ShouldEnableLoFiMode(
+    const net::URLRequest& url_request,
+    content::ResourceContext* resource_context) {
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  data_reduction_proxy::DataReductionProxyIOData* data_reduction_proxy_io_data =
+      io_data->data_reduction_proxy_io_data();
+
+  if (data_reduction_proxy_io_data)
+    return data_reduction_proxy_io_data->ShouldEnableLoFiMode(url_request);
+  return false;
 }
 
 // static

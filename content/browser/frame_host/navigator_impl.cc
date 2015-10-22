@@ -53,6 +53,7 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
     case NavigationControllerImpl::RELOAD:
       return FrameMsg_Navigate_Type::RELOAD;
     case NavigationControllerImpl::RELOAD_IGNORING_CACHE:
+    case NavigationControllerImpl::RELOAD_DISABLE_LOFI_MODE:
       return FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
     case NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL:
       return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
@@ -334,9 +335,14 @@ bool NavigatorImpl::NavigateToEntry(
     // Create the navigation parameters.
     FrameMsg_Navigate_Type::Value navigation_type =
         GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
+    LoFiState lofi_state =
+        (reload_type ==
+                 NavigationController::ReloadType::RELOAD_DISABLE_LOFI_MODE
+             ? LOFI_OFF
+             : LOFI_UNSPECIFIED);
     dest_render_frame_host->Navigate(
-        entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
-                                              frame_entry, navigation_type),
+        entry.ConstructCommonNavigationParams(
+            dest_url, dest_referrer, frame_entry, navigation_type, lofi_state),
         entry.ConstructStartNavigationParams(),
         entry.ConstructRequestNavigationParams(
             frame_entry, navigation_start, is_same_document_history_load,

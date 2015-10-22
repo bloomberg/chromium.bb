@@ -90,6 +90,12 @@ void ResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {
 }
 
+bool ResourceDispatcherHostDelegate::ShouldEnableLoFiMode(
+    const net::URLRequest& url_request,
+    content::ResourceContext* resource_context) {
+  return false;
+}
+
 ResourceDispatcherHostDelegate::ResourceDispatcherHostDelegate() {
 }
 

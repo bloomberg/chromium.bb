@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -28,6 +32,8 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 using base::ASCIIToUTF16;
 
@@ -531,6 +537,217 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   EXPECT_TRUE(
       delegate.page_transition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+}
+
+namespace {
+
+// Checks whether the given urls are requested, and that IsUsingLofi() returns
+// the appropriate value when the Lo-Fi state is set.
+class LoFiModeResourceDispatcherHostDelegate
+    : public ResourceDispatcherHostDelegate {
+ public:
+  LoFiModeResourceDispatcherHostDelegate(const GURL& main_frame_url,
+                                         const GURL& subresource_url,
+                                         const GURL& iframe_url)
+      : main_frame_url_(main_frame_url),
+        subresource_url_(subresource_url),
+        iframe_url_(iframe_url),
+        main_frame_url_seen_(false),
+        subresource_url_seen_(false),
+        iframe_url_seen_(false),
+        use_lofi_(false),
+        should_enable_lofi_mode_called_(false) {}
+
+  ~LoFiModeResourceDispatcherHostDelegate() override {}
+
+  // ResourceDispatcherHostDelegate implementation:
+  void RequestBeginning(net::URLRequest* request,
+                        ResourceContext* resource_context,
+                        AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        ScopedVector<ResourceThrottle>* throttles) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+    if (request->url() != main_frame_url_ && request->url() != subresource_url_
+        && request->url() != iframe_url_)
+      return;
+    if (request->url() == main_frame_url_) {
+      EXPECT_FALSE(main_frame_url_seen_);
+      main_frame_url_seen_ = true;
+    } else if (request->url() == subresource_url_) {
+      EXPECT_TRUE(main_frame_url_seen_);
+      EXPECT_FALSE(subresource_url_seen_);
+      subresource_url_seen_ = true;
+    } else if (request->url() == iframe_url_) {
+      EXPECT_TRUE(main_frame_url_seen_);
+      EXPECT_FALSE(iframe_url_seen_);
+      iframe_url_seen_ = true;
+    }
+    EXPECT_EQ(use_lofi_, info->IsUsingLoFi());
+  }
+
+  void SetDelegate() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    ResourceDispatcherHost::Get()->SetDelegate(this);
+  }
+
+  bool ShouldEnableLoFiMode(
+      const net::URLRequest& request,
+      content::ResourceContext* resource_context) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    EXPECT_FALSE(should_enable_lofi_mode_called_);
+    should_enable_lofi_mode_called_ = true;
+    EXPECT_EQ(main_frame_url_, request.url());
+    return use_lofi_;
+  }
+
+  void Reset(bool use_lofi) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    main_frame_url_seen_ = false;
+    subresource_url_seen_ = false;
+    iframe_url_seen_ = false;
+    use_lofi_ = use_lofi;
+    should_enable_lofi_mode_called_ = false;
+  }
+
+  void CheckResourcesRequested(bool should_enable_lofi_mode_called) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    EXPECT_EQ(should_enable_lofi_mode_called, should_enable_lofi_mode_called_);
+    EXPECT_TRUE(main_frame_url_seen_);
+    EXPECT_TRUE(subresource_url_seen_);
+    EXPECT_TRUE(iframe_url_seen_);
+  }
+
+ private:
+  const GURL main_frame_url_;
+  const GURL subresource_url_;
+  const GURL iframe_url_;
+
+  bool main_frame_url_seen_;
+  bool subresource_url_seen_;
+  bool iframe_url_seen_;
+  bool use_lofi_;
+  bool should_enable_lofi_mode_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoFiModeResourceDispatcherHostDelegate);
+};
+
+}  // namespace
+
+class LoFiResourceDispatcherHostBrowserTest : public ContentBrowserTest {
+ public:
+  ~LoFiResourceDispatcherHostBrowserTest() override {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+    delegate_.reset(new LoFiModeResourceDispatcherHostDelegate(
+        embedded_test_server()->GetURL("/page_with_iframe.html"),
+        embedded_test_server()->GetURL("/image.jpg"),
+        embedded_test_server()->GetURL("/title1.html")));
+
+    content::BrowserThread::PostTask(
+           content::BrowserThread::IO,
+           FROM_HERE,
+           base::Bind(&LoFiModeResourceDispatcherHostDelegate::SetDelegate,
+                      base::Unretained(delegate_.get())));
+  }
+
+  void Reset(bool use_lofi) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&LoFiModeResourceDispatcherHostDelegate::Reset,
+                   base::Unretained(delegate_.get()), use_lofi));
+  }
+
+  void CheckResourcesRequested(
+      bool should_enable_lofi_mode_called) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &LoFiModeResourceDispatcherHostDelegate::CheckResourcesRequested,
+            base::Unretained(delegate_.get()), should_enable_lofi_mode_called));
+  }
+
+ private:
+  scoped_ptr<LoFiModeResourceDispatcherHostDelegate> delegate_;
+};
+
+// Test that navigating with ShouldEnableLoFiMode returning true fetches the
+// resources with LOFI_ON.
+IN_PROC_BROWSER_TEST_F(LoFiResourceDispatcherHostBrowserTest,
+                       ShouldEnableLoFiModeOn) {
+  // Navigate with ShouldEnableLoFiMode returning true.
+  Reset(true);
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
+  CheckResourcesRequested(true);
+}
+
+// Test that navigating with ShouldEnableLoFiMode returning false fetches the
+// resources with LOFI_OFF.
+IN_PROC_BROWSER_TEST_F(LoFiResourceDispatcherHostBrowserTest,
+                       ShouldEnableLoFiModeOff) {
+  // Navigate with ShouldEnableLoFiMode returning false.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
+  CheckResourcesRequested(true);
+}
+
+// Test that reloading calls ShouldEnableLoFiMode again and changes the Lo-Fi
+// state.
+IN_PROC_BROWSER_TEST_F(LoFiResourceDispatcherHostBrowserTest,
+                       ShouldEnableLoFiModeReload) {
+  // Navigate with ShouldEnableLoFiMode returning false.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
+  CheckResourcesRequested(true);
+
+  // Reload. ShouldEnableLoFiMode should be called.
+  Reset(true);
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  CheckResourcesRequested(true);
+}
+
+// Test that navigating backwards calls ShouldEnableLoFiMode again and changes
+// the Lo-Fi state.
+IN_PROC_BROWSER_TEST_F(LoFiResourceDispatcherHostBrowserTest,
+                       ShouldEnableLoFiModeNavigateBackThenForward) {
+  // Navigate with ShouldEnableLoFiMode returning false.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
+  CheckResourcesRequested(true);
+
+  // Go to a different page.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+
+  // Go back with ShouldEnableLoFiMode returning true.
+  Reset(true);
+  TestNavigationObserver tab_observer(shell()->web_contents(), 1);
+  shell()->GoBackOrForward(-1);
+  tab_observer.Wait();
+  CheckResourcesRequested(true);
+}
+
+// Test that reloading with Lo-Fi disabled doesn't call ShouldEnableLoFiMode and
+// already has LOFI_OFF.
+IN_PROC_BROWSER_TEST_F(LoFiResourceDispatcherHostBrowserTest,
+                       ShouldEnableLoFiModeReloadDisableLoFi) {
+  // Navigate with ShouldEnableLoFiMode returning true.
+  Reset(true);
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
+  CheckResourcesRequested(true);
+
+  // Reload with Lo-Fi disabled.
+  Reset(false);
+  TestNavigationObserver tab_observer(shell()->web_contents(), 1);
+  shell()->web_contents()->GetController().ReloadDisableLoFi(true);
+  tab_observer.Wait();
+  CheckResourcesRequested(false);
 }
 
 }  // namespace content

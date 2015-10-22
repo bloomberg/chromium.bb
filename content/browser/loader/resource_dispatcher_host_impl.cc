@@ -436,6 +436,15 @@ void LogResourceRequestTimeOnUI(
   }
 }
 
+bool IsUsingLoFi(LoFiState lofi_state,
+                 ResourceDispatcherHostDelegate* delegate,
+                 const net::URLRequest& request,
+                 ResourceContext* resource_context) {
+  if (lofi_state == LOFI_UNSPECIFIED && delegate)
+    return delegate->ShouldEnableLoFiMode(request, resource_context);
+  return lofi_state == LOFI_ON;
+}
+
 }  // namespace
 
 // static
@@ -1346,7 +1355,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
       request_data.visiblity_state,
       resource_context, filter_->GetWeakPtr(),
       report_raw_headers,
-      !is_sync_load);
+      !is_sync_load,
+      IsUsingLoFi(request_data.lofi_state, delegate_,
+                  *new_request, resource_context));
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -1632,7 +1643,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       false,                                   // report_raw_headers
-      true);                                   // is_async
+      true,                                    // is_async
+      false);                                  // is_using_lofi
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
@@ -2054,18 +2066,15 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // request_data.origin_pid,
       request_id_,
       -1,  // request_data.render_frame_id,
-      info.is_main_frame,
-      info.parent_is_main_frame,
+      info.is_main_frame, info.parent_is_main_frame,
       -1,  // request_data.parent_render_frame_id,
-      resource_type,
-      info.common_params.transition,
+      resource_type, info.common_params.transition,
       // should_replace_current_entry. This was only maintained at layer for
       // request transfers and isn't needed for browser-side navigations.
       false,
       false,  // is download
       false,  // is stream
-      info.common_params.allow_download,
-      info.begin_params.has_user_gesture,
+      info.common_params.allow_download, info.begin_params.has_user_gesture,
       true,   // enable_load_timing
       false,  // enable_upload_progress
       false,  // do_not_prompt_for_login
@@ -2073,11 +2082,12 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // TODO(davidben): This is only used for prerenders. Replace
       // is_showing with something for that. Or maybe it just comes from the
       // same mechanism as the cookie one.
-      blink::WebPageVisibilityStateVisible,
-      resource_context,
+      blink::WebPageVisibilityStateVisible, resource_context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       false,  // request_data.report_raw_headers
-      true);
+      true,
+      IsUsingLoFi(info.common_params.lofi_state, delegate_,
+                  *new_request, resource_context));
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 

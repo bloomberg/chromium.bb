@@ -124,6 +124,11 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Notification that a request has completed.
   virtual void RequestComplete(net::URLRequest* url_request);
 
+  // Asks the embedder if Lo-Fi mode should be enabled for the given request. It
+  // is only called for requests with an unspecified Lo-Fi value.
+  virtual bool ShouldEnableLoFiMode(const net::URLRequest& url_request,
+                                    content::ResourceContext* resource_context);
+
  protected:
   ResourceDispatcherHostDelegate();
   virtual ~ResourceDispatcherHostDelegate();

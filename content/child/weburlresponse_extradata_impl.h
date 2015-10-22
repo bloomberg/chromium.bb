@@ -87,6 +87,9 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
     is_ftp_directory_listing_ = is_ftp_directory_listing;
   }
 
+  bool is_using_lofi() const { return is_using_lofi_; }
+  void set_is_using_lofi(bool is_using_lofi) { is_using_lofi_ = is_using_lofi; }
+
  private:
   std::string npn_negotiated_protocol_;
   bool is_ftp_directory_listing_;
@@ -96,6 +99,7 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   bool was_npn_negotiated_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_alternate_protocol_available_;
+  bool is_using_lofi_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);
 };

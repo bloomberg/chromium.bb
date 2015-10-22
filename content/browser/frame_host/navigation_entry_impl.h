@@ -147,7 +147,8 @@ class CONTENT_EXPORT NavigationEntryImpl
       const GURL& dest_url,
       const Referrer& dest_referrer,
       const FrameNavigationEntry& frame_entry,
-      FrameMsg_Navigate_Type::Value navigation_type) const;
+      FrameMsg_Navigate_Type::Value navigation_type,
+      LoFiState lofi_state) const;
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
       const FrameNavigationEntry& frame_entry,

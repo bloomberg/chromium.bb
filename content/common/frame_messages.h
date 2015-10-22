@@ -60,6 +60,9 @@ IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::Last)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::LoFiState,
+                              content::LOFI_UNSPECIFIED,
+                              content::LOFI_ON)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(color)
@@ -270,6 +273,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(report_type)
   IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
   IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)
+  IPC_STRUCT_TRAITS_MEMBER(lofi_state)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)

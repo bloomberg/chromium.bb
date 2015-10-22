@@ -157,6 +157,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void AddMessageToConsole(ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
+  // Whether or not this frame is using Lo-Fi.
+  virtual bool IsUsingLoFi() const = 0;
+
  protected:
   ~RenderFrame() override {}
 

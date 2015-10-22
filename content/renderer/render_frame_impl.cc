@@ -502,7 +502,7 @@ CommonNavigationParams MakeCommonNavigationParams(
   return CommonNavigationParams(
       request->url(), referrer, extra_data->transition_type(),
       FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
-      ui_timestamp, report_type, GURL(), GURL());
+      ui_timestamp, report_type, GURL(), GURL(), LOFI_UNSPECIFIED);
 }
 
 #if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
@@ -739,6 +739,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       manifest_manager_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
+      is_using_lofi_(false),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
@@ -812,6 +813,11 @@ void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
 void RenderFrameImpl::Initialize() {
   is_main_frame_ = !frame_->parent();
   is_local_root_ = is_main_frame_ || frame_->parent()->isWebRemoteFrame();
+
+  RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
+      frame_->parent());
+  if (parent_frame)
+    is_using_lofi_ = parent_frame->IsUsingLoFi();
 
   bool is_tracing = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing);
@@ -2031,6 +2037,10 @@ void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
     devtools_agent_->AddMessageToConsole(level, message);
 }
 
+bool RenderFrameImpl::IsUsingLoFi() const {
+  return is_using_lofi_;
+}
+
 // blink::WebFrameClient implementation ----------------------------------------
 
 blink::WebPlugin* RenderFrameImpl::createPlugin(
@@ -2718,6 +2728,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       DocumentState::FromDataSource(frame->dataSource());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(
+      frame->dataSource()->response());
+  is_using_lofi_ = extra_data && extra_data->is_using_lofi();
 
   if (proxy_routing_id_ != MSG_ROUTING_NONE) {
     RenderFrameProxy* proxy =
@@ -3378,6 +3391,14 @@ void RenderFrameImpl::willSendRequest(
       navigation_state->start_params().transferred_request_request_id);
   extra_data->set_service_worker_provider_id(provider_id);
   extra_data->set_stream_override(stream_override.Pass());
+  // TODO(megjablon): Set the navigation params for single image loads to
+  // LOFI_OFF and remove the dependency on ReloadBypassingCache.
+  if (request.cachePolicy() == WebURLRequest::ReloadBypassingCache)
+    extra_data->set_lofi_state(LOFI_OFF);
+  else if (is_main_frame_ && !navigation_state->request_committed())
+    extra_data->set_lofi_state(navigation_state->common_params().lofi_state);
+  else
+    extra_data->set_lofi_state(is_using_lofi_ ? LOFI_ON : LOFI_OFF);
   request.setExtraData(extra_data);
 
   // TODO(creis): Update prefetching to work with out-of-process iframes.

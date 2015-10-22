@@ -129,6 +129,9 @@ struct ResourceResponseInfo {
   // If the response is not provided by the ServiceWorker, kept empty.
   // TODO(ksakamoto): Move this to net::LoadTimingInfo.
   base::TimeTicks service_worker_ready_time;
+
+  // Whether or not the request was for a LoFi version of the resource.
+  bool is_using_lofi;
 };
 
 }  // namespace content

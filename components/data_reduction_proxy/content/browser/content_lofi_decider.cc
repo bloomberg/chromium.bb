@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 
+#include "content/public/browser/resource_request_info.h"
+
 namespace data_reduction_proxy {
 
 ContentLoFiDecider::ContentLoFiDecider() {}
@@ -11,7 +13,10 @@ ContentLoFiDecider::ContentLoFiDecider() {}
 ContentLoFiDecider::~ContentLoFiDecider() {}
 
 bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
-  // TODO: will be check of ResourceRequestInfo::IsUsingLoFi
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(&request);
+  if (request_info)
+    return request_info->IsUsingLoFi();
   return false;
 }
 

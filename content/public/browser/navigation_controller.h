@@ -43,7 +43,8 @@ class NavigationController {
     NO_RELOAD,                   // Normal load.
     RELOAD,                      // Normal (cache-validating) reload.
     RELOAD_IGNORING_CACHE,       // Reload bypassing the cache (shift-reload).
-    RELOAD_ORIGINAL_REQUEST_URL  // Reload using the original request URL.
+    RELOAD_ORIGINAL_REQUEST_URL, // Reload using the original request URL.
+    RELOAD_DISABLE_LOFI_MODE     // Reload with Lo-Fi mode disabled.
   };
 
   // Load type used in LoadURLParams.
@@ -364,6 +365,9 @@ class NavigationController {
   // is used for cases where the user wants to refresh a page using a different
   // user agent after following a redirect.
   virtual void ReloadOriginalRequestURL(bool check_for_repost) = 0;
+
+  // Like Reload(), but disables Lo-Fi.
+  virtual void ReloadDisableLoFi(bool check_for_repost) = 0;
 
   // Removing of entries -------------------------------------------------------
 

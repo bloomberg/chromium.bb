@@ -24,6 +24,7 @@
 #include "content/child/sync_load_response.h"
 #include "content/child/threaded_data_provider.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
@@ -808,6 +809,7 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
       extra_data->transferred_request_request_id();
   request->service_worker_provider_id =
       extra_data->service_worker_provider_id();
+  request->lofi_state = extra_data->lofi_state();
   request->request_body = request_body;
   if (frame_origin)
     *frame_origin = extra_data->frame_origin();

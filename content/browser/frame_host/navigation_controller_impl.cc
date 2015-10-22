@@ -288,6 +288,9 @@ void NavigationControllerImpl::ReloadIgnoringCache(bool check_for_repost) {
 void NavigationControllerImpl::ReloadOriginalRequestURL(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD_ORIGINAL_REQUEST_URL);
 }
+void NavigationControllerImpl::ReloadDisableLoFi(bool check_for_repost) {
+  ReloadInternal(check_for_repost, RELOAD_DISABLE_LOFI_MODE);
+}
 
 void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
                                               ReloadType reload_type) {

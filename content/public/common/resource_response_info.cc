@@ -21,7 +21,8 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_fetched_via_service_worker(false),
       was_fallback_required_by_service_worker(false),
       response_type_via_service_worker(
-          blink::WebServiceWorkerResponseTypeDefault) {
+          blink::WebServiceWorkerResponseTypeDefault),
+      is_using_lofi(false) {
 }
 
 ResourceResponseInfo::~ResourceResponseInfo() {

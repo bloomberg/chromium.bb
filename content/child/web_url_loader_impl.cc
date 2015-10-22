@@ -918,6 +918,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   extra_data->set_connection_info(info.connection_info);
   extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
   extra_data->set_proxy_server(info.proxy_server);
+  extra_data->set_is_using_lofi(info.is_using_lofi);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and

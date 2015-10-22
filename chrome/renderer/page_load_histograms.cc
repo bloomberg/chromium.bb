@@ -921,11 +921,14 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   MaybeDumpFirstLayoutHistograms();
 
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromWebFrame(frame);
+
   // Metrics based on the timing information recorded for the Navigation Timing
   // API - http://www.w3.org/TR/navigation-timing/.
   DumpHistograms(
       frame->performance(), document_state, data_reduction_proxy_was_used,
-      false /* TODO: render_frame->IsUsingLoFi() */, came_from_websearch,
+      render_frame && render_frame->IsUsingLoFi(), came_from_websearch,
       websearch_chrome_joint_experiment_id, is_preview, scheme_type);
 
   // Old metrics based on the timing information stored in DocumentState. These

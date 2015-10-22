@@ -374,6 +374,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                       v8::Local<v8::Context> context) override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
+  bool IsUsingLoFi() const override;
 
   // blink::WebFrameClient implementation:
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -1049,6 +1050,9 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<blink::WebBluetooth> bluetooth_;
 
   scoped_ptr<blink::WebUSBClient> usb_client_;
+
+  // Whether or not this RenderFrame is using Lo-Fi mode.
+  bool is_using_lofi_;
 
 #if defined(ENABLE_WEBVR)
   // The VR dispatcher attached to the frame, lazily initialized.

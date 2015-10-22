@@ -68,7 +68,8 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           context,                           // context
           base::WeakPtr<ResourceMessageFilter>(),  // filter
           false,                             // report_raw_headers
-          is_async);                         // is_async
+          is_async,                          // is_async
+          false);                            // is_using_lofi
   info->AssociateWithRequest(request);
 }
 
@@ -127,7 +128,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ResourceContext* context,
     base::WeakPtr<ResourceMessageFilter> filter,
     bool report_raw_headers,
-    bool is_async)
+    bool is_async,
+    bool is_using_lofi)
     : cross_site_handler_(NULL),
       detachable_handler_(NULL),
       process_type_(process_type),
@@ -158,7 +160,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       context_(context),
       filter_(filter),
       report_raw_headers_(report_raw_headers),
-      is_async_(is_async) {
+      is_async_(is_async),
+      is_using_lofi_(is_using_lofi) {
 }
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
@@ -248,6 +251,10 @@ bool ResourceRequestInfoImpl::IsAsync() const {
 
 bool ResourceRequestInfoImpl::IsDownload() const {
   return is_download_;
+}
+
+bool ResourceRequestInfoImpl::IsUsingLoFi() const {
+  return is_using_lofi_;
 }
 
 bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
