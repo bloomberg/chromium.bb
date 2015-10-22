@@ -600,6 +600,8 @@ _waterfall_config_map = {
         'lakitu_next-paladin',
         'panther_moblab-paladin',
         'stumpy_moblab-paladin',
+        'veyron_mighty-paladin',
+        'veyron_speedy-paladin',
 
         # Experimental Canaries (Group)
         'kunimitsu-release-group',
@@ -1681,6 +1683,8 @@ def GetConfig():
       'peach_pit',
       'peppy',
       'stumpy',
+      'veyron_mighty',
+      'veyron_speedy',
       'wolf',
       'x86-alex',
       'x86-zgb',
@@ -1830,6 +1834,7 @@ def GetConfig():
   ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
   ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
   ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
+  ShardHWTestsBetweenBuilders('veyron_mighty-paladin', 'veyron_speedy-paladin')
   ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
   # Add a pre-cq config for every board.
