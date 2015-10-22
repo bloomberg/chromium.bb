@@ -72,7 +72,7 @@ private:
     // the set of WebGLRenderingContextBase contexts becomes empty.
     HashSet<WebGLRenderingContextBase*> m_contexts;
     GC_PLUGIN_IGNORE("http://crbug.com/516610")
-    HashSet<WebGLSharedObject*> m_groupObjects;
+    HashSet<RawPtrWillBeUntracedMember<WebGLSharedObject>> m_groupObjects;
 };
 
 } // namespace blink

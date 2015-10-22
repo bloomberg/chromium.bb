@@ -80,7 +80,7 @@ void WebGLContextGroup::addObject(WebGLSharedObject* object)
 void WebGLContextGroup::detachAndRemoveAllObjects()
 {
     while (!m_groupObjects.isEmpty()) {
-        HashSet<WebGLSharedObject*>::iterator it = m_groupObjects.begin();
+        HashSet<RawPtrWillBeUntracedMember<WebGLSharedObject>>::iterator it = m_groupObjects.begin();
         (*it)->detachContextGroup();
     }
 }
