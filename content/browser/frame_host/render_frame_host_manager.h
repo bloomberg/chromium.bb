@@ -669,13 +669,12 @@ class CONTENT_EXPORT RenderFrameHostManager {
                                         SiteInstance* new_instance,
                                         int bindings);
 
-  // Sets up the necessary state for a new RenderViewHost.  Creates a
-  // RenderFrameProxy in the target renderer process with the given
-  // |proxy_routing_id|, which is used to route IPC messages when in swapped
-  // out state.  Returns early if the RenderViewHost has already been
-  // initialized for another RenderFrameHost.
+  // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
+  // null, it creates a RenderFrameProxy in the target renderer process which is
+  // used to route IPC messages when in swapped out state.  Returns early if the
+  // RenderViewHost has already been initialized for another RenderFrameHost.
   bool InitRenderView(RenderViewHostImpl* render_view_host,
-                      int proxy_routing_id);
+                      RenderFrameProxyHost* proxy);
 
   // Initialization for RenderFrameHost uses the same sequence as InitRenderView
   // above.
