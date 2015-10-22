@@ -95,11 +95,6 @@ public:
         return partitionAllocGeneric(bufferPartition(), n);
     }
 
-    ALWAYS_INLINE static void* bufferRealloc(void* p, size_t n)
-    {
-        return partitionReallocGeneric(bufferPartition(), p, n);
-    }
-
     ALWAYS_INLINE static void bufferFree(void* p)
     {
         partitionFreeGeneric(bufferPartition(), p);
