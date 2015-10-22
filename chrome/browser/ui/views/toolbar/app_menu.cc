@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/wrench_menu.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 
 #include <algorithm>
 #include <cmath>
@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_observer.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_menu_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/ui/zoom/page_zoom.h"
@@ -238,8 +238,9 @@ class InMenuButtonBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(InMenuButtonBackground);
 };
 
-base::string16 GetAccessibleNameForWrenchMenuItem(
-    ButtonMenuItemModel* model, int item_index, int accessible_string_id) {
+base::string16 GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
+                                               int item_index,
+                                               int accessible_string_id) {
   base::string16 accessible_name =
       l10n_util::GetStringUTF16(accessible_string_id);
   base::string16 accelerator_text;
@@ -308,18 +309,18 @@ class InMenuButton : public LabelButton {
   DISALLOW_COPY_AND_ASSIGN(InMenuButton);
 };
 
-// WrenchMenuView is a view that can contain label buttons.
-class WrenchMenuView : public views::View,
-                       public views::ButtonListener,
-                       public WrenchMenuObserver {
+// AppMenuView is a view that can contain label buttons.
+class AppMenuView : public views::View,
+                    public views::ButtonListener,
+                    public AppMenuObserver {
  public:
-  WrenchMenuView(WrenchMenu* menu, ButtonMenuItemModel* menu_model)
+  AppMenuView(AppMenu* menu, ButtonMenuItemModel* menu_model)
       : menu_(menu),
         menu_model_(menu_model) {
     menu_->AddObserver(this);
   }
 
-  ~WrenchMenuView() override {
+  ~AppMenuView() override {
     if (menu_)
       menu_->RemoveObserver(this);
   }
@@ -352,7 +353,7 @@ class WrenchMenuView : public views::View,
             l10n_util::GetStringUTF16(string_id), '&', NULL, NULL));
     button->Init(type);
     button->SetAccessibleName(
-        GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
+        GetAccessibleNameForAppMenuItem(menu_model_, index, acc_string_id));
     button->set_tag(index);
     button->SetEnabled(menu_model_->IsEnabledAt(index));
 
@@ -363,28 +364,28 @@ class WrenchMenuView : public views::View,
     return button;
   }
 
-  // Overridden from WrenchMenuObserver:
-  void WrenchMenuDestroyed() override {
+  // Overridden from AppMenuObserver:
+  void AppMenuDestroyed() override {
     menu_->RemoveObserver(this);
     menu_ = NULL;
     menu_model_ = NULL;
   }
 
  protected:
-  WrenchMenu* menu() { return menu_; }
-  const WrenchMenu* menu() const { return menu_; }
+  AppMenu* menu() { return menu_; }
+  const AppMenu* menu() const { return menu_; }
   ButtonMenuItemModel* menu_model() { return menu_model_; }
 
  private:
-  // Hosting WrenchMenu.
+  // Hosting AppMenu.
   // WARNING: this may be NULL during shutdown.
-  WrenchMenu* menu_;
+  AppMenu* menu_;
 
   // The menu model containing the increment/decrement/reset items.
   // WARNING: this may be NULL during shutdown.
   ButtonMenuItemModel* menu_model_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchMenuView);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuView);
 };
 
 // Generate the button image for hover state.
@@ -427,14 +428,14 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
 // CutCopyPasteView ------------------------------------------------------------
 
 // CutCopyPasteView is the view containing the cut/copy/paste buttons.
-class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
+class AppMenu::CutCopyPasteView : public AppMenuView {
  public:
-  CutCopyPasteView(WrenchMenu* menu,
+  CutCopyPasteView(AppMenu* menu,
                    ButtonMenuItemModel* menu_model,
                    int cut_index,
                    int copy_index,
                    int paste_index)
-      : WrenchMenuView(menu, menu_model) {
+      : AppMenuView(menu, menu_model) {
     InMenuButton* cut = CreateAndConfigureButton(
         IDS_CUT, InMenuButtonBackground::LEFT_BUTTON, cut_index);
     InMenuButton* copy = CreateAndConfigureButton(
@@ -481,14 +482,14 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 // ZoomView contains the various zoom controls: two buttons to increase/decrease
 // the zoom, a label showing the current zoom percent, and a button to go
 // full-screen.
-class WrenchMenu::ZoomView : public WrenchMenuView {
+class AppMenu::ZoomView : public AppMenuView {
  public:
-  ZoomView(WrenchMenu* menu,
+  ZoomView(AppMenu* menu,
            ButtonMenuItemModel* menu_model,
            int decrement_index,
            int increment_index,
            int fullscreen_index)
-      : WrenchMenuView(menu, menu_model),
+      : AppMenuView(menu, menu_model),
         fullscreen_index_(fullscreen_index),
         increment_button_(NULL),
         zoom_label_(NULL),
@@ -500,7 +501,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         ui_zoom::ZoomEventManager::GetForBrowserContext(
             menu->browser_->profile())
             ->AddZoomLevelChangedCallback(
-                base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
+                base::Bind(&AppMenu::ZoomView::OnZoomLevelChanged,
                            base::Unretained(this)));
 
     decrement_button_ = CreateButtonWithAccName(
@@ -541,9 +542,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
     fullscreen_button_->set_background(
         new InMenuButtonBackground(InMenuButtonBackground::SINGLE_BUTTON));
-    fullscreen_button_->SetAccessibleName(
-        GetAccessibleNameForWrenchMenuItem(
-            menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
+    fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
+        menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
     AddChildView(fullscreen_button_);
 
     // Need to set a font list for the zoom label width calculations.
@@ -594,7 +594,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   }
 
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    WrenchMenuView::OnNativeThemeChanged(theme);
+    AppMenuView::OnNativeThemeChanged(theme);
 
     const MenuConfig& menu_config = MenuConfig::instance(theme);
     zoom_label_->SetBorder(views::Border::CreateEmptyBorder(
@@ -630,8 +630,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     }
   }
 
-  // Overridden from WrenchMenuObserver.
-  void WrenchMenuDestroyed() override { WrenchMenuView::WrenchMenuDestroyed(); }
+  // Overridden from AppMenuObserver.
+  void AppMenuDestroyed() override { AppMenuView::AppMenuDestroyed(); }
 
  private:
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change) {
@@ -729,9 +729,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
 // Provides the ui::MenuModelDelegate implementation for RecentTabsSubMenuModel
 // items.
-class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
+class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
  public:
-  RecentTabsMenuModelDelegate(WrenchMenu* app_menu,
+  RecentTabsMenuModelDelegate(AppMenu* app_menu,
                               ui::MenuModel* model,
                               views::MenuItemView* menu_item)
       : app_menu_(app_menu), model_(model), menu_item_(menu_item) {
@@ -770,9 +770,9 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
       while (submenu->child_count() > 0)
         menu_item_->RemoveMenuItemAt(submenu->child_count() - 1);
 
-      // Remove all elements in |WrenchMenu::command_id_to_entry_| that map to
+      // Remove all elements in |AppMenu::command_id_to_entry_| that map to
       // |model_|.
-      WrenchMenu::CommandIDToEntry::iterator iter =
+      AppMenu::CommandIDToEntry::iterator iter =
           app_menu_->command_id_to_entry_.begin();
       while (iter != app_menu_->command_id_to_entry_.end()) {
         if (iter->second.first == model_)
@@ -793,16 +793,16 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   }
 
  private:
-  WrenchMenu* app_menu_;
+  AppMenu* app_menu_;
   ui::MenuModel* model_;
   views::MenuItemView* menu_item_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsMenuModelDelegate);
 };
 
-// WrenchMenu ------------------------------------------------------------------
+// AppMenu ------------------------------------------------------------------
 
-WrenchMenu::WrenchMenu(Browser* browser, int run_flags)
+AppMenu::AppMenu(Browser* browser, int run_flags)
     : root_(nullptr),
       browser_(browser),
       selected_menu_model_(nullptr),
@@ -816,17 +816,17 @@ WrenchMenu::WrenchMenu(Browser* browser, int run_flags)
                  content::Source<Profile>(browser_->profile()));
 }
 
-WrenchMenu::~WrenchMenu() {
+AppMenu::~AppMenu() {
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(
         browser_->profile());
     if (model)
       model->RemoveObserver(this);
   }
-  FOR_EACH_OBSERVER(WrenchMenuObserver, observer_list_, WrenchMenuDestroyed());
+  FOR_EACH_OBSERVER(AppMenuObserver, observer_list_, AppMenuDestroyed());
 }
 
-void WrenchMenu::Init(ui::MenuModel* model) {
+void AppMenu::Init(ui::MenuModel* model) {
   DCHECK(!root_);
   root_ = new MenuItemView(this);
   root_->set_has_icons(true);  // We have checks, radios and icons, set this
@@ -843,7 +843,7 @@ void WrenchMenu::Init(ui::MenuModel* model) {
   menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 
-void WrenchMenu::RunMenu(views::MenuButton* host) {
+void AppMenu::RunMenu(views::MenuButton* host) {
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
@@ -866,24 +866,24 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   }
 }
 
-void WrenchMenu::CloseMenu() {
+void AppMenu::CloseMenu() {
   if (menu_runner_.get())
     menu_runner_->Cancel();
 }
 
-bool WrenchMenu::IsShowing() {
+bool AppMenu::IsShowing() {
   return menu_runner_.get() && menu_runner_->IsRunning();
 }
 
-void WrenchMenu::AddObserver(WrenchMenuObserver* observer) {
+void AppMenu::AddObserver(AppMenuObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void WrenchMenu::RemoveObserver(WrenchMenuObserver* observer) {
+void AppMenu::RemoveObserver(AppMenuObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-const gfx::FontList* WrenchMenu::GetLabelFontList(int command_id) const {
+const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
   if (IsRecentTabsCommand(command_id)) {
     return recent_tabs_menu_model_delegate_->GetLabelFontListAt(
         ModelIndexFromCommandId(command_id));
@@ -891,7 +891,7 @@ const gfx::FontList* WrenchMenu::GetLabelFontList(int command_id) const {
   return NULL;
 }
 
-bool WrenchMenu::GetShouldUseDisabledEmphasizedForegroundColor(
+bool AppMenu::GetShouldUseDisabledEmphasizedForegroundColor(
     int command_id) const {
   if (IsRecentTabsCommand(command_id)) {
     return recent_tabs_menu_model_delegate_->
@@ -901,20 +901,20 @@ bool WrenchMenu::GetShouldUseDisabledEmphasizedForegroundColor(
   return false;
 }
 
-base::string16 WrenchMenu::GetTooltipText(int command_id,
-                                          const gfx::Point& p) const {
+base::string16 AppMenu::GetTooltipText(int command_id,
+                                       const gfx::Point& p) const {
   return IsBookmarkCommand(command_id) ?
       bookmark_menu_delegate_->GetTooltipText(command_id, p) : base::string16();
 }
 
-bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,
-                                    const ui::Event& e) {
+bool AppMenu::IsTriggerableEvent(views::MenuItemView* menu,
+                                 const ui::Event& e) {
   return IsBookmarkCommand(menu->GetCommand()) ?
       bookmark_menu_delegate_->IsTriggerableEvent(menu, e) :
       MenuDelegate::IsTriggerableEvent(menu, e);
 }
 
-bool WrenchMenu::GetDropFormats(
+bool AppMenu::GetDropFormats(
     MenuItemView* menu,
     int* formats,
     std::set<ui::Clipboard::FormatType>* format_types) {
@@ -923,31 +923,29 @@ bool WrenchMenu::GetDropFormats(
       bookmark_menu_delegate_->GetDropFormats(menu, formats, format_types);
 }
 
-bool WrenchMenu::AreDropTypesRequired(MenuItemView* menu) {
+bool AppMenu::AreDropTypesRequired(MenuItemView* menu) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
       bookmark_menu_delegate_->AreDropTypesRequired(menu);
 }
 
-bool WrenchMenu::CanDrop(MenuItemView* menu,
-                         const ui::OSExchangeData& data) {
+bool AppMenu::CanDrop(MenuItemView* menu, const ui::OSExchangeData& data) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
       bookmark_menu_delegate_->CanDrop(menu, data);
 }
 
-int WrenchMenu::GetDropOperation(
-    MenuItemView* item,
-    const ui::DropTargetEvent& event,
-    DropPosition* position) {
+int AppMenu::GetDropOperation(MenuItemView* item,
+                              const ui::DropTargetEvent& event,
+                              DropPosition* position) {
   return IsBookmarkCommand(item->GetCommand()) ?
       bookmark_menu_delegate_->GetDropOperation(item, event, position) :
       ui::DragDropTypes::DRAG_NONE;
 }
 
-int WrenchMenu::OnPerformDrop(MenuItemView* menu,
-                              DropPosition position,
-                              const ui::DropTargetEvent& event) {
+int AppMenu::OnPerformDrop(MenuItemView* menu,
+                           DropPosition position,
+                           const ui::DropTargetEvent& event) {
   if (!IsBookmarkCommand(menu->GetCommand()))
     return ui::DragDropTypes::DRAG_NONE;
 
@@ -955,40 +953,39 @@ int WrenchMenu::OnPerformDrop(MenuItemView* menu,
   return result;
 }
 
-bool WrenchMenu::ShowContextMenu(MenuItemView* source,
-                                 int command_id,
-                                 const gfx::Point& p,
-                                 ui::MenuSourceType source_type) {
+bool AppMenu::ShowContextMenu(MenuItemView* source,
+                              int command_id,
+                              const gfx::Point& p,
+                              ui::MenuSourceType source_type) {
   return IsBookmarkCommand(command_id) ?
       bookmark_menu_delegate_->ShowContextMenu(source, command_id, p,
                                                source_type) :
       false;
 }
 
-bool WrenchMenu::CanDrag(MenuItemView* menu) {
+bool AppMenu::CanDrag(MenuItemView* menu) {
   return IsBookmarkCommand(menu->GetCommand()) ?
       bookmark_menu_delegate_->CanDrag(menu) : false;
 }
 
-void WrenchMenu::WriteDragData(MenuItemView* sender,
-                               ui::OSExchangeData* data) {
+void AppMenu::WriteDragData(MenuItemView* sender, ui::OSExchangeData* data) {
   DCHECK(IsBookmarkCommand(sender->GetCommand()));
   return bookmark_menu_delegate_->WriteDragData(sender, data);
 }
 
-int WrenchMenu::GetDragOperations(MenuItemView* sender) {
+int AppMenu::GetDragOperations(MenuItemView* sender) {
   return IsBookmarkCommand(sender->GetCommand()) ?
       bookmark_menu_delegate_->GetDragOperations(sender) :
       MenuDelegate::GetDragOperations(sender);
 }
 
-int WrenchMenu::GetMaxWidthForMenu(MenuItemView* menu) {
+int AppMenu::GetMaxWidthForMenu(MenuItemView* menu) {
   if (IsBookmarkCommand(menu->GetCommand()))
     return bookmark_menu_delegate_->GetMaxWidthForMenu(menu);
   return MenuDelegate::GetMaxWidthForMenu(menu);
 }
 
-bool WrenchMenu::IsItemChecked(int command_id) const {
+bool AppMenu::IsItemChecked(int command_id) const {
   if (IsBookmarkCommand(command_id))
     return false;
 
@@ -996,7 +993,7 @@ bool WrenchMenu::IsItemChecked(int command_id) const {
   return entry.first->IsItemCheckedAt(entry.second);
 }
 
-bool WrenchMenu::IsCommandEnabled(int command_id) const {
+bool AppMenu::IsCommandEnabled(int command_id) const {
   if (IsBookmarkCommand(command_id))
     return true;
 
@@ -1017,7 +1014,7 @@ bool WrenchMenu::IsCommandEnabled(int command_id) const {
   return entry.first->IsEnabledAt(entry.second);
 }
 
-void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
+void AppMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
   if (IsBookmarkCommand(command_id)) {
     UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenBookmark",
                         menu_opened_timer_.Elapsed());
@@ -1039,8 +1036,8 @@ void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
   return entry.first->ActivatedAt(entry.second, mouse_event_flags);
 }
 
-bool WrenchMenu::GetAccelerator(int command_id,
-                                ui::Accelerator* accelerator) const {
+bool AppMenu::GetAccelerator(int command_id,
+                             ui::Accelerator* accelerator) const {
   if (IsBookmarkCommand(command_id))
     return false;
 
@@ -1061,14 +1058,14 @@ bool WrenchMenu::GetAccelerator(int command_id,
   return true;
 }
 
-void WrenchMenu::WillShowMenu(MenuItemView* menu) {
+void AppMenu::WillShowMenu(MenuItemView* menu) {
   if (menu == bookmark_menu_)
     CreateBookmarkMenu();
   else if (bookmark_menu_delegate_)
     bookmark_menu_delegate_->WillShowMenu(menu);
 }
 
-void WrenchMenu::WillHideMenu(MenuItemView* menu) {
+void AppMenu::WillHideMenu(MenuItemView* menu) {
   // Turns off the fade out animation of the app menus if |feedback_menu_item_|
   // or |screenshot_menu_item_| is selected. This excludes the app menu itself
   // from the screenshot.
@@ -1083,19 +1080,19 @@ void WrenchMenu::WillHideMenu(MenuItemView* menu) {
   }
 }
 
-bool WrenchMenu::ShouldCloseOnDragComplete() {
+bool AppMenu::ShouldCloseOnDragComplete() {
   return false;
 }
 
-void WrenchMenu::BookmarkModelChanged() {
+void AppMenu::BookmarkModelChanged() {
   DCHECK(bookmark_menu_delegate_.get());
   if (!bookmark_menu_delegate_->is_mutating_model())
     root_->Cancel();
 }
 
-void WrenchMenu::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
+void AppMenu::Observe(int type,
+                      const content::NotificationSource& source,
+                      const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       // A change in the global errors list can add or remove items from the
@@ -1108,8 +1105,7 @@ void WrenchMenu::Observe(int type,
   }
 }
 
-void WrenchMenu::PopulateMenu(MenuItemView* parent,
-                              MenuModel* model) {
+void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     // Add the menu item at the end.
     int menu_index = parent->HasSubmenu() ?
@@ -1200,11 +1196,11 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
   }
 }
 
-MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
-                                      int menu_index,
-                                      MenuModel* model,
-                                      int model_index,
-                                      MenuModel::ItemType menu_type) {
+MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
+                                   int menu_index,
+                                   MenuModel* model,
+                                   int model_index,
+                                   MenuModel::ItemType menu_type) {
   int command_id = model->GetCommandIdAt(model_index);
   DCHECK(command_id > -1 ||
          (command_id == -1 &&
@@ -1241,13 +1237,13 @@ MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
   return menu_item;
 }
 
-void WrenchMenu::CancelAndEvaluate(ButtonMenuItemModel* model, int index) {
+void AppMenu::CancelAndEvaluate(ButtonMenuItemModel* model, int index) {
   selected_menu_model_ = model;
   selected_index_ = index;
   root_->Cancel();
 }
 
-void WrenchMenu::CreateBookmarkMenu() {
+void AppMenu::CreateBookmarkMenu() {
   if (bookmark_menu_delegate_.get())
     return;  // Already created the menu.
 
@@ -1271,7 +1267,7 @@ void WrenchMenu::CreateBookmarkMenu() {
                                 BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU);
 }
 
-int WrenchMenu::ModelIndexFromCommandId(int command_id) const {
+int AppMenu::ModelIndexFromCommandId(int command_id) const {
   CommandIDToEntry::const_iterator ix = command_id_to_entry_.find(command_id);
   DCHECK(ix != command_id_to_entry_.end());
   return ix->second.second;

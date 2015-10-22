@@ -13,11 +13,11 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -42,7 +42,7 @@ void TestOverflowedToolbarAction(Browser* browser,
   // A bunch of plumbing to safely get at the overflowed toolbar action.
   AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
   EXPECT_TRUE(app_menu_button->IsMenuShowing());
-  WrenchMenu* app_menu = app_menu_button->app_menu_for_testing();
+  AppMenu* app_menu = app_menu_button->app_menu_for_testing();
   ASSERT_TRUE(app_menu);
   ExtensionToolbarMenuView* menu_view =
       app_menu->extension_toolbar_for_testing();
@@ -83,7 +83,7 @@ void TestWhileContextMenuOpen(bool* did_test_while_menu_open,
 
   // Get the overflow container.
   AppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
-  WrenchMenu* app_menu = app_menu_button->app_menu_for_testing();
+  AppMenu* app_menu = app_menu_button->app_menu_for_testing();
   ASSERT_TRUE(app_menu);
   ExtensionToolbarMenuView* menu_view =
       app_menu->extension_toolbar_for_testing();

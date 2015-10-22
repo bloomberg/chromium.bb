@@ -11,9 +11,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
@@ -25,7 +25,7 @@ int g_close_menu_delay = 300;
 }
 
 ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
-                                                   WrenchMenu* app_menu)
+                                                   AppMenu* app_menu)
     : browser_(browser),
       app_menu_(app_menu),
       container_(nullptr),

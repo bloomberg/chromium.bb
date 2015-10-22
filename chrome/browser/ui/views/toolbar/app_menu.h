@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_MENU_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_MENU_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_H_
 
 #include <map>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -18,10 +19,10 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
-class ExtensionToolbarMenuView;
+class AppMenuObserver;
 class BookmarkMenuDelegate;
 class Browser;
-class WrenchMenuObserver;
+class ExtensionToolbarMenuView;
 
 namespace ui {
 class NativeTheme;
@@ -33,20 +34,20 @@ struct MenuConfig;
 class MenuItemView;
 class MenuRunner;
 class View;
-}  // namespace views
+}
 
-// WrenchMenu adapts the WrenchMenuModel to view's menu related classes.
-class WrenchMenu : public views::MenuDelegate,
-                   public bookmarks::BaseBookmarkModelObserver,
-                   public content::NotificationObserver {
+// AppMenu adapts the WrenchMenuModel to view's menu related classes.
+class AppMenu : public views::MenuDelegate,
+                public bookmarks::BaseBookmarkModelObserver,
+                public content::NotificationObserver {
  public:
   enum RunFlags {
     // Indicates that the menu was opened for a drag-and-drop operation.
     FOR_DROP = 1 << 0,
   };
 
-  WrenchMenu(Browser* browser, int run_flags);
-  ~WrenchMenu() override;
+  AppMenu(Browser* browser, int run_flags);
+  ~AppMenu() override;
 
   void Init(ui::MenuModel* model);
 
@@ -61,8 +62,8 @@ class WrenchMenu : public views::MenuDelegate,
 
   bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
 
-  void AddObserver(WrenchMenuObserver* observer);
-  void RemoveObserver(WrenchMenuObserver* observer);
+  void AddObserver(AppMenuObserver* observer);
+  void RemoveObserver(AppMenuObserver* observer);
 
   // MenuDelegate overrides:
   const gfx::FontList* GetLabelFontList(int command_id) const override;
@@ -196,12 +197,12 @@ class WrenchMenu : public views::MenuDelegate,
   // The bit mask of RunFlags.
   const int run_flags_;
 
-  base::ObserverList<WrenchMenuObserver> observer_list_;
+  base::ObserverList<AppMenuObserver> observer_list_;
 
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchMenu);
+  DISALLOW_COPY_AND_ASSIGN(AppMenu);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_MENU_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_H_

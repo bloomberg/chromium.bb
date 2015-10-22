@@ -1080,7 +1080,7 @@ void ToggleBookmarkBar(Browser* browser) {
 }
 
 void ShowAppMenu(Browser* browser) {
-  // We record the user metric for this event in WrenchMenu::RunMenu.
+  // We record the user metric for this event in AppMenu::RunMenu.
   browser->window()->ShowAppMenu();
 }
 

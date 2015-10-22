@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/layout_constants.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
@@ -93,7 +93,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
 
   Browser* browser = toolbar_view_->browser();
 
-  menu_.reset(new WrenchMenu(browser, for_drop ? WrenchMenu::FOR_DROP : 0));
+  menu_.reset(new AppMenu(browser, for_drop ? AppMenu::FOR_DROP : 0));
   menu_model_.reset(new WrenchMenuModel(toolbar_view_, browser));
   menu_->Init(menu_model_.get());
 

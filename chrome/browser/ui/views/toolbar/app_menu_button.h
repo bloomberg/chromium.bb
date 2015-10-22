@@ -14,7 +14,7 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
-class WrenchMenu;
+class AppMenu;
 class WrenchMenuModel;
 
 namespace views {
@@ -41,7 +41,7 @@ class AppMenuButton : public views::InkDropHost,
   // Closes the app menu, if it's open.
   void CloseMenu();
 
-  WrenchMenu* app_menu_for_testing() { return menu_.get(); }
+  AppMenu* app_menu_for_testing() { return menu_.get(); }
 
   // Whether the app/hotdogs menu is currently showing.
   bool IsMenuShowing() const;
@@ -108,7 +108,7 @@ class AppMenuButton : public views::InkDropHost,
   // Note that the menu should be destroyed before the model it uses, so the
   // menu should be listed later.
   scoped_ptr<WrenchMenuModel> menu_model_;
-  scoped_ptr<WrenchMenu> menu_;
+  scoped_ptr<AppMenu> menu_;
 
   // Used by ShowMenu() to detect when |this| has been deleted; see comments
   // there.

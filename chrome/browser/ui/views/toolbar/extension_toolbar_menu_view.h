@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "ui/views/controls/scroll_view.h"
 
+class AppMenu;
 class Browser;
 class BrowserActionsContainer;
-class WrenchMenu;
 
 // ExtensionToolbarMenuView is the view containing the extension actions that
 // overflowed from the BrowserActionsContainer, and is contained in and owned by
@@ -22,7 +22,7 @@ class WrenchMenu;
 class ExtensionToolbarMenuView : public views::ScrollView,
                                  public BrowserActionsContainerObserver {
  public:
-  ExtensionToolbarMenuView(Browser* browser, WrenchMenu* app_menu);
+  ExtensionToolbarMenuView(Browser* browser, AppMenu* app_menu);
   ~ExtensionToolbarMenuView() override;
 
   // Returns whether the app menu should show this view. This is true when
@@ -59,7 +59,7 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   Browser* browser_;
 
   // The app menu, which may need to be closed after a drag-and-drop.
-  WrenchMenu* app_menu_;
+  AppMenu* app_menu_;
 
   // The overflow BrowserActionsContainer which is nested in this view.
   BrowserActionsContainer* container_;
