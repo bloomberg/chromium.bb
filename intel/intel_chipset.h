@@ -165,20 +165,22 @@
 #define PCI_CHIP_CHERRYVIEW_2		0x22b2
 #define PCI_CHIP_CHERRYVIEW_3		0x22b3
 
-#define PCI_CHIP_SKYLAKE_ULT_GT2	0x1916
-#define PCI_CHIP_SKYLAKE_ULT_GT1	0x1906
-#define PCI_CHIP_SKYLAKE_ULT_GT3	0x1926
-#define PCI_CHIP_SKYLAKE_ULT_GT2F	0x1921
-#define PCI_CHIP_SKYLAKE_ULX_GT1	0x190E
-#define PCI_CHIP_SKYLAKE_ULX_GT2	0x191E
-#define PCI_CHIP_SKYLAKE_DT_GT2		0x1912
 #define PCI_CHIP_SKYLAKE_DT_GT1		0x1902
+#define PCI_CHIP_SKYLAKE_ULT_GT1	0x1906
+#define PCI_CHIP_SKYLAKE_SRV_GT1	0x190A /* Reserved */
+#define PCI_CHIP_SKYLAKE_ULX_GT1	0x190E /* Reserved */
+#define PCI_CHIP_SKYLAKE_DT_GT2		0x1912
+#define PCI_CHIP_SKYLAKE_FUSED0_GT2	0x1913 /* Reserved */
+#define PCI_CHIP_SKYLAKE_FUSED1_GT2	0x1915 /* Reserved */
+#define PCI_CHIP_SKYLAKE_ULT_GT2	0x1916
+#define PCI_CHIP_SKYLAKE_FUSED2_GT2	0x1917 /* Reserved */
+#define PCI_CHIP_SKYLAKE_SRV_GT2	0x191A /* Reserved */
 #define PCI_CHIP_SKYLAKE_HALO_GT2	0x191B
-#define PCI_CHIP_SKYLAKE_HALO_GT3	0x192B
-#define PCI_CHIP_SKYLAKE_HALO_GT1 	0x190B
-#define PCI_CHIP_SKYLAKE_SRV_GT2	0x191A
-#define PCI_CHIP_SKYLAKE_SRV_GT1	0x190A
 #define PCI_CHIP_SKYLAKE_WKS_GT2 	0x191D
+#define PCI_CHIP_SKYLAKE_ULX_GT2	0x191E
+#define PCI_CHIP_SKYLAKE_MOBILE_GT2	0x1921 /* Reserved */
+#define PCI_CHIP_SKYLAKE_GT3		0x1926
+#define PCI_CHIP_SKYLAKE_HALO_GT3	0x192B /* Reserved */
 #define PCI_CHIP_SKYLAKE_SRV_GT4	0x192A
 #define PCI_CHIP_SKYLAKE_DT_GT4		0x1932
 #define PCI_CHIP_SKYLAKE_SRV_GT4X	0x193A
@@ -351,18 +353,20 @@
 #define IS_SKL_GT1(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT1	|| \
 				 (devid) == PCI_CHIP_SKYLAKE_ULX_GT1	|| \
 				 (devid) == PCI_CHIP_SKYLAKE_DT_GT1	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT1	|| \
 				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT1)
 
-#define IS_SKL_GT2(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT2	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_ULT_GT2F	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_ULX_GT2	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_DT_GT2	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT2	|| \
+#define IS_SKL_GT2(devid)	((devid) == PCI_CHIP_SKYLAKE_DT_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_FUSED0_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_FUSED1_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_ULT_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_FUSED2_GT2	|| \
 				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT2	|| \
-				 (devid) == PCI_CHIP_SKYLAKE_WKS_GT2)
+				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_WKS_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_ULX_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_MOBILE_GT2)
 
-#define IS_SKL_GT3(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT3	|| \
+#define IS_SKL_GT3(devid)	((devid) == PCI_CHIP_SKYLAKE_GT3	|| \
 				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT3)
 
 #define IS_SKL_GT4(devid)	((devid) == PCI_CHIP_SKYLAKE_SRV_GT4	|| \
