@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -450,10 +451,6 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
 }
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
-  SkColor color;
-  if (CommonThemeGetSystemColor(color_id, &color))
-    return color;
-
   // TODO: Obtain the correct colors using GetSysColor.
   const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
   const SkColor kUrlTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
@@ -466,12 +463,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
   const SkColor kButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
   const SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
-  const SkColor kButtonHoverBackgroundColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
   // MenuItem:
-  const SkColor kEnabledMenuItemForegroundColor = SkColorSetRGB(6, 45, 117);
-  const SkColor kDisabledMenuItemForegroundColor = SkColorSetRGB(161, 161, 146);
-  const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
-  const SkColor kMenuSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
   // Link:
   const SkColor kLinkPressedColor = SkColorSetRGB(200, 0, 0);
   // Table:
@@ -501,45 +493,10 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kButtonBackgroundColor;
     case kColorId_ButtonEnabledColor:
       return system_colors_[COLOR_BTNTEXT];
-    case kColorId_ButtonDisabledColor:
-      return system_colors_[COLOR_GRAYTEXT];
     case kColorId_ButtonHighlightColor:
       return kButtonHighlightColor;
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
-    case kColorId_ButtonHoverBackgroundColor:
-      return kButtonHoverBackgroundColor;
-    case kColorId_BlueButtonEnabledColor:
-    case kColorId_BlueButtonDisabledColor:
-    case kColorId_BlueButtonPressedColor:
-    case kColorId_BlueButtonHoverColor:
-      NOTREACHED();
-      return kInvalidColorIdColor;
-
-    // MenuItem
-    case kColorId_EnabledMenuItemForegroundColor:
-      return kEnabledMenuItemForegroundColor;
-    case kColorId_DisabledMenuItemForegroundColor:
-      return kDisabledMenuItemForegroundColor;
-    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
-      return SK_ColorBLACK;
-    case kColorId_FocusedMenuItemBackgroundColor:
-      return kFocusedMenuItemBackgroundColor;
-    case kColorId_MenuSeparatorColor:
-      return kMenuSeparatorColor;
-    case kColorId_SelectedMenuItemForegroundColor:
-    case kColorId_HoverMenuItemBackgroundColor:
-    case kColorId_MenuBackgroundColor:
-    case kColorId_MenuBorderColor:
-      NOTREACHED();
-      return kInvalidColorIdColor;
-
-    // MenuButton
-    case kColorId_EnabledMenuButtonBorderColor:
-    case kColorId_FocusedMenuButtonBorderColor:
-    case kColorId_HoverMenuButtonBorderColor:
-      NOTREACHED();
-      return kInvalidColorIdColor;
 
     // Label
     case kColorId_LabelEnabledColor:
@@ -551,10 +508,16 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Link
     case kColorId_LinkDisabled:
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
       return system_colors_[COLOR_WINDOWTEXT];
     case kColorId_LinkEnabled:
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
       return system_colors_[COLOR_HOTLIGHT];
     case kColorId_LinkPressed:
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
       return kLinkPressedColor;
 
     // Textfield
@@ -679,9 +642,15 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return color_utils::GetReadableColor(kNegativeTextColor,
                                            system_colors_[COLOR_HIGHLIGHT]);
     default:
-      NOTREACHED();
-      return kInvalidColorIdColor;
+      break;
   }
+
+  SkColor color;
+  if (CommonThemeGetSystemColor(color_id, &color))
+    return color;
+
+  NOTREACHED();
+  return kInvalidColorIdColor;
 }
 
 void NativeThemeWin::PaintIndirect(SkCanvas* canvas,

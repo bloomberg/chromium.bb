@@ -99,10 +99,6 @@ NativeThemeAura::~NativeThemeAura() {
 
 // This implementation returns hardcoded colors.
 SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
-  SkColor color;
-  if (CommonThemeGetSystemColor(color_id, &color))
-    return color;
-
   // Shared colors.
   static const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
   static const SkColor kTextfieldSelectionBackgroundFocused =
@@ -298,10 +294,16 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
 
     // Link
     case kColorId_LinkDisabled:
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
       return kLinkDisabledColor;
     case kColorId_LinkEnabled:
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
       return kLinkEnabledColor;
     case kColorId_LinkPressed:
+      if (ui::MaterialDesignController::IsModeMaterial())
+        break;
       return kLinkPressedColor;
 
     // Textfield
@@ -396,10 +398,14 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       return kResultsTableNegativeSelectedText;
 
     default:
-      NOTREACHED();
       break;
   }
 
+  SkColor color;
+  if (CommonThemeGetSystemColor(color_id, &color))
+    return color;
+
+  NOTREACHED();
   return kInvalidColorIdColor;
 }
 
