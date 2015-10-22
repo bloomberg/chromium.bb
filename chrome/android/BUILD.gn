@@ -227,12 +227,23 @@ java_cpp_template("resource_id_javagen") {
 # GYP: //chrome/chrome_tests.gypi:chrome_junit_tests
 junit_binary("chrome_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
+    "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionCallableTest.java",
     "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
-    "junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java",
+    "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientConnectionHelperTest.java",
+
+    # TODO(mlamouri): add the requirements dependencies for this test.
+    #"junit/src/org/chromium/chrome/browser/invalidations/InvalidationControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/AbstractMediaRouteControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfoTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/TransportControlTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterTest.java",
+    "junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java",
+    "junit/src/org/chromium/chrome/browser/omaha/VersionNumberTest.java",
+    "junit/src/org/chromium/chrome/browser/util/NonThreadSafeTest.java",
+    "junit/src/org/chromium/chrome/browser/webapps/WebappDataStorageTest.java",
+    "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",
   ]
   deps = [
     ":chrome_java",
@@ -243,6 +254,7 @@ junit_binary("chrome_junit_tests") {
     "//sync/android:sync_java",
     "//third_party/junit:hamcrest",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
+    google_play_services_library,
   ]
 }
 
