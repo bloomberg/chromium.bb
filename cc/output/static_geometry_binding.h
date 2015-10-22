@@ -20,7 +20,7 @@ class StaticGeometryBinding {
   void PrepareForDraw();
 
   enum {
-    NUM_QUADS = 8,
+    NUM_QUADS = 9,
   };
 
  private:
