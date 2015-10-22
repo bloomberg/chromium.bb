@@ -107,10 +107,8 @@ BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
   // Right away let's check if they're coplanar
   double dot = gfx::DotProduct(a.normal_, b.normal_);
   float sign = 0.0f;
-  bool normal_match = false;
   // This check assumes that the normals are normalized.
   if (std::abs(dot) >= 1.0f - coplanar_dot_epsilon) {
-    normal_match = true;
     // The normals are matching enough that we only have to test one point.
     sign = b.SignedPointDistance(a.points_[0]);
     // Is it on either side of the splitter?
@@ -140,9 +138,7 @@ BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
   int pos_count = 0;
   int neg_count = 0;
   for (size_t i = 0; i < a.points_.size(); i++) {
-    if (!normal_match || (normal_match && i > 0)) {
-      sign = gfx::DotProduct(a.points_[i] - b.points_[0], b.normal_);
-    }
+    sign = gfx::DotProduct(a.points_[i] - b.points_[0], b.normal_);
 
     if (sign < -compare_threshold) {
       ++neg_count;
