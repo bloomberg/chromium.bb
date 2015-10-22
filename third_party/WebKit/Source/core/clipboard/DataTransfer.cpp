@@ -357,7 +357,9 @@ void DataTransfer::writeSelection(const FrameSelection& selection)
         return;
 
     if (!enclosingTextFormControl(selection.start())) {
-        m_dataObject->setHTMLAndBaseURL(selection.selectedHTMLForClipboard(), selection.frame()->document()->url());
+        EphemeralRange selectedRange = selection.selection().toNormalizedEphemeralRange();
+        ASSERT(selectedRange.isNotNull());
+        m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange.startPosition(), selectedRange.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs), selectedRange.document().url());
     }
 
     String str = selection.selectedTextForClipboard();

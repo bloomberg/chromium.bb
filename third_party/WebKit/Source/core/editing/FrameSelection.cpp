@@ -1143,9 +1143,9 @@ String FrameSelection::selectedHTMLForClipboard() const
     return extractSelectedHTMLAlgorithm<EditingInComposedTreeStrategy>(*this);
 }
 
-String FrameSelection::selectedText(TextIteratorBehavior behavior) const
+String FrameSelection::selectedText() const
 {
-    return extractSelectedText(*this, behavior);
+    return extractSelectedText(*this, TextIteratorDefaultBehavior);
 }
 
 String FrameSelection::selectedTextForClipboard() const

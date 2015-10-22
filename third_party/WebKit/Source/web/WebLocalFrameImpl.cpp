@@ -1235,7 +1235,11 @@ WebString WebLocalFrameImpl::selectionAsText() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsText();
 
-    String text = frame()->selection().selectedText(TextIteratorEmitsObjectReplacementCharacter);
+    const EphemeralRange range = frame()->selection().selection().toNormalizedEphemeralRange();
+    if (range.isNull())
+        return WebString();
+
+    String text = plainText(range, TextIteratorEmitsObjectReplacementCharacter);
 #if OS(WIN)
     replaceNewlinesWithWindowsStyleNewlines(text);
 #endif
@@ -1249,7 +1253,11 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsMarkup();
 
-    return frame()->selection().selectedHTMLForClipboard();
+    const EphemeralRange range = frame()->selection().selection().toNormalizedEphemeralRange();
+    if (range.isNull())
+        return WebString();
+
+    return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)
