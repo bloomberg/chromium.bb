@@ -27,20 +27,12 @@ bool FakeStatisticsProvider::GetMachineStatistic(const std::string& name,
   return match != machine_statistics_.end();
 }
 
-bool FakeStatisticsProvider::HasMachineStatistic(const std::string& name) {
-  return machine_statistics_.find(name) != machine_statistics_.end();
-}
-
 bool FakeStatisticsProvider::GetMachineFlag(const std::string& name,
                                             bool* result) {
   std::map<std::string, bool>::const_iterator match = machine_flags_.find(name);
   if (match != machine_flags_.end() && result)
     *result = match->second;
   return match != machine_flags_.end();
-}
-
-bool FakeStatisticsProvider::HasMachineFlag(const std::string& name) {
-  return machine_flags_.find(name) != machine_flags_.end();
 }
 
 void FakeStatisticsProvider::Shutdown() {

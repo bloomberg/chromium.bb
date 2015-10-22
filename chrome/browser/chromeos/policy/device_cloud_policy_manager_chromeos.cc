@@ -212,15 +212,19 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineID() {
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
   for (size_t i = 0; i < arraysize(kMachineInfoSerialNumberKeys); i++) {
-    if (provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
+    if (provider->HasMachineStatistic(kMachineInfoSerialNumberKeys[i]) &&
+        provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
                                       &machine_id) &&
         !machine_id.empty()) {
       break;
     }
   }
 
-  if (machine_id.empty())
-    LOG(WARNING) << "Failed to get machine id.";
+  if (machine_id.empty()) {
+    LOG(WARNING) << "Failed to get machine id. This is only an error if the "
+                    "device has not yet been enrolled or claimed by a local "
+                    "user.";
+  }
 
   return machine_id;
 }

@@ -75,9 +75,9 @@ const char kKeyboardsPath[] = "keyboards";
 const char kLocalesPath[] = "locales";
 const char kTimeZonesPath[] = "time_zones";
 
-// Gets list value from given |dictionary| by given |key| and sets |result| to
-// a string with all list values joined by ','.
-// Returns true if |result| was successfully set.
+// Gets ListValue from given |dictionary| by given |key| and (unless |result| is
+// nullptr) sets |result| to a string with all list values joined by ','.
+// Returns true on success.
 bool JoinListValuesToString(const base::DictionaryValue* dictionary,
                             const std::string key,
                             std::string* result) {
@@ -99,13 +99,14 @@ bool JoinListValuesToString(const base::DictionaryValue* dictionary,
 
     buffer += value;
   }
-  *result = buffer;
+  if (result != nullptr)
+    *result = buffer;
   return true;
 }
 
-// Gets list value from given |dictionary| by given |key| and sets |result| to
-// the first value as string.
-// Returns true if |result| was successfully set.
+// Gets ListValue from given |dictionary| by given |key| and (unless |result| is
+// nullptr) sets |result| to the first value as string.  Returns true on
+// success.
 bool GetFirstListValueAsString(const base::DictionaryValue* dictionary,
                                const std::string key,
                                std::string* result) {
@@ -113,10 +114,12 @@ bool GetFirstListValueAsString(const base::DictionaryValue* dictionary,
   if (!dictionary->GetListWithoutPathExpansion(key, &list))
     return false;
 
-  if (list->GetSize() == 0)
+  std::string value;
+  if (!list->GetString(0, &value))
     return false;
-
-  return list->GetString(0, result);
+  if (result != nullptr)
+    *result = value;
+  return true;
 }
 
 bool GetKeyboardLayoutFromRegionalData(const base::DictionaryValue* region_dict,
@@ -178,9 +181,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
       bool load_oem_manifest) override;
   bool GetMachineStatistic(const std::string& name,
                            std::string* result) override;
-  bool HasMachineStatistic(const std::string& name) override;
   bool GetMachineFlag(const std::string& name, bool* result) override;
-  bool HasMachineFlag(const std::string& name) override;
   void Shutdown() override;
 
   static StatisticsProviderImpl* GetInstance();
@@ -247,13 +248,13 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
 
   base::TimeDelta dtime = base::Time::Now() - start_time;
   if (on_statistics_loaded_.IsSignaled()) {
-    LOG(ERROR) << "Statistics loaded after waiting "
-               << dtime.InMilliseconds() << "ms. ";
+    LOG(WARNING) << "Statistics loaded after waiting "
+                 << dtime.InMilliseconds() << "ms.";
     return true;
   }
 
   LOG(ERROR) << "Statistics not loaded after waiting "
-             << dtime.InMilliseconds() << "ms. ";
+             << dtime.InMilliseconds() << "ms.";
   return false;
 }
 
@@ -329,19 +330,16 @@ bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
   if (iter == machine_info_.end()) {
     if (GetRegionalInformation(name, result))
       return true;
-    if (base::SysInfo::IsRunningOnChromeOS() &&
+    if (result != nullptr &&
+        base::SysInfo::IsRunningOnChromeOS() &&
         (oem_manifest_loaded_ || !HasOemPrefix(name))) {
       LOG(WARNING) << "Requested statistic not found: " << name;
     }
     return false;
   }
-  *result = iter->second;
+  if (result != nullptr)
+    *result = iter->second;
   return true;
-}
-
-bool StatisticsProviderImpl::HasMachineStatistic(const std::string& name) {
-  std::string result;
-  return GetMachineStatistic(name, &result);
 }
 
 bool StatisticsProviderImpl::GetMachineFlag(const std::string& name,
@@ -354,19 +352,16 @@ bool StatisticsProviderImpl::GetMachineFlag(const std::string& name,
 
   MachineFlags::const_iterator iter = machine_flags_.find(name);
   if (iter == machine_flags_.end()) {
-    if (base::SysInfo::IsRunningOnChromeOS() &&
+    if (result != nullptr &&
+        base::SysInfo::IsRunningOnChromeOS() &&
         (oem_manifest_loaded_ || !HasOemPrefix(name))) {
       LOG(WARNING) << "Requested machine flag not found: " << name;
     }
     return false;
   }
-  *result = iter->second;
+  if (result != nullptr)
+    *result = iter->second;
   return true;
-}
-
-bool StatisticsProviderImpl::HasMachineFlag(const std::string& name) {
-  bool result = false;
-  return GetMachineFlag(name, &result);
 }
 
 void StatisticsProviderImpl::Shutdown() {
@@ -548,6 +543,10 @@ StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
   return base::Singleton<
       StatisticsProviderImpl,
       base::DefaultSingletonTraits<StatisticsProviderImpl>>::get();
+}
+
+bool StatisticsProvider::HasMachineStatistic(const std::string& name) {
+  return GetMachineStatistic(name, nullptr);
 }
 
 static StatisticsProvider* g_test_statistics_provider = NULL;

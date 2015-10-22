@@ -84,22 +84,21 @@ class CHROMEOS_EXPORT StatisticsProvider {
       const scoped_refptr<base::TaskRunner>& file_task_runner,
       bool load_oem_manifest) = 0;
 
-  // Retrieves the named machine statistic (e.g. "hardware_class"). If |name|
-  // is found, sets |result| and returns true. Safe to call from any thread
-  // except the task runner passed to Initialize() (e.g. FILE). This may block
-  // if called early before the statistics are loaded from disk.
+  // Returns true if the named machine statistic (e.g. "hardware_class") is
+  // found and stores it in |result| (if provided). Probing for the existance of
+  // a statistic by setting |result| to nullptr supresses the usual warning in
+  // case the statistic is not found. Safe to call from any thread except the
+  // task runner passed to Initialize() (e.g. FILE). This may block if called
+  // early before the statistics are loaded from disk.
   // StartLoadingMachineStatistics() must be called before this.
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) = 0;
 
-  // Checks whether a machine statistic is present.
-  virtual bool HasMachineStatistic(const std::string& name) = 0;
+  // Checks whether a machine statistic is present (without logging a warning).
+  bool HasMachineStatistic(const std::string& name);
 
   // Similar to GetMachineStatistic for boolean flags.
   virtual bool GetMachineFlag(const std::string& name, bool* result) = 0;
-
-  // Checks whether a machine flag is present.
-  virtual bool HasMachineFlag(const std::string& name) = 0;
 
   // Cancels any pending file operations.
   virtual void Shutdown() = 0;
