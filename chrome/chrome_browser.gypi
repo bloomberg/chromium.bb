@@ -2869,8 +2869,6 @@
       'browser/sync/glue/sync_backend_host_core.h',
       'browser/sync/glue/sync_backend_host_impl.cc',
       'browser/sync/glue/sync_backend_host_impl.h',
-      'browser/sync/glue/sync_backend_registrar.cc',
-      'browser/sync/glue/sync_backend_registrar.h',
       'browser/sync/glue/sync_start_util.cc',
       'browser/sync/glue/sync_start_util.h',
       'browser/sync/glue/synced_session_tracker.cc',

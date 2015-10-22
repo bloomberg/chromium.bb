@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 class BookmarkUndoService;
 class PrefService;
@@ -81,6 +82,13 @@ class SyncClient {
   // Note: Should only be called from the model type thread.
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) = 0;
+
+  // Creates and returns a new ModelSafeWorker for the group, or null if one
+  // cannot be created.
+  // TODO(maxbogue): Move this inside SyncApiComponentFactory.
+  virtual scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
+      syncer::ModelSafeGroup group,
+      syncer::WorkerLoopDestructionObserver* observer) = 0;
 
   // Returns the current SyncApiComponentFactory instance.
   virtual SyncApiComponentFactory* GetSyncApiComponentFactory() = 0;

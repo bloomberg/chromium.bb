@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_manager_impl.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,6 +33,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
  public:
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
+      sync_driver::SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,

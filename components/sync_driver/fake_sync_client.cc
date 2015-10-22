@@ -65,6 +65,13 @@ FakeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   return base::WeakPtr<syncer::SyncableService>();
 }
 
+scoped_refptr<syncer::ModelSafeWorker>
+FakeSyncClient::CreateModelWorkerForGroup(
+    syncer::ModelSafeGroup group,
+    syncer::WorkerLoopDestructionObserver* observer) {
+  return scoped_refptr<syncer::ModelSafeWorker>();
+}
+
 SyncApiComponentFactory* FakeSyncClient::GetSyncApiComponentFactory() {
   return factory_;
 }

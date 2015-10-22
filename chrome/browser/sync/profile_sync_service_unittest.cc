@@ -360,29 +360,29 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectSyncBackendHostCreation(int times) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
         .Times(times)
         .WillRepeatedly(ReturnNewSyncBackendHostMock());
   }
 
   void ExpectSyncBackendHostCreationCollectDeleteDir(
       int times, std::vector<bool> *delete_dir_param) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
         .Times(times)
-        .WillRepeatedly(ReturnNewMockHostCollectDeleteDirParam(
-            delete_dir_param));
+        .WillRepeatedly(
+            ReturnNewMockHostCollectDeleteDirParam(delete_dir_param));
   }
 
   void ExpectSyncBackendHostCreationCaptureClearServerData(
       syncer::SyncManager::ClearServerDataCallback* captured_callback) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
         .Times(1)
         .WillOnce(ReturnNewMockHostCaptureClearServerData(captured_callback));
   }
 
   void PrepareDelayedInitSyncBackendHost() {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _)).
-        WillOnce(ReturnNewSyncBackendHostNoReturn());
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+        .WillOnce(ReturnNewSyncBackendHostNoReturn());
   }
 
   TestingProfile* profile() {

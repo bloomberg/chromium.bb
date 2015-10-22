@@ -28,9 +28,14 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/sync/browser/password_model_worker.h"
+#include "components/sync_driver/glue/browser_thread_model_worker.h"
+#include "components/sync_driver/glue/history_model_worker.h"
+#include "components/sync_driver/glue/ui_model_worker.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/internal_api/public/engine/passive_model_worker.h"
 
 #if defined(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -68,6 +73,8 @@
 #include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
 #endif
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 ChromeSyncClient::ChromeSyncClient(
@@ -78,7 +85,7 @@ ChromeSyncClient::~ChromeSyncClient() {
 }
 
 void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_service_ = sync_service;
   web_data_service_ = GetWebDataService();
   password_store_ = GetPasswordStore();
@@ -88,47 +95,47 @@ void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
 sync_driver::SyncService* ChromeSyncClient::GetSyncService() {
   // TODO(zea): bring back this DCHECK after Typed URLs are converted to
   // SyncableService.
-  // DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_;
 }
 
 PrefService* ChromeSyncClient::GetPrefService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return profile_->GetPrefs();
 }
 
 bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return BookmarkModelFactory::GetForProfile(profile_);
 }
 
 favicon::FaviconService* ChromeSyncClient::GetFaviconService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return FaviconServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 history::HistoryService* ChromeSyncClient::GetHistoryService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return autofill::PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
 scoped_refptr<password_manager::PasswordStore>
 ChromeSyncClient::GetPasswordStore() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return PasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 scoped_refptr<autofill::AutofillWebDataService>
 ChromeSyncClient::GetWebDataService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
@@ -259,6 +266,47 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       // Typed URLs
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
+  }
+}
+
+scoped_refptr<syncer::ModelSafeWorker>
+ChromeSyncClient::CreateModelWorkerForGroup(
+    syncer::ModelSafeGroup group,
+    syncer::WorkerLoopDestructionObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  switch (group) {
+    case syncer::GROUP_DB:
+      return new BrowserThreadModelWorker(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          syncer::GROUP_DB, observer);
+    case syncer::GROUP_FILE:
+      return new BrowserThreadModelWorker(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+          syncer::GROUP_FILE, observer);
+    case syncer::GROUP_UI:
+      return new UIModelWorker(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          observer);
+    case syncer::GROUP_PASSIVE:
+      return new syncer::PassiveModelWorker(observer);
+    case syncer::GROUP_HISTORY: {
+      history::HistoryService* history_service = GetHistoryService();
+      if (!history_service)
+        return nullptr;
+      return new HistoryModelWorker(
+          history_service->AsWeakPtr(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          observer);
+    }
+    case syncer::GROUP_PASSWORD: {
+      scoped_refptr<password_manager::PasswordStore> password_store =
+          GetPasswordStore();
+      if (!password_store.get())
+        return nullptr;
+      return new PasswordModelWorker(password_store, observer);
+    }
+    default:
+      return nullptr;
   }
 }
 

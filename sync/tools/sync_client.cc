@@ -387,7 +387,7 @@ int SyncClientMain(int argc, char* argv[]) {
     routing_info[it.Get()] = GROUP_PASSIVE;
   }
   scoped_refptr<PassiveModelWorker> passive_model_safe_worker =
-      new PassiveModelWorker(&sync_loop, NULL);
+      new PassiveModelWorker(nullptr);
   std::vector<scoped_refptr<ModelSafeWorker> > workers;
   workers.push_back(passive_model_safe_worker);
 

@@ -22,6 +22,7 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync_driver/device_info.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
@@ -33,6 +34,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sessions/commit_counters.h"
@@ -150,6 +152,20 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
   FakeSyncManager** fake_manager_;
 };
 
+class BackendSyncClient : public sync_driver::FakeSyncClient {
+ public:
+  scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
+      syncer::ModelSafeGroup group,
+      syncer::WorkerLoopDestructionObserver* observer) override {
+    switch (group) {
+      case syncer::GROUP_PASSIVE:
+        return new syncer::PassiveModelWorker(observer);
+      default:
+        return nullptr;
+    }
+  }
+};
+
 class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
@@ -164,7 +180,7 @@ class SyncBackendHostTest : public testing::Test {
     profile_ = profile_manager_.CreateTestingProfile(kTestProfileName);
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     backend_.reset(new SyncBackendHostImpl(
-        profile_->GetDebugName(), profile_,
+        profile_->GetDebugName(), profile_, &sync_client_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         invalidation::ProfileInvalidationProviderFactory::GetForProfile(
             profile_)
@@ -286,6 +302,7 @@ class SyncBackendHostTest : public testing::Test {
   syncer::SyncCredentials credentials_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
+  BackendSyncClient sync_client_;
   syncer::TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
   scoped_ptr<SyncBackendHostImpl> backend_;

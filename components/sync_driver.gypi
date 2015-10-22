@@ -72,6 +72,8 @@
         'sync_driver/glue/chrome_report_unrecoverable_error.h',
         'sync_driver/glue/history_model_worker.cc',
         'sync_driver/glue/history_model_worker.h',
+        'sync_driver/glue/sync_backend_registrar.cc',
+        'sync_driver/glue/sync_backend_registrar.h',
         'sync_driver/glue/synced_session.cc',
         'sync_driver/glue/synced_session.h',
         'sync_driver/glue/synced_window_delegate.h',

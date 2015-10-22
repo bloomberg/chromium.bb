@@ -39,6 +39,7 @@ namespace browser_sync {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
+    sync_driver::SyncClient* sync_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
@@ -46,6 +47,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     : browser_sync::SyncBackendHostImpl(
           profile->GetDebugName(),
           profile,
+          sync_client,
           ui_thread,
           invalidator,
           sync_prefs,
@@ -158,11 +160,12 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
   SyncApiComponentFactoryMock* components =
       sync_service->GetSyncApiComponentFactoryMock();
   // TODO(tim): Convert to a fake instead of mock.
-  EXPECT_CALL(*components, CreateSyncBackendHost(testing::_, testing::_,
-                                                 testing::_, testing::_))
+  EXPECT_CALL(*components,
+              CreateSyncBackendHost(testing::_, testing::_, testing::_,
+                                    testing::_, testing::_))
       .WillOnce(
           testing::Return(new browser_sync::SyncBackendHostForProfileSyncTest(
-              profile,
+              profile, sync_service->GetSyncClient(),
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
               invalidation::ProfileInvalidationProviderFactory::GetForProfile(
                   profile)

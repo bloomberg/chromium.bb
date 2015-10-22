@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_REGISTRAR_H_
-#define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_REGISTRAR_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_REGISTRAR_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_REGISTRAR_H_
 
 #include <map>
 #include <vector>
@@ -29,6 +29,7 @@ struct UserShare;
 
 namespace sync_driver {
 class ChangeProcessor;
+class SyncClient;
 }
 
 namespace browser_sync {
@@ -45,7 +46,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // Must be created on the UI thread.
   SyncBackendRegistrar(
       const std::string& name,
-      Profile* profile,
+      sync_driver::SyncClient* sync_client,
       scoped_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
@@ -78,9 +79,8 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // not already there (initially put in the passive group).
   // |types_to_remove| and |types_to_add| must be disjoint.  Returns
   // the set of newly-added types.  Must be called on the UI thread.
-  syncer::ModelTypeSet ConfigureDataTypes(
-      syncer::ModelTypeSet types_to_add,
-      syncer::ModelTypeSet types_to_remove);
+  syncer::ModelTypeSet ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
+                                          syncer::ModelTypeSet types_to_remove);
 
   // Returns the set of enabled types as of the last configuration. Note that
   // this might be different from the current types in the routing info due
@@ -116,7 +116,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
       const syncer::ImmutableChangeRecordList& changes) override;
   void OnChangesComplete(syncer::ModelType model_type) override;
 
-  void GetWorkers(std::vector<scoped_refptr<syncer::ModelSafeWorker> >* out);
+  void GetWorkers(std::vector<scoped_refptr<syncer::ModelSafeWorker>>* out);
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
 
   // syncer::WorkerLoopDestructionObserver implementation.
@@ -132,9 +132,12 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
  private:
   typedef std::map<syncer::ModelSafeGroup,
-      scoped_refptr<syncer::ModelSafeWorker> > WorkerMap;
+                   scoped_refptr<syncer::ModelSafeWorker>> WorkerMap;
   typedef std::map<syncer::ModelType, sync_driver::ChangeProcessor*>
       ProcessorMap;
+
+  // Add a worker for |group| to the worker map if one can be created.
+  void MaybeAddWorker(syncer::ModelSafeGroup group);
 
   // Callback after workers unregister from observing destruction of their
   // working loops.
@@ -154,8 +157,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   // Return true if |model_type| lives on the current thread.  Must be
   // called with |lock_| held.  May be called on any thread.
-  bool IsCurrentThreadSafeForModel(
-      syncer::ModelType model_type) const;
+  bool IsCurrentThreadSafeForModel(syncer::ModelType model_type) const;
 
   // Returns true if the current thread is the native thread for the
   // given group (or if it is undeterminable).
@@ -165,7 +167,8 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // Name used for debugging.
   const std::string name_;
 
-  Profile* const profile_;
+  // A pointer to the sync client.
+  sync_driver::SyncClient* const sync_client_;
 
   // Protects all variables below.
   mutable base::Lock lock_;
@@ -191,7 +194,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   syncer::ModelTypeSet last_configured_types_;
 
   // Parks stopped workers because they may still be referenced by syncer.
-  std::vector<scoped_refptr<syncer::ModelSafeWorker> > stopped_workers_;
+  std::vector<scoped_refptr<syncer::ModelSafeWorker>> stopped_workers_;
 
   // References to the thread task runners that sync depends on.
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
@@ -209,4 +212,4 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_REGISTRAR_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_REGISTRAR_H_

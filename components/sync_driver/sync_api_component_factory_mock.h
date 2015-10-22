@@ -17,6 +17,7 @@ class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeEncryptionHandler;
 class DataTypeStatusTable;
+class SyncClient;
 }
 
 class SyncApiComponentFactoryMock
@@ -36,9 +37,10 @@ class SyncApiComponentFactoryMock
                    const sync_driver::DataTypeEncryptionHandler*,
                    browser_sync::SyncBackendHost*,
                    sync_driver::DataTypeManagerObserver* observer));
-  MOCK_METHOD4(CreateSyncBackendHost,
+  MOCK_METHOD5(CreateSyncBackendHost,
                browser_sync::SyncBackendHost*(
                    const std::string& name,
+                   sync_driver::SyncClient* sync_client,
                    invalidation::InvalidationService* invalidator,
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));

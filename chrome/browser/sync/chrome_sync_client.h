@@ -38,7 +38,9 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
-
+  scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
+      syncer::ModelSafeGroup group,
+      syncer::WorkerLoopDestructionObserver* observer) override;
   sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
  private:

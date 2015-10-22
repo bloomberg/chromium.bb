@@ -13,13 +13,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
-#include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/sync_driver/glue/sync_backend_registrar.h"
 #include "components/sync_driver/invalidation_helper.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -73,12 +74,14 @@ void UpdateNetworkTime(
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
     Profile* profile,
+    sync_driver::SyncClient* sync_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder)
     : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
+      sync_client_(sync_client),
       ui_thread_(ui_thread),
       name_(name),
       initialized_(false),
@@ -117,7 +120,8 @@ void SyncBackendHostImpl::Initialize(
     syncer::NetworkResources* network_resources,
     scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
   registrar_.reset(new browser_sync::SyncBackendRegistrar(
-      name_, profile_, sync_thread.Pass(), ui_thread_, db_thread, file_thread));
+      name_, sync_client_, sync_thread.Pass(), ui_thread_, db_thread,
+      file_thread));
   CHECK(registrar_->sync_thread());
 
   frontend_ = frontend;

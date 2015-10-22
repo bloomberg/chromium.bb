@@ -18,8 +18,7 @@ namespace syncer {
 // thread).
 class SYNC_EXPORT PassiveModelWorker : public ModelSafeWorker {
  public:
-  explicit PassiveModelWorker(const base::MessageLoop* sync_loop,
-                              WorkerLoopDestructionObserver* observer);
+  explicit PassiveModelWorker(WorkerLoopDestructionObserver* observer);
 
   // ModelSafeWorker implementation. Called on the sync thread.
   void RegisterForLoopDestruction() override;
@@ -30,8 +29,6 @@ class SYNC_EXPORT PassiveModelWorker : public ModelSafeWorker {
 
  private:
   ~PassiveModelWorker() override;
-
-  const base::MessageLoop* const sync_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PassiveModelWorker);
 };

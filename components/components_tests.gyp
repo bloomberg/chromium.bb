@@ -666,6 +666,7 @@
       'sync_driver/frontend_data_type_controller_unittest.cc',
       'sync_driver/generic_change_processor_unittest.cc',
       'sync_driver/glue/browser_thread_model_worker_unittest.cc',
+      'sync_driver/glue/sync_backend_registrar_unittest.cc',
       'sync_driver/glue/ui_model_worker_unittest.cc',
       'sync_driver/model_association_manager_unittest.cc',
       'sync_driver/non_blocking_data_type_controller_unittest.cc',

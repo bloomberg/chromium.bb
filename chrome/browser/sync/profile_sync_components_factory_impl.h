@@ -56,6 +56,7 @@ class ProfileSyncComponentsFactoryImpl
 
   browser_sync::SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
+      sync_driver::SyncClient* sync_client,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) override;

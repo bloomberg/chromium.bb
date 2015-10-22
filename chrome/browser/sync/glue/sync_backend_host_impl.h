@@ -47,6 +47,7 @@ class UnrecoverableErrorHandler;
 }
 
 namespace sync_driver {
+class SyncClient;
 class SyncPrefs;
 }
 
@@ -73,6 +74,7 @@ class SyncBackendHostImpl
   SyncBackendHostImpl(
       const std::string& name,
       Profile* profile,
+      sync_driver::SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
@@ -330,6 +332,8 @@ class SyncBackendHostImpl
   base::MessageLoop* const frontend_loop_;
 
   Profile* const profile_;
+
+  sync_driver::SyncClient* const sync_client_;
 
   // The UI thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;

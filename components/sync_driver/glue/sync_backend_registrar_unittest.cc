@@ -1,17 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/sync_backend_registrar.h"
+#include "components/sync_driver/glue/sync_backend_registrar.h"
 
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/change_processor_mock.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/glue/browser_thread_model_worker.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/engine/passive_model_worker.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +25,6 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
-using content::BrowserThread;
 using syncer::FIRST_REAL_MODEL_TYPE;
 using syncer::AUTOFILL;
 using syncer::BOOKMARKS;
@@ -42,6 +42,39 @@ void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
                               syncer::ImmutableChangeRecordList());
   registrar->OnChangesComplete(type);
 }
+
+class RegistrarSyncClient : public sync_driver::FakeSyncClient {
+ public:
+  RegistrarSyncClient(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
+      : ui_task_runner_(ui_task_runner),
+        db_task_runner_(db_task_runner),
+        file_task_runner_(file_task_runner) {}
+
+  scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
+      syncer::ModelSafeGroup group,
+      syncer::WorkerLoopDestructionObserver* observer) override {
+    switch (group) {
+      case syncer::GROUP_UI:
+        return new BrowserThreadModelWorker(ui_task_runner_, group, observer);
+      case syncer::GROUP_DB:
+        return new BrowserThreadModelWorker(db_task_runner_, group, observer);
+      case syncer::GROUP_FILE:
+        return new BrowserThreadModelWorker(file_task_runner_, group, observer);
+      case syncer::GROUP_PASSIVE:
+        return new syncer::PassiveModelWorker(observer);
+      default:
+        return nullptr;
+    }
+  }
+
+ private:
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+};
 
 // Flaky: https://crbug.com/498238
 class SyncBackendRegistrarTest : public testing::Test {
@@ -62,20 +95,21 @@ class SyncBackendRegistrarTest : public testing::Test {
 
  protected:
   SyncBackendRegistrarTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
-                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
-                       content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : db_thread_("DBThreadForTest"),
+        file_thread_("FileThreadForTest"),
         sync_thread_(NULL) {}
 
   ~SyncBackendRegistrarTest() override {}
 
   void SetUp() override {
+    db_thread_.StartAndWaitForTesting();
+    file_thread_.StartAndWaitForTesting();
     test_user_share_.SetUp();
+    sync_client_.reset(new RegistrarSyncClient(
+        ui_task_runner(), db_task_runner(), file_task_runner()));
     registrar_.reset(new SyncBackendRegistrar(
-        "test", &profile_, scoped_ptr<base::Thread>(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+        "test", sync_client_.get(), scoped_ptr<base::Thread>(),
+        ui_task_runner(), db_task_runner(), file_task_runner()));
     sync_thread_ = registrar_->sync_thread();
   }
 
@@ -106,9 +140,24 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
+    return message_loop_.task_runner();
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> db_task_runner() {
+    return db_thread_.task_runner();
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner() {
+    return db_thread_.task_runner();
+  }
+
+  base::MessageLoop message_loop_;
+  base::Thread db_thread_;
+  base::Thread file_thread_;
+
   syncer::TestUserShare test_user_share_;
-  TestingProfile profile_;
+  scoped_ptr<RegistrarSyncClient> sync_client_;
   scoped_ptr<SyncBackendRegistrar> registrar_;
 
   base::Thread* sync_thread_;
@@ -245,13 +294,10 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
       registrar_->ConfigureDataTypes(types, ModelTypeSet()).Equals(types));
 
   base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(
-      BrowserThread::DB,
+  db_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
-          base::Unretained(this),
-          &change_processor_mock,
-          &done));
+                 base::Unretained(this), &change_processor_mock, &done));
   done.Wait();
 
   registrar_->DeactivateDataType(AUTOFILL);
@@ -275,22 +321,44 @@ class SyncBackendRegistrarShutdownTest : public testing::Test {
   friend class TestRegistrar;
 
   SyncBackendRegistrarShutdownTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
-                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
-                       content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : db_thread_("DBThreadForTest"),
+        file_thread_("FileThreadForTest"),
         db_thread_blocked_(false, false) {
     quit_closure_ = run_loop_.QuitClosure();
   }
 
   ~SyncBackendRegistrarShutdownTest() override {}
 
-  void PostQuitOnUIMessageLoop() {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure_);
+  void SetUp() override {
+    db_thread_.StartAndWaitForTesting();
+    file_thread_.StartAndWaitForTesting();
+    sync_client_.reset(new RegistrarSyncClient(
+        ui_task_runner(), db_task_runner(), file_task_runner()));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  void PostQuitOnUIMessageLoop() {
+    ui_task_runner()->PostTask(FROM_HERE, quit_closure_);
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
+    return message_loop_.task_runner();
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> db_task_runner() {
+    return db_thread_.task_runner();
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner() {
+    return file_thread_.task_runner();
+  }
+
+  base::MessageLoop message_loop_;
+  base::Thread db_thread_;
+  base::Thread file_thread_;
+
+  scoped_ptr<RegistrarSyncClient> sync_client_;
   base::WaitableEvent db_thread_blocked_;
+
   base::Lock db_thread_lock_;
   base::RunLoop run_loop_;
   base::Closure quit_closure_;
@@ -299,15 +367,18 @@ class SyncBackendRegistrarShutdownTest : public testing::Test {
 // Wrap SyncBackendRegistrar so that we can monitor its lifetime.
 class TestRegistrar : public SyncBackendRegistrar {
  public:
-  explicit TestRegistrar(Profile* profile,
-                         SyncBackendRegistrarShutdownTest* test)
-      : SyncBackendRegistrar(
-            "test",
-            profile,
-            scoped_ptr<base::Thread>(),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)),
+  explicit TestRegistrar(
+      sync_driver::SyncClient* sync_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
+      SyncBackendRegistrarShutdownTest* test)
+      : SyncBackendRegistrar("test",
+                             sync_client,
+                             scoped_ptr<base::Thread>(),
+                             ui_thread,
+                             db_thread,
+                             file_thread),
         test_(test) {}
 
   ~TestRegistrar() override { test_->PostQuitOnUIMessageLoop(); }
@@ -321,13 +392,13 @@ TEST_F(SyncBackendRegistrarShutdownTest, BlockingShutdown) {
   db_thread_lock_.Acquire();
 
   // This will block the DB thread by waiting on |db_thread_lock_|.
-  BrowserThread::PostTask(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&SyncBackendRegistrarShutdownTest::BlockDBThread,
-                 base::Unretained(this)));
+  db_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendRegistrarShutdownTest::BlockDBThread,
+                            base::Unretained(this)));
 
-  scoped_ptr<TestRegistrar> registrar(new TestRegistrar(&profile_, this));
+  scoped_ptr<TestRegistrar> registrar(
+      new TestRegistrar(sync_client_.get(), ui_task_runner(), db_task_runner(),
+                        file_task_runner(), this));
   base::Thread* sync_thread = registrar->sync_thread();
 
   // Stop here until the DB thread gets a chance to run and block on the lock.
