@@ -1,8 +1,8 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import gpu_test_base
-import hardware_accelerated_feature_expectations as expectations
+from gpu_tests import gpu_test_base
+import gpu_tests.hardware_accelerated_feature_expectations as hw_expectations
 
 from telemetry.page import page_test
 from telemetry.story import story_set as story_set_module
@@ -22,7 +22,7 @@ test_harness_script = r"""
     }
     return false;
   };
-""";
+"""
 
 class HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
   def ValidateAndMeasurePage(self, page, tab, results):
@@ -54,7 +54,7 @@ class HardwareAcceleratedFeature(gpu_test_base.TestBase):
     return 'hardware_accelerated_feature'
 
   def _CreateExpectations(self):
-    return expectations.HardwareAcceleratedFeatureExpectations()
+    return hw_expectations.HardwareAcceleratedFeatureExpectations()
 
   def CreateStorySet(self, options):
     features = ['WebGL', 'Canvas']

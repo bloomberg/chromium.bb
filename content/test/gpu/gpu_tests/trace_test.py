@@ -1,9 +1,9 @@
 # Copyright (c) 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import gpu_test_base
+from gpu_tests import gpu_test_base
+from gpu_tests import trace_test_expectations
 import page_sets
-import trace_test_expectations
 
 from telemetry.page import page_test
 from telemetry.timeline import model as model_module
@@ -77,7 +77,7 @@ class TraceTestBase(gpu_test_base.TestBase):
   def CreateStorySet(self, options):
     # Utilize pixel tests page set as a set of simple pages to load.
     story_set = page_sets.PixelTestsStorySet(self.GetExpectations(),
-                                             base_name=self.name)
+                                             base_name=self.Name())
     for story in story_set:
       story.script_to_evaluate_on_commit = test_harness_script
     return story_set

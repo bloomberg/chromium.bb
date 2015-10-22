@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import os
-import re
 import sys
 
 def _GetTelemetryPath(input_api):

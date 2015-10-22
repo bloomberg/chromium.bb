@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from gpu_test_expectations import GpuTestExpectations
+from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 # See the GpuTestExpectations class for documentation.
 
@@ -17,7 +17,6 @@ class TraceTestExpectations(GpuTestExpectations):
 
     # Test has become increasingly flaky around 7/31/15: crbug.com/517232
     self.Fail('TraceTest.WebGLGreenTriangle', bug=517232)
-    pass
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
   def SetExpectations(self):

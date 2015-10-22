@@ -7,11 +7,7 @@ import sys
 from telemetry.core import discover
 from telemetry.story import story_set
 
-
-# Import all submodules' StorySet classes.
-start_dir = os.path.dirname(os.path.abspath(__file__))
-top_level_dir = os.path.dirname(start_dir)
-base_class = story_set.StorySet
-for cls in discover.DiscoverClasses(
-    start_dir, top_level_dir, base_class).values():
-  setattr(sys.modules[__name__], cls.__name__, cls)
+from page_sets.gpu_process_tests import GpuProcessTestsStorySet
+from page_sets.gpu_rasterization_tests import GpuRasterizationTestsStorySet
+from page_sets.memory_tests import MemoryTestsStorySet
+from page_sets.pixel_tests import PixelTestsStorySet

@@ -1,9 +1,7 @@
 # Copyright (c) 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os
-
-from webgl_conformance_expectations import WebGLConformanceExpectations
+from gpu_tests.webgl_conformance_expectations import WebGLConformanceExpectations
 
 # See the GpuTestExpectations class for documentation.
 

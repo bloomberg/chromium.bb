@@ -7,7 +7,7 @@ from telemetry.internal.platform import system_info
 from telemetry.page import page as page_module
 from telemetry.story import story_set
 
-import gpu_test_expectations
+from gpu_tests import gpu_test_expectations
 
 VENDOR_NVIDIA = 0x10DE
 VENDOR_AMD = 0x1002

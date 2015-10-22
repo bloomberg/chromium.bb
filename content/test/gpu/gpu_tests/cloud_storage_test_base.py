@@ -14,7 +14,7 @@ from telemetry.page import page_test
 from telemetry.util import image_util
 from telemetry.util import rgba_color
 
-import gpu_test_base
+from gpu_tests import gpu_test_base
 
 test_data_dir = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
@@ -192,7 +192,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
     supplied), and diff image (if reference image was supplied) to cloud
     storage. This subsumes the functionality of the
     archive_gpu_pixel_test_results.py script."""
-    machine_name = re.sub('\W+', '_', self.options.test_machine_name)
+    machine_name = re.sub(r'\W+', '_', self.options.test_machine_name)
     upload_dir = '%s_%s_telemetry' % (self.options.build_revision, machine_name)
     base_bucket = '%s/runs/%s' % (error_image_cloud_storage_bucket, upload_dir)
     image_name_with_revision = '%s_%s.png' % (

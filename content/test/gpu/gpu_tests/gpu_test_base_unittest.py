@@ -1,18 +1,16 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import os
 import unittest
 
-from telemetry import benchmark
+from telemetry import benchmark as benchmark_module
 from telemetry.core import exceptions
-from telemetry.core import util
 from telemetry.story import story_set as story_set_module
 from telemetry.testing import fakes
 
 import mock # pylint: disable=import-error
 
-import gpu_test_base
+from gpu_tests import gpu_test_base
 
 # Unit tests verifying invariants of classes in GpuTestBase.
 
@@ -163,10 +161,10 @@ class PageExecutionTest(unittest.TestCase):
     finder_options.upload_results = False
     testclass = FakeTest
     parser = finder_options.CreateParser()
-    benchmark.AddCommandLineArgs(parser)
+    benchmark_module.AddCommandLineArgs(parser)
     testclass.AddCommandLineArgs(parser)
     options, dummy_args = parser.parse_args([])
-    benchmark.ProcessCommandLineArgs(parser, options)
+    benchmark_module.ProcessCommandLineArgs(parser, options)
     testclass.ProcessCommandLineArgs(parser, options)
     test = testclass(times_to_fail_test=num_test_failures,
                      manager_mock=manager_mock)

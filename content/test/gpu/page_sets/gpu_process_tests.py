@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.story import story_set as story_set_module
+from telemetry.page import page_test
 
 from gpu_tests import gpu_test_base
 

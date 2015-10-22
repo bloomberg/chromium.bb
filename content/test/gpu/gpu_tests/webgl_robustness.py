@@ -3,12 +3,11 @@
 # found in the LICENSE file.
 from telemetry import benchmark
 from telemetry.page import page
-from telemetry.page import page_test
 from telemetry.story import story_set as story_set_module
 
-from webgl_conformance import conformance_harness_script
-from webgl_conformance import conformance_path
-from webgl_conformance import WebglConformanceValidator
+from gpu_tests.webgl_conformance import conformance_harness_script, \
+                                        conformance_path, \
+                                        WebglConformanceValidator
 
 
 robustness_harness_script = conformance_harness_script + r"""

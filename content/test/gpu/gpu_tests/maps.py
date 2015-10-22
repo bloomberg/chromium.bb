@@ -7,13 +7,12 @@ Performs several common navigation actions on the map (pan, zoom, rotate) then
 captures a screenshot and compares selected pixels against expected values"""
 
 import json
-import optparse
 import os
 
-import cloud_storage_test_base
-import gpu_test_base
-import maps_expectations
-import path_util
+from gpu_tests import cloud_storage_test_base
+from gpu_tests import gpu_test_base
+from gpu_tests import maps_expectations
+from gpu_tests import path_util
 
 from telemetry.core import util
 from telemetry.page import page_test
@@ -21,6 +20,9 @@ from telemetry import story as story_module
 from telemetry.story import story_set as story_set_module
 
 class MapsValidator(cloud_storage_test_base.ValidatorBase):
+  def __init__(self):
+    super(MapsValidator, self).__init__()
+
   def CustomizeBrowserOptions(self, options):
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
     # infobar, which causes flakiness in tests.
@@ -45,7 +47,7 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
         page.display_name, screenshot, expected, dpr)
 
   @staticmethod
-  def SpinWaitOnRAF(tab, iterations, timeout = 60):
+  def SpinWaitOnRAF(tab, iterations, timeout=60):
     waitScript = r"""
       window.__spinWaitOnRAFDone = false;
       var iterationsLeft = %d;

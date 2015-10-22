@@ -8,8 +8,6 @@
 This script DOES NOT run tests. run_gpu_test does that.
 """
 
-import os
-import subprocess
 import sys
 
 from gpu_tests import path_util

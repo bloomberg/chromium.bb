@@ -1,16 +1,14 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from datetime import datetime
 import glob
 import json
-import optparse
 import os
 import re
 
-import cloud_storage_test_base
+from gpu_tests import cloud_storage_test_base
+from gpu_tests import pixel_expectations
 import page_sets
-import pixel_expectations
 
 from catapult_base import cloud_storage
 from telemetry.page import page_test
@@ -100,7 +98,7 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
       # reference image, so download it from cloud storage.
       try:
         ref_png = self._DownloadFromCloudStorage(image_name, page, tab)
-      except cloud_storage.NotFoundError as e:
+      except cloud_storage.NotFoundError:
         # There is no reference image yet in cloud storage. This
         # happens when the revision of the test is incremented or when
         # a new test is added, because the trybots are not allowed to

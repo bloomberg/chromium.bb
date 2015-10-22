@@ -4,9 +4,9 @@
 import os
 import time
 
-import context_lost_expectations
-import gpu_test_base
-import path_util
+from gpu_tests import context_lost_expectations
+from gpu_tests import gpu_test_base
+from gpu_tests import path_util
 
 from telemetry.core import exceptions
 from telemetry.core import util
@@ -87,7 +87,7 @@ class ContextLostValidator(gpu_test_base.ValidatorBase):
 
         # Reset the test's state.
         tab.EvaluateJavaScript(
-          'window.domAutomationController.reset()');
+          'window.domAutomationController.reset()')
 
         # If we're running the GPU process crash test, we need the
         # test to have fully reset before crashing the GPU process.

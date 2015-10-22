@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import os
 
-from gpu_test_expectations import GpuTestExpectations
+from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 # See the GpuTestExpectations class for documentation.
 

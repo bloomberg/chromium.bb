@@ -1,12 +1,11 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import gpu_test_base
-import memory_test_expectations
+from gpu_tests import gpu_test_base
+from gpu_tests import memory_test_expectations
 import page_sets
 
 from telemetry.page import page_test
-from telemetry.timeline import counter
 from telemetry.timeline import model
 from telemetry.timeline import tracing_category_filter
 from telemetry.timeline import tracing_options
@@ -90,7 +89,7 @@ class MemoryValidator(gpu_test_base.ValidatorBase):
     custom_categories = ['webkit.console', 'blink.console', 'gpu']
     category_filter = tracing_category_filter.TracingCategoryFilter()
     for c in custom_categories:
-        category_filter.AddIncludedCategory(c)
+      category_filter.AddIncludedCategory(c)
     options = tracing_options.TracingOptions()
     options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(options, category_filter, 60)

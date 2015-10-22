@@ -4,9 +4,9 @@
 import os
 import random
 
-import gpu_test_base
-import path_util
-import screenshot_sync_expectations as expectations
+from gpu_tests import gpu_test_base
+from gpu_tests import path_util
+from gpu_tests import screenshot_sync_expectations
 
 from telemetry import benchmark
 from telemetry.page import page_test
@@ -34,15 +34,15 @@ class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
               (i, canvasRGB[i], screenshotRGB[i]))
 
     def CheckScreenshot():
-      canvasRGB = [];
-      for i in range(0, 3):
+      canvasRGB = []
+      for _ in range(0, 3):
         canvasRGB.append(random.randint(0, 255))
       tab.EvaluateJavaScript("window.draw(%d, %d, %d);" % tuple(canvasRGB))
       screenshot = tab.Screenshot(5)
       CheckColorMatch(canvasRGB, image_util.Pixels(screenshot))
 
     repetitions = 50
-    for n in range(0, repetitions):
+    for _ in range(0, repetitions):
       CheckScreenshot()
 
 class ScreenshotSyncPage(gpu_test_base.PageBase):
@@ -66,7 +66,7 @@ class ScreenshotSyncProcess(gpu_test_base.TestBase):
     return 'screenshot_sync'
 
   def _CreateExpectations(self):
-    return expectations.ScreenshotSyncExpectations()
+    return screenshot_sync_expectations.ScreenshotSyncExpectations()
 
   def CreateStorySet(self, options):
     ps = story_set_module.StorySet(base_dir=data_path, serving_dirs=[''])

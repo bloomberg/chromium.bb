@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 import os
-import re
-import subprocess
-import sys
 
 from gpu_tests import path_util
 

@@ -9,7 +9,7 @@ import os
 import sys
 import traceback
 
-import path_util
+from gpu_tests import path_util
 
 from telemetry.core import exceptions
 

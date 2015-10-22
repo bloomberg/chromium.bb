@@ -5,20 +5,18 @@
 import logging
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import exceptions
 from telemetry.page import page as page_module
 from telemetry.page import page_test
-from telemetry.page import shared_page_state
+from telemetry.page import shared_page_state as shared_page_state_module
 from telemetry.testing import fakes
-from telemetry.value import skip
 
-import exception_formatter
-import gpu_test_expectations
-
-"""Base classes for all GPU tests in this directory. Implements
-support for per-page test expectations."""
+from gpu_tests import exception_formatter
+from gpu_tests import gpu_test_expectations
 
 class TestBase(benchmark_module.Benchmark):
+  """Base classes for all GPU tests in this directory. Implements
+  support for per-page test expectations."""
+
   def __init__(self, max_failures=None):
     super(TestBase, self).__init__(max_failures=max_failures)
     self._cached_expectations = None
@@ -52,6 +50,8 @@ class ValidatorBase(page_test.PageTest):
         needs_browser_restart_after_each_page,
       clear_cache_before_each_run=clear_cache_before_each_run)
 
+  def ValidateAndMeasurePage(self, page, tab, result):
+    pass
 
 def _CanRunOnBrowser(browser_info, page):
   expectations = page.GetExpectations()
@@ -79,8 +79,8 @@ def RunStoryWithRetries(cls, shared_page_state, results):
       return
     if expectation != 'flaky':
       logging.warning(
-          'Unknown expectation %s while handling exception for %s' %
-          (expectation, page.display_name))
+        'Unknown expectation %s while handling exception for %s',
+        expectation, page.display_name)
       raise
     # Flaky tests are handled here.
     num_retries = expectations.GetFlakyRetriesForPage(
@@ -103,7 +103,7 @@ def RunStoryWithRetries(cls, shared_page_state, results):
       logging.warning(
           '%s was expected to fail, but passed.\n', page.display_name)
 
-class GpuSharedPageState(shared_page_state.SharedPageState):
+class GpuSharedPageState(shared_page_state_module.SharedPageState):
   def CanRunOnBrowser(self, browser_info, page):
     return _CanRunOnBrowser(browser_info, page)
 
@@ -114,7 +114,7 @@ class GpuSharedPageState(shared_page_state.SharedPageState):
 # TODO(kbr): re-evaluate the need for this SharedPageState
 # subclass. It's only used by the WebGL conformance suite.
 class DesktopGpuSharedPageState(
-    shared_page_state.SharedDesktopPageState):
+    shared_page_state_module.SharedDesktopPageState):
   def CanRunOnBrowser(self, browser_info, page):
     return _CanRunOnBrowser(browser_info, page)
 
