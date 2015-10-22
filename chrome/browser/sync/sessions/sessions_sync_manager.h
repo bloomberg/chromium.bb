@@ -19,11 +19,11 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_driver/device_info.h"
-#include "components/sync_driver/favicon_cache.h"
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/tab_node_pool.h"
+#include "components/sync_sessions/favicon_cache.h"
 #include "components/variations/variations_associated_data.h"
 #include "sync/api/syncable_service.h"
 

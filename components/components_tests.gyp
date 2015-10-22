@@ -662,7 +662,6 @@
       'sync_driver/data_type_manager_impl_unittest.cc',
       'sync_driver/device_info_data_type_controller_unittest.cc',
       'sync_driver/device_info_sync_service_unittest.cc',
-      'sync_driver/favicon_cache_unittest.cc',
       'sync_driver/frontend_data_type_controller_unittest.cc',
       'sync_driver/generic_change_processor_unittest.cc',
       'sync_driver/glue/browser_thread_model_worker_unittest.cc',
@@ -681,6 +680,7 @@
       'sync_driver/ui_data_type_controller_unittest.cc',
     ],
     'sync_sessions_unittest_sources': [
+      'sync_sessions/favicon_cache_unittest.cc',
       'sync_sessions/revisit/bookmarks_page_revisit_observer_unittest.cc',
       'sync_sessions/revisit/current_tab_matcher_unittest.cc',
       'sync_sessions/revisit/offset_tab_matcher_unittest.cc',

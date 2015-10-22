@@ -5,6 +5,8 @@
 # GYP version: components/sync_sessions.gypi:sync_sessions
 source_set("sync_sessions") {
   sources = [
+    "favicon_cache.cc",
+    "favicon_cache.h",
     "revisit/bookmarks_by_url_provider_impl.cc",
     "revisit/bookmarks_by_url_provider_impl.h",
     "revisit/bookmarks_page_revisit_observer.cc",
@@ -36,6 +38,7 @@ source_set("sync_sessions") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "favicon_cache_unittest.cc",
     "revisit/bookmarks_page_revisit_observer_unittest.cc",
     "revisit/current_tab_matcher_unittest.cc",
     "revisit/offset_tab_matcher_unittest.cc",
@@ -46,6 +49,7 @@ source_set("unit_tests") {
   deps = [
     ":sync_sessions",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//sync",
   ]

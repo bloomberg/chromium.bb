@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/favicon_cache.h"
+#include "components/sync_sessions/favicon_cache.h"
 
 #include "base/location.h"
 #include "base/metrics/histogram.h"

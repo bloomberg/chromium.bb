@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/history/core/browser/history_backend.h"
-#include "components/sync_driver/glue/typed_url_model_associator.h"
+#include "components/history/core/browser/typed_url_model_associator.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"

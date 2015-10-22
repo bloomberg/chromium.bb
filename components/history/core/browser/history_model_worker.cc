@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/glue/history_model_worker.h"
+#include "components/history/core/browser/history_model_worker.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync_driver/favicon_cache.h"
+#include "components/sync_sessions/favicon_cache.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"

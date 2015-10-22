@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_HISTORY_MODEL_WORKER_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_HISTORY_MODEL_WORKER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -59,4 +59,4 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_HISTORY_MODEL_WORKER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_

@@ -20,6 +20,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'sync_sessions/favicon_cache.cc',
+        'sync_sessions/favicon_cache.h',
         'sync_sessions/revisit/bookmarks_by_url_provider_impl.cc',
         'sync_sessions/revisit/bookmarks_by_url_provider_impl.h',
         'sync_sessions/revisit/bookmarks_page_revisit_observer.cc',

@@ -1,7 +1,5 @@
 include_rules = [
   "+components/autofill/core/browser",
-  "+components/favicon/core",
-  "+components/history/core/browser",
   "+components/invalidation",
   "+components/os_crypt",
   "+components/password_manager/core/browser",
@@ -15,5 +13,4 @@ include_rules = [
   "+net",
   "+policy",
   "+sync",
-  "+ui/gfx",
 ]

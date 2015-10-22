@@ -13,8 +13,8 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/history/core/browser/history_backend_observer.h"
+#include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "components/sync_driver/glue/typed_url_model_associator.h"
 
 class Profile;
 

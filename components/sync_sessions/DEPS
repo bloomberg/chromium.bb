@@ -1,6 +1,9 @@
 include_rules = [
   "+components/bookmarks/browser",
+  "+components/favicon/core",
   "+components/history/core/browser",
   "+components/sessions",
   "+components/sync_driver",
+  "+sync",
+  "+ui/gfx",
 ]

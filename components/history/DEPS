@@ -3,6 +3,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/query_parser",
   "+components/signin/core",
+  "+components/sync_driver",
   "+google_apis/gaia",
   "+net",
   "+sql",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
-#define COMPONENTS_SYNC_DRIVER_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_MODEL_ASSOCIATOR_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_MODEL_ASSOCIATOR_H_
 
 #include <map>
 #include <string>
@@ -205,4 +205,4 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_SYNC_DRIVER_GLUE_TYPED_URL_MODEL_ASSOCIATOR_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_MODEL_ASSOCIATOR_H_
