@@ -30,7 +30,7 @@ enum GpuMemoryBufferType {
   GPU_MEMORY_BUFFER_TYPE_LAST = OZONE_NATIVE_PIXMAP
 };
 
-using GpuMemoryBufferId = GenericSharedMemoryId;
+using GpuMemoryBufferId = gfx::GenericSharedMemoryId;
 
 struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle();
@@ -55,28 +55,25 @@ class GFX_EXPORT GpuMemoryBuffer {
   virtual ~GpuMemoryBuffer() {}
 
   // Maps each plane of the buffer into the client's address space so it can be
-  // written to by the CPU. This call may block, for instance if the GPU needs
-  // to finish accessing the buffer or if CPU caches need to be synchronized.
-  // Returns false on failure.
-  virtual bool Map() = 0;
+  // written to by the CPU. A pointer to plane K is stored at index K-1 of the
+  // |data| array. This call may block, for instance if the GPU needs to finish
+  // accessing the buffer or if CPU caches need to be synchronized. Returns
+  // false on failure.
+  virtual bool Map(void** data) = 0;
 
-  // Returns a pointer to the memory address of a plane. Buffer must have been
-  // successfully mapped using a call to Map() before calling this function.
-  virtual void* memory(size_t plane) = 0;
-
-  // Unmaps the buffer. It's illegal to use any pointer returned by memory()
-  // after this has been called.
+  // Unmaps the buffer. It's illegal to use the pointer returned by Map() after
+  // this has been called.
   virtual void Unmap() = 0;
 
   // Returns the size for the buffer.
-  virtual Size GetSize() const = 0;
+  virtual gfx::Size GetSize() const = 0;
 
   // Returns the format for the buffer.
   virtual BufferFormat GetFormat() const = 0;
 
   // Fills the stride in bytes for each plane of the buffer. The stride of
   // plane K is stored at index K-1 of the |stride| array.
-  virtual int stride(size_t plane) const = 0;
+  virtual void GetStride(int* stride) const = 0;
 
   // Returns a unique identifier associated with buffer.
   virtual GpuMemoryBufferId GetId() const = 0;

@@ -54,7 +54,8 @@ GpuMemoryBufferImplSurfaceTexture::GpuMemoryBufferImplSurfaceTexture(
     const DestructionCallback& callback,
     ANativeWindow* native_window)
     : GpuMemoryBufferImpl(id, size, format, callback),
-      native_window_(native_window) {}
+      native_window_(native_window),
+      stride_(0) {}
 
 GpuMemoryBufferImplSurfaceTexture::~GpuMemoryBufferImplSurfaceTexture() {
   ANativeWindow_release(native_window_);
@@ -98,7 +99,7 @@ base::Closure GpuMemoryBufferImplSurfaceTexture::AllocateForTesting(
   scoped_refptr<gfx::SurfaceTexture> surface_texture =
       gfx::SurfaceTexture::Create(0);
   DCHECK(surface_texture);
-  const gfx::GpuMemoryBufferId kBufferId(1);
+  gfx::GpuMemoryBufferId kBufferId(1);
   SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
       kBufferId.id, 0, surface_texture.get());
   handle->type = gfx::SURFACE_TEXTURE_BUFFER;
@@ -106,41 +107,39 @@ base::Closure GpuMemoryBufferImplSurfaceTexture::AllocateForTesting(
   return base::Bind(&FreeSurfaceTextureForTesting, surface_texture, kBufferId);
 }
 
-bool GpuMemoryBufferImplSurfaceTexture::Map() {
+bool GpuMemoryBufferImplSurfaceTexture::Map(void** data) {
   TRACE_EVENT0("gpu", "GpuMemoryBufferImplSurfaceTexture::Map");
+
   DCHECK(!mapped_);
   DCHECK(native_window_);
-  if (ANativeWindow_lock(native_window_, &buffer_, NULL)) {
-    DPLOG(ERROR) << "ANativeWindow_lock failed";
+  ANativeWindow_Buffer buffer;
+  int status = ANativeWindow_lock(native_window_, &buffer, NULL);
+  if (status) {
+    VLOG(1) << "ANativeWindow_lock failed with error code: " << status;
     return false;
   }
-  DCHECK_LE(size_.width(), buffer_.stride);
-  mapped_ = true;
-  return true;
-}
 
-void* GpuMemoryBufferImplSurfaceTexture::memory(size_t plane) {
-  TRACE_EVENT0("gpu", "GpuMemoryBufferImplSurfaceTexture::memory");
-  DCHECK(mapped_);
-  DCHECK_EQ(0u, plane);
-  return buffer_.bits;
+  DCHECK_LE(size_.width(), buffer.stride);
+  stride_ = gfx::RowSizeForBufferFormat(buffer.stride, format_, 0);
+  mapped_ = true;
+  *data = buffer.bits;
+  return true;
 }
 
 void GpuMemoryBufferImplSurfaceTexture::Unmap() {
   TRACE_EVENT0("gpu", "GpuMemoryBufferImplSurfaceTexture::Unmap");
+
   DCHECK(mapped_);
   ANativeWindow_unlockAndPost(native_window_);
   mapped_ = false;
 }
 
-int GpuMemoryBufferImplSurfaceTexture::stride(size_t plane) const {
-  DCHECK(mapped_);
-  DCHECK_EQ(0u, plane);
-  return gfx::RowSizeForBufferFormat(buffer_.stride, format_, 0);
+void GpuMemoryBufferImplSurfaceTexture::GetStride(int* stride) const {
+  *stride = stride_;
 }
 
-gfx::GpuMemoryBufferHandle
-GpuMemoryBufferImplSurfaceTexture::GetHandle() const {
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSurfaceTexture::GetHandle()
+    const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SURFACE_TEXTURE_BUFFER;
   handle.id = id_;

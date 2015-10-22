@@ -52,14 +52,15 @@ static const BufferReceivedTestArg kBufferFormats[]  = {
       std::vector<gpu::MailboxHolder>(
           1, gpu::MailboxHolder(gpu::Mailbox::Generate(), 0, 0)))};
 
-class VideoCaptureImplTest
-    : public ::testing::TestWithParam<BufferReceivedTestArg> {
+class VideoCaptureImplTest :
+    public ::testing::TestWithParam<BufferReceivedTestArg> {
  public:
   class MockVideoCaptureImpl : public VideoCaptureImpl {
    public:
     MockVideoCaptureImpl(const media::VideoCaptureSessionId id,
                          VideoCaptureMessageFilter* filter)
-        : VideoCaptureImpl(id, filter), received_buffer_count_(0) {}
+        : VideoCaptureImpl(id, filter), received_buffer_count_(0) {
+    }
     ~MockVideoCaptureImpl() override {}
 
     // Override Send() to mimic device to send events.
@@ -307,6 +308,7 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
   DeInit();
 }
 
+// NEW TEST
 TEST_P(VideoCaptureImplTest, BufferReceivedWithFormat) {
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(1);
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(1);
@@ -338,6 +340,7 @@ INSTANTIATE_TEST_CASE_P(I420AndARGB,
                         VideoCaptureImplTest,
                         testing::ValuesIn(kBufferFormats));
 
+// NEW TEST
 TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(1);
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(1);

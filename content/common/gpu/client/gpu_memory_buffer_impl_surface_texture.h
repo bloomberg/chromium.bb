@@ -5,10 +5,10 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
 
-#include <android/native_window.h>
-
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+
+struct ANativeWindow;
 
 namespace content {
 
@@ -34,11 +34,10 @@ class CONTENT_EXPORT GpuMemoryBufferImplSurfaceTexture
                                           gfx::GpuMemoryBufferHandle* handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  bool Map() override;
-  void* memory(size_t plane) override;
+  bool Map(void** data) override;
   void Unmap() override;
-  int stride(size_t plane) const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
+  void GetStride(int* stride) const override;
 
  private:
   GpuMemoryBufferImplSurfaceTexture(gfx::GpuMemoryBufferId id,
@@ -48,7 +47,7 @@ class CONTENT_EXPORT GpuMemoryBufferImplSurfaceTexture
                                     ANativeWindow* native_window);
 
   ANativeWindow* native_window_;
-  ANativeWindow_Buffer buffer_;
+  size_t stride_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplSurfaceTexture);
 };

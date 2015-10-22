@@ -34,10 +34,9 @@ class CONTENT_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
                                           gfx::GpuMemoryBufferHandle* handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  bool Map() override;
-  void* memory(size_t plane) override;
+  bool Map(void** data) override;
   void Unmap() override;
-  int stride(size_t plane) const override;
+  void GetStride(int* stride) const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:

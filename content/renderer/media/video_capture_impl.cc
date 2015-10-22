@@ -79,9 +79,9 @@ class VideoCaptureImpl::ClientBuffer2
           gfx::BufferUsage::MAP,
           base::Bind(&ClientBuffer2::DestroyGpuMemoryBuffer,
                      base::Unretained(this))));
-      bool rv = buffers_[i]->Map();
-      DCHECK(rv);
-      data_[i] = reinterpret_cast<uint8*>(buffers_[i]->memory(0u));
+      void* data_ptr = nullptr;
+      buffers_[i]->Map(&data_ptr);
+      data_[i] = reinterpret_cast<uint8*>(data_ptr);
       strides_[i] = width;
     }
   }

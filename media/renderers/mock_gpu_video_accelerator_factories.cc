@@ -14,9 +14,7 @@ namespace {
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(const gfx::Size& size, gfx::BufferFormat format)
-      : mapped_(false),
-        format_(format),
-        size_(size),
+      : format_(format), size_(size),
         num_planes_(gfx::NumberOfPlanesForBufferFormat(format)) {
     DCHECK(gfx::BufferFormat::R_8 == format_ ||
            gfx::BufferFormat::YUV_420_BIPLANAR == format_ ||
@@ -30,28 +28,21 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
-  bool Map() override {
-    DCHECK(!mapped_);
-    mapped_ = true;
+  bool Map(void** data) override {
+    for (size_t plane = 0; plane < num_planes_; ++plane)
+      data[plane] = &bytes_[plane][0];
     return true;
   }
-  void* memory(size_t plane) override {
-    DCHECK(mapped_);
-    DCHECK_LT(plane, num_planes_);
-    return &bytes_[plane][0];
-  }
-  void Unmap() override {
-    DCHECK(mapped_);
-    mapped_ = false;
-  }
+  void Unmap() override {}
   gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override {
     return format_;
   }
-  int stride(size_t plane) const override {
-    DCHECK_LT(plane, num_planes_);
-    return static_cast<int>(gfx::RowSizeForBufferFormat(
-        size_.width(), format_, static_cast<int>(plane)));
+  void GetStride(int* strides) const override {
+    for (int plane = 0; plane < static_cast<int>(num_planes_); ++plane) {
+      strides[plane] = static_cast<int>(
+          gfx::RowSizeForBufferFormat(size_.width(), format_, plane));
+    }
   }
   gfx::GpuMemoryBufferId GetId() const override {
     NOTREACHED();
@@ -68,7 +59,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  private:
   static const size_t kMaxPlanes = 3;
 
-  bool mapped_;
   gfx::BufferFormat format_;
   const gfx::Size size_;
   size_t num_planes_;
@@ -91,7 +81,7 @@ scoped_ptr<gfx::GpuMemoryBuffer>
 MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
-    gfx::BufferUsage /* usage */) {
+    gfx::BufferUsage usage) {
   if (fail_to_allocate_gpu_memory_buffer_)
     return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(

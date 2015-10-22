@@ -21,7 +21,7 @@ TEST(GpuMemoryBufferImplSharedMemoryTest, Create) {
 
   gfx::Size buffer_size(8, 8);
 
-  for (auto format : gfx::GetBufferFormatsForTesting()) {
+  for (auto format : gfx::GetBufferFormats()) {
     if (!GpuMemoryBufferImplSharedMemory::IsFormatSupported(format))
       continue;
 

@@ -28,7 +28,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
 
   gfx::Size buffer_size(2, 2);
 
-  for (auto format : gfx::GetBufferFormatsForTesting()) {
+  for (auto format : gfx::GetBufferFormats()) {
     gfx::BufferUsage usages[] = {gfx::BufferUsage::MAP,
                                  gfx::BufferUsage::PERSISTENT_MAP,
                                  gfx::BufferUsage::SCANOUT};
@@ -62,7 +62,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryImportTest,
 
   gfx::Size buffer_size(2, 2);
 
-  for (auto format : gfx::GetBufferFormatsForTesting()) {
+  for (auto format : gfx::GetBufferFormats()) {
     if (!TypeParam::IsGpuMemoryBufferConfigurationSupported(
             format, gfx::BufferUsage::SCANOUT)) {
       continue;

@@ -27,12 +27,11 @@ class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   const unsigned char* GetMemory() const;
 
   // Overridden from gfx::GpuMemoryBuffer:
-  bool Map() override;
-  void* memory(size_t plane) override;
+  bool Map(void** data) override;
   void Unmap() override;
   gfx::Size GetSize() const override;
   gfx::BufferFormat GetFormat() const override;
-  int stride(size_t plane) const override;
+  void GetStride(int* stride) const override;
   gfx::GpuMemoryBufferId GetId() const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
   ClientBuffer AsClientBuffer() override;

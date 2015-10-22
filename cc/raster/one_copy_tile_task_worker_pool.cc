@@ -406,21 +406,21 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     }
 
     if (staging_buffer->gpu_memory_buffer) {
-      gfx::GpuMemoryBuffer* buffer = staging_buffer->gpu_memory_buffer.get();
-      DCHECK_EQ(1u, gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
-      bool rv = buffer->Map();
+      void* data = nullptr;
+      bool rv = staging_buffer->gpu_memory_buffer->Map(&data);
       DCHECK(rv);
-      DCHECK(buffer->memory(0));
+      int stride;
+      staging_buffer->gpu_memory_buffer->GetStride(&stride);
       // TileTaskWorkerPool::PlaybackToMemory only supports unsigned strides.
-      DCHECK_GE(buffer->stride(0), 0);
+      DCHECK_GE(stride, 0);
 
       DCHECK(!playback_rect.IsEmpty())
           << "Why are we rastering a tile that's not dirty?";
       TileTaskWorkerPool::PlaybackToMemory(
-          buffer->memory(0), resource->format(), staging_buffer->size,
-          buffer->stride(0), raster_source, raster_full_rect, playback_rect,
-          scale, include_images);
-      buffer->Unmap();
+          data, resource->format(), staging_buffer->size,
+          static_cast<size_t>(stride), raster_source, raster_full_rect,
+          playback_rect, scale, include_images);
+      staging_buffer->gpu_memory_buffer->Unmap();
       staging_buffer->content_id = new_content_id;
     }
   }

@@ -436,22 +436,24 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
     if (rows % rows_per_copy)
       ++copies;
   }
-  const base::Closure copies_done =
+  base::Closure copies_done =
       base::Bind(&PoolImpl::OnCopiesDone, this, video_frame, frame_resources,
                  frame_ready_cb);
-  const base::Closure barrier = base::BarrierClosure(copies, copies_done);
+  base::Closure barrier = base::BarrierClosure(copies, copies_done);
 
   // Post all the async tasks.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     gfx::GpuMemoryBuffer* buffer =
         frame_resources->plane_resources[i].gpu_memory_buffer.get();
-
-    if (!buffer || !buffer->Map()) {
-      DLOG(ERROR) << "Could not get or Map() buffer";
-      return;
+    uint8* dest_buffers[VideoFrame::kMaxPlanes] = {0};
+    int dest_strides[VideoFrame::kMaxPlanes] = {0};
+    if (buffer) {
+      DCHECK_EQ(planes_per_copy,
+                gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
+      bool rv = buffer->Map(reinterpret_cast<void**>(dest_buffers));
+      DCHECK(rv);
+      buffer->GetStride(dest_strides);
     }
-    DCHECK_EQ(planes_per_copy,
-              gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
 
     const int rows = VideoFrame::Rows(i, output_format_, size.height());
     const int rows_per_copy = RowsPerCopy(i, output_format_, size.width());
@@ -465,26 +467,24 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
           worker_task_runner_->PostTask(
               FROM_HERE, base::Bind(&CopyRowsToI420Buffer, row, rows_to_copy,
                                     bytes_per_row, video_frame->visible_data(i),
-                                    video_frame->stride(i),
-                                    static_cast<uint8_t*>(buffer->memory(0)),
-                                    buffer->stride(0), barrier));
+                                    video_frame->stride(i), dest_buffers[0],
+                                    dest_strides[0], barrier));
           break;
         }
         case PIXEL_FORMAT_NV12:
           worker_task_runner_->PostTask(
               FROM_HERE,
-              base::Bind(&CopyRowsToNV12Buffer, row, rows_to_copy, size.width(),
-                         video_frame, static_cast<uint8_t*>(buffer->memory(0)),
-                         buffer->stride(0),
-                         static_cast<uint8_t*>(buffer->memory(1)),
-                         buffer->stride(1), barrier));
+              base::Bind(&CopyRowsToNV12Buffer, row, rows_to_copy,
+                         size.width(), video_frame, dest_buffers[0],
+                         dest_strides[0], dest_buffers[1], dest_strides[1],
+                         barrier));
           break;
         case PIXEL_FORMAT_UYVY:
           worker_task_runner_->PostTask(
               FROM_HERE,
               base::Bind(&CopyRowsToUYVYBuffer, row, rows_to_copy, size.width(),
-                         video_frame, static_cast<uint8_t*>(buffer->memory(0)),
-                         buffer->stride(0), barrier));
+                         video_frame, dest_buffers[0], dest_strides[0],
+                         barrier));
           break;
         default:
           NOTREACHED();

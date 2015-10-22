@@ -51,27 +51,23 @@ class VideoCaptureBufferPoolTest
         : size_(size), data_(new uint8[size_.GetArea() * 4]), mapped_(false) {}
     ~MockGpuMemoryBuffer() override { delete[] data_; }
 
-    bool Map() override {
-      EXPECT_FALSE(mapped_);
+    bool Map(void** data) override {
+      EXPECT_EQ(mapped_, false);
       mapped_ = true;
+      data[0] = static_cast<void*>(data_);
       return true;
     }
-    void* memory(size_t plane) override {
-      EXPECT_TRUE(mapped_);
-      EXPECT_EQ(0u, plane);
-      return static_cast<void*>(data_);
-    }
     void Unmap() override {
-      EXPECT_TRUE(mapped_);
+      EXPECT_EQ(mapped_, true);
       mapped_ = false;
     }
     gfx::Size GetSize() const override { return size_; }
     gfx::BufferFormat GetFormat() const override {
       return gfx::BufferFormat::BGRA_8888;
     }
-    int stride(size_t plane) const override {
-      EXPECT_EQ(0u, plane);
-      return size_.width() * 4;
+    void GetStride(int* stride) const override {
+      *stride = size_.width() * 4;
+      return;
     }
     gfx::GpuMemoryBufferId GetId() const override {
       return gfx::GpuMemoryBufferId(0);

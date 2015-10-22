@@ -68,15 +68,15 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
 class GpuMemoryBufferBufferHandle final
     : public VideoCaptureBufferPool::BufferHandle {
  public:
-  GpuMemoryBufferBufferHandle(const std::vector<void*>& data,
+  GpuMemoryBufferBufferHandle(std::vector<void*>* data,
                               const gfx::Size& dimensions,
                               ScopedVector<gfx::GpuMemoryBuffer>* gmbs)
       : data_(data), dimensions_(dimensions), gmbs_(gmbs) {
 #ifndef NDEBUG
-    DCHECK_EQ(data.size(), gmbs->size());
+    DCHECK_EQ(data->size(), gmbs->size());
     for (const auto& gmb : *gmbs)
       DCHECK(gmb);
-    for (const auto& data_ptr : data)
+    for (const auto& data_ptr : *data)
       DCHECK(data_ptr);
 #endif
   }
@@ -86,8 +86,8 @@ class GpuMemoryBufferBufferHandle final
   size_t mapped_size() const override { return dimensions_.GetArea(); }
   void* data(int plane) override {
     DCHECK_GE(plane, media::VideoFrame::kYPlane);
-    DCHECK_LT(plane, static_cast<int>(data_.size()));
-    return data_.at(plane);
+    DCHECK_LT(plane, static_cast<int>(data_->size()));
+    return data_->at(plane);
   }
   ClientBuffer AsClientBuffer(int plane) override {
     DCHECK_GE(plane, media::VideoFrame::kYPlane);
@@ -102,7 +102,7 @@ class GpuMemoryBufferBufferHandle final
 #endif
 
  private:
-  const std::vector<void*> data_;
+  std::vector<void*>* data_;
   const gfx::Size dimensions_;
   ScopedVector<gfx::GpuMemoryBuffer>* const gmbs_;
 };
@@ -147,13 +147,8 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
   ~GpuMemoryBufferTracker() override;
 
   scoped_ptr<BufferHandle> GetBufferHandle() override {
-    std::vector<void*> data;
-    DCHECK_EQ(gpu_memory_buffers_.size(),
-              media::VideoFrame::NumPlanes(pixel_format()));
-    for (const auto& gmb : gpu_memory_buffers_)
-      data.push_back(gmb->memory(0));
     return make_scoped_ptr(new GpuMemoryBufferBufferHandle(
-        data, dimensions_, &gpu_memory_buffers_));
+        &data_, dimensions_, &gpu_memory_buffers_));
   }
   bool ShareToProcess(base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override {
@@ -165,6 +160,7 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
                        gfx::GpuMemoryBufferHandle* new_handle) override;
 
  private:
+  std::vector<void*> data_;
   gfx::Size dimensions_;
   // Owned references to GpuMemoryBuffers.
   ScopedVector<gfx::GpuMemoryBuffer> gpu_memory_buffers_;
@@ -217,10 +213,11 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
     return true;
   dimensions_ = dimensions;
 
-  const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format());
+  const media::VideoPixelFormat video_format = media::PIXEL_FORMAT_I420;
+  const size_t num_planes = media::VideoFrame::NumPlanes(video_format);
   for (size_t i = 0; i < num_planes; ++i) {
     const gfx::Size& size =
-        media::VideoFrame::PlaneSize(pixel_format(), i, dimensions);
+        media::VideoFrame::PlaneSize(video_format, i, dimensions);
     gpu_memory_buffers_.push_back(
         BrowserGpuMemoryBufferManager::current()->AllocateGpuMemoryBuffer(
             size,
@@ -228,8 +225,13 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
             gfx::BufferUsage::MAP));
 
     DLOG_IF(ERROR, !gpu_memory_buffers_[i]) << "Allocating GpuMemoryBuffer";
-    if (!gpu_memory_buffers_[i] || !gpu_memory_buffers_[i]->Map())
+    if (!gpu_memory_buffers_[i])
       return false;
+
+    void* temp_data = nullptr;
+    gpu_memory_buffers_[i]->Map(&temp_data);
+    DCHECK(temp_data);
+    data_.push_back(temp_data);
   }
   return true;
 }
