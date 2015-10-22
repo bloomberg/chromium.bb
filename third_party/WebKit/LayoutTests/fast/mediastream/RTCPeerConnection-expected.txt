@@ -50,6 +50,12 @@ PASS new webkitRTCPeerConnection(null, {optional:[{invalid:0}]}); threw exceptio
 PASS new webkitRTCPeerConnection(null, {valid_and_supported_1:1}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed constraints object..
 PASS new webkitRTCPeerConnection(null, {valid_but_unsupported_1:1}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed constraints object..
 PASS new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed constraints object..
+PASS new webkitRTCPeerConnection({certificates:null}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({certificates:[]}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({certificates:[null]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed sequence<RTCCertificate>.
+PASS new webkitRTCPeerConnection({certificates:[1337]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed sequence<RTCCertificate>.
+PASS new webkitRTCPeerConnection({certificates:[certRSA]}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({certificates:[certECDSA]}, null); did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

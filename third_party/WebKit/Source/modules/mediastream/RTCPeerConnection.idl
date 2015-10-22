@@ -130,4 +130,9 @@ enum RTCIceConnectionState {
     [RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
+
+    // Certificate Management
+    // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
+    // TODO(hbos): Use AlgorithmIdentifier and the WebCryptoAPI normalization process. crbug.com/544917
+    [RuntimeEnabled=RTCCertificate, RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(Dictionary keygenAlgorithm);
 };

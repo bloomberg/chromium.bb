@@ -95,6 +95,7 @@ class WebPrescientNetworking;
 class WebProcessMemoryDump;
 class WebPublicSuffixList;
 class WebPushProvider;
+class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
@@ -625,12 +626,15 @@ public:
     // WebRTC ----------------------------------------------------------
 
     // Creates an WebRTCPeerConnectionHandler for RTCPeerConnection.
-    // May return null if WebRTC functionality is not avaliable or out of resources.
+    // May return null if WebRTC functionality is not avaliable or if it's out of resources.
     virtual WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) { return nullptr; }
 
     // Creates an WebMediaRecorderHandler to record MediaStreams.
     // May return null if the functionality is not available or out of resources.
     virtual WebMediaRecorderHandler* createMediaRecorderHandler() { return nullptr; }
+
+    // May return null if WebRTC functionality is not avaliable or out of resources.
+    virtual WebRTCCertificateGenerator* createRTCCertificateGenerator() { return nullptr; }
 
     // May return null if WebRTC functionality is not avaliable or out of resources.
     virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }

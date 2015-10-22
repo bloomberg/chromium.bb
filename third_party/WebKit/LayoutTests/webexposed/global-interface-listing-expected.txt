@@ -3814,6 +3814,9 @@ interface PushSubscription
     method getKey
     method toJSON
     method unsubscribe
+interface RTCCertificate
+    getter expires
+    method constructor
 interface RTCIceCandidate
     getter candidate
     getter sdpMLineIndex

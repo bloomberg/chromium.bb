@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,7 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebRTCCertificate.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -99,7 +100,7 @@ enum RTCRtcpMuxPolicy {
     RTCRtcpMuxPolicyRequire
 };
 
-class RTCConfiguration final : public GarbageCollected<RTCConfiguration> {
+class PLATFORM_EXPORT RTCConfiguration final : public GarbageCollectedFinalized<RTCConfiguration> {
 public:
     static RTCConfiguration* create() { return new RTCConfiguration(); }
 
@@ -111,6 +112,10 @@ public:
     RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
     void setIceServers(RTCIceServerArray* iceServers) { m_iceServers = iceServers; }
     RTCIceServerArray* iceServers() { return m_iceServers.get(); }
+    // Takes ownership of |certificate|.
+    void appendCertificate(WebRTCCertificate* certificate) { m_certificates.append(adoptPtr(certificate)); }
+    size_t numberOfCertificates() const { return m_certificates.size(); }
+    WebRTCCertificate* certificate(size_t index) const { return m_certificates[index].get(); }
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_iceServers); }
 
@@ -126,6 +131,7 @@ private:
     RTCIceTransports m_iceTransports;
     RTCBundlePolicy m_bundlePolicy;
     RTCRtcpMuxPolicy m_rtcpMuxPolicy;
+    Vector<OwnPtr<WebRTCCertificate>> m_certificates;
 };
 
 } // namespace blink

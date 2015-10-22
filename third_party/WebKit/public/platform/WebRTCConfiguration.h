@@ -41,6 +41,7 @@ namespace blink {
 class RTCIceServer;
 class RTCIceServerArray;
 class RTCConfiguration;
+class WebRTCCertificate;
 class WebString;
 class WebURL;
 
@@ -140,6 +141,9 @@ public:
 
     BLINK_PLATFORM_EXPORT WebRTCRtcpMuxPolicy rtcpMuxPolicy() const;
     BLINK_PLATFORM_EXPORT WebRTCICEServerArray iceServers() const;
+
+    BLINK_PLATFORM_EXPORT size_t numberOfCertificates() const;
+    BLINK_PLATFORM_EXPORT WebRTCCertificate* certificate(size_t index) const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);

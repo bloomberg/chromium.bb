@@ -138,6 +138,7 @@ RenderingPipelineThrottling status=experimental
 RequestIdleCallback status=stable
 RequestAutocomplete status=test
 RestrictIFramePermissions
+RTCCertificate status=test
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable

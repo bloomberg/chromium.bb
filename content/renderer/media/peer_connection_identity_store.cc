@@ -5,12 +5,17 @@
 #include "content/renderer/media/peer_connection_identity_store.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
 namespace {
+
+const char kIdentityName[] = "WebRTC";
+
 // Bridges identity requests between the main render thread and libjingle's
 // signaling thread.
 class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
@@ -25,7 +30,7 @@ class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
         RenderThreadImpl::current()
             ->get_webrtc_identity_service()
             ->RequestIdentity(
-                url, first_party_for_cookies, "WebRTC", "WebRTC",
+                url, first_party_for_cookies, kIdentityName, kIdentityName,
                 base::Bind(&RequestHandler::OnIdentityReady, this),
                 base::Bind(&RequestHandler::OnRequestFailed, this));
     DCHECK_NE(request_id, 0);
@@ -67,6 +72,16 @@ class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   scoped_refptr<webrtc::DtlsIdentityRequestObserver> observer_;
 };
+
+// Helper function for PeerConnectionIdentityStore::RequestIdentity.
+// Used to invoke |observer|->OnSuccess in a PostTask.
+void ObserverOnSuccess(
+    const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer,
+    scoped_ptr<rtc::SSLIdentity> identity) {
+  rtc::scoped_ptr<rtc::SSLIdentity> rtc_scoped_ptr(identity.release());
+  observer->OnSuccess(rtc_scoped_ptr.Pass());
+}
+
 }  // namespace
 
 PeerConnectionIdentityStore::PeerConnectionIdentityStore(
@@ -88,14 +103,46 @@ void PeerConnectionIdentityStore::RequestIdentity(
     const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer) {
   DCHECK(signaling_thread_.CalledOnValidThread());
   DCHECK(observer);
-  // This store only supports RSA.
-  DCHECK_EQ(key_type, rtc::KT_RSA);
 
-  scoped_refptr<RequestHandler> handler(new RequestHandler(observer));
-  main_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&RequestHandler::RequestIdentityOnUIThread, handler, url_,
-                 first_party_for_cookies_));
+  // TODO(torbjorng): crbug.com/544902. Update store to use rtc::KeyParams.
+  // With parameters such as modulesize, we cannot just call into the Chromium
+  // code for some parameters (e.g. modulesize=1024, publicexponent=0x10001)
+  // with the assumption that those are the parameters being used. I'd prefer to
+  // never use Chromium's own code here, or else export its RSA parameters to a
+  // header file so that we can invoke it only for exactly the parameters
+  // requested here.
+  if (key_type == rtc::KT_RSA) {
+    // Use Chromium identity generation code for RSA. This generation code is
+    // preferred over WebRTC RSA generation code for performance reasons.
+    scoped_refptr<RequestHandler> handler(new RequestHandler(observer));
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestHandler::RequestIdentityOnUIThread, handler, url_,
+                   first_party_for_cookies_));
+  } else {
+    // Use WebRTC identity generation code for non-RSA.
+    scoped_ptr<rtc::SSLIdentity> identity(rtc::SSLIdentity::Generate(
+        kIdentityName, key_type));
+
+    scoped_refptr<base::SingleThreadTaskRunner> signaling_thread =
+        base::ThreadTaskRunnerHandle::Get();
+
+    // Invoke |observer| callbacks asynchronously. The callbacks of
+    // DtlsIdentityStoreInterface implementations have to be async.
+    if (identity) {
+      // Async call to |observer|->OnSuccess.
+      // Helper function necessary because OnSuccess takes an rtc::scoped_ptr
+      // argument which has to be Pass()-ed. base::Passed gets around this for
+      // scoped_ptr (without rtc namespace), but not for rtc::scoped_ptr.
+      signaling_thread->PostTask(FROM_HERE,
+          base::Bind(&ObserverOnSuccess, observer, base::Passed(&identity)));
+    } else {
+      // Async call to |observer|->OnFailure.
+      signaling_thread->PostTask(FROM_HERE,
+          base::Bind(&webrtc::DtlsIdentityRequestObserver::OnFailure,
+                     observer, 0));
+    }
+  }
 }
 
 }  // namespace content

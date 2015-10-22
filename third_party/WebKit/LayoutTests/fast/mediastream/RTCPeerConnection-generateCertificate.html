@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests RTCPeerConnection.generateCertificate RSA/ECDSA.");
+
+// Signature of the last generateCertificate call.
+var generateCallString = null;
+// Global certificate variables so that the "should..." methods can evaluate them.
+var certRSA = null;
+var certECDSA = null;
+
+// 1: RSA-2048 using public exponent = 65537.
+function generate1RSA()
+{
+    generateCallString  =  'generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: 65537 })';
+    webkitRTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: 65537 })
+        .then(generate1RSASuccessful, generate1RSAFailed);
+}
+function generate1RSASuccessful(certificate)
+{
+    certRSA = certificate;
+    testPassed(generateCallString);
+    certificateSanityCheck(certificate, 'certRSA');
+    generate2ECDSA();
+}
+function generate1RSAFailed()
+{
+    testFailed(generateCallString);
+    generate2ECDSA();
+}
+
+// 2: ECDSA using NIST P-256.
+function generate2ECDSA()
+{
+    generateCallString  =  'generateCertificate({ name: "ECDSA", namedCurve: "P-256" })';
+    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
+        .then(generate2ECDSASuccessful, generate2ECDSAFailed);
+}
+function generate2ECDSASuccessful(certificate)
+{
+    certECDSA = certificate;
+    testPassed(generateCallString);
+    certificateSanityCheck(certificate, 'certECDSA');
+    finishJSTest();
+}
+function generate2ECDSAFailed()
+{
+    testFailed(generateCallString);
+    finishJSTest();
+}
+
+// Helper methods.
+function certificateSanityCheck(cert, certVariableName)
+{
+    shouldBeNonNull(certVariableName);
+    // TODO(hbos): Check cert.expires when WebRTC certificates have reasonable expires values.
+}
+
+// Run each generate test sequentially. The ith generate method will make sure
+// the (i+1)st generate method is executed when its promise's callbacks are
+// invoked. generate2ECDSA's callback methods mark the end of the async tests.
+generate1RSA();
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

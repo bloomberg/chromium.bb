@@ -60,6 +60,47 @@ shouldThrow("new webkitRTCPeerConnection(null, {optional:[{invalid:0}]});");
 shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_1:1});");
 shouldThrow("new webkitRTCPeerConnection(null, {valid_but_unsupported_1:1});");
 shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}});");
+
+// Construct with certificates.
+shouldNotThrow("new webkitRTCPeerConnection({certificates:null}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({certificates:[]}, null);");
+shouldThrow("new webkitRTCPeerConnection({certificates:[null]}, null);");
+shouldThrow("new webkitRTCPeerConnection({certificates:[1337]}, null);");
+// Global certificate variables so that the "should..." methods can evaluate them.
+var certRSA = null;
+var certECDSA = null;
+function testCertificates1RSA()
+{
+    webkitRTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: 65537 })
+        .then(function(certificate) {
+                  certRSA = certificate;
+                  shouldNotThrow('new webkitRTCPeerConnection({certificates:[certRSA]}, null);');
+                  testCertificates2ECDSA();
+              },
+              function() {
+                  testFailed('Generating RSA 2048');
+                  testCertificates2ECDSA();
+              });
+}
+function testCertificates2ECDSA()
+{
+    webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
+        .then(function(certificate) {
+                  certECDSA = certificate;
+                  shouldNotThrow('new webkitRTCPeerConnection({certificates:[certECDSA]}, null);');
+                  finishJSTest();
+              },
+              function() {
+                  testFailed('Generating ECDSA P-256');
+                  finishJSTest();
+              });
+}
+// Sequentially test construction with RSA and ECDSA certificates.
+// testCertificates2ECDSA's callback methods mark the end of the async tests.
+testCertificates1RSA();
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
 </script>
 </body>
 </html>

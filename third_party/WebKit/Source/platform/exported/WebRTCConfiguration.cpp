@@ -165,4 +165,16 @@ WebRTCICEServerArray WebRTCConfiguration::iceServers() const
     return WebRTCICEServerArray(m_private->iceServers());
 }
 
+size_t WebRTCConfiguration::numberOfCertificates() const
+{
+    ASSERT(!isNull());
+    return m_private->numberOfCertificates();
+}
+
+WebRTCCertificate* WebRTCConfiguration::certificate(size_t index) const
+{
+    ASSERT(!isNull());
+    return m_private->certificate(index);
+}
+
 } // namespace blink

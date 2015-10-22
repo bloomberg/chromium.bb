@@ -32,6 +32,7 @@
 #define RTCPeerConnection_h
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediastream/MediaStream.h"
@@ -79,6 +80,8 @@ public:
     String signalingState() const;
 
     void updateIce(const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
+
+    static ScriptPromise generateCertificate(ScriptState*, const Dictionary& keygenAlgorithm, ExceptionState&);
 
     // DEPRECATED
     void addIceCandidate(RTCIceCandidate*, ExceptionState&);

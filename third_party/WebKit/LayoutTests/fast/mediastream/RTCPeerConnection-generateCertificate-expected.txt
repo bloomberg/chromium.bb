@@ -1,0 +1,13 @@
+Tests RTCPeerConnection.generateCertificate RSA/ECDSA.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: 65537 })
+PASS certRSA is non-null.
+PASS generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
+PASS certECDSA is non-null.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

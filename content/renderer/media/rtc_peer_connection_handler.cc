@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
@@ -23,6 +22,7 @@
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/remote_media_stream_impl.h"
+#include "content/renderer/media/rtc_certificate.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
@@ -255,6 +255,12 @@ void GetNativeRtcConfiguration(
       break;
     default:
       NOTREACHED();
+  }
+
+  for (size_t i = 0; i < blink_config.numberOfCertificates(); ++i) {
+    webrtc_config->certificates.push_back(
+        static_cast<RTCCertificate*>(
+            blink_config.certificate(i))->rtcCertificate());
   }
 }
 
