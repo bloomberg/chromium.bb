@@ -7,8 +7,11 @@
 #include <string.h>
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/format_macros.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -255,6 +258,26 @@ bool Connection::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   statement_size);
   return true;
+}
+
+void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
+  AssertIOAllowed();
+
+  std::string debug_info;
+  const int error = (extended_error & 0xFF);
+  if (error == SQLITE_CORRUPT) {
+    debug_info = CollectCorruptionInfo();
+  } else {
+    debug_info = CollectErrorInfo(extended_error, stmt);
+  }
+
+  if (!debug_info.empty() && RegisterIntentToUpload()) {
+    char debug_buf[2000];
+    base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
+    base::debug::Alias(&debug_buf);
+
+    base::debug::DumpWithoutCrashing();
+  }
 }
 
 // static
@@ -580,6 +603,256 @@ void Connection::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
 
   total_changes_at_last_release_ = total_changes;
   sqlite3_db_release_memory(db_);
+}
+
+base::FilePath Connection::DbPath() const {
+  if (!is_open())
+    return base::FilePath();
+
+  const char* path = sqlite3_db_filename(db_, "main");
+  const base::StringPiece db_path(path);
+#if defined(OS_WIN)
+  return base::FilePath(base::UTF8ToWide(db_path));
+#elif defined(OS_POSIX)
+  return base::FilePath(db_path);
+#else
+  NOTREACHED();
+  return base::FilePath();
+#endif
+}
+
+// Data is persisted in a file shared between databases in the same directory.
+// The "sqlite-diag" file contains a dictionary with the version number, and an
+// array of histogram tags for databases which have been dumped.
+bool Connection::RegisterIntentToUpload() const {
+  static const char* kVersionKey = "version";
+  static const char* kDiagnosticDumpsKey = "DiagnosticDumps";
+  static int kVersion = 1;
+
+  AssertIOAllowed();
+
+  if (histogram_tag_.empty())
+    return false;
+
+  if (!is_open())
+    return false;
+
+  if (in_memory_)
+    return false;
+
+  const base::FilePath db_path = DbPath();
+  if (db_path.empty())
+    return false;
+
+  // Put the collection of diagnostic data next to the databases.  In most
+  // cases, this is the profile directory, but safe-browsing stores a Cookies
+  // file in the directory above the profile directory.
+  base::FilePath breadcrumb_path(
+      db_path.DirName().Append(FILE_PATH_LITERAL("sqlite-diag")));
+
+  // Lock against multiple updates to the diagnostics file.  This code should
+  // seldom be called in the first place, and when called it should seldom be
+  // called for multiple databases, and when called for multiple databases there
+  // is _probably_ something systemic wrong with the user's system.  So the lock
+  // should never be contended, but when it is the database experience is
+  // already bad.
+  base::AutoLock lock(g_sqlite_init_lock.Get());
+
+  scoped_ptr<base::Value> root;
+  if (!base::PathExists(breadcrumb_path)) {
+    scoped_ptr<base::DictionaryValue> root_dict(new base::DictionaryValue());
+    root_dict->SetInteger(kVersionKey, kVersion);
+
+    scoped_ptr<base::ListValue> dumps(new base::ListValue);
+    dumps->AppendString(histogram_tag_);
+    root_dict->Set(kDiagnosticDumpsKey, dumps.Pass());
+
+    root = root_dict.Pass();
+  } else {
+    // Failure to read a valid dictionary implies that something is going wrong
+    // on the system.
+    JSONFileValueDeserializer deserializer(breadcrumb_path);
+    scoped_ptr<base::Value> read_root(
+        deserializer.Deserialize(nullptr, nullptr));
+    if (!read_root.get())
+      return false;
+    scoped_ptr<base::DictionaryValue> root_dict =
+        base::DictionaryValue::From(read_root.Pass());
+    if (!root_dict)
+      return false;
+
+    // Don't upload if the version is missing or newer.
+    int version = 0;
+    if (!root_dict->GetInteger(kVersionKey, &version) || version > kVersion)
+      return false;
+
+    base::ListValue* dumps = nullptr;
+    if (!root_dict->GetList(kDiagnosticDumpsKey, &dumps))
+      return false;
+
+    const size_t size = dumps->GetSize();
+    for (size_t i = 0; i < size; ++i) {
+      std::string s;
+
+      // Don't upload if the value isn't a string, or indicates a prior upload.
+      if (!dumps->GetString(i, &s) || s == histogram_tag_)
+        return false;
+    }
+
+    // Record intention to proceed with upload.
+    dumps->AppendString(histogram_tag_);
+    root = root_dict.Pass();
+  }
+
+  const base::FilePath breadcrumb_new =
+      breadcrumb_path.AddExtension(FILE_PATH_LITERAL("new"));
+  base::DeleteFile(breadcrumb_new, false);
+
+  // No upload if the breadcrumb file cannot be updated.
+  // TODO(shess): Consider ImportantFileWriter::WriteFileAtomically() to land
+  // the data on disk.  For now, losing the data is not a big problem, so the
+  // sync overhead would probably not be worth it.
+  JSONFileValueSerializer serializer(breadcrumb_new);
+  if (!serializer.Serialize(*root))
+    return false;
+  if (!base::PathExists(breadcrumb_new))
+    return false;
+  if (!base::ReplaceFile(breadcrumb_new, breadcrumb_path, nullptr)) {
+    base::DeleteFile(breadcrumb_new, false);
+    return false;
+  }
+
+  return true;
+}
+
+std::string Connection::CollectErrorInfo(int error, Statement* stmt) const {
+  // Buffer for accumulating debugging info about the error.  Place
+  // more-relevant information earlier, in case things overflow the
+  // fixed-size reporting buffer.
+  std::string debug_info;
+
+  // The error message from the failed operation.
+  base::StringAppendF(&debug_info, "db error: %d/%s\n",
+                      GetErrorCode(), GetErrorMessage());
+
+  // TODO(shess): |error| and |GetErrorCode()| should always be the same, but
+  // reading code does not entirely convince me.  Remove if they turn out to be
+  // the same.
+  if (error != GetErrorCode())
+    base::StringAppendF(&debug_info, "reported error: %d\n", error);
+
+  // System error information.  Interpretation of Windows errors is different
+  // from posix.
+#if defined(OS_WIN)
+  base::StringAppendF(&debug_info, "LastError: %d\n", GetLastErrno());
+#elif defined(OS_POSIX)
+  base::StringAppendF(&debug_info, "errno: %d\n", GetLastErrno());
+#else
+  NOTREACHED();  // Add appropriate log info.
+#endif
+
+  if (stmt) {
+    base::StringAppendF(&debug_info, "statement: %s\n",
+                        stmt->GetSQLStatement());
+  } else {
+    base::StringAppendF(&debug_info, "statement: NULL\n");
+  }
+
+  // SQLITE_ERROR often indicates some sort of mismatch between the statement
+  // and the schema, possibly due to a failed schema migration.
+  if (error == SQLITE_ERROR) {
+    const char* kVersionSql = "SELECT value FROM meta WHERE key = 'version'";
+    sqlite3_stmt* s;
+    int rc = sqlite3_prepare_v2(db_, kVersionSql, -1, &s, nullptr);
+    if (rc == SQLITE_OK) {
+      rc = sqlite3_step(s);
+      if (rc == SQLITE_ROW) {
+        base::StringAppendF(&debug_info, "version: %d\n",
+                            sqlite3_column_int(s, 0));
+      } else if (rc == SQLITE_DONE) {
+        debug_info += "version: none\n";
+      } else {
+        base::StringAppendF(&debug_info, "version: error %d\n", rc);
+      }
+      sqlite3_finalize(s);
+    } else {
+      base::StringAppendF(&debug_info, "version: prepare error %d\n", rc);
+    }
+
+    debug_info += "schema:\n";
+
+    // sqlite_master has columns:
+    //   type - "index" or "table".
+    //   name - name of created element.
+    //   tbl_name - name of element, or target table in case of index.
+    //   rootpage - root page of the element in database file.
+    //   sql - SQL to create the element.
+    // In general, the |sql| column is sufficient to derive the other columns.
+    // |rootpage| is not interesting for debugging, without the contents of the
+    // database.  The COALESCE is because certain automatic elements will have a
+    // |name| but no |sql|,
+    const char* kSchemaSql = "SELECT COALESCE(sql, name) FROM sqlite_master";
+    rc = sqlite3_prepare_v2(db_, kSchemaSql, -1, &s, nullptr);
+    if (rc == SQLITE_OK) {
+      while ((rc = sqlite3_step(s)) == SQLITE_ROW) {
+        base::StringAppendF(&debug_info, "%s\n", sqlite3_column_text(s, 0));
+      }
+      if (rc != SQLITE_DONE)
+        base::StringAppendF(&debug_info, "error %d\n", rc);
+      sqlite3_finalize(s);
+    } else {
+      base::StringAppendF(&debug_info, "prepare error %d\n", rc);
+    }
+  }
+
+  return debug_info;
+}
+
+// TODO(shess): Since this is only called in an error situation, it might be
+// prudent to rewrite in terms of SQLite API calls, and mark the function const.
+std::string Connection::CollectCorruptionInfo() {
+  AssertIOAllowed();
+
+  // If the file cannot be accessed it is unlikely that an integrity check will
+  // turn up actionable information.
+  const base::FilePath db_path = DbPath();
+  int64 db_size = -1;
+  if (!base::GetFileSize(db_path, &db_size) || db_size < 0)
+    return std::string();
+
+  // Buffer for accumulating debugging info about the error.  Place
+  // more-relevant information earlier, in case things overflow the
+  // fixed-size reporting buffer.
+  std::string debug_info;
+  base::StringAppendF(&debug_info, "SQLITE_CORRUPT, db size %" PRId64 "\n",
+                      db_size);
+
+  // Only check files up to 8M to keep things from blocking too long.
+  const int64 kMaxIntegrityCheckSize = 8192 * 1024;
+  if (db_size > kMaxIntegrityCheckSize) {
+    debug_info += "integrity_check skipped due to size\n";
+  } else {
+    std::vector<std::string> messages;
+
+    // TODO(shess): FullIntegrityCheck() splits into a vector while this joins
+    // into a string.  Probably should be refactored.
+    const base::TimeTicks before = base::TimeTicks::Now();
+    FullIntegrityCheck(&messages);
+    base::StringAppendF(
+        &debug_info,
+        "integrity_check %" PRId64 " ms, %" PRIuS " records:\n",
+        (base::TimeTicks::Now() - before).InMilliseconds(),
+        messages.size());
+
+    // SQLite returns up to 100 messages by default, trim deeper to
+    // keep close to the 2000-character size limit for dumping.
+    const size_t kMaxMessages = 20;
+    for (size_t i = 0; i < kMaxMessages && i < messages.size(); ++i) {
+      base::StringAppendF(&debug_info, "%s\n", messages[i].c_str());
+    }
+  }
+
+  return debug_info;
 }
 
 void Connection::TrimMemory(bool aggressively) {

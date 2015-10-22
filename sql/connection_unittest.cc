@@ -136,7 +136,6 @@ class ScopedCommitHook {
 };
 
 }  // namespace test
-}  // namespace sql
 
 namespace {
 
@@ -209,6 +208,29 @@ class ScopedUmaskSetter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedUmaskSetter);
 };
 #endif
+
+// SQLite function to adjust mock time by |argv[0]| milliseconds.
+void sqlite_adjust_millis(sql::test::ScopedMockTimeSource* time_mock,
+                          sqlite3_context* context,
+                          int argc, sqlite3_value** argv) {
+  int64 milliseconds = argc > 0 ? sqlite3_value_int64(argv[0]) : 1000;
+  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
+  sqlite3_result_int64(context, milliseconds);
+}
+
+// Adjust mock time by |milliseconds| on commit.
+int adjust_commit_hook(sql::test::ScopedMockTimeSource* time_mock,
+                       int64 milliseconds) {
+  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
+  return SQLITE_OK;
+}
+
+const char kCommitTime[] = "Sqlite.CommitTime.Test";
+const char kAutoCommitTime[] = "Sqlite.AutoCommitTime.Test";
+const char kUpdateTime[] = "Sqlite.UpdateTime.Test";
+const char kQueryTime[] = "Sqlite.QueryTime.Test";
+
+}  // namespace
 
 class SQLConnectionTest : public sql::SQLTestBase {
  public:
@@ -1147,27 +1169,6 @@ TEST_F(SQLConnectionTest, EventsStatement) {
   }
 }
 
-// SQLite function to adjust mock time by |argv[0]| milliseconds.
-void sqlite_adjust_millis(sql::test::ScopedMockTimeSource* time_mock,
-                          sqlite3_context* context,
-                          int argc, sqlite3_value** argv) {
-  int64 milliseconds = argc > 0 ? sqlite3_value_int64(argv[0]) : 1000;
-  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
-  sqlite3_result_int64(context, milliseconds);
-}
-
-// Adjust mock time by |milliseconds| on commit.
-int adjust_commit_hook(sql::test::ScopedMockTimeSource* time_mock,
-                       int64 milliseconds) {
-  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
-  return SQLITE_OK;
-}
-
-const char kCommitTime[] = "Sqlite.CommitTime.Test";
-const char kAutoCommitTime[] = "Sqlite.AutoCommitTime.Test";
-const char kUpdateTime[] = "Sqlite.UpdateTime.Test";
-const char kQueryTime[] = "Sqlite.QueryTime.Test";
-
 // Read-only query allocates time to QueryTime, but not others.
 TEST_F(SQLConnectionTest, TimeQuery) {
   // Re-open with histogram tag.  Use an in-memory database to minimize variance
@@ -1387,4 +1388,77 @@ TEST_F(SQLConnectionTest, OnMemoryDump) {
   EXPECT_GE(pmd.allocator_dumps().size(), 1u);
 }
 
-}  // namespace
+// Test that the functions to collect diagnostic data run to completion, without
+// worrying too much about what they generate (since that will change).
+TEST_F(SQLConnectionTest, CollectDiagnosticInfo) {
+  // NOTE(shess): Mojo doesn't support everything CollectCorruptionInfo() uses,
+  // but it's not really clear if adding support would be useful.
+#if !defined(MOJO_APPTEST_IMPL)
+  const std::string corruption_info = db().CollectCorruptionInfo();
+  EXPECT_NE(std::string::npos, corruption_info.find("SQLITE_CORRUPT"));
+  EXPECT_NE(std::string::npos, corruption_info.find("integrity_check"));
+#endif
+
+  // A statement to see in the results.
+  const char* kSimpleSql = "SELECT 'mountain'";
+  Statement s(db().GetCachedStatement(SQL_FROM_HERE, kSimpleSql));
+
+  // Error includes the statement.
+  const std::string readonly_info = db().CollectErrorInfo(SQLITE_READONLY, &s);
+  EXPECT_NE(std::string::npos, readonly_info.find(kSimpleSql));
+
+  // Some other error doesn't include the statment.
+  // TODO(shess): This is weak.
+  const std::string full_info = db().CollectErrorInfo(SQLITE_FULL, NULL);
+  EXPECT_EQ(std::string::npos, full_info.find(kSimpleSql));
+
+  // A table to see in the SQLITE_ERROR results.
+  EXPECT_TRUE(db().Execute("CREATE TABLE volcano (x)"));
+
+  // Version info to see in the SQLITE_ERROR results.
+  sql::MetaTable meta_table;
+  ASSERT_TRUE(meta_table.Init(&db(), 4, 4));
+
+  const std::string error_info = db().CollectErrorInfo(SQLITE_ERROR, &s);
+  EXPECT_NE(std::string::npos, error_info.find(kSimpleSql));
+  EXPECT_NE(std::string::npos, error_info.find("volcano"));
+  EXPECT_NE(std::string::npos, error_info.find("version: 4"));
+}
+
+#if !defined(MOJO_APPTEST_IMPL)
+TEST_F(SQLConnectionTest, RegisterIntentToUpload) {
+  base::FilePath breadcrumb_path(
+      db_path().DirName().Append(FILE_PATH_LITERAL("sqlite-diag")));
+
+  // No stale diagnostic store.
+  ASSERT_TRUE(!base::PathExists(breadcrumb_path));
+
+  // The histogram tag is required to enable diagnostic features.
+  EXPECT_FALSE(db().RegisterIntentToUpload());
+  EXPECT_TRUE(!base::PathExists(breadcrumb_path));
+
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().Open(db_path()));
+
+  // Should signal upload only once.
+  EXPECT_TRUE(db().RegisterIntentToUpload());
+  EXPECT_TRUE(base::PathExists(breadcrumb_path));
+  EXPECT_FALSE(db().RegisterIntentToUpload());
+
+  // Changing the histogram tag should allow new upload to succeed.
+  db().Close();
+  db().set_histogram_tag("NewTest");
+  ASSERT_TRUE(db().Open(db_path()));
+  EXPECT_TRUE(db().RegisterIntentToUpload());
+  EXPECT_FALSE(db().RegisterIntentToUpload());
+
+  // Old tag is still prevented.
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().Open(db_path()));
+  EXPECT_FALSE(db().RegisterIntentToUpload());
+}
+#endif  // !defined(MOJO_APPTEST_IMPL)
+
+}  // namespace sql

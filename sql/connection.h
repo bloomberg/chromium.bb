@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -470,6 +471,11 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
       const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
+  // Collect various diagnostic information and post a crash dump to aid
+  // debugging.  Dump rate per database is limited to prevent overwhelming the
+  // crash server.
+  void ReportDiagnosticInfo(int extended_error, Statement* stmt);
+
  private:
   // For recovery module.
   friend class Recovery;
@@ -484,6 +490,9 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
   friend class test::ScopedCommitHook;
   friend class test::ScopedScalarFunction;
   friend class test::ScopedMockTimeSource;
+
+  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, CollectDiagnosticInfo);
+  FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, RegisterIntentToUpload);
 
   // Internal initialize function used by both Init and InitInMemory. The file
   // name is always 8 bits since we want to use the 8-bit version of
@@ -504,7 +513,7 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
   // Check whether the current thread is allowed to make IO calls, but only
   // if database wasn't open in memory. Function is inlined to be a no-op in
   // official build.
-  void AssertIOAllowed() {
+  void AssertIOAllowed() const {
     if (!in_memory_)
       base::ThreadRestrictions::AssertIOAllowed();
   }
@@ -652,6 +661,33 @@ class SQL_EXPORT Connection : public base::trace_event::MemoryDumpProvider {
   // overriding the change detection for cases like DDL (CREATE, DROP, etc),
   // which do not participate in the total-rows-changed tracking.
   void ReleaseCacheMemoryIfNeeded(bool implicit_change_performed);
+
+  // Returns the results of sqlite3_db_filename(), which should match the path
+  // passed to Open().
+  base::FilePath DbPath() const;
+
+  // Helper to prevent uploading too many diagnostic dumps for a given database,
+  // since every dump will likely show the same problem.  Returns |true| if this
+  // function was not previously called for this database, and the persistent
+  // storage which tracks state was updated.
+  //
+  // |false| is returned if the function was previously called for this
+  // database, even across restarts.  |false| is also returned if the persistent
+  // storage cannot be updated, possibly indicating problems requiring user or
+  // admin intervention, such as filesystem corruption or disk full.  |false| is
+  // also returned if the persistent storage contains invalid data or is not
+  // readable.
+  //
+  // TODO(shess): It would make sense to reset the persistent state if the
+  // database is razed or recovered, or if the diagnostic code adds new
+  // capabilities.
+  bool RegisterIntentToUpload() const;
+
+  // Helper to collect diagnostic info for a corrupt database.
+  std::string CollectCorruptionInfo();
+
+  // Helper to collect diagnostic info for errors.
+  std::string CollectErrorInfo(int error, Statement* stmt) const;
 
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
