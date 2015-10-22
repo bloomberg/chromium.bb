@@ -1,0 +1,26 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function onload()
+{
+    testRunner.showWebInspector(JSON.stringify({ "drawer-view-closeableTabs": JSON.stringify({ sensors: true }) }));
+    runTest();
+}
+
+function test()
+{
+    var drawer = WebInspector.inspectorView._drawer._tabbedPane;
+    InspectorTest.addResult("Has sensors tab: " + drawer.hasTab("sensors"));
+    InspectorTest.addResult("Has rendering tab: " + drawer.hasTab("rendering"));
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>Tests that persisted closeable tabs are restored.</p>
+</body>
+</html>

@@ -9,7 +9,7 @@
 <script>
 function test()
 {
-    WebInspector.inspectorView.showViewInDrawer("search");
+    WebInspector.inspectorView.showViewInDrawer("sources.search");
     var scope = new WebInspector.SourcesSearchScope();
     InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
 

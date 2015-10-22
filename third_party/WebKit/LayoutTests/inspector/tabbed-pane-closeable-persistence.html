@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+var test = function()
+{
+    function logPersistenceSetting()
+    {
+        InspectorTest.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedPaneController._closeableTabSetting.get()));
+    }
+
+    var tabbedPaneController = WebInspector.inspectorView._drawer._extensibleTabbedPaneController;
+    logPersistenceSetting();
+    // Show a closeable tab.
+    tabbedPaneController.showTab("sensors");
+    logPersistenceSetting();
+    tabbedPaneController.showTab("sensors");
+    logPersistenceSetting();
+    // Show a permanent tab.
+    tabbedPaneController.showTab("console");
+    logPersistenceSetting();
+    // Show temporary tab.
+    tabbedPaneController.showTab("sources.history");
+    logPersistenceSetting();
+    // Close closeable tab.
+    tabbedPaneController._tabbedPane.closeTab("sensors");
+    logPersistenceSetting();
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests extensible tabbed pane closeable tabs persistence logic.</p>
+</body>
+</html>

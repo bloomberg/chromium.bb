@@ -1,0 +1,5 @@
+Tests that persisted closeable tabs are restored.
+
+Has sensors tab: true
+Has rendering tab: false
+
