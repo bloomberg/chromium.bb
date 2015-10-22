@@ -233,13 +233,6 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXStringAttribute {
-    // Document attributes.
-    doc_url,
-    doc_title,
-    doc_mimetype,
-    doc_doctype,
-
-    // Attributes that could apply to any node.
     access_key,
     action,
     auto_complete,
@@ -271,10 +264,6 @@
     scroll_y_max,
 
     // Attributes for retrieving the endpoints of a selection.
-    anchor_object_id,
-    anchor_offset,
-    focus_object_id,
-    focus_offset,
     text_sel_start,
     text_sel_end,
 
@@ -305,14 +294,8 @@
     title_ui_element,
     activedescendant_id,
 
-    // Uniquely identifies an AXTree.
-    tree_id,
-
     // Identifies a child tree which this node hosts.
     child_tree_id,
-
-    // Identifies the parent tree that hosts this tree's root node.
-    parent_tree_id,
 
     // Position or Number of items in current set of listitems or treeitems
     set_size,
@@ -340,9 +323,6 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXFloatAttribute {
-    // Document attributes.
-    doc_loading_progress,
-
     // Range attributes.
     value_for_range,
     min_value_for_range,
@@ -354,9 +334,6 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXBoolAttribute {
-    // Document attributes.
-    doc_loaded,
-
     // True if a checkbox or radio button is in the "mixed" state.
     button_mixed,
 

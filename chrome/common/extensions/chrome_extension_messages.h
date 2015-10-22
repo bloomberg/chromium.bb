@@ -19,6 +19,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "url/gurl.h"
 
@@ -68,7 +69,24 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXNodeData)
   IPC_STRUCT_TRAITS_MEMBER(child_ids)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate<ui::AXNodeData>)
+IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeData)
+  IPC_STRUCT_TRAITS_MEMBER(tree_id)
+  IPC_STRUCT_TRAITS_MEMBER(parent_tree_id)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(mimetype)
+  IPC_STRUCT_TRAITS_MEMBER(doctype)
+  IPC_STRUCT_TRAITS_MEMBER(loaded)
+  IPC_STRUCT_TRAITS_MEMBER(loading_progress)
+  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_object_id)
+  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_offset)
+  IPC_STRUCT_TRAITS_MEMBER(sel_focus_object_id)
+  IPC_STRUCT_TRAITS_MEMBER(sel_focus_offset)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate)
+  IPC_STRUCT_TRAITS_MEMBER(has_tree_data)
+  IPC_STRUCT_TRAITS_MEMBER(tree_data)
   IPC_STRUCT_TRAITS_MEMBER(node_id_to_clear)
   IPC_STRUCT_TRAITS_MEMBER(nodes)
 IPC_STRUCT_TRAITS_END()
@@ -81,7 +99,7 @@ IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
   IPC_STRUCT_MEMBER(gfx::Vector2d, location_offset)
 
   // The tree update.
-  IPC_STRUCT_MEMBER(ui::AXTreeUpdate<ui::AXNodeData>, update)
+  IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
 
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)

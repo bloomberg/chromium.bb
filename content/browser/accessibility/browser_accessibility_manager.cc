@@ -40,7 +40,7 @@ using AXTreeIDMap =
     base::hash_map<AXTreeIDRegistry::AXTreeID, BrowserAccessibilityManager*>;
 base::LazyInstance<AXTreeIDMap> g_ax_tree_id_map = LAZY_INSTANCE_INITIALIZER;
 
-SimpleAXTreeUpdate MakeAXTreeUpdate(
+ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node1,
     const ui::AXNodeData& node2 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node3 /* = ui::AXNodeData() */,
@@ -53,7 +53,7 @@ SimpleAXTreeUpdate MakeAXTreeUpdate(
   CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
   int32 no_id = empty_data.id;
 
-  SimpleAXTreeUpdate update;
+  ui::AXTreeUpdate update;
   update.nodes.push_back(node1);
   if (node2.id != no_id)
     update.nodes.push_back(node2);
@@ -95,7 +95,7 @@ BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
 // For other platforms, instantiate the base class.
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const SimpleAXTreeUpdate& initial_tree,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManager(initial_tree, delegate, factory);
@@ -125,7 +125,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
-    const SimpleAXTreeUpdate& initial_tree,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : delegate_(delegate),
@@ -145,7 +145,7 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
 }
 
 void BrowserAccessibilityManager::Initialize(
-    const SimpleAXTreeUpdate& initial_tree) {
+    const ui::AXTreeUpdate& initial_tree) {
   if (!tree_->Unserialize(initial_tree)) {
     if (delegate_) {
       LOG(ERROR) << tree_->error();
@@ -160,12 +160,12 @@ void BrowserAccessibilityManager::Initialize(
 }
 
 // static
-SimpleAXTreeUpdate
+ui::AXTreeUpdate
 BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  SimpleAXTreeUpdate update;
+  ui::AXTreeUpdate update;
   update.nodes.push_back(empty_document);
   return update;
 }
@@ -196,7 +196,7 @@ BrowserAccessibilityManager::GetParentNodeFromParentTree() {
   if (!GetRoot())
     return nullptr;
 
-  int parent_tree_id = GetRoot()->GetIntAttribute(ui::AX_ATTR_PARENT_TREE_ID);
+  int parent_tree_id = GetTreeData().parent_tree_id;
   BrowserAccessibilityManager* parent_manager =
       BrowserAccessibilityManager::FromID(parent_tree_id);
   if (!parent_manager)
@@ -224,6 +224,10 @@ BrowserAccessibilityManager::GetParentNodeFromParentTree() {
   }
 
   return nullptr;
+}
+
+const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() {
+  return tree_->data();
 }
 
 void BrowserAccessibilityManager::OnWindowFocused() {
@@ -527,6 +531,9 @@ BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
   return next_node;
 }
 
+void BrowserAccessibilityManager::OnTreeDataChanged(ui::AXTree* tree) {
+}
+
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
   DCHECK(node);
@@ -568,10 +575,9 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  if (GetRoot()->HasIntAttribute(ui::AX_ATTR_TREE_ID) &&
-      GetRoot()->GetIntAttribute(ui::AX_ATTR_TREE_ID) != ax_tree_id_) {
+  if (GetTreeData().tree_id != -1 && GetTreeData().tree_id != ax_tree_id_) {
     g_ax_tree_id_map.Get().erase(ax_tree_id_);
-    ax_tree_id_ = GetRoot()->GetIntAttribute(ui::AX_ATTR_TREE_ID);
+    ax_tree_id_ = GetTreeData().tree_id;
     g_ax_tree_id_map.Get().insert(std::make_pair(ax_tree_id_, this));
   }
 }
@@ -580,7 +586,7 @@ BrowserAccessibilityDelegate*
     BrowserAccessibilityManager::GetDelegateFromRootManager() {
   if (!GetRoot())
     return nullptr;
-  int parent_tree_id = GetRoot()->GetIntAttribute(ui::AX_ATTR_PARENT_TREE_ID);
+  int parent_tree_id = GetTreeData().parent_tree_id;
   BrowserAccessibilityManager* parent_manager =
       BrowserAccessibilityManager::FromID(parent_tree_id);
   if (parent_manager)
@@ -588,13 +594,16 @@ BrowserAccessibilityDelegate*
   return delegate();
 }
 
-SimpleAXTreeUpdate
+ui::AXTreeUpdate
 BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
-  scoped_ptr<ui::AXTreeSource<const ui::AXNode*, ui::AXNodeData> > tree_source(
+  scoped_ptr<ui::AXTreeSource<const ui::AXNode*,
+                              ui::AXNodeData,
+                              ui::AXTreeData> > tree_source(
       tree_->CreateTreeSource());
-  ui::AXTreeSerializer<const ui::AXNode*, ui::AXNodeData> serializer(
-      tree_source.get());
-  SimpleAXTreeUpdate update;
+  ui::AXTreeSerializer<const ui::AXNode*,
+                       ui::AXNodeData,
+                       ui::AXTreeData> serializer(tree_source.get());
+  ui::AXTreeUpdate update;
   serializer.SerializeChanges(tree_->root(), &update);
   return update;
 }

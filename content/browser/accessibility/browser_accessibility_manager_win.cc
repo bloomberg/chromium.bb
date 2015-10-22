@@ -19,7 +19,7 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const SimpleAXTreeUpdate& initial_tree,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerWin(initial_tree, delegate, factory);
@@ -31,7 +31,7 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 }
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
-    const SimpleAXTreeUpdate& initial_tree,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
@@ -50,7 +50,7 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
 }
 
 // static
-SimpleAXTreeUpdate
+ui::AXTreeUpdate
     BrowserAccessibilityManagerWin::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
@@ -60,7 +60,7 @@ SimpleAXTreeUpdate
       (1 << ui::AX_STATE_READ_ONLY) |
       (1 << ui::AX_STATE_BUSY);
 
-  SimpleAXTreeUpdate update;
+  ui::AXTreeUpdate update;
   update.nodes.push_back(empty_document);
   return update;
 }
@@ -122,7 +122,7 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
       node == GetRoot() &&
       node->PlatformChildCount() == 0 &&
       !node->HasState(ui::AX_STATE_BUSY) &&
-      !node->GetBoolAttribute(ui::AX_ATTR_DOC_LOADED)) {
+      !node->manager()->GetTreeData().loaded) {
     return;
   }
 
@@ -205,7 +205,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
       node == GetRoot() &&
       node->PlatformChildCount() == 0 &&
       !node->HasState(ui::AX_STATE_BUSY) &&
-      !node->GetBoolAttribute(ui::AX_ATTR_DOC_LOADED)) {
+      !node->manager()->GetTreeData().loaded) {
     return;
   }
 

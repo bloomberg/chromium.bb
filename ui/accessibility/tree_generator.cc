@@ -84,7 +84,7 @@ void TreeGenerator::BuildUniqueTreeWithSize(
 
   // Build an AXTreeUpdate. The first two nodes of the tree always
   // go in the same place.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.nodes.resize(node_count);
   update.nodes[0].id = permuted[0];
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;

@@ -42,7 +42,7 @@ const size_t kMaxSnapshotNodeCount = 5000;
 // static
 void RendererAccessibility::SnapshotAccessibilityTree(
     RenderFrameImpl* render_frame,
-    ui::AXTreeUpdate<content::AXContentNodeData>* response) {
+    AXContentTreeUpdate* response) {
   DCHECK(render_frame);
   DCHECK(response);
   if (!render_frame->GetWebFrame())

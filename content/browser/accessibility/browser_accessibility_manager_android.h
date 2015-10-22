@@ -48,13 +48,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  public:
   BrowserAccessibilityManagerAndroid(
       base::android::ScopedJavaLocalRef<jobject> content_view_core,
-      const SimpleAXTreeUpdate& initial_tree,
+      const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   ~BrowserAccessibilityManagerAndroid() override;
 
-  static SimpleAXTreeUpdate GetEmptyDocument();
+  static ui::AXTreeUpdate GetEmptyDocument();
 
   void SetContentViewCore(
       base::android::ScopedJavaLocalRef<jobject> content_view_core);

@@ -56,6 +56,14 @@ void AXTreeSourceAura::ShowContextMenu(int32 id) {
     obj->ShowContextMenu();
 }
 
+ui::AXTreeData AXTreeSourceAura::GetTreeData() const {
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = 0;
+  tree_data.loaded = true;
+  tree_data.loading_progress = 1.0;
+  return tree_data;
+}
+
 AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {
   return root_.get();
 }

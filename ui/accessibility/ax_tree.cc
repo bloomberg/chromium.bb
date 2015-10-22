@@ -53,12 +53,12 @@ AXTree::AXTree()
   root.id = -1;
   root.role = AX_ROLE_ROOT_WEB_AREA;
 
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
 }
 
-AXTree::AXTree(const AXTreeUpdate<AXNodeData>& initial_state)
+AXTree::AXTree(const AXTreeUpdate& initial_state)
     : delegate_(NULL), root_(NULL) {
   CHECK(Unserialize(initial_state)) << error();
 }
@@ -77,9 +77,18 @@ AXNode* AXTree::GetFromId(int32 id) const {
   return iter != id_map_.end() ? iter->second : NULL;
 }
 
-bool AXTree::Unserialize(const AXTreeUpdate<AXNodeData>& update) {
+void AXTree::UpdateData(const AXTreeData& data) {
+  data_ = data;
+  if (delegate_)
+    delegate_->OnTreeDataChanged(this);
+}
+
+bool AXTree::Unserialize(const AXTreeUpdate& update) {
   AXTreeUpdateState update_state;
   int32 old_root_id = root_ ? root_->id() : 0;
+
+  if (update.has_tree_data)
+    UpdateData(update.tree_data);
 
   if (update.node_id_to_clear != 0) {
     AXNode* node = GetFromId(update.node_id_to_clear);
@@ -144,7 +153,7 @@ bool AXTree::Unserialize(const AXTreeUpdate<AXNodeData>& update) {
 }
 
 std::string AXTree::ToString() const {
-  return TreeToStringHelper(root_, 0);
+  return "AXTree" + data_.ToString() + "\n" + TreeToStringHelper(root_, 0);
 }
 
 AXNode* AXTree::CreateNode(AXNode* parent, int32 id, int32 index_in_parent) {

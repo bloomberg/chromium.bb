@@ -652,12 +652,8 @@ bool BrowserAccessibility::HasCaret() const {
     return true;
   }
 
-  BrowserAccessibility* root = manager()->GetRoot();
   // The caret is always at the focus of the selection.
-  int32 focus_id;
-  if (!root || !root->GetIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, &focus_id))
-    return false;
-
+  int32 focus_id = manager()->GetTreeData().sel_focus_object_id;
   BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
   if (!focus_object)
     return false;

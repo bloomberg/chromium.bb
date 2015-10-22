@@ -18,7 +18,7 @@
 namespace ui {
 
 // A compact representation of the accessibility information for a
-// single web object, in a form that can be serialized and sent from
+// single accessible object, in a form that can be serialized and sent from
 // one process to another.
 struct AX_EXPORT AXNodeData {
   AXNodeData();

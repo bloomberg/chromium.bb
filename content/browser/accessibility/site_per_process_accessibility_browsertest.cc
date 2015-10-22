@@ -41,7 +41,7 @@ class SitePerProcessAccessibilityBrowserTest
 bool AccessibilityTreeContainsDocTitle(
     BrowserAccessibility* node,
     const std::string& title) {
-  if (node->GetStringAttribute(ui::AX_ATTR_DOC_TITLE) == title)
+  if (node->GetStringAttribute(ui::AX_ATTR_NAME) == title)
     return true;
   for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
     if (AccessibilityTreeContainsDocTitle(node->PlatformGetChild(i), title))
@@ -53,9 +53,8 @@ bool AccessibilityTreeContainsDocTitle(
 // Utility function to determine if an accessibility tree has finished loading
 // or if the tree represents a page that hasn't finished loading yet.
 bool AccessibilityTreeIsLoaded(BrowserAccessibilityManager* manager) {
-  BrowserAccessibility* root = manager->GetRoot();
-  return (root->GetFloatAttribute(ui::AX_ATTR_DOC_LOADING_PROGRESS) == 1.0 &&
-          root->GetStringAttribute(ui::AX_ATTR_DOC_URL) != url::kAboutBlankURL);
+  return (manager->GetTreeData().loading_progress == 1.0 &&
+          manager->GetTreeData().url != url::kAboutBlankURL);
 }
 
 // Times out on Android, not clear if it's an actual bug or just slow.

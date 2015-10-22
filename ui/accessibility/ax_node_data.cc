@@ -334,18 +334,6 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_HIERARCHICAL_LEVEL:
         result += " level=" + value;
         break;
-      case AX_ATTR_ANCHOR_OBJECT_ID:
-        result += " anchor_object_id=" + value;
-        break;
-      case AX_ATTR_ANCHOR_OFFSET:
-        result += " anchor_offset=" + value;
-        break;
-      case AX_ATTR_FOCUS_OBJECT_ID:
-        result += " focus_object_id=" + value;
-        break;
-      case AX_ATTR_FOCUS_OFFSET:
-        result += " focus_offset=" + value;
-        break;
       case AX_ATTR_TEXT_SEL_START:
         result += " sel_start=" + value;
         break;
@@ -407,14 +395,8 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
         break;
-      case AX_ATTR_TREE_ID:
-        result += " tree_id=" + value;
-        break;
       case AX_ATTR_CHILD_TREE_ID:
         result += " child_tree_id=" + value;
-        break;
-      case AX_ATTR_PARENT_TREE_ID:
-        result += " parent_tree_id=" + value;
         break;
       case AX_ATTR_COLOR_VALUE:
         result += base::StringPrintf(" color_value=&%X",
@@ -491,18 +473,6 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < string_attributes.size(); ++i) {
     std::string value = string_attributes[i].second;
     switch (string_attributes[i].first) {
-      case AX_ATTR_DOC_URL:
-        result += " doc_url=" + value;
-        break;
-      case AX_ATTR_DOC_TITLE:
-        result += " doc_title=" + value;
-        break;
-      case AX_ATTR_DOC_MIMETYPE:
-        result += " doc_mimetype=" + value;
-        break;
-      case AX_ATTR_DOC_DOCTYPE:
-        result += " doc_doctype=" + value;
-        break;
       case AX_ATTR_ACCESS_KEY:
         result += " access_key=" + value;
         break;
@@ -565,9 +535,6 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < float_attributes.size(); ++i) {
     std::string value = DoubleToString(float_attributes[i].second);
     switch (float_attributes[i].first) {
-      case AX_ATTR_DOC_LOADING_PROGRESS:
-        result += " doc_progress=" + value;
-        break;
       case AX_ATTR_VALUE_FOR_RANGE:
         result += " value_for_range=" + value;
         break;
@@ -588,9 +555,6 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < bool_attributes.size(); ++i) {
     std::string value = bool_attributes[i].second ? "true" : "false";
     switch (bool_attributes[i].first) {
-      case AX_ATTR_DOC_LOADED:
-        result += " doc_loaded=" + value;
-        break;
       case AX_ATTR_BUTTON_MIXED:
         result += " mixed=" + value;
         break;

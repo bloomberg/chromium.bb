@@ -2665,7 +2665,17 @@ STDMETHODIMP BrowserAccessibilityWin::get_URL(BSTR* url) {
   if (!url)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(ui::AX_ATTR_DOC_URL, url);
+  if (this != manager()->GetRoot())
+    return E_FAIL;
+
+  std::string str = manager()->GetTreeData().url;
+  if (str.empty())
+    return S_FALSE;
+
+  *url = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  DCHECK(*url);
+
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
@@ -2675,7 +2685,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
   if (!title)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(ui::AX_ATTR_DOC_TITLE, title);
+  std::string str = manager()->GetTreeData().title;
+  if (str.empty())
+    return S_FALSE;
+
+  *title = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  DCHECK(*title);
+
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
@@ -2685,8 +2702,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
   if (!mime_type)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(
-      ui::AX_ATTR_DOC_MIMETYPE, mime_type);
+  std::string str = manager()->GetTreeData().mimetype;
+  if (str.empty())
+    return S_FALSE;
+
+  *mime_type = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  DCHECK(*mime_type);
+
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
@@ -2696,8 +2719,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
   if (!doc_type)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(
-      ui::AX_ATTR_DOC_DOCTYPE, doc_type);
+  std::string str = manager()->GetTreeData().doctype;
+  if (str.empty())
+    return S_FALSE;
+
+  *doc_type = SysAllocString(base::UTF8ToUTF16(str).c_str());
+  DCHECK(*doc_type);
+
+  return S_OK;
 }
 
 STDMETHODIMP
@@ -3444,7 +3473,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   // On Windows, the value of a document should be its url.
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
       GetRole() == ui::AX_ROLE_WEB_AREA) {
-    value = GetString16Attribute(ui::AX_ATTR_DOC_URL);
+    value = base::UTF8ToUTF16(manager()->GetTreeData().url);
   }
 
   // For certain roles (listbox option, static text, and list marker)
@@ -3885,38 +3914,24 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
 }
 
 int BrowserAccessibilityWin::GetSelectionAnchor() const {
-  BrowserAccessibility* root = manager()->GetRoot();
-  int32 anchor_id;
-  if (!root || !root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, &anchor_id))
-    return -1;
-
+  int32 anchor_id = manager()->GetTreeData().sel_anchor_object_id;
   BrowserAccessibilityWin* anchor_object = manager()->GetFromID(
       anchor_id)->ToBrowserAccessibilityWin();
   if (!anchor_object)
     return -1;
 
-  int anchor_offset;
-  if (!root->GetIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, &anchor_offset))
-    return -1;
-
+  int32 anchor_offset = manager()->GetTreeData().sel_anchor_offset;
   return GetHypertextOffsetFromEndpoint(*anchor_object, anchor_offset);
 }
 
 int BrowserAccessibilityWin::GetSelectionFocus() const {
-  BrowserAccessibility* root = manager()->GetRoot();
-  int32 focus_id;
-  if (!root || !root->GetIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, &focus_id))
-    return -1;
-
+  int32 focus_id = manager()->GetTreeData().sel_focus_object_id;
   BrowserAccessibilityWin* focus_object = manager()->GetFromID(
       focus_id)->ToBrowserAccessibilityWin();
   if (!focus_object)
     return -1;
 
-  int focus_offset;
-  if (!root->GetIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, &focus_offset))
-    return -1;
-
+  int focus_offset = manager()->GetTreeData().sel_focus_offset;
   return GetHypertextOffsetFromEndpoint(*focus_object, focus_offset);
 }
 

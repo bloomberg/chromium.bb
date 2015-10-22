@@ -99,14 +99,7 @@ bool AccessibilityNotificationWaiter::IsAboutBlank() {
   // Skip any accessibility notifications related to "about:blank",
   // to avoid a possible race condition between the test beginning
   // listening for accessibility events and "about:blank" loading.
-  const ui::AXNodeData& root = GetAXTree().root()->data();
-  for (size_t i = 0; i < root.string_attributes.size(); ++i) {
-    if (root.string_attributes[i].first != ui::AX_ATTR_DOC_URL)
-      continue;
-    const std::string& doc_url = root.string_attributes[i].second;
-    return doc_url == url::kAboutBlankURL;
-  }
-  return false;
+  return GetAXTree().data().url == url::kAboutBlankURL;
 }
 
 }  // namespace content

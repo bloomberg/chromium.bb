@@ -1171,7 +1171,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
   for (const auto& iter : ax_tree_snapshot_callbacks_)
-    iter.second.Run(ui::AXTreeUpdate<ui::AXNodeData>());
+    iter.second.Run(ui::AXTreeUpdate());
   ax_tree_snapshot_callbacks_.clear();
 
   // Note: don't add any more code at this point in the function because
@@ -1426,6 +1426,11 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       detail.event_type = param.event_type;
       detail.id = param.id;
       detail.ax_tree_id = GetAXTreeID();
+      if (param.update.has_tree_data) {
+        detail.update.has_tree_data = true;
+        AXContentTreeDataToAXTreeData(param.update.tree_data,
+                                      &detail.update.tree_data);
+      }
       detail.update.node_id_to_clear = param.update.node_id_to_clear;
       detail.update.nodes.resize(param.update.nodes.size());
       for (size_t i = 0; i < param.update.nodes.size(); ++i) {
@@ -1507,14 +1512,18 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
 
 void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
     int callback_id,
-    const ui::AXTreeUpdate<AXContentNodeData>& snapshot) {
+    const AXContentTreeUpdate& snapshot) {
   const auto& it = ax_tree_snapshot_callbacks_.find(callback_id);
   if (it != ax_tree_snapshot_callbacks_.end()) {
-    ui::AXTreeUpdate<ui::AXNodeData> dst_snapshot;
+    ui::AXTreeUpdate dst_snapshot;
     dst_snapshot.nodes.resize(snapshot.nodes.size());
     for (size_t i = 0; i < snapshot.nodes.size(); ++i) {
       AXContentNodeDataToAXNodeData(snapshot.nodes[i],
                                     &dst_snapshot.nodes[i]);
+    }
+    if (snapshot.has_tree_data) {
+      AXContentTreeDataToAXTreeData(snapshot.tree_data,
+                                    &dst_snapshot.tree_data);
     }
     it->second.Run(dst_snapshot);
     ax_tree_snapshot_callbacks_.erase(it);
@@ -2252,14 +2261,6 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
     AXContentIntAttribute attr = iter.first;
     int32 value = iter.second;
     switch (attr) {
-      case AX_CONTENT_ATTR_ROUTING_ID:
-        dst->int_attributes.push_back(std::make_pair(
-            ui::AX_ATTR_TREE_ID, RoutingIDToAXTreeID(value)));
-        break;
-      case AX_CONTENT_ATTR_PARENT_ROUTING_ID:
-        dst->int_attributes.push_back(std::make_pair(
-            ui::AX_ATTR_PARENT_TREE_ID, RoutingIDToAXTreeID(value)));
-        break;
       case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
         dst->int_attributes.push_back(std::make_pair(
             ui::AX_ATTR_CHILD_TREE_ID, RoutingIDToAXTreeID(value)));
@@ -2274,6 +2275,19 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
         break;
     }
   }
+}
+
+void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
+    const AXContentTreeData& src,
+    ui::AXTreeData* dst) {
+  // Copy the common fields.
+  *dst = src;
+
+  if (src.routing_id != -1)
+    dst->tree_id = RoutingIDToAXTreeID(src.routing_id);
+
+  if (src.parent_routing_id != -1)
+    dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
 }
 
 }  // namespace content

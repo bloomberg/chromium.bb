@@ -15,7 +15,7 @@ namespace {
 class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
  public:
   TestBrowserAccessibilityManager(
-      const SimpleAXTreeUpdate& initial_tree)
+      const ui::AXTreeUpdate& initial_tree)
       : BrowserAccessibilityManager(initial_tree,
                                     nullptr,
                                     new BrowserAccessibilityFactory()) {}

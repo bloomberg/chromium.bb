@@ -32,10 +32,8 @@ class BrowserAccessibilityManagerWin;
 class BrowserAccessibilityManagerAuraLinux;
 #endif
 
-using SimpleAXTreeUpdate = ui::AXTreeUpdate<ui::AXNodeData>;
-
 // For testing.
-CONTENT_EXPORT SimpleAXTreeUpdate MakeAXTreeUpdate(
+CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node,
     const ui::AXNodeData& node2 = ui::AXNodeData(),
     const ui::AXNodeData& node3 = ui::AXNodeData(),
@@ -118,7 +116,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Creates the platform-specific BrowserAccessibilityManager, but
   // with no parent window pointer. Only useful for unit tests.
   static BrowserAccessibilityManager* Create(
-      const SimpleAXTreeUpdate& initial_tree,
+      const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
@@ -127,9 +125,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   ~BrowserAccessibilityManager() override;
 
-  void Initialize(const SimpleAXTreeUpdate& initial_tree);
+  void Initialize(const ui::AXTreeUpdate& initial_tree);
 
-  static SimpleAXTreeUpdate GetEmptyDocument();
+  static ui::AXTreeUpdate GetEmptyDocument();
 
   virtual void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) { }
@@ -146,6 +144,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // If this tree has a parent tree, return the parent node in that tree.
   BrowserAccessibility* GetParentNodeFromParentTree();
+
+  // Get the AXTreeData for this frame.
+  const ui::AXTreeData& GetTreeData();
 
   // Called to notify the accessibility manager that its associated native
   // view got focused.
@@ -261,6 +262,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       BrowserAccessibility* node) const;
 
   // AXTreeDelegate implementation.
+  void OnTreeDataChanged(ui::AXTree* tree) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
@@ -281,7 +283,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibilityDelegate* GetDelegateFromRootManager();
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
-  SimpleAXTreeUpdate SnapshotAXTreeForTesting();
+  ui::AXTreeUpdate SnapshotAXTreeForTesting();
 
  protected:
   BrowserAccessibilityManager(
@@ -289,7 +291,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       BrowserAccessibilityFactory* factory);
 
   BrowserAccessibilityManager(
-      const SimpleAXTreeUpdate& initial_tree,
+      const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 

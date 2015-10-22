@@ -40,6 +40,12 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
 
   void OnMessageReceived(const IPC::Message& message);
 
+  TreeCache* GetTreeCacheFromTreeID(int tree_id);
+
+  ScriptContext* context() const {
+    return ObjectBackedNativeHandler::context();
+  }
+
  private:
   // Returns whether this extension has the "interact" permission set (either
   // explicitly or implicitly after manifest parsing).
@@ -65,12 +71,27 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   void DestroyAccessibilityTree(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  void RouteTreeIDFunction(const std::string& name,
+                           void (*callback)(v8::Isolate* isolate,
+                                            v8::ReturnValue<v8::Value> result,
+                                            TreeCache* cache));
+
+  void RouteNodeIDFunction(const std::string& name,
+                           void (*callback)(v8::Isolate* isolate,
+                                            v8::ReturnValue<v8::Value> result,
+                                            TreeCache* cache,
+                                            ui::AXNode* node));
+
+  void RouteNodeIDPlusAttributeFunction(
+      const std::string& name,
+      void (*callback)(v8::Isolate* isolate,
+                       v8::ReturnValue<v8::Value> result,
+                       ui::AXNode* node,
+                       const std::string& attribute_name));
+
   //
   // Access the cached accessibility trees and properties of their nodes.
   //
-
-  // Args: int ax_tree_id, Returns: int root_node_id.
-  void GetRootID(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Args: int ax_tree_id, int node_id, Returns: int parent_node_id.
   void GetParentID(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -123,35 +144,12 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   // Helper functions.
   //
 
-  // Throw an exception if we get bad arguments.
-  void ThrowInvalidArgumentsException(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // For any function that takes int ax_tree_id, int node_id as its first
-  // two arguments, returns the tree and node it corresponds to, or returns
-  // false if not found.
-  bool GetNodeHelper(
-      const v8::FunctionCallbackInfo<v8::Value>& args,
-      TreeCache** out_cache,
-      ui::AXNode** out_node);
-
-  // For any function that takes int ax_tree_id, int node_id, string attr
-  // as its first, returns the node it corresponds to and the string as
-  // a UTF8 string.
-  bool GetAttributeHelper(
-      const v8::FunctionCallbackInfo<v8::Value>& args,
-      ui::AXNode** out_node,
-      std::string* out_attribute_name);
-
-  // Create a V8 string from a string.
-  v8::Local<v8::Value> CreateV8String(const char* str);
-  v8::Local<v8::Value> CreateV8String(const std::string& str);
-
   // Handle accessibility events from the browser process.
   void OnAccessibilityEvent(const ExtensionMsg_AccessibilityEventParams& params,
                             bool is_active_profile);
 
   // AXTreeDelegate implementation.
+  void OnTreeDataChanged(ui::AXTree* tree) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;

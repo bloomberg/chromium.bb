@@ -36,6 +36,8 @@
         'ax_text_utils.h',
         'ax_tree.cc',
         'ax_tree.h',
+        'ax_tree_data.cc',
+        'ax_tree_data.h',
         'ax_tree_serializer.cc',
         'ax_tree_serializer.h',
         'ax_tree_source.h',

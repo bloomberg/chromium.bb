@@ -969,21 +969,25 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
       (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
-  // Place the caret between 'h' and 'e'.
-  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 5);
-  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, 1);
-  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 5);
-  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, 1);
-
   root.child_ids.push_back(2);
   div_editable.child_ids.push_back(3);
   div_editable.child_ids.push_back(4);
   link.child_ids.push_back(5);
 
+  ui::AXTreeUpdate update = MakeAXTreeUpdate(
+      root, div_editable, link, link_text, text);
+
+  // Place the caret between 'h' and 'e'.
+  update.has_tree_data = true;
+  update.tree_data.sel_anchor_object_id = 5;
+  update.tree_data.sel_anchor_offset = 1;
+  update.tree_data.sel_focus_object_id = 5;
+  update.tree_data.sel_focus_offset = 1;
+
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, div_editable, link, link_text, text),
+          update,
           nullptr, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(5, CountedBrowserAccessibility::num_instances());
 
@@ -1084,21 +1088,25 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   link_text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
-  // Select the following part of the text: "lick here".
-  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OBJECT_ID, 3);
-  root.AddIntAttribute(ui::AX_ATTR_ANCHOR_OFFSET, 1);
-  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OBJECT_ID, 5);
-  root.AddIntAttribute(ui::AX_ATTR_FOCUS_OFFSET, 4);
-
   root.child_ids.push_back(2);
   div_editable.child_ids.push_back(3);
   div_editable.child_ids.push_back(4);
   link.child_ids.push_back(5);
 
+  ui::AXTreeUpdate update =
+      MakeAXTreeUpdate(root, div_editable, link, link_text, text);
+
+  // Select the following part of the text: "lick here".
+  update.has_tree_data = true;
+  update.tree_data.sel_anchor_object_id = 3;
+  update.tree_data.sel_anchor_offset = 1;
+  update.tree_data.sel_focus_object_id = 5;
+  update.tree_data.sel_focus_offset = 4;
+
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, div_editable, link, link_text, text),
+          update,
           nullptr, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(5, CountedBrowserAccessibility::num_instances());
 

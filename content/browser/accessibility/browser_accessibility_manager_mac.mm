@@ -13,7 +13,7 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const SimpleAXTreeUpdate& initial_tree,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerMac(
@@ -22,7 +22,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     NSView* parent_view,
-    const SimpleAXTreeUpdate& initial_tree,
+    const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
@@ -31,14 +31,14 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
 }
 
 // static
-SimpleAXTreeUpdate
+ui::AXTreeUpdate
     BrowserAccessibilityManagerMac::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
   empty_document.state =
       1 << ui::AX_STATE_READ_ONLY;
-  SimpleAXTreeUpdate update;
+  ui::AXTreeUpdate update;
   update.nodes.push_back(empty_document);
   return update;
 }

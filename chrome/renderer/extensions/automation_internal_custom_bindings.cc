@@ -20,6 +20,8 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
 
+namespace extensions {
+
 namespace {
 
 // Helper to convert an enum to a V8 object.
@@ -36,9 +38,171 @@ v8::Local<v8::Object> ToEnumObject(v8::Isolate* isolate,
   return object;
 }
 
-}  // namespace
+void ThrowInvalidArgumentsException(
+    AutomationInternalCustomBindings* automation_bindings) {
+  v8::Isolate* isolate = automation_bindings->GetIsolate();
+  automation_bindings->GetIsolate()->ThrowException(
+      v8::String::NewFromUtf8(
+          isolate,
+          "Invalid arguments to AutomationInternalCustomBindings function",
+          v8::NewStringType::kNormal)
+          .ToLocalChecked());
 
-namespace extensions {
+  LOG(FATAL) << "Invalid arguments to AutomationInternalCustomBindings function"
+             << automation_bindings->context()->GetStackTraceAsString();
+}
+
+v8::Local<v8::Value> CreateV8String(v8::Isolate* isolate, const char* str) {
+  return v8::String::NewFromUtf8(isolate, str, v8::String::kNormalString,
+                                 strlen(str));
+}
+
+v8::Local<v8::Value> CreateV8String(v8::Isolate* isolate,
+                                    const std::string& str) {
+  return v8::String::NewFromUtf8(isolate, str.c_str(),
+                                 v8::String::kNormalString, str.length());
+}
+
+//
+// Helper class that helps implement bindings for a JavaScript function
+// that takes a single input argument consisting of a Tree ID. Looks up
+// the TreeCache and passes it to the function passed to the constructor.
+//
+
+typedef void (*TreeIDFunction)(v8::Isolate* isolate,
+                               v8::ReturnValue<v8::Value> result,
+                               TreeCache* cache);
+
+class TreeIDWrapper : public base::RefCountedThreadSafe<TreeIDWrapper> {
+ public:
+  TreeIDWrapper(AutomationInternalCustomBindings* automation_bindings,
+                TreeIDFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() != 1 || !args[0]->IsNumber())
+      ThrowInvalidArgumentsException(automation_bindings_);
+
+    int tree_id = args[0]->Int32Value();
+    TreeCache* cache = automation_bindings_->GetTreeCacheFromTreeID(tree_id);
+    if (!cache)
+      return;
+
+    // The root can be null if this is called from an onTreeChange callback.
+    if (!cache->tree.root())
+      return;
+
+    function_(isolate, args.GetReturnValue(), cache);
+  }
+
+ private:
+  virtual ~TreeIDWrapper() {}
+
+  friend class base::RefCountedThreadSafe<TreeIDWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  TreeIDFunction function_;
+};
+
+//
+// Helper class that helps implement bindings for a JavaScript function
+// that takes two input arguments: a tree ID and node ID. Looks up the
+// TreeCache and the AXNode and passes them to the function passed to
+// the constructor.
+//
+
+typedef void (*NodeIDFunction)(v8::Isolate* isolate,
+                               v8::ReturnValue<v8::Value> result,
+                               TreeCache* cache,
+                               ui::AXNode* node);
+
+class NodeIDWrapper : public base::RefCountedThreadSafe<NodeIDWrapper> {
+ public:
+  NodeIDWrapper(AutomationInternalCustomBindings* automation_bindings,
+                NodeIDFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber())
+      ThrowInvalidArgumentsException(automation_bindings_);
+
+    int tree_id = args[0]->Int32Value();
+    int node_id = args[1]->Int32Value();
+
+    TreeCache* cache = automation_bindings_->GetTreeCacheFromTreeID(tree_id);
+    if (!cache)
+      return;
+
+    ui::AXNode* node = cache->tree.GetFromId(node_id);
+    if (!node)
+      return;
+
+    function_(isolate, args.GetReturnValue(), cache, node);
+  }
+
+ private:
+  virtual ~NodeIDWrapper() {}
+
+  friend class base::RefCountedThreadSafe<NodeIDWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  NodeIDFunction function_;
+};
+
+//
+// Helper class that helps implement bindings for a JavaScript function
+// that takes three input arguments: a tree ID, node ID, and string
+// argument. Looks up the TreeCache and the AXNode and passes them to the
+// function passed to the constructor.
+//
+
+typedef void (*NodeIDPlusAttributeFunction)(v8::Isolate* isolate,
+                                            v8::ReturnValue<v8::Value> result,
+                                            ui::AXNode* node,
+                                            const std::string& attribute);
+
+class NodeIDPlusAttributeWrapper
+    : public base::RefCountedThreadSafe<NodeIDPlusAttributeWrapper> {
+ public:
+  NodeIDPlusAttributeWrapper(
+      AutomationInternalCustomBindings* automation_bindings,
+      NodeIDPlusAttributeFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() < 3 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+        !args[2]->IsString()) {
+      ThrowInvalidArgumentsException(automation_bindings_);
+    }
+
+    int tree_id = args[0]->Int32Value();
+    int node_id = args[1]->Int32Value();
+    std::string attribute = *v8::String::Utf8Value(args[2]);
+
+    TreeCache* cache = automation_bindings_->GetTreeCacheFromTreeID(tree_id);
+    if (!cache)
+      return;
+
+    ui::AXNode* node = cache->tree.GetFromId(node_id);
+    if (!node)
+      return;
+
+    function_(isolate, args.GetReturnValue(), node, attribute);
+  }
+
+ private:
+  virtual ~NodeIDPlusAttributeWrapper() {}
+
+  friend class base::RefCountedThreadSafe<NodeIDPlusAttributeWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  NodeIDPlusAttributeFunction function_;
+};
+
+}  // namespace
 
 TreeCache::TreeCache() {}
 TreeCache::~TreeCache() {}
@@ -109,28 +273,204 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   RouteFunction(#FN, \
                 base::Bind(&AutomationInternalCustomBindings::FN, \
                 base::Unretained(this)))
-
   ROUTE_FUNCTION(IsInteractPermitted);
   ROUTE_FUNCTION(GetSchemaAdditions);
   ROUTE_FUNCTION(GetRoutingID);
   ROUTE_FUNCTION(StartCachingAccessibilityTrees);
   ROUTE_FUNCTION(DestroyAccessibilityTree);
-  ROUTE_FUNCTION(GetRootID);
-  ROUTE_FUNCTION(GetParentID);
-  ROUTE_FUNCTION(GetChildCount);
   ROUTE_FUNCTION(GetChildIDAtIndex);
-  ROUTE_FUNCTION(GetIndexInParent);
-  ROUTE_FUNCTION(GetState);
-  ROUTE_FUNCTION(GetRole);
-  ROUTE_FUNCTION(GetLocation);
-  ROUTE_FUNCTION(GetStringAttribute);
-  ROUTE_FUNCTION(GetBoolAttribute);
-  ROUTE_FUNCTION(GetIntAttribute);
-  ROUTE_FUNCTION(GetFloatAttribute);
-  ROUTE_FUNCTION(GetIntListAttribute);
-  ROUTE_FUNCTION(GetHtmlAttribute);
-
   #undef ROUTE_FUNCTION
+
+  // Bindings that take a Tree ID and return a property of the tree.
+
+  RouteTreeIDFunction(
+      "GetRootID", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                      TreeCache* cache) {
+        result.Set(v8::Integer::New(isolate, cache->tree.root()->id()));
+      });
+  RouteTreeIDFunction(
+      "GetDocURL", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                      TreeCache* cache) {
+        result.Set(
+            v8::String::NewFromUtf8(isolate, cache->tree.data().url.c_str()));
+      });
+  RouteTreeIDFunction(
+      "GetDocTitle", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                        TreeCache* cache) {
+        result.Set(
+            v8::String::NewFromUtf8(isolate, cache->tree.data().title.c_str()));
+      });
+  RouteTreeIDFunction(
+      "GetDocLoaded", [](v8::Isolate* isolate,
+                         v8::ReturnValue<v8::Value> result, TreeCache* cache) {
+        result.Set(v8::Boolean::New(isolate, cache->tree.data().loaded));
+      });
+  RouteTreeIDFunction("GetDocLoadingProgress",
+                      [](v8::Isolate* isolate,
+                         v8::ReturnValue<v8::Value> result, TreeCache* cache) {
+                        result.Set(v8::Number::New(
+                            isolate, cache->tree.data().loading_progress));
+                      });
+  RouteTreeIDFunction("GetAnchorObjectID",
+                      [](v8::Isolate* isolate,
+                         v8::ReturnValue<v8::Value> result, TreeCache* cache) {
+                        result.Set(v8::Number::New(
+                            isolate, cache->tree.data().sel_anchor_object_id));
+                      });
+  RouteTreeIDFunction("GetAnchorOffset", [](v8::Isolate* isolate,
+                                            v8::ReturnValue<v8::Value> result,
+                                            TreeCache* cache) {
+    result.Set(v8::Number::New(isolate, cache->tree.data().sel_anchor_offset));
+  });
+  RouteTreeIDFunction("GetFocusObjectID",
+                      [](v8::Isolate* isolate,
+                         v8::ReturnValue<v8::Value> result, TreeCache* cache) {
+                        result.Set(v8::Number::New(
+                            isolate, cache->tree.data().sel_focus_object_id));
+                      });
+  RouteTreeIDFunction("GetFocusOffset", [](v8::Isolate* isolate,
+                                           v8::ReturnValue<v8::Value> result,
+                                           TreeCache* cache) {
+    result.Set(v8::Number::New(isolate, cache->tree.data().sel_focus_offset));
+  });
+
+  // Bindings that take a Tree ID and Node ID and return a property of the node.
+
+  RouteNodeIDFunction(
+      "GetParentID", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                        TreeCache* cache, ui::AXNode* node) {
+        if (node->parent())
+          result.Set(v8::Integer::New(isolate, node->parent()->id()));
+      });
+  RouteNodeIDFunction("GetChildCount", [](v8::Isolate* isolate,
+                                          v8::ReturnValue<v8::Value> result,
+                                          TreeCache* cache, ui::AXNode* node) {
+    result.Set(v8::Integer::New(isolate, node->child_count()));
+  });
+  RouteNodeIDFunction(
+      "GetIndexInParent",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         TreeCache* cache, ui::AXNode* node) {
+        result.Set(v8::Integer::New(isolate, node->index_in_parent()));
+      });
+  RouteNodeIDFunction(
+      "GetState", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                     TreeCache* cache, ui::AXNode* node) {
+        v8::Local<v8::Object> state(v8::Object::New(isolate));
+        uint32 state_pos = 0, state_shifter = node->data().state;
+        while (state_shifter) {
+          if (state_shifter & 1) {
+            std::string key = ToString(static_cast<ui::AXState>(state_pos));
+            state->Set(CreateV8String(isolate, key),
+                       v8::Boolean::New(isolate, true));
+          }
+          state_shifter = state_shifter >> 1;
+          state_pos++;
+        }
+        result.Set(state);
+      });
+  RouteNodeIDFunction(
+      "GetRole", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                    TreeCache* cache, ui::AXNode* node) {
+        std::string role_name = ui::ToString(node->data().role);
+        result.Set(v8::String::NewFromUtf8(isolate, role_name.c_str()));
+      });
+  RouteNodeIDFunction(
+      "GetLocation", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                        TreeCache* cache, ui::AXNode* node) {
+        v8::Local<v8::Object> location_obj(v8::Object::New(isolate));
+        gfx::Rect location = node->data().location;
+        location.Offset(cache->location_offset);
+        location_obj->Set(CreateV8String(isolate, "left"),
+                          v8::Integer::New(isolate, location.x()));
+        location_obj->Set(CreateV8String(isolate, "top"),
+                          v8::Integer::New(isolate, location.y()));
+        location_obj->Set(CreateV8String(isolate, "width"),
+                          v8::Integer::New(isolate, location.width()));
+        location_obj->Set(CreateV8String(isolate, "height"),
+                          v8::Integer::New(isolate, location.height()));
+        result.Set(location_obj);
+      });
+
+  // Bindings that take a Tree ID and Node ID and string attribute name
+  // and return a property of the node.
+
+  RouteNodeIDPlusAttributeFunction(
+      "GetStringAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXNode* node, const std::string& attribute_name) {
+        ui::AXStringAttribute attribute =
+            ui::ParseAXStringAttribute(attribute_name);
+        std::string attr_value;
+        if (!node->data().GetStringAttribute(attribute, &attr_value))
+          return;
+
+        result.Set(v8::String::NewFromUtf8(isolate, attr_value.c_str()));
+      });
+  RouteNodeIDPlusAttributeFunction(
+      "GetBoolAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXNode* node, const std::string& attribute_name) {
+        ui::AXBoolAttribute attribute =
+            ui::ParseAXBoolAttribute(attribute_name);
+        bool attr_value;
+        if (!node->data().GetBoolAttribute(attribute, &attr_value))
+          return;
+
+        result.Set(v8::Boolean::New(isolate, attr_value));
+      });
+  RouteNodeIDPlusAttributeFunction(
+      "GetIntAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXNode* node, const std::string& attribute_name) {
+        ui::AXIntAttribute attribute = ui::ParseAXIntAttribute(attribute_name);
+        int attr_value;
+        if (!node->data().GetIntAttribute(attribute, &attr_value))
+          return;
+
+        result.Set(v8::Integer::New(isolate, attr_value));
+      });
+  RouteNodeIDPlusAttributeFunction(
+      "GetFloatAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXNode* node, const std::string& attribute_name) {
+        ui::AXFloatAttribute attribute =
+            ui::ParseAXFloatAttribute(attribute_name);
+        float attr_value;
+
+        if (!node->data().GetFloatAttribute(attribute, &attr_value))
+          return;
+
+        result.Set(v8::Number::New(isolate, attr_value));
+      });
+  RouteNodeIDPlusAttributeFunction(
+      "GetIntListAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXNode* node, const std::string& attribute_name) {
+        ui::AXIntListAttribute attribute =
+            ui::ParseAXIntListAttribute(attribute_name);
+        if (!node->data().HasIntListAttribute(attribute))
+          return;
+        const std::vector<int32>& attr_value =
+            node->data().GetIntListAttribute(attribute);
+
+        v8::Local<v8::Array> array_result(
+            v8::Array::New(isolate, attr_value.size()));
+        for (size_t i = 0; i < attr_value.size(); ++i)
+          array_result->Set(static_cast<uint32>(i),
+                            v8::Integer::New(isolate, attr_value[i]));
+        result.Set(array_result);
+      });
+  RouteNodeIDPlusAttributeFunction(
+      "GetHtmlAttribute",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         ui::AXNode* node, const std::string& attribute_name) {
+        std::string attr_value;
+        if (!node->data().GetHtmlAttribute(attribute_name.c_str(), &attr_value))
+          return;
+
+        result.Set(v8::String::NewFromUtf8(isolate, attr_value.c_str()));
+      });
 }
 
 AutomationInternalCustomBindings::~AutomationInternalCustomBindings() {
@@ -145,6 +485,15 @@ void AutomationInternalCustomBindings::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvent, OnAccessibilityEvent)
   IPC_END_MESSAGE_MAP()
+}
+
+TreeCache* AutomationInternalCustomBindings::GetTreeCacheFromTreeID(
+    int tree_id) {
+  const auto iter = tree_id_to_tree_cache_map_.find(tree_id);
+  if (iter == tree_id_to_tree_cache_map_.end())
+    return nullptr;
+
+  return iter->second;
 }
 
 void AutomationInternalCustomBindings::IsInteractPermitted(
@@ -195,7 +544,7 @@ void AutomationInternalCustomBindings::GetSchemaAdditions(
 void AutomationInternalCustomBindings::DestroyAccessibilityTree(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() != 1 || !args[0]->IsNumber()) {
-    ThrowInvalidArgumentsException(args);
+    ThrowInvalidArgumentsException(this);
     return;
   }
 
@@ -210,65 +559,48 @@ void AutomationInternalCustomBindings::DestroyAccessibilityTree(
   delete cache;
 }
 
-//
-// Access the cached accessibility trees and properties of their nodes.
-//
-
-void AutomationInternalCustomBindings::GetRootID(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 1 || !args[0]->IsNumber()) {
-    ThrowInvalidArgumentsException(args);
-    return;
-  }
-
-  int tree_id = args[0]->Int32Value();
-  const auto iter = tree_id_to_tree_cache_map_.find(tree_id);
-  if (iter == tree_id_to_tree_cache_map_.end())
-    return;
-
-  TreeCache* cache = iter->second;
-  ui::AXNode* root = cache->tree.root();
-
-  // The root can be null if this is called from an onTreeChange callback.
-  if (!root)
-    return;
-
-  int root_id = root->id();
-  args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), root_id));
+void AutomationInternalCustomBindings::RouteTreeIDFunction(
+    const std::string& name,
+    TreeIDFunction callback) {
+  scoped_refptr<TreeIDWrapper> wrapper = new TreeIDWrapper(this, callback);
+  RouteFunction(name, base::Bind(&TreeIDWrapper::Run, wrapper));
 }
 
-void AutomationInternalCustomBindings::GetParentID(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, nullptr, &node))
-    return;
-
-  if (!node->parent())
-    return;
-
-  int parent_id = node->parent()->id();
-  args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), parent_id));
+void AutomationInternalCustomBindings::RouteNodeIDFunction(
+    const std::string& name,
+    NodeIDFunction callback) {
+  scoped_refptr<NodeIDWrapper> wrapper = new NodeIDWrapper(this, callback);
+  RouteFunction(name, base::Bind(&NodeIDWrapper::Run, wrapper));
 }
 
-void AutomationInternalCustomBindings::GetChildCount(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, nullptr, &node))
-    return;
-
-  int child_count = node->child_count();
-  args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), child_count));
+void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
+    const std::string& name,
+    NodeIDPlusAttributeFunction callback) {
+  scoped_refptr<NodeIDPlusAttributeWrapper> wrapper =
+      new NodeIDPlusAttributeWrapper(this, callback);
+  RouteFunction(name, base::Bind(&NodeIDPlusAttributeWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::GetChildIDAtIndex(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() < 3 || !args[2]->IsNumber()) {
-    ThrowInvalidArgumentsException(args);
+    ThrowInvalidArgumentsException(this);
     return;
   }
 
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, nullptr, &node))
+  int tree_id = args[0]->Int32Value();
+  int node_id = args[1]->Int32Value();
+
+  const auto iter = tree_id_to_tree_cache_map_.find(tree_id);
+  if (iter == tree_id_to_tree_cache_map_.end())
+    return;
+
+  TreeCache* cache = iter->second;
+  if (!cache)
+    return;
+
+  ui::AXNode* node = cache->tree.GetFromId(node_id);
+  if (!node)
     return;
 
   int index = args[2]->Int32Value();
@@ -277,241 +609,6 @@ void AutomationInternalCustomBindings::GetChildIDAtIndex(
 
   int child_id = node->children()[index]->id();
   args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), child_id));
-}
-
-void AutomationInternalCustomBindings::GetIndexInParent(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, nullptr, &node))
-    return;
-
-  int index_in_parent = node->index_in_parent();
-  args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), index_in_parent));
-}
-
-void AutomationInternalCustomBindings::GetState(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, nullptr, &node))
-    return;
-
-  v8::Local<v8::Object> state(v8::Object::New(GetIsolate()));
-  uint32 state_pos = 0, state_shifter = node->data().state;
-  while (state_shifter) {
-    if (state_shifter & 1) {
-      std::string key = ToString(static_cast<ui::AXState>(state_pos));
-      state->Set(CreateV8String(key),
-                 v8::Boolean::New(GetIsolate(), true));
-    }
-    state_shifter = state_shifter >> 1;
-    state_pos++;
-  }
-
-  args.GetReturnValue().Set(state);
-}
-
-void AutomationInternalCustomBindings::GetRole(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, nullptr, &node))
-    return;
-
-  std::string role_name = ui::ToString(node->data().role);
-  args.GetReturnValue().Set(
-      v8::String::NewFromUtf8(GetIsolate(), role_name.c_str()));
-}
-
-void AutomationInternalCustomBindings::GetLocation(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  TreeCache* cache;
-  ui::AXNode* node = nullptr;
-  if (!GetNodeHelper(args, &cache, &node))
-    return;
-
-  v8::Local<v8::Object> location_obj(v8::Object::New(GetIsolate()));
-  gfx::Rect location = node->data().location;
-  location.Offset(cache->location_offset);
-  location_obj->Set(CreateV8String("left"),
-                    v8::Integer::New(GetIsolate(), location.x()));
-  location_obj->Set(CreateV8String("top"),
-                    v8::Integer::New(GetIsolate(), location.y()));
-  location_obj->Set(CreateV8String("width"),
-                    v8::Integer::New(GetIsolate(), location.width()));
-  location_obj->Set(CreateV8String("height"),
-                    v8::Integer::New(GetIsolate(), location.height()));
-  args.GetReturnValue().Set(location_obj);
-}
-
-void AutomationInternalCustomBindings::GetStringAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  std::string attribute_name;
-  if (!GetAttributeHelper(args, &node, &attribute_name))
-    return;
-
-  ui::AXStringAttribute attribute = ui::ParseAXStringAttribute(attribute_name);
-  std::string attr_value;
-  if (!node->data().GetStringAttribute(attribute, &attr_value))
-    return;
-
-  args.GetReturnValue().Set(
-      v8::String::NewFromUtf8(GetIsolate(), attr_value.c_str()));
-}
-
-void AutomationInternalCustomBindings::GetBoolAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  std::string attribute_name;
-  if (!GetAttributeHelper(args, &node, &attribute_name))
-    return;
-
-  ui::AXBoolAttribute attribute = ui::ParseAXBoolAttribute(attribute_name);
-  bool attr_value;
-  if (!node->data().GetBoolAttribute(attribute, &attr_value))
-    return;
-
-  args.GetReturnValue().Set(v8::Boolean::New(GetIsolate(), attr_value));
-}
-
-void AutomationInternalCustomBindings::GetIntAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  std::string attribute_name;
-  if (!GetAttributeHelper(args, &node, &attribute_name))
-    return;
-
-  ui::AXIntAttribute attribute = ui::ParseAXIntAttribute(attribute_name);
-  int attr_value;
-  if (!node->data().GetIntAttribute(attribute, &attr_value))
-    return;
-
-  args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), attr_value));
-}
-
-void AutomationInternalCustomBindings::GetFloatAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  std::string attribute_name;
-  if (!GetAttributeHelper(args, &node, &attribute_name))
-    return;
-
-  ui::AXFloatAttribute attribute = ui::ParseAXFloatAttribute(attribute_name);
-  float attr_value;
-
-  if (!node->data().GetFloatAttribute(attribute, &attr_value))
-    return;
-
-  args.GetReturnValue().Set(v8::Number::New(GetIsolate(), attr_value));
-}
-
-void AutomationInternalCustomBindings::GetIntListAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  std::string attribute_name;
-  if (!GetAttributeHelper(args, &node, &attribute_name))
-    return;
-
-  ui::AXIntListAttribute attribute =
-      ui::ParseAXIntListAttribute(attribute_name);
-  if (!node->data().HasIntListAttribute(attribute))
-    return;
-  const std::vector<int32>& attr_value =
-      node->data().GetIntListAttribute(attribute);
-
-  v8::Local<v8::Array> result(v8::Array::New(GetIsolate(), attr_value.size()));
-  for (size_t i = 0; i < attr_value.size(); ++i)
-    result->Set(static_cast<uint32>(i),
-                v8::Integer::New(GetIsolate(), attr_value[i]));
-  args.GetReturnValue().Set(result);
-}
-
-void AutomationInternalCustomBindings::GetHtmlAttribute(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ui::AXNode* node = nullptr;
-  std::string attribute_name;
-  if (!GetAttributeHelper(args, &node, &attribute_name))
-    return;
-
-  std::string attr_value;
-  if (!node->data().GetHtmlAttribute(attribute_name.c_str(), &attr_value))
-    return;
-
-  args.GetReturnValue().Set(
-      v8::String::NewFromUtf8(GetIsolate(), attr_value.c_str()));
-}
-
-//
-// Helper functions.
-//
-
-void AutomationInternalCustomBindings::ThrowInvalidArgumentsException(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  GetIsolate()->ThrowException(
-      v8::String::NewFromUtf8(
-          GetIsolate(),
-          "Invalid arguments to AutomationInternalCustomBindings function",
-          v8::NewStringType::kNormal).ToLocalChecked());
-
-  LOG(FATAL)
-      << "Invalid arguments to AutomationInternalCustomBindings function"
-      << context()->GetStackTraceAsString();
-}
-
-bool AutomationInternalCustomBindings::GetNodeHelper(
-    const v8::FunctionCallbackInfo<v8::Value>& args,
-    TreeCache** out_cache,
-    ui::AXNode** out_node) {
-  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
-    ThrowInvalidArgumentsException(args);
-    return false;
-  }
-
-  int tree_id = args[0]->Int32Value();
-  int node_id = args[1]->Int32Value();
-
-  const auto iter = tree_id_to_tree_cache_map_.find(tree_id);
-  if (iter == tree_id_to_tree_cache_map_.end())
-    return false;
-
-  TreeCache* cache = iter->second;
-  ui::AXNode* node = cache->tree.GetFromId(node_id);
-
-  if (out_cache)
-    *out_cache = cache;
-  if (out_node)
-    *out_node = node;
-
-  return node != nullptr;
-}
-
-bool AutomationInternalCustomBindings::GetAttributeHelper(
-    const v8::FunctionCallbackInfo<v8::Value>& args,
-    ui::AXNode** out_node,
-    std::string* out_attribute_name) {
-  if (args.Length() != 3 ||
-      !args[2]->IsString()) {
-    ThrowInvalidArgumentsException(args);
-    return false;
-  }
-
-  TreeCache* cache = nullptr;
-  if (!GetNodeHelper(args, &cache, out_node))
-    return false;
-
-  *out_attribute_name = *v8::String::Utf8Value(args[2]);
-  return true;
-}
-
-v8::Local<v8::Value> AutomationInternalCustomBindings::CreateV8String(
-    const char* str) {
-  return v8::String::NewFromUtf8(
-      GetIsolate(), str, v8::String::kNormalString, strlen(str));
-}
-
-v8::Local<v8::Value> AutomationInternalCustomBindings::CreateV8String(
-    const std::string& str) {
-  return v8::String::NewFromUtf8(
-      GetIsolate(), str.c_str(), v8::String::kNormalString, str.length());
 }
 
 //
@@ -547,19 +644,22 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   if (!is_active_profile)
     return;
 
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 1U));
   v8::Local<v8::Object> event_params(v8::Object::New(GetIsolate()));
-  event_params->Set(CreateV8String("treeID"),
+  event_params->Set(CreateV8String(isolate, "treeID"),
                     v8::Integer::New(GetIsolate(), params.tree_id));
-  event_params->Set(CreateV8String("targetID"),
+  event_params->Set(CreateV8String(isolate, "targetID"),
                     v8::Integer::New(GetIsolate(), params.id));
-  event_params->Set(CreateV8String("eventType"),
-                    CreateV8String(ToString(params.event_type)));
+  event_params->Set(CreateV8String(isolate, "eventType"),
+                    CreateV8String(isolate, ToString(params.event_type)));
   args->Set(0U, event_params);
   context()->DispatchEvent("automationInternal.onAccessibilityEvent", args);
 }
+
+void AutomationInternalCustomBindings::OnTreeDataChanged(ui::AXTree* tree) {}
 
 void AutomationInternalCustomBindings::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                            ui::AXNode* node) {
@@ -634,12 +734,13 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
 
   int tree_id = iter->second->tree_id;
 
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 3U));
   args->Set(0U, v8::Integer::New(GetIsolate(), tree_id));
   args->Set(1U, v8::Integer::New(GetIsolate(), node->id()));
-  args->Set(2U, CreateV8String(ToString(change_type)));
+  args->Set(2U, CreateV8String(isolate, ToString(change_type)));
   context()->DispatchEvent("automationInternal.onTreeChange", args);
 }
 

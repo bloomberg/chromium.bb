@@ -144,17 +144,13 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
 
+  // Check properties of thet tree.
+  EXPECT_STREQ(url_str, tree.data().url.c_str());
+  EXPECT_STREQ("Accessibility Test", tree.data().title.c_str());
+  EXPECT_STREQ("html", tree.data().doctype.c_str());
+  EXPECT_STREQ("text/html", tree.data().mimetype.c_str());
+
   // Check properties of the root element of the tree.
-  EXPECT_STREQ(url_str,
-               GetAttr(root, ui::AX_ATTR_DOC_URL).c_str());
-  EXPECT_STREQ(
-      "Accessibility Test",
-      GetAttr(root, ui::AX_ATTR_DOC_TITLE).c_str());
-  EXPECT_STREQ(
-      "html", GetAttr(root, ui::AX_ATTR_DOC_DOCTYPE).c_str());
-  EXPECT_STREQ(
-      "text/html",
-      GetAttr(root, ui::AX_ATTR_DOC_MIMETYPE).c_str());
   EXPECT_STREQ(
       "Accessibility Test",
       GetAttr(root, ui::AX_ATTR_NAME).c_str());

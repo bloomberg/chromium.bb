@@ -15,7 +15,9 @@ namespace content {
 class RenderFrameImpl;
 
 class BlinkAXTreeSource
-    : public ui::AXTreeSource<blink::WebAXObject, AXContentNodeData> {
+    : public ui::AXTreeSource<blink::WebAXObject,
+                              AXContentNodeData,
+                              AXContentTreeData> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame);
   ~BlinkAXTreeSource() override;
@@ -35,6 +37,7 @@ class BlinkAXTreeSource
   void set_accessibility_focus_id(int id) { accessibility_focus_id_ = id; }
 
   // AXTreeSource implementation.
+  AXContentTreeData GetTreeData() const override;
   blink::WebAXObject GetRoot() const override;
   blink::WebAXObject GetFromId(int32 id) const override;
   int32 GetId(blink::WebAXObject node) const override;

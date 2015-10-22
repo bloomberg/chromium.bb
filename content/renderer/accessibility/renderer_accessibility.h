@@ -52,7 +52,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   // enabling accessibility if it wasn't already enabled.
   static void SnapshotAccessibilityTree(
       RenderFrameImpl* render_frame,
-      ui::AXTreeUpdate<AXContentNodeData>* response);
+      AXContentTreeUpdate* response);
 
   explicit RendererAccessibility(RenderFrameImpl* render_frame);
   ~RendererAccessibility() override;
@@ -126,7 +126,9 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
 
   // The serializer that sends accessibility messages to the browser process.
   using BlinkAXTreeSerializer =
-      ui::AXTreeSerializer<blink::WebAXObject, AXContentNodeData>;
+      ui::AXTreeSerializer<blink::WebAXObject,
+                           AXContentNodeData,
+                           AXContentTreeData>;
   BlinkAXTreeSerializer serializer_;
 
   // Current location of every object, so we can detect when it moves.

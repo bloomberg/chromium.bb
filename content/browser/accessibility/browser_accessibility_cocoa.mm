@@ -768,8 +768,8 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSNumber*)loadingProgress {
-  float floatValue = browserAccessibility_->GetFloatAttribute(
-      ui::AX_ATTR_DOC_LOADING_PROGRESS);
+  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
+  float floatValue = manager->GetTreeData().loading_progress;
   return [NSNumber numberWithFloat:floatValue];
 }
 
@@ -1205,16 +1205,16 @@ bool InitializeAccessibilityTreeSearch(
 }
 
 - (NSURL*)url {
-  StringAttribute urlAttribute =
-      [[self role] isEqualToString:@"AXWebArea"] ?
-          ui::AX_ATTR_DOC_URL :
-          ui::AX_ATTR_URL;
+  std::string url;
+  if ([[self role] isEqualToString:@"AXWebArea"])
+    url = browserAccessibility_->manager()->GetTreeData().url;
+  else
+    url = browserAccessibility_->GetStringAttribute(ui::AX_ATTR_URL);
 
-  std::string urlStr = browserAccessibility_->GetStringAttribute(urlAttribute);
-  if (urlStr.empty())
+  if (url.empty())
     return nil;
 
-  return [NSURL URLWithString:(base::SysUTF8ToNSString(urlStr))];
+  return [NSURL URLWithString:(base::SysUTF8ToNSString(url))];
 }
 
 - (id)value {

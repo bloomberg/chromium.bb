@@ -16,7 +16,13 @@ namespace {
 
 class FakeAXTreeDelegate : public AXTreeDelegate {
  public:
-  FakeAXTreeDelegate() : root_changed_(false) {}
+  FakeAXTreeDelegate()
+      : tree_data_changed_(false),
+        root_changed_(false) {}
+
+  void OnTreeDataChanged(AXTree* tree) override {
+    tree_data_changed_ = true;
+  }
 
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     deleted_ids_.push_back(node->id());
@@ -55,6 +61,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
     }
   }
 
+  bool tree_data_changed() const { return tree_data_changed_; }
   bool root_changed() const { return root_changed_; }
   const std::vector<int32>& deleted_ids() { return deleted_ids_; }
   const std::vector<int32>& subtree_deleted_ids() {
@@ -72,6 +79,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   }
 
  private:
+  bool tree_data_changed_;
   bool root_changed_;
   std::vector<int32> deleted_ids_;
   std::vector<int32> subtree_deleted_ids_;
@@ -105,17 +113,19 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   checkbox.state = 0;
   checkbox.location = gfx::Rect(20, 50, 200, 30);
 
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.push_back(root);
   initial_state.nodes.push_back(button);
   initial_state.nodes.push_back(checkbox);
+  initial_state.has_tree_data = true;
+  initial_state.tree_data.title = "Title";
   AXSerializableTree src_tree(initial_state);
 
-  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData> > tree_source(
+  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData> > tree_source(
       src_tree.CreateTreeSource());
-  AXTreeSerializer<const AXNode*, AXNodeData> serializer(
+  AXTreeSerializer<const AXNode*, AXNodeData, AXTreeData> serializer(
       tree_source.get());
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   serializer.SerializeChanges(src_tree.root(), &update);
 
   AXTree dst_tree;
@@ -137,6 +147,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
 
   EXPECT_EQ(
+      "AXTree title=Title\n"
       "id=1 rootWebArea FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
       "  id=2 button (20, 20)-(200, 30)\n"
       "  id=3 checkBox (20, 50)-(200, 30)\n",
@@ -167,7 +178,7 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
   button.role = AX_ROLE_BUTTON;
   button.state = 0;
 
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.nodes.push_back(list);
   update.nodes.push_back(list_item_2);
   update.nodes.push_back(list_item_3);
@@ -186,13 +197,13 @@ TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
   root.id = 1;
   root.role = AX_ROLE_ROOT_WEB_AREA;
 
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.push_back(root);
   AXTree tree(initial_state);
 
   // This should fail because we're asking it to delete
   // a subtree rooted at id=2, which doesn't exist.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.node_id_to_clear = 2;
   update.nodes.resize(1);
   update.nodes[0].id = 1;
@@ -202,7 +213,7 @@ TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
 }
 
 TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -214,7 +225,7 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
 
   // This should fail because we delete a subtree rooted at id=2
   // but never update it.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.node_id_to_clear = 2;
   update.nodes.resize(1);
   update.nodes[0].id = 3;
@@ -223,7 +234,7 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
 }
 
 TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -231,7 +242,7 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
 
   // This should fail because we add a new child to the root node
   // but never update it.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.nodes.resize(1);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -241,14 +252,14 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
 }
 
 TEST(AXTreeTest, DuplicateChildIdFails) {
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   AXTree tree(initial_state);
 
   // This should fail because a child id appears twice.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.nodes.resize(2);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -260,7 +271,7 @@ TEST(AXTreeTest, DuplicateChildIdFails) {
 }
 
 TEST(AXTreeTest, InvalidReparentingFails) {
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -273,7 +284,7 @@ TEST(AXTreeTest, InvalidReparentingFails) {
 
   // This should fail because node 3 is reparented from node 2 to node 1
   // without deleting node 1's subtree first.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.nodes.resize(3);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -286,14 +297,14 @@ TEST(AXTreeTest, InvalidReparentingFails) {
 }
 
 TEST(AXTreeTest, TwoRootsFails) {
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   AXTree tree(initial_state);
 
   // This should fail because there are two new roots.
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.nodes.resize(2);
   update.nodes[0].id = 2;
   update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -304,7 +315,7 @@ TEST(AXTreeTest, TwoRootsFails) {
 }
 
 TEST(AXTreeTest, TreeDelegateIsCalled) {
-  AXTreeUpdate<AXNodeData> initial_state;
+  AXTreeUpdate initial_state;
   initial_state.nodes.resize(2);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
@@ -312,7 +323,7 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
   initial_state.nodes[1].id = 2;
 
   AXTree tree(initial_state);
-  AXTreeUpdate<AXNodeData> update;
+  AXTreeUpdate update;
   update.node_id_to_clear = 1;
   update.nodes.resize(2);
   update.nodes[0].id = 3;
@@ -343,6 +354,43 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
   EXPECT_EQ(4, fake_delegate.node_creation_finished_ids()[0]);
 
   ASSERT_EQ(true, fake_delegate.root_changed());
+
+  tree.SetDelegate(NULL);
+}
+
+TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
+  AXTreeUpdate initial_state;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  initial_state.has_tree_data = true;
+  initial_state.tree_data.title = "Initial";
+  AXTree tree(initial_state);
+
+  FakeAXTreeDelegate fake_delegate;
+  tree.SetDelegate(&fake_delegate);
+
+  // An empty update shouldn't change tree data.
+  AXTreeUpdate empty_update;
+  EXPECT_TRUE(tree.Unserialize(empty_update));
+  EXPECT_FALSE(fake_delegate.tree_data_changed());
+  EXPECT_EQ("Initial", tree.data().title);
+
+  // An update with tree data shouldn't change tree data if
+  // |has_tree_data| isn't set.
+  AXTreeUpdate ignored_tree_data_update;
+  ignored_tree_data_update.tree_data.title = "Ignore Me";
+  EXPECT_TRUE(tree.Unserialize(ignored_tree_data_update));
+  EXPECT_FALSE(fake_delegate.tree_data_changed());
+  EXPECT_EQ("Initial", tree.data().title);
+
+  // An update with |has_tree_data| set should update the tree data.
+  AXTreeUpdate tree_data_update;
+  tree_data_update.has_tree_data = true;
+  tree_data_update.tree_data.title = "New Title";
+  EXPECT_TRUE(tree.Unserialize(tree_data_update));
+  EXPECT_TRUE(fake_delegate.tree_data_changed());
+  EXPECT_EQ("New Title", tree.data().title);
 
   tree.SetDelegate(NULL);
 }

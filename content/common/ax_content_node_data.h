@@ -7,16 +7,12 @@
 
 #include "content/common/content_export.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
 
 enum AXContentIntAttribute {
-  // The routing ID of this root node.
-  AX_CONTENT_ATTR_ROUTING_ID,
-
-  // The routing ID of this tree's parent.
-  AX_CONTENT_ATTR_PARENT_ROUTING_ID,
-
   // The routing ID of this node's child tree.
   AX_CONTENT_ATTR_CHILD_ROUTING_ID,
 
@@ -45,6 +41,25 @@ struct CONTENT_EXPORT AXContentNodeData : public ui::AXNodeData {
   // public and copyable.
   std::vector<std::pair<AXContentIntAttribute, int32> > content_int_attributes;
 };
+
+// A subclass of AXTreeData that contains extra fields for
+// content-layer-specific AX attributes.
+struct CONTENT_EXPORT AXContentTreeData : public ui::AXTreeData {
+  AXContentTreeData();
+  ~AXContentTreeData() override;
+
+  // Return a string representation of this data, for debugging.
+  std::string ToString() const override;
+
+  // The routing ID of this frame.
+  int routing_id;
+
+  // The routing ID of the parent frame.
+  int parent_routing_id;
+};
+
+typedef ui::AXTreeUpdateBase<content::AXContentNodeData,
+                             content::AXContentTreeData> AXContentTreeUpdate;
 
 }  // namespace content
 

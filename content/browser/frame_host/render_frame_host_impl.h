@@ -90,7 +90,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public BrowserAccessibilityDelegate {
  public:
   using AXTreeSnapshotCallback =
-      base::Callback<void(const ui::AXTreeUpdate<ui::AXNodeData>&)>;
+      base::Callback<void(
+          const ui::AXTreeUpdate&)>;
 
   // Keeps track of the state of the RenderFrameHostImpl, particularly with
   // respect to swap out.
@@ -558,7 +559,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const AccessibilityHostMsg_FindInPageResultParams& params);
   void OnAccessibilitySnapshotResponse(
       int callback_id,
-      const ui::AXTreeUpdate<AXContentNodeData>& snapshot);
+      const AXContentTreeUpdate& snapshot);
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidStartLoading(bool to_different_document);
   void OnDidStopLoading();
@@ -608,6 +609,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // AXNodeData structure.
   void AXContentNodeDataToAXNodeData(const AXContentNodeData& src,
                                      ui::AXNodeData* dst);
+
+  // Convert the content-layer-specific AXContentTreeData to a general-purpose
+  // AXTreeData structure.
+  void AXContentTreeDataToAXTreeData(const AXContentTreeData& src,
+                                     ui::AXTreeData* dst);
 
   // Returns the RenderWidgetHostView used for accessibility. For subframes,
   // this function will return the platform view on the main frame; for main

@@ -41,20 +41,20 @@ class AXPlatformNodeWinTest : public testing::Test {
   }
 
   // Initialize given an AXTreeUpdate.
-  void Init(const AXTreeUpdate<AXNodeData>& initial_state) {
+  void Init(const AXTreeUpdate& initial_state) {
     tree_.reset(new AXTree(initial_state));
   }
 
   // Convenience functions to initialize directly from a few AXNodeDatas.
   void Init(const AXNodeData& node1) {
-    AXTreeUpdate<AXNodeData> update;
+    AXTreeUpdate update;
     update.nodes.push_back(node1);
     Init(update);
   }
 
   void Init(const AXNodeData& node1,
             const AXNodeData& node2) {
-    AXTreeUpdate<AXNodeData> update;
+    AXTreeUpdate update;
     update.nodes.push_back(node1);
     update.nodes.push_back(node2);
     Init(update);
@@ -63,7 +63,7 @@ class AXPlatformNodeWinTest : public testing::Test {
   void Init(const AXNodeData& node1,
             const AXNodeData& node2,
             const AXNodeData& node3) {
-    AXTreeUpdate<AXNodeData> update;
+    AXTreeUpdate update;
     update.nodes.push_back(node1);
     update.nodes.push_back(node2);
     update.nodes.push_back(node3);

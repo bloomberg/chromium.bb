@@ -17,10 +17,13 @@ namespace ui {
 // as an AXNodeData. This is the primary interface to use when
 // an accessibility tree will be sent over an IPC before being
 // consumed.
-template<typename AXNodeSource, typename AXNodeData>
+template<typename AXNodeSource, typename AXNodeData, typename AXTreeData>
 class AXTreeSource {
  public:
   virtual ~AXTreeSource() {}
+
+  // Get the tree data.
+  virtual AXTreeData GetTreeData() const = 0;
 
   // Get the root of the tree.
   virtual AXNodeSource GetRoot() const = 0;

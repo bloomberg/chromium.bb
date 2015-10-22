@@ -41,14 +41,33 @@ IPC_STRUCT_TRAITS_BEGIN(content::AXContentNodeData)
   IPC_STRUCT_TRAITS_MEMBER(content_int_attributes)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate<content::AXContentNodeData>)
+IPC_STRUCT_TRAITS_BEGIN(content::AXContentTreeData)
+  IPC_STRUCT_TRAITS_MEMBER(tree_id)
+  IPC_STRUCT_TRAITS_MEMBER(parent_tree_id)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(mimetype)
+  IPC_STRUCT_TRAITS_MEMBER(doctype)
+  IPC_STRUCT_TRAITS_MEMBER(loaded)
+  IPC_STRUCT_TRAITS_MEMBER(loading_progress)
+  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_object_id)
+  IPC_STRUCT_TRAITS_MEMBER(sel_anchor_offset)
+  IPC_STRUCT_TRAITS_MEMBER(sel_focus_object_id)
+  IPC_STRUCT_TRAITS_MEMBER(sel_focus_offset)
+  IPC_STRUCT_TRAITS_MEMBER(routing_id)
+  IPC_STRUCT_TRAITS_MEMBER(parent_routing_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::AXContentTreeUpdate)
+  IPC_STRUCT_TRAITS_MEMBER(has_tree_data)
+  IPC_STRUCT_TRAITS_MEMBER(tree_data)
   IPC_STRUCT_TRAITS_MEMBER(node_id_to_clear)
   IPC_STRUCT_TRAITS_MEMBER(nodes)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // The tree update.
-  IPC_STRUCT_MEMBER(ui::AXTreeUpdate<content::AXContentNodeData>, update)
+  IPC_STRUCT_MEMBER(content::AXContentTreeUpdate, update)
 
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)
@@ -202,4 +221,4 @@ IPC_MESSAGE_ROUTED1(
 // a standalone snapshot of the accessibility tree.
 IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_SnapshotResponse,
                     int /* callback_id */,
-                    ui::AXTreeUpdate<content::AXContentNodeData>)
+                    content::AXContentTreeUpdate)

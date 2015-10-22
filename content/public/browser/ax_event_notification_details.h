@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
@@ -19,7 +21,7 @@ struct CONTENT_EXPORT AXEventNotificationDetails {
   AXEventNotificationDetails();
   ~AXEventNotificationDetails();
 
-  ui::AXTreeUpdate<ui::AXNodeData> update;
+  ui::AXTreeUpdate update;
   ui::AXEvent event_type;
   int id;
   int ax_tree_id;

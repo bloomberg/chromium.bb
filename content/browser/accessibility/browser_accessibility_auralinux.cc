@@ -205,13 +205,13 @@ static const gchar* GetDocumentAttributeValue(
     BrowserAccessibilityAuraLinux* obj,
     const gchar* attribute) {
   if (!g_ascii_strcasecmp(attribute, "DocType"))
-    return obj->GetStringAttribute(ui::AX_ATTR_DOC_DOCTYPE).c_str();
+    return obj->manager()->GetTreeData().doctype.c_str();
   else if (!g_ascii_strcasecmp(attribute, "MimeType"))
-    return obj->GetStringAttribute(ui::AX_ATTR_DOC_MIMETYPE).c_str();
+    return obj->manager()->GetTreeData().mimetype.c_str();
   else if (!g_ascii_strcasecmp(attribute, "Title"))
-    return obj->GetStringAttribute(ui::AX_ATTR_DOC_TITLE).c_str();
+    return obj->manager()->GetTreeData().title.c_str();
   else if (!g_ascii_strcasecmp(attribute, "URI"))
-    return obj->GetStringAttribute(ui::AX_ATTR_DOC_URL).c_str();
+    return obj->manager()->GetTreeData().url.c_str();
 
   return 0;
 }

@@ -105,11 +105,12 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(JNIEnv* env,
 }
 
 // Walks over the AXTreeUpdate and creates a light weight snapshot.
-void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                            float scale_factor,
-                            float y_offset,
-                            float x_scroll,
-                            const ui::AXTreeUpdate<ui::AXNodeData>& result) {
+void AXTreeSnapshotCallback(
+    const ScopedJavaGlobalRef<jobject>& callback,
+    float scale_factor,
+    float y_offset,
+    float x_scroll,
+    const ui::AXTreeUpdate& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (result.nodes.empty()) {
     Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback.obj());
