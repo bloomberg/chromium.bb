@@ -160,14 +160,14 @@ ExecutionContext* PresentationConnection::executionContext() const
     return frame()->document();
 }
 
-bool PresentationConnection::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool capture)
+bool PresentationConnection::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::statechange)
         UseCounter::count(executionContext(), UseCounter::PresentationConnectionStateChangeEventListener);
     else if (eventType == EventTypeNames::message)
         UseCounter::count(executionContext(), UseCounter::PresentationConnectionMessageEventListener);
 
-    return EventTarget::addEventListener(eventType, listener, capture);
+    return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 DEFINE_TRACE(PresentationConnection)

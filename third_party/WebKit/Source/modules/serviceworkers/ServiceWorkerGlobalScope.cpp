@@ -161,7 +161,7 @@ void ServiceWorkerGlobalScope::setRegistration(WebPassOwnPtr<WebServiceWorkerReg
     m_registration = ServiceWorkerRegistration::getOrCreate(executionContext(), handle.release());
 }
 
-bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (m_didEvaluateScript) {
         if (eventType == EventTypeNames::install) {
@@ -172,7 +172,7 @@ bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, P
             addMessageToWorkerConsole(consoleMessage.release());
         }
     }
-    return WorkerGlobalScope::addEventListener(eventType, listener, useCapture);
+    return WorkerGlobalScope::addEventListenerInternal(eventType, listener, options);
 }
 
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const

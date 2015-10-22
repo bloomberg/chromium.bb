@@ -79,7 +79,7 @@ ExecutionContext* BluetoothGATTCharacteristic::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool BluetoothGATTCharacteristic::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool BluetoothGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     // We will also need to unregister a characteristic once all the event
     // listeners have been removed. See http://crbug.com/541390
@@ -87,7 +87,7 @@ bool BluetoothGATTCharacteristic::addEventListener(const AtomicString& eventType
         WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(executionContext());
         webbluetooth->registerCharacteristicObject(m_webCharacteristic->characteristicInstanceID, this);
     }
-    return EventTarget::addEventListener(eventType, listener, useCapture);
+    return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)

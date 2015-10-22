@@ -37,7 +37,6 @@ public:
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool capture) override;
 
     // WebPresentationAvailabilityObserver implementation.
     void availabilityChanged(bool) override;
@@ -57,6 +56,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
     DECLARE_VIRTUAL_TRACE();
+
+protected:
+    // EventTarget implementation.
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     // Current state of the ActiveDOMObject. It is Active when created. It

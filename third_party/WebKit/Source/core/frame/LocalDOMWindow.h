@@ -173,8 +173,6 @@ public:
 
     // Events
     // EventTarget API
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
-    bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
     void removeAllEventListeners() override;
 
     using EventTarget::dispatchEvent;
@@ -206,6 +204,11 @@ public:
     void clearEventQueue();
 
     void acceptLanguagesChanged();
+
+protected:
+    // EventTarget overrides.
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) override;
+    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     // Rather than simply inheriting LocalFrameLifecycleObserver like most other

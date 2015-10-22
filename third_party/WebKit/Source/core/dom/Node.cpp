@@ -1754,41 +1754,29 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 }
 
-static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool Node::addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptions& options)
 {
-    if (!targetNode->EventTarget::addEventListener(eventType, listener, useCapture))
+    if (!EventTarget::addEventListenerInternal(eventType, listener, options))
         return false;
 
-    Document& document = targetNode->document();
-    document.addListenerTypeIfNeeded(eventType);
-    if (document.frameHost())
-        document.frameHost()->eventHandlerRegistry().didAddEventHandler(*targetNode, eventType);
+    document().addListenerTypeIfNeeded(eventType);
+    if (FrameHost* frameHost = document().frameHost())
+        frameHost->eventHandlerRegistry().didAddEventHandler(*this, eventType);
 
     return true;
 }
 
-bool Node::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool Node::removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptions& options)
 {
-    return tryAddEventListener(this, eventType, listener, useCapture);
-}
-
-static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
-{
-    if (!targetNode->EventTarget::removeEventListener(eventType, listener, useCapture))
+    if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
         return false;
 
     // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
-    Document& document = targetNode->document();
-    if (document.frameHost())
-        document.frameHost()->eventHandlerRegistry().didRemoveEventHandler(*targetNode, eventType);
+    if (FrameHost* frameHost = document().frameHost())
+        frameHost->eventHandlerRegistry().didRemoveEventHandler(*this, eventType);
 
     return true;
-}
-
-bool Node::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
-{
-    return tryRemoveEventListener(this, eventType, listener, useCapture);
 }
 
 void Node::removeAllEventListeners()

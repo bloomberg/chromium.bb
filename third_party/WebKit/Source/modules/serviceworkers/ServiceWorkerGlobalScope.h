@@ -77,7 +77,6 @@ public:
     void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>);
 
     // EventTarget
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
     const AtomicString& interfaceName() const override;
 
     void dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Event>, WaitUntilObserver*);
@@ -93,6 +92,7 @@ public:
 protected:
     // EventTarget
     bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     class SkipWaitingCallback;

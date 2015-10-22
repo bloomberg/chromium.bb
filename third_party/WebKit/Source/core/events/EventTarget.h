@@ -33,6 +33,7 @@
 #define EventTarget_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
 #include "core/EventNames.h"
 #include "core/EventTargetNames.h"
@@ -127,8 +128,13 @@ public:
     virtual LocalDOMWindow* toDOMWindow();
     virtual MessagePort* toMessagePort();
 
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture);
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture);
+    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false);
+    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptionsOrBoolean&);
+    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, EventListenerOptions&);
+
+    bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false);
+    bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptionsOrBoolean&);
+    bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, EventListenerOptions&);
     virtual void removeAllEventListeners();
 
     bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
@@ -158,6 +164,8 @@ public:
 protected:
     EventTarget();
 
+    virtual bool addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&);
+    virtual bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&);
     virtual bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>);
 
     // Subclasses should likely not override these themselves; instead, they should subclass EventTargetWithInlineData.

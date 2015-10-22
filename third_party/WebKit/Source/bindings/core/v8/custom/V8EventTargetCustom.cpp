@@ -31,12 +31,15 @@
 #include "config.h"
 #include "bindings/core/v8/V8EventTarget.h"
 
+#include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 
 namespace blink {
+namespace {
 
-void V8EventTarget::addEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
+void addEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
 {
     if (info.Length() < 2) {
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
@@ -48,13 +51,13 @@ void V8EventTarget::addEventListenerMethodPrologueCustom(const v8::FunctionCallb
     }
 }
 
-void V8EventTarget::addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
+void addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
 {
     if (info.Length() >= 2 && info[1]->IsObject() && !impl->toNode())
         addHiddenValueToArray(info.GetIsolate(), info.Holder(), info[1], V8EventTarget::eventListenerCacheIndex);
 }
 
-void V8EventTarget::removeEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
+void removeEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
 {
     if (info.Length() < 2) {
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
@@ -66,10 +69,104 @@ void V8EventTarget::removeEventListenerMethodPrologueCustom(const v8::FunctionCa
     }
 }
 
-void V8EventTarget::removeEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
+void removeEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
 {
     if (info.Length() >= 2 && info[1]->IsObject() && !impl->toNode())
         removeHiddenValueFromArray(info.GetIsolate(), info.Holder(), info[1], V8EventTarget::eventListenerCacheIndex);
+}
+
+} // namespace
+
+void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "EventTarget", info.Holder(), info.GetIsolate());
+    EventTarget* impl = V8EventTarget::toImpl(info.Holder());
+    if (LocalDOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
+    V8StringResource<TreatNullAsNullString> type;
+    RefPtrWillBeRawPtr<EventListener> listener;
+    EventListenerOptionsOrBoolean options;
+    {
+        if (!info[0]->IsUndefined()) {
+            type = info[0];
+            if (!type.prepare())
+                return;
+        } else {
+            type = nullptr;
+        }
+        if (!info[1]->IsUndefined()) {
+            listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
+        } else {
+            listener = nullptr;
+        }
+        // TODO(dtapuska): This custom binding code can be eliminated once
+        // EventListenerOptions runtime enabled feature is removed.
+        // http://crbug.com/545163
+        if (UNLIKELY(info.Length() <= 2) || isUndefinedOrNull(info[2])) {
+            addEventListenerMethodPrologueCustom(info, impl);
+            impl->addEventListener(type, listener);
+            addEventListenerMethodEpilogueCustom(info, impl);
+            return;
+        }
+        V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    addEventListenerMethodPrologueCustom(info, impl);
+    impl->addEventListener(type, listener, options);
+    addEventListenerMethodEpilogueCustom(info, impl);
+}
+
+void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "EventTarget", info.Holder(), info.GetIsolate());
+    EventTarget* impl = V8EventTarget::toImpl(info.Holder());
+    if (LocalDOMWindow* window = impl->toDOMWindow()) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
+    V8StringResource<TreatNullAsNullString> type;
+    RefPtrWillBeRawPtr<EventListener> listener;
+    EventListenerOptionsOrBoolean options;
+    {
+        if (!info[0]->IsUndefined()) {
+            type = info[0];
+            if (!type.prepare())
+                return;
+        } else {
+            type = nullptr;
+        }
+        if (!info[1]->IsUndefined()) {
+            listener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOnly);
+        } else {
+            listener = nullptr;
+        }
+        // TODO(dtapuska): This custom binding code can be eliminated once
+        // EventListenerOptions runtime enabled feature is removed.
+        // http://crbug.com/545163
+        if (UNLIKELY(info.Length() <= 2) || isUndefinedOrNull(info[2])) {
+            removeEventListenerMethodPrologueCustom(info, impl);
+            impl->removeEventListener(type, listener);
+            removeEventListenerMethodEpilogueCustom(info, impl);
+            return;
+        }
+        V8EventListenerOptionsOrBoolean::toImpl(info.GetIsolate(), info[2], options, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    removeEventListenerMethodPrologueCustom(info, impl);
+    impl->removeEventListener(type, listener, options);
+    removeEventListenerMethodEpilogueCustom(info, impl);
 }
 
 } // namespace blink

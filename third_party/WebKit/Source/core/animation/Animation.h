@@ -174,12 +174,11 @@ public:
         return animation1->sequenceNumber() < animation2->sequenceNumber();
     }
 
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:
     bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     Animation(ExecutionContext*, AnimationTimeline&, AnimationEffect*);

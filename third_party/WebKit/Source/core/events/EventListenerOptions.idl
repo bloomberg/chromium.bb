@@ -1,0 +1,14 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/RByers/EventListenerOptions
+
+dictionary EventListenerOptions {
+    // TODO: |capture| is runtime enabled and its value actually
+    // changes whether the feature is enabled or not. Setting
+    // it to a default value here prevents the ability of checking
+    // whether it was set manually or by default. See EventTarget.cpp
+    // where it is populated. crbug.com/543685
+    [RuntimeEnabled=EventListenerOptions] boolean capture;
+};

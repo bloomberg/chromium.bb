@@ -608,8 +608,6 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const final;
 
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
-    bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) override;
     void removeAllEventListeners() override;
     void removeAllEventListenersRecursively();
 
@@ -742,6 +740,8 @@ protected:
 
     virtual void didMoveToNewDocument(Document& oldDocument);
 
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) override;
+    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) override;
     bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
     static void reattachWhitespaceSiblingsIfNeeded(Text* start);

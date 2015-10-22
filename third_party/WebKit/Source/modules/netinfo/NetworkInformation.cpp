@@ -102,17 +102,17 @@ ExecutionContext* NetworkInformation::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool NetworkInformation::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool NetworkInformation::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
-    if (!EventTargetWithInlineData::addEventListener(eventType, listener, useCapture))
+    if (!EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options))
         return false;
     startObserving();
     return true;
 }
 
-bool NetworkInformation::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool NetworkInformation::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
-    if (!EventTargetWithInlineData::removeEventListener(eventType, listener, useCapture))
+    if (!EventTargetWithInlineData::removeEventListenerInternal(eventType, listener, options))
         return false;
     if (!hasEventListeners())
         stopObserving();

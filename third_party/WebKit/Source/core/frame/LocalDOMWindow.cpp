@@ -1323,10 +1323,10 @@ void LocalDOMWindow::cancelIdleCallback(int id)
         document->cancelIdleCallback(id);
 }
 
-bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, bool useCapture)
+bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
     RefPtrWillBeRawPtr<EventListener> listener = prpListener;
-    if (!EventTarget::addEventListener(eventType, listener, useCapture))
+    if (!EventTarget::addEventListenerInternal(eventType, listener, options))
         return false;
 
     if (frame() && frame()->host())
@@ -1357,9 +1357,9 @@ bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtrW
     return true;
 }
 
-bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool LocalDOMWindow::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
-    if (!EventTarget::removeEventListener(eventType, listener, useCapture))
+    if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
         return false;
 
     if (frame() && frame()->host())

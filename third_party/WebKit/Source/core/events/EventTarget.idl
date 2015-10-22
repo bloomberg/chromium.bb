@@ -28,7 +28,7 @@
     // FIXME: first 2 args should be required, but throwing TypeError breaks
     // legacy content.  http://crbug.com/353484
     // FIXME: type should not be nullable.
-    [Custom=(CallPrologue,CallEpilogue)] void addEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional boolean capture = false);
-    [Custom=(CallPrologue,CallEpilogue)] void removeEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional boolean capture = false);
+    [Custom] void addEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional (EventListenerOptions or boolean) options);
+    [Custom] void removeEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional (EventListenerOptions or boolean) options);
     [ImplementedAs=dispatchEventForBindings, RaisesException] boolean dispatchEvent(Event event);
 };

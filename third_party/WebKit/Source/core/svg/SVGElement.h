@@ -139,9 +139,6 @@ public:
 
     virtual bool haveLoadedRequiredResources();
 
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) final;
-    bool removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture = false) final;
-
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
     void addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase>);
@@ -219,6 +216,9 @@ protected:
     friend class SVGFitToViewBox;
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
+
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) final;
+    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener>, const EventListenerOptions&) final;
 
 private:
     bool isSVGElement() const = delete; // This will catch anyone doing an unnecessary check.

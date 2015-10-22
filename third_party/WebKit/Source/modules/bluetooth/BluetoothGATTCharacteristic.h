@@ -64,7 +64,6 @@ public:
     // EventTarget methods:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const;
-    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool useCapture) override;
 
     // Interface required by garbage collection.
     DECLARE_VIRTUAL_TRACE();
@@ -80,6 +79,10 @@ public:
     ScriptPromise stopNotifications(ScriptState*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(characteristicvaluechanged);
+
+protected:
+    // EventTarget overrides.
+    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     OwnPtr<WebBluetoothGATTCharacteristicInit> m_webCharacteristic;

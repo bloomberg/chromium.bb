@@ -729,31 +729,31 @@ static inline void collectInstancesForSVGElement(SVGElement* element, WillBeHeap
     instances = element->instancesForElement();
 }
 
-bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, bool useCapture)
+bool SVGElement::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
     RefPtrWillBeRawPtr<EventListener> listener = prpListener;
 
     // Add event listener to regular DOM element
-    if (!Node::addEventListener(eventType, listener, useCapture))
+    if (!Node::addEventListenerInternal(eventType, listener, options))
         return false;
 
     // Add event listener to all shadow tree DOM element instances
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
     for (SVGElement* element : instances) {
-        bool result = element->Node::addEventListener(eventType, listener, useCapture);
+        bool result = element->Node::addEventListenerInternal(eventType, listener, options);
         ASSERT_UNUSED(result, result);
     }
 
     return true;
 }
 
-bool SVGElement::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, bool useCapture)
+bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
     RefPtrWillBeRawPtr<EventListener> listener = prpListener;
 
     // Remove event listener from regular DOM element
-    if (!Node::removeEventListener(eventType, listener, useCapture))
+    if (!Node::removeEventListenerInternal(eventType, listener, options))
         return false;
 
     // Remove event listener from all shadow tree DOM element instances
@@ -762,7 +762,7 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, PassRefPtrWi
     for (SVGElement* shadowTreeElement : instances) {
         ASSERT(shadowTreeElement);
 
-        shadowTreeElement->Node::removeEventListener(eventType, listener, useCapture);
+        shadowTreeElement->Node::removeEventListenerInternal(eventType, listener, options);
     }
 
     return true;

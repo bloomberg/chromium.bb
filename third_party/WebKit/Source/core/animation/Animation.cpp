@@ -1059,11 +1059,11 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
         InspectorInstrumentation::didStartAnimation(m_animation->timeline()->document(), m_animation);
 }
 
-bool Animation::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool Animation::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::finish)
         UseCounter::count(executionContext(), UseCounter::AnimationFinishEvent);
-    return EventTargetWithInlineData::addEventListener(eventType, listener, useCapture);
+    return EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options);
 }
 
 void Animation::pauseForTesting(double pauseTime)

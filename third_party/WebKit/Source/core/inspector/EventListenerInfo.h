@@ -58,8 +58,8 @@ public:
 private:
     WillBeHeapVector<EventListenerInfo>& m_listenersArray;
     unsigned m_infoIndex;
-    unsigned m_listenerIndex;
-    bool m_isUseCapturePass;
+    unsigned m_listenerIndex : 31;
+    unsigned m_isUseCapturePass : 1;
 };
 
 } // namespace blink

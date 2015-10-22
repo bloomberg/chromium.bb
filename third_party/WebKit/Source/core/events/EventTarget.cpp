@@ -48,6 +48,25 @@
 using namespace WTF;
 
 namespace blink {
+namespace {
+
+void setDefaultEventListenerOptionsLegacy(EventListenerOptions& options, bool useCapture)
+{
+    options.setCapture(useCapture);
+}
+
+void setDefaultEventListenerOptions(EventListenerOptions& options)
+{
+    // The default for capture is based on whether the eventListenerOptions
+    // runtime setting is enabled. That is
+    // addEventListener('type', function(e) {}, {});
+    // behaves differently under the setting. With the setting off
+    // capture is true; with the setting on capture is false.
+    if (!options.hasCapture())
+        options.setCapture(!RuntimeEnabledFeatures::eventListenerOptionsEnabled());
+}
+
+} // namespace
 
 EventTargetData::EventTargetData()
 {
@@ -92,7 +111,31 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return nullptr;
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    EventListenerOptions options;
+    setDefaultEventListenerOptionsLegacy(options, useCapture);
+    return addEventListenerInternal(eventType, listener, options);
+}
+
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
+{
+    if (optionsUnion.isBoolean())
+        return addEventListener(eventType, listener, optionsUnion.getAsBoolean());
+    if (optionsUnion.isEventListenerOptions()) {
+        EventListenerOptions options = optionsUnion.getAsEventListenerOptions();
+        return addEventListener(eventType, listener, options);
+    }
+    return addEventListener(eventType, listener);
+}
+
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, EventListenerOptions& options)
+{
+    setDefaultEventListenerOptions(options);
+    return addEventListenerInternal(eventType, listener, options);
+}
+
+bool EventTarget::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!listener)
         return false;
@@ -105,10 +148,34 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWill
         activityLogger->logEvent("blinkAddEventListener", argv.size(), argv.data());
     }
 
-    return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
+    return ensureEventTargetData().eventListenerMap.add(eventType, listener, options);
 }
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
+{
+    EventListenerOptions options;
+    setDefaultEventListenerOptionsLegacy(options, useCapture);
+    return removeEventListenerInternal(eventType, listener, options);
+}
+
+bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
+{
+    if (optionsUnion.isBoolean())
+        return removeEventListener(eventType, listener, optionsUnion.getAsBoolean());
+    if (optionsUnion.isEventListenerOptions()) {
+        EventListenerOptions options = optionsUnion.getAsEventListenerOptions();
+        return removeEventListener(eventType, listener, options);
+    }
+    return removeEventListener(eventType, listener);
+}
+
+bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, EventListenerOptions& options)
+{
+    setDefaultEventListenerOptions(options);
+    return removeEventListenerInternal(eventType, listener, options);
+}
+
+bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!listener)
         return false;
@@ -119,7 +186,7 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtrW
 
     size_t indexOfRemovedListener;
 
-    if (!d->eventListenerMap.remove(eventType, listener.get(), useCapture, indexOfRemovedListener))
+    if (!d->eventListenerMap.remove(eventType, listener.get(), options, indexOfRemovedListener))
         return false;
 
     // Notify firing events planning to invoke the listener at 'index' that
