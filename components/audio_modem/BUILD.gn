@@ -3,11 +3,6 @@
 # found in the LICENSE file.
 
 source_set("audio_modem") {
-  public = [
-    "public/audio_modem_types.h",
-    "public/modem.h",
-    "public/whispernet_client.h",
-  ]
   sources = [
     "audio_modem_switches.cc",
     "audio_modem_switches.h",
@@ -20,11 +15,14 @@ source_set("audio_modem") {
     "constants.cc",
     "modem_impl.cc",
     "modem_impl.h",
+    "public/audio_modem_types.h",
+    "public/modem.h",
+    "public/whispernet_client.h",
   ]
 
   deps = [
     "//base",
-    "//content",
+    "//content/public/browser",
     "//media",
     "//media:shared_memory_support",
     "//third_party/webrtc/common_audio",
@@ -48,6 +46,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//media",
+    "//media:shared_memory_support",
   ]
 }
 
@@ -63,6 +62,10 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//base",
+    "//content/test:test_support",
+    "//media",
+    "//media:shared_memory_support",
     "//testing/gtest",
   ]
 }

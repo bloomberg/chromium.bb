@@ -41,5 +41,7 @@ source_set("metrics") {
     "//base/memory",
   ]
 
+  allow_circular_includes_from = [ "//base/memory" ]
+
   visibility = [ "//base/*" ]
 }

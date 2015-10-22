@@ -672,7 +672,6 @@ component("base") {
   ]
 
   deps = [
-    ":base_static",
     "//base/allocator:allocator_extension_thunks",
     "//base/third_party/dynamic_annotations",
     "//third_party/modp_b64",
@@ -680,6 +679,7 @@ component("base") {
 
   public_deps = [
     ":base_paths",
+    ":base_static",
     "//base/debug",
     "//base/json",
     "//base/memory",

@@ -74,8 +74,10 @@ source_set("test_support") {
     "url_request_post_interceptor.h",
   ]
 
-  deps = [
+  public_deps = [
     ":update_client",
+  ]
+  deps = [
     "//base",
     "//net:test_support",
     "//testing/gtest",

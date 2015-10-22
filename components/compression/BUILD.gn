@@ -21,6 +21,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":compression",
+    "//base",
     "//testing/gtest",
   ]
 }

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("common") {
+source_set("common") {
   sources = [
     "cdm_message_generator.cc",
     "cdm_message_generator.h",
@@ -12,6 +12,7 @@ static_library("common") {
   deps = [
     "//base",
     "//content/public/common",
+    "//media",
     "//ipc",
   ]
 }

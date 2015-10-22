@@ -42,6 +42,8 @@ source_set("unit_tests") {
   deps = [
     ":component_updater",
     "//base",
+    "//base/test:test_support",
+    "//components/update_client:test_support",
     "//testing/gtest",
     "//testing/gmock",
   ]

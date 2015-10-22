@@ -31,6 +31,7 @@ source_set("browser_watcher_client") {
   ]
   deps = [
     "//base",
+    "//components/metrics",
   ]
 }
 
@@ -48,6 +49,8 @@ source_set("unit_tests") {
   deps = [
     ":browser_watcher",
     ":browser_watcher_client",
+    "//base",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

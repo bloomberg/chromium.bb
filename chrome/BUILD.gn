@@ -101,8 +101,6 @@ if (!is_android) {
 
     if (is_win) {
       sources += [
-        "//content/public/common/content_switches.cc",
-        "//content/public/common/content_switches.h",
         "app/chrome_crash_reporter_client.cc",
         "app/chrome_crash_reporter_client.h",
         "app/chrome_exe.rc",
@@ -121,12 +119,6 @@ if (!is_android) {
         "common/crash_keys.cc",
         "common/crash_keys.h",
       ]
-
-      if (is_component_build) {
-        # This is necessary to make content_switches compile without DLL
-        # linkage errors in a component build.
-        defines += [ "COMPILE_CONTENT_STATICALLY" ]
-      }
 
       deps += [
         ":chrome_exe_version",
@@ -149,6 +141,7 @@ if (!is_android) {
         "//components/crash/content/app",
         "//components/crash/core/common",
         "//content:sandbox_helper_win",
+        "//content/public/common:static_switches",
         "//crypto",
         "//sandbox",
         "//ui/gfx",

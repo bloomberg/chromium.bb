@@ -13,9 +13,11 @@ source_set("lib") {
   ]
 
   deps = [
+    "//base",
     "//components/clipboard/public/interfaces",
     "//mojo/application/public/cpp",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
   ]
 }
 
@@ -44,8 +46,12 @@ mojo_native_application("apptests") {
   deps = [
     "//base",
     "//components/clipboard/public/interfaces",
+    "//mojo/application/public/cpp",
     "//mojo/application/public/cpp:test_support",
+    "//mojo/common",
   ]
 
-  data_deps = [ ":clipboard" ]
+  data_deps = [
+    ":clipboard",
+  ]
 }

@@ -14,6 +14,10 @@ source_set("bubble") {
     "bubble_reference.h",
     "bubble_ui.h",
   ]
+
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("test_support") {

@@ -17,7 +17,7 @@ secondary_source = "//build/secondary/"
 check_targets = [
   #"//apps/*",  # Medium-hard.
   #"//ash/*",  # Medium-hard.
-  #"//base/*",  # Needs GN binary changes to work on Android.
+  #"//base/*",  # Minor work on Windows.
   "//blink/*",
   "//breakpad/*",
   "//build/*",
@@ -35,9 +35,35 @@ check_targets = [
   #"//cloud_print/*",
 
   #"//components/*",  # Lots of errors.
+  "//components/about_handler/*",
+  "//components/about_ui/*",
   "//components/app_modal/*",
+  "//components/audio_modem/*",
   "//components/autofill/*",
+  "//components/auto_login_parser/*",
   "//components/bookmarks/*",
+  "//components/browser_watcher/*",
+  "//components/browsing_data/*",
+  "//components/bubble/*",
+  "//components/captive_portal/*",
+  "//components/cdm/*",
+  "//components/certificate_reporting/*",
+  "//components/certificate_transparency/*",
+  "//components/chrome_apps/*",
+  "//components/clipboard/*",
+  "//components/cloud_devices/*",
+  "//components/component_updater/*",
+  "//components/compression/*",
+  "//components/constrained_window/*",
+
+  # TODO(brettw) do these next.
+  #"//components/content_settings/*",
+  #"//components/cookie_config/*",
+  #"//components/copresence/*",
+  #"//components/crash/*",
+  "//components/cronet/*",
+  "//components/crx_file/*",
+
   "//components/google/*",
   "//components/history/*",
 

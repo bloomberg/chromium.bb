@@ -12,6 +12,13 @@ source_set("browser") {
     "crash_dump_manager_android.h",
   ]
 
+  deps = [
+    "//base",
+    "//components/crash/content/app",
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+
   if (is_linux || is_android) {
     set_sources_assignment_filter([])
 
@@ -20,14 +27,8 @@ source_set("browser") {
       "crash_handler_host_linux.cc",
       "crash_handler_host_linux.h",
     ]
+    deps += [ "//breakpad:client" ]
   }
-
-  deps = [
-    "//base",
-    "//components/crash/content/app",
-    "//content/public/browser",
-    "//content/public/common",
-  ]
 
   # This is not in the GYP build but this target includes breakpad client
   # headers, so add the dependency here.
