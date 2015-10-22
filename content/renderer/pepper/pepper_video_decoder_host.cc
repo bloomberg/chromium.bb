@@ -137,15 +137,6 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   profile_ = PepperToMediaVideoProfile(profile);
   software_fallback_allowed_ = (acceleration != PP_HARDWAREACCELERATION_ONLY);
 
-  // Check for Dev API use
-  // TODO(lpique): remove check when PPB_VideoDecoder_1_1 reaches beta/stable.
-  // https://crbug.com/520323
-  if (min_picture_count != 0) {
-    ContentRendererClient* client = GetContentClient()->renderer();
-    bool allowed = client->IsPluginAllowedToUseDevChannelAPIs();
-    if (!allowed)
-      return PP_ERROR_NOTSUPPORTED;
-  }
   min_picture_count_ = min_picture_count;
 
   if (acceleration != PP_HARDWAREACCELERATION_NONE) {

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_decoder.idl modified Thu Aug  6 14:15:48 2015. */
+/* From ppb_video_decoder.idl modified Mon Sep 28 15:23:30 2015. */
 
 #ifndef PPAPI_C_PPB_VIDEO_DECODER_H_
 #define PPAPI_C_PPB_VIDEO_DECODER_H_
@@ -22,8 +22,8 @@
 #define PPB_VIDEODECODER_INTERFACE_0_1 "PPB_VideoDecoder;0.1"
 #define PPB_VIDEODECODER_INTERFACE_0_2 "PPB_VideoDecoder;0.2"
 #define PPB_VIDEODECODER_INTERFACE_1_0 "PPB_VideoDecoder;1.0"
-#define PPB_VIDEODECODER_INTERFACE_1_1 "PPB_VideoDecoder;1.1" /* dev */
-#define PPB_VIDEODECODER_INTERFACE PPB_VIDEODECODER_INTERFACE_1_0
+#define PPB_VIDEODECODER_INTERFACE_1_1 "PPB_VideoDecoder;1.1"
+#define PPB_VIDEODECODER_INTERFACE PPB_VIDEODECODER_INTERFACE_1_1
 
 /**
  * @file
@@ -58,7 +58,7 @@
  * Chrome and ChromeOS: aac, h264.
  * ChromeOS: mpeg4.
  */
-struct PPB_VideoDecoder_1_1 { /* dev */
+struct PPB_VideoDecoder_1_1 {
   /**
    * Creates a new video decoder resource.
    *
@@ -230,6 +230,8 @@ struct PPB_VideoDecoder_1_1 { /* dev */
                    struct PP_CompletionCallback callback);
 };
 
+typedef struct PPB_VideoDecoder_1_1 PPB_VideoDecoder;
+
 struct PPB_VideoDecoder_0_1 {
   PP_Resource (*Create)(PP_Instance instance);
   PP_Bool (*IsVideoDecoder)(PP_Resource resource);
@@ -301,8 +303,6 @@ struct PPB_VideoDecoder_1_0 {
   int32_t (*Reset)(PP_Resource video_decoder,
                    struct PP_CompletionCallback callback);
 };
-
-typedef struct PPB_VideoDecoder_1_0 PPB_VideoDecoder;
 /**
  * @}
  */
