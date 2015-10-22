@@ -12,14 +12,16 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-class Profile;
 
 namespace sync_driver {
 class SyncService;
 }
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
+}
+
+namespace password_manager {
 
 // Service that is responsible for reconciling the legacy "Offer to save your
 // web passwords" setting (henceforth denoted 'L', for legacy) with the new
@@ -74,29 +76,10 @@ class SyncService;
 // depends on PrefServiceSyncable https://crbug.com/522536.
 class PasswordManagerSettingMigratorService
     : public KeyedService,
-      public syncable_prefs::PrefServiceSyncableObserver,
-      public content::NotificationObserver {
+      public syncable_prefs::PrefServiceSyncableObserver {
  public:
-  class Factory : public BrowserContextKeyedServiceFactory {
-   public:
-    static Factory* GetInstance();
-    static PasswordManagerSettingMigratorService* GetForProfile(
-        Profile* profile);
-
-   private:
-    friend struct base::DefaultSingletonTraits<Factory>;
-    friend class PasswordManagerSettingMigratorServiceTest;
-
-    Factory();
-    ~Factory() override;
-
-    // BrowserContextKeyedServiceFactory:
-    KeyedService* BuildServiceInstanceFor(
-        content::BrowserContext* profile) const override;
-    bool ServiceIsCreatedWithBrowserContext() const override;
-  };
-
-  explicit PasswordManagerSettingMigratorService(Profile* profile);
+  explicit PasswordManagerSettingMigratorService(
+      syncable_prefs::PrefServiceSyncable* prefs);
   ~PasswordManagerSettingMigratorService() override;
 
   void Shutdown() override;
@@ -104,10 +87,7 @@ class PasswordManagerSettingMigratorService
   // PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void InitializeMigration(sync_driver::SyncService* sync_service);
 
  private:
   // Initializes the observers: preferences observers and sync status observers.
@@ -161,16 +141,14 @@ class PasswordManagerSettingMigratorService
   // The initial value for kPasswordManagerSavingEnabled.
   bool initial_legacy_pref_value_;
 
-  Profile* const profile_;
-
+  syncable_prefs::PrefServiceSyncable* prefs_;
   sync_driver::SyncService* sync_service_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Used to register for notification that profile creation is complete.
-  content::NotificationRegistrar registrar_;
-
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerSettingMigratorService);
 };
+
+}  // namespace password_manager
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_

@@ -7,18 +7,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/test/histogram_tester.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
-#include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/sync_driver/fake_sync_service.h"
+#include "components/syncable_prefs/pref_model_associator_client.h"
+#include "components/syncable_prefs/pref_service_mock_factory.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -124,6 +120,50 @@ void StartSyncingPref(syncable_prefs::PrefServiceSyncable* prefs,
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock));
 }
 
+class SyncServiceMock : public sync_driver::FakeSyncService {
+ public:
+  bool HasSyncSetupCompleted() const override { return true; }
+
+  bool CanSyncStart() const override { return can_sync_start_; }
+
+  void SetCanSyncStart(bool can_sync_start) {
+    can_sync_start_ = can_sync_start;
+  }
+
+ private:
+  bool can_sync_start_ = true;
+};
+
+class TestPrefModelAssociatorClient
+    : public syncable_prefs::PrefModelAssociatorClient {
+ public:
+  TestPrefModelAssociatorClient() {}
+  ~TestPrefModelAssociatorClient() override {}
+
+  // PrefModelAssociatorClient implementation.
+  bool IsMergeableListPreference(const std::string& pref_name) const override {
+    return false;
+  }
+
+  bool IsMergeableDictionaryPreference(
+      const std::string& pref_name) const override {
+    return false;
+  }
+
+  bool IsMigratedPreference(const std::string& new_pref_name,
+                            std::string* old_pref_name) const override {
+    return false;
+  }
+
+  bool IsOldMigratedPreference(const std::string& old_pref_name,
+                               std::string* new_pref_name) const override {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPrefModelAssociatorClient);
+};
+
 }  // namespace
 
 namespace password_manager {
@@ -134,47 +174,46 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
   ~PasswordManagerSettingMigratorServiceTest() override {}
 
   void SetUp() override {
-    ResetProfile();
+    SetupPreferenceMigrationEnvironment();
     EnforcePasswordManagerSettingMigrationExperiment(kEnabledGroupName);
   }
 
   void SetupLocalPrefState(const std::string& name, BooleanPrefState state) {
-    PrefService* prefs = profile()->GetPrefs();
     if (state == ON)
-      prefs->SetBoolean(name, true);
+      prefs()->SetBoolean(name, true);
     else if (state == OFF)
-      prefs->SetBoolean(name, false);
+      prefs()->SetBoolean(name, false);
     else if (state == EMPTY)
-      ASSERT_TRUE(prefs->FindPreference(name)->IsDefaultValue());
+      ASSERT_TRUE(prefs()->FindPreference(name)->IsDefaultValue());
   }
 
-  Profile* profile() { return profile_.get(); }
+  syncable_prefs::PrefServiceSyncable* prefs() { return pref_service_.get(); }
 
-  void ResetProfile() {
-    profile_ = TestingProfile::Builder().Build();
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), &ProfileSyncServiceMock::BuildMockProfileSyncService);
-    ON_CALL(*profile_sync_service(), CanSyncStart())
-        .WillByDefault(testing::Return(true));
+  void SetupPreferenceMigrationEnvironment() {
+    syncable_prefs::PrefServiceMockFactory factory;
+    factory.SetPrefModelAssociatorClient(&client_);
+    scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
+        new user_prefs::PrefRegistrySyncable);
+    password_manager::PasswordManager::RegisterProfilePrefs(
+        pref_registry.get());
+    scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service_syncable =
+        factory.CreateSyncable(pref_registry.get());
+    migration_service_.reset(
+        new PasswordManagerSettingMigratorService(pref_service_syncable.get()));
+    pref_service_.reset(pref_service_syncable.release());
   }
 
   void ExpectValuesForBothPrefValues(bool new_pref_value, bool old_pref_value) {
-    PrefService* prefs = profile()->GetPrefs();
     EXPECT_EQ(new_pref_value,
-              prefs->GetBoolean(prefs::kCredentialsEnableService));
+              prefs()->GetBoolean(prefs::kCredentialsEnableService));
     EXPECT_EQ(old_pref_value,
-              prefs->GetBoolean(prefs::kPasswordManagerSavingEnabled));
+              prefs()->GetBoolean(prefs::kPasswordManagerSavingEnabled));
   }
 
-  ProfileSyncServiceMock* profile_sync_service() {
-    return static_cast<ProfileSyncServiceMock*>(
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
-  }
+  SyncServiceMock* profile_sync_service() { return &sync_service_; }
 
   void NotifyProfileAdded() {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_ADDED, content::Source<Profile>(profile()),
-        content::NotificationService::NoDetails());
+    migration_service_->InitializeMigration(&sync_service_);
   }
 
   void EnforcePasswordManagerSettingMigrationExperiment(const char* name) {
@@ -186,9 +225,11 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
+  TestPrefModelAssociatorClient client_;
+  SyncServiceMock sync_service_;
+  scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+  scoped_ptr<PasswordManagerSettingMigratorService> migration_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerSettingMigratorServiceTest);
 };
@@ -214,15 +255,15 @@ TEST_F(PasswordManagerSettingMigratorServiceTest, TestMigrationOnLocalChanges) {
        true}};
 
   for (const auto& test_case : kTestingTable) {
-    ResetProfile();
+    SetupPreferenceMigrationEnvironment();
     EnforcePasswordManagerSettingMigrationExperiment(test_case.group);
-    PrefService* prefs = profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kCredentialsEnableService, !test_case.pref_value);
-    prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled,
-                      !test_case.pref_value);
+    prefs()->SetBoolean(prefs::kCredentialsEnableService,
+                        !test_case.pref_value);
+    prefs()->SetBoolean(prefs::kPasswordManagerSavingEnabled,
+                        !test_case.pref_value);
     NotifyProfileAdded();
     base::HistogramTester tester;
-    prefs->SetBoolean(test_case.pref_name, test_case.pref_value);
+    prefs()->SetBoolean(test_case.pref_name, test_case.pref_value);
     ExpectValuesForBothPrefValues(test_case.expected_new_pref_value,
                                   test_case.expected_old_pref_value);
     EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
@@ -281,7 +322,7 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
   };
 
   for (const auto& test_case : kTestingTable) {
-    ResetProfile();
+    SetupPreferenceMigrationEnvironment();
     EnforcePasswordManagerSettingMigrationExperiment(kEnabledGroupName);
     SCOPED_TRACE(testing::Message("Local data = ")
                  << test_case.new_pref_local_value << " "
@@ -295,12 +336,10 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                         test_case.new_pref_local_value);
     base::HistogramTester tester;
     NotifyProfileAdded();
-    syncable_prefs::PrefServiceSyncable* prefs =
-        PrefServiceSyncableFromProfile(profile());
-    StartSyncingPref(prefs, prefs::kCredentialsEnableService,
+    StartSyncingPref(prefs(), prefs::kCredentialsEnableService,
                      test_case.new_pref_sync_value);
 #if !defined(OS_ANDROID)
-    StartSyncingPref(prefs, prefs::kPasswordManagerSavingEnabled,
+    StartSyncingPref(prefs(), prefs::kPasswordManagerSavingEnabled,
                      test_case.old_pref_sync_value);
 #endif
     ExpectValuesForBothPrefValues(test_case.result_value,
@@ -363,7 +402,7 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
   };
 
   for (const auto& test_case : kTestingTable) {
-    ResetProfile();
+    SetupPreferenceMigrationEnvironment();
     EnforcePasswordManagerSettingMigrationExperiment(kDisabledGroupName);
     SCOPED_TRACE(testing::Message("Local data = ")
                  << test_case.new_pref_local_value << " "
@@ -377,12 +416,10 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                         test_case.new_pref_local_value);
     base::HistogramTester tester;
     NotifyProfileAdded();
-    syncable_prefs::PrefServiceSyncable* prefs =
-        PrefServiceSyncableFromProfile(profile());
-    StartSyncingPref(prefs, prefs::kCredentialsEnableService,
+    StartSyncingPref(prefs(), prefs::kCredentialsEnableService,
                      test_case.new_pref_sync_value);
 #if !defined(OS_ANDROID)
-    StartSyncingPref(prefs, prefs::kPasswordManagerSavingEnabled,
+    StartSyncingPref(prefs(), prefs::kPasswordManagerSavingEnabled,
                      test_case.old_pref_sync_value);
 #endif
     ExpectValuesForBothPrefValues(test_case.result_new_pref_value,
@@ -397,11 +434,8 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
        ReconcileWhenSyncIsNotExpectedPasswordManagerEnabledOff) {
-  syncable_prefs::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile());
-  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, false);
-  ON_CALL(*profile_sync_service(), CanSyncStart())
-      .WillByDefault(testing::Return(false));
+  prefs()->SetBoolean(prefs::kPasswordManagerSavingEnabled, false);
+  profile_sync_service()->SetCanSyncStart(false);
   base::HistogramTester tester;
   NotifyProfileAdded();
   ExpectValuesForBothPrefValues(false, false);
@@ -411,12 +445,9 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
        ReconcileWhenSyncIsNotExpectedPasswordManagerEnabledOn) {
-  syncable_prefs::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile());
-  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
-  ASSERT_EQ(prefs->GetBoolean(prefs::kCredentialsEnableService), true);
-  ON_CALL(*profile_sync_service(), CanSyncStart())
-      .WillByDefault(testing::Return(false));
+  prefs()->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
+  ASSERT_EQ(prefs()->GetBoolean(prefs::kCredentialsEnableService), true);
+  profile_sync_service()->SetCanSyncStart(false);
   base::HistogramTester tester;
   NotifyProfileAdded();
   ExpectValuesForBothPrefValues(true, true);
@@ -426,11 +457,8 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
        ReconcileWhenSyncIsNotExpectedDefaultValuesForPrefs) {
-  syncable_prefs::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile());
-  ASSERT_EQ(prefs->GetBoolean(prefs::kCredentialsEnableService), true);
-  ON_CALL(*profile_sync_service(), CanSyncStart())
-      .WillByDefault(testing::Return(false));
+  ASSERT_EQ(prefs()->GetBoolean(prefs::kCredentialsEnableService), true);
+  profile_sync_service()->SetCanSyncStart(false);
   base::HistogramTester tester;
   NotifyProfileAdded();
   ExpectValuesForBothPrefValues(true, true);

@@ -15,10 +15,10 @@ namespace password_manager_setting_migrater_helper {
 // Enables the password manager setting migration field trial.
 void SetupFieldTrial();
 
-// Sends NOTIFICATION_PROFILE_ADDED for the |profile|.
-// PasswordManagerSettingMigrater observes this notification to register
-// observers which are required in order to perform migration.
-void SendProfileAddNotification(Profile* profile);
+// Triggers Initalization of the PasswordManagerSettingMigrator service.
+// The service registers observes which are required in order to perform
+// migration.
+void InitializePreferencesMigration(Profile* profile);
 
 // Checks that on the client number |index| the value for
 // kCredentialsEnableService is equal to |new_pref_value| and the value for

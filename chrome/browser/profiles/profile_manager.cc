@@ -29,6 +29,8 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
+#include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
@@ -1115,6 +1117,14 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   GaiaCookieManagerServiceFactory::GetForProfile(profile)->Init();
   AccountFetcherServiceFactory::GetForProfile(profile)->EnableNetworkFetches();
   AccountReconcilorFactory::GetForProfile(profile);
+
+  // Service is responsible for migration of the legacy password manager
+  // preference which controls behaviour of the Chrome to the new preference
+  // which controls password management behaviour on Chrome and Android. After
+  // migration will be performed for all users it's planned to remove the
+  // migration code, rough time estimates are Q1 2016.
+  PasswordManagerSettingMigratorServiceFactory::GetForProfile(profile)
+      ->InitializeMigration(ProfileSyncServiceFactory::GetForProfile(profile));
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {

@@ -7,7 +7,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
+#include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/browser/notification_details.h"
@@ -30,10 +34,9 @@ void SetupFieldTrial() {
   base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kEnabledGroupName);
 }
 
-void SendProfileAddNotification(Profile* profile) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_ADDED, content::Source<Profile>(profile),
-      content::NotificationService::NoDetails());
+void InitializePreferencesMigration(Profile* profile) {
+  PasswordManagerSettingMigratorServiceFactory::GetForProfile(profile)
+      ->InitializeMigration(ProfileSyncServiceFactory::GetForProfile(profile));
 }
 
 void ExpectPrefValuesOnClient(int index,

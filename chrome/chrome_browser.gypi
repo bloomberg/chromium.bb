@@ -2052,6 +2052,8 @@
       'browser/password_manager/chrome_password_manager_client.h',
       'browser/password_manager/password_manager_setting_migrator_service.cc',
       'browser/password_manager/password_manager_setting_migrator_service.h',
+      'browser/password_manager/password_manager_setting_migrator_service_factory.cc',
+      'browser/password_manager/password_manager_setting_migrator_service_factory.h',
       'browser/password_manager/password_store_factory.cc',
       'browser/password_manager/password_store_factory.h',
       'browser/password_manager/password_store_mac.cc',

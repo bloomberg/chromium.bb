@@ -70,7 +70,7 @@ class SyncStateObserver : public syncable_prefs::PrefServiceSyncableObserver {
     if (!prefs_->IsSyncing() && !prefs_->IsPrioritySyncing()) {
       // TODO(melandory): postpone observer removal until destruction.
       prefs_->RemoveObserver(this);
-      password_manager_setting_migrater_helper::SendProfileAddNotification(
+      password_manager_setting_migrater_helper::InitializePreferencesMigration(
           profile_);
     }
   }

@@ -31,7 +31,7 @@ class MultipleClientPasswordManagerSettingMigratorServiceSyncTest
   }
 
   void EnsureMigrationStartsForClient(int index) {
-    password_manager_setting_migrater_helper::SendProfileAddNotification(
+    password_manager_setting_migrater_helper::InitializePreferencesMigration(
         GetProfile(index));
   }
 
