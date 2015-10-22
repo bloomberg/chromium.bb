@@ -150,6 +150,7 @@ public:
     void setCSSPropertyValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
 
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedRulesList(Element*);
+    String styleSheetId(CSSStyleSheet*);
 private:
     class StyleSheetAction;
     class SetStyleSheetTextAction;

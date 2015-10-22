@@ -17,15 +17,19 @@
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
+#include "core/css/CSSRuleList.h"
+#include "core/css/CSSStyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectedFrames.h"
+#include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
+#include "wtf/text/Base64.h"
 
 namespace AnimationAgentState {
 static const char animationAgentEnabled[] = "animationAgentEnabled";
@@ -33,10 +37,11 @@ static const char animationAgentEnabled[] = "animationAgentEnabled";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_inspectedFrames(inspectedFrames)
     , m_domAgent(domAgent)
+    , m_cssAgent(cssAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_isCloning(false)
 {
@@ -177,6 +182,8 @@ PassRefPtr<TypeBuilder::Animation::Animation> InspectorAnimationAgent::buildObje
         .setCurrentTime(animation.currentTime())
         .setSource(animationEffectObject.release())
         .setType(animationType);
+    if (animationType != AnimationType::WebAnimation)
+        animationObject->setCssId(createCSSId(animation));
     return animationObject.release();
 }
 
@@ -290,6 +297,63 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
     ScriptValue scriptValue = ScriptValue(scriptState, toV8(animation, scriptState->context()->Global(), isolate));
     injectedScript.releaseObjectGroup("animation");
     result = injectedScript.wrapObject(scriptValue, "animation");
+}
+
+static CSSPropertyID animationProperties[] = {
+    CSSPropertyAnimationDelay,
+    CSSPropertyAnimationDirection,
+    CSSPropertyAnimationDuration,
+    CSSPropertyAnimationFillMode,
+    CSSPropertyAnimationIterationCount,
+    CSSPropertyAnimationName,
+    CSSPropertyAnimationTimingFunction
+};
+
+static CSSPropertyID transitionProperties[] = {
+    CSSPropertyTransitionDelay,
+    CSSPropertyTransitionDuration,
+    CSSPropertyTransitionProperty,
+    CSSPropertyTransitionTimingFunction,
+};
+
+static void addStringToDigestor(WebCryptoDigestor* digestor, const String& string)
+{
+    digestor->consume(reinterpret_cast<const unsigned char*>(string.ascii().data()), string.length());
+}
+
+String InspectorAnimationAgent::createCSSId(Animation& animation)
+{
+    AnimationType type = m_idToAnimationType.get(String::number(animation.sequenceNumber()));
+    ASSERT(type != AnimationType::WebAnimation);
+
+    KeyframeEffect* effect = toKeyframeEffect(animation.effect());
+    Vector<CSSPropertyID> cssProperties;
+    if (type == AnimationType::CSSAnimation) {
+        for (CSSPropertyID property : animationProperties)
+            cssProperties.append(property);
+    } else {
+        for (CSSPropertyID property : transitionProperties)
+            cssProperties.append(property);
+        cssProperties.append(cssPropertyID(effect->name()));
+    }
+
+    Element* element = effect->target();
+    RefPtrWillBeRawPtr<CSSRuleList> ruleList = m_cssAgent->matchedRulesList(element);
+    OwnPtr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
+    addStringToDigestor(digestor.get(), String::number(type));
+    addStringToDigestor(digestor.get(), effect->name());
+    for (CSSPropertyID property : cssProperties) {
+        RefPtrWillBeRawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, ruleList.get(), element->style());
+        // Ignore inline styles.
+        if (!style || !style->parentStyleSheet() || !style->parentRule() || style->parentRule()->type() != CSSRule::STYLE_RULE)
+            continue;
+        addStringToDigestor(digestor.get(), getPropertyNameString(property));
+        addStringToDigestor(digestor.get(), m_cssAgent->styleSheetId(style->parentStyleSheet()));
+        addStringToDigestor(digestor.get(), toCSSStyleRule(style->parentRule())->selectorText());
+    }
+    DigestValue digestResult;
+    finishDigestor(digestor.get(), digestResult);
+    return base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);
 }
 
 void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)

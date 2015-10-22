@@ -20,15 +20,16 @@ class AnimationTimeline;
 class Element;
 class InjectedScriptManager;
 class InspectedFrames;
+class InspectorCSSAgent;
 class InspectorDOMAgent;
 class TimingFunction;
 
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrames, domAgent, injectedScriptManager));
+        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, injectedScriptManager));
     }
 
     // Base agent methods.
@@ -58,7 +59,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InjectedScriptManager*);
+    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, InjectedScriptManager*);
 
     typedef TypeBuilder::Animation::Animation::Type::Enum AnimationType;
 
@@ -67,9 +68,11 @@ private:
     double normalizedStartTime(Animation&);
     AnimationTimeline& referenceTimeline();
     Animation* animationClone(Animation*);
+    String createCSSId(Animation&);
 
     InspectedFrames* m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;

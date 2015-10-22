@@ -1316,6 +1316,11 @@ InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet
     return inspectorStyleSheet.get();
 }
 
+String InspectorCSSAgent::styleSheetId(CSSStyleSheet* styleSheet)
+{
+    return bindStyleSheet(styleSheet)->id();
+}
+
 String InspectorCSSAgent::unbindStyleSheet(InspectorStyleSheet* inspectorStyleSheet)
 {
     String id = inspectorStyleSheet->id();
