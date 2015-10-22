@@ -107,7 +107,8 @@ class _ApkDelegate(object):
 
   def Install(self, device, incremental=False):
     if not incremental:
-      device.Install(self._apk_helper, permissions=self._permissions)
+      device.Install(self._apk_helper, reinstall=True,
+                     permissions=self._permissions)
       return
 
     installer_script = os.path.join(constants.GetOutDirectory(), 'bin',
