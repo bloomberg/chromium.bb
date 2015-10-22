@@ -24,7 +24,6 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/cpp/content_handler_factory.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
@@ -313,85 +312,94 @@ class BitmapUploader : public mus::mojom::SurfaceClient {
   DISALLOW_COPY_AND_ASSIGN(BitmapUploader);
 };
 
-class EmbedderData {
- public:
-  EmbedderData(mojo::Shell* shell, mus::Window* root) : bitmap_uploader_(root) {
-    bitmap_uploader_.Init(shell);
-    bitmap_uploader_.SetColor(g_background_color);
-  }
-
-  BitmapUploader& bitmap_uploader() { return bitmap_uploader_; }
-
- private:
-  BitmapUploader bitmap_uploader_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbedderData);
-};
-
-class PDFView : public mojo::ApplicationDelegate,
-                public mus::WindowTreeDelegate,
+// Responsible for managing a particlar view displaying a PDF document.
+class PDFView : public mus::WindowTreeDelegate,
                 public mus::WindowObserver,
                 public web_view::mojom::FrameClient,
-                public mojo::InterfaceFactory<mus::mojom::WindowTreeClient>,
                 public mojo::InterfaceFactory<web_view::mojom::FrameClient> {
  public:
-  PDFView(mojo::InterfaceRequest<mojo::Application> request,
-          mojo::URLResponsePtr response)
-      : app_(this,
-             request.Pass(),
-             base::Bind(&PDFView::OnTerminate, base::Unretained(this))),
+  using DeleteCallback = base::Callback<void(PDFView*)>;
+
+  PDFView(mojo::ApplicationImpl* app,
+          mojo::ApplicationConnection* connection,
+          FPDF_DOCUMENT doc,
+          const DeleteCallback& delete_callback)
+      : app_ref_(app->app_lifetime_helper()->CreateAppRefCount()),
+        doc_(doc),
         current_page_(0),
-        page_count_(0),
-        doc_(nullptr),
-        frame_client_binding_(this) {
-    FetchPDF(response.Pass());
+        page_count_(FPDF_GetPageCount(doc_)),
+        shell_(app->shell()),
+        root_(nullptr),
+        frame_client_binding_(this),
+        delete_callback_(delete_callback) {
+    connection->AddService(this);
   }
 
-  ~PDFView() override {
-    if (doc_)
-      FPDF_CloseDocument(doc_);
-    for (auto& roots : embedder_for_roots_) {
-      roots.first->RemoveObserver(this);
-      delete roots.second;
-    }
-    for (auto& roots : embedder_for_roots_)
-      mus::ScopedWindowPtr::DeleteWindowOrWindowManager(roots.first);
+  void Close() {
+    if (root_)
+      mus::ScopedWindowPtr::DeleteWindowOrWindowManager(root_);
+    else
+      delete this;
   }
 
  private:
-  // Overridden from ApplicationDelegate:
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) override {
-    connection->AddService<mus::mojom::WindowTreeClient>(this);
-    connection->AddService<web_view::mojom::FrameClient>(this);
-    return true;
+  ~PDFView() override {
+    DCHECK(!root_);
+    if (!delete_callback_.is_null())
+      delete_callback_.Run(this);
   }
 
-  // Overridden from WindowTreeDelegate:
+  void DrawBitmap() {
+    if (!doc_)
+      return;
+
+    FPDF_PAGE page = FPDF_LoadPage(doc_, current_page_);
+    int width = static_cast<int>(FPDF_GetPageWidth(page));
+    int height = static_cast<int>(FPDF_GetPageHeight(page));
+
+    scoped_ptr<std::vector<unsigned char>> bitmap;
+    bitmap.reset(new std::vector<unsigned char>);
+    bitmap->resize(width * height * 4);
+
+    FPDF_BITMAP f_bitmap = FPDFBitmap_CreateEx(width, height, FPDFBitmap_BGRA,
+                                               &(*bitmap)[0], width * 4);
+    FPDFBitmap_FillRect(f_bitmap, 0, 0, width, height, 0xFFFFFFFF);
+    FPDF_RenderPageBitmap(f_bitmap, page, 0, 0, width, height, 0, 0);
+    FPDFBitmap_Destroy(f_bitmap);
+
+    FPDF_ClosePage(page);
+
+    bitmap_uploader_->SetBitmap(width, height, bitmap.Pass(),
+                                BitmapUploader::BGRA);
+  }
+
+  // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override {
-    DCHECK(embedder_for_roots_.find(root) == embedder_for_roots_.end());
-    root->AddObserver(this);
-    EmbedderData* embedder_data = new EmbedderData(app_.shell(), root);
-    embedder_for_roots_[root] = embedder_data;
-    DrawBitmap(embedder_data);
+    DCHECK(!root_);
+    root_ = root;
+    root_->AddObserver(this);
+    bitmap_uploader_.reset(new BitmapUploader(root_));
+    bitmap_uploader_->Init(shell_);
+    bitmap_uploader_->SetColor(g_background_color);
+    DrawBitmap();
   }
 
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override {}
+  void OnConnectionLost(mus::WindowTreeConnection* connection) override {
+    root_ = nullptr;
+    delete this;
+  }
 
-  // Overridden from WindowObserver:
+  // WindowObserver:
   void OnWindowBoundsChanged(mus::Window* view,
                              const mojo::Rect& old_bounds,
                              const mojo::Rect& new_bounds) override {
-    DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
-    DrawBitmap(embedder_for_roots_[view]);
+    DrawBitmap();
   }
 
   void OnWindowInputEvent(mus::Window* view,
                           const mojo::EventPtr& event) override {
-    DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
-    if (event->key_data &&
-        (event->action != mojo::EVENT_TYPE_KEY_PRESSED ||
-         event->key_data->is_char)) {
+    if (event->key_data && (event->action != mojo::EVENT_TYPE_KEY_PRESSED ||
+                            event->key_data->is_char)) {
       return;
     }
 
@@ -402,26 +410,22 @@ class PDFView : public mojo::ApplicationDelegate,
         (event->wheel_data && event->wheel_data->delta_y < 0)) {
       if (current_page_ < (page_count_ - 1)) {
         current_page_++;
-        DrawBitmap(embedder_for_roots_[view]);
+        DrawBitmap();
       }
     } else if ((event->key_data &&
                 event->key_data->windows_key_code == mojo::KEYBOARD_CODE_UP) ||
                (event->wheel_data && event->wheel_data->delta_y > 0)) {
       if (current_page_ > 0) {
         current_page_--;
-        DrawBitmap(embedder_for_roots_[view]);
+        DrawBitmap();
       }
     }
   }
 
   void OnWindowDestroyed(mus::Window* view) override {
-    DCHECK(embedder_for_roots_.find(view) != embedder_for_roots_.end());
-    const auto& it = embedder_for_roots_.find(view);
-    DCHECK(it != embedder_for_roots_.end());
-    delete it->second;
-    embedder_for_roots_.erase(it);
-    if (embedder_for_roots_.size() == 0)
-      app_.Quit();
+    DCHECK_EQ(root_, view);
+    root_ = nullptr;
+    bitmap_uploader_.reset();
   }
 
   // web_view::mojom::FrameClient:
@@ -469,15 +473,6 @@ class PDFView : public mojo::ApplicationDelegate,
   }
   void StopHighlightingFindResults() override {}
 
-  // Overridden from mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
-  void Create(
-      mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
-    mus::WindowTreeConnection::Create(
-        this, request.Pass(),
-        mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
-  }
-
   // mojo::InterfaceFactory<web_view::mojom::FrameClient>:
   void Create(
       mojo::ApplicationConnection* connection,
@@ -485,30 +480,49 @@ class PDFView : public mojo::ApplicationDelegate,
     frame_client_binding_.Bind(request.Pass());
   }
 
-  void DrawBitmap(EmbedderData* embedder_data) {
-    if (!doc_)
-      return;
+  scoped_ptr<mojo::AppRefCount> app_ref_;
+  FPDF_DOCUMENT doc_;
+  int current_page_;
+  int page_count_;
 
-    FPDF_PAGE page = FPDF_LoadPage(doc_, current_page_);
-    int width = static_cast<int>(FPDF_GetPageWidth(page));
-    int height = static_cast<int>(FPDF_GetPageHeight(page));
+  scoped_ptr<BitmapUploader> bitmap_uploader_;
 
-    scoped_ptr<std::vector<unsigned char>> bitmap;
-    bitmap.reset(new std::vector<unsigned char>);
-    bitmap->resize(width * height * 4);
+  mojo::Shell* shell_;
+  mus::Window* root_;
 
-    FPDF_BITMAP f_bitmap = FPDFBitmap_CreateEx(width, height, FPDFBitmap_BGRA,
-                                               &(*bitmap)[0], width * 4);
-    FPDFBitmap_FillRect(f_bitmap, 0, 0, width, height, 0xFFFFFFFF);
-    FPDF_RenderPageBitmap(f_bitmap, page, 0, 0, width, height, 0, 0);
-    FPDFBitmap_Destroy(f_bitmap);
+  web_view::mojom::FramePtr frame_;
+  mojo::Binding<web_view::mojom::FrameClient> frame_client_binding_;
+  DeleteCallback delete_callback_;
 
-    FPDF_ClosePage(page);
+  DISALLOW_COPY_AND_ASSIGN(PDFView);
+};
 
-    embedder_data->bitmap_uploader().SetBitmap(width, height, bitmap.Pass(),
-                                               BitmapUploader::BGRA);
+// Responsible for managing all the views for displaying a PDF document.
+class PDFViewerApplicationDelegate
+    : public mojo::ApplicationDelegate,
+      public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
+ public:
+  PDFViewerApplicationDelegate(
+      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::URLResponsePtr response)
+      : app_(this,
+             request.Pass(),
+             base::Bind(&PDFViewerApplicationDelegate::OnTerminate,
+                        base::Unretained(this))),
+        doc_(nullptr),
+        is_destroying_(false) {
+    FetchPDF(response.Pass());
   }
 
+  ~PDFViewerApplicationDelegate() override {
+    is_destroying_ = true;
+    if (doc_)
+      FPDF_CloseDocument(doc_);
+    while (!pdf_views_.empty())
+      pdf_views_.front()->Close();
+  }
+
+ private:
   void FetchPDF(mojo::URLResponsePtr response) {
     data_.clear();
     mojo::common::BlockingCopyToString(response->body.Pass(), &data_);
@@ -516,27 +530,47 @@ class PDFView : public mojo::ApplicationDelegate,
       return;
     doc_ = FPDF_LoadMemDocument(data_.data(), static_cast<int>(data_.length()),
                                 nullptr);
-    page_count_ = FPDF_GetPageCount(doc_);
   }
 
   // Callback from the quit closure. We key off this rather than
   // ApplicationDelegate::Quit() as we don't want to shut down the messageloop
   // when we quit (the messageloop is shared among multiple PDFViews).
-  void OnTerminate() {
-    delete this;
+  void OnTerminate() { delete this; }
+
+  void OnPDFViewDestroyed(PDFView* pdf_view) {
+    DCHECK(std::find(pdf_views_.begin(), pdf_views_.end(), pdf_view) !=
+           pdf_views_.end());
+    pdf_views_.erase(std::find(pdf_views_.begin(), pdf_views_.end(), pdf_view));
+  }
+
+  // ApplicationDelegate:
+  bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) override {
+    connection->AddService<mus::mojom::WindowTreeClient>(this);
+    return true;
+  }
+
+  // mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
+    PDFView* pdf_view = new PDFView(
+        &app_, connection, doc_,
+        base::Bind(&PDFViewerApplicationDelegate::OnPDFViewDestroyed,
+                   base::Unretained(this)));
+    pdf_views_.push_back(pdf_view);
+    mus::WindowTreeConnection::Create(
+        pdf_view, request.Pass(),
+        mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
   }
 
   mojo::ApplicationImpl app_;
   std::string data_;
-  int current_page_;
-  int page_count_;
+  std::vector<PDFView*> pdf_views_;
   FPDF_DOCUMENT doc_;
-  std::map<mus::Window*, EmbedderData*> embedder_for_roots_;
+  bool is_destroying_;
 
-  web_view::mojom::FramePtr frame_;
-  mojo::Binding<web_view::mojom::FrameClient> frame_client_binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFView);
+  DISALLOW_COPY_AND_ASSIGN(PDFViewerApplicationDelegate);
 };
 
 class ContentHandlerImpl : public mojo::ContentHandler {
@@ -546,10 +580,10 @@ class ContentHandlerImpl : public mojo::ContentHandler {
   ~ContentHandlerImpl() override {}
 
  private:
-  // Overridden from ContentHandler:
+  // ContentHandler:
   void StartApplication(mojo::InterfaceRequest<mojo::Application> request,
                         mojo::URLResponsePtr response) override {
-    new PDFView(request.Pass(), response.Pass());
+    new PDFViewerApplicationDelegate(request.Pass(), response.Pass());
   }
 
   mojo::StrongBinding<mojo::ContentHandler> binding_;
@@ -565,19 +599,17 @@ class PDFViewer : public mojo::ApplicationDelegate,
     FPDF_InitLibrary();
   }
 
-  ~PDFViewer() override {
-    FPDF_DestroyLibrary();
-  }
+  ~PDFViewer() override { FPDF_DestroyLibrary(); }
 
  private:
-  // Overridden from ApplicationDelegate:
+  // ApplicationDelegate:
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
 
-  // Overridden from InterfaceFactory<ContentHandler>:
+  // InterfaceFactory<ContentHandler>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::ContentHandler> request) override {
     new ContentHandlerImpl(request.Pass());
@@ -585,7 +617,6 @@ class PDFViewer : public mojo::ApplicationDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(PDFViewer);
 };
-
 }  // namespace
 }  // namespace pdf_viewer
 
