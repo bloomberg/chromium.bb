@@ -789,8 +789,10 @@ String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
         return String();
 
     PrintContext printContext(frame);
-    if (behavior & LayoutAsTextPrintingMode)
-        printContext.begin(toLayoutBox(layoutObject)->size().width().toFloat());
+    if (behavior & LayoutAsTextPrintingMode) {
+        FloatSize size(toLayoutBox(layoutObject)->size());
+        printContext.begin(size.width(), size.height());
+    }
 
     return externalRepresentation(toLayoutBox(layoutObject), behavior);
 }
