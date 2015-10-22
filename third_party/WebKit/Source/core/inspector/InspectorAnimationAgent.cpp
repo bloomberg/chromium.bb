@@ -405,6 +405,7 @@ DEFINE_TRACE(InspectorAnimationAgent)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_domAgent);
+    visitor->trace(m_cssAgent);
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_idToAnimation);
     visitor->trace(m_idToAnimationType);
