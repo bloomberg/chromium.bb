@@ -194,16 +194,55 @@ private:
     RefPtr<ExecutableWithDatabase> m_executableWithDatabase;
 };
 
+class UpgradeDatabaseCallback final : public EventListener {
+public:
+    static PassRefPtrWillBeRawPtr<UpgradeDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
+    {
+        return adoptRefWillBeNoop(new UpgradeDatabaseCallback(executableWithDatabase));
+    }
+
+    ~UpgradeDatabaseCallback() override { }
+
+    bool operator==(const EventListener& other) override
+    {
+        return this == &other;
+    }
+
+    void handleEvent(ExecutionContext* context, Event* event) override
+    {
+        if (event->type() != EventTypeNames::upgradeneeded) {
+            m_executableWithDatabase->requestCallback()->sendFailure("Unexpected event type.");
+            return;
+        }
+
+        // If an "upgradeneeded" event comes through then the database that
+        // had previously been enumerated was deleted. We don't want to
+        // implicitly re-create it here, so abort the transaction.
+        IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
+        NonThrowableExceptionState exceptionState;
+        idbOpenDBRequest->transaction()->abort(exceptionState);
+        m_executableWithDatabase->requestCallback()->sendFailure("Aborted upgrade.");
+    }
+
+private:
+    UpgradeDatabaseCallback(ExecutableWithDatabase* executableWithDatabase)
+        : EventListener(EventListener::CPPEventListenerType)
+        , m_executableWithDatabase(executableWithDatabase) { }
+    RefPtr<ExecutableWithDatabase> m_executableWithDatabase;
+};
+
 void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, const String& databaseName)
 {
-    RefPtrWillBeRawPtr<OpenDatabaseCallback> callback = OpenDatabaseCallback::create(this);
+    RefPtrWillBeRawPtr<OpenDatabaseCallback> openCallback = OpenDatabaseCallback::create(this);
+    RefPtrWillBeRawPtr<UpgradeDatabaseCallback> upgradeCallback = UpgradeDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
     IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(scriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
         requestCallback()->sendFailure("Could not open database.");
         return;
     }
-    idbOpenDBRequest->addEventListener(EventTypeNames::success, callback, false);
+    idbOpenDBRequest->addEventListener(EventTypeNames::upgradeneeded, upgradeCallback, false);
+    idbOpenDBRequest->addEventListener(EventTypeNames::success, openCallback, false);
 }
 
 static IDBTransaction* transactionForDatabase(ScriptState* scriptState, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IndexedDBNames::readonly)
