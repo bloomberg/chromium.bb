@@ -292,9 +292,11 @@ int GpuMain(const MainFunctionParams& parameters) {
       if (!CollectGraphicsInfo(gpu_info))
         dead_on_arrival = true;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-      // Recompute gpu driver bug workarounds - this is specifically useful
-      // on systems where vendor_id/device_id aren't available.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_LINUX)
+      // Recompute gpu driver bug workarounds.
+      // This is necessary on systems where vendor_id/device_id aren't available
+      // (Chrome OS, Android) or where workarounds may be dependent on GL_VENDOR
+      // and GL_RENDERER strings which are lazily computed (Linux).
       if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
         gpu::ApplyGpuDriverBugWorkarounds(
             gpu_info, const_cast<base::CommandLine*>(&command_line));
