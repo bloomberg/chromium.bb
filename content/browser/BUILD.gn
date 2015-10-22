@@ -370,6 +370,7 @@ source_set("browser") {
       "//mojo/android:libsystem_java",
       "//ui/android",
     ]
+    defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
     libs += [ "jnigraphics" ]
   }
 

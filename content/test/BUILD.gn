@@ -496,6 +496,7 @@ group("content_unittests_run") {
 }
 
 test("content_unittests") {
+  defines = []
   sources = rebase_path(content_tests_gypi_values.content_unittests_sources,
                         ".",
                         "//content")
@@ -671,6 +672,8 @@ test("content_unittests") {
     ]
     deps -= [ "//device/battery" ]
     deps += [ "//testing/android/native_test:native_test_native_code" ]
+
+    defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
   }
   if (!is_android && !is_ios) {
     deps += [ "//third_party/libvpx_new" ]
