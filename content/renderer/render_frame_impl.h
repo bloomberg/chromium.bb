@@ -384,7 +384,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm) override;
-  blink::WebMediaSession* createMediaSession() override;
   blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebLocalFrame* frame,
       blink::WebApplicationCacheHostClient* client) override;

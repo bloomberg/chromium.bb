@@ -37,7 +37,6 @@
 #include "platform/Widget.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayer.h"
-#include "public/platform/modules/mediasession/WebMediaSession.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 
@@ -131,11 +130,6 @@ PassRefPtrWillBeRawPtr<Widget> EmptyFrameLoaderClient::createPlugin(HTMLPlugInEl
 }
 
 PassOwnPtr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*)
-{
-    return nullptr;
-}
-
-PassOwnPtr<WebMediaSession> EmptyFrameLoaderClient::createWebMediaSession()
 {
     return nullptr;
 }

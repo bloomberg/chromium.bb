@@ -56,7 +56,6 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
-#include "modules/mediasession/MediaSession.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/storage/DOMWindowStorageController.h"
 #include "modules/vr/NavigatorVRDevice.h"
@@ -75,7 +74,6 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/mediasession/WebMediaSession.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "public/web/WebAutofillClient.h"
@@ -779,14 +777,6 @@ PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
     return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url,
         client, &encryptedMedia,
         encryptedMedia.contentDecryptionModule()));
-}
-
-PassOwnPtr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()
-{
-    if (!m_webFrame->client())
-        return nullptr;
-
-    return adoptPtr(m_webFrame->client()->createMediaSession());
 }
 
 ObjectContentType FrameLoaderClientImpl::objectContentType(

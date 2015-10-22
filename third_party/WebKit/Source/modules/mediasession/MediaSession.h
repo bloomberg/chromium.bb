@@ -5,35 +5,23 @@
 #ifndef MediaSession_h
 #define MediaSession_h
 
-#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/mediasession/WebMediaSession.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
-class ScriptState;
-
-class MODULES_EXPORT MediaSession
-    : public GarbageCollectedFinalized<MediaSession>
-    , public ScriptWrappable {
+class MediaSession : public GarbageCollected<MediaSession>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaSession* create(ExecutionContext*, ExceptionState&);
+    static MediaSession* create();
 
-    ScriptPromise activate(ScriptState*);
-    ScriptPromise deactivate(ScriptState*);
+    void activate();
+    void deactivate();
 
     DEFINE_INLINE_TRACE() { }
 
 private:
-    friend class MediaSessionTest;
-
-    explicit MediaSession(PassOwnPtr<WebMediaSession>);
-
-    OwnPtr<WebMediaSession> m_webMediaSession;
+    MediaSession() = default;
 };
 
 } // namespace blink

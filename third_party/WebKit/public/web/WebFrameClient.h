@@ -74,7 +74,6 @@ class WebGeolocationClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
-class WebMediaSession;
 class WebMIDIClient;
 class WebNotificationPermissionCallback;
 class WebPermissionClient;
@@ -111,9 +110,6 @@ public:
     // May return null.
     // WebContentDecryptionModule* may be null if one has not yet been set.
     virtual WebMediaPlayer* createMediaPlayer(WebLocalFrame*, const WebURL&, WebMediaPlayerClient*, WebMediaPlayerEncryptedMediaClient*, WebContentDecryptionModule*) { return 0; }
-
-    // May return null.
-    virtual WebMediaSession* createMediaSession() { return 0; }
 
     // May return null.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) { return 0; }

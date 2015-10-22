@@ -270,8 +270,6 @@
       'renderer/media/android/stream_texture_factory_synchronous_impl.h',
       'renderer/media/android/webmediaplayer_android.cc',
       'renderer/media/android/webmediaplayer_android.h',
-      'renderer/media/android/webmediasession_android.cc',
-      'renderer/media/android/webmediasession_android.h',
       'renderer/media/audio_decoder.cc',
       'renderer/media/audio_decoder.h',
       'renderer/media/audio_device_factory.cc',
