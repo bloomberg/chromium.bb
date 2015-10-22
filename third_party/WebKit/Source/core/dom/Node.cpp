@@ -1754,7 +1754,7 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 }
 
-bool Node::addEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptions& options)
+bool Node::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!EventTarget::addEventListenerInternal(eventType, listener, options))
         return false;
@@ -1766,7 +1766,7 @@ bool Node::addEventListenerInternal(const AtomicString& eventType, PassRefPtr<Ev
     return true;
 }
 
-bool Node::removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptions& options)
+bool Node::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
         return false;

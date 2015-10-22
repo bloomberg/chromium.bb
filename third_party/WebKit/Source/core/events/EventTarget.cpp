@@ -111,14 +111,14 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return nullptr;
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)
 {
     EventListenerOptions options;
     setDefaultEventListenerOptionsLegacy(options, useCapture);
     return addEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
 {
     if (optionsUnion.isBoolean())
         return addEventListener(eventType, listener, optionsUnion.getAsBoolean());
@@ -129,7 +129,7 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
     return addEventListener(eventType, listener);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, EventListenerOptions& options)
+bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, EventListenerOptions& options)
 {
     setDefaultEventListenerOptions(options);
     return addEventListenerInternal(eventType, listener, options);
@@ -158,7 +158,7 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtrW
     return removeEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
+bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
 {
     if (optionsUnion.isBoolean())
         return removeEventListener(eventType, listener, optionsUnion.getAsBoolean());
@@ -169,13 +169,13 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<
     return removeEventListener(eventType, listener);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, EventListenerOptions& options)
+bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, EventListenerOptions& options)
 {
     setDefaultEventListenerOptions(options);
     return removeEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, PassRefPtr<EventListener> listener, const EventListenerOptions& options)
+bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!listener)
         return false;
