@@ -27,6 +27,7 @@
 @page zunitc zunitc
 
 - @ref zunitc_overview
+  - @ref zunitc_overview_return
 - @ref zunitc_execution
   - @ref zunitc_execution_commandline
   - @ref zunitc_execution_matching
@@ -38,12 +39,14 @@
 
 @section zunitc_overview Overview
 
-A simple test framework in plain C suitable for basic unit and integration testing.
+A simple test framework in plain C suitable for basic unit and integration
+testing.
 
-The main rationale for creating this framework was to have a simple to use testing
-framework with tests implemented in C using common patterns and under a
+The main rationale for creating this framework was to have a simple to use
+testing framework with tests implemented in C using common patterns and under a
 compatible license. The structure of the test code and macro use is intended to
-follow common patterns established by frameworks such as Boost Test and Google Test.
+follow common patterns established by frameworks such as Boost Test and Google
+Test.
 
 
 To get started, one or more tests should be defined via ZUC_TEST() and/or
@@ -53,9 +56,10 @@ To actually execute tests, ZUC_RUN_TESTS() should be called.
 
 Tests can use several ZUC_ASSERT_* or ZUC_ASSERTG_* checks to validate
 conditions. The ZUC_ASSERT_* ones upon failure will mark the current test
-as failing and immediatly execute a return. On the other hand, the
+as failing and immediately execute a return. On the other hand, the
 ZUC_ASSERTG_* tests will mark the current test as failed and then execute a
-'goto' targeting the specified label.
+'goto' targeting the specified label. See @ref zunitc_overview_return for more
+detail.
 
 The set of fatal test checks are
 
@@ -94,12 +98,66 @@ Unconditional test values for logging and termination are
 Unconditional message logging for failure cases only is
 - ZUC_TRACEPOINT()
 
+@subsection zunitc_overview_return Test Termination and Return
+
+One key point where this framework differs from some others (especially many
+common ad hoc test programs) is that it does not use assert() nor exceptions.
+
+- does not use assert()
+- can not use throw
+
+One main implication of this is that when a check fails the current function
+will be terminated via a 'return' statement and control passed back to the
+calling function. If the check fails in an individual ZUC_TEST() or ZUC_TEST_F()
+test function then control is returned to the framework and the current test is
+deemed completed (either successfully or with failure).
+
+On the other hand, if a check fails that is being executed in a function called
+by an individual test, then control will stay in the current test. In order to
+successfully exit the current test a follow-up check needs to be done after
+calling functions that might cause a failure.
+
+@code{.c}
+...
+
+    /* Call a function that might contain ZUC_ASSERT_* use. */
+    some_helper_function();
+
+    /* Stop the current test if something failed. */
+    ZUC_ASSERT_FALSE(zuc_has_failure());
+
+    /* execution will only reach this point if no failures occurred. */
+
+...
+@endcode
+
+Use of the ZUC_ASSERTG_*() variants can help in certain situations as check
+failure will trigger a 'goto' statement as opposed to a general 'return'.
+
+@code{.c}
+...
+
+    /* Call a function that might contain ZUC_ASSERT_* use. */
+    some_helper_function();
+
+    /* Stop the current test if something failed. */
+    ZUC_ASSERTG_FALSE(zuc_has_failure(), err);
+
+    /* execution will only reach this point if no failures occurred. */
+...
+
+err:
+    free(str_a);
+}
+...
+@endcode
+
 @section zunitc_execution Controlling Execution
 
 To control execution, the various zuc_set_* functions can be called
 before invoking ZUC_RUN_TESTS().
 
-@subsection zunitc_execution_commandline Commandline Parameters
+@subsection zunitc_execution_commandline Command-line Parameters
 
 The current implementation defers processing of command-line parameters
 to the main application hosting the testing. It is possible that a
@@ -117,6 +175,10 @@ Wildcards can be used in the match/exclude patterns and recognize the
 following two special characters:
 - '*' matches any number of characters including zero.
 - '?' matches any single character.
+
+This pattern matching is consistent with other testing frameworks and
+has been chosen in order to make it easier for developers to move
+between different testing frameworks.
 
 Calling zuc_list_tests() after zuc_set_filter() can be done to show the
 effects of the matching without needing to actually run tests.
@@ -151,7 +213,6 @@ parameter to ZUC_TEST_F().
 - zuc_set_filter()
 - zuc_set_random()
 - zuc_set_spawn()
-- zuc_set_output_tap()
 - zuc_set_output_junit()
 - zuc_has_skip()
 - zuc_has_failure()
