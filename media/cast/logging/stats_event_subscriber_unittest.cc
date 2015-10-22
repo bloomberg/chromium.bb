@@ -7,6 +7,7 @@
 #include "base/rand_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "base/values.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/stats_event_subscriber.h"

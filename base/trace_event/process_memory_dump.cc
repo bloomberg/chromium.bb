@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/trace_event/process_memory_totals.h"
 #include "base/trace_event/trace_event_argument.h"

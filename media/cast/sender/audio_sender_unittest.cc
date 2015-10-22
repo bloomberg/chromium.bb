@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/values.h"
 #include "media/base/media.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"

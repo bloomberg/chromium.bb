@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/bluetooth_adapter.h"

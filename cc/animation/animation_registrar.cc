@@ -4,6 +4,7 @@
 
 #include "cc/animation/animation_registrar.h"
 
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/layer_animation_controller.h"
 

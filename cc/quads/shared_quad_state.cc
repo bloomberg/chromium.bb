@@ -4,6 +4,7 @@
 
 #include "cc/quads/shared_quad_state.h"
 
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
