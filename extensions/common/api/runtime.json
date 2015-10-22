@@ -205,7 +205,7 @@
       },
       {
         "name": "reload",
-        "description": "Reloads the app or extension.",
+        "description": "Reloads the app or extension. This method is not supported in kiosk mode. For kiosk mode, use chrome.runtime.restart() method.",
         "type": "function",
         "parameters": []
       },
