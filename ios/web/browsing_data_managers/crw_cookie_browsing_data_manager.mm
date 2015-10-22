@@ -26,24 +26,17 @@
 }
 
 #pragma mark CRWBrowsingDataManager implementation
-// TODO(shreyasv): During implementation of the following methods evaluate if
-// the entire BrowserState is required. Looks like only |state_path| may be
-// required.
 
 - (void)stashData {
-  // TODO(shreyasv): Implement this. crbug.com/480654
 }
 
 - (void)restoreData {
-  // TODO(shreyasv): Implement this. crbug.com/480654
 }
 
 - (void)removeDataAtStashPath {
-  // TODO(shreyasv): Implement this. crbug.com/480654
 }
 
 - (void)removeDataAtCanonicalPath {
-  // TODO(shreyasv): Implement this. crbug.com/480654
 }
 
 @end

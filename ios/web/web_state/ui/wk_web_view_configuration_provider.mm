@@ -187,7 +187,7 @@ void WKWebViewConfigurationProvider::Purge() {
   // Make sure that no one retains configuration, router, processPool.
   DCHECK(!weak_configuration);
   DCHECK(!weak_router);
-  // TODO(shreyasv): Enable this DCHECK (crbug.com/522672).
+  // TODO(crbug.com/522672): Enable this DCHECK.
   // DCHECK(!weak_process_pool);
 }
 

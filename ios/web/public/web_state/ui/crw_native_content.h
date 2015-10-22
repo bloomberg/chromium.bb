@@ -54,8 +54,8 @@
 - (BOOL)wantsKeyboardShield;
 
 // Returns |YES| if CRWNativeContent wants the hint text displayed.
-// TODO(shreyasv): Remove this. This is chrome level concept and should not
-// exist in the web/ layer. crbug.com/374984.
+// TODO(crbug.com/374984): Remove this. This is chrome level concept and should
+// not exist in the web/ layer.
 - (BOOL)wantsLocationBarHintText;
 
 // Dismisses on-screen keyboard if necessary.

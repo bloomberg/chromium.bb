@@ -21,8 +21,8 @@ GCDWebServerResponse* DataResponseProvider::GetGCDWebServerResponse(
   std::string name;
   std::string value;
   while (response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    // TODO(shreyasv): Extract out other names that can't be set by using the
-    // |setValue:forAdditionalHeader:| API such as "ETag" etc. crbug.com/435350
+    // TODO(crbug.com/435350): Extract out other names that can't be set by
+    // using the |setValue:forAdditionalHeader:| API such as "ETag" etc.
     if (name == "Content-type") {
       data_response.contentType = base::SysUTF8ToNSString(value);
       continue;

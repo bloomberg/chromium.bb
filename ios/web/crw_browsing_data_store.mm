@@ -150,15 +150,11 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   if (self) {
     DCHECK([NSThread isMainThread]);
     DCHECK(browserState);
-    // TODO(shreyasv): Instantiate the necessary CRWBrowsingDataManagers that
-    // are encapsulated within this class. crbug.com/480654.
     _browserState = browserState;
     web::ActiveStateManager* activeStateManager =
         web::BrowserState::GetActiveStateManager(browserState);
     DCHECK(activeStateManager);
     _mode = activeStateManager->IsActive() ? web::ACTIVE : web::INACTIVE;
-    // TODO(shreyasv): If the creation of CRWBrowsingDataManagers turns out to
-    // be an expensive operations re-visit this with a lazy-evaluation approach.
     base::scoped_nsobject<CRWCookieBrowsingDataManager>
         cookieBrowsingDataManager([[CRWCookieBrowsingDataManager alloc]
             initWithBrowserState:browserState]);
@@ -237,8 +233,6 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (void)makeActiveWithCompletionHandler:
     (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
-  // TODO(shreyasv): Verify the preconditions for this method when
-  // web::WebViewCounter class is implemented. crbug.com/480507.
 
   [self changeMode:web::ACTIVE completionHandler:completionHandler];
 }
@@ -246,8 +240,6 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (void)makeInactiveWithCompletionHandler:
     (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
-  // TODO(shreyasv): Verify the preconditions for this method when
-  // web::WebViewCounter class is implemented. crbug.com/480507.
 
   [self changeMode:web::INACTIVE completionHandler:completionHandler];
 }
@@ -255,8 +247,6 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (void)removeDataOfTypes:(web::BrowsingDataTypes)browsingDataTypes
         completionHandler:(ProceduralBlock)completionHandler {
   DCHECK([NSThread isMainThread]);
-  // TODO(shreyasv): Verify the preconditions for this method when
-  // web::WebViewCounter class is implemented. crbug.com/480507.
 
   NSArray* browsingDataManagers =
       [self browsingDataManagersForBrowsingDataTypes:browsingDataTypes];

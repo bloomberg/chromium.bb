@@ -131,9 +131,6 @@ void ClearAllCookiesFromBinaryCookiesFile() {
       DLOG(WARNING) << "Failed to remove binarycookies file.";
     }
   }
-  // TODO(shreyasv): Should .binarycookies be parsed to find out how many
-  // more cookies are deleted? Investigate further if the accuracy of this
-  // actually matters to the callback.
 }
 
 // Builds a NSHTTPCookie from a header cookie line ("Set-Cookie: xxx") and a

@@ -173,7 +173,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                      const GURL& resource_url);
 
   // Executes a JavaScript string on the page asynchronously.
-  // TODO(shreyasv): Rename this to ExecuteJavaScript for consitency with
+  // TODO(shreyasv): Rename this to ExecuteJavaScript for consistency with
   // upstream API.
   virtual void ExecuteJavaScriptAsync(const base::string16& script);
 

@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 
@@ -27,11 +28,11 @@
 
 - (void)evaluateJavaScript:(NSString*)script
        stringResultHandler:(web::JavaScriptCompletion)handler {
+  base::WeakNSObject<CRWTestUIWebViewEvaluator> weakEvaluator(self);
   dispatch_async(dispatch_get_main_queue(), ^{
-      // TODO(shreyasv): Change to weaknsobject once weaknsobject is moved to
-      // ios/base.
+      UIWebView* webView = weakEvaluator ? weakEvaluator.get()->_webView : nil;
       NSString* result =
-          [_webView stringByEvaluatingJavaScriptFromString:script];
+          [webView stringByEvaluatingJavaScriptFromString:script];
       if (handler)
         handler(result, nil);
   });

@@ -28,8 +28,6 @@
                            withRect:(CGRect)rect
                            overlays:(NSArray*)overlays;
 
-// TODO(shreyasv): Consider passing the sessionID into SnapshotManager from Tab
-// in the init method and simplifying the following methods.
 // Retrieve a cached snapshot for the |sessionID| and return it via the callback
 // if it exists. The callback is garanteed to be called synchronously if the
 // image is in memory. It will be called asynchronously if the image is on disk
