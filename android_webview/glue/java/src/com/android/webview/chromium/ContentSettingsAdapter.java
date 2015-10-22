@@ -533,10 +533,12 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
         return mAwSettings.getMixedContentMode();
     }
 
+    @Override
     public void setOffscreenPreRaster(boolean enabled) {
         mAwSettings.setOffscreenPreRaster(enabled);
     }
 
+    @Override
     public boolean getOffscreenPreRaster() {
         return mAwSettings.getOffscreenPreRaster();
     }
