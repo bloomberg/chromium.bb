@@ -36,7 +36,6 @@ class TestInProcessContextProvider : public ContextProvider {
   void SetupLock() override;
   base::Lock* GetLock() override;
   Capabilities ContextCapabilities() override;
-  void VerifyContexts() override;
   void DeleteCachedResources() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;

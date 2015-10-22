@@ -96,7 +96,6 @@ class PerfContextProvider : public ContextProvider {
   }
   void SetupLock() override {}
   base::Lock* GetLock() override { return &context_lock_; }
-  void VerifyContexts() override {}
   void DeleteCachedResources() override {}
   void SetLostContextCallback(const LostContextCallback& cb) override {}
 

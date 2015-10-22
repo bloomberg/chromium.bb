@@ -139,10 +139,6 @@ base::Lock* BlimpContextProvider::GetLock() {
   return &context_lock_;
 }
 
-void BlimpContextProvider::VerifyContexts() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-}
-
 void BlimpContextProvider::DeleteCachedResources() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

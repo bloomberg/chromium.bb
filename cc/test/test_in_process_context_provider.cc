@@ -156,8 +156,6 @@ TestInProcessContextProvider::ContextCapabilities() {
   return capabilities;
 }
 
-void TestInProcessContextProvider::VerifyContexts() {}
-
 void TestInProcessContextProvider::DeleteCachedResources() {
   if (gr_context_)
     gr_context_->freeGpuResources();

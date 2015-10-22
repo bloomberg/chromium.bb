@@ -46,7 +46,6 @@ class SurfacesContextProvider : public cc::ContextProvider,
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
   Capabilities ContextCapabilities() override;
-  void VerifyContexts() override {}
   void DeleteCachedResources() override {}
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;

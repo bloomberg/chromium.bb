@@ -84,18 +84,12 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // Returns the capabilities of the currently bound 3d context.
   virtual Capabilities ContextCapabilities() = 0;
 
-  // Ask the provider to check if the contexts are valid or lost. If they are,
-  // this should invalidate the provider so that it can be replaced with a new
-  // one.
-  virtual void VerifyContexts() = 0;
-
   // Delete all cached gpu resources.
   virtual void DeleteCachedResources() = 0;
 
   // Sets a callback to be called when the context is lost. This should be
   // called from the same thread that the context is bound to. To avoid races,
-  // it should be called before BindToCurrentThread(), or VerifyContexts()
-  // should be called after setting the callback.
+  // it should be called before BindToCurrentThread().
   typedef base::Closure LostContextCallback;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) = 0;

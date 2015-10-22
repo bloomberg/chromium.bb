@@ -158,14 +158,6 @@ ContextProviderCommandBuffer::ContextCapabilities() {
   return capabilities_;
 }
 
-void ContextProviderCommandBuffer::VerifyContexts() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
-    OnLostContext();
-}
-
 void ContextProviderCommandBuffer::DeleteCachedResources() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

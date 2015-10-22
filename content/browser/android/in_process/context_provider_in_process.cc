@@ -158,14 +158,6 @@ base::Lock* ContextProviderInProcess::GetLock() {
   return &context_lock_;
 }
 
-void ContextProviderInProcess::VerifyContexts() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
-    OnLostContext();
-}
-
 void ContextProviderInProcess::DeleteCachedResources() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

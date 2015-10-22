@@ -186,9 +186,6 @@ base::Lock* InProcessContextProvider::GetLock() {
   return &context_lock_;
 }
 
-void InProcessContextProvider::VerifyContexts() {
-}
-
 void InProcessContextProvider::DeleteCachedResources() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

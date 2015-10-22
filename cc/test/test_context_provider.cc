@@ -137,11 +137,6 @@ base::Lock* TestContextProvider::GetLock() {
   return &context_lock_;
 }
 
-void TestContextProvider::VerifyContexts() {
-  DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-}
-
 void TestContextProvider::DeleteCachedResources() {
 }
 

@@ -156,9 +156,6 @@ base::Lock* AwRenderThreadContextProvider::GetLock() {
   return &context_lock_;
 }
 
-void AwRenderThreadContextProvider::VerifyContexts() {
-}
-
 void AwRenderThreadContextProvider::DeleteCachedResources() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
