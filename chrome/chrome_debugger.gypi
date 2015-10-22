@@ -111,6 +111,8 @@
             'browser/devtools/devtools_ui_bindings.h',
             'browser/devtools/devtools_window.cc',
             'browser/devtools/devtools_window.h',
+            'browser/devtools/global_confirm_info_bar.cc',
+            'browser/devtools/global_confirm_info_bar.h',
             'browser/devtools/remote_debugging_server.cc',
             'browser/devtools/remote_debugging_server.h',
           ],

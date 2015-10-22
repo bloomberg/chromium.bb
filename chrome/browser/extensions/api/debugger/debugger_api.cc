@@ -23,15 +23,13 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
+#include "chrome/browser/devtools/global_confirm_info_bar.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tab_strip_tracker.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -94,13 +92,6 @@ void CopyDebuggee(Debuggee* dst, const Debuggee& src) {
 
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an extension dev tools infobar and delegate and adds the infobar to
-  // the |infobar_service|. Returns the infobar if it was successfully added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   const base::Closure& dismissed_callback,
-                                   const std::string& client_name);
-
- private:
   ExtensionDevToolsInfoBarDelegate(const base::Closure& dismissed_callback,
                                    const std::string& client_name);
   ~ExtensionDevToolsInfoBarDelegate() override;
@@ -118,16 +109,6 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsInfoBarDelegate);
 };
-
-// static
-infobars::InfoBar* ExtensionDevToolsInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
-    const base::Closure& dismissed_callback,
-    const std::string& client_name) {
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new ExtensionDevToolsInfoBarDelegate(
-          dismissed_callback, client_name))));
-}
 
 ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
     const base::Closure& dismissed_callback,
@@ -168,99 +149,6 @@ bool ExtensionDevToolsInfoBarDelegate::Cancel() {
   InfoBarDismissed();
   // InfoBarDismissed() will have closed us already.
   return false;
-}
-
-// GlobalConfirmInfoBar -------------------------------------------------------
-
-// GlobalConfirmInfobar is shown for every tab in every browser until it
-// is dismissed or the object itself is destroyed.
-// It listens to all tabs in all browsers and adds/removes confirm infobar
-// to each of the tabs.
-class GlobalConfirmInfoBar : public TabStripModelObserver,
-                             public infobars::InfoBarManager::Observer {
- public:
-  GlobalConfirmInfoBar(const base::Closure& dismissed_callback,
-                       const std::string& client_name);
-  ~GlobalConfirmInfoBar() override;
-
- private:
-  using InfoBarMap = std::map<InfoBarService*, infobars::InfoBar*>;
-
-  // TabStripModelObserver:
-  void TabInsertedAt(content::WebContents* web_contents,
-                     int index,
-                     bool foreground) override;
-
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
-  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
-  // We don't override OnInfoBarReplaces, as extension debugger api infobar
-  // should not be involved in replacements.
-
-  base::Closure dismissed_callback_;
-  std::string client_name_;
-  InfoBarMap infobars_;
-  BrowserTabStripTracker browser_tab_strip_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalConfirmInfoBar);
-};
-
-GlobalConfirmInfoBar::GlobalConfirmInfoBar(
-    const base::Closure& dismissed_callback,
-    const std::string& client_name)
-    : dismissed_callback_(dismissed_callback),
-      client_name_(client_name),
-      browser_tab_strip_tracker_(this, nullptr, nullptr) {
-  browser_tab_strip_tracker_.Init(
-      BrowserTabStripTracker::InitWith::BROWSERS_IN_ACTIVE_DESKTOP);
-}
-
-GlobalConfirmInfoBar::~GlobalConfirmInfoBar() {
-  while (!infobars_.empty()) {
-    InfoBarMap::iterator it = infobars_.begin();
-    it->first->RemoveInfoBar(it->second);
-  }
-}
-
-void GlobalConfirmInfoBar::TabInsertedAt(content::WebContents* web_contents,
-                                         int index,
-                                         bool foreground) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  // WebContents from the tab strip must have the infobar service.
-  DCHECK(infobar_service);
-
-  infobars::InfoBar* infobar = ExtensionDevToolsInfoBarDelegate::Create(
-      infobar_service, dismissed_callback_, client_name_);
-  // Infobar with the same delegate won't be added again, so it's safe
-  // to not listen to TabReplacedAt.
-  if (infobar) {
-    infobars_[infobar_service] = infobar;
-    infobar_service->AddObserver(this);
-  }
-}
-
-void GlobalConfirmInfoBar::OnInfoBarRemoved(infobars::InfoBar* infobar,
-                                            bool animate) {
-  // Generally, our infobars should not be removed externally and we wouldn't
-  // need OnInfoBarRemoved. But during browser shutdown all infobars are removed
-  // before this class gets a chance to remove infobars itself.
-  InfoBarMap::iterator it =
-      std::find_if(infobars_.begin(), infobars_.end(),
-                   [&infobar](const InfoBarMap::value_type& value) {
-                     return value.second == infobar;
-                   });
-  if (it != infobars_.end())
-    OnManagerShuttingDown(it->first);
-}
-
-void GlobalConfirmInfoBar::OnManagerShuttingDown(
-    infobars::InfoBarManager* manager) {
-  InfoBarService* infobar_service = static_cast<InfoBarService*>(manager);
-  infobar_service->RemoveObserver(this);
-  InfoBarMap::iterator it = infobars_.find(infobar_service);
-  DCHECK(it != infobars_.end());
-  infobars_.erase(it);
 }
 
 }  // namespace
@@ -322,7 +210,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   content::NotificationRegistrar registrar_;
   int last_request_id_;
   PendingRequests pending_requests_;
-  scoped_ptr<GlobalConfirmInfoBar> infobar_;
+  base::WeakPtr<GlobalConfirmInfoBar> infobar_;
   api::debugger::DetachReason detach_reason_;
 
   // Listen to extension unloaded notification.
@@ -365,15 +253,19 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kSilentDebuggerExtensionAPI)) {
-    // This class owns the |infobar_|, so it's safe to pass Unretained(this).
-    infobar_.reset(new GlobalConfirmInfoBar(
-        base::Bind(&ExtensionDevToolsClientHost::InfoBarDismissed,
-                   base::Unretained(this)),
-        extension_name));
+    // This class closes the |infobar_|, so it's safe to pass Unretained(this).
+    scoped_ptr<ExtensionDevToolsInfoBarDelegate> delegate(
+        new ExtensionDevToolsInfoBarDelegate(
+            base::Bind(&ExtensionDevToolsClientHost::InfoBarDismissed,
+                       base::Unretained(this)),
+            extension_name));
+    infobar_ = GlobalConfirmInfoBar::Show(delegate.Pass());
   }
 }
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
+  if (infobar_)
+    infobar_->Close();
   g_attached_client_hosts.Get().erase(this);
 }
 

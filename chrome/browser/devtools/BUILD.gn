@@ -131,6 +131,8 @@ static_library("devtools") {
       "devtools_ui_bindings.h",
       "devtools_window.cc",
       "devtools_window.h",
+      "global_confirm_info_bar.cc",
+      "global_confirm_info_bar.h",
       "remote_debugging_server.cc",
       "remote_debugging_server.h",
     ]

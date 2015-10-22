@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
+#include "chrome/browser/devtools/global_confirm_info_bar.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,19 +113,12 @@ typedef base::Callback<void(bool)> InfoBarCallback;
 
 class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // If |infobar_service| is NULL, runs |callback| with a single argument with
-  // value "false".  Otherwise, creates a dev tools confirm infobar and delegate
-  // and adds the infobar to |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     const InfoBarCallback& callback,
-                     const base::string16& message);
-
- private:
   DevToolsConfirmInfoBarDelegate(
       const InfoBarCallback& callback,
       const base::string16& message);
   ~DevToolsConfirmInfoBarDelegate() override;
 
+ private:
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
@@ -135,20 +129,6 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsConfirmInfoBarDelegate);
 };
-
-void DevToolsConfirmInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
-    const InfoBarCallback& callback,
-    const base::string16& message) {
-  if (!infobar_service) {
-    callback.Run(false);
-    return;
-  }
-
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new DevToolsConfirmInfoBarDelegate(callback, message))));
-}
 
 DevToolsConfirmInfoBarDelegate::DevToolsConfirmInfoBarDelegate(
     const InfoBarCallback& callback,
@@ -1029,8 +1009,13 @@ void DevToolsUIBindings::SearchCompleted(
 void DevToolsUIBindings::ShowDevToolsConfirmInfoBar(
     const base::string16& message,
     const InfoBarCallback& callback) {
-  DevToolsConfirmInfoBarDelegate::Create(delegate_->GetInfoBarService(),
-      callback, message);
+  if (!delegate_->GetInfoBarService()) {
+    callback.Run(false);
+    return;
+  }
+  scoped_ptr<DevToolsConfirmInfoBarDelegate> delegate(
+      new DevToolsConfirmInfoBarDelegate(callback, message));
+  GlobalConfirmInfoBar::Show(delegate.Pass());
 }
 
 void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
