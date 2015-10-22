@@ -312,6 +312,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnRetireSyncPoint)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPoint,
                         OnSignalSyncPoint)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncToken,
+                        OnSignalSyncToken)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery,
                         OnSignalQuery)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
@@ -1003,13 +1005,26 @@ void GpuCommandBufferStub::PullTextureUpdates(
 void GpuCommandBufferStub::OnSignalSyncPoint(uint32 sync_point, uint32 id) {
   sync_point_manager_->AddSyncPointCallback(
       sync_point,
-      base::Bind(&RunOnThread, task_runner_,
-                 base::Bind(&GpuCommandBufferStub::OnSignalSyncPointAck,
-                            this->AsWeakPtr(), id)));
+      base::Bind(&GpuCommandBufferStub::OnSignalAck, this->AsWeakPtr(), id));
 }
 
-void GpuCommandBufferStub::OnSignalSyncPointAck(uint32 id) {
-  Send(new GpuCommandBufferMsg_SignalSyncPointAck(route_id_, id));
+void GpuCommandBufferStub::OnSignalSyncToken(const gpu::SyncToken& sync_token,
+                                             uint32 id) {
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager_->GetSyncPointClientState(
+          sync_token.namespace_id(), sync_token.command_buffer_id());
+
+  if (release_state) {
+    sync_point_client_->Wait(release_state.get(), sync_token.release_count(),
+                             base::Bind(&GpuCommandBufferStub::OnSignalAck,
+                                        this->AsWeakPtr(), id));
+  } else {
+    OnSignalAck(id);
+  }
+}
+
+void GpuCommandBufferStub::OnSignalAck(uint32 id) {
+  Send(new GpuCommandBufferMsg_SignalAck(route_id_, id));
 }
 
 void GpuCommandBufferStub::OnSignalQuery(uint32 query_id, uint32 id) {
@@ -1020,7 +1035,7 @@ void GpuCommandBufferStub::OnSignalQuery(uint32 query_id, uint32 id) {
           query_manager->GetQuery(query_id);
       if (query) {
         query->AddCallback(
-          base::Bind(&GpuCommandBufferStub::OnSignalSyncPointAck,
+          base::Bind(&GpuCommandBufferStub::OnSignalAck,
                      this->AsWeakPtr(),
                      id));
         return;
@@ -1028,7 +1043,7 @@ void GpuCommandBufferStub::OnSignalQuery(uint32 query_id, uint32 id) {
     }
   }
   // Something went wrong, run callback immediately.
-  OnSignalSyncPointAck(id);
+  OnSignalAck(id);
 }
 
 void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {

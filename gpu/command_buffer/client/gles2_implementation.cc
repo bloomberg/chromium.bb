@@ -319,6 +319,15 @@ void GLES2Implementation::SignalSyncPoint(uint32 sync_point,
                  callback));
 }
 
+void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                          const base::Closure& callback) {
+  gpu_control_->SignalSyncToken(
+      sync_token,
+      base::Bind(&GLES2Implementation::RunIfContextNotLost,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
 void GLES2Implementation::SignalQuery(uint32 query,
                                       const base::Closure& callback) {
   // Flush previously entered commands to ensure ordering with any

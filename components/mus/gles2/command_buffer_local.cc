@@ -238,6 +238,12 @@ bool CommandBufferLocal::IsFenceSyncFlushed(uint64_t release) {
   return IsFenceSyncRelease(release);
 }
 
+void CommandBufferLocal::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                         const base::Closure& callback) {
+  // TODO(dyen)
+  NOTIMPLEMENTED();
+}
+
 bool CommandBufferLocal::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncRelease(release);
 }

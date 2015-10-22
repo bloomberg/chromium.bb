@@ -428,6 +428,11 @@ bool CommandBufferClientImpl::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncFlushed(release);
 }
 
+void CommandBufferClientImpl::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                              const base::Closure& callback) {
+  // TODO(dyen)
+}
+
 bool CommandBufferClientImpl::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken* sync_token) {
   // All sync tokens must be flushed before being waited on.

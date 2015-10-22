@@ -72,8 +72,8 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPointAck,
-                        OnSignalSyncPointAck);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalAck,
+                        OnSignalAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffersCompleted,
                         OnSwapBuffersCompleted);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateVSyncParameters,
@@ -145,7 +145,7 @@ void CommandBufferProxyImpl::RemoveDeletionObserver(
   deletion_observers_.RemoveObserver(observer);
 }
 
-void CommandBufferProxyImpl::OnSignalSyncPointAck(uint32 id) {
+void CommandBufferProxyImpl::OnSignalAck(uint32 id) {
   SignalTaskMap::iterator it = signal_tasks_.find(id);
   DCHECK(it != signal_tasks_.end());
   base::Closure callback = it->second;
@@ -535,6 +535,22 @@ bool CommandBufferProxyImpl::IsFenceSyncFlushReceived(uint64_t release) {
   }
 
   return false;
+}
+
+void CommandBufferProxyImpl::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                             const base::Closure& callback) {
+  CheckLock();
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  uint32 signal_id = next_signal_id_++;
+  if (!Send(new GpuCommandBufferMsg_SignalSyncToken(route_id_,
+                                                    sync_token,
+                                                    signal_id))) {
+    return;
+  }
+
+  signal_tasks_.insert(std::make_pair(signal_id, callback));
 }
 
 bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(

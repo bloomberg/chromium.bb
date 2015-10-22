@@ -208,6 +208,11 @@ bool PpapiCommandBufferProxy::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncFlushed(release);
 }
 
+void PpapiCommandBufferProxy::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                              const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
 bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken* sync_token) {
   return false;

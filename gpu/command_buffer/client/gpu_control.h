@@ -109,6 +109,10 @@ class GPU_EXPORT GpuControl {
   virtual bool IsFenceSyncFlushed(uint64_t release) = 0;
   virtual bool IsFenceSyncFlushReceived(uint64_t release) = 0;
 
+  // Runs |callback| when sync token is signalled.
+  virtual void SignalSyncToken(const SyncToken& sync_token,
+                               const base::Closure& callback) = 0;
+
   // Under some circumstances a sync token may be used which has not been
   // verified to have been flushed. For example, fence syncs queued on the
   // same channel as the wait command guarantee that the fence sync will

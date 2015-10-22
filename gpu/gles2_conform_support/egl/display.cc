@@ -369,6 +369,11 @@ bool Display::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncRelease(release);
 }
 
+void Display::SignalSyncToken(const gpu::SyncToken& sync_token,
+                              const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
 bool Display::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
   return false;
 }

@@ -253,6 +253,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // ContextSupport implementation.
   void SignalSyncPoint(uint32 sync_point,
                        const base::Closure& callback) override;
+  void SignalSyncToken(const gpu::SyncToken& sync_token,
+                       const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;

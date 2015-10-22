@@ -15,10 +15,16 @@ class RectF;
 
 namespace gpu {
 
+struct SyncToken;
+
 class ContextSupport {
  public:
   // Runs |callback| when a sync point is reached.
   virtual void SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) = 0;
+
+  // Runs |callback| when a sync token is signalled.
+  virtual void SignalSyncToken(const SyncToken& sync_token,
                                const base::Closure& callback) = 0;
 
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared

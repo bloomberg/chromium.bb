@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -627,8 +628,8 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalSyncPoint,
                     uint32 /* sync_point */,
                     uint32 /* signal_id */)
 
-// Response to GpuCommandBufferMsg_SignalSyncPoint.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalSyncPointAck,
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalSyncToken,
+                    gpu::SyncToken /* sync_token */,
                     uint32 /* signal_id */)
 
 // Makes this command buffer signal when a query is reached, by sending
@@ -636,6 +637,10 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalSyncPointAck,
 // signal_id.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalQuery,
                     uint32 /* query */,
+                    uint32 /* signal_id */)
+
+// Response to SignalSyncPoint, SignalSyncToken, and SignalQuery.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalAck,
                     uint32 /* signal_id */)
 
 // Create an image from an existing gpu memory buffer. The id that can be

@@ -826,11 +826,8 @@ void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
 
 void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
                                              const base::Closure& callback) {
-  CheckSequencedThread();
-  QueueTask(base::Bind(&InProcessCommandBuffer::SignalSyncPointOnGpuThread,
-                       base::Unretained(this),
-                       sync_point,
-                       WrapCallback(callback)));
+  service_->sync_point_manager()->AddSyncPointCallback(sync_point,
+                                                       WrapCallback(callback));
 }
 
 bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
@@ -893,12 +890,6 @@ bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
   SyncToken sync_token(namespace_id, command_buffer_id, release);
   mailbox_manager->PullTextureUpdates(sync_token);
   return true;
-}
-
-void InProcessCommandBuffer::SignalSyncPointOnGpuThread(
-    unsigned sync_point,
-    const base::Closure& callback) {
-  service_->sync_point_manager()->AddSyncPointCallback(sync_point, callback);
 }
 
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,
@@ -969,6 +960,24 @@ bool InProcessCommandBuffer::IsFenceSyncFlushed(uint64_t release) {
 
 bool InProcessCommandBuffer::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncFlushed(release);
+}
+
+void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
+                                             const base::Closure& callback) {
+  gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
+  DCHECK(sync_point_manager);
+
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      sync_point_manager->GetSyncPointClientState(
+          sync_token.namespace_id(), sync_token.command_buffer_id());
+
+  if (!release_state) {
+    callback.Run();
+    return;
+  }
+
+  sync_point_client_->Wait(release_state.get(), sync_token.release_count(),
+                           WrapCallback(callback));
 }
 
 bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(

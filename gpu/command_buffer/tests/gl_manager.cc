@@ -524,6 +524,11 @@ bool GLManager::IsFenceSyncFlushReceived(uint64_t release) {
   return IsFenceSyncRelease(release);
 }
 
+void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
+
 bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
   return false;
 }

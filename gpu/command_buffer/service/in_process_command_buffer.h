@@ -134,6 +134,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;
   bool IsFenceSyncFlushReceived(uint64_t release) override;
+  void SignalSyncToken(const SyncToken& sync_token,
+                       const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken* sync_token) override;
 
   // The serializer interface to the GPU service (i.e. thread).
@@ -217,8 +219,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void QueueTask(const base::Closure& task) { service_->ScheduleTask(task); }
   void CheckSequencedThread();
   void RetireSyncPointOnGpuThread(uint32 sync_point);
-  void SignalSyncPointOnGpuThread(uint32 sync_point,
-                                  const base::Closure& callback);
   bool WaitSyncPointOnGpuThread(uint32 sync_point);
   void FenceSyncReleaseOnGpuThread(uint64_t release);
   bool WaitFenceSyncOnGpuThread(gpu::CommandBufferNamespace namespace_id,

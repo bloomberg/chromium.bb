@@ -34,6 +34,7 @@
 
 namespace gpu {
 struct Mailbox;
+struct SyncToken;
 class SyncPointClient;
 class SyncPointManager;
 class ValueStateMap;
@@ -201,7 +202,8 @@ class GpuCommandBufferStub
   bool OnWaitSyncPoint(uint32 sync_point);
   void OnWaitSyncPointCompleted(uint32 sync_point);
   void OnSignalSyncPoint(uint32 sync_point, uint32 id);
-  void OnSignalSyncPointAck(uint32 id);
+  void OnSignalSyncToken(const gpu::SyncToken& sync_token, uint32 id);
+  void OnSignalAck(uint32 id);
   void OnSignalQuery(uint32 query, uint32 id);
 
   void OnFenceSyncRelease(uint64_t release);

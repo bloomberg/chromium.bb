@@ -24,6 +24,14 @@ void TestContextSupport::SignalSyncPoint(uint32 sync_point,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
+                                         const base::Closure& callback) {
+  sync_point_callbacks_.push_back(callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
 void TestContextSupport::SignalQuery(uint32 query,
                                      const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);

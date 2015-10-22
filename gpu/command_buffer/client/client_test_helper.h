@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,6 +119,8 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD1(IsFenceSyncRelease, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncFlushed, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncFlushReceived, bool(uint64_t release));
+  MOCK_METHOD2(SignalSyncToken, void(const SyncToken& sync_token,
+                                     const base::Closure& callback));
   MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken*));
 
  private:

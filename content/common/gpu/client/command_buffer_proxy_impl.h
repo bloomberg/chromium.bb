@@ -32,6 +32,7 @@ class SharedMemory;
 
 namespace gpu {
 struct Mailbox;
+struct SyncToken;
 }
 
 namespace media {
@@ -127,6 +128,8 @@ class CommandBufferProxyImpl
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;
   bool IsFenceSyncFlushReceived(uint64_t release) override;
+  void SignalSyncToken(const gpu::SyncToken& sync_token,
+                       const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
@@ -187,7 +190,7 @@ class CommandBufferProxyImpl
   void OnDestroyed(gpu::error::ContextLostReason reason,
                    gpu::error::Error error);
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
-  void OnSignalSyncPointAck(uint32 id);
+  void OnSignalAck(uint32 id);
   void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
                               gfx::SwapResult result);
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
