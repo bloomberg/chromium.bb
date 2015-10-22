@@ -747,7 +747,7 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 
-#crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
