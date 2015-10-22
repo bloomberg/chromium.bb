@@ -27,12 +27,6 @@ UtilityProcessPolicy::~UtilityProcessPolicy() {
 }
 
 ResultExpr UtilityProcessPolicy::EvaluateSyscall(int sysno) const {
-  // TODO(mdempsky): For now, this is just a copy of the renderer
-  // policy, which happens to work well for utility processes too.  It
-  // should be possible to limit further though.  In particular, the
-  // entries below annotated with bug references are most likely
-  // unnecessary.
-
   switch (sysno) {
     case __NR_ioctl:
       return sandbox::RestrictIoctl();
@@ -45,6 +39,7 @@ ResultExpr UtilityProcessPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
 #endif
+    case __NR_mremap:  // https://crbug.com/546204
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sysinfo:
