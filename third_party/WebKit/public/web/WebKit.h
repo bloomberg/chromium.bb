@@ -74,6 +74,10 @@ BLINK_EXPORT void shutdownWithoutV8();
 BLINK_EXPORT void setLayoutTestMode(bool);
 BLINK_EXPORT bool layoutTestMode();
 
+// Enables or disables the use of the mock theme for layout tests. This function
+// must be called only if setLayoutTestMode(true).
+BLINK_EXPORT void setMockThemeEnabledForTest(bool);
+
 // Alters the rendering of fonts for layout tests.
 BLINK_EXPORT void setFontAntialiasingEnabledForTest(bool);
 BLINK_EXPORT bool fontAntialiasingEnabledForTest();

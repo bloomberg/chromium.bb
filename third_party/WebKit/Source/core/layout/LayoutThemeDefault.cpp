@@ -59,7 +59,7 @@ static const float maxSearchFieldResultsDecorationSize = 30;
 
 static bool useMockTheme()
 {
-    return LayoutTestSupport::isRunningLayoutTest();
+    return LayoutTestSupport::isMockThemeEnabledForTest();
 }
 
 unsigned LayoutThemeDefault::m_activeSelectionBackgroundColor = 0xff1e90ff;

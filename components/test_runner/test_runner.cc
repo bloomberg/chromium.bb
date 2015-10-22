@@ -1746,7 +1746,8 @@ void TestRunner::Reset() {
 
   web_content_settings_->Reset();
 
-  use_mock_theme_ = true;
+  SetUseMockTheme(true);
+
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
 
@@ -2785,6 +2786,7 @@ void TestRunner::DumpResourceRequestPriorities() {
 
 void TestRunner::SetUseMockTheme(bool use) {
   use_mock_theme_ = use;
+  blink::setMockThemeEnabledForTest(use);
 }
 
 void TestRunner::ShowWebInspector(const std::string& str,

@@ -39,6 +39,8 @@ class LayoutTestSupport {
 public:
     PLATFORM_EXPORT static bool isRunningLayoutTest();
     PLATFORM_EXPORT static void setIsRunningLayoutTest(bool);
+    PLATFORM_EXPORT static bool isMockThemeEnabledForTest();
+    PLATFORM_EXPORT static void setMockThemeEnabledForTest(bool);
     PLATFORM_EXPORT static bool isFontAntialiasingEnabledForTest();
     PLATFORM_EXPORT static void setFontAntialiasingEnabledForTest(bool);
     PLATFORM_EXPORT static bool alwaysUseComplexTextForTest();

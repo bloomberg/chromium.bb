@@ -248,6 +248,9 @@ void shutdownWithoutV8()
     WebPrerenderingSupport::shutdown();
 }
 
+// TODO(tkent): The following functions to wrap LayoutTestSupport should be
+// moved to public/platform/.
+
 void setLayoutTestMode(bool value)
 {
     LayoutTestSupport::setIsRunningLayoutTest(value);
@@ -256,6 +259,11 @@ void setLayoutTestMode(bool value)
 bool layoutTestMode()
 {
     return LayoutTestSupport::isRunningLayoutTest();
+}
+
+void setMockThemeEnabledForTest(bool value)
+{
+    LayoutTestSupport::setMockThemeEnabledForTest(value);
 }
 
 void setFontAntialiasingEnabledForTest(bool value)

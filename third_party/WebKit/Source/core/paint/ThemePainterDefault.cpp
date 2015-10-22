@@ -46,7 +46,7 @@ const unsigned defaultButtonBackgroundColor = 0xffdddddd;
 
 bool useMockTheme()
 {
-    return LayoutTestSupport::isRunningLayoutTest();
+    return LayoutTestSupport::isMockThemeEnabledForTest();
 }
 
 WebThemeEngine::State getWebThemeState(const LayoutObject& o)
