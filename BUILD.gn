@@ -564,7 +564,6 @@ group("gn_only") {
       "//blimp:blimp_tests",
       "//chrome/browser/resources:extension_resource_demo",
       "//chrome/installer/util:strings",
-      "//chrome:main_dll",
       "//chrome/test:load_library_perf_tests",
       "//chrome/tools/convert_dict",
       "//components/constrained_window:unit_tests",

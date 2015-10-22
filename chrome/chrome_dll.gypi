@@ -6,6 +6,7 @@
     ['OS=="mac" or OS=="win"', {
       'targets': [
         {
+          # GN version: //chrome:chrome_dll
           'target_name': 'chrome_dll',
           'type': 'none',
           'dependencies': [
