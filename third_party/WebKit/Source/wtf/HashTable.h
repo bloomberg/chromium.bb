@@ -151,6 +151,7 @@ private:
         // ListHashSet, which has its own iterators that tolerate modification
         // of the underlying set.
         ASSERT(m_containerModifications == m_container->modifications());
+        ASSERT(!m_container->accessForbidden());
     }
 
 public:
@@ -411,7 +412,10 @@ public:
         ASSERT(!Allocator::isGarbageCollected);
         if (LIKELY(!m_table))
             return;
+        RELEASE_ASSERT(!m_accessForbidden);
+        m_accessForbidden = true;
         deleteAllBucketsAndDeallocate(m_table, m_tableSize);
+        m_accessForbidden = false;
         m_table = nullptr;
     }
 
@@ -428,9 +432,21 @@ public:
     const_iterator begin() const { return isEmpty() ? end() : makeConstIterator(m_table); }
     const_iterator end() const { return makeKnownGoodConstIterator(m_table + m_tableSize); }
 
-    unsigned size() const { return m_keyCount; }
-    unsigned capacity() const { return m_tableSize; }
-    bool isEmpty() const { return !m_keyCount; }
+    unsigned size() const
+    {
+        RELEASE_ASSERT(!m_accessForbidden);
+        return m_keyCount;
+    }
+    unsigned capacity() const
+    {
+        RELEASE_ASSERT(!m_accessForbidden);
+        return m_tableSize;
+    }
+    bool isEmpty() const
+    {
+        RELEASE_ASSERT(!m_accessForbidden);
+        return !m_keyCount;
+    }
 
     void reserveCapacityForSize(unsigned size);
 
@@ -468,6 +484,7 @@ public:
 
     template <typename VisitorDispatcher> void trace(VisitorDispatcher);
 
+    bool accessForbidden() const { return m_accessForbidden; }
 #if ENABLE(ASSERT)
     int64_t modifications() const { return m_modifications; }
     void registerModification() { m_modifications++; }
@@ -513,7 +530,11 @@ private:
     ValueType* reinsert(ValueType&);
 
     static void initializeBucket(ValueType& bucket);
-    static void deleteBucket(ValueType& bucket) { bucket.~ValueType(); Traits::constructDeletedValue(bucket, Allocator::isGarbageCollected); }
+    static void deleteBucket(ValueType& bucket)
+    {
+        bucket.~ValueType();
+        Traits::constructDeletedValue(bucket, Allocator::isGarbageCollected);
+    }
 
     FullLookupType makeLookupResult(ValueType* position, bool found, unsigned hash)
         { return FullLookupType(LookupType(position, found), hash); }
@@ -540,8 +561,9 @@ private:
     ValueType* m_table;
     unsigned m_tableSize;
     unsigned m_keyCount;
-    unsigned m_deletedCount:31;
+    unsigned m_deletedCount:30;
     unsigned m_queueFlag:1;
+    unsigned m_accessForbidden:1;
 #if ENABLE(ASSERT)
     unsigned m_modifications;
 #endif
@@ -562,6 +584,7 @@ inline HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     , m_keyCount(0)
     , m_deletedCount(0)
     , m_queueFlag(false)
+    , m_accessForbidden(false)
 #if ENABLE(ASSERT)
     , m_modifications(0)
 #endif
@@ -612,6 +635,7 @@ template <typename Key, typename Value, typename Extractor, typename HashFunctio
 template <typename HashTranslator, typename T>
 inline const Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(T key) const
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     ASSERT((HashTableKeyChecker<HashTranslator, KeyTraits, HashFunctions::safeToCompareToEmptyOrDeleted>::checkKey(key)));
     const ValueType* table = m_table;
     if (!table)
@@ -651,6 +675,7 @@ template <typename Key, typename Value, typename Extractor, typename HashFunctio
 template <typename HashTranslator, typename T>
 inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::LookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookupForWriting(const T& key)
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     ASSERT(m_table);
     registerModification();
 
@@ -693,6 +718,7 @@ template <typename Key, typename Value, typename Extractor, typename HashFunctio
 template <typename HashTranslator, typename T>
 inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::FullLookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::fullLookupForWriting(const T& key)
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     ASSERT(m_table);
     registerModification();
 
@@ -761,6 +787,7 @@ template <typename Key, typename Value, typename Extractor, typename HashFunctio
 template <typename HashTranslator, typename T, typename Extra>
 typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::add(const T& key, const Extra& extra)
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     ASSERT(Allocator::isAllocationAllowed());
     if (!m_table)
         expand();
@@ -826,6 +853,7 @@ template <typename Key, typename Value, typename Extractor, typename HashFunctio
 template <typename HashTranslator, typename T, typename Extra>
 typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::addPassingHashCode(const T& key, const Extra& extra)
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     ASSERT(Allocator::isAllocationAllowed());
     if (!m_table)
         expand();
@@ -907,6 +935,7 @@ bool HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::remove(ValueType* pos)
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     registerModification();
 #if DUMP_HASHTABLE_STATS
     atomicIncrement(&HashTableStats::numRemoves);
@@ -915,7 +944,10 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
     ++m_stats->numRemoves;
 #endif
 
+    RELEASE_ASSERT(!m_accessForbidden);
+    m_accessForbidden = true;
     deleteBucket(*pos);
+    m_accessForbidden = false;
     ++m_deletedCount;
     --m_keyCount;
 
@@ -1052,7 +1084,11 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
             initializeBucket(originalTable[i]);
     }
     newEntry = rehashTo(originalTable, newTableSize, newEntry);
+
+    RELEASE_ASSERT(!m_accessForbidden);
+    m_accessForbidden = true;
     deleteAllBucketsAndDeallocate(temporaryTable, oldTableSize);
+    m_accessForbidden = false;
 
     return newEntry;
 }
@@ -1122,7 +1158,11 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
 
     ValueType* newTable = allocateTable(newTableSize);
     Value* newEntry = rehashTo(newTable, newTableSize, entry);
+
+    RELEASE_ASSERT(!m_accessForbidden);
+    m_accessForbidden = true;
     deleteAllBucketsAndDeallocate(oldTable, oldTableSize);
+    m_accessForbidden = false;
 
     return newEntry;
 }
@@ -1134,7 +1174,10 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
     if (!m_table)
         return;
 
+    RELEASE_ASSERT(!m_accessForbidden);
+    m_accessForbidden = true;
     deleteAllBucketsAndDeallocate(m_table, m_tableSize);
+    m_accessForbidden = false;
     m_table = nullptr;
     m_tableSize = 0;
     m_keyCount = 0;
@@ -1147,6 +1190,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::H
     , m_keyCount(0)
     , m_deletedCount(0)
     , m_queueFlag(false)
+    , m_accessForbidden(false)
 #if ENABLE(ASSERT)
     , m_modifications(0)
 #endif
@@ -1165,6 +1209,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::H
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::swap(HashTable& other)
 {
+    RELEASE_ASSERT(!m_accessForbidden);
     std::swap(m_table, other.m_table);
     std::swap(m_tableSize, other.m_tableSize);
     std::swap(m_keyCount, other.m_keyCount);
