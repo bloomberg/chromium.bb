@@ -382,10 +382,11 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static std::string MakeGetUserInfoBody(const std::string& lsid);
 
   // Supply the authentication token returned from StartIssueAuthToken.
-  static std::string MakeMergeSessionBody(const std::string& auth_token,
-                                          const std::string& external_cc_result,
-                                          const std::string& continue_url,
-                                          const std::string& source);
+  static std::string MakeMergeSessionQuery(
+      const std::string& auth_token,
+      const std::string& external_cc_result,
+      const std::string& continue_url,
+      const std::string& source);
 
   static std::string MakeGetAuthCodeHeader(const std::string& auth_token);
 

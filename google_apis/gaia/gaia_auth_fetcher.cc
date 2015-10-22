@@ -103,7 +103,7 @@ const char GaiaAuthFetcher::kGetUserInfoFormat[] =
     "LSID=%s";
 // static
 const char GaiaAuthFetcher::kMergeSessionFormat[] =
-    "uberauth=%s&"
+    "?uberauth=%s&"
     "continue=%s&"
     "source=%s";
 // static
@@ -290,7 +290,7 @@ std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
 }
 
 // static
-std::string GaiaAuthFetcher::MakeMergeSessionBody(
+std::string GaiaAuthFetcher::MakeMergeSessionQuery(
     const std::string& auth_token,
     const std::string& external_cc_result,
     const std::string& continue_url,
@@ -588,9 +588,10 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
   // created such that it sends the cookies with the request, which is
   // different from all other requests the fetcher can make.
   std::string continue_url("http://www.google.com");
-  request_body_ = MakeMergeSessionBody(uber_token, external_cc_result,
-      continue_url, source_);
-  CreateAndStartGaiaFetcher(request_body_, std::string(), merge_session_gurl_,
+  std::string query = MakeMergeSessionQuery(uber_token, external_cc_result,
+                                            continue_url, source_);
+  CreateAndStartGaiaFetcher(std::string(), std::string(),
+                            merge_session_gurl_.Resolve(query),
                             net::LOAD_NORMAL);
 }
 
@@ -944,7 +945,8 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     OnOAuth2TokenPairFetched(data, status, response_code);
   } else if (url == get_user_info_gurl_) {
     OnGetUserInfoFetched(data, status, response_code);
-  } else if (url == merge_session_gurl_) {
+  } else if (base::StartsWith(url.spec(), merge_session_gurl_.spec(),
+                              base::CompareCase::SENSITIVE)) {
     OnMergeSessionFetched(data, status, response_code);
   } else if (url == uberauth_token_gurl_) {
     OnUberAuthTokenFetch(data, status, response_code);

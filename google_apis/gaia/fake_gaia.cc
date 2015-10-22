@@ -353,21 +353,24 @@ void FakeGaia::HandleMergeSession(const HttpRequest& request,
     return;
   }
 
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string request_query = request_url.query();
+
   std::string uber_token;
-  if (!GetQueryParameter(request.content, "uberauth", &uber_token) ||
+  if (!GetQueryParameter(request_query, "uberauth", &uber_token) ||
       uber_token != merge_session_params_.gaia_uber_token) {
     LOG(ERROR) << "Missing or invalid 'uberauth' param in /MergeSession call";
     return;
   }
 
   std::string continue_url;
-  if (!GetQueryParameter(request.content, "continue", &continue_url)) {
+  if (!GetQueryParameter(request_query, "continue", &continue_url)) {
     LOG(ERROR) << "Missing or invalid 'continue' param in /MergeSession call";
     return;
   }
 
   std::string source;
-  if (!GetQueryParameter(request.content, "source", &source)) {
+  if (!GetQueryParameter(request_query, "source", &source)) {
     LOG(ERROR) << "Missing or invalid 'source' param in /MergeSession call";
     return;
   }
