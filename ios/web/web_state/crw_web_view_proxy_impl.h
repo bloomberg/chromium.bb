@@ -20,9 +20,6 @@
 // WebViewScrollViewProxy.
 @property(nonatomic, weak) CRWContentView* contentView;
 
-// TODO(justincohen): It would be better if we could use something like a
-// ScrollPositionController instead of passing in all of web controller.
-// crbug.com/227744
 // Init with a weak reference of web controller, used for passing thru calls.
 - (instancetype)initWithWebController:(CRWWebController*)webController;
 

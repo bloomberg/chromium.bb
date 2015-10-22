@@ -3158,8 +3158,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [_delegate webController:self retrievePlaceholderOverlayImage:callback];
 
   if (!_placeholderOverlayView.get().image) {
-    // TODO(justincohen): This is just a blank white image. Consider fading in
-    // the snapshot when it comes in instead.
     // TODO(shreyasv): This is just a blank white image. Consider adding an API
     // so that the delegate can return something immediately for the default
     // overlay image.
