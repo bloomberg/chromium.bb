@@ -230,39 +230,39 @@ source_set("test_support") {
   }
 }
 
-# GYP version: chrome/chrome_tests.gypi:test_support_ui
-source_set("test_support_ui") {
-  defines = []
-  testonly = true
-
-  sources = [
-    "base/in_process_browser_test.cc",
-    "base/in_process_browser_test.h",
-    "base/in_process_browser_test_mac.cc",
-    "base/ui_test_utils.cc",
-    "base/ui_test_utils.h",
-  ]
-
-  configs += [ "//build/config:precompiled_headers" ]
-
-  public_deps = [
-    "//chrome/browser:test_support_ui",
-  ]
-  deps = [
-    "//components/metrics:test_support",
-    "//skia",
-    "//testing/gtest",
-  ]
-
-  if (enable_plugins) {
-    sources += [
-      "ppapi/ppapi_test.cc",
-      "ppapi/ppapi_test.h",
-    ]
-  }
-}
-
 if (!is_android) {
+  # GYP version: chrome/chrome_tests.gypi:test_support_ui
+  source_set("test_support_ui") {
+    defines = []
+    testonly = true
+
+    sources = [
+      "base/in_process_browser_test.cc",
+      "base/in_process_browser_test.h",
+      "base/in_process_browser_test_mac.cc",
+      "base/ui_test_utils.cc",
+      "base/ui_test_utils.h",
+    ]
+
+    configs += [ "//build/config:precompiled_headers" ]
+
+    public_deps = [
+      "//chrome/browser:test_support_ui",
+    ]
+    deps = [
+      "//components/metrics:test_support",
+      "//skia",
+      "//testing/gtest",
+    ]
+
+    if (enable_plugins) {
+      sources += [
+        "ppapi/ppapi_test.cc",
+        "ppapi/ppapi_test.h",
+      ]
+    }
+  }
+
   import("//third_party/protobuf/proto_library.gni")
 
   # GYP version: chrome/chrome_tests_unit.gypi:ipc_protobuf_message_test_proto
