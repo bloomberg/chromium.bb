@@ -43,3 +43,9 @@ crbug.com/506186 accessibility/axobjectcache-leaks-node.html [ Failure ]
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
 
 crbug.com/544175 [ Mac Win ] plugins/fullscreen-plugins-dont-reload.html [ Crash ]
+
+crbug.com/546559 virtual/threaded/animations/interpolation/background-image-interpolation.html [ Crash ]
+crbug.com/546559 virtual/threaded/animations/interpolation/webkit-mask-image-interpolation.html [ Crash ]
+crbug.com/546559 animations/interpolation/background-image-interpolation.html [ Crash ]
+crbug.com/546559 animations/interpolation/webkit-mask-image-interpolation.html [ Crash ]
+
