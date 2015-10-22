@@ -669,10 +669,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     }
 
-    // Currently, the UI is only enabled on Windows and OSX so we don't even
-    // bother with pinging the server if we're not on one of those platforms.
-    // TODO(noelutz): change this code once the UI is done for Linux.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Currently, the UI is enabled on Windows, OSX and chrome OS. we don't ping
+// the server if we're not on one of those platforms.
+// TODO(noelutz): change this code once the UI is done for Linux.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     // The URLFetcher is owned by the UI thread, so post a message to
     // start the pingback.
     BrowserThread::PostTask(
@@ -1017,10 +1017,10 @@ void DownloadProtectionService::CheckDownloadUrl(
 bool DownloadProtectionService::IsSupportedDownload(
     const content::DownloadItem& item,
     const base::FilePath& target_path) const {
-  // Currently, the UI is only enabled on Windows and OSX.  On Linux we still
-  // want to show the dangerous file type warning if the file is possibly
-  // dangerous which means we have to always return false here.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Currently, the UI is only enabled on Windows, OSX and Chrome OS. On
+// Linux we still want to show the dangerous file type warning if the file
+// is possibly dangerous which means we have to always return false here.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   DownloadCheckResultReason reason = REASON_MAX;
   ClientDownloadRequest::DownloadType type =
       ClientDownloadRequest::WIN_EXECUTABLE;

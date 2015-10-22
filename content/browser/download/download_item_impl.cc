@@ -666,7 +666,7 @@ void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
 }
 
 bool DownloadItemImpl::IsDangerous() const {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // TODO(noelutz): At this point only the windows views and OSX UI supports
   // warnings based on dangerous content.
   return (danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||

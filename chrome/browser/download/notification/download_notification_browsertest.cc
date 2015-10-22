@@ -230,6 +230,13 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   // Return if  the download is opened.
   bool opened() const { return opened_; }
 
+ protected:
+  // Disable DownloadProtectionService in order to disable content checking.
+  safe_browsing::DownloadProtectionService* GetDownloadProtectionService()
+      override {
+    return nullptr;
+  }
+
  private:
   bool opened_;
 };

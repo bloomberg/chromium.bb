@@ -535,7 +535,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -552,7 +552,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -569,7 +569,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -681,12 +681,13 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
 #else
-  // On !(OS_WIN || OS_MACOSX), no file types are currently supported. Hence all
+  // On !(OS_WIN || OS_MACOSX || OS_CHROMEOS),
+  // no file types are currently supported. Hence all
   // requests to CheckClientDownload() result in a verdict of UNKNOWN.
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
@@ -705,7 +706,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
 #else
@@ -731,7 +732,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
       item, &feedback_ping, &feedback_response));
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -752,7 +753,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNCOMMON));
   EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
       item, &feedback_ping, &feedback_response));
@@ -779,7 +780,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS_HOST));
   EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
       item, &feedback_ping, &feedback_response));
@@ -804,7 +805,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::POTENTIALLY_UNWANTED));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -859,7 +860,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -913,7 +914,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -971,7 +972,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadData) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   ASSERT_TRUE(HasClientDownloadRequest());
   const ClientDownloadRequest& request = *GetClientDownloadRequest();
@@ -1073,7 +1074,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
   EXPECT_TRUE(HasClientDownloadRequest());
   const ClientDownloadRequest& request = *GetClientDownloadRequest();
@@ -1090,7 +1091,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
             archived_binary->length());
   ClearClientDownloadRequest();
 #else
-  // For !(OS_WIN || OS_MACOSX), no file types are currently supported. Hence
+  // For !(OS_WIN || OS_MACOSX || OS_CHROMEOS),
+  // no file types are currently supported. Hence
   // the resulting verdict is UNKNOWN.
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
@@ -1111,7 +1113,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
                  base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
@@ -1134,7 +1136,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
                         base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   ASSERT_TRUE(HasClientDownloadRequest());
   EXPECT_EQ(1, GetClientDownloadRequest()->archived_binary_size());
   EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
@@ -1142,7 +1144,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
             GetClientDownloadRequest()->download_type());
   ClearClientDownloadRequest();
 #else
-  // For !(OS_WIN || OS_MACOSX), no file types are currently supported. Hence
+  // For !(OS_WIN || OS_MACOSX || OS_CHROMEOS),
+  // no file types are currently supported. Hence
   // the resulting verdict is UNKNOWN.
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
@@ -1159,7 +1162,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
                         base::Unretained(this)));
   MessageLoop::current()->Run();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   ASSERT_TRUE(HasClientDownloadRequest());
   EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
   EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
@@ -1167,7 +1170,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
             GetClientDownloadRequest()->download_type());
   ClearClientDownloadRequest();
 #else
-  // For !(OS_WIN || OS_MACOSX), no file types are currently supported. Hence
+  // For !(OS_WIN || OS_MACOSX || OS_CHROMEOS),
+  // no file types are currently supported. Hence
   // the resulting verdict is UNKNOWN.
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_FALSE(HasClientDownloadRequest());
@@ -1306,7 +1310,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1396,7 +1400,7 @@ TEST_F(DownloadProtectionServiceTest,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   MessageLoop::current()->Run();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1489,7 +1493,7 @@ TEST_F(DownloadProtectionServiceTest,
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                    base::Unretained(this)));
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
     // SendRequest is not called.  Wait for FinishRequest to call our callback.
     MessageLoop::current()->Run();
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1568,7 +1572,7 @@ TEST_F(DownloadProtectionServiceTest,
         &item,
         base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                    base::Unretained(this)));
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
     // SendRequest is not called.  Wait for FinishRequest to call our callback.
     MessageLoop::current()->Run();
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1734,7 +1738,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   // anything yet.
   MessageLoop::current()->Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
 #else
