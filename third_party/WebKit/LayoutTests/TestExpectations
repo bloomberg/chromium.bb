@@ -813,6 +813,8 @@ crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
 
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
+crbug.com/546512 http/tests/security/w3c/cross-origin-objects.html [ NeedsManualRebaseline ]
+
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 
