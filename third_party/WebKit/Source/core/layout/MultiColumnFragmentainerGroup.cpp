@@ -54,8 +54,6 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
 
     m_maxColumnHeight = calculateMaxColumnHeight();
 
-    LayoutUnit oldColumnHeight = m_columnHeight;
-
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
     LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread();
     if (enclosingFlowThread && enclosingFlowThread->isPageLogicalHeightKnown()) {
@@ -68,9 +66,6 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
     } else {
         setAndConstrainColumnHeight(heightAdjustedForRowOffset(flowThread->columnHeightAvailable()));
     }
-
-    if (m_columnHeight != oldColumnHeight)
-        m_columnSet.setChildNeedsLayout(MarkOnlyThis);
 }
 
 bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode)

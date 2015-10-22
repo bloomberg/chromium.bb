@@ -364,6 +364,7 @@ void LayoutMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
             continue;
         }
         LayoutMultiColumnSet* columnSet = toLayoutMultiColumnSet(columnBox);
+        layoutScope.setChildNeedsLayout(columnSet);
         if (!m_inBalancingPass) {
             // This is the initial layout pass. We need to reset the column height, because contents
             // typically have changed.
@@ -391,16 +392,8 @@ bool LayoutMultiColumnFlowThread::recalculateColumnHeights()
     // passes than that, though, but the number of retries should not exceed the number of
     // columns, unless we have a bug.
     bool needsRelayout = false;
-    for (LayoutMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
+    for (LayoutMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet())
         needsRelayout |= multicolSet->recalculateColumnHeight(m_inBalancingPass ? StretchBySpaceShortage : GuessFromFlowThreadPortion);
-        if (needsRelayout) {
-            // Once a column set gets a new column height, that column set and all successive column
-            // sets need to be laid out over again, since their logical top will be affected by
-            // this, and therefore their column heights may change as well, at least if the multicol
-            // height is constrained.
-            multicolSet->setChildNeedsLayout(MarkOnlyThis);
-        }
-    }
 
     if (needsRelayout)
         setChildNeedsLayout(MarkOnlyThis);
@@ -545,7 +538,6 @@ void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(LayoutBox* s
                 // a new spanner placeholder between them.
                 setToSplit = mapDescendantToColumnSet(previousLayoutObject);
                 ASSERT(setToSplit == mapDescendantToColumnSet(insertedBeforeInFlowThread));
-                setToSplit->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
                 insertBeforeColumnBox = setToSplit->nextSiblingMultiColumnBox();
                 // We've found out which set that needs to be split. Now proceed to
                 // inserting the spanner placeholder, and then insert a second column set.
@@ -572,7 +564,6 @@ void LayoutMultiColumnFlowThread::destroySpannerPlaceholder(LayoutMultiColumnSpa
             && previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
             // Need to merge two column sets.
             nextColumnBox->destroy();
-            previousColumnBox->setNeedsLayout(LayoutInvalidationReason::ColumnsChanged);
             invalidateColumnSets();
         }
     }
