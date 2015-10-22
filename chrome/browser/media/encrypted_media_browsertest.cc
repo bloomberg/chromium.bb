@@ -608,11 +608,13 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine_Prefixed,
                                 Values(PREFIXED)));
 #endif  // !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 
+#if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(MSE),
                                 Values(UNPREFIXED)));
+#endif  // !defined(OS_CHROMEOS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
