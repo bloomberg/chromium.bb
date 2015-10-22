@@ -1,8 +1,8 @@
 layer at (0,0) size 0x0
   LayoutView at (0,0) size 0x0
-layer at (0,0) size 1000x325
-  LayoutBlockFlow {HTML} at (0,0) size 1000x325
-    LayoutBlockFlow {BODY} at (8,8) size 984x309
+layer at (0,0) size 1000x750
+  LayoutBlockFlow {HTML} at (0,0) size 1000x750
+    LayoutBlockFlow {BODY} at (8,8) size 984x734
       LayoutText {#text} at (304,289) size 4x19
         text run at (304,289) width 4: " "
       LayoutText {#text} at (0,0) size 0x0

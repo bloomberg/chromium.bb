@@ -1,0 +1,18 @@
+layer at (0,0) size 0x0
+  LayoutView at (0,0) size 0x0
+layer at (0,0) size 1000x776
+  LayoutBlockFlow {HTML} at (0,0) size 1000x776
+    LayoutBlockFlow {BODY} at (8,16) size 984x752
+      LayoutBlockFlow {P} at (0,0) size 984x36
+        LayoutText {#text} at (0,0) size 982x35
+          text run at (0,0) width 566: "This is a test that only dumps the layout tree, and doesn't actually display the page. This "
+          text run at (565,0) width 417: "tests some peculiarities in the test framework for printing. To run"
+          text run at (0,18) width 159: "this test manually, run it "
+          text run at (158,18) width 227: "with content_shell --run-layout-test"
+      LayoutBlockFlow {DIV} at (0,52) size 984x18
+        LayoutText {#text} at (0,0) size 165x17
+          text run at (0,0) width 165: "This should be on page 1."
+      LayoutBlockFlow {DIV} at (0,734) size 984x18
+        LayoutText {#text} at (0,0) size 165x17
+          text run at (0,0) width 165: "This should be on page 2."
+
