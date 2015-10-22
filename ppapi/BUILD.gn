@@ -273,7 +273,7 @@ if (enable_nacl) {
       } else {
         if (target_cpu == "x86") {
           nmf_cpu = "x32"
-        } else if (current_cpu != "pnacl") {
+        } else {
           nmf_cpu = target_cpu
         }
         if (is_nacl_glibc) {
@@ -298,7 +298,11 @@ if (enable_nacl) {
 
     action("generate_nmf") {
       if (is_nacl_glibc) {
-        toolchain_dir = "${nacl_toolchain_dir}/nacl_x86_glibc"
+        if (current_cpu == "arm") {
+          toolchain_dir = "${nacl_toolchain_dir}/nacl_arm_glibc"
+        } else {
+          toolchain_dir = "${nacl_toolchain_dir}/nacl_x86_glibc"
+        }
         nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
       } else if (current_cpu == "pnacl") {
         toolchain_dir = "${nacl_toolchain_dir}/pnacl_newlib"
@@ -308,6 +312,12 @@ if (enable_nacl) {
         nmf = "${root_build_dir}/ppapi_nacl_tests_newlib.nmf"
       }
       nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
+
+      if (current_cpu == "arm") {
+        objdump = rebase_path("${toolchain_dir}/bin/arm-nacl-objdump")
+      } else {
+        objdump = rebase_path("${toolchain_dir}/bin/x86_64-nacl-objdump")
+      }
 
       script = "//native_client_sdk/src/tools/create_nmf.py"
       sources = [
@@ -332,11 +342,15 @@ if (enable_nacl) {
                          rebase_path("${toolchain_dir}/x86_64-nacl/lib") ]
           data += [ "$root_build_dir/lib64/" ]
         }
+        if (current_cpu == "arm") {
+          nmf_flags += [ "--library-path=" +
+                         rebase_path("${toolchain_dir}/arm-nacl/lib") ]
+          data += [ "$root_build_dir/lib/" ]
+        }
       }
       args = [
                "--no-default-libpath",
-               "--objdump=" +
-                   rebase_path("${toolchain_dir}/bin/x86_64-nacl-objdump"),
+               "--objdump=" + objdump,
                "--output=" + rebase_path(nmf, root_build_dir),
                "--stage-dependencies=" + rebase_path(root_build_dir),
              ] + nmf_flags + rebase_path(sources, root_build_dir)
@@ -348,19 +362,19 @@ if (enable_nacl) {
         deps = [
           ":ppapi_nacl_tests",
         ]
+        if (is_nacl_glibc && current_cpu == "arm") {
+          deps += [ "//native_client/src/untrusted/elf_loader:elf_loader" ]
+        }
       }
     }
   }
 
   group("ppapi_nacl_tests_all") {
-    data_deps = []
-    if (target_cpu == "x86" || target_cpu == "x64") {
-      data_deps += [
-        ":copy_test_files",
-        ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
-        ":generate_nmf(//build/toolchain/nacl:glibc_${target_cpu})",
-        ":generate_nmf(//build/toolchain/nacl:newlib_pnacl)",
-      ]
-    }
+    data_deps = [
+      ":copy_test_files",
+      ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
+      ":generate_nmf(//build/toolchain/nacl:glibc_${target_cpu})",
+      ":generate_nmf(//build/toolchain/nacl:newlib_pnacl)",
+    ]
   }
 }
