@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/event_dispatcher.h"
 
+#include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_server_window_delegate.h"
@@ -18,18 +19,30 @@ namespace {
 class TestEventDispatcherDelegate : public EventDispatcherDelegate {
  public:
   explicit TestEventDispatcherDelegate(ServerWindow* root)
-      : root_(root), focused_window_(nullptr), last_target_(nullptr) {}
+      : root_(root),
+        focused_window_(nullptr),
+        last_target_(nullptr),
+        last_accelerator_(0) {}
   ~TestEventDispatcherDelegate() override {}
 
   mojo::EventPtr GetAndClearLastDispatchedEvent() {
     return last_dispatched_event_.Pass();
   }
 
+  uint32_t GetAndClearLastAccelerator() {
+    uint32_t return_value = last_accelerator_;
+    last_accelerator_ = 0;
+    return return_value;
+  }
+
   ServerWindow* last_target() { return last_target_; }
 
  private:
   // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator, mojo::EventPtr event) override {}
+  void OnAccelerator(uint32_t accelerator, mojo::EventPtr event) override {
+    EXPECT_EQ(0u, last_accelerator_);
+    last_accelerator_ = accelerator;
+  }
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override {
     focused_window_ = window;
   }
@@ -46,6 +59,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* focused_window_;
   ServerWindow* last_target_;
   mojo::EventPtr last_dispatched_event_;
+  uint32_t last_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
@@ -89,6 +103,41 @@ TEST(EventDispatcherTest, OnEvent) {
       static_cast<ui::MouseEvent*>(dispatched_event.get());
   EXPECT_EQ(gfx::Point(20, 25), dispatched_mouse_event->root_location());
   EXPECT_EQ(gfx::Point(10, 15), dispatched_mouse_event->location());
+}
+
+TEST(EventDispatcherTest, EventMatching) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  mojo::EventMatcherPtr matcher =
+      mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_W,
+                            mojo::EVENT_FLAGS_CONTROL_DOWN);
+  uint32_t accelerator_1 = 1;
+  dispatcher.AddAccelerator(accelerator_1, matcher.Pass());
+
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  dispatcher.OnEvent(mojo::Event::From(key));
+  EXPECT_EQ(accelerator_1,
+            event_dispatcher_delegate.GetAndClearLastAccelerator());
+
+  key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_NONE);
+  dispatcher.OnEvent(mojo::Event::From(key));
+  EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
+
+  uint32_t accelerator_2 = 2;
+  matcher = mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_W,
+                                  mojo::EVENT_FLAGS_NONE);
+  dispatcher.AddAccelerator(accelerator_2, matcher.Pass());
+  dispatcher.OnEvent(mojo::Event::From(key));
+  EXPECT_EQ(accelerator_2,
+            event_dispatcher_delegate.GetAndClearLastAccelerator());
+
+  dispatcher.RemoveAccelerator(accelerator_2);
+  dispatcher.OnEvent(mojo::Event::From(key));
+  EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
 }
 
 }  // namespace ws

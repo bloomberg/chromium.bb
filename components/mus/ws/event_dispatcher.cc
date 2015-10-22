@@ -8,10 +8,103 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_finder.h"
+#include "components/mus/ws/window_tree_host_impl.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace mus {
 namespace ws {
+
+class EventMatcher {
+ public:
+  explicit EventMatcher(const mojo::EventMatcher& matcher)
+      : fields_to_match_(NONE),
+        event_type_(mojo::EVENT_TYPE_UNKNOWN),
+        event_flags_(mojo::EVENT_FLAGS_NONE),
+        keyboard_code_(mojo::KEYBOARD_CODE_UNKNOWN),
+        pointer_kind_(mojo::POINTER_KIND_MOUSE) {
+    if (matcher.type_matcher) {
+      fields_to_match_ |= TYPE;
+      event_type_ = matcher.type_matcher->type;
+    }
+    if (matcher.flags_matcher) {
+      fields_to_match_ |= FLAGS;
+      event_flags_ = matcher.flags_matcher->flags;
+    }
+    if (matcher.key_matcher) {
+      fields_to_match_ |= KEYBOARD_CODE;
+      keyboard_code_ = matcher.key_matcher->keyboard_code;
+    }
+    if (matcher.pointer_kind_matcher) {
+      fields_to_match_ |= POINTER_KIND;
+      pointer_kind_ = matcher.pointer_kind_matcher->pointer_kind;
+    }
+    if (matcher.pointer_location_matcher) {
+      fields_to_match_ |= POINTER_LOCATION;
+      pointer_region_ =
+          matcher.pointer_location_matcher->region.To<gfx::RectF>();
+    }
+  }
+
+  ~EventMatcher() {}
+
+  bool MatchesEvent(const mojo::Event& event) const {
+    if ((fields_to_match_ & TYPE) && event.action != event_type_)
+      return false;
+    if ((fields_to_match_ & FLAGS) && event.flags != event_flags_)
+      return false;
+    if (fields_to_match_ & KEYBOARD_CODE) {
+      if (!event.key_data)
+        return false;
+      if (keyboard_code_ != event.key_data->key_code)
+        return false;
+    }
+    if (fields_to_match_ & POINTER_KIND) {
+      if (!event.pointer_data)
+        return false;
+      if (pointer_kind_ != event.pointer_data->kind)
+        return false;
+    }
+    if (fields_to_match_ & POINTER_LOCATION) {
+      // TODO(sad): The tricky part here is to make sure the same coord-space is
+      // used for the location-region and the event-location.
+      NOTIMPLEMENTED();
+      return false;
+    }
+
+    return true;
+  }
+
+#if !defined(NDEBUG)
+  bool Equals(const EventMatcher& matcher) const {
+    return fields_to_match_ == matcher.fields_to_match_ &&
+           event_type_ == matcher.event_type_ &&
+           event_flags_ == matcher.event_flags_ &&
+           keyboard_code_ == matcher.keyboard_code_ &&
+           pointer_kind_ == matcher.pointer_kind_ &&
+           pointer_region_ == matcher.pointer_region_;
+  }
+#endif
+
+ private:
+  enum MatchFields {
+    NONE = 0,
+    TYPE = 1 << 0,
+    FLAGS = 1 << 1,
+    KEYBOARD_CODE = 1 << 2,
+    POINTER_KIND = 1 << 3,
+    POINTER_LOCATION = 1 << 4,
+  };
+
+  uint32_t fields_to_match_;
+  mojo::EventType event_type_;
+  mojo::EventFlags event_flags_;
+  mojo::KeyboardCode keyboard_code_;
+  mojo::PointerKind pointer_kind_;
+  gfx::RectF pointer_region_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate), root_(nullptr) {}
@@ -19,16 +112,15 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
 EventDispatcher::~EventDispatcher() {}
 
 void EventDispatcher::AddAccelerator(uint32_t id,
-                                     mojo::KeyboardCode keyboard_code,
-                                     mojo::EventFlags flags) {
+                                     mojo::EventMatcherPtr event_matcher) {
+  EventMatcher matcher(*event_matcher);
 #if !defined(NDEBUG)
   for (const auto& pair : accelerators_) {
-    DCHECK(pair.first != id);
-    DCHECK(pair.second.keyboard_code != keyboard_code ||
-           pair.second.flags != flags);
+    DCHECK_NE(pair.first, id);
+    DCHECK(!matcher.Equals(pair.second));
   }
 #endif
-  accelerators_.insert(Entry(id, Accelerator(keyboard_code, flags)));
+  accelerators_.insert(Entry(id, matcher));
 }
 
 void EventDispatcher::RemoveAccelerator(uint32_t id) {
@@ -63,8 +155,7 @@ bool EventDispatcher::FindAccelerator(const mojo::Event& event,
                                       uint32_t* accelerator_id) {
   DCHECK(event.key_data);
   for (const auto& pair : accelerators_) {
-    if (pair.second.keyboard_code == event.key_data->windows_key_code &&
-        pair.second.flags == event.flags) {
+    if (pair.second.MatchesEvent(event)) {
       *accelerator_id = pair.first;
       return true;
     }

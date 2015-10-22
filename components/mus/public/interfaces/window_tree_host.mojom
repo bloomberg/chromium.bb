@@ -6,6 +6,7 @@ module mus.mojom;
 
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/events/input_event_constants.mojom";
+import "ui/mojo/events/input_event_matcher.mojom";
 import "ui/mojo/events/input_events.mojom";
 import "ui/mojo/events/input_key_codes.mojom";
 import "ui/mojo/geometry/geometry.mojom";
@@ -20,12 +21,10 @@ interface WindowTreeHost {
   SetTitle(string title);
 
   // Add and remove accelerators. When accelerators are registered the
-  // WindowTreeHostClient receives the key event via OnAccelerator() rather than
-  // the focused window. The id is defined by the client and can be used to more
+  // WindowTreeHostClient receives the event via OnAccelerator() rather than the
+  // target window. The id is defined by the client and can be used to more
   // easily identify the accelerator's action.
-  AddAccelerator(uint32 id,
-                 mojo.KeyboardCode keyboard_code,
-                 mojo.EventFlags flags);
+  AddAccelerator(uint32 id, mojo.EventMatcher matcher);
   RemoveAccelerator(uint32 id);
 };
 

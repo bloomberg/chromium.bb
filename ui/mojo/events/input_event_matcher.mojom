@@ -1,0 +1,48 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "ui/mojo/events/input_event_constants.mojom";
+import "ui/mojo/events/input_key_codes.mojom";
+import "ui/mojo/geometry/geometry.mojom";
+
+struct KeyEventMatcher {
+  KeyboardCode keyboard_code;
+};
+
+struct PointerKindMatcher {
+  PointerKind pointer_kind;
+};
+
+struct PointerLocationMatcher {
+  RectF region;
+};
+
+struct EventTypeMatcher {
+  EventType type;
+};
+
+struct EventFlagsMatcher {
+  EventFlags flags;
+};
+
+// If a specific matcher is missing, then an Event will match this EventMatcher
+// (if relevant). For example, if |type_matcher| is missing, then events of all
+// types will match this EventMatcher. Similarly, if |key_matcher| is missing,
+// then all key-events will match.
+// An example matcher to match the Ctrl+A accelerator would be:
+// - |type_matcher.type| = mojo::EVENT_TYPE_KEY_PRESSED
+// - |flags_matcher.flags| = mojo::EVENT_FLAGS_CONTROL_DOWN
+// - |key_matcher.keyboard_code| = mojo::KEYBOARD_CODE_A
+//
+// A matcher to match any key-press event would be:
+// - |type_matcher.type| = mojo::EVENT_TYPE_KEY_PRESSED
+struct EventMatcher {
+  EventTypeMatcher? type_matcher;
+  EventFlagsMatcher? flags_matcher;
+  KeyEventMatcher? key_matcher;
+  PointerKindMatcher? pointer_kind_matcher;
+  PointerLocationMatcher? pointer_location_matcher;
+};

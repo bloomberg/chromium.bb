@@ -109,9 +109,8 @@ void WindowTreeHostImpl::SetTitle(const mojo::String& title) {
 }
 
 void WindowTreeHostImpl::AddAccelerator(uint32_t id,
-                                        mojo::KeyboardCode keyboard_code,
-                                        mojo::EventFlags flags) {
-  event_dispatcher_.AddAccelerator(id, keyboard_code, flags);
+                                        mojo::EventMatcherPtr event_matcher) {
+  event_dispatcher_.AddAccelerator(id, event_matcher.Pass());
 }
 
 void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {

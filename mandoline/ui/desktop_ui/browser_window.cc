@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mandoline/ui/desktop_ui/browser_commands.h"
@@ -176,18 +177,23 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   web_view_.Init(app_, content_);
 
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::CLOSE),
-                        mojo::KEYBOARD_CODE_W, mojo::EVENT_FLAGS_CONTROL_DOWN);
+                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_W,
+                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::FOCUS_OMNIBOX),
-                        mojo::KEYBOARD_CODE_L, mojo::EVENT_FLAGS_CONTROL_DOWN);
+                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_L,
+                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
-                        mojo::KEYBOARD_CODE_N, mojo::EVENT_FLAGS_CONTROL_DOWN);
+                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_N,
+                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::SHOW_FIND),
-                        mojo::KEYBOARD_CODE_F, mojo::EVENT_FLAGS_CONTROL_DOWN);
+                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_F,
+                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_BACK),
-                        mojo::KEYBOARD_CODE_LEFT, mojo::EVENT_FLAGS_ALT_DOWN);
+                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_LEFT,
+                                              mojo::EVENT_FLAGS_ALT_DOWN));
   host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
-                        mojo::KEYBOARD_CODE_RIGHT, mojo::EVENT_FLAGS_ALT_DOWN);
-
+                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_RIGHT,
+                                              mojo::EVENT_FLAGS_ALT_DOWN));
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
 

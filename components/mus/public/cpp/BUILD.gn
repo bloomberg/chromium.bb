@@ -8,7 +8,9 @@ mojo_sdk_source_set("cpp") {
   restrict_external_deps = false
   sources = [
     "context_provider.h",
+    "event_matcher.h",
     "lib/context_provider.cc",
+    "lib/event_matcher.cc",
     "lib/output_surface.cc",
     "lib/scoped_window_ptr.cc",
     "lib/window.cc",

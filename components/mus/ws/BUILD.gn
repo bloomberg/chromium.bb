@@ -125,6 +125,7 @@ test("window_manager_unittests") {
     "//base",
     "//base/test:test_config",
     "//components/mus/surfaces",
+    "//components/mus/public/cpp",
     "//components/mus/public/cpp:common",
     "//components/mus/public/interfaces",
     "//mojo/application/public/interfaces",
