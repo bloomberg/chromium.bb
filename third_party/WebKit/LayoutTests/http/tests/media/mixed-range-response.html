@@ -16,9 +16,11 @@
 // If the origin of 2. (mixed-range-response.php) and 6. (load-video.php) are
 // different, an error should occur.
 
-function create_failure_audio_test(url) {
+function create_failure_audio_test(url, crossOrigin) {
   return new Promise(function(resolve, reject) {
       var audio = document.createElement('audio');
+      if (crossOrigin)
+          audio.crossOrigin = crossOrigin;
       audio.oncanplay = function() {
         reject('canplay event should not be fired. url: ' + url);
       };
@@ -28,9 +30,11 @@ function create_failure_audio_test(url) {
     });
 }
 
-function create_success_audio_test(url) {
+function create_success_audio_test(url, crossOrigin) {
   return new Promise(function(resolve, reject) {
       var audio = document.createElement('audio');
+      if (crossOrigin)
+          audio.crossOrigin = crossOrigin;
       audio.oncanplay = resolve;
       audio.onerror = function(e) {
         reject('error event should not be fired. url: ' + url);
@@ -42,8 +46,73 @@ function create_success_audio_test(url) {
 
 var HOST_INFO = get_host_info();
 var MIX_RESPONSE_PHP_PATH = '/media/resources/mixed-range-response.php';
+var REDIRECT_PHP_PATH = '/resources/redirect.php'
 var AUDIO_PATH = '/media/resources/load-video.php?' +
                  'name=../../../../media/content/silence.oga&type=audio/ogg';
+
+promise_test(function(t) {
+     return create_success_audio_test(
+         HOST_INFO['HTTP_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+         encodeURIComponent(HOST_INFO['HTTP_ORIGIN'] + AUDIO_PATH));
+   }, 'Redirect from same-origin to same-origin must succeed.');
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH));
+  }, 'Redirect from same-origin to remote-origin must succeed.');
+
+promise_test(function(t) {
+    return create_failure_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH ,
+        'anonymous');
+  }, 'CORS-disallowed remote-origin with crossOrigin=anonymous must fail.');
+
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH + '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN'],
+        'anonymous');
+  }, 'CORS-allowed remote-origin with crossOrigin=anonymous must succeed.');
+
+promise_test(function(t) {
+     return create_success_audio_test(
+         HOST_INFO['HTTP_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+         encodeURIComponent(HOST_INFO['HTTP_ORIGIN'] + AUDIO_PATH),
+         'anonymous');
+   }, 'Redirect from same-origin to same-origin with crossOrigin=anonymous must succeed.');
+
+promise_test(function(t) {
+    return create_failure_audio_test(
+        HOST_INFO['HTTP_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH),
+        'anonymous');
+  }, 'Redirect from same-origin to CORS-disallowed remote-origin with crossOrigin=anonymous must fail.');
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH +
+                           '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN']),
+        'anonymous');
+  }, 'Redirect from same-origin to CORS-allowed remote-origin with crossOrigin=anonymous must succeed.');
+
+promise_test(function(t) {
+    return create_failure_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH +
+                           '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN']),
+        'anonymous');
+  }, 'Redirect from CORS-disallowed remote-origin to CORS-allowed remote-origin with crossOrigin=anonymous must fail.');
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + REDIRECT_PHP_PATH + '?url=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH +
+                           '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN']) +
+        '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN'],
+        'anonymous');
+  }, 'Redirect from CORS-allowed remote-origin to CORS-allowed remote-origin with crossOrigin=anonymous must succeed.');
 
 promise_test(function(t) {
     return create_success_audio_test(
@@ -69,5 +138,29 @@ promise_test(function(t) {
         encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH));
   }, 'Mixing same remote-origin responses must succeed.');
 
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH +
+                           '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN']) +
+        '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN'],
+        'anonymous');
+  }, 'Mixing same CORS-allowed remote-origin responses with crossOrigin=anonymous must succeed.');
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH +
+                           '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN']),
+        'anonymous');
+  }, 'Mixing same-origin response and CORS-allowed remote-origin response with crossOrigin=anonymous must succeed.');
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_ORIGIN'] + AUDIO_PATH + '&cors_allow_origin=*') +
+        '&cors_allow_origin=' + HOST_INFO['HTTP_ORIGIN'],
+        'anonymous');
+  }, 'Mixing CORS-allowed remote-origin response and same-origin response with crossOrigin=anonymous must succeed.');
 </script>
 </body>

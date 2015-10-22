@@ -27,6 +27,9 @@
         header("Accept-Ranges: bytes");
         header("Content-Range: bytes " . $start . "-" . $end . "/" . $fileSize);
     }
+    if (isset($_GET['cors_allow_origin'])) {
+        header("Access-Control-Allow-Origin: " . $_GET['cors_allow_origin']);
+    }
     header("Connection: close");
 
     $chunkSize = 1024 * 256;

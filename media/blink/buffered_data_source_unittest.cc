@@ -51,11 +51,12 @@ class MockBufferedDataSource : public BufferedDataSource {
  public:
   MockBufferedDataSource(
       const GURL& url,
+      BufferedResourceLoader::CORSMode cors_mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       WebLocalFrame* frame,
       BufferedDataSourceHost* host)
       : BufferedDataSource(url,
-                           BufferedResourceLoader::kUnspecified,
+                           cors_mode,
                            task_runner,
                            frame,
                            new media::MediaLog(),
@@ -128,13 +129,13 @@ class BufferedDataSourceTest : public testing::Test {
 
   MOCK_METHOD1(OnInitialize, void(bool));
 
-  void Initialize(const char* url, bool expected) {
+  void InitializeWithCORS(const char* url,
+                          bool expected,
+                          BufferedResourceLoader::CORSMode cors_mode) {
     GURL gurl(url);
-    data_source_.reset(
-        new MockBufferedDataSource(gurl,
-                                   message_loop_.task_runner(),
-                                   view_->mainFrame()->toWebLocalFrame(),
-                                   &host_));
+    data_source_.reset(new MockBufferedDataSource(
+        gurl, cors_mode, message_loop_.task_runner(),
+        view_->mainFrame()->toWebLocalFrame(), &host_));
     data_source_->SetPreload(preload_);
 
     response_generator_.reset(new TestResponseGenerator(gurl, kFileSize));
@@ -146,6 +147,10 @@ class BufferedDataSourceTest : public testing::Test {
 
     bool is_http = gurl.SchemeIsHTTPOrHTTPS();
     EXPECT_EQ(data_source_->downloading(), is_http);
+  }
+
+  void Initialize(const char* url, bool expected) {
+    InitializeWithCORS(url, expected, BufferedResourceLoader::kUnspecified);
   }
 
   // Helper to initialize tests with a valid 200 response.
@@ -575,6 +580,20 @@ TEST_F(BufferedDataSourceTest,
   // The origin URL of response1 and response2 are different. So an error should
   // occur.
   ExecuteMixedResponseFailureTest(response1, response2);
+}
+
+TEST_F(BufferedDataSourceTest,
+       Http_MixedResponse_ServiceWorkerProxiedAndDifferentOriginResponseCORS) {
+  InitializeWithCORS(kHttpUrl, true, BufferedResourceLoader::kAnonymous);
+  WebURLResponse response1 =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response1.setWasFetchedViaServiceWorker(true);
+  response1.setOriginalURLViaServiceWorker(GURL(kHttpDifferentOriginUrl));
+  WebURLResponse response2 =
+      response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
+  // The origin URL of response1 and response2 are different, but a CORS check
+  // has been passed for each request, so expect success.
+  ExecuteMixedResponseSuccessTest(response1, response2);
 }
 
 TEST_F(BufferedDataSourceTest, File_Retry) {

@@ -160,8 +160,13 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     // create a new one, and copy these headers.
     const HTTPHeaderMap& headerMap = request.httpHeaderFields();
     for (const auto& header : headerMap) {
-        if (FetchUtils::isSimpleHeader(header.key, header.value))
+        if (FetchUtils::isSimpleHeader(header.key, header.value)) {
             m_simpleRequestHeaders.add(header.key, header.value);
+        } else if (equalIgnoringCase(header.key, "range") && m_options.crossOriginRequestPolicy == UseAccessControl && m_options.preflightPolicy == PreventPreflight) {
+            // Allow an exception for the "range" header for when CORS callers request no preflight, this ensures cross-origin
+            // redirects work correctly for crossOrigin enabled WebURLRequest::RequestContextVideo type requests.
+            m_simpleRequestHeaders.add(header.key, header.value);
+        }
     }
 
     // DocumentThreadableLoader is used by all javascript initiated fetch, so
