@@ -200,7 +200,12 @@ bool InlineTextBox::hasWrappedSelectionNewline() const
         && (state == SelectionStart || state == SelectionInside)
         // Checking last leaf child can be slow, so we make sure to do this only
         // after the other simple conditionals.
-        && (root().lastLeafChild() == this);
+        && (root().lastLeafChild() == this)
+        // It's possible to have mixed LTR/RTL on a single line, and we only
+        // want to paint a newline when we're the last leaf child and we make
+        // sure there isn't a differently-directioned box following us.
+        && ((!isLeftToRightDirection() && root().firstSelectedBox() == this)
+            || (isLeftToRightDirection() && root().lastSelectedBox() == this));
 }
 
 float InlineTextBox::newlineSpaceWidth() const
