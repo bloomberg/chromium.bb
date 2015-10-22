@@ -143,6 +143,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
 
+  const std::vector<GURL>& foreign_fetch_scopes() const {
+    return foreign_fetch_scopes_;
+  }
+  void set_foreign_fetch_scopes(const std::vector<GURL>& scopes) {
+    foreign_fetch_scopes_ = scopes;
+  }
+
   // This sets the new status and also run status change callbacks
   // if there're any (see RegisterStatusChangeCallback).
   void SetStatus(Status status);

@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -83,6 +84,9 @@
 //   value: <empty>
 //     - This entry represents that the old BlockFile diskcache was deleted
 //       after diskcache migration (http://crbug.com/487482).
+//
+//   key: "INITDATA_FOREIGN_FETCH_ORIGIN:" + <GURL 'origin'>
+//   value: <empty>
 namespace content {
 
 namespace {
@@ -96,6 +100,7 @@ const char kDiskCacheMigrationNotNeededKey[] =
     "INITDATA_DISKCACHE_MIGRATION_NOT_NEEDED";
 const char kOldDiskCacheDeletionNotNeededKey[] =
     "INITDATA_OLD_DISKCACHE_DELETION_NOT_NEEDED";
+const char kForeignFetchOriginKey[] = "INITDATA_FOREIGN_FETCH_ORIGIN:";
 
 const char kRegKeyPrefix[] = "REG:";
 const char kRegUserDataKeyPrefix[] = "REG_USER_DATA:";
@@ -158,6 +163,11 @@ std::string CreateUniqueOriginKey(const GURL& origin) {
                             origin.GetOrigin().spec().c_str());
 }
 
+std::string CreateForeignFetchOriginKey(const GURL& origin) {
+  return base::StringPrintf("%s%s", kForeignFetchOriginKey,
+                            origin.GetOrigin().spec().c_str());
+}
+
 std::string CreateResourceIdKey(const char* key_prefix, int64 resource_id) {
   return base::StringPrintf(
       "%s%s", key_prefix, base::Int64ToString(resource_id).c_str());
@@ -206,6 +216,12 @@ void PutRegistrationDataToBatch(
   data.set_has_fetch_handler(input.has_fetch_handler);
   data.set_last_update_check_time(input.last_update_check.ToInternalValue());
   data.set_resources_total_size_bytes(input.resources_total_size_bytes);
+  for (const GURL& url : input.foreign_fetch_scopes) {
+    DCHECK(ServiceWorkerUtils::ScopeMatches(input.scope, url))
+        << "Foreign fetch scope '" << url
+        << "' does not match service worker scope '" << input.scope << "'.";
+    data.add_foreign_fetch_scope(url.spec());
+  }
 
   std::string value;
   bool success = data.SerializeToString(&value);
@@ -243,6 +259,12 @@ void PutPurgeableResourceIdToBatch(int64 resource_id,
                                    leveldb::WriteBatch* batch) {
   // Value should be empty.
   batch->Put(CreateResourceIdKey(kPurgeableResIdKeyPrefix, resource_id), "");
+}
+
+void PutForeignFetchOriginToBatch(const GURL& origin,
+                                  leveldb::WriteBatch* batch) {
+  // Value should be empty.
+  batch->Put(CreateForeignFetchOriginKey(origin), "");
 }
 
 ServiceWorkerDatabase::Status ParseId(
@@ -305,6 +327,17 @@ ServiceWorkerDatabase::Status ParseRegistrationData(
   out->last_update_check =
       base::Time::FromInternalValue(data.last_update_check_time());
   out->resources_total_size_bytes = data.resources_total_size_bytes();
+  for (int i = 0; i < data.foreign_fetch_scope_size(); ++i) {
+    GURL sub_scope_url(data.foreign_fetch_scope(i));
+    if (!sub_scope_url.is_valid() ||
+        !ServiceWorkerUtils::ScopeMatches(scope_url, sub_scope_url)) {
+      DLOG(ERROR) << "Foreign fetch scope '" << data.foreign_fetch_scope(i)
+                  << "' is not valid or does not match Scope URL '" << scope_url
+                  << "'.";
+      return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+    }
+    out->foreign_fetch_scopes.push_back(sub_scope_url);
+  }
 
   return ServiceWorkerDatabase::STATUS_OK;
 }
@@ -563,6 +596,47 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
   return status;
 }
 
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::GetOriginsWithForeignFetchRegistrations(
+    std::set<GURL>* origins) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(origins->empty());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
+
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kForeignFetchOriginKey); itr->Valid(); itr->Next()) {
+    status = LevelDBStatusToStatus(itr->status());
+    if (status != STATUS_OK) {
+      HandleReadResult(FROM_HERE, status);
+      origins->clear();
+      return status;
+    }
+
+    std::string origin_str;
+    if (!RemovePrefix(itr->key().ToString(), kForeignFetchOriginKey,
+                      &origin_str))
+      break;
+
+    GURL origin(origin_str);
+    if (!origin.is_valid()) {
+      status = STATUS_ERROR_CORRUPTED;
+      HandleReadResult(FROM_HERE, status);
+      origins->clear();
+      return status;
+    }
+
+    origins->insert(origin);
+  }
+
+  HandleReadResult(FROM_HERE, status);
+  return status;
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     const GURL& origin,
     std::vector<RegistrationData>* registrations,
@@ -741,6 +815,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
 
   PutUniqueOriginToBatch(registration.scope.GetOrigin(), &batch);
 
+  if (!registration.foreign_fetch_scopes.empty())
+    PutForeignFetchOriginToBatch(registration.scope.GetOrigin(), &batch);
+
   DCHECK_EQ(AccumulateResourceSizeInBytes(resources),
             registration.resources_total_size_bytes)
       << "The total size in the registration must match the cumulative "
@@ -792,6 +869,31 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
                                       newly_purgeable_resources->end());
     DCHECK(base::STLSetIntersection<std::set<int64> >(
         pushed_resources, deleted_resources).empty());
+
+    // If old registration had foreign fetch scopes, but new registration
+    // doesn't, the origin might have to be removed from the list of origins
+    // with foreign fetch scopes.
+    // TODO(mek): Like the similar check in DeleteRegistration, ideally this
+    // could be done more efficiently.
+    if (!old_registration->foreign_fetch_scopes.empty() &&
+        registration.foreign_fetch_scopes.empty()) {
+      std::vector<RegistrationData> registrations;
+      status = GetRegistrationsForOrigin(registration.scope.GetOrigin(),
+                                         &registrations, nullptr);
+      if (status != STATUS_OK)
+        return status;
+      bool remaining_ff_scopes = false;
+      for (const auto& existing_reg : registrations) {
+        if (existing_reg.registration_id != registration.registration_id &&
+            !existing_reg.foreign_fetch_scopes.empty()) {
+          remaining_ff_scopes = true;
+          break;
+        }
+      }
+      if (!remaining_ff_scopes)
+        batch.Delete(
+            CreateForeignFetchOriginKey(registration.scope.GetOrigin()));
+    }
   }
 
   return WriteBatch(&batch);
@@ -876,6 +978,19 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
       registrations[0].registration_id == registration_id) {
     batch.Delete(CreateUniqueOriginKey(origin));
   }
+
+  // Remove |origin| from foreign fetch origins if a registration specified by
+  // |registration_id| is the only one with foreign fetch scopes for |origin|.
+  bool remaining_ff_scopes = false;
+  for (const auto& registration : registrations) {
+    if (registration.registration_id != registration_id &&
+        !registration.foreign_fetch_scopes.empty()) {
+      remaining_ff_scopes = true;
+      break;
+    }
+  }
+  if (!remaining_ff_scopes)
+    batch.Delete(CreateForeignFetchOriginKey(origin));
 
   // Delete a registration specified by |registration_id|.
   batch.Delete(CreateRegistrationKey(registration_id, origin));
@@ -1083,6 +1198,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigins(
 
     // Delete from the unique origin list.
     batch.Delete(CreateUniqueOriginKey(origin));
+
+    // Delete from the foreign fetch origin list.
+    batch.Delete(CreateForeignFetchOriginKey(origin));
 
     std::vector<RegistrationData> registrations;
     status = GetRegistrationsForOrigin(origin, &registrations, nullptr);

@@ -407,6 +407,7 @@ void ServiceWorkerStorage::StoreRegistration(
   data.version_id = version->version_id();
   data.last_update_check = registration->last_update_check();
   data.is_active = (version == registration->active_version());
+  data.foreign_fetch_scopes = version->foreign_fetch_scopes();
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -685,6 +686,12 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
                      callback)));
 }
 
+bool ServiceWorkerStorage::OriginHasForeignFetchRegistrations(
+    const GURL& origin) {
+  return !IsDisabled() &&
+         foreign_fetch_origins_.find(origin) != foreign_fetch_origins_.end();
+}
+
 void ServiceWorkerStorage::DeleteAndStartOver(const StatusCallback& callback) {
   Disable();
 
@@ -854,6 +861,7 @@ void ServiceWorkerStorage::DidReadInitialData(
     registered_origins_.swap(data->origins);
     disk_cache_migration_needed_ = data->disk_cache_migration_needed;
     old_disk_cache_deletion_needed_ = data->old_disk_cache_deletion_needed;
+    foreign_fetch_origins_.swap(data->foreign_fetch_origins);
     state_ = INITIALIZED;
   } else {
     DVLOG(2) << "Failed to initialize: "
@@ -1090,6 +1098,8 @@ void ServiceWorkerStorage::DidStoreRegistration(
     return;
   }
   registered_origins_.insert(origin);
+  if (!new_version.foreign_fetch_scopes.empty())
+    foreign_fetch_origins_.insert(origin);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(new_version.registration_id);
@@ -1125,7 +1135,7 @@ void ServiceWorkerStorage::DidUpdateToActiveState(
 
 void ServiceWorkerStorage::DidDeleteRegistration(
     const DidDeleteRegistrationParams& params,
-    bool origin_is_deletable,
+    OriginState origin_state,
     const ServiceWorkerDatabase::RegistrationData& deleted_version,
     const std::vector<int64>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
@@ -1143,8 +1153,11 @@ void ServiceWorkerStorage::DidDeleteRegistration(
         storage::StorageType::kStorageTypeTemporary,
         -deleted_version.resources_total_size_bytes);
   }
-  if (origin_is_deletable)
+  if (origin_state == OriginState::DELETE_FROM_ALL)
     registered_origins_.erase(params.origin);
+  if (origin_state == OriginState::DELETE_FROM_ALL ||
+      origin_state == OriginState::DELETE_FROM_FOREIGN_FETCH)
+    foreign_fetch_origins_.erase(params.origin);
   params.callback.Run(SERVICE_WORKER_OK);
 
   if (!context_->GetLiveVersion(deleted_version.version_id))
@@ -1233,6 +1246,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     version->SetStatus(data.is_active ?
         ServiceWorkerVersion::ACTIVATED : ServiceWorkerVersion::INSTALLED);
     version->script_cache_map()->SetResources(resources);
+    version->set_foreign_fetch_scopes(data.foreign_fetch_scopes);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)
@@ -1576,6 +1590,14 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
   }
 
   status = database->GetOriginsWithRegistrations(&data->origins);
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    original_task_runner->PostTask(
+        FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
+    return;
+  }
+
+  status = database->GetOriginsWithForeignFetchRegistrations(
+      &data->foreign_fetch_origins);
   original_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
 }
@@ -1603,9 +1625,8 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
       registration_id, origin, &deleted_version, &newly_purgeable_resources);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(
-            callback, false, deleted_version, std::vector<int64>(), status));
+        FROM_HERE, base::Bind(callback, OriginState::KEEP_ALL, deleted_version,
+                              std::vector<int64>(), status));
     return;
   }
 
@@ -1615,19 +1636,26 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
   status = database->GetRegistrationsForOrigin(origin, &registrations, nullptr);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(
-            callback, false, deleted_version, std::vector<int64>(), status));
+        FROM_HERE, base::Bind(callback, OriginState::KEEP_ALL, deleted_version,
+                              std::vector<int64>(), status));
     return;
   }
 
-  bool deletable = registrations.empty();
-  original_task_runner->PostTask(FROM_HERE,
-                                 base::Bind(callback,
-                                            deletable,
-                                            deleted_version,
-                                            newly_purgeable_resources,
-                                            status));
+  OriginState origin_state = registrations.empty()
+                                 ? OriginState::DELETE_FROM_ALL
+                                 : OriginState::DELETE_FROM_FOREIGN_FETCH;
+
+  // TODO(mek): Add convenient method to ServiceWorkerDatabase to check the
+  // foreign fetch scope origin list.
+  for (const auto& registration : registrations) {
+    if (!registration.foreign_fetch_scopes.empty()) {
+      origin_state = OriginState::KEEP_ALL;
+      break;
+    }
+  }
+  original_task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, origin_state, deleted_version,
+                            newly_purgeable_resources, status));
 }
 
 void ServiceWorkerStorage::WriteRegistrationInDB(

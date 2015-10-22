@@ -63,6 +63,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.last_update_check, actual.last_update_check);
   EXPECT_EQ(expected.resources_total_size_bytes,
             actual.resources_total_size_bytes);
+  EXPECT_EQ(expected.foreign_fetch_scopes, actual.foreign_fetch_scopes);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -659,6 +660,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
   data.resources_total_size_bytes = 10939 + 200;
+  data.foreign_fetch_scopes.push_back(URL(origin, "/foo/bar"));
 
   std::vector<Resource> resources;
   resources.push_back(CreateResource(1, URL(origin, "/resource1"), 10939));
@@ -795,6 +797,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
   data.resources_total_size_bytes = 10 + 11;
+  data.foreign_fetch_scopes.push_back(URL(origin, "/foo"));
 
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, URL(origin, "/resource1"), 10));
@@ -823,6 +826,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   RegistrationData updated_data = data;
   updated_data.version_id = data.version_id + 1;
   updated_data.resources_total_size_bytes = 12 + 13;
+  updated_data.foreign_fetch_scopes.clear();
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 12));
   resources2.push_back(CreateResource(4, URL(origin, "/resource4"), 13));
@@ -1465,6 +1469,7 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   data1.script = URL(origin1, "/script1.js");
   data1.version_id = 100;
   data1.resources_total_size_bytes = 2013 + 512;
+  data1.foreign_fetch_scopes.push_back(URL(origin1, "/foo/ff"));
 
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, URL(origin1, "/resource1"), 2013));
@@ -1512,6 +1517,7 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   data3.script = URL(origin2, "/script3.js");
   data3.version_id = 102;
   data3.resources_total_size_bytes = 6 + 7;
+  data3.foreign_fetch_scopes.push_back(URL(origin2, "/hoge/ff"));
 
   std::vector<Resource> resources3;
   resources3.push_back(CreateResource(5, URL(origin2, "/resource5"), 6));
@@ -1539,6 +1545,13 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   std::set<GURL> unique_origins;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetOriginsWithRegistrations(&unique_origins));
+  EXPECT_EQ(1u, unique_origins.size());
+  EXPECT_TRUE(ContainsKey(unique_origins, origin2));
+
+  // |origin1| should be removed from the foreign fetch origin list.
+  unique_origins.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithForeignFetchRegistrations(&unique_origins));
   EXPECT_EQ(1u, unique_origins.size());
   EXPECT_TRUE(ContainsKey(unique_origins, origin2));
 
@@ -1612,6 +1625,142 @@ TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->DestroyDatabase());
   ASSERT_FALSE(base::DirectoryExists(database_dir.path()));
+}
+
+TEST(ServiceWorkerDatabaseTest, GetOriginsWithForeignFetchRegistrations) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  std::set<GURL> origins;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithForeignFetchRegistrations(&origins));
+  EXPECT_TRUE(origins.empty());
+
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64> newly_purgeable_resources;
+
+  GURL origin1("http://example.com");
+  RegistrationData data1;
+  data1.registration_id = 123;
+  data1.scope = URL(origin1, "/foo");
+  data1.script = URL(origin1, "/script1.js");
+  data1.version_id = 456;
+  data1.resources_total_size_bytes = 100;
+  data1.foreign_fetch_scopes.push_back(URL(origin1, "/foo/bar"));
+  std::vector<Resource> resources1;
+  resources1.push_back(CreateResource(1, data1.script, 100));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data1, resources1, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  GURL origin2("https://www.example.com");
+  RegistrationData data2;
+  data2.registration_id = 234;
+  data2.scope = URL(origin2, "/bar");
+  data2.script = URL(origin2, "/script2.js");
+  data2.version_id = 567;
+  data2.resources_total_size_bytes = 200;
+  std::vector<Resource> resources2;
+  resources2.push_back(CreateResource(2, data2.script, 200));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data2, resources2, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  GURL origin3("https://example.org");
+  RegistrationData data3;
+  data3.registration_id = 345;
+  data3.scope = URL(origin3, "/hoge");
+  data3.script = URL(origin3, "/script3.js");
+  data3.version_id = 678;
+  data3.resources_total_size_bytes = 300;
+  data3.foreign_fetch_scopes.push_back(URL(origin3, "/hoge/foo"));
+  std::vector<Resource> resources3;
+  resources3.push_back(CreateResource(3, data3.script, 300));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data3, resources3, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // |origin3| has three registrations.
+  RegistrationData data4;
+  data4.registration_id = 456;
+  data4.scope = URL(origin3, "/fuga");
+  data4.script = URL(origin3, "/script4.js");
+  data4.version_id = 789;
+  data4.resources_total_size_bytes = 400;
+  data4.foreign_fetch_scopes.push_back(URL(origin3, "/fuga/bar"));
+  std::vector<Resource> resources4;
+  resources4.push_back(CreateResource(4, data4.script, 400));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data4, resources4, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  RegistrationData data5;
+  data5.registration_id = 567;
+  data5.scope = URL(origin3, "/bla");
+  data5.script = URL(origin3, "/script5.js");
+  data5.version_id = 890;
+  data5.resources_total_size_bytes = 500;
+  std::vector<Resource> resources5;
+  resources5.push_back(CreateResource(5, data5.script, 500));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data5, resources5, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  origins.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithForeignFetchRegistrations(&origins));
+  EXPECT_EQ(2U, origins.size());
+  EXPECT_TRUE(ContainsKey(origins, origin1));
+  EXPECT_TRUE(ContainsKey(origins, origin3));
+
+  // |origin3| has another registration, so should not remove it from the
+  // foreign fetch origin list.
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteRegistration(data4.registration_id, origin3,
+                                         &deleted_version,
+                                         &newly_purgeable_resources));
+  EXPECT_EQ(data4.registration_id, deleted_version.registration_id);
+
+  origins.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithForeignFetchRegistrations(&origins));
+  EXPECT_EQ(2U, origins.size());
+  EXPECT_TRUE(ContainsKey(origins, origin1));
+  EXPECT_TRUE(ContainsKey(origins, origin3));
+
+  // |origin3| should be removed from the foreign fetch origin list, since its
+  // only remaining registration doesn't have foreign fetch scopes.
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteRegistration(data3.registration_id, origin3,
+                                         &deleted_version,
+                                         &newly_purgeable_resources));
+  EXPECT_EQ(data3.registration_id, deleted_version.registration_id);
+
+  origins.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithForeignFetchRegistrations(&origins));
+  EXPECT_EQ(1U, origins.size());
+  EXPECT_TRUE(ContainsKey(origins, origin1));
+
+  // |origin1| should be removed from the foreign fetch origin list, since we
+  // replace its registration with one without scopes.
+  RegistrationData updated_data1 = data1;
+  updated_data1.version_id++;
+  updated_data1.resources_total_size_bytes = 12 + 13;
+  updated_data1.foreign_fetch_scopes.clear();
+  std::vector<Resource> updated_resources1;
+  updated_resources1.push_back(
+      CreateResource(13, URL(origin1, "/resource3"), 12));
+  updated_resources1.push_back(
+      CreateResource(14, URL(origin1, "/resource4"), 13));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(updated_data1, updated_resources1,
+                                        &deleted_version,
+                                        &newly_purgeable_resources));
+
+  origins.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithForeignFetchRegistrations(&origins));
+  EXPECT_EQ(0U, origins.size());
 }
 
 }  // namespace content

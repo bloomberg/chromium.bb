@@ -498,6 +498,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const int64 kResource2Size = 51;
   const int64 kRegistrationId = 0;
   const int64 kVersionId = 0;
+  const GURL kForeignFetchScope("http://www.test.not/scope/ff/");
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
 
@@ -532,6 +533,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
           live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version->script_cache_map()->SetResources(resources);
+  live_version->set_foreign_fetch_scopes(
+      std::vector<GURL>(1, kForeignFetchScope));
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -618,6 +621,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(kYesterday, found_registration->last_update_check());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED,
             found_registration->waiting_version()->status());
+  EXPECT_EQ(
+      1u, found_registration->waiting_version()->foreign_fetch_scopes().size());
+  EXPECT_EQ(kForeignFetchScope,
+            found_registration->waiting_version()->foreign_fetch_scopes()[0]);
 
   // Update to active and update the last check time.
   scoped_refptr<ServiceWorkerVersion> temp_version =
@@ -1471,6 +1478,129 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration2, found_registration);
+}
+
+class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTest {
+ public:
+  void SetUp() override {
+    ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
+    ServiceWorkerStorageTest::SetUp();
+  }
+
+  base::FilePath GetUserDataDirectory() override {
+    return user_data_directory_.path();
+  }
+
+ protected:
+  base::ScopedTempDir user_data_directory_;
+};
+
+TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
+  LazyInitialize();
+
+  // Registration 1 for http://www.example.com
+  const GURL kScope1("http://www.example.com/scope/");
+  const GURL kScript1("http://www.example.com/script1.js");
+  const int64 kRegistrationId1 = 1;
+  const int64 kVersionId1 = 1;
+  scoped_refptr<ServiceWorkerRegistration> live_registration1 =
+      new ServiceWorkerRegistration(kScope1, kRegistrationId1, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version1 = new ServiceWorkerVersion(
+      live_registration1.get(), kScript1, kVersionId1, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records1;
+  records1.push_back(ServiceWorkerDatabase::ResourceRecord(
+      1, live_version1->script_url(), 100));
+  live_version1->script_cache_map()->SetResources(records1);
+  live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_version1->set_foreign_fetch_scopes(std::vector<GURL>(1, kScope1));
+  live_registration1->SetWaitingVersion(live_version1);
+
+  // Registration 2 for http://www.example.com
+  const GURL kScope2("http://www.example.com/scope/foo");
+  const GURL kScript2("http://www.example.com/script2.js");
+  const int64 kRegistrationId2 = 2;
+  const int64 kVersionId2 = 2;
+  scoped_refptr<ServiceWorkerRegistration> live_registration2 =
+      new ServiceWorkerRegistration(kScope2, kRegistrationId2, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version2 = new ServiceWorkerVersion(
+      live_registration2.get(), kScript2, kVersionId2, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records2;
+  records2.push_back(ServiceWorkerDatabase::ResourceRecord(
+      2, live_version2->script_url(), 100));
+  live_version2->script_cache_map()->SetResources(records2);
+  live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_version2->set_foreign_fetch_scopes(std::vector<GURL>(1, kScope2));
+  live_registration2->SetWaitingVersion(live_version2);
+
+  // Registration for http://www.test.com
+  const GURL kScope3("http://www.test.com/scope/foobar");
+  const GURL kScript3("http://www.test.com/script3.js");
+  const int64 kRegistrationId3 = 3;
+  const int64 kVersionId3 = 3;
+  scoped_refptr<ServiceWorkerRegistration> live_registration3 =
+      new ServiceWorkerRegistration(kScope3, kRegistrationId3, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version3 = new ServiceWorkerVersion(
+      live_registration3.get(), kScript3, kVersionId3, context_ptr_);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records3;
+  records3.push_back(ServiceWorkerDatabase::ResourceRecord(
+      3, live_version3->script_url(), 100));
+  live_version3->script_cache_map()->SetResources(records3);
+  live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_registration3->SetWaitingVersion(live_version3);
+
+  // Neither origin should have registrations before they are stored.
+  const GURL kOrigin1 = kScope1.GetOrigin();
+  const GURL kOrigin2 = kScope3.GetOrigin();
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
+
+  // Store all registrations.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            StoreRegistration(live_registration1, live_version1));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            StoreRegistration(live_registration2, live_version2));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            StoreRegistration(live_registration3, live_version3));
+
+  // Now first origin should have foreign fetch registrations, second doesn't.
+  EXPECT_TRUE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
+
+  // Remove one registration at first origin.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            DeleteRegistration(kRegistrationId1, kScope1.GetOrigin()));
+
+  // First origin should still have a registration left.
+  EXPECT_TRUE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
+
+  // Simulate browser shutdown and restart.
+  live_registration1 = nullptr;
+  live_version1 = nullptr;
+  live_registration2 = nullptr;
+  live_version2 = nullptr;
+  live_registration3 = nullptr;
+  live_version3 = nullptr;
+  context_.reset();
+  scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
+      new MockServiceWorkerDatabaseTaskManager(
+          base::ThreadTaskRunnerHandle::Get()));
+  context_.reset(new ServiceWorkerContextCore(
+      GetUserDataDirectory(), database_task_manager.Pass(),
+      base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr, nullptr, nullptr));
+  LazyInitialize();
+
+  // First origin should still have a registration left.
+  EXPECT_TRUE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
+
+  // Remove other registration at first origin.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            DeleteRegistration(kRegistrationId2, kScope2.GetOrigin()));
+
+  // No foreign fetch registrations remain.
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin1));
+  EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
 }
 
 }  // namespace content
