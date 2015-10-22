@@ -442,7 +442,7 @@ class Rietveld(object):
               ):
             # Usually internal GAE flakiness.
             raise
-        except ssl.SSLError, e:
+        except socket.error, e:
           if retry >= (self._maxtries - 1):
             raise
           if not 'timed out' in str(e):

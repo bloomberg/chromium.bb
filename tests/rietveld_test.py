@@ -7,6 +7,7 @@
 
 import logging
 import os
+import socket
 import ssl
 import sys
 import time
@@ -434,21 +435,19 @@ class ProbeException(Exception):
     self.value = value
 
 
-def MockSend(request_path, payload=None,
-             content_type="application/octet-stream",
-             timeout=None,
-             extra_headers=None,
-             **kwargs):
+def MockSend(*args, **kwargs):
   """Mock upload.py's Send() to probe the timeout value"""
-  raise ProbeException(timeout)
+  raise ProbeException(kwargs['timeout'])
 
-def MockSendTimeout(request_path, payload=None,
-                    content_type="application/octet-stream",
-                    timeout=None,
-                    extra_headers=None,
-                    **kwargs):
+
+def MockSendTimeout(*args, **kwargs):
   """Mock upload.py's Send() to raise SSLError"""
   raise ssl.SSLError('The read operation timed out')
+
+
+def MockSocketConnectTimeout(*args, **kwargs):
+  """Mock upload.py's Send() to raise socket.timeout"""
+  raise socket.timeout('timed out')
 
 
 class DefaultTimeoutTest(auto_stub.TestCase):
@@ -480,8 +479,14 @@ class DefaultTimeoutTest(auto_stub.TestCase):
   def test_ssl_timeout_post(self):
     self.mock(self.rietveld.rpc_server, 'Send', MockSendTimeout)
     self.mock(time, 'sleep', self.MockSleep)
-    self.sleep_time = 0
     with self.assertRaises(ssl.SSLError):
+      self.rietveld.post('/api/1234', [('key', 'data')])
+    self.assertNotEqual(self.sleep_time, 0)
+
+  def test_socket_connect_timeout_post(self):
+    self.mock(self.rietveld.rpc_server, 'Send', MockSocketConnectTimeout)
+    self.mock(time, 'sleep', self.MockSleep)
+    with self.assertRaises(socket.timeout):
       self.rietveld.post('/api/1234', [('key', 'data')])
     self.assertNotEqual(self.sleep_time, 0)
 
