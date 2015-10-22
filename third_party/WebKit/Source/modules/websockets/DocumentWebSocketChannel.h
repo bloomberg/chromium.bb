@@ -69,9 +69,9 @@ public:
     // In the usual case, they are set automatically and you don't have to
     // pass it.
     // Specify handle explicitly only in tests.
-    static DocumentWebSocketChannel* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
+    static DocumentWebSocketChannel* create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
     {
-        return new DocumentWebSocketChannel(context, client, sourceURL, lineNumber, handle);
+        return new DocumentWebSocketChannel(document, client, sourceURL, lineNumber, handle);
     }
     ~DocumentWebSocketChannel() override;
 
@@ -126,14 +126,14 @@ private:
 
     class BlobLoader;
 
-    DocumentWebSocketChannel(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
+    DocumentWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
     void sendInternal(WebSocketHandle::MessageType, const char* data, size_t totalSize, uint64_t* consumedBufferedAmount);
     void processSendQueue();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
     void abortAsyncOperations();
     void handleDidClose(bool wasClean, unsigned short code, const String& reason);
-    Document* document(); // can be called only when m_identifier > 0.
+    Document* document();
 
     // WebSocketHandleClient functions.
     void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) override;
