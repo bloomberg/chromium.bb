@@ -45,8 +45,9 @@ bool StreamTexture::Create(
     texture_manager->SetLevelInfo(texture, GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
                                   size.width(), size.height(), 1, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, gfx::Rect(size));
-    texture_manager->SetLevelImage(
-        texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get());
+    texture_manager->SetLevelImage(texture, GL_TEXTURE_EXTERNAL_OES, 0,
+                                   gl_image.get(),
+                                   gpu::gles2::Texture::UNBOUND);
     return true;
   }
 
@@ -63,6 +64,7 @@ StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
       owner_stub_(owner_stub),
       route_id_(route_id),
       has_listener_(false),
+      texture_id_(texture_id),
       weak_factory_(this) {
   owner_stub->AddDestructionObserver(this);
   memset(current_matrix_, 0, sizeof(current_matrix_));
@@ -92,9 +94,21 @@ void StreamTexture::Destroy(bool have_context) {
   NOTREACHED();
 }
 
-void StreamTexture::WillUseTexImage() {
+bool StreamTexture::CopyTexImage(unsigned target) {
+  if (target != GL_TEXTURE_EXTERNAL_OES)
+    return false;
+
   if (!owner_stub_ || !surface_texture_.get())
-    return;
+    return true;
+
+  GLint texture_id;
+  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
+  DCHECK(texture_id);
+
+  // The following code only works if we're being asked to copy into
+  // |texture_id_|. Copying into a different texture is not supported.
+  if (static_cast<unsigned>(texture_id) != texture_id_)
+    return false;
 
   if (has_pending_frame_) {
     scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
@@ -130,6 +144,18 @@ void StreamTexture::WillUseTexImage() {
     }
   }
 
+  TextureManager* texture_manager =
+      owner_stub_->decoder()->GetContextGroup()->texture_manager();
+  gpu::gles2::Texture* texture =
+      texture_manager->GetTextureForServiceId(texture_id_);
+  if (texture) {
+    // By setting image state to UNBOUND instead of COPIED we ensure that
+    // CopyTexImage() is called each time the surface texture is used for
+    // drawing.
+    texture->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
+                           gpu::gles2::Texture::UNBOUND);
+  }
+
   if (has_listener_ && has_valid_frame_) {
     float mtx[16];
     surface_texture_->GetTransformMatrix(mtx);
@@ -144,6 +170,8 @@ void StreamTexture::WillUseTexImage() {
           new GpuStreamTextureMsg_MatrixChanged(route_id_, params));
     }
   }
+
+  return true;
 }
 
 void StreamTexture::OnFrameAvailable() {

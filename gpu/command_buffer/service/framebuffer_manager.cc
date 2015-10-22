@@ -87,8 +87,6 @@ class RenderbufferAttachment
     renderbuffer_->AddToSignature(signature);
   }
 
-  void OnWillRenderTo() const override {}
-  void OnDidRenderTo() const override {}
   bool FormsFeedbackLoop(TextureRef* /* texture */,
                          GLint /*level */) const override {
     return false;
@@ -179,7 +177,6 @@ class TextureAttachment
 
   void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
     texture_ref_->texture()->DetachFromFramebuffer();
-    framebuffer->OnTextureRefDetached(texture_ref_.get());
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
@@ -214,14 +211,6 @@ class TextureAttachment
         texture_ref_.get(), target_, level_, signature);
   }
 
-  void OnWillRenderTo() const override {
-    texture_ref_->texture()->OnWillModifyPixels();
-  }
-
-  void OnDidRenderTo() const override {
-    texture_ref_->texture()->OnDidModifyPixels();
-  }
-
   bool FormsFeedbackLoop(TextureRef* texture, GLint level) const override {
     return texture == texture_ref_.get() && level == level_;
   }
@@ -237,10 +226,6 @@ class TextureAttachment
 
   DISALLOW_COPY_AND_ASSIGN(TextureAttachment);
 };
-
-FramebufferManager::TextureDetachObserver::TextureDetachObserver() {}
-
-FramebufferManager::TextureDetachObserver::~TextureDetachObserver() {}
 
 FramebufferManager::FramebufferManager(
     uint32 max_draw_buffers,
@@ -713,28 +698,6 @@ const Framebuffer::Attachment* Framebuffer::GetReadBufferAttachment() const {
   return GetAttachment(read_buffer_);
 }
 
-void Framebuffer::OnTextureRefDetached(TextureRef* texture) {
-  manager_->OnTextureRefDetached(texture);
-}
-
-void Framebuffer::OnWillRenderTo(GLenum attachment) const {
-  for (AttachmentMap::const_iterator it = attachments_.begin();
-       it != attachments_.end(); ++it) {
-    if (attachment == 0 || attachment == it->first) {
-      it->second->OnWillRenderTo();
-    }
-  }
-}
-
-void Framebuffer::OnDidRenderTo(GLenum attachment) const {
-  for (AttachmentMap::const_iterator it = attachments_.begin();
-       it != attachments_.end(); ++it) {
-    if (attachment == 0 || attachment == it->first) {
-      it->second->OnDidRenderTo();
-    }
-  }
-}
-
 bool FramebufferManager::GetClientId(
     GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
@@ -770,16 +733,6 @@ bool FramebufferManager::IsComplete(
   DCHECK(framebuffer);
   return framebuffer->framebuffer_complete_state_count_id() ==
       framebuffer_state_change_count_;
-}
-
-void FramebufferManager::OnTextureRefDetached(TextureRef* texture) {
-  for (TextureDetachObserverVector::iterator it =
-           texture_detach_observers_.begin();
-       it != texture_detach_observers_.end();
-       ++it) {
-    TextureDetachObserver* observer = *it;
-    observer->OnTextureRefDetachedFromFramebuffer(texture);
-  }
 }
 
 }  // namespace gles2

@@ -7,16 +7,21 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
+#include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gl/gl_image_memory.h"
+
+namespace base {
+class SharedMemory;
+}
 
 namespace gfx {
 
 class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
  public:
-  GLImageSharedMemory(const gfx::Size& size, unsigned internalformat);
+  GLImageSharedMemory(const Size& size, unsigned internalformat);
 
   bool Initialize(const base::SharedMemoryHandle& handle,
-                  gfx::GenericSharedMemoryId shared_memory_id,
+                  GenericSharedMemoryId shared_memory_id,
                   BufferFormat format);
 
   // Overridden from GLImage:

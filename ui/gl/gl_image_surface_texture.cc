@@ -9,9 +9,8 @@
 
 namespace gfx {
 
-GLImageSurfaceTexture::GLImageSurfaceTexture(const gfx::Size& size)
-    : size_(size), texture_id_(0) {
-}
+GLImageSurfaceTexture::GLImageSurfaceTexture(const Size& size)
+    : size_(size), texture_id_(0) {}
 
 GLImageSurfaceTexture::~GLImageSurfaceTexture() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -32,7 +31,9 @@ void GLImageSurfaceTexture::Destroy(bool have_context) {
   texture_id_ = 0;
 }
 
-gfx::Size GLImageSurfaceTexture::GetSize() { return size_; }
+Size GLImageSurfaceTexture::GetSize() {
+  return size_;
+}
 
 unsigned GLImageSurfaceTexture::GetInternalFormat() { return GL_RGBA; }
 
@@ -78,13 +79,17 @@ bool GLImageSurfaceTexture::BindTexImage(unsigned target) {
   return true;
 }
 
+bool GLImageSurfaceTexture::CopyTexImage(unsigned target) {
+  return false;
+}
+
 bool GLImageSurfaceTexture::CopyTexSubImage(unsigned target,
                                             const Point& offset,
                                             const Rect& rect) {
   return false;
 }
 
-bool GLImageSurfaceTexture::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+bool GLImageSurfaceTexture::ScheduleOverlayPlane(AcceleratedWidget widget,
                                                  int z_order,
                                                  OverlayTransform transform,
                                                  const Rect& bounds_rect,

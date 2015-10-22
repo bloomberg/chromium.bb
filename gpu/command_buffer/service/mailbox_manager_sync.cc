@@ -273,7 +273,7 @@ void MailboxManagerSync::UpdateDefinitionLocked(
   if (SkipTextureWorkarounds(texture))
     return;
 
-  gfx::GLImage* gl_image = texture->GetLevelImage(texture->target(), 0);
+  gfx::GLImage* image = texture->GetLevelImage(texture->target(), 0);
   TextureGroup* group = group_ref->group.get();
   const TextureDefinition& definition = group->GetDefinition();
   scoped_refptr<NativeImageBuffer> image_buffer = definition.image();
@@ -287,14 +287,14 @@ void MailboxManagerSync::UpdateDefinitionLocked(
   if (definition.Matches(texture))
     return;
 
-  DCHECK_IMPLIES(gl_image, image_buffer.get());
-  if (gl_image && !image_buffer->IsClient(gl_image)) {
+  DCHECK_IMPLIES(image, image_buffer.get());
+  if (image && !image_buffer->IsClient(image)) {
     LOG(ERROR) << "MailboxSync: Incompatible attachment";
     return;
   }
 
   group->SetDefinition(TextureDefinition(texture, ++group_ref->version,
-                                         gl_image ? image_buffer : NULL));
+                                         image ? image_buffer : NULL));
 }
 
 void MailboxManagerSync::PushTextureUpdates(const SyncToken& token) {

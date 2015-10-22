@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_IMAGE_H_
 #define UI_GL_GL_IMAGE_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,8 +24,8 @@ class ProcessMemoryDump;
 
 namespace gfx {
 
-// Encapsulates an image that can be bound to a texture, hiding platform
-// specific management.
+// Encapsulates an image that can be bound and/or copied to a texture, hiding
+// platform specific management.
 class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
  public:
   GLImage() {}
@@ -32,36 +34,32 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   virtual void Destroy(bool have_context) = 0;
 
   // Get the size of the image.
-  virtual gfx::Size GetSize() = 0;
+  virtual Size GetSize() = 0;
 
   // Get the internal format of the image.
   virtual unsigned GetInternalFormat() = 0;
 
-  // Bind image to texture currently bound to |target|.
+  // Bind image to texture currently bound to |target|. Returns true on success.
+  // It is valid for an implementation to always return false.
   virtual bool BindTexImage(unsigned target) = 0;
 
   // Release image from texture currently bound to |target|.
   virtual void ReleaseTexImage(unsigned target) = 0;
 
+  // Define texture currently bound to |target| by copying image into it.
+  // Returns true on success. It is valid for an implementation to always
+  // return false.
+  virtual bool CopyTexImage(unsigned target) = 0;
+
   // Copy |rect| of image to |offset| in texture currently bound to |target|.
+  // Returns true on success. It is valid for an implementation to always
+  // return false.
   virtual bool CopyTexSubImage(unsigned target,
                                const Point& offset,
                                const Rect& rect) = 0;
 
-  // Called before the texture is used for drawing.
-  virtual void WillUseTexImage() = 0;
-
-  // Called after the texture has been used for drawing.
-  virtual void DidUseTexImage() = 0;
-
-  // Called before the texture image data will be modified.
-  virtual void WillModifyTexImage() = 0;
-
-  // Called after the texture image data has been modified.
-  virtual void DidModifyTexImage() = 0;
-
   // Schedule image as an overlay plane to be shown at swap time for |widget|.
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+  virtual bool ScheduleOverlayPlane(AcceleratedWidget widget,
                                     int z_order,
                                     OverlayTransform transform,
                                     const Rect& bounds_rect,

@@ -38,13 +38,10 @@ class StreamTexture : public gfx::GLImage,
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
+  bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
                        const gfx::Point& offset,
                        const gfx::Rect& rect) override;
-  void WillUseTexImage() override;
-  void DidUseTexImage() override {}
-  void WillModifyTexImage() override {}
-  void DidModifyTexImage() override {}
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             gfx::OverlayTransform transform,
@@ -85,6 +82,7 @@ class StreamTexture : public gfx::GLImage,
   GpuCommandBufferStub* owner_stub_;
   int32 route_id_;
   bool has_listener_;
+  uint32 texture_id_;
 
   base::WeakPtrFactory<StreamTexture> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);
