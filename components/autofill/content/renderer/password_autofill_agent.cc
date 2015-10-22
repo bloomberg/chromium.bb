@@ -185,6 +185,12 @@ bool FindFormInputElement(
     if (input_element.isPasswordField() != is_password_field)
       continue;
 
+    // Avoid autofilling invisible password fields.
+    if (input_element.isPasswordField() &&
+        !form_util::IsWebNodeVisible(input_element)) {
+      continue;
+    }
+
     // For change password form with ambiguous or empty names keep only the
     // first password field having |autocomplete='current-password'| attribute
     // set. Also make sure we avoid keeping password fields having

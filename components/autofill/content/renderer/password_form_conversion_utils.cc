@@ -364,6 +364,7 @@ bool GetPasswordForm(const SyntheticForm& form,
     // was made readonly by JavaScript before submission. We can do this by
     // checking whether password element was updated not from JavaScript.
     if (input_element->isPasswordField() &&
+        form_util::IsWebNodeVisible(*input_element) &&
         (!input_element->isReadOnly() ||
          (nonscript_modified_values &&
           nonscript_modified_values->find(*input_element) !=
