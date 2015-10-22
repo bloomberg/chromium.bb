@@ -132,6 +132,20 @@ inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {
 // This should not be used in production code - call ToString() instead.
 void PrintTo(const Point& point, ::std::ostream* os);
 
+// Helper methods to scale a gfx::Point to a new gfx::Point.
+GFX_EXPORT Point ScaleToCeiledPoint(const Point& point,
+                                    float x_scale,
+                                    float y_scale);
+GFX_EXPORT Point ScaleToCeiledPoint(const Point& point, float x_scale);
+GFX_EXPORT Point ScaleToFlooredPoint(const Point& point,
+                                     float x_scale,
+                                     float y_scale);
+GFX_EXPORT Point ScaleToFlooredPoint(const Point& point, float x_scale);
+GFX_EXPORT Point ScaleToRoundedPoint(const Point& point,
+                                     float x_scale,
+                                     float y_scale);
+GFX_EXPORT Point ScaleToRoundedPoint(const Point& point, float x_scale);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_GEOMETRY_POINT_H_

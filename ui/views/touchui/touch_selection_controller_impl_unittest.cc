@@ -608,7 +608,7 @@ class TestTouchEditable : public ui::TouchEditable {
     bounds_ = bounds;
   }
 
-  void set_cursor_rect(const gfx::Rect& cursor_rect) {
+  void set_cursor_rect(const gfx::RectF& cursor_rect) {
     cursor_bound_.SetEdge(cursor_rect.origin(), cursor_rect.bottom_left());
     cursor_bound_.set_type(ui::SelectionBound::Type::CENTER);
   }
@@ -687,31 +687,35 @@ TEST_F(TouchSelectionControllerImplTest,
 
   // Put the cursor completely inside the client bounds. Handle should be
   // visible.
-  touch_editable.set_cursor_rect(gfx::Rect(2, 0, 1, 20));
+  touch_editable.set_cursor_rect(gfx::RectF(2.f, 0.f, 1.f, 20.f));
   touch_selection_controller->SelectionChanged();
   EXPECT_TRUE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
 
   // Move the cursor up such that |kBarMinHeight| pixels are still in the client
   // bounds. Handle should still be visible.
-  touch_editable.set_cursor_rect(gfx::Rect(2, kBarMinHeight - 20, 1, 20));
+  touch_editable.set_cursor_rect(
+      gfx::RectF(2.f, kBarMinHeight - 20.f, 1.f, 20.f));
   touch_selection_controller->SelectionChanged();
   EXPECT_TRUE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
 
   // Move the cursor up such that less than |kBarMinHeight| pixels are in the
   // client bounds. Handle should be hidden.
-  touch_editable.set_cursor_rect(gfx::Rect(2, kBarMinHeight - 20 - 1, 1, 20));
+  touch_editable.set_cursor_rect(
+      gfx::RectF(2.f, kBarMinHeight - 20.f - 1.f, 1.f, 20.f));
   touch_selection_controller->SelectionChanged();
   EXPECT_FALSE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
 
   // Move the Cursor down such that |kBarBottomAllowance| pixels are out of the
   // client bounds. Handle should be visible.
-  touch_editable.set_cursor_rect(gfx::Rect(2, kBarBottomAllowance, 1, 20));
+  touch_editable.set_cursor_rect(
+      gfx::RectF(2.f, kBarBottomAllowance, 1.f, 20.f));
   touch_selection_controller->SelectionChanged();
   EXPECT_TRUE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
 
   // Move the cursor down such that more than |kBarBottomAllowance| pixels are
   // out of the client bounds. Handle should be hidden.
-  touch_editable.set_cursor_rect(gfx::Rect(2, kBarBottomAllowance + 1, 1, 20));
+  touch_editable.set_cursor_rect(
+      gfx::RectF(2.f, kBarBottomAllowance + 1.f, 1.f, 20.f));
   touch_selection_controller->SelectionChanged();
   EXPECT_FALSE(IsCursorHandleVisibleFor(touch_selection_controller.get()));
 
@@ -729,7 +733,7 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
   // Start touch editing, check that the handle is above the first window, and
   // end touch editing.
   StartTouchEditing();
-  gfx::Point test_point = GetCursorHandleDragPoint();
+  auto test_point = gfx::PointF(GetCursorHandleDragPoint());
   ui::MouseEvent test_event1(ui::ET_MOUSE_MOVED, test_point, test_point,
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(GetCursorHandleNativeView(),

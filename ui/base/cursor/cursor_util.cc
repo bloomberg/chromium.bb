@@ -56,7 +56,7 @@ void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
       skia::ImageOperations::RESIZE_BETTER,
       scaled_size.width(),
       scaled_size.height());
-  *hotpoint = gfx::ToFlooredPoint(gfx::ScalePoint(*hotpoint, scale));
+  *hotpoint = gfx::ScaleToFlooredPoint(*hotpoint, scale);
 }
 
 void GetImageCursorBitmap(int resource_id,

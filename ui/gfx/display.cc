@@ -159,20 +159,17 @@ void Display::SetScaleAndBounds(
     device_scale_factor_ = device_scale_factor;
   }
   device_scale_factor_ = std::max(1.0f, device_scale_factor_);
-  bounds_ =
-      gfx::Rect(gfx::ToFlooredPoint(gfx::ScalePoint(
-                    bounds_in_pixel.origin(), 1.0f / device_scale_factor_)),
-                gfx::ScaleToFlooredSize(bounds_in_pixel.size(),
-                                        1.0f / device_scale_factor_));
+  bounds_ = gfx::Rect(gfx::ScaleToFlooredPoint(bounds_in_pixel.origin(),
+                                               1.0f / device_scale_factor_),
+                      gfx::ScaleToFlooredSize(bounds_in_pixel.size(),
+                                              1.0f / device_scale_factor_));
   UpdateWorkAreaFromInsets(insets);
 }
 
 void Display::SetSize(const gfx::Size& size_in_pixel) {
   gfx::Point origin = bounds_.origin();
 #if defined(USE_AURA)
-  gfx::PointF origin_f = origin;
-  origin_f.Scale(device_scale_factor_);
-  origin = gfx::ToFlooredPoint(origin_f);
+  origin = gfx::ScaleToFlooredPoint(origin, device_scale_factor_);
 #endif
   SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
 }

@@ -45,11 +45,11 @@ double GetDeviceScaleFactor() {
 }
 
 gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
-  return ToFlooredPoint(ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
+  return gfx::ScaleToFlooredPoint(pixel_point, 1.0f / GetDeviceScaleFactor());
 }
 
 gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
-  return ToFlooredPoint(gfx::ScalePoint(dip_point, GetDeviceScaleFactor()));
+  return gfx::ScaleToFlooredPoint(dip_point, GetDeviceScaleFactor());
 }
 
 std::vector<gfx::Display> GetFallbackDisplayList() {
@@ -322,9 +322,8 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
         // SetScaleAndBounds() above does the conversion from pixels to DIP for
         // us, but set_work_area does not, so we need to do it here.
         display.set_work_area(gfx::Rect(
-            gfx::ToFlooredPoint(
-                gfx::ScalePoint(intersection_in_pixels.origin(),
-                                1.0f / display.device_scale_factor())),
+            gfx::ScaleToFlooredPoint(intersection_in_pixels.origin(),
+                                     1.0f / display.device_scale_factor()),
             gfx::ScaleToFlooredSize(intersection_in_pixels.size(),
                                     1.0f / display.device_scale_factor())));
       }

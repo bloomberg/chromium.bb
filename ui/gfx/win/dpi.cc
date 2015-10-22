@@ -67,11 +67,11 @@ float GetDPIScale() {
 namespace win {
 
 Point ScreenToDIPPoint(const Point& pixel_point) {
-  return ToFlooredPoint(ScalePoint(pixel_point, 1.0f / GetDPIScale()));
+  return ScaleToFlooredPoint(pixel_point, 1.0f / GetDPIScale());
 }
 
 Point DIPToScreenPoint(const Point& dip_point) {
-  return ToFlooredPoint(ScalePoint(dip_point, GetDPIScale()));
+  return ScaleToFlooredPoint(dip_point, GetDPIScale());
 }
 
 Rect ScreenToDIPRect(const Rect& pixel_bounds) {

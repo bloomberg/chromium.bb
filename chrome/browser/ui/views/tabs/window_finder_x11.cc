@@ -16,7 +16,7 @@ float GetDeviceScaleFactor() {
 }
 
 gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
-  return ToFlooredPoint(gfx::ScalePoint(dip_point, GetDeviceScaleFactor()));
+  return gfx::ScaleToFlooredPoint(dip_point, GetDeviceScaleFactor());
 }
 
 }  // anonymous namespace

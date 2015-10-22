@@ -345,7 +345,7 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
         skia::ImageOperations::RESIZE_BETTER,
         static_cast<int>(cursor_image->width() * scale),
         static_cast<int>(cursor_image->height() * scale));
-    hotspot_point = gfx::ToFlooredPoint(gfx::ScalePoint(hotspot, scale));
+    hotspot_point = gfx::ScaleToFlooredPoint(hotspot, scale);
     needs_scale = true;
   }
 

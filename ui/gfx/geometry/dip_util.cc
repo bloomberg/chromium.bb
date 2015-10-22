@@ -15,7 +15,7 @@
 namespace gfx {
 
 Point ConvertPointToDIP(float scale_factor, const Point& point_in_pixel) {
-  return ToFlooredPoint(ScalePoint(point_in_pixel, 1.0f / scale_factor));
+  return ScaleToFlooredPoint(point_in_pixel, 1.0f / scale_factor);
 }
 
 PointF ConvertPointToDIP(float scale_factor, const PointF& point_in_pixel) {
@@ -32,7 +32,7 @@ Rect ConvertRectToDIP(float scale_factor, const Rect& rect_in_pixel) {
 }
 
 Point ConvertPointToPixel(float scale_factor, const Point& point_in_dip) {
-  return ToFlooredPoint(ScalePoint(point_in_dip, scale_factor));
+  return ScaleToFlooredPoint(point_in_dip, scale_factor);
 }
 
 Size ConvertSizeToPixel(float scale_factor, const Size& size_in_dip) {
@@ -46,7 +46,7 @@ Rect ConvertRectToPixel(float scale_factor, const Rect& rect_in_dip) {
   // results in rounding down and not drawing all the pixels that are
   // touched.
   return ToEnclosingRect(
-      RectF(ScalePoint(rect_in_dip.origin(), scale_factor),
+      RectF(ScalePoint(gfx::PointF(rect_in_dip.origin()), scale_factor),
             ScaleSize(gfx::SizeF(rect_in_dip.size()), scale_factor)));
 }
 

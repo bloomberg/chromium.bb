@@ -23,7 +23,7 @@ gfx::Point DefaultScreenPositionClient::GetOriginInScreen(
   aura::Window* window = const_cast<aura::Window*>(root_window);
   float scale = gfx::Screen::GetScreenFor(window)->
        GetDisplayNearestWindow(window).device_scale_factor();
-  return gfx::ToFlooredPoint(gfx::ScalePoint(origin_in_pixels, 1.0f / scale));
+  return gfx::ScaleToFlooredPoint(origin_in_pixels, 1.0f / scale);
 }
 
 void DefaultScreenPositionClient::ConvertPointToScreen(
