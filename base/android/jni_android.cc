@@ -70,7 +70,7 @@ void DetachFromVM() {
 }
 
 void InitVM(JavaVM* vm) {
-  DCHECK(!g_jvm);
+  DCHECK(!g_jvm || g_jvm == vm);
   g_jvm = vm;
 }
 
