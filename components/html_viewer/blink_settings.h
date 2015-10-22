@@ -13,8 +13,8 @@ class WebView;
 
 namespace html_viewer {
 
-// BlinkSettings encapsulates the necessary settings needed by the blink
-// instance used by this HTMLViewer.
+// BlinkSettings is a pure-virtual interface for configuring blink for
+// use by this HTMLViewer.
 //
 // TODO(rjkroege): The methods labeled "interim" are waiting on the a
 // future rationaliztion of the code comprising blink::WebSettings,
@@ -24,21 +24,13 @@ namespace html_viewer {
 class BlinkSettings {
  public:
   BlinkSettings();
-  ~BlinkSettings();
+  virtual ~BlinkSettings();
 
   // Additional more time-consuming configuration.
-  void Init();
+  virtual void Init() = 0;
 
-  // Marks this |BlinkSettings| object to setup blink for running layout tests.
-  void SetLayoutTestMode();
-
-  // interim code: pushes layout test mode and other interim settings
-  // into Blink.
-  void ApplySettingsToWebView(blink::WebView* view) const;
-
- private:
-  bool layout_test_settings_;
-  bool experimental_webgl_enabled_;
+  // interim code: pushes settings into Blink.
+  virtual void ApplySettingsToWebView(blink::WebView* view) const = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkSettings);
 };

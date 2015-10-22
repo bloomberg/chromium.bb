@@ -68,6 +68,8 @@ source_set("lib") {
     "blink_resource_constants.h",
     "blink_settings.cc",
     "blink_settings.h",
+    "blink_settings_impl.cc",
+    "blink_settings_impl.h",
     "blink_text_input_type_converters.cc",
     "blink_text_input_type_converters.h",
     "blink_url_request_type_converters.cc",
@@ -127,6 +129,8 @@ source_set("lib") {
     "web_mime_registry_impl.h",
     "web_notification_manager_impl.cc",
     "web_notification_manager_impl.h",
+    "web_preferences.cc",
+    "web_preferences.h",
     "web_socket_handle_impl.cc",
     "web_socket_handle_impl.h",
     "web_storage_namespace_impl.cc",
@@ -250,6 +254,8 @@ mojo_native_application("html_viewer") {
 mojo_native_application("layout_test_html_viewer") {
   testonly = true
   sources = [
+    "layout_test_blink_settings_impl.cc",
+    "layout_test_blink_settings_impl.h",
     "layout_test_content_handler_impl.cc",
     "layout_test_content_handler_impl.h",
     "layout_test_html_viewer.cc",

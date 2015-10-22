@@ -84,7 +84,10 @@ class GlobalState {
 
   MediaFactory* media_factory() { return media_factory_.get(); }
 
-  BlinkSettings* blink_settings() { return &blink_settings_; }
+  BlinkSettings* blink_settings() { return blink_settings_.get(); }
+  void set_blink_settings(BlinkSettings* blink_settings) {
+    blink_settings_.reset(blink_settings);
+  }
 
  private:
   // Callback for |gpu_service_|->GetGpuInfo().
@@ -123,7 +126,7 @@ class GlobalState {
   mus::mojom::GpuInfoPtr gpu_info_;
   scoped_ptr<MediaFactory> media_factory_;
 
-  BlinkSettings blink_settings_;
+  scoped_ptr<BlinkSettings> blink_settings_;
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   skia::RefPtr<font_service::FontLoader> font_loader_;

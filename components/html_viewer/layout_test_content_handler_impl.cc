@@ -5,10 +5,10 @@
 #include "components/html_viewer/layout_test_content_handler_impl.h"
 
 #include "base/bind.h"
-#include "components/html_viewer/blink_settings.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document_application_delegate.h"
 #include "components/html_viewer/html_widget.h"
+#include "components/html_viewer/layout_test_blink_settings_impl.h"
 #include "components/html_viewer/web_test_delegate_impl.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -80,7 +80,8 @@ HTMLWidgetRootLocal* LayoutTestContentHandlerImpl::CreateHTMLWidgetRootLocal(
 
 HTMLFrame* LayoutTestContentHandlerImpl::CreateHTMLFrame(
     HTMLFrame::CreateParams* params) {
-  params->manager->global_state()->blink_settings()->SetLayoutTestMode();
+  params->manager->global_state()->set_blink_settings(
+      new LayoutTestBlinkSettingsImpl());
 
   // The test harness isn't correctly set-up for iframes yet. So return a normal
   // HTMLFrame for iframes.
