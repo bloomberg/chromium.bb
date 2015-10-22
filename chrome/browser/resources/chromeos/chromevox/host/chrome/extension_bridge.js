@@ -235,6 +235,9 @@ cvox.ExtensionBridge.setupBackgroundPort = function() {
   // Set up the connection to the background page.
   var self = cvox.ExtensionBridge;
   self.backgroundPort = chrome.extension.connect({name: self.PORT_NAME});
+  if (!self.backgroundPort) {
+    return;
+  }
   self.backgroundPort.onMessage.addListener(function(message) {
     if (message[cvox.ExtensionBridge.PONG_MSG]) {
       self.gotPongFromBackgroundPage(
@@ -285,7 +288,9 @@ cvox.ExtensionBridge.tryToPingBackgroundPage = function() {
   if (!self.backgroundPort) {
     self.setupBackgroundPort();
   }
-  self.backgroundPort.postMessage(msg);
+  if (self.backgroundPort) {
+    self.backgroundPort.postMessage(msg);
+  }
 
   // Check again in 500 ms in case we get no response.
   window.setTimeout(cvox.ExtensionBridge.tryToPingBackgroundPage, 500);

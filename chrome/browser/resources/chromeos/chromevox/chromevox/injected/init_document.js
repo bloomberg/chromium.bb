@@ -28,6 +28,22 @@ cvox.ChromeVox.initTimeout_ = 100;
 
 
 /**
+ * @type {number}
+ * @private
+ */
+cvox.ChromeVox.initTimer_ = 0;
+
+
+/**
+ * Maximum retry timeout for initialization.  Note that exponential backoff
+ * used, so the actual time before giving up is about twice this number.
+ * @const {number}
+ * @private
+ */
+cvox.ChromeVox.MAX_INIT_TIMEOUT_ = 30000;
+
+
+/**
  * Flag indicating if ChromeVox Classic is enabled based on the Next
  * background page. Initializes to true for non-top level
  * (i.e. iframes) windows. For top level windows, left undefined and
@@ -45,10 +61,17 @@ cvox.ChromeVox.isClassicEnabled_ = window.top == window ? undefined : true;
  * @private
  */
 cvox.ChromeVox.recallInit_ = function(reason) {
+  if (cvox.ChromeVox.initTimeout_ > cvox.ChromeVox.MAX_INIT_TIMEOUT_) {
+    window.console.log(reason +
+        ' Taking too long - giving up.');
+    return;
+  }
   window.console.log(reason +
                      ' Will try again in ' +
                      cvox.ChromeVox.initTimeout_ + 'ms');
-  window.setTimeout(cvox.ChromeVox.initDocument, cvox.ChromeVox.initTimeout_);
+  cvox.ChromeVox.initTimer_ = window.setTimeout(
+      cvox.ChromeVox.initDocument,
+      cvox.ChromeVox.initTimeout_);
   cvox.ChromeVox.initTimeout_ *= 2;
 };
 
@@ -68,9 +91,16 @@ cvox.ChromeVox.initDocument = function() {
     url: location.href
   });
 
-  if (!document.body || cvox.ChromeVox.isClassicEnabled_ === undefined) {
-    cvox.ChromeVox.recallInit_('ChromeVox not starting on unloaded page or' +
-        ' waiting for background page: ' +
+  cvox.ChromeVox.initTimer_ = 0;
+  var reinitReason;
+  if (!document.body) {
+    reinitReason = 'ChromeVox not starting on unloaded page';
+  }
+  if (cvox.ChromeVox.isClassicEnabled_ === undefined) {
+    reinitReason = 'ChromeVox waiting for background page';
+  }
+  if (reinitReason) {
+    cvox.ChromeVox.recallInit_(reinitReason + ': ' +
         document.location.href + '.');
     return;
   }
@@ -121,8 +151,15 @@ if (!COMPILED) {
   cvox.ChromeVox.initDocument();
 }
 
-cvox.ExtensionBridge.addMessageListener(goog.bind(function(msg, port) {
+cvox.ExtensionBridge.addMessageListener(function(msg, port) {
   if (msg['target'] == 'next') {
     cvox.ChromeVox.isClassicEnabled_ = msg['isClassicEnabled'];
   }
-}, this));
+});
+
+cvox.ExtensionBridge.addDisconnectListener(function() {
+  if (cvox.ChromeVox.initTimer_ > 0) {
+    window.clearTimeout(cvox.ChromeVox.initTimer_);
+    cvox.ChromeVox.initTimer_ = 0;
+  }
+});
