@@ -74,6 +74,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         'markdown.extensions.fenced_code',
         'markdown.extensions.tables',
         'markdown.extensions.toc',
+        'gitiles_ext_blocks',
     ]
 
     contents = self._Read(path[1:])
