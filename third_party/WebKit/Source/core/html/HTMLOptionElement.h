@@ -42,11 +42,13 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLOptionElement> createForJSConstructor(Document&, const String& data, const AtomicString& value,
         bool defaultSelected, bool selected, ExceptionState&);
 
-    // TOOD(tkent): Remove or rename |text()|, and rename |textForBinding| to
-    // |text|.
-    String text() const;
+    // A text to be shown to users.  The difference from |label()| is |label()|
+    // returns an empty string if |label| content attribute is empty.
+    // |displayLabel()| returns the value string in that case.
+    String displayLabel() const;
 
     // |text| IDL attribute implementations.
+    // TOOD(tkent): Rename |textForBinding| to |text|.
     String textForBinding() const;
     void setTextForBinding(const String&, ExceptionState&);
 

@@ -356,7 +356,7 @@ void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& 
 {
     SharedBuffer* data = context.m_buffer;
     PagePopupClient::addString("{", data);
-    addProperty("label", element.text(), data);
+    addProperty("label", element.displayLabel(), data);
     addProperty("value", context.m_listIndex, data);
     if (!element.title().isEmpty())
         addProperty("title", element.title(), data);

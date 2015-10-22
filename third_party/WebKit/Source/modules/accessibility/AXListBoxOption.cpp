@@ -148,7 +148,7 @@ String AXListBoxOption::stringValue() const
         return ariaLabel;
 
     if (isHTMLOptionElement(node()))
-        return toHTMLOptionElement(node())->text();
+        return toHTMLOptionElement(node())->displayLabel();
 
     return String();
 }

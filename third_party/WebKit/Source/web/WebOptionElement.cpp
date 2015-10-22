@@ -56,7 +56,7 @@ int WebOptionElement::index() const
 
 WebString WebOptionElement::text() const
 {
-    return constUnwrap<HTMLOptionElement>()->text();
+    return constUnwrap<HTMLOptionElement>()->displayLabel();
 }
 
 WebString WebOptionElement::label() const

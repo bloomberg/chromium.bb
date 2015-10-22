@@ -1676,7 +1676,7 @@ String HTMLSelectElement::optionAtIndex(int index) const
     HTMLElement* element = items[index];
     if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl())
         return String();
-    return toHTMLOptionElement(element)->text();
+    return toHTMLOptionElement(element)->displayLabel();
 }
 
 void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)

@@ -121,7 +121,7 @@ LayoutRect AXMenuListOption::elementRect() const
 
 String AXMenuListOption::stringValue() const
 {
-    return m_element ? m_element->text() : String();
+    return m_element ? m_element->displayLabel() : String();
 }
 
 DEFINE_TRACE(AXMenuListOption)
