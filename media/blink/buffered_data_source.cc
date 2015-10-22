@@ -432,9 +432,14 @@ bool BufferedDataSource::CheckPartialResponseURL(
   // for details.
   // If the origin of the new response is different from the first response we
   // deny the redirected response unless the crossorigin attribute has been set.
-  return (response_original_url_.GetOrigin() ==
-          partial_response_original_url.GetOrigin()) ||
-         DidPassCORSAccessCheck();
+  if ((response_original_url_.GetOrigin() ==
+       partial_response_original_url.GetOrigin()) ||
+      DidPassCORSAccessCheck()) {
+    return true;
+  }
+
+  MEDIA_LOG(ERROR, media_log_) << "BufferedDataSource: origin has changed";
+  return false;
 }
 
 void BufferedDataSource::ReadCallback(
