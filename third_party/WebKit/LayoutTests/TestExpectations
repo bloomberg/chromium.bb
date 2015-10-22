@@ -1599,17 +1599,6 @@ crbug.com/545551 [ Win Mac ] svg/custom/repaint-shadow.svg [ Failure Pass ]
 
 crbug.com/546041 [ Win Debug ] fast/forms/input-implicit-length-limit.html [ Timeout Pass ]
 
-crbug.com/404597 [ Yosemite ] fast/forms/listbox-bidi-align.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/forms/placeholder-position.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/text/emphasis-vertical.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/writing-mode/Kusa-Makura-background-canvas.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/writing-mode/border-vertical-lr.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-lr-text.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
-crbug.com/404597 [ Yosemite ] fast/writing-mode/japanese-rl-text.html [ NeedsRebaseline ]
-
 crbug.com/543397 [ Win10 ] svg/batik/text/verticalText.svg [ NeedsRebaseline ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]

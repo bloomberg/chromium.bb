@@ -190,8 +190,8 @@ layer at (11,283) size 159x45 clip at (23,284) size 146x43
       LayoutText {#text} at (18,0) size 110x13
         text run at (18,0) width 110: "This is an English text"
     LayoutBlockFlow {OPTION} at (12,15.19) size 146.47x14.19
-      LayoutText {#text} at (1,0) size 144x13
-        text run at (1,0) width 144: "It needs to be center aligned"
+      LayoutText {#text} at (2,0) size 143x13
+        text run at (2,0) width 143: "It needs to be center aligned"
     LayoutBlockFlow {OPTION} at (12,29.38) size 146.47x14.19
       LayoutText {#text} at (33,0) size 81x13
         text run at (33,0) width 81: "Some more text"
