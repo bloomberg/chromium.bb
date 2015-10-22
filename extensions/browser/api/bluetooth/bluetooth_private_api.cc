@@ -252,7 +252,7 @@ bool BluetoothPrivateSetPairingResponseFunction::DoWork(
 
   BluetoothEventRouter* router =
       BluetoothAPI::Get(browser_context())->event_router();
-  if (!router->GetPairingDelegate(extension_id())) {
+  if (!router->GetPairingDelegate(GetExtensionId())) {
     SetError(kPairingNotEnabled);
     SendResponse(false);
     return true;
@@ -407,8 +407,10 @@ bool BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
       discovery_filter->SetPathloss(*df_param.pathloss);
   }
 
-  BluetoothAPI::Get(browser_context())->event_router()->SetDiscoveryFilter(
-          discovery_filter.Pass(), adapter.get(), extension_id(),
+  BluetoothAPI::Get(browser_context())
+      ->event_router()
+      ->SetDiscoveryFilter(
+          discovery_filter.Pass(), adapter.get(), GetExtensionId(),
           base::Bind(
               &BluetoothPrivateSetDiscoveryFilterFunction::OnSuccessCallback,
               this),
@@ -446,14 +448,14 @@ bool BluetoothPrivatePairFunction::DoWork(
 
   BluetoothEventRouter* router =
       BluetoothAPI::Get(browser_context())->event_router();
-  if (!router->GetPairingDelegate(extension_id())) {
+  if (!router->GetPairingDelegate(GetExtensionId())) {
     SetError(kPairingNotEnabled);
     SendResponse(false);
     return true;
   }
 
   device->Pair(
-      router->GetPairingDelegate(extension_id()),
+      router->GetPairingDelegate(GetExtensionId()),
       base::Bind(&BluetoothPrivatePairFunction::OnSuccessCallback, this),
       base::Bind(&BluetoothPrivatePairFunction::OnErrorCallback, this));
   return true;

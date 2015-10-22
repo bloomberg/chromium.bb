@@ -31,6 +31,9 @@ class BluetoothExtensionFunction : public AsyncExtensionFunction {
   // ExtensionFunction:
   bool RunAsync() override;
 
+  // Use instead of extension_id() so that this can be run from WebUI.
+  std::string GetExtensionId();
+
  private:
   void RunOnAdapterReady(scoped_refptr<device::BluetoothAdapter> adapter);
 
