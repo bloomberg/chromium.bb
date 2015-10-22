@@ -31,8 +31,6 @@
 #include "config.h"
 #include "platform/graphics/ReplayingCanvas.h"
 
-#include "third_party/skia/include/core/SkBitmapDevice.h"
-
 namespace blink {
 
 CanvasInterceptor<ReplayingCanvas>::~CanvasInterceptor()

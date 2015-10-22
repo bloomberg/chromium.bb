@@ -26,7 +26,6 @@
 #include "config.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 
-#include "SkBitmapDevice.h"
 #include "SkCanvas.h"
 #include "SkPicture.h"
 #include "SkPictureRecorder.h"
