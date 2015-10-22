@@ -20,12 +20,6 @@ TaskRunnerImpl::~TaskRunnerImpl() {}
 
 bool TaskRunnerImpl::PostTask(Task* task, uint64_t delay_milliseconds) {
   DCHECK(task);
-  if (delay_milliseconds == 0 && runner_->BelongsToCurrentThread()) {
-    task->Run();
-    delete task;
-    return true;
-  }
-
   // TODO(halliwell): FROM_HERE is misleading, we should consider a macro for
   // vendor backends to send the callsite info.
   return runner_->PostDelayedTask(
