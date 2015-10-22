@@ -349,6 +349,14 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
 }
 
+OobeUI::Screen GaiaScreenHandler::GetCurrentScreen() const {
+  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
+  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
+  if (oobe_ui)
+    screen = oobe_ui->current_screen();
+  return screen;
+}
+
 void GaiaScreenHandler::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
@@ -357,7 +365,8 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
 
   const NetworkPortalDetector::CaptivePortalStatus status = state.status;
   if (status == captive_portal_status_ ||
-      disable_restrictive_proxy_check_for_test_)
+      disable_restrictive_proxy_check_for_test_ ||
+      GetCurrentScreen() != OobeUI::SCREEN_GAIA_SIGNIN)
     return;
 
   captive_portal_status_ = status;

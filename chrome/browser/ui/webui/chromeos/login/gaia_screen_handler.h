@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
 
@@ -216,6 +217,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // user has already signed in.
   std::string GetCanonicalEmail(const std::string& authenticated_email,
                                 const std::string& gaia_id) const;
+
+  // Returns current visible screen.
+  // TODO(jdufault): This definition exists in multiple locations. Refactor it
+  // into BaseScreenHandler.
+  OobeUI::Screen GetCurrentScreen() const;
 
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
