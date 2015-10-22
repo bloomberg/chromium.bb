@@ -604,6 +604,13 @@ source_set("test_support") {
       "test/windowed_nsnotification_observer.h",
       "test/windowed_nsnotification_observer.mm",
     ]
+  } else {
+    sources += [
+      "test/ios/keyboard_appearance_listener.h",
+      "test/ios/keyboard_appearance_listener.mm",
+      "test/ios/ui_view_test_utils.h",
+      "test/ios/ui_view_test_utils.mm",
+    ]
   }
 
   public_deps = [

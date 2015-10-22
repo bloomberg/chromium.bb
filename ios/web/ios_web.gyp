@@ -41,6 +41,7 @@
     # This will become unnecessary once Chrome switches to using ios_web_thread,
     # at which point that will be folded into this target.
     {
+      # GN version: //ios/web
       'target_name': 'ios_web',
       'type': 'static_library',
       'include_dirs': [
@@ -174,8 +175,6 @@
         'public/string_util.h',
         'public/url_scheme_util.h',
         'public/url_util.h',
-        'public/user_agent.h',
-        'public/user_agent.mm',
         'public/user_metrics.h',
         'public/web/url_data_source_ios.h',
         'public/web_client.h',
@@ -322,6 +321,8 @@
         'webui/web_ui_ios_impl.mm',
       ],
       'link_settings': {
+        # TODO(crbug.com/541549): change to regular linking once support for
+        # iOS 7 is dropped.
         'xcode_settings': {
           'OTHER_LDFLAGS': [
             '-weak_framework WebKit',
@@ -367,6 +368,7 @@
     },
     # Target shared by ios_web and CrNet.
     {
+      # GN version: //ios/web:core
       'target_name': 'ios_web_core',
       'type': 'static_library',
       'dependencies': [
@@ -383,6 +385,7 @@
       ],
     },
     {
+      # GN version: //ios/web:web_bundle_ui
       'target_name': 'ios_web_js_bundle_ui',
       'type': 'none',
       'variables': {
@@ -413,6 +416,7 @@
       ],
     },
     {
+      # GN version: //ios/web:web_bundle_wk
       'target_name': 'ios_web_js_bundle_wk',
       'type': 'none',
       'variables': {
@@ -443,6 +447,7 @@
       ],
     },
     {
+      # GN version: //ios/web:js_resources
       'target_name': 'js_resources',
       'type': 'none',
       'dependencies': [
@@ -466,6 +471,7 @@
       ],
     },
     {
+      # GN version: //ios/web:test_support
       'target_name': 'test_support_ios_web',
       'type': 'static_library',
       'dependencies': [
@@ -552,6 +558,7 @@
       ],
     },
     {
+      # GN version: //ios/web:user_agent
       'target_name': 'user_agent',
       'type': 'static_library',
       'include_dirs': [

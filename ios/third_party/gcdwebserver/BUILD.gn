@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 config("public_config") {
-  ldflags = [ "-lz" ]
   libs = [
     "CFNetwork.framework",
     "MobileCoreServices.framework",
+    "z",
   ]
+
   include_dirs = [
     "src/GCDWebServer/Core",
     "src/GCDWebServer/Requests",

@@ -187,8 +187,7 @@ group("both_gn_and_gyp") {
     deps += [
       "//ios/net:ios_net_unittests",
       "//ios/testing:ocmock_support_unittest",
-      "//ios/third_party/gcdwebserver",
-      "//ios/third_party/blink:html_tokenizer",
+      "//ios/web:ios_web_unittests",
     ]
   }
 
