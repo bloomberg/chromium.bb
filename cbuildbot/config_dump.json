@@ -18584,9 +18584,25 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
+            },
+            {
+                "_template": "full",
+                "boards": [
+                    "terra"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "terra-full",
+                "prebuilts": "public",
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: reks, cyan-cheets, wizpig)",
+        "description": "Full Builds; Group config (boards: reks, cyan-cheets, wizpig, terra)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -18630,9 +18646,21 @@
                 "name": "wizpig-release",
                 "unittests": null,
                 "vm_tests": []
+            },
+            {
+                "_template": "release",
+                "boards": [
+                    "terra"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk_build_chrome": false,
+                "grouped": true,
+                "name": "terra-release",
+                "unittests": null,
+                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: reks, cyan-cheets, wizpig)"
+        "description": "Release Builds (canary) (internal); Group config (boards: reks, cyan-cheets, wizpig, terra)"
     },
     "strago-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -19684,6 +19712,171 @@
         "boards": [],
         "builder_class_name": "test_builders.ManifestVersionedSyncBuilder",
         "hw_tests_override": []
+    },
+    "terra-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "terra"
+        ],
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "terra-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "terra"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "terra-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "terra"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "terra-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "terra"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
+    "terra-full": {
+        "_template": "full",
+        "boards": [
+            "terra"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "terra-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "terra"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "terra-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "terra"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "terra-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "terra"
+        ]
+    },
+    "terra-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "terra"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "terra-release": {
+        "_template": "release",
+        "boards": [
+            "terra"
+        ]
+    },
+    "terra-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "terra"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "terra"
+                ],
+                "grouped": true,
+                "name": "terra-release-afdo-generate"
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "terra"
+                ],
+                "grouped": true,
+                "name": "terra-release-afdo-use"
+            }
+        ]
+    },
+    "terra-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "terra"
+        ]
+    },
+    "terra-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "terra"
+        ]
+    },
+    "terra-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "terra"
+        ],
+        "manifest": "official.xml"
+    },
+    "terra-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "terra"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "test-ap-group": {
         "_template": "test-ap",

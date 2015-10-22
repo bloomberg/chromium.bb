@@ -436,6 +436,7 @@ _x86_internal_release_boards = frozenset([
     'stumpy_moblab',
     'sumo',
     'swanky',
+    'terra',
     'tidus',
     'tricky',
     'ultima',
@@ -2599,6 +2600,7 @@ def GetConfig():
       'strago-b', 'reks', (
           'cyan-cheets',
           'wizpig',
+          'terra',
       ),
       important=False,
   )
@@ -2744,6 +2746,7 @@ def GetConfig():
       'stumpy',
       'sumo',
       'swanky',
+      'terra',
       'winky',
       'wolf',
       'x86-mario',
