@@ -219,6 +219,7 @@ For example, if you had:
     }
   }
 }
+```
 
 and you ran `mb gen -c linux_release_trybot //out/Release`, it would
 translate into a call to `gyp_chromium -G Release` with `GYP_DEFINES` set to
