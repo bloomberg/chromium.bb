@@ -38,6 +38,7 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   virtual bool ShouldSendMetrics() const;
   virtual PageLoadTiming GetTiming() const;
   virtual scoped_ptr<base::Timer> CreateTimer() const;
+  virtual bool HasNoRenderFrame() const;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsRenderFrameObserver);
 };

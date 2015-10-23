@@ -40,6 +40,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
  public:
   MockMetricsRenderFrameObserver() : MetricsRenderFrameObserver(nullptr) {
     ON_CALL(*this, ShouldSendMetrics()).WillByDefault(Return(true));
+    ON_CALL(*this, HasNoRenderFrame()).WillByDefault(Return(false));
   }
 
   scoped_ptr<base::Timer> CreateTimer() const override {
@@ -63,6 +64,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
 
   MOCK_CONST_METHOD0(GetTiming, PageLoadTiming());
   MOCK_CONST_METHOD0(ShouldSendMetrics, bool());
+  MOCK_CONST_METHOD0(HasNoRenderFrame, bool());
   MockIPCInterceptor* ipc_interceptor() { return &interceptor_; }
 
  private:

@@ -64,12 +64,15 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
 void MetricsRenderFrameObserver::SendMetrics() {
   if (!page_timing_metrics_sender_)
     return;
-
+  if (HasNoRenderFrame())
+    return;
   PageLoadTiming timing(GetTiming());
   page_timing_metrics_sender_->Send(timing);
 }
 
 bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
+  if (HasNoRenderFrame())
+    return false;
   const blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // We only generate historgrams for main frames.
   if (frame->parent())
@@ -118,6 +121,12 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
 
 scoped_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() const {
   return make_scoped_ptr(new base::OneShotTimer);
+}
+
+bool MetricsRenderFrameObserver::HasNoRenderFrame() const {
+  bool no_frame = !render_frame() || !render_frame()->GetWebFrame();
+  DCHECK(!no_frame);
+  return no_frame;
 }
 
 }  // namespace page_load_metrics
