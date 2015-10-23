@@ -51,9 +51,9 @@ class TestBrowserContext : public BrowserContext {
   BackgroundSyncController* GetBackgroundSyncController() override;
 
  private:
+  base::ScopedTempDir browser_context_dir_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_ptr<MockResourceContext> resource_context_;
-  base::ScopedTempDir browser_context_dir_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<MockSSLHostStateDelegate> ssl_host_state_delegate_;
 

@@ -196,6 +196,8 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   scoped_refptr<IndexedDBBackingStore> diskStore2 =
       factory()->TestOpenBackingStore(ok_origin, base_path);
   EXPECT_TRUE(diskStore2.get());
+  // We need a manual close or Windows can't delete the temp directory.
+  factory()->TestCloseBackingStore(diskStore2.get());
 }
 
 class DiskFullFactory : public IndexedDBFactoryImpl {

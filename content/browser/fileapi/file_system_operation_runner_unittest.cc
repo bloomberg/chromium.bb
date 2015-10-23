@@ -222,8 +222,8 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir base_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiThreadFileSystemOperationRunnerTest);

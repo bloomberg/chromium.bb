@@ -246,10 +246,12 @@ class FileSystemURLRequestJobTest : public testing::Test {
     return GURL(kFileSystemURLPrefix + path);
   }
 
-  // Put the message loop at the top, so that it's the last thing deleted.
+  // Temp directory is at the top because it must be deleted last.
+  base::ScopedTempDir temp_dir_;
+
+  // The message loop must be deleted second to last.
   base::MessageLoopForIO message_loop_;
 
-  base::ScopedTempDir temp_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   net::URLRequestContext empty_context_;

@@ -62,8 +62,8 @@ TEST(StoragePartitionConfigTest, OperatorLess) {
 }
 
 TEST(StoragePartitionImplMapTest, GarbageCollect) {
-  base::MessageLoop message_loop;
   TestBrowserContext browser_context;
+  base::MessageLoop message_loop;
   StoragePartitionImplMap storage_partition_impl_map(&browser_context);
 
   scoped_ptr<base::hash_set<base::FilePath> > active_paths(

@@ -82,6 +82,8 @@ class WebRtcIdentityStoreTest : public testing::Test {
     webrtc_identity_store_->SetTaskRunnerForTesting(pool_owner_->pool());
   }
 
+  void Stop() { webrtc_identity_store_ = nullptr; }
+
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
@@ -355,6 +357,7 @@ TEST_F(WebRtcIdentityStoreTest, IdentityPersistentAcrossRestart) {
   EXPECT_TRUE(completed_2);
   EXPECT_EQ(cert_1, cert_2);
   EXPECT_EQ(key_1, key_2);
+  Stop();
 }
 
 TEST_F(WebRtcIdentityStoreTest, HandleDBErrors) {
@@ -386,6 +389,8 @@ TEST_F(WebRtcIdentityStoreTest, HandleDBErrors) {
   scoped_ptr<sql::Connection> db(new sql::Connection());
   EXPECT_TRUE(db->Open(db_path));
   EXPECT_EQ(0U, sql::test::CountSQLTables(db.get()));
+
+  Stop();
 }
 
 }  // namespace content

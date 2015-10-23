@@ -286,7 +286,11 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   void TearDown() override { context_.reset(); }
 
-  virtual base::FilePath GetUserDataDirectory() { return base::FilePath(); }
+  base::FilePath GetUserDataDirectory() { return user_data_directory_.path(); }
+
+  bool InitUserDataDirectory() {
+    return user_data_directory_.CreateUniqueTempDir();
+  }
 
   ServiceWorkerStorage* storage() { return context_->storage(); }
 
@@ -483,6 +487,8 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result;
   }
 
+  // user_data_directory_ must be declared first to preserve destructor order.
+  base::ScopedTempDir user_data_directory_;
   scoped_ptr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -961,16 +967,10 @@ class ServiceWorkerResourceStorageDiskTest
     : public ServiceWorkerResourceStorageTest {
  public:
   void SetUp() override {
-    ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
+    ASSERT_TRUE(InitUserDataDirectory());
     ServiceWorkerResourceStorageTest::SetUp();
   }
 
-  base::FilePath GetUserDataDirectory() override {
-    return user_data_directory_.path();
-  }
-
- protected:
-  base::ScopedTempDir user_data_directory_;
 };
 
 TEST_F(ServiceWorkerResourceStorageTest,
@@ -1483,16 +1483,9 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
 class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTest {
  public:
   void SetUp() override {
-    ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
+    ASSERT_TRUE(InitUserDataDirectory());
     ServiceWorkerStorageTest::SetUp();
   }
-
-  base::FilePath GetUserDataDirectory() override {
-    return user_data_directory_.path();
-  }
-
- protected:
-  base::ScopedTempDir user_data_directory_;
 };
 
 TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
