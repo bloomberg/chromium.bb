@@ -8,7 +8,6 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -93,14 +92,6 @@ public abstract class FirstRunFlowSequencer  {
     boolean didAcceptToS() {
         return ToSAckedReceiver.checkAnyUserHasSeenToS(mActivity)
                 || PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
-    }
-
-    /**
-     * @return Whether Chrome was installed as a part of the system image.
-     */
-    @VisibleForTesting
-    boolean isSystemInstall() {
-        return ((mActivity.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) != 0);
     }
 
     private void processFreEnvironment() {
