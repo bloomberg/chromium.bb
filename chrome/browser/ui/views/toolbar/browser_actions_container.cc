@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
@@ -128,9 +127,6 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   // always have cleared the active bubble by now.
   DCHECK(!active_bubble_);
 
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver, observers_,
-                    OnBrowserActionsContainerDestroyed(this));
-
   toolbar_actions_bar_->DeleteActions();
   // All views should be removed as part of ToolbarActionsBar::DeleteActions().
   DCHECK(toolbar_action_views_.empty());
@@ -189,9 +185,6 @@ bool BrowserActionsContainer::ShownInsideMenu() const {
 
 void BrowserActionsContainer::OnToolbarActionViewDragDone() {
   toolbar_actions_bar_->OnDragEnded();
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
-                    observers_,
-                    OnBrowserActionDragDone());
 }
 
 views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
@@ -272,13 +265,7 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
     }
   }
 
-  if (width() != GetPreferredSize().width() && parent()) {
-    parent()->Layout();
-    parent()->SchedulePaint();
-  } else {
-    Layout();
-    SchedulePaint();
-  }
+  Layout();
 }
 
 void BrowserActionsContainer::ResizeAndAnimate(
@@ -374,16 +361,6 @@ int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
         toolbar_actions_bar_->WidthToIconCount(max_width));
   }
   return preferred_width;
-}
-
-void BrowserActionsContainer::AddObserver(
-    BrowserActionsContainerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void BrowserActionsContainer::RemoveObserver(
-    BrowserActionsContainerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
@@ -654,7 +631,7 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
 
   if (!done_resizing) {
     resize_amount_ = resize_amount;
-    Redraw(false);
+    parent()->Layout();
     return;
   }
 
@@ -674,7 +651,7 @@ void BrowserActionsContainer::AnimationProgressed(
   DCHECK_EQ(resize_animation_.get(), animation);
   resize_amount_ = static_cast<int>(resize_animation_->GetCurrentValue() *
       (resize_starting_width_ - animation_target_size_));
-  Redraw(false);
+  parent()->Layout();
 }
 
 void BrowserActionsContainer::AnimationCanceled(
@@ -687,10 +664,7 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   resize_amount_ = 0;
   resize_starting_width_ = -1;
   suppress_chevron_ = false;
-  Redraw(false);
-  FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
-                    observers_,
-                    OnBrowserActionsContainerAnimationEnded());
+  parent()->Layout();
 
   toolbar_actions_bar_->OnAnimationEnded();
 }

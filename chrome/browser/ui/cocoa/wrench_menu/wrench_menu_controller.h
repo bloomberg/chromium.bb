@@ -29,6 +29,7 @@ extern const CGFloat kWrenchBubblePointOffsetY;
 
 namespace WrenchMenuControllerInternal {
 class AcceleratorDelegate;
+class ToolbarActionsBarObserverHelper;
 class ZoomLevelObserver;
 }  // namespace WrenchMenuControllerInternal
 
@@ -65,7 +66,12 @@ class ZoomLevelObserver;
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
 
   // Observer for page zoom level change notifications.
-  scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver> observer_;
+  scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver>
+      zoom_level_observer_;
+
+  // Observer for the main window's ToolbarActionsBar changing size.
+  scoped_ptr<WrenchMenuControllerInternal::ToolbarActionsBarObserverHelper>
+      toolbar_actions_bar_observer_;
 
   // The controller for the toolbar actions overflow that is stored in the
   // wrench menu.
@@ -91,6 +97,9 @@ class ZoomLevelObserver;
 // Creates a RecentTabsMenuModelDelegate instance which will take care of
 // updating the recent tabs submenu.
 - (void)updateRecentTabsSubmenu;
+
+// Updates the browser actions section of the menu.
+- (void)updateBrowserActionsSubmenu;
 
 // Retuns the weak reference to the BrowserActionsController.
 - (BrowserActionsController*)browserActionsController;

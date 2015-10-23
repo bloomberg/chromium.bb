@@ -30,7 +30,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
       app_menu_(app_menu),
       container_(nullptr),
       max_height_(0),
-      browser_actions_container_observer_(this),
+      toolbar_actions_bar_observer_(this),
       weak_factory_(this) {
   BrowserActionsContainer* main =
       BrowserView::GetBrowserViewForBrowser(browser_)
@@ -43,8 +43,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
   container_->Layout();
 
   // Listen for the drop to finish so we can close the app menu, if necessary.
-  browser_actions_container_observer_.Add(container_);
-  browser_actions_container_observer_.Add(main);
+  toolbar_actions_bar_observer_.Add(main->toolbar_actions_bar());
 
   // In *very* extreme cases, it's possible that there are so many overflowed
   // actions, we won't be able to show them all. Cap the height so that the
@@ -94,18 +93,14 @@ void ExtensionToolbarMenuView::set_close_menu_delay_for_testing(int delay) {
   g_close_menu_delay = delay;
 }
 
-void ExtensionToolbarMenuView::OnBrowserActionsContainerDestroyed(
-    BrowserActionsContainer* browser_actions_container) {
-  browser_actions_container_observer_.Remove(browser_actions_container);
+void ExtensionToolbarMenuView::OnToolbarActionsBarDestroyed() {
+  toolbar_actions_bar_observer_.RemoveAll();
 }
 
-void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
+void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
   // In the case of a drag-and-drop, the bounds of the container may have
-  // changed (in the case of removing an icon that was the last in a row). We
-  // need to re-layout the menu in order to shrink down the view (calling
-  // Layout() on this is insufficient because other items may need to shift
-  // upwards).
-  parent()->parent()->Layout();
+  // changed (in the case of removing an icon that was the last in a row).
+  Redraw();
 
   // We need to close the app menu if it was just opened for the drag and drop,
   // or if there are no more extensions in the overflow menu after a drag and
@@ -119,8 +114,23 @@ void ExtensionToolbarMenuView::OnBrowserActionDragDone() {
   }
 }
 
+void ExtensionToolbarMenuView::OnToolbarActionsBarDidStartResize() {
+  Redraw();
+}
+
 void ExtensionToolbarMenuView::CloseAppMenu() {
   app_menu_->CloseMenu();
+}
+
+void ExtensionToolbarMenuView::Redraw() {
+  // In a case where the size of the container may have changed (e.g., by a row
+  // being added or removed), we need to re-layout the menu in order to resize
+  // the view (calling Layout() on this is insufficient because other items may
+  // need to shift up or down).
+  parent()->parent()->Layout();
+  // The Menus layout code doesn't recursively call layout on its children like
+  // the default View code. Explicitly layout this view.
+  Layout();
 }
 
 int ExtensionToolbarMenuView::start_padding() const {

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/mac/bundle_locations.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -25,6 +26,8 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/ui/zoom/zoom_event_manager.h"
@@ -111,6 +114,31 @@ class ZoomLevelObserver {
   DISALLOW_COPY_AND_ASSIGN(ZoomLevelObserver);
 };
 
+class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
+ public:
+  ToolbarActionsBarObserverHelper(WrenchMenuController* controller,
+                                  ToolbarActionsBar* toolbar_actions_bar)
+      : controller_(controller),
+        scoped_observer_(this) {
+    scoped_observer_.Add(toolbar_actions_bar);
+  }
+  ~ToolbarActionsBarObserverHelper() override {}
+
+ private:
+  // ToolbarActionsBarObserver:
+  void OnToolbarActionsBarDestroyed() override {
+    scoped_observer_.RemoveAll();
+  }
+  void OnToolbarActionsBarDidStartResize() override {
+    [controller_ updateBrowserActionsSubmenu];
+  }
+
+  WrenchMenuController* controller_;
+  ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver> scoped_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarObserverHelper);
+};
+
 }  // namespace WrenchMenuControllerInternal
 
 @implementation WrenchMenuController
@@ -118,9 +146,6 @@ class ZoomLevelObserver {
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     browser_ = browser;
-    observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(
-        self,
-        ui_zoom::ZoomEventManager::GetForBrowserContext(browser->profile())));
     acceleratorDelegate_.reset(
         new WrenchMenuControllerInternal::AcceleratorDelegate());
     [self createModel];
@@ -140,11 +165,12 @@ class ZoomLevelObserver {
   [self setModel:nullptr];
   wrenchMenuModel_.reset();
   buttonViewController_.reset();
-  // ZoomLevelObserver holds a subscription to ZoomEventManager, which is
-  // user-data on the BrowserContext. The BrowserContext may be destroyed soon
-  // if Chrome is quitting. In any case, |observer_| should not be needed at
-  // this point.
-  observer_.reset();
+
+  // The observers should most likely already be destroyed (since they're reset
+  // in -menuDidClose:), but sometimes shutdown can be funny, so make sure to
+  // not leave any dangling observers.
+  zoom_level_observer_.reset();
+  toolbar_actions_bar_observer_.reset();
 
   [browserActionsController_ browserWillBeDestroyed];
 
@@ -187,6 +213,9 @@ class ZoomLevelObserver {
           [[[BrowserWindowController browserWindowControllerForWindow:browser_->
               window()->GetNativeWindow()] toolbarController]
                   browserActionsController];
+      toolbar_actions_bar_observer_.reset(
+          new WrenchMenuControllerInternal::ToolbarActionsBarObserverHelper(
+              self, [mainController toolbarActionsBar]));
       browserActionsController_.reset(
           [[BrowserActionsController alloc]
               initWithBrowser:browser_
@@ -304,6 +333,11 @@ class ZoomLevelObserver {
 - (void)menuWillOpen:(NSMenu*)menu {
   [super menuWillOpen:menu];
 
+  zoom_level_observer_.reset(
+      new WrenchMenuControllerInternal::ZoomLevelObserver(
+          self,
+          ui_zoom::ZoomEventManager::GetForBrowserContext(
+              browser_->profile())));
   NSString* title = base::SysUTF16ToNSString(
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[[buttonViewController_ zoomItem] viewWithTag:IDC_ZOOM_PERCENT_DISPLAY]
@@ -314,6 +348,16 @@ class ZoomLevelObserver {
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
           [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
   [[buttonViewController_ zoomFullScreen] setImage:icon];
+}
+
+- (void)menuDidClose:(NSMenu*)menu {
+  [super menuDidClose:menu];
+  // We don't need to observe changes to zoom or toolbar size when the menu is
+  // closed, since we instantiate it with the proper value and recreate the menu
+  // on each show. (We do this in -menuNeedsUpdate:, which is called when the
+  // menu is about to be displayed at the start of a tracking session.)
+  zoom_level_observer_.reset();
+  toolbar_actions_bar_observer_.reset();
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {

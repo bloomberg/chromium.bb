@@ -7,12 +7,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "ui/views/controls/scroll_view.h"
 
 class AppMenu;
 class Browser;
 class BrowserActionsContainer;
+class ToolbarActionsBar;
 
 // ExtensionToolbarMenuView is the view containing the extension actions that
 // overflowed from the BrowserActionsContainer, and is contained in and owned by
@@ -20,7 +21,7 @@ class BrowserActionsContainer;
 // In the event that the app menu was opened for an Extension Action drag-and-
 // drop, this will also close the menu upon completion.
 class ExtensionToolbarMenuView : public views::ScrollView,
-                                 public BrowserActionsContainerObserver {
+                                 public ToolbarActionsBarObserver {
  public:
   ExtensionToolbarMenuView(Browser* browser, AppMenu* app_menu);
   ~ExtensionToolbarMenuView() override;
@@ -44,13 +45,16 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   static void set_close_menu_delay_for_testing(int delay);
 
  private:
-  // BrowserActionsContainerObserver:
-  void OnBrowserActionsContainerDestroyed(
-      BrowserActionsContainer* browser_actions_container) override;
-  void OnBrowserActionDragDone() override;
+  // ToolbarActionsBarObserver:
+  void OnToolbarActionsBarDestroyed() override;
+  void OnToolbarActionDragDone() override;
+  void OnToolbarActionsBarDidStartResize() override;
 
   // Closes the |app_menu_|.
   void CloseAppMenu();
+
+  // Resizes and lays out the view.
+  void Redraw();
 
   // Returns the padding before the BrowserActionsContainer in the menu.
   int start_padding() const;
@@ -67,8 +71,8 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   // The maximum allowed height for the view.
   int max_height_;
 
-  ScopedObserver<BrowserActionsContainer, BrowserActionsContainerObserver>
-      browser_actions_container_observer_;
+  ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
+      toolbar_actions_bar_observer_;
 
   base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_;
 

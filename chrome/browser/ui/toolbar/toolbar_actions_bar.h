@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -25,6 +26,7 @@ class PrefRegistrySyncable;
 }
 
 class ToolbarActionsBarDelegate;
+class ToolbarActionsBarObserver;
 class ToolbarActionViewController;
 
 // A platform-independent version of the container for toolbar actions,
@@ -202,6 +204,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   ToolbarActionViewController* GetMainControllerForAction(
       ToolbarActionViewController* action);
 
+  // Add or remove an observer.
+  void AddObserver(ToolbarActionsBarObserver* observer);
+  void RemoveObserver(ToolbarActionsBarObserver* observer);
+
   // Returns the underlying toolbar actions, but does not order them. Primarily
   // for use in testing.
   const std::vector<ToolbarActionViewController*>& toolbar_actions_unordered()
@@ -322,6 +328,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // The controller of the bubble to show once animation finishes, if any.
   scoped_ptr<extensions::ExtensionMessageBubbleController>
       pending_extension_bubble_controller_;
+
+  base::ObserverList<ToolbarActionsBarObserver> observers_;
 
   base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_;
 

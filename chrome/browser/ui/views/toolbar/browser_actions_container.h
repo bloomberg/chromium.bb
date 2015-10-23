@@ -20,7 +20,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
-class BrowserActionsContainerObserver;
 class ExtensionPopup;
 
 namespace extensions {
@@ -195,10 +194,6 @@ class BrowserActionsContainer
   // the omnibox, this is probably *not* |max_width|).
   int GetWidthForMaxWidth(int max_width) const;
 
-  // Add or remove an observer.
-  void AddObserver(BrowserActionsContainerObserver* observer);
-  void RemoveObserver(BrowserActionsContainerObserver* observer);
-
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
@@ -354,8 +349,6 @@ class BrowserActionsContainer
 
   // The extension bubble that is actively showing, if any.
   views::BubbleDelegateView* active_bubble_;
-
-  base::ObserverList<BrowserActionsContainerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

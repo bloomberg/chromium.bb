@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -137,6 +138,8 @@ ToolbarActionsBar::~ToolbarActionsBar() {
   // the order of deletion between the views and the ToolbarActionsBar.
   DCHECK(toolbar_actions_.empty()) <<
       "Must call DeleteActions() before destruction.";
+  FOR_EACH_OBSERVER(ToolbarActionsBarObserver, observers_,
+                    OnToolbarActionsBarDestroyed());
 }
 
 // static
@@ -452,9 +455,15 @@ void ToolbarActionsBar::OnDragStarted() {
 
 void ToolbarActionsBar::OnDragEnded() {
   // All drag-and-drop commands should go to the main bar.
-  ToolbarActionsBar* main_bar = in_overflow_mode() ? main_bar_ : this;
-  DCHECK(main_bar->is_drag_in_progress_);
-  main_bar->is_drag_in_progress_ = false;
+  if (in_overflow_mode()) {
+    main_bar_->OnDragEnded();
+    return;
+  }
+
+  DCHECK(is_drag_in_progress_);
+  is_drag_in_progress_ = false;
+  FOR_EACH_OBSERVER(ToolbarActionsBarObserver,
+                    observers_, OnToolbarActionDragDone());
 }
 
 void ToolbarActionsBar::OnDragDrop(int dragged_index,
@@ -552,6 +561,14 @@ ToolbarActionViewController* ToolbarActionsBar::GetMainControllerForAction(
     ToolbarActionViewController* action) {
   return in_overflow_mode() ?
       main_bar_->GetActionForId(action->GetId()) : action;
+}
+
+void ToolbarActionsBar::AddObserver(ToolbarActionsBarObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ToolbarActionsBar::RemoveObserver(ToolbarActionsBarObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ToolbarActionsBar::MaybeShowExtensionBubble(
@@ -697,6 +714,9 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
     // action and added a different one in quick succession).
     delegate_->Redraw(false);
   }
+
+  FOR_EACH_OBSERVER(ToolbarActionsBarObserver,
+                    observers_, OnToolbarActionsBarDidStartResize());
 }
 
 void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
