@@ -1987,7 +1987,12 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
     # Copy the file in 'paths' as is to the archive directory.
     if len(artifact_info['paths']) > 1:
       raise ValueError('default archive type does not support multiple inputs')
-    shutil.copy(os.path.join(image_dir, artifact_info['paths'][0]), archive_dir)
+    src_image = os.path.join(image_dir, artifact_info['paths'][0])
+    tgt_image = os.path.join(archive_dir, artifact_info['paths'][0])
+    if not os.path.exists(tgt_image):
+      # The image may have already been copied into place. If so, overwriting it
+      # can affect parallel processes.
+      shutil.copy(src_image, tgt_image)
     return artifact_info['paths']
 
   inputs = artifact_info['paths']
