@@ -6,6 +6,8 @@
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_DEBUG_BUFFER_H_
 
 #include <linux/input.h>
+
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

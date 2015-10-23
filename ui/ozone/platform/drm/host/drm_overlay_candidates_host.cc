@@ -19,7 +19,7 @@ const size_t kMaxCacheSize = 100;
 
 bool DrmOverlayCandidatesHost::OverlayCompare::operator()(
     const OverlayCheck_Params& l,
-    const OverlayCheck_Params& r) {
+    const OverlayCheck_Params& r) const {
   if (l.plane_z_order < r.plane_z_order)
     return true;
   if (l.plane_z_order > r.plane_z_order)

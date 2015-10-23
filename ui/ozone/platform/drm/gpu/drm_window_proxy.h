@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_WINDOW_PROXY_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_WINDOW_PROXY_H_
 
+#include <vector>
+
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/public/surface_ozone_egl.h"

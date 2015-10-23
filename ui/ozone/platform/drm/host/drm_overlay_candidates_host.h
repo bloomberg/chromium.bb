@@ -35,10 +35,6 @@ class DrmWindowHost;
 // sequence number so that replies can be routed to the correct object.
 class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
                                  public GpuPlatformSupportHost {
-  struct OverlayCompare {
-    bool operator()(const OverlayCheck_Params& l, const OverlayCheck_Params& r);
-  };
-
  public:
   DrmOverlayCandidatesHost(DrmGpuPlatformSupportHost* platform_support,
                            DrmWindowHost* window);
@@ -66,6 +62,16 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
     uint32_t plane_id;
   };
 
+  struct OverlayCompare {
+    bool operator()(const OverlayCheck_Params& l,
+                    const OverlayCheck_Params& r) const;
+  };
+
+  template <class KeyType, class ValueType>
+  struct OverlayMap {
+    typedef std::map<KeyType, ValueType, OverlayCompare> Type;
+  };
+
   void SendRequest(const std::vector<OverlayCheck_Params>& list);
   void OnOverlayResult(bool* handled,
                        gfx::AcceleratedWidget widget,
@@ -78,10 +84,6 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
   DrmGpuPlatformSupportHost* platform_support_;  // Not owned.
   DrmWindowHost* window_;                        // Not owned.
 
-  template <class KeyType, class ValueType>
-  struct OverlayMap {
-    typedef std::map<KeyType, ValueType, OverlayCompare> Type;
-  };
   // List of all OverlayCheck_Params which have been validated in GPU side. If
   // this value is true, it means the particular param is compatible and
   // corresponding candidate can be promoted to use Hardware Overlays.
