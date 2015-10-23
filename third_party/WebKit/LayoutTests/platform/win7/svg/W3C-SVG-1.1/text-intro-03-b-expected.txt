@@ -37,8 +37,8 @@ layer at (0,0) size 480x360
             chunk 1 (vertical) text run 28 at (65.00,285.02) startOffset 27 endOffset 28 height 16.00: "e"
             chunk 1 (vertical) text run 29 at (65.00,291.02) startOffset 28 endOffset 29 height 16.00: "s"
             chunk 1 (vertical) text run 30 at (65.00,297.02) startOffset 29 endOffset 30 height 16.00: "e"
-        LayoutSVGText {text} at (222,10) size 16x428 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 15x428
+        LayoutSVGText {text} at (222,10) size 16x424 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 15x424
             chunk 1 (vertical) text run 1 at (225.50,10.00) startOffset 0 endOffset 1 height 15.00: "J"
             chunk 1 (vertical) text run 2 at (225.50,15.00) startOffset 1 endOffset 2 height 15.00: "a"
             chunk 1 (vertical) text run 3 at (225.50,21.00) startOffset 2 endOffset 3 height 15.00: "p"
@@ -74,8 +74,8 @@ layer at (0,0) size 480x360
             chunk 1 (vertical) text run 33 at (225.50,395.00) startOffset 32 endOffset 33 height 15.00: "\x{305B}"
             chunk 1 (vertical) text run 34 at (225.50,410.00) startOffset 33 endOffset 34 height 15.00: "\x{3093}"
             chunk 1 (vertical) text run 35 at (225.50,425.00) startOffset 34 endOffset 35 height 15.00: "\x{3002}"
-        LayoutSVGText {text} at (364,13) size 12x418 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 12x418
+        LayoutSVGText {text} at (364,13) size 12x415 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 12x415
             chunk 1 (vertical) text run 1 at (366.00,13.00) startOffset 0 endOffset 1 height 12.00: "J"
             chunk 1 (vertical) text run 2 at (366.00,25.00) startOffset 1 endOffset 2 height 12.00: "a"
             chunk 1 (vertical) text run 3 at (366.00,37.00) startOffset 2 endOffset 3 height 12.00: "p"

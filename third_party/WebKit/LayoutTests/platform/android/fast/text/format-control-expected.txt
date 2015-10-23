@@ -1,0 +1,28 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 704
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x704 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x704
+    LayoutBlockFlow {BODY} at (8,8) size 769x656
+      LayoutBlockFlow (anonymous) at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 457x19
+          text run at (0,0) width 457: "This tests the ZWJ and ZWNJ format control characters on basic Latin text."
+      LayoutBlockFlow {DIV} at (0,60) size 769x278
+        LayoutBlockFlow {P} at (0,0) size 769x48
+          LayoutText {#text} at (0,1) size 274x46
+            text run at (0,1) width 274: "fi fl ff ffi ffl fl f   i"
+        LayoutBlockFlow {P} at (0,88) size 769x75
+          LayoutText {#text} at (0,15) size 274x46
+            text run at (0,15) width 274: "f\x{200C}i f\x{200C}l f\x{200C}f f\x{200C}f\x{200C}i f\x{200C}f\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}i"
+        LayoutBlockFlow {P} at (0,203) size 769x75
+          LayoutText {#text} at (0,15) size 274x46
+            text run at (0,15) width 274: "f\x{200D}i f\x{200D}l f\x{200D}f f\x{200D}f\x{200D}i f\x{200D}f\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}i"
+      LayoutBlockFlow {DIV} at (0,378) size 769x278
+        LayoutBlockFlow {P} at (0,0) size 769x48
+          LayoutText {#text} at (0,1) size 274x46
+            text run at (0,1) width 274: "fi fl ff ffi ffl fl f   i"
+        LayoutBlockFlow {P} at (0,88) size 769x75
+          LayoutText {#text} at (0,15) size 274x46
+            text run at (0,15) width 274: "f\x{200C}i f\x{200C}l f\x{200C}f f\x{200C}f\x{200C}i f\x{200C}f\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}l f\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C} \x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}\x{200C}i"
+        LayoutBlockFlow {P} at (0,203) size 769x75
+          LayoutText {#text} at (0,15) size 274x46
+            text run at (0,15) width 274: "f\x{200D}i f\x{200D}l f\x{200D}f f\x{200D}f\x{200D}i f\x{200D}f\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}l f\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D} \x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}\x{200D}i"

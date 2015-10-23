@@ -17,5 +17,5 @@ layer at (0,0) size 800x600
           text run at (0,0) width 505: "The following box should not break the sequence of symbols since U+1F1EF is not "
           text run at (505,0) width 227: "a letter or number category character."
       LayoutBlockFlow {DIV} at (0,212) size 186x55 [border: (3px solid #0000FF)]
-        LayoutText {#text} at (3,3) size 464x49
-          text run at (3,3) width 464: "\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}"
+        LayoutText {#text} at (3,3) size 504x49
+          text run at (3,3) width 504: "\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}\x{D83C}\x{DDEF}\x{D83C}\x{DDF5}"

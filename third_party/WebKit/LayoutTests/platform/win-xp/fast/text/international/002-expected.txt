@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
-  LayoutView at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x600
-    LayoutBlockFlow {BODY} at (8,8) size 784x584
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
       LayoutTable {TABLE} at (0,0) size 280x100
         LayoutTableSection {TBODY} at (0,0) size 280x100
           LayoutTableRow {TR} at (0,0) size 280x100
             LayoutTableCell {TD} at (0,0) size 280x100 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 280x99
+              RenderText {#text} at (0,0) size 280x99
                 text run at (0,0) width 280: "\x{8AB0}\x{3067}\x{3082}\x{3042}\x{306A}\x{305F}\x{306E}\x{30C9}\x{30AD}\x{30E5}\x{30E1}\x{30F3}\x{30C8}\x{3092}\x{30AA}\x{30EA}\x{30B8}\x{30CA}\x{30EB}\x{306E}"
                 text run at (0,20) width 189: "\x{4F53}\x{88C1}\x{3067}\x{958B}\x{304F}\x{3053}\x{3068}\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002} "
                 text run at (189,20) width 76: "\x{3042}\x{306A}\x{305F}\x{306E}\x{610F}"

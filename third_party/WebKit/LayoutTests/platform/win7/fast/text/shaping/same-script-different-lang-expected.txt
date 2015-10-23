@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x182
+  LayoutBlockFlow {HTML} at (0,0) size 800x182.44
+    LayoutBlockFlow {BODY} at (8,18.72) size 784x147.72
+      LayoutBlockFlow {H3} at (0,0) size 784x22
+        LayoutText {#text} at (0,0) size 759x21
+          text run at (0,0) width 759: "The glyph for JHA should look different for Nepali and Hindi, depending on the lang attribute."
+      LayoutBlockFlow {P} at (0,40.72) size 784x25
+        LayoutText {#text} at (0,4) size 88x21
+          text run at (0,4) width 88: "Hindi:JHA \x{91D}"
+      LayoutBlockFlow {P} at (0,81.72) size 784x25
+        LayoutText {#text} at (0,4) size 97x21
+          text run at (0,4) width 97: "Nepali:JHA \x{91D}"
+      LayoutBlockFlow {P} at (0,122.72) size 784x25
+        LayoutText {#text} at (0,4) size 82x21
+          text run at (0,4) width 82: "Nepali:JHA "
+        LayoutInline {SPAN} at (0,0) size 16x21
+          LayoutText {#text} at (81,4) size 16x21
+            text run at (81,4) width 16: "\x{91D}"
+        LayoutText {#text} at (96,4) size 309x21
+          text run at (96,4) width 309: " - \"ne\" in \"hi\" should look the same as above."

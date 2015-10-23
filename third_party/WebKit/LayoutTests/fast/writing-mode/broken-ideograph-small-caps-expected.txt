@@ -12,11 +12,9 @@ layer at (0,0) size 800x377
             LayoutText {#text} at (21,1) size 176x20
               text run at (21,1) width 176: "\x{7B2C}\x{4E8C}\x{6BB5}\x{843D} Paragraph 2"
         LayoutBlockFlow {DIV} at (278,1) size 277x275 [bgcolor=#FFFFEE]
-          LayoutBlockFlow {P} at (14.64,28.30) size 82x218.41 [bgcolor=#FFAAAA] [border: none (20px solid #FF8888) none (20px solid #FF8888)]
-            LayoutText {#text} at (21,1) size 40x212
-              text run at (21,1) width 212: "\x{7B2C}\x{4E00}\x{6BB5}\x{843D} Paragraph"
-              text run at (41,1) width 10: "1"
-          LayoutBlockFlow {P} at (110.28,28.30) size 82x218.41 [bgcolor=#FFAAAA] [border: none (20px solid #FF8888) none (20px solid #FF8888)]
-            LayoutText {#text} at (21,1) size 40x212
-              text run at (21,1) width 212: "\x{7B2C}\x{4E8C}\x{6BB5}\x{843D} Paragraph"
-              text run at (41,1) width 10: "2"
+          LayoutBlockFlow {P} at (14.64,28.30) size 62x218.41 [bgcolor=#FFAAAA] [border: none (20px solid #FF8888) none (20px solid #FF8888)]
+            LayoutText {#text} at (21,1) size 20x176
+              text run at (21,1) width 176: "\x{7B2C}\x{4E00}\x{6BB5}\x{843D} Paragraph 1"
+          LayoutBlockFlow {P} at (90.28,28.30) size 62x218.41 [bgcolor=#FFAAAA] [border: none (20px solid #FF8888) none (20px solid #FF8888)]
+            LayoutText {#text} at (21,1) size 20x176
+              text run at (21,1) width 176: "\x{7B2C}\x{4E8C}\x{6BB5}\x{843D} Paragraph 2"

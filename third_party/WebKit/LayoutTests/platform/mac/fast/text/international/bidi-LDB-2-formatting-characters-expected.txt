@@ -36,60 +36,60 @@ layer at (0,0) size 800x589
         LayoutText {#text} at (0,0) size 287x18
           text run at (0,0) width 287: "In each box, all the lines should be the same."
       LayoutBlockFlow (anonymous) at (0,160.44) size 784x237
-        LayoutBlockFlow {DIV} at (3,3) size 99.58x178 [border: (1px solid #008000)]
+        LayoutBlockFlow {DIV} at (3,7) size 99.58x170 [border: (1px solid #008000)]
           LayoutBlockFlow {P} at (4,4) size 91.58x18
             LayoutText {#text} at (0,0) size 92x18
               text run at (0,0) width 92: "ABCDEFGHI"
-          LayoutBlockFlow {P} at (4,22) size 91.58x19
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 92: "\x{202B}ABCDEFGHI"
-          LayoutBlockFlow {P} at (4,41) size 91.58x19
-            LayoutText {#text} at (0,1) size 33x18
-              text run at (0,1) width 33: "\x{202B}ABC"
+          LayoutBlockFlow {P} at (4,22) size 91.58x18
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 92: "\x{202B}ABCDEFGHI"
+          LayoutBlockFlow {P} at (4,40) size 91.58x18
+            LayoutText {#text} at (0,0) size 33x18
+              text run at (0,0) width 33: "\x{202B}ABC"
             LayoutInline {SPAN} at (0,0) size 32x18
-              LayoutText {#text} at (32,1) size 32x18
-                text run at (32,1) width 32: "DEF"
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (63,1) width 29: "GHI"
-          LayoutBlockFlow {P} at (4,60) size 91.58x19
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 92 RTL override: "\x{202E}IHGFEDCBA"
-          LayoutBlockFlow {P} at (4,79) size 91.58x19
-            LayoutText {#text} at (63,1) size 29x18
-              text run at (63,1) width 29 RTL override: "\x{202E}IHG"
+              LayoutText {#text} at (32,0) size 32x18
+                text run at (32,0) width 32: "DEF"
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (63,0) width 29: "GHI"
+          LayoutBlockFlow {P} at (4,58) size 91.58x18
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 92 RTL override: "\x{202E}IHGFEDCBA"
+          LayoutBlockFlow {P} at (4,76) size 91.58x18
+            LayoutText {#text} at (63,0) size 29x18
+              text run at (63,0) width 29 RTL override: "\x{202E}IHG"
             LayoutInline {SPAN} at (0,0) size 32x18
-              LayoutText {#text} at (32,1) size 32x18
-                text run at (32,1) width 32 RTL override: "FED"
-            LayoutText {#text} at (0,1) size 33x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 33 RTL override: "CBA"
-          LayoutBlockFlow {P} at (4,98) size 91.58x19
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 33 RTL override: "\x{202C}CBA"
-              text run at (32,1) width 32: "\x{202B}DEF"
-              text run at (63,1) width 29 RTL override: "\x{202E}IHG"
-          LayoutBlockFlow {P} at (4,117) size 91.58x19
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 33 RTL override: "\x{202C}CBA"
-              text run at (32,1) width 32 RTL override: "\x{202E}FED"
-              text run at (63,1) width 29 RTL override: "\x{202E}IHG"
-          LayoutBlockFlow {P} at (4,136) size 91.58x19
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 33 RTL override: "\x{202C}CBA"
-              text run at (32,1) width 32 RTL override: "\x{202E}FED"
-              text run at (63,1) width 29 RTL override: "\x{202E}IHG"
-          LayoutBlockFlow {P} at (4,155) size 91.58x19
-            LayoutText {#text} at (0,1) size 92x18
-              text run at (0,1) width 0 RTL: "\x{202C}"
-              text run at (0,1) width 33 RTL override: "\x{202C}CBA"
-              text run at (32,1) width 32 LTR override: "\x{202D}DEF"
-              text run at (63,1) width 29 RTL override: "\x{202E}IHG"
+              LayoutText {#text} at (32,0) size 32x18
+                text run at (32,0) width 32 RTL override: "FED"
+            LayoutText {#text} at (0,0) size 33x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 33 RTL override: "CBA"
+          LayoutBlockFlow {P} at (4,94) size 91.58x18
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 33 RTL override: "\x{202C}CBA"
+              text run at (32,0) width 32: "\x{202B}DEF"
+              text run at (63,0) width 29 RTL override: "\x{202E}IHG"
+          LayoutBlockFlow {P} at (4,112) size 91.58x18
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 33 RTL override: "\x{202C}CBA"
+              text run at (32,0) width 32 RTL override: "\x{202E}FED"
+              text run at (63,0) width 29 RTL override: "\x{202E}IHG"
+          LayoutBlockFlow {P} at (4,130) size 91.58x18
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 33 RTL override: "\x{202C}CBA"
+              text run at (32,0) width 32 RTL override: "\x{202E}FED"
+              text run at (63,0) width 29 RTL override: "\x{202E}IHG"
+          LayoutBlockFlow {P} at (4,148) size 91.58x18
+            LayoutText {#text} at (0,0) size 92x18
+              text run at (0,0) width 0 RTL: "\x{202C}"
+              text run at (0,0) width 33 RTL override: "\x{202C}CBA"
+              text run at (32,0) width 32 LTR override: "\x{202D}DEF"
+              text run at (63,0) width 29 RTL override: "\x{202E}IHG"
         LayoutText {#text} at (105,82) size 5x18
           text run at (105,82) width 5: " "
         LayoutBlockFlow {DIV} at (112.58,50) size 36x84 [border: (1px solid #008000)]

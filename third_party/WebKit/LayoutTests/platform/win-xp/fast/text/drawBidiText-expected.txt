@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 264x19
           text run at (0,0) width 264: "This tests GraphicsContext::drawBidiText()."
-layer at (8,44) size 327x209 clip at (9,45) size 310x207 scrollHeight 209
+layer at (8,44) size 327x209 clip at (9,45) size 310x207
   LayoutListBox {SELECT} at (0,36) size 327x209 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 310x23
       LayoutText {#text} at (2,0) size 199x21
@@ -37,18 +37,18 @@ layer at (8,44) size 327x209 clip at (9,45) size 310x207 scrollHeight 209
     LayoutBlockFlow {OPTION} at (1,139) size 310x23
       LayoutText {#text} at (2,0) size 127x21
         text run at (2,0) width 127: "Et volia\x{300}: ATSUI!"
-    LayoutBlockFlow {OPTION} at (1,162) size 310x24
-      LayoutText {#text} at (2,1) size 282x21
-        text run at (2,1) width 90: "Directional "
-        text run at (92,1) width 74 RTL override: "\x{202E}overrides"
-        text run at (166,1) width 118: "\x{202C} are confusing."
-    LayoutBlockFlow {OPTION} at (1,186) size 310x24
-      LayoutText {#text} at (2,1) size 306x21
-        text run at (2,1) width 82: "She said \x{201C}"
-        text run at (84,1) width 67 RTL: " \x{5D1}\x{5DE}\x{5D6}\x{5D5}\x{5D5}\x{5D3}\x{5D4}!"
-        text run at (151,1) width 37: "TNT"
-        text run at (188,1) width 22 RTL: "\x{202B}\x{5D9}\x{5E9} "
-        text run at (210,1) width 98: "\x{202C}\x{201D} and ran off"
+    LayoutBlockFlow {OPTION} at (1,162) size 310x23
+      LayoutText {#text} at (2,0) size 282x21
+        text run at (2,0) width 90: "Directional "
+        text run at (92,0) width 74 RTL override: "\x{202E}overrides"
+        text run at (166,0) width 118: "\x{202C} are confusing."
+    LayoutBlockFlow {OPTION} at (1,185) size 310x23
+      LayoutText {#text} at (2,0) size 306x21
+        text run at (2,0) width 82: "She said \x{201C}"
+        text run at (84,0) width 67 RTL: " \x{5D1}\x{5DE}\x{5D6}\x{5D5}\x{5D5}\x{5D3}\x{5D4}!"
+        text run at (151,0) width 37: "TNT"
+        text run at (188,0) width 22 RTL: "\x{202B}\x{5D9}\x{5E9} "
+        text run at (210,0) width 98: "\x{202C}\x{201D} and ran off"
 layer at (8,253) size 365x18 clip at (9,254) size 348x16
   LayoutListBox {SELECT} at (0,245) size 365x18 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 348x16

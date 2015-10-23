@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x366
-  LayoutBlockFlow {HTML} at (0,0) size 800x366
-    LayoutBlockFlow {BODY} at (8,16) size 784x342
+layer at (0,0) size 800x356
+  LayoutBlockFlow {HTML} at (0,0) size 800x356
+    LayoutBlockFlow {BODY} at (8,16) size 784x332
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 295x19
           text run at (0,0) width 295: "All rows should be identical to the reference row."
-      LayoutTable {TABLE} at (0,36) size 506x127 [border: none]
-        LayoutTableSection {TBODY} at (0,0) size 505x126
+      LayoutTable {TABLE} at (0,36) size 506x117 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 505x116
           LayoutTableRow {TR} at (0,0) size 505x29
             LayoutTableCell {TD} at (0,0) size 93x29 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (28,5) size 61x19
@@ -103,31 +103,31 @@ layer at (0,0) size 800x366
                     text run at (23,5) width 62 LTR override: "\x{5D8}\x{5D7}\x{5D6}abc\x{5D5}\x{5D4}\x{5D3}"
                 LayoutText {#text} at (5,5) size 18x19
                   text run at (5,5) width 18 RTL: "\x{5D9}\x{5DB}\x{5DC}"
-          LayoutTableRow {TR} at (0,87) size 505x39
-            LayoutTableCell {TD} at (0,92) size 93x29 [border: (1px solid #008000)] [r=3 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,87) size 505x29
+            LayoutTableCell {TD} at (0,87) size 93x29 [border: (1px solid #008000)] [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (38,5) size 51x19
                 text run at (38,5) width 51: "Unicode"
-            LayoutTableCell {TD} at (93,87) size 206x39 [border: (1px solid #008000)] [r=3 c=1 rs=1 cs=1]
-              LayoutText {#text} at (5,11) size 197x19
-                text run at (5,11) width 22: "abc"
-                text run at (27,11) width 56 RTL override: "\x{202E}ihg\x{5D0}\x{5D1}\x{5D2}fed"
-                text run at (83,11) width 19: "\x{202C}jkl "
-                text run at (102,11) width 18 RTL: "\x{202C}\x{5D9}\x{5DB}\x{5DC}"
-                text run at (120,11) width 62 LTR override: "\x{202D}\x{5D8}\x{5D7}\x{5D6}abc\x{5D5}\x{5D4}\x{5D3}"
-                text run at (182,11) width 20 RTL: "\x{5D0}\x{5D1}\x{5D2}"
-            LayoutTableCell {TD} at (299,87) size 206x39 [border: (1px solid #008000)] [r=3 c=2 rs=1 cs=1]
-              LayoutText {#text} at (5,11) size 197x19
-                text run at (5,11) width 18 RTL: "\x{202C}\x{5D9}\x{5DB}\x{5DC}"
-                text run at (23,11) width 62 LTR override: "\x{202D}\x{5D8}\x{5D7}\x{5D6}abc\x{5D5}\x{5D4}\x{5D3}"
-                text run at (85,11) width 20 RTL: "\x{5D0}\x{5D1}\x{5D2}"
-                text run at (105,11) width 4 RTL: " "
-                text run at (109,11) width 22: "abc"
-                text run at (131,11) width 56 RTL override: "\x{202E}ihg\x{5D0}\x{5D1}\x{5D2}fed"
-                text run at (187,11) width 15: "\x{202C}jkl"
-      LayoutBlockFlow {P} at (0,179) size 784x20
+            LayoutTableCell {TD} at (93,87) size 206x29 [border: (1px solid #008000)] [r=3 c=1 rs=1 cs=1]
+              LayoutText {#text} at (5,5) size 197x19
+                text run at (5,5) width 22: "abc"
+                text run at (27,5) width 56 RTL override: "\x{202E}ihg\x{5D0}\x{5D1}\x{5D2}fed"
+                text run at (83,5) width 19: "\x{202C}jkl "
+                text run at (102,5) width 18 RTL: "\x{202C}\x{5D9}\x{5DB}\x{5DC}"
+                text run at (120,5) width 62 LTR override: "\x{202D}\x{5D8}\x{5D7}\x{5D6}abc\x{5D5}\x{5D4}\x{5D3}"
+                text run at (182,5) width 20 RTL: "\x{5D0}\x{5D1}\x{5D2}"
+            LayoutTableCell {TD} at (299,87) size 206x29 [border: (1px solid #008000)] [r=3 c=2 rs=1 cs=1]
+              LayoutText {#text} at (5,5) size 197x19
+                text run at (5,5) width 18 RTL: "\x{202C}\x{5D9}\x{5DB}\x{5DC}"
+                text run at (23,5) width 62 LTR override: "\x{202D}\x{5D8}\x{5D7}\x{5D6}abc\x{5D5}\x{5D4}\x{5D3}"
+                text run at (85,5) width 20 RTL: "\x{5D0}\x{5D1}\x{5D2}"
+                text run at (105,5) width 4 RTL: " "
+                text run at (109,5) width 22: "abc"
+                text run at (131,5) width 56 RTL override: "\x{202E}ihg\x{5D0}\x{5D1}\x{5D2}fed"
+                text run at (187,5) width 15: "\x{202C}jkl"
+      LayoutBlockFlow {P} at (0,169) size 784x20
         LayoutText {#text} at (0,0) size 367x19
           text run at (0,0) width 367: "The CSS column should be identical to the reference column."
-      LayoutTable {TABLE} at (0,215) size 219x127 [border: none]
+      LayoutTable {TABLE} at (0,205) size 219x127 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 218x126
           LayoutTableRow {TR} at (0,0) size 218x29
             LayoutTableCell {TD} at (0,0) size 109x29 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]

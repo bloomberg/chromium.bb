@@ -21,7 +21,7 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (304,80) width 0: " "
           text run at (0,96) width 64: "U+16Fx \x{16F0}"
           text run at (64,96) width 0: " "
-        LayoutText {#text} at (0,112) size 328x133
+        LayoutText {#text} at (0,112) size 309x133
           text run at (0,112) width 0: " "
           text run at (0,129) width 239: "U+200x \x{2000} \x{2001} \x{2002} \x{2003} \x{2004} \x{2004} \x{2004} \x{2004} \x{2004} \x{2009} \x{200A} \x{200B} \x{200C} \x{200D} \x{200E} "
           text run at (239,129) width 0 RTL: "\x{200F}"
@@ -37,10 +37,10 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (222,163) width 16 RTL override: "\x{202E} \x{202F}"
           text run at (0,180) width 309: "U+203x \x{2030} \x{2031} \x{2032} \x{2033} \x{2034} \x{2035} \x{2036} \x{2037} \x{2038} \x{2039} \x{203A} \x{203B} \x{203C} \x{203D} \x{203E} \x{203F}"
           text run at (309,180) width 0: " "
-          text run at (0,197) width 320: "U+204x \x{2040} \x{2041} \x{2042} \x{2043} \x{2044} \x{2045} \x{2046} \x{2047} \x{2048} \x{2049} \x{204A} \x{204B} \x{204C} \x{204D} \x{204E} \x{204F}"
-          text run at (320,197) width 0: " "
-          text run at (0,213) width 328: "U+205x \x{2050} \x{2051} \x{2052} \x{2053} \x{2054} \x{2055} \x{2056} \x{2057} \x{2058} \x{2059} \x{205A} \x{205B} \x{205C} \x{205D} \x{205E} \x{205F}"
-          text run at (328,213) width 0: " "
+          text run at (0,197) width 296: "U+204x \x{2040} \x{2041} \x{2042} \x{2043} \x{2044} \x{2045} \x{2046} \x{2047} \x{2048} \x{2049} \x{204A} \x{204B} \x{204C} \x{204D} \x{204E} \x{204F}"
+          text run at (296,197) width 0: " "
+          text run at (0,213) width 304: "U+205x \x{2050} \x{2051} \x{2052} \x{2053} \x{2054} \x{2055} \x{2056} \x{2057} \x{2058} \x{2059} \x{205A} \x{205B} \x{205C} \x{205D} \x{205E} \x{205F}"
+          text run at (304,213) width 0: " "
           text run at (0,229) width 136: "U+206x \x{2060} \x{2061} \x{2062} \x{2063} \x{2064} \x{206A} \x{206B} \x{206C} \x{206D} \x{206E} \x{206F}"
           text run at (136,229) width 0: " "
         LayoutText {#text} at (0,245) size 384x273
@@ -103,10 +103,10 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (384,694) width 0: " "
           text run at (0,710) width 374: "U+27Bx \x{27B0} \x{27B1} \x{27B2} \x{27B3} \x{27B4} \x{27B5} \x{27B6} \x{27B7} \x{27B8} \x{27B9} \x{27BA} \x{27BB} \x{27BC} \x{27BD} \x{27BE} \x{27BF}"
           text run at (374,710) width 0: " "
-        LayoutText {#text} at (0,726) size 344x288
+        LayoutText {#text} at (0,726) size 304x288
           text run at (0,726) width 0: " "
-          text run at (0,742) width 328: "U+2A0x \x{2A00} \x{2A01} \x{2A02} \x{2A03} \x{2A04} \x{2A05} \x{2A06} \x{2A07} \x{2A08} \x{2A09} \x{2A0A} \x{2A0B} \x{2A0C} \x{2A0D} \x{2A0E} \x{2A0F}"
-          text run at (328,742) width 0: " "
+          text run at (0,742) width 304: "U+2A0x \x{2A00} \x{2A01} \x{2A02} \x{2A03} \x{2A04} \x{2A05} \x{2A06} \x{2A07} \x{2A08} \x{2A09} \x{2A0A} \x{2A0B} \x{2A0C} \x{2A0D} \x{2A0E} \x{2A0F}"
+          text run at (304,742) width 0: " "
           text run at (0,758) width 304: "U+2A1x \x{2A10} \x{2A11} \x{2A12} \x{2A13} \x{2A14} \x{2A15} \x{2A16} \x{2A17} \x{2A18} \x{2A19} \x{2A1A} \x{2A1B} \x{2A1C} \x{2A1D} \x{2A1E} \x{2A1F}"
           text run at (304,758) width 0: " "
           text run at (0,774) width 304: "U+2A2x \x{2A20} \x{2A21} \x{2A22} \x{2A23} \x{2A24} \x{2A25} \x{2A26} \x{2A27} \x{2A28} \x{2A29} \x{2A2A} \x{2A2B} \x{2A2C} \x{2A2D} \x{2A2E} \x{2A2F}"
@@ -119,8 +119,8 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (304,822) width 0: " "
           text run at (0,838) width 304: "U+2A6x \x{2A60} \x{2A61} \x{2A62} \x{2A63} \x{2A64} \x{2A65} \x{2A66} \x{2A67} \x{2A68} \x{2A69} \x{2A6A} \x{2A6B} \x{2A6C} \x{2A6D} \x{2A6E} \x{2A6F}"
           text run at (304,838) width 0: " "
-          text run at (0,854) width 344: "U+2A7x \x{2A70} \x{2A71} \x{2A72} \x{2A73} \x{2A74} \x{2A75} \x{2A76} \x{2A77} \x{2A78} \x{2A79} \x{2A7A} \x{2A7B} \x{2A7C} \x{2A7D} \x{2A7E} \x{2A7F}"
-          text run at (344,854) width 0: " "
+          text run at (0,854) width 304: "U+2A7x \x{2A70} \x{2A71} \x{2A72} \x{2A73} \x{2A74} \x{2A75} \x{2A76} \x{2A77} \x{2A78} \x{2A79} \x{2A7A} \x{2A7B} \x{2A7C} \x{2A7D} \x{2A7E} \x{2A7F}"
+          text run at (304,854) width 0: " "
           text run at (0,870) width 304: "U+2A8x \x{2A80} \x{2A81} \x{2A82} \x{2A83} \x{2A84} \x{2A85} \x{2A86} \x{2A87} \x{2A88} \x{2A89} \x{2A8A} \x{2A8B} \x{2A8C} \x{2A8D} \x{2A8E} \x{2A8F}"
           text run at (304,870) width 0: " "
           text run at (0,886) width 304: "U+2A9x \x{2A90} \x{2A91} \x{2A92} \x{2A93} \x{2A94} \x{2A95} \x{2A96} \x{2A97} \x{2A98} \x{2A99} \x{2A9A} \x{2A9B} \x{2A9C} \x{2A9D} \x{2A9E} \x{2A9F}"

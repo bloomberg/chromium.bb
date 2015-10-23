@@ -10,11 +10,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 679x19
           text run at (0,0) width 679: "The backslash-looking mark should connect into the the character on the center, not be positioned off to the side."
       LayoutBlockFlow {DIV} at (0,72) size 784x123
-        LayoutText {#text} at (0,16) size 297x80
-          text run at (0,16) width 297: "\x{915}+ \x{947} = \x{915}\x{947}"
+        LayoutText {#text} at (0,16) size 290x80
+          text run at (0,16) width 290: "\x{915}+ \x{947} = \x{915}\x{947}"
       LayoutBlockFlow {DIV} at (0,195) size 784x53
-        LayoutText {#text} at (0,7) size 129x34
-          text run at (0,7) width 129: "\x{915}+ \x{947} = \x{915}\x{947}"
+        LayoutText {#text} at (0,7) size 126x34
+          text run at (0,7) width 126: "\x{915}+ \x{947} = \x{915}\x{947}"
       LayoutBlockFlow {P} at (0,264) size 784x20
         LayoutText {#text} at (0,0) size 586x19
           text run at (0,0) width 586: "The three words should be separated by spaces, and there should be no marks above the spaces."
