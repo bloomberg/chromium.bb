@@ -48,9 +48,8 @@ public:
     String displayLabel() const;
 
     // |text| IDL attribute implementations.
-    // TOOD(tkent): Rename |textForBinding| to |text|.
-    String textForBinding() const;
-    void setTextForBinding(const String&, ExceptionState&);
+    String text() const;
+    void setText(const String&, ExceptionState&);
 
     int index() const;
 
