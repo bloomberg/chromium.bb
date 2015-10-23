@@ -308,6 +308,7 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
 - (void)toggleFullScreen:(id)sender;
 - (void)setRestorable:(BOOL)flag;
 - (NSRect)convertRectFromScreen:(NSRect)aRect;
+- (NSSize)convertRectToScreen:(NSRect)aRect;
 @end
 
 @interface NSCursor (LionSDKDeclarations)

@@ -183,7 +183,43 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
       draggingWithinTabStrip_ = NO;
       // When you finally leave the strip, we treat that as the origin.
       dragOrigin_.x = thisPoint.x;
-    } else {
+      // The above call to insertPlaceholderForTab:frame: updates
+      // |draggedTab_|'s frame, but does so using an animator, which means the
+      // new frame gets set only after the next turn of the run loop. As a
+      // result, at this point in the code the updated frame is only pending,
+      // which means that when the tab gets torn off into its own window, its
+      // location in that new window will be based on its current, un-updated
+      // location. As a result, the tab will appear at an unexpected location
+      // in the new window relative to the mouse. The difference between the
+      // expected and actual locations will be more-pronounced the faster you
+      // drag the mouse horizontally when tearing it off from its current
+      // window. To fix, explicitly set the tab's new location so that it's
+      // correct at tearoff time. See http://crbug.com/541674 .
+      NSRect newTabFrame = [[draggedTab_ tabView] frame];
+      newTabFrame.origin.x = sourceTabFrame_.origin.x + offset;
+
+      // Ensure that the tab won't extend beyond the right edge of the tab area
+      // in the tab strip.
+      CGFloat tabWidthBeyondRightEdge =
+          MAX(NSMaxX(newTabFrame) - [tabStrip_ tabAreaRightEdge], 0.0);
+      if (tabWidthBeyondRightEdge) {
+        // Adjust the tab's x-origin so that it just touches the right edge of
+        // the tab area.
+        newTabFrame.origin.x -= tabWidthBeyondRightEdge;
+        // Offset the new window's drag location so that the tab will still be
+        // positioned correctly beneath the mouse (being careful to convert the
+        // view frame offset to screen coordinates).
+        if (base::mac::IsOSLionOrLater()) {
+          NSWindow* tabViewWindow = [[draggedTab_ tabView] window];
+          horizDragOffset_ = [tabViewWindow convertRectToScreen:
+              NSMakeRect(0.0, 0.0, tabWidthBeyondRightEdge, 1.0)].size.width;
+        } else {
+          horizDragOffset_ = tabWidthBeyondRightEdge;
+        }
+      }
+
+      [[draggedTab_ tabView] setFrameOrigin:newTabFrame.origin];
+  } else {
       // Still dragging within the tab strip, wait for the next drag event.
       return;
     }
@@ -330,7 +366,8 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     origin.y = NSMinY(targetFrame) +
                 (NSHeight(targetFrame) - NSHeight(sourceFrame));
   }
-  [dragWindow_ setFrameOrigin:NSMakePoint(origin.x, origin.y)];
+  [dragWindow_ setFrameOrigin:
+      NSMakePoint(origin.x + horizDragOffset_, origin.y)];
 
   // If we're not hovering over any window, make the window fully
   // opaque. Otherwise, find where the tab might be dropped and insert
@@ -471,6 +508,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   sourceController_ = nil;
   sourceWindow_ = nil;
   targetController_ = nil;
+  horizDragOffset_ = 0.0;
 }
 
 // Returns an array of controllers that could be a drop target, ordered front to

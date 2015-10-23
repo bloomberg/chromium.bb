@@ -235,6 +235,10 @@ class WebContents;
 // is visible.
 - (BOOL)isTabFullyVisible:(TabView*)tab;
 
+// Returns the right edge of the tab strip's tab area (i.e. the width of the
+// tab strip, less the right indent for controls).
+- (CGFloat)tabAreaRightEdge;
+
 // Show or hide the new tab button. The button is hidden immediately, but
 // waits until the next call to |-layoutTabs| to show it again.
 - (void)showNewTabButton:(BOOL)show;

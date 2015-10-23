@@ -54,6 +54,8 @@
   NSWindow* dragOverlay_;  // Weak. The overlay being dragged
 
   TabWindowController* targetController_;  // weak. Controller being targeted
+
+  CGFloat horizDragOffset_;
 }
 
 // The tab being dragged, or nil if not dragging a tab.

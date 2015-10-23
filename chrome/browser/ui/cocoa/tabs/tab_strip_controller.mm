@@ -960,8 +960,11 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   NSRect frame = [tab frame];
   return NSMinX(frame) >= [self leftIndentForControls] &&
-      NSMaxX(frame) <= (NSMaxX([tabStripView_ frame]) -
-                        [self rightIndentForControls]);
+      NSMaxX(frame) <= [self tabAreaRightEdge];
+}
+
+- (CGFloat)tabAreaRightEdge {
+  return NSMaxX([tabStripView_ frame]) - [self rightIndentForControls];
 }
 
 - (void)showNewTabButton:(BOOL)show {
