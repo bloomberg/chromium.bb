@@ -366,14 +366,14 @@ bool LayerTreeHostImpl::CanDraw() const {
   DCHECK(output_surface_);
 
   // TODO(boliu): Make draws without root_layer work and move this below
-  // draw_and_swap_full_viewport_every_frame check. Tracked in crbug.com/264967.
+  // |resourceless_software_draw_| check. Tracked in crbug.com/264967.
   if (!active_tree_->root_layer()) {
     TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw no root layer",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
-  if (output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
+  if (resourceless_software_draw_)
     return true;
 
   if (DrawViewportSize().IsEmpty()) {
@@ -766,8 +766,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;
-    DCHECK(!output_surface_->capabilities()
-               .draw_and_swap_full_viewport_every_frame);
+    DCHECK(!resourceless_software_draw_);
     return DRAW_SUCCESS;
   }
 
@@ -946,11 +945,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
   }
 
-  // When this capability is set we don't have control over the surface the
-  // compositor draws to, so even though the frame may not be complete, the
-  // previous frame has already been potentially lost, so an incomplete frame is
-  // better than nothing, so this takes highest precidence.
-  if (output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
+  // When doing a resourceless software draw, we don't have control over the
+  // surface the compositor draws to, so even though the frame may not be
+  // complete, the previous frame has already been potentially lost, so an
+  // incomplete frame is better than nothing, so this takes highest precidence.
+  if (resourceless_software_draw_)
     draw_result = DRAW_SUCCESS;
 
 #if DCHECK_IS_ON()
@@ -1091,8 +1090,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
 
   DrawResult draw_result = CalculateRenderPasses(frame);
   if (draw_result != DRAW_SUCCESS) {
-    DCHECK(!output_surface_->capabilities()
-               .draw_and_swap_full_viewport_every_frame);
+    DCHECK(!resourceless_software_draw_);
     return draw_result;
   }
 
@@ -1449,6 +1447,11 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
     SetFullRootLayerDamage();
     SetNeedsRedraw();
   }
+
+  if (resourceless_software_draw_changed) {
+    client_->OnResourcelessSoftareDrawStateChanged(resourceless_software_draw);
+    client_->OnCanDrawStateChanged(CanDraw());
+  }
 }
 
 void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
@@ -1557,8 +1560,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   if (frame->has_no_damage) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
-    DCHECK(!output_surface_->capabilities()
-               .draw_and_swap_full_viewport_every_frame);
+    DCHECK(!resourceless_software_draw_);
     return;
   }
 

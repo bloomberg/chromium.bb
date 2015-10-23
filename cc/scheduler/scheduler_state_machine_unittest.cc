@@ -1788,11 +1788,20 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
-TEST(SchedulerStateMachineTest, ForceDrawForSynchronousCompositor) {
-  SchedulerSettings scheduler_settings;
-  scheduler_settings.using_synchronous_renderer_compositor = true;
-  StateMachine state(scheduler_settings);
+TEST(SchedulerStateMachineTest, ForceDrawForResourcelessSoftwareDraw) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
+  state.SetResourcelessSoftareDraw(true);
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+
+  state.SetVisible(false);
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+
+  state.SetResourcelessSoftareDraw(false);
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+
+  state.SetResourcelessSoftareDraw(true);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 
   state.SetVisible(false);

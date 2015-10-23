@@ -137,6 +137,11 @@ void Scheduler::SetVisible(bool visible) {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetResourcelessSoftareDraw(bool resourceless_draw) {
+  state_machine_.SetResourcelessSoftareDraw(resourceless_draw);
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetCanDraw(bool can_draw) {
   state_machine_.SetCanDraw(can_draw);
   ProcessScheduledActions();

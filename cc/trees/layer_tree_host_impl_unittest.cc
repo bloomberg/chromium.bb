@@ -119,6 +119,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void SetMaxSwapsPendingOnImplThread(int max) override {}
   void DidSwapBuffersOnImplThread() override {}
   void DidSwapBuffersCompleteOnImplThread() override {}
+  void OnResourcelessSoftareDrawStateChanged(bool resourceless_draw) override {}
   void OnCanDrawStateChanged(bool can_draw) override {
     on_can_draw_state_changed_called_ = true;
   }
@@ -467,7 +468,15 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
 
 TEST_F(LayerTreeHostImplTest, CanDrawIncompleteFrames) {
   CreateHostImpl(DefaultSettings(),
-                 FakeOutputSurface::CreateAlwaysDrawAndSwap3d());
+                 FakeOutputSurface::CreateSoftware(
+                     make_scoped_ptr(new SoftwareOutputDevice())));
+  const gfx::Transform external_transform;
+  const gfx::Rect external_viewport;
+  const gfx::Rect external_clip;
+  const bool resourceless_software_draw = true;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip, external_viewport,
+      external_transform, resourceless_software_draw);
 
   bool always_draw = true;
   CheckNotifyCalledIfCanDrawChanged(always_draw);
@@ -3118,10 +3127,16 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
 TEST_F(LayerTreeHostImplTest,
        PrepareToDrawWhenDrawAndSwapFullViewportEveryFrame) {
   CreateHostImpl(DefaultSettings(),
-                 FakeOutputSurface::CreateAlwaysDrawAndSwap3d());
-  EXPECT_TRUE(host_impl_->output_surface()
-                  ->capabilities()
-                  .draw_and_swap_full_viewport_every_frame);
+                 FakeOutputSurface::CreateSoftware(
+                     make_scoped_ptr(new SoftwareOutputDevice())));
+
+  const gfx::Transform external_transform;
+  const gfx::Rect external_viewport;
+  const gfx::Rect external_clip;
+  const bool resourceless_software_draw = true;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip, external_viewport,
+      external_transform, resourceless_software_draw);
 
   std::vector<PrepareToDrawSuccessTestCase> cases;
 
@@ -5530,9 +5545,10 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
       child_(NULL),
       did_activate_pending_tree_(false) {}
 
-  scoped_ptr<OutputSurface> CreateFakeOutputSurface(bool always_draw) {
-    if (always_draw) {
-      return FakeOutputSurface::CreateAlwaysDrawAndSwap3d();
+  scoped_ptr<OutputSurface> CreateFakeOutputSurface(bool software) {
+    if (software) {
+      return FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice()));
     }
     return FakeOutputSurface::Create3d();
   }
@@ -5682,6 +5698,16 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
         size, host_impl_->active_tree()->device_scale_factor());
   }
 
+  void SetResourcelessSoftwareDraw() {
+    const gfx::Transform external_transform;
+    const gfx::Rect external_viewport;
+    const gfx::Rect external_clip;
+    const bool resourceless_software_draw = true;
+    host_impl_->SetExternalDrawConstraints(
+        external_transform, external_viewport, external_clip, external_viewport,
+        external_transform, resourceless_software_draw);
+  }
+
   DrawQuad::Material gutter_quad_material_;
   gfx::Size gutter_texture_size_;
   gfx::Size viewport_size_;
@@ -5692,8 +5718,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
 TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCovered) {
   viewport_size_ = gfx::Size(1000, 1000);
 
-  bool always_draw = false;
-  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(always_draw));
+  bool software = false;
+  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(software));
 
   host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
   SetupActiveTreeLayers();
@@ -5706,8 +5732,8 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCovered) {
 TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
   viewport_size_ = gfx::Size(1000, 1000);
 
-  bool always_draw = false;
-  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(always_draw));
+  bool software = false;
+  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(software));
 
   host_impl_->active_tree()->SetDeviceScaleFactor(2.f);
   host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
@@ -5721,8 +5747,9 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
 TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
   viewport_size_ = gfx::Size(1000, 1000);
 
-  bool always_draw = true;
-  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(always_draw));
+  bool software = true;
+  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(software));
+  SetResourcelessSoftwareDraw();
 
   // Pending tree to force active_tree size invalid. Not used otherwise.
   host_impl_->CreatePendingTree();
@@ -5738,8 +5765,9 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
 TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
   viewport_size_ = gfx::Size(1000, 1000);
 
-  bool always_draw = true;
-  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(always_draw));
+  bool software = true;
+  CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(software));
+  SetResourcelessSoftwareDraw();
 
   // Set larger viewport and activate it to active tree.
   host_impl_->CreatePendingTree();
@@ -8225,11 +8253,8 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
       external_transform, external_viewport, external_clip1, external_viewport,
       external_transform, resourceless_software_draw);
   EXPECT_FALSE(did_request_redraw_);
-  {
-    LayerTreeHostImpl::FrameData frame;
-    EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));
-    EXPECT_TRUE(frame.has_no_damage);
-  }
+  // Can't call PrepareToDrawFrame with no change for resourceless software
+  // draw.
 
   // Unsetting resourceless_software_draw do not need redraw.
   did_request_redraw_ = false;

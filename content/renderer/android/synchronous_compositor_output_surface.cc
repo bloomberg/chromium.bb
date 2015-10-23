@@ -71,12 +71,12 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       registry_(registry),
       registered_(false),
       sync_client_(nullptr),
+      next_hardware_draw_needs_damage_(false),
       current_sw_canvas_(nullptr),
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue) {
   thread_checker_.DetachFromThread();
   DCHECK(registry_);
-  capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
@@ -195,7 +195,10 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   SetExternalDrawConstraints(adjusted_transform, viewport, clip,
                              viewport_rect_for_tile_priority,
                              transform_for_tile_priority, !hardware_draw);
-  SetNeedsRedrawRect(gfx::Rect(viewport.size()));
+  if (!hardware_draw || next_hardware_draw_needs_damage_) {
+    next_hardware_draw_needs_damage_ = false;
+    SetNeedsRedrawRect(gfx::Rect(viewport.size()));
+  }
 
   client_->OnDraw();
 
@@ -217,6 +220,10 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
                                cached_hw_viewport_rect_for_tile_priority_,
                                cached_hw_transform_for_tile_priority_,
                                resourceless_software_draw);
+    // This draw may have reset all damage, which would lead to subsequent
+    // incorrect hardware draw, so explicitly set damage for next hardware
+    // draw as well.
+    next_hardware_draw_needs_damage_ = true;
   }
 
   if (frame_holder_.get())

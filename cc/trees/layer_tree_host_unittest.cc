@@ -2486,7 +2486,8 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   int swap_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestResourcelessSoftwareDraw);
+// Resourceless is not used for SingleThreadProxy, so it is unimplemented.
+MULTI_THREAD_TEST_F(LayerTreeHostTestResourcelessSoftwareDraw);
 
 // Test for UI Resource management.
 class LayerTreeHostTestUIResource : public LayerTreeHostTest {

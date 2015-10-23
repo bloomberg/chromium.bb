@@ -79,12 +79,6 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(software_device.Pass(), true));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateAlwaysDrawAndSwap3d() {
-    scoped_ptr<FakeOutputSurface> surface(Create3d());
-    surface->capabilities_.draw_and_swap_full_viewport_every_frame = true;
-    return surface.Pass();
-  }
-
   static scoped_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
       scoped_ptr<TestWebGraphicsContext3D> context) {
     scoped_ptr<FakeOutputSurface> surface(Create3d(context.Pass()));

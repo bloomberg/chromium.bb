@@ -219,6 +219,9 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates production should be skipped to recover latency.
   void SetSkipNextBeginMainFrameToReduceLatency();
 
+  // Resourceless software draws are allowed even when invisible.
+  void SetResourcelessSoftareDraw(bool resourceless_draw);
+
   // Indicates whether drawing would, at this time, make sense.
   // CanDraw can be used to suppress flashes or checkerboarding
   // when such behavior would be undesirable.
@@ -319,6 +322,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_prepare_tiles_;
   bool needs_begin_main_frame_;
   bool visible_;
+  bool resourceless_draw_;
   bool can_draw_;
   bool has_pending_tree_;
   bool pending_tree_is_ready_for_activation_;

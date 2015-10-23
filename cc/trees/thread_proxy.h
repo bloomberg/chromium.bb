@@ -204,6 +204,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetMaxSwapsPendingOnImplThread(int max) override;
   void DidSwapBuffersOnImplThread() override;
   void DidSwapBuffersCompleteOnImplThread() override;
+  void OnResourcelessSoftareDrawStateChanged(bool resourceless_draw) override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;

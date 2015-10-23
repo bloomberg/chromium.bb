@@ -366,6 +366,12 @@ void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
   }
 }
 
+void ThreadProxy::OnResourcelessSoftareDrawStateChanged(
+    bool resourceless_draw) {
+  DCHECK(IsImplThread());
+  impl().scheduler->SetResourcelessSoftareDraw(resourceless_draw);
+}
+
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1(
       "cc", "ThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);

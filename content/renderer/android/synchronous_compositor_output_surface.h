@@ -112,6 +112,7 @@ class SynchronousCompositorOutputSurface
   gfx::Rect cached_hw_clip_;
   gfx::Rect cached_hw_viewport_rect_for_tile_priority_;
   gfx::Transform cached_hw_transform_for_tile_priority_;
+  bool next_hardware_draw_needs_damage_;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_;

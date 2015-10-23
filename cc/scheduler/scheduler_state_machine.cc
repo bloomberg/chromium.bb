@@ -40,6 +40,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_prepare_tiles_(false),
       needs_begin_main_frame_(false),
       visible_(false),
+      resourceless_draw_(false),
       can_draw_(false),
       has_pending_tree_(false),
       pending_tree_is_ready_for_activation_(false),
@@ -225,6 +226,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
   state->SetBoolean("visible", visible_);
   state->SetBoolean("can_draw", can_draw_);
+  state->SetBoolean("resourceless_draw", resourceless_draw_);
   state->SetBoolean("has_pending_tree", has_pending_tree_);
   state->SetBoolean("pending_tree_is_ready_for_activation",
                     pending_tree_is_ready_for_activation_);
@@ -256,7 +258,7 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // software draws could be scheduled by the Android OS at any time and draws
   // should not be aborted in this case.
   bool is_output_surface_lost = (output_surface_state_ == OUTPUT_SURFACE_NONE);
-  if (settings_.using_synchronous_renderer_compositor)
+  if (resourceless_draw_)
     return is_output_surface_lost || !can_draw_;
 
   // These are all the cases where we normally cannot or do not want to draw
@@ -925,6 +927,10 @@ void SchedulerStateMachine::SetVisible(bool visible) {
   // TODO(sunnyps): Change the funnel to a bool to avoid hacks like this.
   prepare_tiles_funnel_ = 0;
   wait_for_ready_to_draw_ = false;
+}
+
+void SchedulerStateMachine::SetResourcelessSoftareDraw(bool resourceless_draw) {
+  resourceless_draw_ = resourceless_draw;
 }
 
 void SchedulerStateMachine::SetCanDraw(bool can_draw) { can_draw_ = can_draw; }

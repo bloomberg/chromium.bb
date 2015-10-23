@@ -3368,12 +3368,13 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   client_->Reset();
 }
 
-TEST_F(SchedulerTest, SynchronousCompositorOnDrawWhenInvisible) {
+TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
   scheduler_->SetVisible(false);
+  scheduler_->SetResourcelessSoftareDraw(true);
 
   scheduler_->SetNeedsRedraw();
   scheduler_->OnDrawForOutputSurface();

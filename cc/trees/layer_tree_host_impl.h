@@ -96,6 +96,8 @@ class LayerTreeHostImplClient {
   virtual void SetMaxSwapsPendingOnImplThread(int max) = 0;
   virtual void DidSwapBuffersOnImplThread() = 0;
   virtual void DidSwapBuffersCompleteOnImplThread() = 0;
+  virtual void OnResourcelessSoftareDrawStateChanged(
+      bool resourceless_draw) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
   virtual void NotifyReadyToDraw() = 0;

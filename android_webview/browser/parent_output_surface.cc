@@ -12,7 +12,6 @@ namespace android_webview {
 ParentOutputSurface::ParentOutputSurface(
     scoped_refptr<cc::ContextProvider> context_provider)
     : cc::OutputSurface(context_provider) {
-  capabilities_.draw_and_swap_full_viewport_every_frame = true;
 }
 
 ParentOutputSurface::~ParentOutputSurface() {

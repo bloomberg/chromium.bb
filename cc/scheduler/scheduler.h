@@ -77,6 +77,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetVisible(bool visible);
   bool visible() { return state_machine_.visible(); }
+  void SetResourcelessSoftareDraw(bool resourceless_draw);
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();
