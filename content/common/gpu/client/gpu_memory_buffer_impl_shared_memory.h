@@ -35,7 +35,6 @@ class CONTENT_EXPORT GpuMemoryBufferImplSharedMemory
       gfx::BufferUsage usage,
       const DestructionCallback& callback);
 
-  static bool IsFormatSupported(gfx::BufferFormat format);
   static bool IsUsageSupported(gfx::BufferUsage usage);
   static bool IsConfigurationSupported(gfx::BufferFormat format,
                                        gfx::BufferUsage usage);

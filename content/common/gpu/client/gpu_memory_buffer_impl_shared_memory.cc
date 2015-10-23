@@ -25,7 +25,6 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     scoped_ptr<base::SharedMemory> shared_memory)
     : GpuMemoryBufferImpl(id, size, format, callback),
       shared_memory_(shared_memory.Pass()) {
-  DCHECK(IsFormatSupported(format));
   DCHECK(IsSizeValidForFormat(size, format));
 }
 
@@ -94,31 +93,6 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(
-    gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::YUV_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
-      return true;
-    case gfx::BufferFormat::BGRX_8888:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
 bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(gfx::BufferUsage usage) {
   switch (usage) {
     case gfx::BufferUsage::MAP:
@@ -135,7 +109,7 @@ bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(gfx::BufferUsage usage) {
 bool GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return IsFormatSupported(format) && IsUsageSupported(usage);
+  return IsUsageSupported(usage);
 }
 
 // static
@@ -154,6 +128,7 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
       return true;

@@ -10,14 +10,20 @@
 namespace gfx {
 namespace {
 
-const BufferFormat kBufferFormats[] = {
-    BufferFormat::ATC,       BufferFormat::ATCIA,
-    BufferFormat::DXT1,      BufferFormat::DXT5,
-    BufferFormat::ETC1,      BufferFormat::R_8,
-    BufferFormat::RGBA_4444, BufferFormat::RGBA_8888,
-    BufferFormat::BGRX_8888, BufferFormat::BGRA_8888,
-    BufferFormat::UYVY_422,  BufferFormat::YUV_420_BIPLANAR,
-    BufferFormat::YUV_420};
+const BufferFormat kBufferFormats[] = {BufferFormat::ATC,
+                                       BufferFormat::ATCIA,
+                                       BufferFormat::DXT1,
+                                       BufferFormat::DXT5,
+                                       BufferFormat::ETC1,
+                                       BufferFormat::R_8,
+                                       BufferFormat::RGBA_4444,
+                                       BufferFormat::RGBX_8888,
+                                       BufferFormat::RGBA_8888,
+                                       BufferFormat::BGRX_8888,
+                                       BufferFormat::BGRA_8888,
+                                       BufferFormat::UYVY_422,
+                                       BufferFormat::YUV_420_BIPLANAR,
+                                       BufferFormat::YUV_420};
 
 static_assert(arraysize(kBufferFormats) ==
                   (static_cast<int>(BufferFormat::LAST) + 1),
@@ -54,6 +60,7 @@ bool RowSizeForBufferFormatChecked(
       *size_in_bytes = checked_size.ValueOrDie();
       return true;
     case BufferFormat::BGRX_8888:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
       checked_size *= 4;
@@ -90,6 +97,7 @@ size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRA_8888:
@@ -113,6 +121,7 @@ size_t SubsamplingFactorForBufferFormat(BufferFormat format, int plane) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRA_8888:
@@ -181,6 +190,7 @@ int BufferOffsetForBufferFormat(const Size& size,
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::BGRA_8888:

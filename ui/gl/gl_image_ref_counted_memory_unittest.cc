@@ -12,11 +12,10 @@
 namespace gfx {
 namespace {
 
+template <BufferFormat format>
 class GLImageRefCountedMemoryTestDelegate {
  public:
   scoped_refptr<GLImage> CreateSolidColorImage(const Size& size,
-                                               unsigned internalformat,
-                                               BufferFormat format,
                                                const uint8_t color[4]) const {
     DCHECK_EQ(NumberOfPlanesForBufferFormat(format), 1u);
     std::vector<uint8_t> data(BufferSizeForBufferFormat(size, format));
@@ -25,21 +24,27 @@ class GLImageRefCountedMemoryTestDelegate {
         size.width(), size.height(),
         static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)),
         format, color, &bytes->data().front());
-    scoped_refptr<GLImageRefCountedMemory> image(
-        new GLImageRefCountedMemory(size, internalformat));
+    scoped_refptr<GLImageRefCountedMemory> image(new GLImageRefCountedMemory(
+        size, GLImageMemory::GetInternalFormatForTesting(format)));
     bool rv = image->Initialize(bytes.get(), format);
     EXPECT_TRUE(rv);
     return image;
   }
 };
 
+using GLImageTestTypes = testing::Types<
+    GLImageRefCountedMemoryTestDelegate<BufferFormat::RGBX_8888>,
+    GLImageRefCountedMemoryTestDelegate<BufferFormat::RGBA_8888>,
+    GLImageRefCountedMemoryTestDelegate<BufferFormat::BGRX_8888>,
+    GLImageRefCountedMemoryTestDelegate<BufferFormat::BGRA_8888>>;
+
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
                               GLImageTest,
-                              GLImageRefCountedMemoryTestDelegate);
+                              GLImageTestTypes);
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
                               GLImageCopyTest,
-                              GLImageRefCountedMemoryTestDelegate);
+                              GLImageTestTypes);
 
 }  // namespace
 }  // namespace gfx

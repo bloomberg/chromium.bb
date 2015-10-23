@@ -11,27 +11,9 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace gfx {
-namespace {
-
-// Returns true if the size is valid and false otherwise.
-bool SizeInBytes(const Size& size, BufferFormat format, size_t* size_in_bytes) {
-  if (size.IsEmpty())
-    return false;
-
-  size_t stride_in_bytes = 0;
-  if (!GLImageMemory::StrideInBytes(size.width(), format, &stride_in_bytes))
-    return false;
-  base::CheckedNumeric<size_t> s = stride_in_bytes;
-  s *= size.height();
-  if (!s.IsValid())
-    return false;
-  *size_in_bytes = s.ValueOrDie();
-  return true;
-}
-
-}  // namespace
 
 GLImageSharedMemory::GLImageSharedMemory(const Size& size,
                                          unsigned internalformat)
@@ -45,7 +27,7 @@ bool GLImageSharedMemory::Initialize(const base::SharedMemoryHandle& handle,
                                      GenericSharedMemoryId shared_memory_id,
                                      BufferFormat format) {
   size_t size_in_bytes;
-  if (!SizeInBytes(GetSize(), format, &size_in_bytes))
+  if (!BufferSizeForBufferFormatChecked(GetSize(), format, &size_in_bytes))
     return false;
 
   if (!base::SharedMemory::IsHandleValid(handle))
@@ -90,10 +72,8 @@ void GLImageSharedMemory::OnMemoryDump(
     const std::string& dump_name) {
   size_t size_in_bytes = 0;
 
-  if (shared_memory_) {
-    bool result = SizeInBytes(GetSize(), format(), &size_in_bytes);
-    DCHECK(result);
-  }
+  if (shared_memory_)
+    size_in_bytes = BufferSizeForBufferFormat(GetSize(), format());
 
   // Dump under "/shared_memory", as the base class may also dump to
   // "/texture_memory".

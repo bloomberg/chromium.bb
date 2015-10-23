@@ -10,11 +10,10 @@
 namespace gfx {
 namespace {
 
+template <BufferFormat format>
 class GLImageSharedMemoryTestDelegate {
  public:
   scoped_refptr<GLImage> CreateSolidColorImage(const Size& size,
-                                               unsigned internalformat,
-                                               BufferFormat format,
                                                const uint8_t color[4]) const {
     DCHECK_EQ(NumberOfPlanesForBufferFormat(format), 1u);
     base::SharedMemory shared_memory;
@@ -25,8 +24,8 @@ class GLImageSharedMemoryTestDelegate {
         size.width(), size.height(),
         static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)),
         format, color, reinterpret_cast<uint8_t*>(shared_memory.memory()));
-    scoped_refptr<GLImageSharedMemory> image(
-        new GLImageSharedMemory(size, internalformat));
+    scoped_refptr<GLImageSharedMemory> image(new GLImageSharedMemory(
+        size, GLImageMemory::GetInternalFormatForTesting(format)));
     rv = image->Initialize(
         base::SharedMemory::DuplicateHandle(shared_memory.handle()),
         GenericSharedMemoryId(0), format);
@@ -35,13 +34,19 @@ class GLImageSharedMemoryTestDelegate {
   }
 };
 
+using GLImageTestTypes =
+    testing::Types<GLImageSharedMemoryTestDelegate<BufferFormat::RGBX_8888>,
+                   GLImageSharedMemoryTestDelegate<BufferFormat::RGBA_8888>,
+                   GLImageSharedMemoryTestDelegate<BufferFormat::BGRX_8888>,
+                   GLImageSharedMemoryTestDelegate<BufferFormat::BGRA_8888>>;
+
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageTest,
-                              GLImageSharedMemoryTestDelegate);
+                              GLImageTestTypes);
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageCopyTest,
-                              GLImageSharedMemoryTestDelegate);
+                              GLImageTestTypes);
 
 }  // namespace
 }  // namespace gfx

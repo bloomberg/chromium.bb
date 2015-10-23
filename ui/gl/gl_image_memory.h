@@ -16,10 +16,6 @@ class GL_EXPORT GLImageMemory : public GLImage {
  public:
   GLImageMemory(const Size& size, unsigned internalformat);
 
-  static bool StrideInBytes(size_t width,
-                            BufferFormat format,
-                            size_t* stride_in_bytes);
-
   bool Initialize(const unsigned char* memory, BufferFormat format);
 
   // Overridden from GLImage:
@@ -37,6 +33,8 @@ class GL_EXPORT GLImageMemory : public GLImage {
                             OverlayTransform transform,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+
+  static unsigned GetInternalFormatForTesting(BufferFormat format);
 
  protected:
   ~GLImageMemory() override;

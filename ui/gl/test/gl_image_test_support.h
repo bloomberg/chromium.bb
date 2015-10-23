@@ -18,12 +18,6 @@ class GLImageTestSupport {
   // Cleanup GL after being initialized for image testing.
   static void CleanupGL();
 
-  // Returns the preferred internal format used for images.
-  static GLenum GetPreferredInternalFormat();
-
-  // Returns the preferred buffer format used for images.
-  static BufferFormat GetPreferredBufferFormat();
-
   // Initialize buffer of a specific |format| to |color|.
   static void SetBufferDataToColor(int width,
                                    int height,

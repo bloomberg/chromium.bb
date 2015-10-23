@@ -109,13 +109,14 @@ void SetRow(gfx::BufferFormat format,
       return;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return;
   }
@@ -134,13 +135,14 @@ GLenum InternalFormat(gfx::BufferFormat format) {
       return GL_BGRA_EXT;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
   }

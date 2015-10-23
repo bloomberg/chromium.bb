@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gfx {
 namespace {
@@ -19,6 +22,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
     case GL_ETC1_RGB8_OES:
     case GL_R8:
+    case GL_RGB:
     case GL_RGBA:
     case GL_BGRA_EXT:
       return true;
@@ -36,10 +40,11 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::BGRA_8888:
       return true;
-    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:
@@ -60,9 +65,10 @@ bool IsCompressedFormat(BufferFormat format) {
       return true;
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
-    case BufferFormat::BGRA_8888:
     case BufferFormat::BGRX_8888:
+    case BufferFormat::BGRA_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:
@@ -92,7 +98,9 @@ GLenum TextureFormat(BufferFormat format) {
       return GL_RGBA;
     case BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
+    case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
+      return GL_RGB;
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:
@@ -105,14 +113,37 @@ GLenum TextureFormat(BufferFormat format) {
 }
 
 GLenum DataFormat(BufferFormat format) {
-  return TextureFormat(format);
+  switch (format) {
+    case BufferFormat::RGBX_8888:
+      return GL_RGBA;
+    case BufferFormat::BGRX_8888:
+      return GL_BGRA_EXT;
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
+    case BufferFormat::R_8:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::YUV_420:
+    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
+      return TextureFormat(format);
+  }
+
+  NOTREACHED();
+  return 0;
 }
 
 GLenum DataType(BufferFormat format) {
   switch (format) {
     case BufferFormat::RGBA_4444:
       return GL_UNSIGNED_SHORT_4_4_4_4;
+    case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::BGRA_8888:
     case BufferFormat::R_8:
       return GL_UNSIGNED_BYTE;
@@ -121,7 +152,6 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
-    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:
@@ -133,12 +163,73 @@ GLenum DataType(BufferFormat format) {
   return 0;
 }
 
-GLsizei SizeInBytes(const Size& size, BufferFormat format) {
-  size_t stride_in_bytes = 0;
-  bool valid_stride = GLImageMemory::StrideInBytes(
-      size.width(), format, &stride_in_bytes);
-  DCHECK(valid_stride);
-  return static_cast<GLsizei>(stride_in_bytes * size.height());
+template <typename F>
+scoped_ptr<uint8_t[]> GLES2RGBData(const Size& size,
+                                   BufferFormat format,
+                                   const uint8_t* data,
+                                   F const& data_to_rgb,
+                                   GLenum* data_format,
+                                   GLenum* data_type) {
+  TRACE_EVENT2("gpu", "GLES2RGBData", "width", size.width(), "height",
+               size.height());
+
+  // Four-byte row alignment as specified by glPixelStorei with argument
+  // GL_UNPACK_ALIGNMENT set to 4.
+  size_t gles2_rgb_data_stride = (size.width() * 3 + 3) & ~3;
+  scoped_ptr<uint8_t[]> gles2_rgb_data(
+      new uint8_t[gles2_rgb_data_stride * size.height()]);
+  size_t data_stride = RowSizeForBufferFormat(size.width(), format, 0);
+
+  for (int y = 0; y < size.height(); ++y) {
+    for (int x = 0; x < size.width(); ++x) {
+      data_to_rgb(&data[y * data_stride + x * 4],
+                  &gles2_rgb_data[y * gles2_rgb_data_stride + x * 3]);
+    }
+  }
+
+  *data_format = GL_RGB;
+  *data_type = GL_UNSIGNED_BYTE;
+  return gles2_rgb_data.Pass();
+}
+
+scoped_ptr<uint8_t[]> GLES2Data(const Size& size,
+                                BufferFormat format,
+                                const uint8_t* data,
+                                GLenum* data_format,
+                                GLenum* data_type) {
+  switch (format) {
+    case BufferFormat::RGBX_8888:
+      return GLES2RGBData(size, format,
+                          data, [](const uint8_t* src, uint8_t* dst) {
+                            dst[0] = src[0];
+                            dst[1] = src[1];
+                            dst[2] = src[2];
+                          }, data_format, data_type);
+    case BufferFormat::BGRX_8888:
+      return GLES2RGBData(size, format,
+                          data, [](const uint8_t* src, uint8_t* dst) {
+                            dst[0] = src[2];
+                            dst[1] = src[1];
+                            dst[2] = src[0];
+                          }, data_format, data_type);
+    case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBA_8888:
+    case BufferFormat::BGRA_8888:
+    case BufferFormat::R_8:
+    case BufferFormat::ATC:
+    case BufferFormat::ATCIA:
+    case BufferFormat::DXT1:
+    case BufferFormat::DXT5:
+    case BufferFormat::ETC1:
+    case BufferFormat::YUV_420:
+    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
+      // No data conversion needed.
+      return nullptr;
+  }
+
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace
@@ -151,53 +242,6 @@ GLImageMemory::GLImageMemory(const Size& size, unsigned internalformat)
 
 GLImageMemory::~GLImageMemory() {
   DCHECK(!memory_);
-}
-
-// static
-bool GLImageMemory::StrideInBytes(size_t width,
-                                  BufferFormat format,
-                                  size_t* stride_in_bytes) {
-  base::CheckedNumeric<size_t> checked_stride = width;
-  switch (format) {
-    case BufferFormat::ATCIA:
-    case BufferFormat::DXT5:
-      *stride_in_bytes = width;
-      return true;
-    case BufferFormat::ATC:
-    case BufferFormat::DXT1:
-    case BufferFormat::ETC1:
-      DCHECK_EQ(width % 2, 0u);
-      *stride_in_bytes = width / 2;
-      return true;
-    case BufferFormat::R_8:
-      checked_stride += 3;
-      if (!checked_stride.IsValid())
-        return false;
-      *stride_in_bytes = checked_stride.ValueOrDie() & ~0x3;
-      return true;
-    case BufferFormat::RGBA_4444:
-      checked_stride *= 2;
-      if (!checked_stride.IsValid())
-        return false;
-      *stride_in_bytes = checked_stride.ValueOrDie();
-      return true;
-    case BufferFormat::RGBA_8888:
-    case BufferFormat::BGRA_8888:
-      checked_stride *= 4;
-      if (!checked_stride.IsValid())
-        return false;
-      *stride_in_bytes = checked_stride.ValueOrDie();
-      return true;
-    case BufferFormat::BGRX_8888:
-    case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
-    case BufferFormat::UYVY_422:
-      NOTREACHED();
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 bool GLImageMemory::Initialize(const unsigned char* memory,
@@ -246,13 +290,21 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
     return false;
 
   if (IsCompressedFormat(format_)) {
-    glCompressedTexImage2D(target, 0, TextureFormat(format_), size_.width(),
-                           size_.height(), 0, SizeInBytes(size_, format_),
-                           memory_);
+    glCompressedTexImage2D(
+        target, 0, TextureFormat(format_), size_.width(), size_.height(), 0,
+        static_cast<GLsizei>(BufferSizeForBufferFormat(size_, format_)),
+        memory_);
   } else {
+    scoped_ptr<uint8_t[]> gles2_data;
+    GLenum data_format = DataFormat(format_);
+    GLenum data_type = DataType(format_);
+
+    if (GLContext::GetCurrent()->GetVersionInfo()->is_es)
+      gles2_data = GLES2Data(size_, format_, memory_, &data_format, &data_type);
+
     glTexImage2D(target, 0, TextureFormat(format_), size_.width(),
-                 size_.height(), 0, DataFormat(format_), DataType(format_),
-                 memory_);
+                 size_.height(), 0, data_format, data_type,
+                 gles2_data ? gles2_data.get() : memory_);
   }
 
   return true;
@@ -276,19 +328,27 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
   if (IsCompressedFormat(format_) && rect.height() % 4)
     return false;
 
-  size_t stride_in_bytes = 0;
-  bool rv = StrideInBytes(size_.width(), format_, &stride_in_bytes);
-  DCHECK(rv);
-  DCHECK(memory_);
-  const unsigned char* data = memory_ + rect.y() * stride_in_bytes;
+  const uint8_t* data =
+      memory_ + rect.y() * RowSizeForBufferFormat(size_.width(), format_, 0);
   if (IsCompressedFormat(format_)) {
-    glCompressedTexSubImage2D(target, 0, offset.x(), offset.y(), rect.width(),
-                              rect.height(), DataFormat(format_),
-                              SizeInBytes(rect.size(), format_), data);
+    glCompressedTexSubImage2D(
+        target, 0, offset.x(), offset.y(), rect.width(), rect.height(),
+        DataFormat(format_),
+        static_cast<GLsizei>(BufferSizeForBufferFormat(rect.size(), format_)),
+        data);
   } else {
+    GLenum data_format = DataFormat(format_);
+    GLenum data_type = DataType(format_);
+    scoped_ptr<uint8_t[]> gles2_data;
+
+    if (GLContext::GetCurrent()->GetVersionInfo()->is_es) {
+      gles2_data =
+          GLES2Data(rect.size(), format_, data, &data_format, &data_type);
+    }
+
     glTexSubImage2D(target, 0, offset.x(), offset.y(), rect.width(),
-                    rect.height(), DataFormat(format_), DataType(format_),
-                    data);
+                    rect.height(), data_format, data_type,
+                    gles2_data ? gles2_data.get() : data);
   }
 
   return true;
@@ -300,6 +360,12 @@ bool GLImageMemory::ScheduleOverlayPlane(AcceleratedWidget widget,
                                          const Rect& bounds_rect,
                                          const RectF& crop_rect) {
   return false;
+}
+
+// static
+unsigned GLImageMemory::GetInternalFormatForTesting(BufferFormat format) {
+  DCHECK(ValidFormat(format));
+  return TextureFormat(format);
 }
 
 }  // namespace gfx

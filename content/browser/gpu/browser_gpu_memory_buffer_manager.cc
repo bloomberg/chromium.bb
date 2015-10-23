@@ -141,9 +141,9 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
 
   if (force_native_scanout_formats) {
     const gfx::BufferFormat kScanoutFormats[] = {
-        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
-        gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::UYVY_422,
-        gfx::BufferFormat::YUV_420_BIPLANAR};
+        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
+        gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_8888,
+        gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
     for (auto& format : kScanoutFormats) {
       if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(
               format, gfx::BufferUsage::SCANOUT)) {
@@ -311,8 +311,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   }
 
   // Early out if we cannot fallback to shared memory buffer.
-  if (!GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) ||
-      !GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
+  if (!GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
       !GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size, format)) {
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
@@ -476,8 +475,6 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
     return;
   }
 
-  DCHECK(GpuMemoryBufferImplSharedMemory::IsFormatSupported(request->format))
-      << static_cast<int>(request->format);
   DCHECK(GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
       << static_cast<int>(request->usage);
 

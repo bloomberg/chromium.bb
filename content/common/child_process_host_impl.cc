@@ -294,9 +294,8 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
 
   // AllocateForChildProcess() will check if |width| and |height| are valid
   // and handle failure in a controlled way when not. We just need to make
-  // sure |format| and |usage| are supported here.
-  if (GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) &&
-      GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
+  // sure |usage| is supported here.
+  if (GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
     *handle = GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
         id, gfx::Size(width, height), format, peer_process_.Handle());
   }

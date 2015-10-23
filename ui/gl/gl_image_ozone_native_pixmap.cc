@@ -39,6 +39,7 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:
@@ -64,6 +65,7 @@ EGLint FourCC(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
+    case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::UYVY_422:

@@ -46,6 +46,7 @@ int32 BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
       NOTREACHED();
@@ -73,6 +74,7 @@ int32 PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
       NOTREACHED();

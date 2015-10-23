@@ -352,7 +352,6 @@ test("gl_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
