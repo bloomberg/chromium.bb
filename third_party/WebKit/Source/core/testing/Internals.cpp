@@ -2458,6 +2458,26 @@ void Internals::setVisualViewportOffset(int x, int y)
     frame()->host()->visualViewport().setLocation(FloatPoint(x, y));
 }
 
+int Internals::visualViewportHeight()
+{
+    return expandedIntSize(frame()->host()->visualViewport().visibleRect().size()).height();
+}
+
+int Internals::visualViewportWidth()
+{
+    return expandedIntSize(frame()->host()->visualViewport().visibleRect().size()).width();
+}
+
+double Internals::visualViewportScrollX()
+{
+    return frame()->view()->scrollableArea()->scrollPositionDouble().x();
+}
+
+double Internals::visualViewportScrollY()
+{
+    return frame()->view()->scrollableArea()->scrollPositionDouble().y();
+}
+
 ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)
 {
     return new InternalsIterationSource();

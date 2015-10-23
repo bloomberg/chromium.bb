@@ -26,26 +26,26 @@
   function testScroll(forwardCmd, backwardCmd) {
     internals.executeCommand(document, forwardCmd, '');
 
-    if (window.scrollY === 0) {
+    if (internals.visualViewportScrollY() === 0) {
         debug('FAIL: Command ' + forwardCmd + ' failed to scroll page at all.');
         return;
     }
 
-    numScrolls = Math.ceil((pageHeight - window.innerHeight) / window.scrollY);
+    numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
       internals.executeCommand(document, forwardCmd, '');
     }
 
-    shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
-    shouldBe('window.scrollX', '0');
+    shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
+    shouldBe('internals.visualViewportScrollX()', '0');
 
     for(var i = 0; i < numScrolls; ++i) {
       internals.executeCommand(document, backwardCmd, '');
     }
 
-    shouldBe('window.scrollY', '0');
-    shouldBe('window.scrollX', '0');
+    shouldBe('internals.visualViewportScrollY()', '0');
+    shouldBe('internals.visualViewportScrollX()', '0');
   }
 
   function runTest()

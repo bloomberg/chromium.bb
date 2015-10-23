@@ -7,24 +7,26 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Testing arrow keys:
-PASS window.scrollY is > 0
-PASS window.scrollY is pageHeight - window.innerHeight
-PASS window.scrollY is 0
-PASS window.scrollX is pageWidth - window.innerWidth
-PASS window.scrollX is 0
+PASS internals.visualViewportScrollY() is > 0
+PASS internals.visualViewportScrollY() is pageHeight - internals.visualViewportHeight()
+PASS internals.visualViewportScrollY() is 0
+PASS internals.visualViewportScrollX() is pageWidth - internals.visualViewportWidth()
+PASS internals.visualViewportScrollX() is 0
 
 Testing home and end keys:
 PASS window.scrollY is pageHeight - window.innerHeight
+PASS internals.visualViewportScrollY() is pageHeight - internals.visualViewportHeight()
 PASS window.scrollY is 0
+PASS internals.visualViewportScrollY() is 0
 
 Testing page up and page down keys:
-PASS window.scrollY is > 0
-PASS window.scrollY is pageHeight - window.innerHeight
-PASS window.scrollY is 0
+PASS internals.visualViewportScrollY() is > 0
+PASS internals.visualViewportScrollY() is pageHeight - internals.visualViewportHeight()
+PASS internals.visualViewportScrollY() is 0
 
 Testing spacebar:
-PASS window.scrollY is > 0
-PASS window.scrollY is pageHeight - window.innerHeight
-PASS window.scrollY is 0
+PASS internals.visualViewportScrollY() is > 0
+PASS internals.visualViewportScrollY() is pageHeight - internals.visualViewportHeight()
+PASS internals.visualViewportScrollY() is 0
 
 Top of pageBottom of pageLeft of pageRight of pageMiddle of page

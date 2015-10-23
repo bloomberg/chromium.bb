@@ -40,11 +40,12 @@ if (window.eventSender) {
   eventSender.gesturePinchBegin('touchpad', 150, 100);
   eventSender.gesturePinchUpdate('touchpad', 150, 100, 2.0);
   eventSender.gesturePinchEnd('touchpad', 150, 100);
-  shouldBe('window.innerWidth', '400');
-  shouldBe('window.innerHeight', '300');
-  shouldBe('window.scrollX', '75');
-  shouldBe('window.scrollY', '50');
-
   shouldBeFalse('gotWheelEvent');
+  if (window.internals) {
+    shouldBe('internals.visualViewportWidth()', '400');
+    shouldBe('internals.visualViewportHeight()', '300');
+    shouldBe('internals.visualViewportScrollX()', '75');
+    shouldBe('internals.visualViewportScrollY()', '50');
+  }
 }
 </script>

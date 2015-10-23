@@ -11,11 +11,11 @@ PASS window.innerHeight is 600
 PASS window.scrollX is 0
 PASS window.scrollY is 0
 PASS gotWheelEvent is true
-PASS window.innerWidth is 400
-PASS window.innerHeight is 300
-PASS window.scrollX is 75
-PASS window.scrollY is 50
 PASS gotWheelEvent is false
+PASS internals.visualViewportWidth() is 400
+PASS internals.visualViewportHeight() is 300
+PASS internals.visualViewportScrollX() is 75
+PASS internals.visualViewportScrollY() is 50
 PASS successfullyParsed is true
 
 TEST COMPLETE

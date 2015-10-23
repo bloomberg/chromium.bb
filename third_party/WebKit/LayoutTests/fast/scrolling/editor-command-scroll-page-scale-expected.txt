@@ -14,15 +14,15 @@ PASS window.scrollY is 0
 PASS window.scrollX is 0
 
 Testing Page Scrolling:
-PASS window.scrollY is pageHeight - window.innerHeight
-PASS window.scrollX is 0
-PASS window.scrollY is 0
-PASS window.scrollX is 0
+PASS internals.visualViewportScrollY() is pageHeight - internals.visualViewportHeight()
+PASS internals.visualViewportScrollX() is 0
+PASS internals.visualViewportScrollY() is 0
+PASS internals.visualViewportScrollX() is 0
 
 Testing Line Scrolling:
-PASS window.scrollY is pageHeight - window.innerHeight
-PASS window.scrollX is 0
-PASS window.scrollY is 0
-PASS window.scrollX is 0
+PASS internals.visualViewportScrollY() is pageHeight - internals.visualViewportHeight()
+PASS internals.visualViewportScrollX() is 0
+PASS internals.visualViewportScrollY() is 0
+PASS internals.visualViewportScrollX() is 0
 
 Top of pageBottom of pageLeft of pageRight of pageMiddle of page

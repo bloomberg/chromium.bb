@@ -15,87 +15,89 @@
   {
     // Test up and down.
     window.eventSender.keyDown('downArrow');
-    shouldBeGreaterThan('window.scrollY', '0');
+    shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
-    numScrolls = Math.ceil((pageHeight - window.innerHeight) / window.scrollY);
+    numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
       window.eventSender.keyDown('downArrow');
     }
 
-    shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
+    shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
       window.eventSender.keyDown('upArrow');
     }
 
-    shouldBe('window.scrollY', '0');
+    shouldBe('internals.visualViewportScrollY()', '0');
 
     // Now test left and right.
 
     reset();
     window.eventSender.keyDown('rightArrow');
-    numScrolls = Math.ceil((pageWidth - window.innerWidth) / window.scrollX);
+    numScrolls = Math.ceil((pageWidth - internals.visualViewportWidth()) / internals.visualViewportScrollX());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
       window.eventSender.keyDown('rightArrow');
     }
 
-    shouldBe('window.scrollX', 'pageWidth - window.innerWidth');
+    shouldBe('internals.visualViewportScrollX()', 'pageWidth - internals.visualViewportWidth()');
 
     for(var i = 0; i < numScrolls; ++i) {
       window.eventSender.keyDown('leftArrow');
     }
 
-    shouldBe('window.scrollX', '0');
+    shouldBe('internals.visualViewportScrollX()', '0');
   }
 
   function testHomeEnd()
   {
     window.eventSender.keyDown('end');
     shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
+    shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
     window.eventSender.keyDown('home');
     shouldBe('window.scrollY', '0');
+    shouldBe('internals.visualViewportScrollY()', '0');
   }
 
   function testPageUpDown()
   {
     window.eventSender.keyDown('pageDown');
-    shouldBeGreaterThan('window.scrollY', '0');
+    shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
-    numScrolls = Math.ceil((pageHeight - window.innerHeight) / window.scrollY);
+    numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
       window.eventSender.keyDown('pageDown');
     }
 
-    shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
+    shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
       window.eventSender.keyDown('pageUp');
     }
 
-    shouldBe('window.scrollY', '0');
+    shouldBe('internals.visualViewportScrollY()', '0');
   }
 
   function testSpacebar()
   {
     window.eventSender.keyDown(' ');
-    shouldBeGreaterThan('window.scrollY', '0');
+    shouldBeGreaterThan('internals.visualViewportScrollY()', '0');
 
-    numScrolls = Math.ceil((pageHeight - window.innerHeight) / window.scrollY);
+    numScrolls = Math.ceil((pageHeight - internals.visualViewportHeight()) / internals.visualViewportScrollY());
 
     for(var i = 0; i < numScrolls - 1; ++i) {
       window.eventSender.keyDown(' ');
     }
 
-    shouldBe('window.scrollY', 'pageHeight - window.innerHeight');
+    shouldBe('internals.visualViewportScrollY()', 'pageHeight - internals.visualViewportHeight()');
 
     for(var i = 0; i < numScrolls; ++i) {
       window.eventSender.keyDown(' ', 'shiftKey');
     }
 
-    shouldBe('window.scrollY', '0');
+    shouldBe('internals.visualViewportScrollY()', '0');
   }
 
   function runTest()

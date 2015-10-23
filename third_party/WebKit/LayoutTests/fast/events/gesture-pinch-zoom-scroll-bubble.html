@@ -5,32 +5,32 @@
 // TODO: This test just verifies that scrollX and scrollY end up with the right
 // values after a scroll. It does not verify whether these values are coming
 // from content scroll or from viewport moving. This should be added.
-if (window.eventSender) {
+if (window.eventSender && window.internals) {
   // Do a pinch at the bottom of the page.
   eventSender.gesturePinchBegin('touchpad', 400, 600);
   eventSender.gesturePinchUpdate('touchpad', 400, 600, 2.0);
   eventSender.gesturePinchEnd('touchpad', 400, 600);
-  shouldBe('window.innerWidth', '400');
-  shouldBe('window.innerHeight', '300');
-  shouldBe('window.scrollX', '200');
-  shouldBe('window.scrollY', '300');
+  shouldBe('internals.visualViewportWidth()', '400');
+  shouldBe('internals.visualViewportHeight()', '300');
+  shouldBe('internals.visualViewportScrollX()', '200');
+  shouldBe('internals.visualViewportScrollY()', '300');
 
   // Do a purely vertical scroll. This will scroll contents only.
   eventSender.continuousMouseScrollBy(0, -1);
-  shouldBe('window.scrollX', '200');
-  shouldBe('window.scrollY', '301');
+  shouldBe('internals.visualViewportScrollX()', '200');
+  shouldBe('internals.visualViewportScrollY()', '301');
 
   // Do a purely horizontal scroll. This will change pinch virtual viewport
   // offset only.
   eventSender.continuousMouseScrollBy(-1, 0);
-  shouldBe('window.scrollX', '201');
-  shouldBe('window.scrollY', '301');
+  shouldBe('internals.visualViewportScrollX()', '201');
+  shouldBe('internals.visualViewportScrollY()', '301');
 
   // Do a diagonal scroll. This will scroll the contents, and then bubble the
-  // result up to the pinch virtual viewport, where it will change the pinch
+  // result up to the visual viewport, where it will change the pinch
   // virtual viewport offset.
   eventSender.continuousMouseScrollBy(2, 2);
-  shouldBe('window.scrollX', '199');
-  shouldBe('window.scrollY', '299');
+  shouldBe('internals.visualViewportScrollX()', '199');
+  shouldBe('internals.visualViewportScrollY()', '299');
 }
 </script>

@@ -15,27 +15,26 @@
 
 <script>
     (function() {
-        if (!window.testRunner) {
-            debug("This test only works in the test runner.");
+        if (!window.testRunner || !window.internals) {
+            debug("This test only works in the test runner and requires window.internals.");
             return;
         }
 
         // Force a layout.
         document.body.offsetLeft;
 
-        if (window.internals)
-            window.internals.setPageScaleFactor(2);
+        window.internals.setPageScaleFactor(2);
 
         // Note that with ScrollTopLeftInterop enabled, document.scrollingElement is
         // null because document.body is potentially scrollable (with overflow:hidden
         // the  box can still be scrolled programmatically).
-        shouldBe("window.scrollY", "0");
+        shouldBe("internals.visualViewportScrollY()", "0");
 
         if (window.eventSender) {
             eventSender.mouseMoveTo(100, 100);
             eventSender.mouseScrollBy(0, -5);
         }
 
-        shouldBe("window.scrollY", "200");
+        shouldBe("internals.visualViewportScrollY()", "200");
     })();
 </script>

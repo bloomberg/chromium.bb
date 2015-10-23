@@ -10,12 +10,9 @@
   var horizontalContainer;
   var verticalContainer;
   var startSpot;
-  var missSpot;
 
   var startXInViewport;
   var startYInViewport;
-  var missXInViewport;
-  var missYInViewport;
   var pinchViewportContentX = 300;
   var pinchViewportContentY = 300;
   var scale = 2;
@@ -29,18 +26,12 @@
     verticalContainer = document.getElementById('vcontainer');
     horizontalContainer = document.getElementById('hcontainer');
     startSpot = document.getElementById('startspot');
-    missSpot = document.getElementById('missspot');
     fullyScrolled = verticalContainer.scrollHeight - verticalContainer.clientHeight;
 
     var startX = startSpot.offsetLeft + startSpot.offsetWidth/2;
     var startY = startSpot.offsetTop + startSpot.offsetHeight/2;
     startXInViewport = (startX - pinchViewportContentX)*scale;
     startYInViewport = (startY - pinchViewportContentY)*scale;
-
-    var missX = missSpot.offsetLeft + missSpot.offsetWidth/2;
-    var missY = missSpot.offsetTop + missSpot.offsetHeight/2;
-    missXInViewport = (missX - pinchViewportContentX)*scale;
-    missYInViewport = (missY - pinchViewportContentY)*scale;
 
     if (window.testRunner && window.eventSender && window.internals) {
       internals.setPageScaleFactorLimits(1, 4.0);
@@ -52,11 +43,6 @@
               + 'and perform a touchpad fling. If the mouse passes over the '
               + 'div it should cause it to scroll. If it doesn\'t pass over '
               + 'the div it shouldn\'t scroll.');
-  }
-
-  var scrollHandler = function() {
-    if (window.scrollY == 0 || window.scrollX == 0)
-      finishedTest();
   }
 
   var verticalContainerScrollHandler = function() {
@@ -83,16 +69,7 @@
     }
   }
 
-  var setContainerDoesntScrollExpectation = function() {
-    window.addEventListener("scroll", scrollHandler);
-    checkExpectation = function() {
-      shouldBe('verticalContainer.scrollTop', 'fullyScrolled');
-      shouldBe('horizontalContainer.scrollLeft', 'fullyScrolled');
-    }
-  }
-
   var reset = function() {
-    window.removeEventListener("scroll", scrollHandler);
     horizontalContainer.removeEventListener("scroll", horizontalContainerScrollHandler);
     verticalContainer.removeEventListener("scroll", verticalContainerScrollHandler);
 
@@ -126,18 +103,6 @@
       "touchpad");
   };
 
-  var verticalFlingNotOverContainerTest = function() {
-    debug('Flinging vertically with mouse *not* over container. Container should not be scrolled at all.');
-    setContainerDoesntScrollExpectation();
-    eventSender.gestureFlingCancel();
-    eventSender.gestureFlingStart(
-      missXInViewport,
-      missYInViewport,
-      0,
-      10000,
-      "touchpad");
-  };
-
   var horizontalFlingOverContainerTest = function() {
     debug('Flinging horizontally with mouse over container. Container should be scrolled.');
     setHorizontalContainerScrollsExpectation();
@@ -150,23 +115,7 @@
       "touchpad");
   };
 
-  var horizontalFlingNotOverContainerTest = function() {
-    debug('Flinging horizontally with mouse *not* over container. Container should not be scrolled at all.');
-    setContainerDoesntScrollExpectation();
-    eventSender.gestureFlingCancel();
-    eventSender.gestureFlingStart(
-      missXInViewport,
-      missYInViewport,
-      10000,
-      0,
-      "touchpad");
-  };
-
-  var tests = [ verticalFlingOverContainerTest,
-                verticalFlingNotOverContainerTest,
-                horizontalFlingOverContainerTest,
-                horizontalFlingNotOverContainerTest
-                ];
+  var tests = [verticalFlingOverContainerTest, horizontalFlingOverContainerTest];
 
   var finishedTest = function() {
     checkExpectation();
@@ -227,19 +176,9 @@
     height: 35px;
     background-color: grey;
   }
-
-  .missspot {
-    position: absolute;
-    left: 400px;
-    top: 400px;
-    width: 35px;
-    height: 35px;
-    background-color: red;
-  }
 </style>
 
 <div class="startspot" id="startspot"></div>
-<div class="missspot" id="missspot"></div>
 <div class="verticalContainer" id="vcontainer">
   <div class="greenbox"></div>
   <div class="redbox"></div>

@@ -17,9 +17,10 @@
       document.body.offsetTop; // force layout
       if (window.name != 'verification') {
         assert_array_equals([window.innerWidth, window.innerHeight], [800, 600], 'initial page size is valid');
-        if (window.internals)
+        if (window.internals) {
           window.internals.setPageScaleFactor(2);
-        assert_array_equals([window.innerWidth, window.innerHeight], [400, 300], 'page is scaled');
+          assert_array_equals([internals.visualViewportWidth(), internals.visualViewportHeight()], [400, 300], 'page is scaled');
+        }
 
         history.scrollRestoration = 'manual';
         window.scrollTo(100, 200);
@@ -31,7 +32,7 @@
           window.location = "data:text/html,<script>history.back();</scr" + "ipt>";
         }, 0);
       } else {
-        assert_array_equals([window.innerWidth, window.innerHeight], [400, 300], 'page scale is restored');
+        assert_array_equals([internals.visualViewportWidth(), internals.visualViewportHeight()], [400, 300], 'page scale is restored');
         assert_array_equals([window.scrollX, window.scrollY], [0, 0], 'scroll position is not restored');
         // clean up
         window.name = '';

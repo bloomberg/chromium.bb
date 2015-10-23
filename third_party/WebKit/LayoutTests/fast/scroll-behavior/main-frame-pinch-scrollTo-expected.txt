@@ -1,9 +1,0 @@
-Test that scrollTo works on the visual viewport.
-
-This is a testharness.js-based test.
-PASS Scroll x:0, y:1000, smooth:true 
-PASS Scroll x:10, y:400, smooth:true 
-PASS Scroll x:0, y:1000, smooth:false 
-PASS Scroll x:10, y:400, smooth:false 
-Harness: the test ran to completion.
-

@@ -13,11 +13,11 @@
 
         window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
         document.execCommand("FindString", false, "target");
-        document.getElementById("result").innerText = document.scrollingElement.scrollTop === 860 ? "PASS" : "FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
+        document.getElementById("result").innerText = internals.visualViewportScrollY() === 860 ? "PASS" : "FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
 
         window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
         document.execCommand("FindString", false, "target");
-        document.getElementById("result").innerText += document.scrollingElement.scrollTop === 860 ? " PASS" : " FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
+        document.getElementById("result").innerText += internals.visualViewportScrollY() === 860 ? " PASS" : " FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
     };
     </script>
 </body>
