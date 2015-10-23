@@ -14,84 +14,104 @@ import android.widget.RemoteViews;
 
 import org.chromium.chrome.R;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
- * Builds a notification using the given inputs. Uses a RemoteViews instance in order to provide a
- * custom layout.
+ * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
  */
 public class CustomNotificationBuilder implements NotificationBuilder {
-    private final NotificationCompat.Builder mBuilder;
-    private final RemoteViews mCompactView;
-    private final RemoteViews mBigView;
+    private final Context mContext;
+    private String mTitle;
+    private String mBody;
+    private String mOrigin;
+    private CharSequence mTickerText;
+    private Bitmap mLargeIcon;
+    private int mSmallIconId;
+    private PendingIntent mContentIntent;
+    private PendingIntent mDeleteIntent;
+    private int mDefaults;
+    private long[] mVibratePattern;
 
     public CustomNotificationBuilder(Context context) {
-        mCompactView = new RemoteViews(context.getPackageName(), R.layout.web_notification);
-        mCompactView.setTextViewText(
-                R.id.time, DateFormat.getTimeFormat(context).format(new Date()));
-
-        mBigView = new RemoteViews(context.getPackageName(), R.layout.web_notification_big);
-        mBigView.setTextViewText(R.id.time, DateFormat.getTimeFormat(context).format(new Date()));
-
-        mBuilder = new NotificationCompat.Builder(context);
+        mContext = context;
     }
 
     @Override
     public Notification build() {
-        Notification notification = mBuilder.setContent(mCompactView).build();
-        notification.bigContentView = mBigView;
+        RemoteViews compactView =
+                new RemoteViews(mContext.getPackageName(), R.layout.web_notification);
+        RemoteViews bigView =
+                new RemoteViews(mContext.getPackageName(), R.layout.web_notification_big);
+
+        String time = DateFormat.getTimeFormat(mContext).format(new Date());
+        for (RemoteViews view : new RemoteViews[] {compactView, bigView}) {
+            view.setTextViewText(R.id.time, time);
+            view.setTextViewText(R.id.title, mTitle);
+            view.setTextViewText(R.id.body, mBody);
+            view.setTextViewText(R.id.origin, mOrigin);
+            view.setImageViewBitmap(R.id.icon, mLargeIcon);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+        builder.setTicker(mTickerText);
+        builder.setSmallIcon(mSmallIconId);
+        builder.setContentIntent(mContentIntent);
+        builder.setDeleteIntent(mDeleteIntent);
+        builder.setDefaults(mDefaults);
+        builder.setVibrate(mVibratePattern);
+        builder.setContent(compactView);
+
+        Notification notification = builder.build();
+        notification.bigContentView = bigView;
         return notification;
     }
 
     @Override
     public NotificationBuilder setTitle(String title) {
-        mCompactView.setTextViewText(R.id.title, title);
-        mBigView.setTextViewText(R.id.title, title);
+        mTitle = title;
         return this;
     }
 
     @Override
     public NotificationBuilder setBody(String body) {
-        mCompactView.setTextViewText(R.id.body, body);
-        mBigView.setTextViewText(R.id.body, body);
+        mBody = body;
         return this;
     }
 
     @Override
     public NotificationBuilder setOrigin(String origin) {
-        mCompactView.setTextViewText(R.id.origin, origin);
-        mBigView.setTextViewText(R.id.origin, origin);
+        mOrigin = origin;
         return this;
     }
 
     @Override
     public NotificationBuilder setTicker(CharSequence tickerText) {
-        mBuilder.setTicker(tickerText);
+        mTickerText = tickerText;
         return this;
     }
 
     @Override
     public NotificationBuilder setLargeIcon(Bitmap icon) {
-        mCompactView.setImageViewBitmap(R.id.icon, icon);
-        mBigView.setImageViewBitmap(R.id.icon, icon);
+        mLargeIcon = icon;
         return this;
     }
 
     @Override
     public NotificationBuilder setSmallIcon(int iconId) {
-        mBuilder.setSmallIcon(iconId);
+        mSmallIconId = iconId;
         return this;
     }
 
     @Override
     public NotificationBuilder setContentIntent(PendingIntent intent) {
-        mBuilder.setContentIntent(intent);
+        mContentIntent = intent;
         return this;
     }
 
     @Override
     public NotificationBuilder setDeleteIntent(PendingIntent intent) {
-        mBuilder.setDeleteIntent(intent);
+        mDeleteIntent = intent;
         return this;
     }
 
@@ -103,13 +123,13 @@ public class CustomNotificationBuilder implements NotificationBuilder {
 
     @Override
     public NotificationBuilder setDefaults(int defaults) {
-        mBuilder.setDefaults(defaults);
+        mDefaults = defaults;
         return this;
     }
 
     @Override
     public NotificationBuilder setVibrate(long[] pattern) {
-        mBuilder.setVibrate(pattern);
+        mVibratePattern = Arrays.copyOf(pattern, pattern.length);
         return this;
     }
 }
