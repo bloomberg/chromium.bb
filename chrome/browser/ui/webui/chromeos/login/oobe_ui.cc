@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
-#include "ash/shell_window_ids.h"
-#include "ash/wm/screen_dimmer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -383,9 +381,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 OobeUI::~OobeUI() {
   core_handler_->SetDelegate(nullptr);
   network_dropdown_handler_->RemoveObserver(error_screen_handler_);
-  ash::ScreenDimmer::GetForContainer(
-      ash::kShellWindowId_LockScreenContainersContainer)
-      ->SetDimming(false);
 }
 
 CoreOobeActor* OobeUI::GetCoreOobeActor() {
@@ -544,12 +539,6 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_OOBE_HOST_PAIRING] = kScreenHostPairing;
   screen_names_[SCREEN_DEVICE_DISABLED] = kScreenDeviceDisabled;
 
-  dim_overlay_screen_ids_.push_back(SCREEN_CONFIRM_PASSWORD);
-  dim_overlay_screen_ids_.push_back(SCREEN_GAIA_SIGNIN);
-  dim_overlay_screen_ids_.push_back(SCREEN_OOBE_ENROLLMENT);
-  dim_overlay_screen_ids_.push_back(SCREEN_PASSWORD_CHANGED);
-  dim_overlay_screen_ids_.push_back(SCREEN_USER_IMAGE_PICKER);
-
   screen_ids_.clear();
   for (size_t i = 0; i < screen_names_.size(); ++i)
     screen_ids_[screen_names_[i]] = static_cast<Screen>(i);
@@ -645,17 +634,7 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   previous_screen_ = current_screen_;
   DCHECK(screen_ids_.count(screen))
       << "Screen should be registered in InitializeScreenMaps()";
-  LOG(ERROR) << "OnCurrentScreenChanged:" << screen;
   Screen new_screen = screen_ids_[screen];
-
-  bool should_dim =
-      std::find(dim_overlay_screen_ids_.begin(), dim_overlay_screen_ids_.end(),
-                new_screen) != dim_overlay_screen_ids_.end();
-  ash::ScreenDimmer* screen_dimmer = ash::ScreenDimmer::GetForContainer(
-      ash::kShellWindowId_LockScreenContainersContainer);
-  screen_dimmer->set_at_bottom(true);
-  screen_dimmer->SetDimming(should_dim);
-
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
                     OnCurrentScreenChanged(current_screen_, new_screen));

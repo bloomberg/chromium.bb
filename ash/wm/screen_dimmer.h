@@ -41,8 +41,6 @@ class ASH_EXPORT ScreenDimmer : ShellObserver {
   // Dim or undim the layers.
   void SetDimming(bool should_dim);
 
-  void set_at_bottom(bool at_bottom) { at_bottom_ = at_bottom; }
-
   bool is_dimming() const { return is_dimming_; }
 
   // Find a ScreenDimmer in the container, or nullptr if it does not exist.
@@ -65,7 +63,6 @@ class ASH_EXPORT ScreenDimmer : ShellObserver {
 
   // Are we currently dimming the screen?
   bool is_dimming_;
-  bool at_bottom_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };

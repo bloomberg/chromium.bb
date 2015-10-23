@@ -53,10 +53,7 @@ ScreenDimmer* ScreenDimmer::GetForRoot() {
 }
 
 ScreenDimmer::ScreenDimmer(int container_id)
-    : container_id_(container_id),
-      target_opacity_(0.5f),
-      is_dimming_(false),
-      at_bottom_(false) {
+    : container_id_(container_id), target_opacity_(0.5f), is_dimming_(false) {
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -96,10 +93,6 @@ void ScreenDimmer::Update(bool should_dim) {
         dim = new DimWindow(container);
         dim->SetDimOpacity(target_opacity_);
       }
-      if (at_bottom_)
-        dim->parent()->StackChildAtBottom(dim);
-      else
-        dim->parent()->StackChildAtTop(dim);
       dim->Show();
     } else {
       if (dim) {
