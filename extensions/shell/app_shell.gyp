@@ -16,6 +16,7 @@
   },
   'targets': [
     {
+      # GN version: //extensions/shell:app_shell_lib
       'target_name': 'app_shell_lib',
       'type': 'static_library',
       'dependencies': [
@@ -107,6 +108,7 @@
       ],
     },
     {
+      # GN version: //extensions/shell:app_shell
       'target_name': 'app_shell',
       'type': 'executable',
       'mac_bundle': 1,
@@ -271,6 +273,7 @@
     ['OS=="mac"', {
       'targets': [
         {
+          # GN version: //extensions/shell:app_shell_framework
           'target_name': 'app_shell_framework',
           'type': 'shared_library',
           'product_name': '<(app_shell_product_name) Framework',

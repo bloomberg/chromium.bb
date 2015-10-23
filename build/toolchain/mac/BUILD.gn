@@ -130,7 +130,8 @@ template("mac_toolchain") {
 
       does_reexport_command = "[ ! -e $dylib -o ! -e $tocname ] || otool -l $dylib | grep -q LC_REEXPORT_DYLIB"
 
-      link_command = "$ld -shared {{ldflags}} -o $dylib -Wl,-filelist,$rspfile"
+      link_command =
+          "$ld -shared {{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\""
       if (is_component_build) {
         link_command += " -Wl,-install_name,@rpath/{{target_output_name}}{{output_extension}}"
       }
@@ -171,7 +172,8 @@ template("mac_toolchain") {
       sofile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
       rspfile = sofile + ".rsp"
 
-      link_command = "$ld -bundle {{ldflags}} -o $sofile -Wl,-filelist,$rspfile"
+      link_command =
+          "$ld -bundle {{ldflags}} -o \"$sofile\" -Wl,-filelist,\"$rspfile\""
       if (is_component_build) {
         link_command += " -Wl,-install_name,@rpath/{{target_output_name}}{{output_extension}}"
       }
@@ -195,7 +197,7 @@ template("mac_toolchain") {
     tool("link") {
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
-      command = "$ld {{ldflags}} -o $outfile -Wl,-filelist,$rspfile {{solibs}} {{libs}}"
+      command = "$ld {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
       description = "LINK $outfile"
       rspfile_content = "{{inputs_newline}}"
       outputs = [

@@ -156,7 +156,12 @@ if (!(is_chromeos && !use_ozone)) {
     }
 
     if (is_mac) {
-      # TODO(GYP): Mac bundling
+      # TODO(GYP) bug 546894: Fix GN and toolchains to handle spaces here.
+      #output_name = "App Shell"
+      # TODO(GYP): Mac bundling. See also content_shell which this is basically
+      # a copy-paste of.
+      deps += [ ":app_shell_framework" ]
+      # TODO(GYP): Mac app_shell_helper stuff.
     }
   }
 }
@@ -237,4 +242,20 @@ test("app_shell_unittests") {
 process_version("version_header") {
   template_file = "common/version.h.in"
   output = "$target_gen_dir/common/version.h"
+}
+
+if (is_mac) {
+  # TODO(GYP) this should be a bundle. Lots of other stuff in this target.
+  # Should be able to copy content shell framework (this is basically a
+  # copy-paste of that target).
+  shared_library("app_shell_framework") {
+    testonly = true
+    sources = [
+      "app/shell_main_mac.cc",
+      "app/shell_main_mac.h",
+    ]
+    deps = [
+      ":app_shell_lib",
+    ]
+  }
 }

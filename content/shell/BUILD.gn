@@ -430,7 +430,12 @@ if (!is_android && !is_mac) {
     }
 
     if (is_mac) {
-      # TODO(GYP) lots of stuff from GYP file here.
+      # TODO(GYP) lots of stuff from GYP file here including helper_app and
+      # postbuilds.
+      output_name = content_shell_product_name
+      deps = [
+        ":framework",
+      ]
     }
 
     if (is_android) {
@@ -465,5 +470,26 @@ if (is_win) {
 
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]
+  }
+}
+
+if (is_mac) {
+  # TODO(GYP) this should be a bundle. Lots of other stuff in this target.
+  # GYP version: content/content_shell.gypi:content_shell_framework
+  shared_library("framework") {
+    testonly = true
+
+    # TODO(GYP) bug 546894: Fix GN and toolchains to handle spaces here.
+    #output_name = "$content_shell_product_name Framework"
+    output_name = "content_shell_framework"  # Temporary one with no spaces.
+
+    sources = [
+      "shell_content_main.cc",
+      "shell_content_main.h",
+    ]
+
+    deps = [
+      ":content_shell_lib",
+    ]
   }
 }

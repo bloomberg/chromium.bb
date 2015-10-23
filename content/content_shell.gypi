@@ -696,6 +696,7 @@
     ['OS=="mac"', {
       'targets': [
         {
+          # GN version: //content/shell:framework
           'target_name': 'content_shell_framework',
           'type': 'shared_library',
           'product_name': '<(content_shell_product_name) Framework',

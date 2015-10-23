@@ -276,6 +276,23 @@ if (is_mac || is_win) {
   shared_library("main_dll") {
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
     defines = []
+    ldflags = []
+
+    sources = [
+      "//base/win/dllmain.cc",
+      "app/chrome_command_ids.h",
+      "app/chrome_dll.rc",
+      "app/chrome_dll_resource.h",
+      "app/chrome_main.cc",
+      "app/chrome_main_delegate.cc",
+      "app/chrome_main_delegate.h",
+      "app/chrome_main_mac.h",
+      "app/chrome_main_mac.mm",
+      "app/close_handle_hook_win.cc",
+      "app/close_handle_hook_win.h",
+      "app/delay_load_hook_win.cc",
+      "app/delay_load_hook_win.h",
+    ]
 
     deps = [
       ":browser_dependencies",
@@ -284,20 +301,6 @@ if (is_mac || is_win) {
     ]
     if (is_win) {
       output_name = "chrome"
-
-      sources = [
-        "//base/win/dllmain.cc",
-        "app/chrome_command_ids.h",
-        "app/chrome_dll.rc",
-        "app/chrome_dll_resource.h",
-        "app/chrome_main.cc",
-        "app/chrome_main_delegate.cc",
-        "app/chrome_main_delegate.h",
-        "app/close_handle_hook_win.cc",
-        "app/close_handle_hook_win.h",
-        "app/delay_load_hook_win.cc",
-        "app/delay_load_hook_win.h",
-      ]
 
       deps += [
         ":chrome_dll_manifest",
@@ -350,6 +353,21 @@ if (is_mac || is_win) {
       #  'includes': [ 'chrome_dll_bundle.gypi' ],
       #}],
       # TODO(GYP) Lots of other stuff in the OS=="mac" block.
+      sources += [
+        "app/chrome_crash_reporter_client.cc",
+        "app/chrome_crash_reporter_client.h",
+        "app/chrome_crash_reporter_client_mac.mm",
+      ]
+      deps += [
+        "//components/crash/content/app",
+        "//components/policy",
+      ]
+
+      # Define the order of symbols within the framework.
+      ldflags += [
+        "-Wl,-order_file",
+        "-Wl," + rebase_path("app/framework.order", root_build_dir),
+      ]
     }
 
     if (enable_plugins && !is_multi_dll_chrome) {

@@ -420,10 +420,6 @@ if (!is_android) {
               ".",
               "//chrome")
       sources += [ "../browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc" ]
-      sources -= [
-        # Use only the _chromeos version on ChromeOS.
-        "base/view_event_test_platform_part_ash.cc",
-      ]
 
       deps += [
         "//ash/resources",
@@ -513,11 +509,24 @@ if (!is_android) {
               "//chrome")
     }
 
+    if (!use_aura) {
+      sources -= [
+        "base/interactive_test_utils_aura.cc",
+        "base/interactive_test_utils_aura.h",
+      ]
+    }
+
     if (use_ash) {
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_interactive_ui_test_ash_sources,
               ".",
               "//chrome")
+      if (is_chromeos) {
+        sources -= [
+          # Use only the _chromeos version on ChromeOS.
+          "base/view_event_test_platform_part_ash.cc",
+        ]
+      }
       deps += [ "//ash:interactive_ui_test_support" ]
     }
 
@@ -983,6 +992,10 @@ if (!is_android) {
       defines += [ "DEBUG_DEVTOOLS=1" ]
     }
     if (use_ash) {
+      sources +=
+          rebase_path(chrome_tests_gypi_values.chrome_browser_tests_ash_sources,
+                      ".",
+                      "//chrome")
       deps += [ "//ash:test_support" ]
     }
     if (use_aura || toolkit_views) {
@@ -1034,9 +1047,11 @@ if (!is_android) {
         "../browser/extensions/api/terminal/terminal_private_apitest.cc",
         "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
         "../browser/net/nss_context_chromeos_browsertest.cc",
-        "../browser/ui/ash/keyboard_controller_browsertest.cc",
         "data/webui/certificate_viewer_ui_test-inl.h",
       ]
+      if (use_ash) {
+        sources -= [ "../browser/ui/ash/keyboard_controller_browsertest.cc" ]
+      }
       if (toolkit_views) {
         sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
       }
