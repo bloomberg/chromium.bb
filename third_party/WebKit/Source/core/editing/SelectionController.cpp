@@ -55,6 +55,7 @@ SelectionController::SelectionController(LocalFrame& frame)
     : m_frame(&frame)
     , m_mouseDownMayStartSelect(false)
     , m_mouseDownWasSingleClickInSelection(false)
+    , m_mouseDownAllowsMultiClick(false)
     , m_selectionState(SelectionState::HaveNotStartedSelection)
 {
 }
@@ -394,6 +395,9 @@ bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithH
 {
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventDoubleClick");
 
+    if (!m_mouseDownAllowsMultiClick)
+        return handleMousePressEventSingleClick(event);
+
     if (event.event().button() != LeftButton)
         return false;
 
@@ -414,6 +418,9 @@ template <typename Strategy>
 bool SelectionController::handleMousePressEventTripleClickAlgorithm(const MouseEventWithHitTestResults& event)
 {
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventTripleClick");
+
+    if (!m_mouseDownAllowsMultiClick)
+        return handleMousePressEventSingleClick(event);
 
     if (event.event().button() != LeftButton)
         return false;
@@ -452,6 +459,9 @@ void SelectionController::handleMousePressEvent(const MouseEventWithHitTestResul
     // so it's allowed to start a drag or selection if it wasn't in a scrollbar.
     m_mouseDownMayStartSelect = canMouseDownStartSelect(event.innerNode()) && !event.scrollbar();
     m_mouseDownWasSingleClickInSelection = false;
+    // Avoid double-tap touch gesture confusion by restricting multi-click side
+    // effects, e.g., word selection, to editable regions.
+    m_mouseDownAllowsMultiClick = !event.event().fromTouch() || selection().hasEditableStyle();
 }
 
 void SelectionController::handleMouseDraggedEvent(const MouseEventWithHitTestResults& event, const IntPoint& mouseDownPos, const LayoutPoint& dragStartPos, Node* mousePressNode, const IntPoint& lastKnownMousePosition)

@@ -109,6 +109,7 @@ private:
     RawPtrWillBeMember<LocalFrame> const m_frame;
     bool m_mouseDownMayStartSelect;
     bool m_mouseDownWasSingleClickInSelection;
+    bool m_mouseDownAllowsMultiClick;
     enum class SelectionState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
     SelectionState m_selectionState;
 };
