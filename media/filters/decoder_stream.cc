@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder.h"
@@ -50,11 +51,11 @@ DecoderStream<StreamType>::DecoderStream(
       decoder_selector_(new DecoderSelector<StreamType>(task_runner,
                                                         decoders.Pass(),
                                                         media_log)),
+      decoded_frames_since_fallback_(0),
       active_splice_(false),
       decoding_eos_(false),
       pending_decode_requests_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::~DecoderStream() {
@@ -243,6 +244,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   }
 
   previous_decoder_ = decoder_.Pass();
+  decoded_frames_since_fallback_ = 0;
   decoder_ = selected_decoder.Pass();
   if (decrypting_demuxer_stream) {
     decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
@@ -413,6 +415,13 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
 
   // Store decoded output.
   ready_outputs_.push_back(output);
+
+  // Destruct any previous decoder once we've decoded enough frames to ensure
+  // that it's no longer in use.
+  if (previous_decoder_ &&
+      ++decoded_frames_since_fallback_ > limits::kMaxVideoFrames) {
+    previous_decoder_.reset();
+  }
 }
 
 template <DemuxerStream::Type StreamType>

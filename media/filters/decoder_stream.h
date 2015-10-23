@@ -113,6 +113,10 @@ class MEDIA_EXPORT DecoderStream {
     config_change_observer_cb_ = config_change_observer;
   }
 
+  const Decoder* get_previous_decoder_for_testing() const {
+    return previous_decoder_.get();
+  }
+
  private:
   enum State {
     STATE_UNINITIALIZED,
@@ -186,9 +190,11 @@ class MEDIA_EXPORT DecoderStream {
   scoped_ptr<DecoderSelector<StreamType> > decoder_selector_;
 
   scoped_ptr<Decoder> decoder_;
-  // TODO(watk): When falling back from H/W decoding to S/W decoding,
-  // destructing the GpuVideoDecoder too early results in black frames being
-  // displayed. |previous_decoder_| is used to keep it alive.
+  // When falling back from H/W decoding to S/W decoding, destructing the
+  // GpuVideoDecoder too early results in black frames being displayed.
+  // |previous_decoder_| is used to keep it alive.  It is destroyed once we've
+  // decoded at least media::limits::kMaxVideoFrames frames after fallback.
+  int decoded_frames_since_fallback_;
   scoped_ptr<Decoder> previous_decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 

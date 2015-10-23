@@ -825,7 +825,9 @@ TEST_P(VideoFrameStreamTest, FallbackDecoderSelectedOnFailureToReinitialize) {
   Initialize();
   decoder1_->SimulateFailureToInit();
   ReadUntilDecoderReinitialized(decoder1_);
+  ASSERT_TRUE(video_frame_stream_->get_previous_decoder_for_testing());
   ReadAllFrames();
+  ASSERT_FALSE(video_frame_stream_->get_previous_decoder_for_testing());
 }
 
 TEST_P(VideoFrameStreamTest,
