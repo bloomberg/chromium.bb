@@ -38,16 +38,16 @@ sed -i '' 's/"default"/"hidden"/g' ../../libcxxabi/src/*
 sed -i '' 's/push(default)/push(hidden)/g' ../../libcxxabi/src/*
 
 # Let the default handler not depend on __cxa_demangle, this saves 0.5MB binary
-# size in each binary linking against libc++.a
+# size in each binary linking against libc++-static.a
 patch -d ../../libcxxabi -p0 < "${THIS_DIR}/libcxxabi.patch"
 
 "$CXX" -c -I../../libcxx/include/ -I../../libcxxabi/include ../../libcxxabi/src/*.cpp $FLAGS
 popd
 
-libtool -static -o libc++.a libcxx*/*.o
+libtool -static -o libc++-static.a libcxx*/*.o
 
-cp libc++.a "${THIS_DIR}/libc++.a"
-upload_to_google_storage.py -b chromium-libcpp "${THIS_DIR}/libc++.a"
+cp libc++-static.a "${THIS_DIR}"
+upload_to_google_storage.py -b chromium-libcpp "${THIS_DIR}/libc++-static.a"
 
 popd
 rm -rf "${DIR}"
