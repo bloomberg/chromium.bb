@@ -126,6 +126,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       delegate_(params->delegate),
       pending_navigation_(false),
       weak_factory_(this) {
+  TRACE_EVENT0("html_viewer", "HTMLFrame::HTMLFrame");
   if (parent_)
     parent_->children_.push_back(this);
 
@@ -273,6 +274,9 @@ bool HTMLFrame::HasLocalDescendant() const {
 
 void HTMLFrame::LoadRequest(const blink::WebURLRequest& request,
                             base::TimeTicks navigation_start_time) {
+  TRACE_EVENT1("html_viewer", "HTMLFrame::LoadRequest",
+               "url", request.url().string().utf8());
+
   DCHECK(IsLocal());
 
   DVLOG(2) << "HTMLFrame::LoadRequest this=" << this << " id=" << id_
@@ -618,6 +622,8 @@ void HTMLFrame::UpdateFocus() {
 }
 
 void HTMLFrame::SwapToRemote() {
+  TRACE_EVENT0("html_viewer", "HTMLFrame::SwapToRemote");
+
   DVLOG(2) << "HTMLFrame::SwapToRemote this=" << this << " id=" << id_;
 
   DCHECK(IsLocal());
@@ -665,6 +671,7 @@ void HTMLFrame::SwapToLocal(
     HTMLFrameDelegate* delegate,
     mus::Window* window,
     const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
+  TRACE_EVENT0("html_viewer", "HTMLFrame::SwapToLocal");
   DVLOG(2) << "HTMLFrame::SwapToLocal this=" << this << " id=" << id_;
   CHECK(!IsLocal());
   // It doesn't make sense for the root to swap to local.

@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
@@ -114,6 +115,7 @@ void BrowserWindow::Close() {
 }
 
 void BrowserWindow::ShowOmnibox() {
+  TRACE_EVENT0("desktop_ui", "BrowserWindow::ShowOmnibox");
   if (!omnibox_.get()) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:omnibox");
@@ -131,15 +133,18 @@ void BrowserWindow::ShowOmnibox() {
 }
 
 void BrowserWindow::ShowFind() {
+  TRACE_EVENT0("desktop_ui", "BrowserWindow::ShowFind");
   toolbar_view_->SetVisible(false);
   find_bar_view_->Show();
 }
 
 void BrowserWindow::GoBack() {
+  TRACE_EVENT0("desktop_ui", "BrowserWindow::GoBack");
   web_view_.web_view()->GoBack();
 }
 
 void BrowserWindow::GoForward() {
+  TRACE_EVENT0("desktop_ui", "BrowserWindow::GoForward");
   web_view_.web_view()->GoForward();
 }
 
@@ -156,6 +161,7 @@ float BrowserWindow::DIPSToPixels(float value) const {
 // BrowserWindow, mus::ViewTreeDelegate implementation:
 
 void BrowserWindow::OnEmbed(mus::Window* root) {
+  TRACE_EVENT0("desktop_ui", "BrowserWindow::OnEmbed");
   // BrowserWindow does not support being embedded more than once.
   CHECK(!root_);
 

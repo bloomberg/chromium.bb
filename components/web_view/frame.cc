@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/web_view/frame_tree.h"
@@ -376,6 +377,9 @@ void Frame::OnCanNavigateFrame(
     mojom::FrameClient* frame_client,
     scoped_ptr<FrameUserData> user_data,
     mus::mojom::WindowTreeClientPtr window_tree_client) {
+  TRACE_EVENT1("web_view", "Frame::OnCanNavigateFrame",
+               "url", url.possibly_invalid_spec());
+
   DVLOG(2) << "Frame::OnCanNavigateFrame id=" << id_
            << " equal=" << (AreAppIdsEqual(app_id, app_id_) ? "true" : "false");
   if (AreAppIdsEqual(app_id, app_id_)) {

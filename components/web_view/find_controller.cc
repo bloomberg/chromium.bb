@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/web_view/find_controller_delegate.h"
 #include "components/web_view/frame.h"
 
@@ -22,6 +23,9 @@ FindController::~FindController() {}
 
 void FindController::Find(const std::string& in_search_string,
                           bool forward_direction) {
+  TRACE_EVENT2("web_view", "FindController::Find",
+               "search_string", in_search_string,
+               "forward_direction", forward_direction);
   std::string search_string = in_search_string;
   // Remove the carriage return character, which generally isn't in web content.
   const char kInvalidChars[] = {'\r', 0};
@@ -124,6 +128,9 @@ void FindController::OnContinueFinding(int32_t request_id,
                                        uint32_t starting_frame,
                                        uint32_t current_frame,
                                        bool found) {
+  TRACE_EVENT2("web_view", "FindController::OnContinueFinding",
+               "request_id", request_id,
+               "search_string", search_string);
   if (!found) {
     // So we need to figure out what the next frame to search is.
     Frame* next_frame =

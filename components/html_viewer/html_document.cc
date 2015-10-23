@@ -117,6 +117,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
 }
 
 void HTMLDocument::Destroy() {
+  TRACE_EVENT0("html_viewer", "HTMLDocument::Destroy");
   if (resource_waiter_) {
     mus::Window* root = resource_waiter_->root();
     if (root) {
@@ -147,6 +148,7 @@ HTMLDocument::~HTMLDocument() {
 }
 
 void HTMLDocument::Load() {
+  TRACE_EVENT0("html_viewer", "HTMLDocument::Load");
   DCHECK(resource_waiter_ && resource_waiter_->is_ready());
 
   // Note: |window| is null if we're taking over for an existing frame.
@@ -208,6 +210,7 @@ void HTMLDocument::OnConnectionLost(mus::WindowTreeConnection* connection) {
 }
 
 void HTMLDocument::OnFrameDidFinishLoad() {
+  TRACE_EVENT0("html_viewer", "HTMLDocument::OnFrameDidFinishLoad");
   did_finish_local_frame_load_ = true;
   scoped_ptr<BeforeLoadCache> before_load_cache = before_load_cache_.Pass();
   if (!before_load_cache)
@@ -240,6 +243,7 @@ void HTMLDocument::OnFrameSwappedToRemote() {
 }
 
 void HTMLDocument::OnSwap(HTMLFrame* frame, HTMLFrameDelegate* old_delegate) {
+  TRACE_EVENT0("html_viewer", "HTMLDocument::OnSwap");
   DCHECK(frame->IsLocal());
   DCHECK(frame->window());
   DCHECK(!frame_);
