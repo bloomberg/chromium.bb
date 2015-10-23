@@ -631,6 +631,14 @@ if [[ -n "${with_android}" ]]; then
       --stl=stlport \
       --toolchain=arm-linux-androideabi-4.9
 
+  # Do the same for arm64.
+  ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
+      --platform=android-21 \
+      --install-dir="${LLVM_BUILD_DIR}/android-toolchain-aarch64" \
+      --system=linux-x86_64 \
+      --stl=stlport \
+      --toolchain=aarch64-linux-android-4.9
+
   # Do the same for x86.
   ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
       --platform=android-19 \
@@ -639,7 +647,7 @@ if [[ -n "${with_android}" ]]; then
       --stl=stlport \
       --toolchain=x86-4.9
 
-  for target_arch in "arm" "i686"; do
+  for target_arch in "aarch64" "arm" "i686"; do
     # Android NDK r9d copies a broken unwind.h into the toolchain, see
     # http://crbug.com/357890
     rm -v "${LLVM_BUILD_DIR}"/android-toolchain-${target_arch}/include/c++/*/unwind.h
