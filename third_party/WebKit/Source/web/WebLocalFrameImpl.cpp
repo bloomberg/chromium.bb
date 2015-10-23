@@ -119,6 +119,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
@@ -2135,6 +2136,16 @@ void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const
     ASSERT(frame());
     ASSERT(frame()->document());
     frame()->document()->postSuspendableTask(WebSuspendableTaskWrapper::create(adoptPtr(task)));
+}
+
+void WebLocalFrameImpl::didCallAddSearchProvider()
+{
+    UseCounter::count(frame(), UseCounter::ExternalAddSearchProvider);
+}
+
+void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
+{
+    UseCounter::count(frame(), UseCounter::ExternalIsSearchProviderInstalled);
 }
 
 void WebLocalFrameImpl::willBeDetached()

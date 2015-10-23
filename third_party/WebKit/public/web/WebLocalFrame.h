@@ -170,6 +170,11 @@ public:
     // If the provided node is an image, reload the image bypassing the cache.
     virtual void reloadImage(const WebNode&) = 0;
 
+    // Feature usage logging --------------------------------------------------
+
+    virtual void didCallAddSearchProvider() = 0;
+    virtual void didCallIsSearchProviderInstalled() = 0;
+
     // Testing ----------------------------------------------------------------
 
     // Registers a test interface factory. Takes ownership of the factory.
