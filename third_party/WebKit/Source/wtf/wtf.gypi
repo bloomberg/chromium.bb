@@ -230,6 +230,7 @@
             'TemporaryChangeTest.cpp',
             'TreeNodeTest.cpp',
             'VectorTest.cpp',
+            'dtoa_test.cpp',
             'testing/WTFTestPrintersTest.cpp',
             'text/AtomicStringTest.cpp',
             'text/CStringTest.cpp',
