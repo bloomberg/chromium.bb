@@ -40,6 +40,7 @@ struct FocusCandidate;
 class Element;
 class Frame;
 class InputDeviceCapabilities;
+class LocalFrame;
 class Node;
 class Page;
 
@@ -50,7 +51,7 @@ public:
 
     void setFocusedFrame(PassRefPtrWillBeRawPtr<Frame>);
     void focusDocumentView(PassRefPtrWillBeRawPtr<Frame>);
-    Frame* focusedFrame() const { return m_focusedFrame.get(); }
+    LocalFrame* focusedFrame() const;
     Frame* focusedOrMainFrame() const;
 
     bool setInitialFocus(WebFocusType);

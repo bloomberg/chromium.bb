@@ -603,9 +603,20 @@ void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame)
     setFocusedFrame(frame);
 }
 
+LocalFrame* FocusController::focusedFrame() const
+{
+    // TODO(alexmos): Strengthen this to ASSERT that whoever called this really
+    // expected a LocalFrame. Refactor call sites so that the rare cases that
+    // need to know about focused RemoteFrames use a separate accessor (to be
+    // added).
+    if (m_focusedFrame && m_focusedFrame->isRemoteFrame())
+        return nullptr;
+    return toLocalFrame(m_focusedFrame.get());
+}
+
 Frame* FocusController::focusedOrMainFrame() const
 {
-    if (Frame* frame = focusedFrame())
+    if (LocalFrame* frame = focusedFrame())
         return frame;
 
     // FIXME: This is a temporary hack to ensure that we return a LocalFrame, even when the mainFrame is remote.
@@ -799,7 +810,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
 
 bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
-    RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = focusedFrame() && focusedFrame()->isLocalFrame() ? toLocalFrame(focusedFrame()) : nullptr;
+    RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = focusedFrame();
     RefPtrWillBeRawPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : nullptr;
 
     Element* oldFocusedElement = oldDocument ? oldDocument->focusedElement() : nullptr;
@@ -910,7 +921,7 @@ static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate
 
 void FocusController::findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType type, FocusCandidate& closest)
 {
-    Element* focusedElement = (focusedFrame() && toLocalFrame(focusedFrame())->document()) ? toLocalFrame(focusedFrame())->document()->focusedElement() : nullptr;
+    Element* focusedElement = (focusedFrame() && focusedFrame()->document()) ? focusedFrame()->document()->focusedElement() : nullptr;
 
     Element* element = ElementTraversal::firstWithin(container);
     FocusCandidate current;
