@@ -13,7 +13,6 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace wm {
 
@@ -52,39 +51,6 @@ TEST_F(VisibilityControllerTest, AnimateTransparencyToZeroAndHideHides) {
   window->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(window->layer()->visible());
   EXPECT_FALSE(window->IsVisible());
-}
-
-// Test if SetWindowVisibilityChagngesAnimated will animate the specified
-// window.
-TEST_F(VisibilityControllerTest, SetWindowVisibilityChagnesAnimated) {
-  // We cannot disable animations for this test.
-  ui::ScopedAnimationDurationScaleMode test_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
-  VisibilityController controller;
-  aura::client::SetVisibilityClient(root_window(), &controller);
-
-  aura::test::TestWindowDelegate d;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
-      &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
-  // Test using Show animation because Hide animation detaches the window's
-  // layer.
-  window->Hide();
-  ASSERT_FALSE(window->IsVisible());
-
-  SetWindowVisibilityChangesAnimated(window.get());
-  SetWindowVisibilityAnimationDuration(window.get(),
-                                       base::TimeDelta::FromMilliseconds(5));
-  SetWindowVisibilityAnimationType(window.get(),
-                                   WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  window->Show();
-  EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
-  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(0.0f, window->layer()->opacity());
-
-  window->layer()->GetAnimator()->StopAnimating();
-  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(1.0f, window->layer()->opacity());
 }
 
 }  // namespace wm

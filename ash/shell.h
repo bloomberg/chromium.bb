@@ -467,6 +467,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
                          aura::Window* root_window);
   ShelfAlignment GetShelfAlignment(const aura::Window* root_window);
 
+  // Dims or undims the screen.
+  void SetDimming(bool should_dim);
+
   // Notifies |observers_| when entering or exiting fullscreen mode in
   // |root_window|.
   void NotifyFullscreenStateChange(bool is_fullscreen,

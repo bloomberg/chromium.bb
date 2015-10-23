@@ -525,8 +525,6 @@
       'wm/default_state.h',
       'wm/default_window_resizer.cc',
       'wm/default_window_resizer.h',
-      'wm/dim_window.cc',
-      'wm/dim_window.h',
       'wm/dock/docked_window_layout_manager.cc',
       'wm/dock/docked_window_layout_manager.h',
       'wm/dock/docked_window_layout_manager_observer.h',

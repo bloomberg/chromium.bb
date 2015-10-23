@@ -22,9 +22,11 @@ class EventFilter;
 namespace gfx {
 class Rect;
 }
+namespace views {
+class Widget;
+}
 
 namespace ash {
-class DimWindow;
 
 // LayoutManager for the modal window container.
 // System modal windows which are centered on the screen will be kept centered
@@ -96,9 +98,9 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   // The container that owns the layout manager.
   aura::Window* container_;
 
-  // A window that dims the windows behind the modal window(s) being
+  // A widget that dims the windows behind the modal window(s) being
   // shown in |container_|.
-  DimWindow* modal_background_;
+  views::Widget* modal_background_;
 
   // A stack of modal windows. Only the topmost can receive events.
   std::vector<aura::Window*> modal_windows_;

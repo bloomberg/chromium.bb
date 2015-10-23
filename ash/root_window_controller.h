@@ -54,6 +54,7 @@ class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
 class RootWindowLayoutManager;
+class ScreenDimmer;
 class ShelfLayoutManager;
 class ShelfWidget;
 class StackingController;
@@ -119,6 +120,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   AlwaysOnTopController* always_on_top_controller() {
     return always_on_top_controller_.get();
   }
+
+  ScreenDimmer* screen_dimmer() { return screen_dimmer_.get(); }
 
   // Access the shelf associated with this root window controller,
   // NULL if no such shelf exists.
@@ -293,6 +296,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   scoped_ptr<AshTouchExplorationManager> touch_exploration_manager_;
 #endif
 
+  scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;
   scoped_ptr<AlwaysOnTopController> always_on_top_controller_;
 

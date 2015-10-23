@@ -64,17 +64,7 @@ class WM_EXPORT SuspendChildWindowVisibilityAnimations {
   DISALLOW_COPY_AND_ASSIGN(SuspendChildWindowVisibilityAnimations);
 };
 
-// Enable visibility change animation for specific |window|. Use this if
-// you want to enable visibility change animation on a specific window without
-// affecting other windows in the same container. Calling this on a window
-// whose animation is already enabled either by this function, or
-// via SetChildWindowVisibilityChangesAnimatedbelow below is allowed and
-// the animation stays enabled.
-void WM_EXPORT SetWindowVisibilityChangesAnimated(aura::Window* window);
-
-// Enable visibiilty change animation for all children of the |window|.
-// Tyically applied to a container whose child windows should be animated
-// when their visibility changes.
+// Tells |window| to animate visibility changes to its children.
 void WM_EXPORT SetChildWindowVisibilityChangesAnimated(
     aura::Window* window);
 

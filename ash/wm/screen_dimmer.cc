@@ -5,102 +5,62 @@
 #include "ash/wm/screen_dimmer.h"
 
 #include "ash/shell.h"
-#include "ash/wm/dim_window.h"
 #include "base/time/time.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::ScreenDimmer*);
-
 namespace ash {
 namespace {
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ScreenDimmer, kScreenDimmerKey, nullptr);
 
-// Opacity when it's dimming the entire screen.
-const float kDimmingLayerOpacityForRoot = 0.4f;
+// Opacity for |dimming_layer_| when it's dimming the screen.
+const float kDimmingLayerOpacity = 0.4f;
 
-const int kRootWindowMagicId = -100;
-
-std::vector<aura::Window*> GetAllContainers(int container_id) {
-  return container_id == kRootWindowMagicId
-             ? Shell::GetAllRootWindows()
-             : Shell::GetContainersFromAllRootWindows(container_id, nullptr);
-}
+// Duration for dimming animations, in milliseconds.
+const int kDimmingTransitionMs = 200;
 
 }  // namespace
 
-// static
-ScreenDimmer* ScreenDimmer::GetForContainer(int container_id) {
-  aura::Window* primary_container = FindContainer(container_id);
-  ScreenDimmer* dimmer = primary_container->GetProperty(kScreenDimmerKey);
-  if (!dimmer) {
-    dimmer = new ScreenDimmer(container_id);
-    primary_container->SetProperty(kScreenDimmerKey, dimmer);
-  }
-  return dimmer;
-}
-
-// static
-ScreenDimmer* ScreenDimmer::GetForRoot() {
-  ScreenDimmer* dimmer = GetForContainer(kRootWindowMagicId);
-  // Root window's dimmer
-  dimmer->target_opacity_ = kDimmingLayerOpacityForRoot;
-  return dimmer;
-}
-
-ScreenDimmer::ScreenDimmer(int container_id)
-    : container_id_(container_id), target_opacity_(0.5f), is_dimming_(false) {
-  Shell::GetInstance()->AddShellObserver(this);
+ScreenDimmer::ScreenDimmer(aura::Window* root_window)
+    : root_window_(root_window),
+      currently_dimming_(false) {
+  root_window_->AddObserver(this);
 }
 
 ScreenDimmer::~ScreenDimmer() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  root_window_->RemoveObserver(this);
 }
 
 void ScreenDimmer::SetDimming(bool should_dim) {
-  if (should_dim == is_dimming_)
+  if (should_dim == currently_dimming_)
     return;
-  is_dimming_ = should_dim;
 
-  Update(should_dim);
-}
-
-ScreenDimmer* ScreenDimmer::FindForTest(int container_id) {
-  return FindContainer(container_id)->GetProperty(kScreenDimmerKey);
-}
-
-// static
-aura::Window* ScreenDimmer::FindContainer(int container_id) {
-  aura::Window* primary = Shell::GetPrimaryRootWindow();
-  return container_id == kRootWindowMagicId
-             ? primary
-             : primary->GetChildById(container_id);
-}
-
-void ScreenDimmer::OnRootWindowAdded(aura::Window* root_window) {
-  Update(is_dimming_);
-}
-
-void ScreenDimmer::Update(bool should_dim) {
-  for (aura::Window* container : GetAllContainers(container_id_)) {
-    DimWindow* dim = DimWindow::Get(container);
-    if (should_dim) {
-      if (!dim) {
-        dim = new DimWindow(container);
-        dim->SetDimOpacity(target_opacity_);
-      }
-      dim->Show();
-    } else {
-      if (dim) {
-        dim->Hide();
-        delete dim;
-      }
-    }
+  if (!dimming_layer_) {
+    dimming_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
+    dimming_layer_->SetColor(SK_ColorBLACK);
+    dimming_layer_->SetOpacity(0.0f);
+    ui::Layer* root_layer = root_window_->layer();
+    dimming_layer_->SetBounds(root_layer->bounds());
+    root_layer->Add(dimming_layer_.get());
+    root_layer->StackAtTop(dimming_layer_.get());
   }
+
+  currently_dimming_ = should_dim;
+
+  ui::ScopedLayerAnimationSettings scoped_settings(
+      dimming_layer_->GetAnimator());
+  scoped_settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kDimmingTransitionMs));
+  dimming_layer_->SetOpacity(should_dim ? kDimmingLayerOpacity : 0.0f);
+}
+
+void ScreenDimmer::OnWindowBoundsChanged(aura::Window* root,
+                                         const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds) {
+  if (dimming_layer_)
+    dimming_layer_->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
 }  // namespace ash

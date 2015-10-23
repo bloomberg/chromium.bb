@@ -68,6 +68,7 @@
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
+#include "ash/wm/screen_dimmer.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -521,6 +522,13 @@ ShelfAlignment Shell::GetShelfAlignment(const aura::Window* root_window) {
   return GetRootWindowController(root_window)
       ->GetShelfLayoutManager()
       ->GetAlignment();
+}
+
+void Shell::SetDimming(bool should_dim) {
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    (*iter)->screen_dimmer()->SetDimming(should_dim);
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
