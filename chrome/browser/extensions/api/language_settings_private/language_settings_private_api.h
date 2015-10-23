@@ -73,7 +73,8 @@ class LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction
 
 // Implements the languageSettingsPrivate.getSpellcheckWords method.
 class LanguageSettingsPrivateGetSpellcheckWordsFunction
-    : public UIThreadExtensionFunction {
+    : public UIThreadExtensionFunction,
+      public SpellcheckCustomDictionary::Observer {
  public:
   LanguageSettingsPrivateGetSpellcheckWordsFunction();
   DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.getSpellcheckWords",
@@ -85,8 +86,52 @@ class LanguageSettingsPrivateGetSpellcheckWordsFunction
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
+  // SpellcheckCustomDictionary::Observer overrides.
+  void OnCustomDictionaryLoaded() override;
+  void OnCustomDictionaryChanged(
+      const SpellcheckCustomDictionary::Change& dictionary_change) override;
+
+  // Returns the list of words from the loaded custom dictionary.
+  scoped_ptr<base::ListValue> GetSpellcheckWords() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateGetSpellcheckWordsFunction);
+};
+
+// Implements the languageSettingsPrivate.addSpellcheckWord method.
+class LanguageSettingsPrivateAddSpellcheckWordFunction
+    : public UIThreadExtensionFunction {
+ public:
+  LanguageSettingsPrivateAddSpellcheckWordFunction();
+  DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.addSpellcheckWord",
+                             LANGUAGESETTINGSPRIVATE_ADDSPELLCHECKWORD)
+
+ protected:
+  ~LanguageSettingsPrivateAddSpellcheckWordFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateAddSpellcheckWordFunction);
+};
+
+// Implements the languageSettingsPrivate.removeSpellcheckWord method.
+class LanguageSettingsPrivateRemoveSpellcheckWordFunction
+    : public UIThreadExtensionFunction {
+ public:
+  LanguageSettingsPrivateRemoveSpellcheckWordFunction();
+  DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.removeSpellcheckWord",
+                             LANGUAGESETTINGSPRIVATE_REMOVESPELLCHECKWORD)
+
+ protected:
+  ~LanguageSettingsPrivateRemoveSpellcheckWordFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateRemoveSpellcheckWordFunction);
 };
 
 // Implements the languageSettingsPrivate.getTranslateTargetLanguage method.

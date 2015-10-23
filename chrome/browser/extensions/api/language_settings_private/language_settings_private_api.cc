@@ -26,7 +26,6 @@
 #include "chrome/common/extensions/api/language_settings_private.h"
 #include "chrome/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "components/translate/core/common/translate_util.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -114,11 +113,9 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       language.display_name_rtl.reset(new bool(true));
     if (locale_set.count(pair.first) > 0)
       language.supports_ui.reset(new bool(true));
-    if (spellcheck_language_set.count(language.code) > 0)
+    if (spellcheck_language_set.count(pair.first) > 0)
       language.supports_spellcheck.reset(new bool(true));
-    std::string translate_code = language.code;
-    translate::ToTranslateLanguageSynonym(&translate_code);
-    if (translate_language_set.count(translate_code) > 0)
+    if (translate_language_set.count(pair.first) > 0)
       language.supports_translate.reset(new bool(true));
 
     language_list->Append(language.ToValue());
@@ -183,14 +180,86 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::Run() {
       SpellcheckServiceFactory::GetForContext(browser_context());
   SpellcheckCustomDictionary* dictionary = service->GetCustomDictionary();
 
+  if (dictionary->IsLoaded())
+    return RespondNow(OneArgument(GetSpellcheckWords().release()));
+
+  dictionary->AddObserver(this);
+  AddRef();  // Balanced in OnCustomDictionaryLoaded().
+  return RespondLater();
+}
+
+void
+LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryLoaded() {
+  SpellcheckService* service =
+      SpellcheckServiceFactory::GetForContext(browser_context());
+  service->GetCustomDictionary()->RemoveObserver(this);
+  Respond(OneArgument(GetSpellcheckWords().release()));
+  Release();
+}
+
+void
+LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryChanged(
+    const SpellcheckCustomDictionary::Change& dictionary_change) {
+  NOTREACHED() << "SpellcheckCustomDictionary::Observer: "
+                  "OnCustomDictionaryChanged() called before "
+                  "OnCustomDictionaryLoaded()";
+}
+
+scoped_ptr<base::ListValue>
+LanguageSettingsPrivateGetSpellcheckWordsFunction::GetSpellcheckWords() const {
+  SpellcheckService* service =
+      SpellcheckServiceFactory::GetForContext(browser_context());
+  SpellcheckCustomDictionary* dictionary = service->GetCustomDictionary();
+  DCHECK(dictionary->IsLoaded());
+
+  // TODO(michaelpg): Sort using app locale.
   scoped_ptr<base::ListValue> word_list(new base::ListValue());
-  // TODO(michaelpg): observe the dictionary and respond later if not loaded.
-  if (dictionary->IsLoaded()) {
-    const std::set<std::string>& words = dictionary->GetWords();
-    for (const std::string& word : words)
-      word_list->AppendString(word);
-  }
-  return RespondNow(OneArgument(word_list.release()));
+  const std::set<std::string>& words = dictionary->GetWords();
+  for (const std::string& word : words)
+    word_list->AppendString(word);
+  return word_list.Pass();
+}
+
+LanguageSettingsPrivateAddSpellcheckWordFunction::
+    LanguageSettingsPrivateAddSpellcheckWordFunction() {
+}
+
+LanguageSettingsPrivateAddSpellcheckWordFunction::
+    ~LanguageSettingsPrivateAddSpellcheckWordFunction() {
+}
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
+  scoped_ptr<language_settings_private::AddSpellcheckWord::Params> params =
+      language_settings_private::AddSpellcheckWord::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  SpellcheckService* service =
+      SpellcheckServiceFactory::GetForContext(browser_context());
+  bool success = service->GetCustomDictionary()->AddWord(params->word);
+
+  return RespondNow(OneArgument(new base::FundamentalValue(success)));
+}
+
+LanguageSettingsPrivateRemoveSpellcheckWordFunction::
+    LanguageSettingsPrivateRemoveSpellcheckWordFunction() {
+}
+
+LanguageSettingsPrivateRemoveSpellcheckWordFunction::
+    ~LanguageSettingsPrivateRemoveSpellcheckWordFunction() {
+}
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
+  scoped_ptr<language_settings_private::RemoveSpellcheckWord::Params> params =
+      language_settings_private::RemoveSpellcheckWord::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  SpellcheckService* service =
+      SpellcheckServiceFactory::GetForContext(browser_context());
+  bool success = service->GetCustomDictionary()->RemoveWord(params->word);
+
+  return RespondNow(OneArgument(new base::FundamentalValue(success)));
 }
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::

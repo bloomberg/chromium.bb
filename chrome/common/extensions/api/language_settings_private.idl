@@ -88,8 +88,14 @@ namespace languageSettingsPrivate {
     static void getSpellcheckDictionaryStatuses(
         GetSpellcheckDictionaryStatusesCallback callback);
 
-    // Gets the custom spell check words.
+    // Gets the custom spell check words, in sorted order.
     static void getSpellcheckWords(GetSpellcheckWordsCallback callback);
+
+    // Adds a word to the custom dictionary.
+    static void addSpellcheckWord(DOMString word);
+
+    // Removes a word from the custom dictionary.
+    static void removeSpellcheckWord(DOMString word);
 
     // Gets the translate target language (in most cases, the display locale).
     static void getTranslateTargetLanguage(

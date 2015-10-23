@@ -85,11 +85,25 @@ chrome.languageSettingsPrivate.setLanguageList = function(languageCodes) {};
 chrome.languageSettingsPrivate.getSpellcheckDictionaryStatuses = function(callback) {};
 
 /**
- * Gets the custom spell check words.
+ * Gets the custom spell check words, in sorted order.
  * @param {function(!Array<string>):void} callback
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellcheckWords
  */
 chrome.languageSettingsPrivate.getSpellcheckWords = function(callback) {};
+
+/**
+ * Adds a word to the custom dictionary.
+ * @param {string} word
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-addSpellcheckWord
+ */
+chrome.languageSettingsPrivate.addSpellcheckWord = function(word) {};
+
+/**
+ * Removes a word from the custom dictionary.
+ * @param {string} word
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-removeSpellcheckWord
+ */
+chrome.languageSettingsPrivate.removeSpellcheckWord = function(word) {};
 
 /**
  * Gets the translate target language (in most cases, the display locale).
