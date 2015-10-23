@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGAnimatedEnumerationBase.h"
 
 #include "core/svg/SVGElement.h"
@@ -47,9 +46,17 @@ void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value, ExceptionState
         return;
     }
 
-    baseValue()->setValue(value, exceptionState);
-    if (exceptionState.hadException())
+    if (!value) {
+        exceptionState.throwTypeError("The enumeration value provided is 0, which is not settable.");
         return;
+    }
+
+    if (value > baseValue()->maxExposedEnumValue()) {
+        exceptionState.throwTypeError("The enumeration value provided (" + String::number(value) + ") is larger than the largest allowed value (" + String::number(baseValue()->maxExposedEnumValue()) + ").");
+        return;
+    }
+
+    baseValue()->setValue(value);
 
     m_baseValueUpdated = true;
 

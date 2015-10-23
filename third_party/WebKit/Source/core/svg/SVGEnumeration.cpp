@@ -68,18 +68,8 @@ String SVGEnumerationBase::valueAsString() const
     return emptyString();
 }
 
-void SVGEnumerationBase::setValue(unsigned short value, ExceptionState& exceptionState)
+void SVGEnumerationBase::setValue(unsigned short value)
 {
-    if (!value) {
-        exceptionState.throwTypeError("The enumeration value provided is 0, which is not settable.");
-        return;
-    }
-
-    if (value > maxExposedEnumValue()) {
-        exceptionState.throwTypeError("The enumeration value provided (" + String::number(value) + ") is larger than the largest allowed value (" + String::number(maxExposedEnumValue()) + ").");
-        return;
-    }
-
     m_value = value;
     notifyChange();
 }

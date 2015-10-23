@@ -277,13 +277,8 @@ void SVGAngle::newValueSpecifiedUnits(SVGAngleType unitType, float valueInSpecif
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
 }
 
-void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState& exceptionState)
+void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType)
 {
-    if (m_unitType == SVG_ANGLETYPE_UNKNOWN) {
-        exceptionState.throwDOMException(NotSupportedError, "Cannot convert from unknown or invalid units.");
-        return;
-    }
-
     if (unitType == m_unitType)
         return;
 

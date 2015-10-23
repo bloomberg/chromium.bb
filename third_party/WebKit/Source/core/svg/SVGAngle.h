@@ -92,7 +92,7 @@ public:
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
 
     void newValueSpecifiedUnits(SVGAngleType unitType, float valueInSpecifiedUnits);
-    void convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState&);
+    void convertToSpecifiedUnits(SVGAngleType unitType);
 
     SVGEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
     const SVGEnumeration<SVGMarkerOrientType>* orientType() const { return m_orientType.get(); }

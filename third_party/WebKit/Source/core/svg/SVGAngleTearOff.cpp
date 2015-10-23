@@ -97,9 +97,13 @@ void SVGAngleTearOff::convertToSpecifiedUnits(unsigned short unitType, Exception
         return;
     }
 
-    target()->convertToSpecifiedUnits(static_cast<SVGAngle::SVGAngleType>(unitType), exceptionState);
-    if (!exceptionState.hadException())
-        commitChange();
+    if (target()->unitType() == SVGAngle::SVG_ANGLETYPE_UNKNOWN) {
+        exceptionState.throwDOMException(NotSupportedError, "Cannot convert from unknown or invalid units.");
+        return;
+    }
+
+    target()->convertToSpecifiedUnits(static_cast<SVGAngle::SVGAngleType>(unitType));
+    commitChange();
 }
 
 void SVGAngleTearOff::setValueAsString(const String& value, ExceptionState& exceptionState)
