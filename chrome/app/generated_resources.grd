@@ -8087,12 +8087,12 @@ I don't think this site should be blocked!
       </if>
       <if expr="is_win or chromeos">
         <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
-          Updates are disabled by the administrator
+          Updates are disabled by your administrator.
         </message>
       </if>
       <if expr="is_win">
         <message name="IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL" desc="Status label: Manual upgrades disabled by policy, automatic upgrades ok">
-          Manual updates are disabled by the administrator.  Automatic updates are enabled.
+          Automatic updates are enabled. Manual updates are disabled by your administrator.
         </message>
       </if>
       <message name="IDS_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">

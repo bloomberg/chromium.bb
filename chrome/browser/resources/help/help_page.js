@@ -325,7 +325,7 @@ cr.define('help', function() {
         }
       } else if (status == 'updated') {
         this.setUpdateImage_('up-to-date');
-        $('update-status-message').innerHTML =
+        $('update-status-message').innerHTML = message ? message :
             loadTimeData.getString('upToDate');
       } else if (status == 'failed') {
         this.setUpdateImage_('failed');

@@ -137,13 +137,18 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
                                 const base::string16& new_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::string16 message;
+  Status status = FAILED;
 
   switch (error_code) {
     case GOOGLE_UPDATE_DISABLED_BY_POLICY:
+      // Display this as if Chrome is up to date, but with a custom message.
+      status = UPDATED;
       message =
           l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY);
       break;
     case GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY:
+      // Display this as if Chrome is up to date, but with a custom message.
+      status = UPDATED;
       message =
           l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL);
       break;
@@ -157,7 +162,7 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
       }
       break;
   }
-  callback_.Run(FAILED, 0, message);
+  callback_.Run(status, 0, message);
 }
 
 void VersionUpdaterWin::BeginUpdateCheckOnFileThread(
