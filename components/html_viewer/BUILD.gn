@@ -244,8 +244,8 @@ mojo_native_application("html_viewer") {
 
   if (v8_use_external_startup_data) {
     resources += [
-      "$root_build_dir/natives_blob.bin",
-      "$root_build_dir/snapshot_blob.bin",
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
     ]
     deps += [ "//gin" ]
   }
@@ -281,8 +281,8 @@ mojo_native_application("layout_test_html_viewer") {
 
   if (v8_use_external_startup_data) {
     resources += [
-      "$root_build_dir/natives_blob.bin",
-      "$root_build_dir/snapshot_blob.bin",
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
     ]
     deps += [ "//gin" ]
   }
@@ -302,8 +302,8 @@ if (is_android) {
     sources = [
       "$root_build_dir/html_viewer.pak",
       "$root_build_dir/icudtl.dat",
-      "$root_build_dir/natives_blob.bin",
-      "$root_build_dir/snapshot_blob.bin",
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
     ]
   }
 

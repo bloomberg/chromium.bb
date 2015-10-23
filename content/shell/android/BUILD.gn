@@ -103,8 +103,8 @@ copy_ex("copy_content_shell_assets") {
   }
   if (v8_use_external_startup_data) {
     sources += [
-      "$root_build_dir/natives_blob.bin",
-      "$root_build_dir/snapshot_blob.bin",
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
     ]
     deps += [ "//v8" ]
   }
@@ -159,7 +159,9 @@ instrumentation_test_apk("content_shell_test_apk") {
     "//base:base_javatests",
     "//net/android:net_javatests",
   ]
-  data_deps = [ ":content_shell_apk" ]
+  data_deps = [
+    ":content_shell_apk",
+  ]
   apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"

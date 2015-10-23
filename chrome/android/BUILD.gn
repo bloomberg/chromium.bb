@@ -358,8 +358,8 @@ copy_ex("chrome_public_apk_assets") {
 
   if (v8_use_external_startup_data) {
     sources += [
-      "$root_build_dir/natives_blob.bin",
-      "$root_build_dir/snapshot_blob.bin",
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
     ]
     deps += [ "//v8" ]
   }
