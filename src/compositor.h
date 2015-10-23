@@ -619,9 +619,9 @@ enum weston_capability {
  */
 struct weston_backend_output_config {
 	uint32_t transform;
-	int32_t width;
-	int32_t height;
-	int scale;
+	uint32_t width;
+	uint32_t height;
+	uint32_t scale;
 };
 
 /* Configuration struct for a backend.
