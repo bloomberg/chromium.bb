@@ -44,16 +44,8 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
 
-  void WillDrawSurface(SurfaceId id, const gfx::Rect& damage_rect) override {
-    last_surface_id_ = id;
-    last_damage_rect_ = damage_rect;
-  }
-
   void SetBeginFrameSource(SurfaceId surface_id,
                            BeginFrameSource* begin_frame_source) override {}
-
-  gfx::Rect last_damage_rect_;
-  SurfaceId last_surface_id_;
 };
 
 class FakeSurfaceAggregatorClient : public SurfaceAggregatorClient {
@@ -211,10 +203,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleFrame) {
   EXPECT_FALSE(surface_aggregator_client_.HasSurface(root_surface_));
   AggregateAndVerify(passes, arraysize(passes), ids, arraysize(ids));
   EXPECT_TRUE(surface_aggregator_client_.HasSurface(root_surface_));
-
-  // Check that WillDrawSurface was called.
-  EXPECT_EQ(gfx::Rect(SurfaceSize()), empty_client_.last_damage_rect_);
-  EXPECT_EQ(root_surface_id_, empty_client_.last_surface_id_);
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {

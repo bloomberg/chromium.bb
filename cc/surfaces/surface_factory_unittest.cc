@@ -4,8 +4,6 @@
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/surfaces/surface.h"
@@ -529,62 +527,6 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
   EXPECT_TRUE(!manager_.GetSurfaceForId(surface_id_));
 
   surface_id_ = SurfaceId();
-}
-
-void CopyRequestTestCallback(bool* called,
-                             scoped_ptr<CopyOutputResult> result) {
-  *called = true;
-}
-
-TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
-  {
-    scoped_ptr<RenderPass> render_pass(RenderPass::Create());
-    render_pass->referenced_surfaces.push_back(surface_id_);
-    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
-    frame_data->render_pass_list.push_back(render_pass.Pass());
-    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
-    frame->delegated_frame_data = frame_data.Pass();
-    factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
-                                    SurfaceFactory::DrawCallback());
-  }
-  void* source1 = &source1;
-  void* source2 = &source2;
-
-  bool called1 = false;
-  scoped_ptr<CopyOutputRequest> request;
-  request = CopyOutputRequest::CreateRequest(
-      base::Bind(&CopyRequestTestCallback, &called1));
-  request->set_source(source1);
-
-  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
-  EXPECT_FALSE(called1);
-
-  bool called2 = false;
-  request = CopyOutputRequest::CreateRequest(
-      base::Bind(&CopyRequestTestCallback, &called2));
-  request->set_source(source2);
-
-  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
-  // Callbacks have different sources so neither should be called.
-  EXPECT_FALSE(called1);
-  EXPECT_FALSE(called2);
-
-  bool called3 = false;
-  request = CopyOutputRequest::CreateRequest(
-      base::Bind(&CopyRequestTestCallback, &called3));
-  request->set_source(source1);
-
-  factory_->RequestCopyOfSurface(surface_id_, request.Pass());
-  // Two callbacks are from source1, so the first should be called.
-  EXPECT_TRUE(called1);
-  EXPECT_FALSE(called2);
-  EXPECT_FALSE(called3);
-
-  factory_->Destroy(surface_id_);
-  surface_id_ = SurfaceId();
-  EXPECT_TRUE(called1);
-  EXPECT_TRUE(called2);
-  EXPECT_TRUE(called3);
 }
 
 // Verifies BFS is forwarded to the client.

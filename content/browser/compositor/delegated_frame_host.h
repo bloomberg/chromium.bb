@@ -116,7 +116,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(cc::SurfaceId id, const gfx::Rect& damage_rect) override;
   void SetBeginFrameSource(cc::SurfaceId surface_id,
                            cc::BeginFrameSource* begin_frame_source) override;
 
@@ -249,7 +248,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.
-  void AttemptFrameSubscriberCapture(const gfx::Rect& damage_rect);
+  void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
 
   DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;

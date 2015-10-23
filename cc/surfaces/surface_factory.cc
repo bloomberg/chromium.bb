@@ -82,11 +82,6 @@ void SurfaceFactory::RequestCopyOfSurface(
   manager_->SurfaceModified(surface_id);
 }
 
-void SurfaceFactory::WillDrawSurface(SurfaceId id,
-                                     const gfx::Rect& damage_rect) {
-  client_->WillDrawSurface(id, damage_rect);
-}
-
 void SurfaceFactory::ReceiveFromChild(
     const TransferableResourceArray& resources) {
   holder_.ReceiveFromChild(resources);

@@ -254,7 +254,7 @@ void DelegatedFrameHost::CheckResizeLock() {
   resize_lock_->UnlockCompositor();
 }
 
-void DelegatedFrameHost::AttemptFrameSubscriberCapture(
+void DelegatedFrameHost::DidReceiveFrameFromRenderer(
     const gfx::Rect& damage_rect) {
   if (!frame_subscriber() || !CanCopyToVideoFrame())
     return;
@@ -298,25 +298,14 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   // screenshots) since those copy requests do not specify |frame_subscriber()|
   // as a source.
   request->set_source(frame_subscriber());
+  request->set_area(gfx::Rect(current_frame_size_in_dip_));
   if (subscriber_texture.get()) {
     request->SetTextureMailbox(
         cc::TextureMailbox(subscriber_texture->mailbox(),
                            subscriber_texture->target(),
                            subscriber_texture->sync_point()));
   }
-
-  if (surface_factory_.get()) {
-    // To avoid unnecessary composites, go directly to the Surface rather than
-    // through RequestCopyOfOutput (which goes through the browser
-    // compositor).
-    if (!request_copy_of_output_callback_for_testing_.is_null())
-      request_copy_of_output_callback_for_testing_.Run(request.Pass());
-    else
-      surface_factory_->RequestCopyOfSurface(surface_id_, request.Pass());
-  } else {
-    request->set_area(gfx::Rect(current_frame_size_in_dip_));
-    RequestCopyOfOutput(request.Pass());
-  }
+  RequestCopyOfOutput(request.Pass());
 }
 
 void DelegatedFrameHost::SwapDelegatedFrame(
@@ -486,10 +475,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   } else {
     AddOnCommitCallbackAndDisableLocks(base::Closure());
   }
-  // With Surfaces, the notification that the surface will be drawn notifies
-  // the frame subscriber.
-  if (!use_surfaces_)
-    AttemptFrameSubscriberCapture(damage_rect);
+  DidReceiveFrameFromRenderer(damage_rect);
   if (frame_provider_.get() || !surface_id_.is_null())
     delegated_frame_evictor_->SwappedFrame(
         client_->DelegatedFrameHostIsVisible());
@@ -548,13 +534,6 @@ void DelegatedFrameHost::ReturnResources(
             std::back_inserter(surface_returned_resources_));
   if (!pending_delegated_ack_count_)
     SendReturnedDelegatedResources(last_output_surface_id_);
-}
-
-void DelegatedFrameHost::WillDrawSurface(cc::SurfaceId id,
-                                         const gfx::Rect& damage_rect) {
-  if (id != surface_id_)
-    return;
-  AttemptFrameSubscriberCapture(damage_rect);
 }
 
 void DelegatedFrameHost::SetBeginFrameSource(

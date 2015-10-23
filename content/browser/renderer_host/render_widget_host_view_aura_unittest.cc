@@ -21,7 +21,6 @@
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
-#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -193,14 +192,12 @@ class TestWindowObserver : public aura::WindowObserver {
 class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  public:
   FakeFrameSubscriber(gfx::Size size, base::Callback<void(bool)> callback)
-      : size_(size), callback_(callback), should_capture_(true) {}
+      : size_(size), callback_(callback) {}
 
   bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
                           base::TimeTicks present_time,
                           scoped_refptr<media::VideoFrame>* storage,
                           DeliverFrameCallback* callback) override {
-    if (!should_capture_)
-      return false;
     last_present_time_ = present_time;
     *storage = media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12, size_,
                                               gfx::Rect(size_), size_,
@@ -210,10 +207,6 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   }
 
   base::TimeTicks last_present_time() const { return last_present_time_; }
-
-  void set_should_capture(bool should_capture) {
-    should_capture_ = should_capture;
-  }
 
   static void CallbackMethod(base::Callback<void(bool)> callback,
                              base::TimeTicks present_time,
@@ -225,7 +218,6 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   gfx::Size size_;
   base::Callback<void(bool)> callback_;
   base::TimeTicks last_present_time_;
-  bool should_capture_;
 };
 
 class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
@@ -2232,10 +2224,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
   void RunLoopUntilCallback() {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    // Temporarily ignore real draw requests.
-    frame_subscriber_->set_should_capture(false);
     run_loop.Run();
-    frame_subscriber_->set_should_capture(true);
   }
 
   void InitializeView() {
@@ -2267,10 +2256,6 @@ class RenderWidgetHostViewAuraCopyRequestTest
   void OnSwapCompositorFrame() {
     view_->OnSwapCompositorFrame(
         1, MakeDelegatedFrame(1.f, view_rect_.size(), view_rect_));
-    cc::SurfaceId surface_id =
-        view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
-    if (!surface_id.is_null())
-      view_->GetDelegatedFrameHost()->WillDrawSurface(surface_id, view_rect_);
     ASSERT_TRUE(view_->last_copy_request_);
   }
 
