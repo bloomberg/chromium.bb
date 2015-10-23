@@ -262,9 +262,13 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
         int spacingBottom = box.borderBottom() + box.paddingBottom();
         int spacingRight = box.borderRight() + box.paddingRight();
         extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
-        extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
+        extraParams.menuList.arrowSize = rect.height() - spacingBottom - spacingTop;
     } else {
-        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 7 : right - 13;
+        // TODO(tkent): arrowSize should be zoom-aware. crbug.com/432795.
+        const int arrowSize = 6;
+        const int arrowPadding = 7;
+        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + arrowPadding : right - arrowSize - arrowPadding;
+        extraParams.menuList.arrowSize = arrowSize;
     }
 }
 

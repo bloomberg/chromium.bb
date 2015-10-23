@@ -135,6 +135,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool has_border_radius;
     int arrow_x;
     int arrow_y;
+    int arrow_size;
     SkColor background_color;
     int classic_state;  // Used on Windows when uxtheme is not available.
   };

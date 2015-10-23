@@ -774,14 +774,12 @@ void NativeThemeBase::PaintMenuList(
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
 
-  static const int kArrowWidth = 6;
-  static const int kArrowHeight = 6;
-
+  int arrow_size = menu_list.arrow_size;
   gfx::Rect arrow(
     menu_list.arrow_x,
-    menu_list.arrow_y - (kArrowHeight / 2),
-    kArrowWidth,
-    kArrowHeight);
+    menu_list.arrow_y - (arrow_size / 2),
+    arrow_size,
+    arrow_size);
 
   // Constrain to the paint rect.
   arrow.Intersect(rect);

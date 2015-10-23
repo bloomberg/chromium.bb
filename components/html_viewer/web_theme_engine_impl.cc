@@ -127,6 +127,8 @@ void GetNativeThemeExtraParams(
           extra_params->menuList.arrowX;
       native_theme_extra_params->menu_list.arrow_y =
           extra_params->menuList.arrowY;
+      native_theme_extra_params->menu_list.arrow_size =
+          extra_params->menuList.arrowSize;
       native_theme_extra_params->menu_list.background_color =
           extra_params->menuList.backgroundColor;
       break;

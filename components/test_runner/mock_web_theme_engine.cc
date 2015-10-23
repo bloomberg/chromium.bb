@@ -487,9 +487,9 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
         irect.fRight = extraParams->menuList.arrowX + 12;
 
       irect.fTop = extraParams->menuList.arrowY -
-                   (extraParams->menuList.arrowHeight) / 2;
+                   (extraParams->menuList.arrowSize) / 2;
       irect.fBottom = extraParams->menuList.arrowY +
-                      (extraParams->menuList.arrowHeight - 1) / 2;
+                      (extraParams->menuList.arrowSize - 1) / 2;
       halfWidth = irect.width() / 2;
       quarterWidth = irect.width() / 4;
 
