@@ -57,6 +57,7 @@ extern "C" {
 /**
  * Structure to use when defining a test fixture.
  * @note likely pending refactoring as use cases are refined.
+ * @see ZUC_TEST_F()
  */
 struct zuc_fixture {
 	/**
@@ -259,6 +260,9 @@ zuc_set_output_junit(bool enable);
 
 /**
  * Defines a test case that can be registered to run.
+ *
+ * @param tcase name to use as the containing test case.
+ * @param test name used for the test under a given test case.
  */
 #define ZUC_TEST(tcase, test) \
 	static void zuctest_##tcase##_##test(void); \
@@ -277,10 +281,21 @@ zuc_set_output_junit(bool enable);
  * Defines a test case that can be registered to run along with setup/teardown
  * support per-test and/or per test case.
  *
- * @note likely pending refactoring as use cases are refined.
+ * @note This defines a test that *uses* a fixture, it does not
+ * actually define a test fixture itself.
+ *
+ * @param tcase name to use as the containing test case/fixture.
+ * The name used must represent a test fixture instance. It also
+ * must not duplicate any name used in a non-fixture ZUC_TEST()
+ * test.
+ * @note the test case name must be the name of a fixture struct
+ * to be passed to the test.
+ * @param test name used for the test under a given test case.
+ * @param param name for the fixture data pointer.
+ * @see struct zuc_fixture
  */
-#define ZUC_TEST_F(tcase, test) \
-	static void zuctest_##tcase##_##test(void *data); \
+#define ZUC_TEST_F(tcase, test, param)			  \
+	static void zuctest_##tcase##_##test(void *param); \
 	\
 	const struct zuc_registration zzz_##tcase##_##test \
 	__attribute__ ((section ("zuc_tsect"))) = \
@@ -290,7 +305,7 @@ zuc_set_output_junit(bool enable);
 		zuctest_##tcase##_##test	\
 	}; \
 	\
-	static void zuctest_##tcase##_##test(void *data)
+	static void zuctest_##tcase##_##test(void *param)
 
 
 /**

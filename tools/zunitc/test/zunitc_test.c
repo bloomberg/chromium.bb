@@ -219,7 +219,7 @@ struct zuc_fixture complex_test = {
  * but the fixture should reset that.
 */
 
-ZUC_TEST_F(complex_test, bases_cenario)
+ZUC_TEST_F(complex_test, bases_cenario, data)
 {
 	struct fixture_data *fdata = data;
 	ZUC_ASSERT_NOT_NULL(fdata);
@@ -231,7 +231,7 @@ ZUC_TEST_F(complex_test, bases_cenario)
 	ZUC_ASSERT_EQ(2, fdata->test_counter);
 }
 
-ZUC_TEST_F(complex_test, something)
+ZUC_TEST_F(complex_test, something, data)
 {
 	struct fixture_data *fdata = data;
 	ZUC_ASSERT_NOT_NULL(fdata);
@@ -243,7 +243,7 @@ ZUC_TEST_F(complex_test, something)
 	ZUC_ASSERT_EQ(2, fdata->test_counter);
 }
 
-ZUC_TEST_F(complex_test, else_here)
+ZUC_TEST_F(complex_test, else_here, data)
 {
 	struct fixture_data *fdata = data;
 	ZUC_ASSERT_NOT_NULL(fdata);

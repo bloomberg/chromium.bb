@@ -43,7 +43,7 @@ static struct zuc_fixture fixture_minimal = {
 	.data = "for all good men to",
 };
 
-ZUC_TEST_F(fixture_minimal, just_as_is)
+ZUC_TEST_F(fixture_minimal, just_as_is, data)
 {
 	const char *str = data;
 	ZUC_ASSERT_NOT_NULL(str);
@@ -86,7 +86,7 @@ static struct zuc_fixture fixture_data0 = {
 	.tear_down = teardown_test_config
 };
 
-ZUC_TEST_F(fixture_data0, base)
+ZUC_TEST_F(fixture_data0, base, data)
 {
 	const char *str = data;
 	ZUC_ASSERT_NOT_NULL(str);
@@ -95,7 +95,7 @@ ZUC_TEST_F(fixture_data0, base)
 }
 
 /* Use the same fixture for a second test. */
-ZUC_TEST_F(fixture_data0, no_lower)
+ZUC_TEST_F(fixture_data0, no_lower, data)
 {
 	int i;
 	const char *str = data;

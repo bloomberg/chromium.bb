@@ -166,7 +166,7 @@ static struct zuc_fixture config_test_t4 = {
 	.set_up = setup_test_config_failing,
 };
 
-ZUC_TEST_F(config_test_t0, comment_only)
+ZUC_TEST_F(config_test_t0, comment_only, data)
 {
 	struct weston_config *config = data;
 	ZUC_ASSERT_NOT_NULL(config);
@@ -174,7 +174,7 @@ ZUC_TEST_F(config_test_t0, comment_only)
 
 /** @todo individual t1 tests should have more descriptive names. */
 
-ZUC_TEST_F(config_test_t1, test001)
+ZUC_TEST_F(config_test_t1, test001, data)
 {
 	struct weston_config_section *section;
 	struct weston_config *config = data;
@@ -184,7 +184,7 @@ ZUC_TEST_F(config_test_t1, test001)
 	ZUC_ASSERT_NULL(section);
 }
 
-ZUC_TEST_F(config_test_t1, test002)
+ZUC_TEST_F(config_test_t1, test002, data)
 {
 	char *s;
 	int r;
@@ -201,7 +201,7 @@ out_free:
 	free(s);
 }
 
-ZUC_TEST_F(config_test_t1, test003)
+ZUC_TEST_F(config_test_t1, test003, data)
 {
 	char *s;
 	int r;
@@ -216,7 +216,7 @@ ZUC_TEST_F(config_test_t1, test003)
 	ZUC_ASSERT_NULL(s);
 }
 
-ZUC_TEST_F(config_test_t1, test004)
+ZUC_TEST_F(config_test_t1, test004, data)
 {
 	char *s;
 	int r;
@@ -233,7 +233,7 @@ out_free:
 	free(s);
 }
 
-ZUC_TEST_F(config_test_t1, test005)
+ZUC_TEST_F(config_test_t1, test005, data)
 {
 	char *s;
 	int r;
@@ -251,7 +251,7 @@ out_free:
 	free(s);
 }
 
-ZUC_TEST_F(config_test_t1, test006)
+ZUC_TEST_F(config_test_t1, test006, data)
 {
 	int r;
 	int32_t n;
@@ -265,7 +265,7 @@ ZUC_TEST_F(config_test_t1, test006)
 	ZUC_ASSERT_EQ(5252, n);
 }
 
-ZUC_TEST_F(config_test_t1, test007)
+ZUC_TEST_F(config_test_t1, test007, data)
 {
 	int r;
 	int32_t n;
@@ -280,7 +280,7 @@ ZUC_TEST_F(config_test_t1, test007)
 	ZUC_ASSERT_EQ(700, n);
 }
 
-ZUC_TEST_F(config_test_t1, test008)
+ZUC_TEST_F(config_test_t1, test008, data)
 {
 	int r;
 	uint32_t u;
@@ -293,7 +293,7 @@ ZUC_TEST_F(config_test_t1, test008)
 	ZUC_ASSERT_EQ(5252, u);
 }
 
-ZUC_TEST_F(config_test_t1, test009)
+ZUC_TEST_F(config_test_t1, test009, data)
 {
 	int r;
 	uint32_t u;
@@ -307,7 +307,7 @@ ZUC_TEST_F(config_test_t1, test009)
 	ZUC_ASSERT_EQ(600, u);
 }
 
-ZUC_TEST_F(config_test_t1, test010)
+ZUC_TEST_F(config_test_t1, test010, data)
 {
 	int r, b;
 	struct weston_config_section *section;
@@ -319,7 +319,7 @@ ZUC_TEST_F(config_test_t1, test010)
 	ZUC_ASSERT_EQ(0, b);
 }
 
-ZUC_TEST_F(config_test_t1, test011)
+ZUC_TEST_F(config_test_t1, test011, data)
 {
 	int r, b;
 	struct weston_config_section *section;
@@ -331,7 +331,7 @@ ZUC_TEST_F(config_test_t1, test011)
 	ZUC_ASSERT_EQ(1, b);
 }
 
-ZUC_TEST_F(config_test_t1, test012)
+ZUC_TEST_F(config_test_t1, test012, data)
 {
 	int r, b;
 	struct weston_config_section *section;
@@ -343,7 +343,7 @@ ZUC_TEST_F(config_test_t1, test012)
 	ZUC_ASSERT_EQ(1, b);
 }
 
-ZUC_TEST_F(config_test_t1, test013)
+ZUC_TEST_F(config_test_t1, test013, data)
 {
 	int r, b;
 	struct weston_config_section *section;
@@ -356,7 +356,7 @@ ZUC_TEST_F(config_test_t1, test013)
 	ZUC_ASSERT_EQ(-1, b);
 }
 
-ZUC_TEST_F(config_test_t1, test014)
+ZUC_TEST_F(config_test_t1, test014, data)
 {
 	char *s;
 	int r;
@@ -374,7 +374,7 @@ out_free:
 	free(s);
 }
 
-ZUC_TEST_F(config_test_t1, test015)
+ZUC_TEST_F(config_test_t1, test015, data)
 {
 	char *s;
 	int r;
@@ -392,7 +392,7 @@ out_free:
 	free(s);
 }
 
-ZUC_TEST_F(config_test_t1, test016)
+ZUC_TEST_F(config_test_t1, test016, data)
 {
 	char *s;
 	int r;
@@ -412,7 +412,7 @@ out_free:
 	free(s);
 }
 
-ZUC_TEST_F(config_test_t1, test017)
+ZUC_TEST_F(config_test_t1, test017, data)
 {
 	const char *name;
 	int i;
@@ -427,19 +427,19 @@ ZUC_TEST_F(config_test_t1, test017)
 	ZUC_ASSERT_EQ(5, i);
 }
 
-ZUC_TEST_F(config_test_t2, doesnt_parse)
+ZUC_TEST_F(config_test_t2, doesnt_parse, data)
 {
 	struct weston_config *config = data;
 	ZUC_ASSERT_NULL(config);
 }
 
-ZUC_TEST_F(config_test_t3, doesnt_parse)
+ZUC_TEST_F(config_test_t3, doesnt_parse, data)
 {
 	struct weston_config *config = data;
 	ZUC_ASSERT_NULL(config);
 }
 
-ZUC_TEST_F(config_test_t4, doesnt_parse)
+ZUC_TEST_F(config_test_t4, doesnt_parse, data)
 {
 	struct weston_config *config = data;
 	ZUC_ASSERT_NULL(config);
