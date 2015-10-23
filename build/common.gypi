@@ -869,7 +869,7 @@
           'enable_webrtc%': 0,
           'notifications%': 0,
           'remoting%': 0,
-          'safe_browsing%': 0,
+          'safe_browsing%': 2,
           'enable_supervised_users%': 0,
           'enable_task_manager%': 0,
           'enable_media_router%': 0,
@@ -3066,7 +3066,7 @@
           'SAFE_BROWSING_DB_LOCAL',
         ],
       }],
-      ['safe_browsing==2', {
+      ['safe_browsing==2 and OS!="ios"', {
         'defines': [
           'SAFE_BROWSING_DB_REMOTE',
         ],

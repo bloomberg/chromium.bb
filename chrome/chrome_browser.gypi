@@ -3497,7 +3497,7 @@
                 }],
               ],
             }],
-            ['safe_browsing == 2', {
+            ['safe_browsing == 2 and OS != "ios"', {
               'sources': [ '<@(chrome_browser_safe_browsing_mobile_sources)' ],
               'dependencies': [
                 'safe_browsing_proto',
