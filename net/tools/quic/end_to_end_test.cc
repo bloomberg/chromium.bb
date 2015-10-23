@@ -1969,7 +1969,9 @@ class ServerStreamWithErrorResponseBody : public QuicSpdyServerStream {
   string response_body_;
 };
 
-TEST_P(EndToEndTest, EarlyResponseFinRecording) {
+// TODO(rtenneti): EarlyResponseFinRecording is flaky on valgrind bots.
+// http://crbug.com/547085.
+TEST_P(EndToEndTest, DISABLED_EarlyResponseFinRecording) {
   // Verify that an incoming FIN is recorded in a stream object even if the read
   // side has been closed.  This prevents an entry from being made in
   // locally_close_streams_highest_offset_ (which will never be deleted).
