@@ -4,8 +4,11 @@
 
 #include "components/mus/ws/event_dispatcher.h"
 
+#include "cc/surfaces/surface_hittest.h"
+#include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_finder.h"
 #include "components/mus/ws/window_tree_host_impl.h"
@@ -14,6 +17,16 @@
 
 namespace mus {
 namespace ws {
+
+namespace {
+
+bool IsMouseEventFlag(int32_t event_flags) {
+  return !!(event_flags & (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
+                           mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
+                           mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
+}
+
+}  // namespace
 
 class EventMatcher {
  public:
@@ -107,7 +120,7 @@ class EventMatcher {
 ////////////////////////////////////////////////////////////////////////////////
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
-    : delegate_(delegate), root_(nullptr) {}
+    : delegate_(delegate), root_(nullptr), capture_window_(nullptr) {}
 
 EventDispatcher::~EventDispatcher() {}
 
@@ -180,18 +193,31 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
   DCHECK(event_location);
   gfx::Point location(static_cast<int>(event_location->x),
                       static_cast<int>(event_location->y));
-  ServerWindow* target = focused_window;
-  if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target ||
-      !root_->Contains(target)) {
-    target = FindDeepestVisibleWindowFromSurface(root_, surface_id_, &location);
-    // Surface-based hit-testing will not return a valid target if no
-    // compositor-frame have been submitted (e.g. in unit-tests).
-    if (!target)
+
+  ServerWindow* target = capture_window_;
+
+  gfx::Transform transform;
+  if (!target) {
+    target = FindDeepestVisibleWindowFromSurface(root_, surface_id_, location,
+                                                 &transform);
+    if (target) {
+      transform.TransformPoint(&location);
+    } else {
+      // Surface-based hit-testing will not return a valid target if no
+      // CompositorFrame has been submitted (e.g. in unit-tests).
       target = FindDeepestVisibleWindow(root_, &location);
-    CHECK(target);
+    }
   } else {
-    gfx::Point old_point = location;
-    location = ConvertPointBetweenWindows(root_, target, location);
+    if (!GetTransformToTargetWindowFromSurface(surface_id_, target, &transform))
+      GetTransformToTargetWindow(target, &transform);
+    transform.TransformPoint(&location);
+  }
+
+  if (IsMouseEventFlag(event->flags)) {
+    if (!capture_window_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN))
+      capture_window_ = target;
+  } else {
+    capture_window_ = nullptr;
   }
 
   event_location->x = location.x();
@@ -199,5 +225,6 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
   return target;
 }
 
+// static
 }  // namespace ws
 }  // namespace mus

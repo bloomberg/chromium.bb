@@ -64,6 +64,42 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
 
+struct MouseEventTest {
+  ui::MouseEvent input_event;
+  ServerWindow* expected_target_window;
+  gfx::Point expected_root_location;
+  gfx::Point expected_location;
+};
+
+void RunMouseEventTests(EventDispatcher* dispatcher,
+                        TestEventDispatcherDelegate* dispatcher_delegate,
+                        MouseEventTest* tests,
+                        size_t test_count) {
+  for (size_t i = 0; i < test_count; ++i) {
+    const MouseEventTest& test = tests[i];
+    dispatcher->OnEvent(
+        mojo::Event::From(static_cast<const ui::Event&>(test.input_event)));
+
+    ASSERT_EQ(test.expected_target_window, dispatcher_delegate->last_target())
+        << "Test " << i << " failed.";
+
+    mojo::EventPtr dispatched_event_mojo =
+        dispatcher_delegate->GetAndClearLastDispatchedEvent();
+    ASSERT_TRUE(dispatched_event_mojo.get()) << "Test " << i << " failed.";
+    scoped_ptr<ui::Event> dispatched_event(
+        dispatched_event_mojo.To<scoped_ptr<ui::Event>>());
+    ASSERT_TRUE(dispatched_event.get()) << "Test " << i << " failed.";
+    ASSERT_TRUE(dispatched_event->IsMouseEvent()) << "Test " << i << " failed.";
+    ui::MouseEvent* dispatched_mouse_event =
+        static_cast<ui::MouseEvent*>(dispatched_event.get());
+    EXPECT_EQ(test.expected_root_location,
+              dispatched_mouse_event->root_location())
+        << "Test " << i << " failed.";
+    EXPECT_EQ(test.expected_location, dispatched_mouse_event->location())
+        << "Test " << i << " failed.";
+  }
+}
+
 }  // namespace
 
 TEST(EventDispatcherTest, OnEvent) {
@@ -138,6 +174,98 @@ TEST(EventDispatcherTest, EventMatching) {
   dispatcher.RemoveAccelerator(accelerator_2);
   dispatcher.OnEvent(mojo::Event::From(key));
   EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
+}
+
+TEST(EventDispatcherTest, Capture) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child(&window_delegate, WindowId(1, 3));
+  root.Add(&child);
+  child.SetVisible(true);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  MouseEventTest tests[] = {
+      // Send a mouse down event over child.
+      {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(20.f, 25.f),
+                      gfx::PointF(20.f, 25.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &child, gfx::Point(20, 25), gfx::Point(10, 15)},
+      // Capture should be activated. Let's send a mouse move outside the bounds
+      // of the child.
+      {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::PointF(50.f, 50.f),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+      // Release the mouse and verify that the mouse up event goes to the child.
+      {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::PointF(50.f, 50.f),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(), ui::EF_NONE,
+                      ui::EF_NONE),
+       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+      // A mouse move at (50, 50) should now go to the root window.
+      {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::PointF(50.f, 50.f),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &root, gfx::Point(50, 50), gfx::Point(50, 50)},
+
+  };
+  RunMouseEventTests(&dispatcher, &event_dispatcher_delegate, tests,
+                     arraysize(tests));
+}
+
+TEST(EventDispatcherTest, CaptureMultipleMouseButtons) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child(&window_delegate, WindowId(1, 3));
+  root.Add(&child);
+  child.SetVisible(true);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  MouseEventTest tests[] = {
+      // Send a mouse down event over child with a left mouse button
+      {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(20.f, 25.f),
+                      gfx::PointF(20.f, 25.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &child, gfx::Point(20, 25), gfx::Point(10, 15)},
+      // Capture should be activated. Let's send a mouse move outside the bounds
+      // of the child and press the right mouse button too.
+      {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::PointF(50.f, 50.f),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+                      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON),
+       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+      // Release the left mouse button and verify that the mouse up event goes
+      // to the child.
+      {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::PointF(50.f, 50.f),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+      // A mouse move at (50, 50) should still go to the child.
+      {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::PointF(50.f, 50.f),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+
+  };
+  RunMouseEventTests(&dispatcher, &event_dispatcher_delegate, tests,
+                     arraysize(tests));
 }
 
 }  // namespace ws

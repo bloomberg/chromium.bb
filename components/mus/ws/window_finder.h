@@ -11,6 +11,7 @@ struct SurfaceId;
 
 namespace gfx {
 class Point;
+class Transform;
 }
 
 namespace mus {
@@ -25,10 +26,22 @@ ServerWindow* FindDeepestVisibleWindow(ServerWindow* root,
 
 // Find the deepest visible child of |root| that contains |location| using
 // a previously submitted frame.
-ServerWindow* FindDeepestVisibleWindowFromSurface(ServerWindow* root,
-                                                  cc::SurfaceId surface_id,
-                                                  gfx::Point* location);
+ServerWindow* FindDeepestVisibleWindowFromSurface(
+    ServerWindow* root_window,
+    cc::SurfaceId display_surface_id,
+    const gfx::Point& location,
+    gfx::Transform* transform);
 
+// Retrieve the transform to the provided |target_window|'s coordinate
+// space.
+void GetTransformToTargetWindow(ServerWindow* target_window,
+                                gfx::Transform* transform);
+
+// Retrieve the transform to the provided |target_window|'s coordinate
+// space. Returns whether a transform was successfully retrieved.
+bool GetTransformToTargetWindowFromSurface(cc::SurfaceId display_surface_id,
+                                           ServerWindow* target_window,
+                                           gfx::Transform* transform);
 }  // namespace ws
 }  // namespace mus
 

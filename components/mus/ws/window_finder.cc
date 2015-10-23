@@ -11,6 +11,7 @@
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/transform.h"
 
 namespace mus {
 namespace ws {
@@ -34,30 +35,49 @@ ServerWindow* FindDeepestVisibleWindow(ServerWindow* window,
   return window;
 }
 
-ServerWindow* FindDeepestVisibleWindowFromSurface(ServerWindow* window,
-                                                  cc::SurfaceId surface_id,
-                                                  gfx::Point* location) {
-  if (surface_id.is_null())
+ServerWindow* FindDeepestVisibleWindowFromSurface(
+    ServerWindow* root_window,
+    cc::SurfaceId display_surface_id,
+    const gfx::Point& location,
+    gfx::Transform* transform) {
+  if (display_surface_id.is_null())
     return nullptr;
 
-  gfx::Transform transform_to_target_surface;
   cc::SurfaceId target_surface =
-      window->delegate()
+      root_window->delegate()
           ->GetSurfacesState()
           ->hit_tester()
-          ->GetTargetSurfaceAtPoint(surface_id, *location,
-                                    &transform_to_target_surface);
+          ->GetTargetSurfaceAtPoint(display_surface_id, location, transform);
   WindowId id = WindowIdFromTransportId(
       cc::SurfaceIdAllocator::NamespaceForId(target_surface));
-  ServerWindow* target = window->GetChildWindow(id);
   // TODO(fsamuel): This should be a DCHECK but currently we use stale
   // information to decide where to route input events. This should be fixed
   // once we implement a UI scheduler.
-  if (target) {
-    transform_to_target_surface.TransformPoint(location);
-    return target;
+  return root_window->GetChildWindow(id);
+}
+
+void GetTransformToTargetWindow(ServerWindow* target_window,
+                                gfx::Transform* transform) {
+  *transform = gfx::Transform();
+  ServerWindow* current = target_window;
+  while (current->parent()) {
+    transform->Translate(-current->bounds().x(), -current->bounds().y());
+    current = current->parent();
   }
-  return nullptr;
+}
+
+bool GetTransformToTargetWindowFromSurface(cc::SurfaceId display_surface_id,
+                                           ServerWindow* target_window,
+                                           gfx::Transform* transform) {
+  *transform = gfx::Transform();
+  if (display_surface_id.is_null())
+    return false;
+
+  return target_window->delegate()
+      ->GetSurfacesState()
+      ->hit_tester()
+      ->GetTransformToTargetSurface(display_surface_id,
+                                    target_window->surface()->id(), transform);
 }
 
 }  // namespace ws

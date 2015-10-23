@@ -58,6 +58,7 @@ class EventDispatcher {
   ServerWindow* root_;
 
   cc::SurfaceId surface_id_;
+  ServerWindow* capture_window_;
 
   using Entry = std::pair<uint32_t, EventMatcher>;
   std::map<uint32_t, EventMatcher> accelerators_;
