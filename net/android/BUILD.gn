@@ -36,6 +36,11 @@ android_library("net_java_test_support") {
   srcjar_deps = [ ":net_java_test_support_enums_srcjar" ]
 }
 
+android_resources("net_unittests_apk_resources") {
+  resource_dirs = [ "unittest_support/res" ]
+  custom_package = "org.chromium.native_test"
+}
+
 android_library("net_javatests") {
   DEPRECATED_java_in_dir = "javatests/src"
   deps = [
@@ -94,16 +99,4 @@ junit_binary("net_junit_tests") {
     "//base:base_junit_test_support",
     "//third_party/junit:hamcrest",
   ]
-}
-
-# TODO(GYP)
-if (false) {
-  unittest_apk("net_unittests_apk") {
-    deps = [
-      ":net_java",
-      ":net_javatests",
-      "//net:net_unittests",
-    ]
-    unittests_dep = "//net:net_unittests"
-  }
 }

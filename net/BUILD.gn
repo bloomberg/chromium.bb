@@ -26,9 +26,9 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "net.gypi" ])
 
-# Disable Kerberos on ChromeOS, Android, iOS, and Chromecast, at least for now.
+# Disable Kerberos on ChromeOS, iOS, and Chromecast, at least for now.
 # It needs configuration (krb5.conf and so on).
-use_kerberos = !is_chromeos && !is_android && !is_ios && !is_chromecast
+use_kerberos = !is_chromeos && !is_ios && !is_chromecast
 
 # The way the cache uses mmap() is inefficient on some Android devices. If
 # this flag is set, we hackily avoid using mmap() in the disk cache. We are
@@ -236,6 +236,8 @@ if (!is_nacl) {
         "cert/cert_database_openssl.cc",
         "cert/cert_verify_proc_openssl.cc",
         "cert/test_root_certs_openssl.cc",
+        "http/http_auth_gssapi_posix.cc",
+        "http/http_auth_gssapi_posix.h",
       ]
     }
   }
@@ -1195,8 +1197,26 @@ if (is_android) {
     sources = [
       "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
+      "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java",
     ]
     jni_package = "net/test"
+  }
+
+  _net_unittests_apk_assets_dir = "$root_out_dir/net_unittests_apk/assets"
+
+  copy_ex("copy_net_unittests_apk_assets") {
+    clear_dir = true
+    dest = _net_unittests_apk_assets_dir
+
+    if (v8_use_external_startup_data) {
+      sources = [
+        "$root_out_dir/natives_blob.bin",
+        "$root_out_dir/snapshot_blob.bin",
+      ]
+      deps = [
+        "//v8",
+      ]
+    }
   }
 }
 
@@ -1581,10 +1601,18 @@ test("net_unittests") {
   }
 
   if (is_android) {
+    apk_deps = [
+      "//base:base_java_unittest_support",
+      "//net/android:net_java",
+      "//net/android:net_javatests",
+      "//net/android:net_java_test_support",
+      "//net/android:net_unittests_apk_resources",
+      ":copy_net_unittests_apk_assets",
+    ]
+    android_manifest = "//net/android/unittest_support/AndroidManifest.xml"
     sources -= [
       # See bug http://crbug.com/344533.
       "disk_cache/blockfile/index_table_v3_unittest.cc",
-      "dns/dns_config_service_posix_unittest.cc",
     ]
     deps += [
       ":net_test_jni_headers",
@@ -1596,6 +1624,7 @@ test("net_unittests") {
     set_sources_assignment_filter([])
     sources += [ "base/address_tracker_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
+    apk_asset_location = _net_unittests_apk_assets_dir
     isolate_file = "net_unittests.isolate"
   }
 

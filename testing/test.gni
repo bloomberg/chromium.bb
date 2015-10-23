@@ -78,6 +78,9 @@ template("test") {
       if (defined(invoker.apk_asset_location)) {
         asset_location = invoker.apk_asset_location
       }
+      if (defined(invoker.android_manifest)) {
+        android_manifest = invoker.android_manifest
+      }
     }
 
     _test_name = main_target_name

@@ -1780,7 +1780,11 @@ template("unittest_apk") {
   }
 
   android_apk(target_name) {
-    forward_variables_from(invoker, [ "asset_location" ])
+    forward_variables_from(invoker,
+                           [
+                             "asset_location",
+                             "android_manifest",
+                           ])
     final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
     java_files = [
       "//testing/android/native_test/java/src/org/chromium/native_test/NativeBrowserTestActivity.java",
@@ -1788,7 +1792,10 @@ template("unittest_apk") {
       "//testing/android/native_test/java/src/org/chromium/native_test/NativeUnitTestActivity.java",
       "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestInstrumentationTestRunner.java",
     ]
-    android_manifest = "//testing/android/native_test/java/AndroidManifest.xml"
+    if (!defined(invoker.android_manifest)) {
+      android_manifest =
+          "//testing/android/native_test/java/AndroidManifest.xml"
+    }
     native_libs = [ unittests_binary ]
     deps = [
       "//base:base_java",
