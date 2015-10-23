@@ -84,6 +84,7 @@ source_set("unittests") {
     "media_codec_decoder_unittest.cc",
     "media_codec_player_unittest.cc",
     "media_drm_bridge_unittest.cc",
+    "media_player_bridge_unittest.cc",
     "media_source_player_unittest.cc",
     "test_data_factory.cc",
     "test_data_factory.h",

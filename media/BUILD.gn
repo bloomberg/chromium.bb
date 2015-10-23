@@ -678,14 +678,14 @@ test("media_unittests") {
 
   if (is_android) {
     isolate_file = "media_unittests.isolate"
-    deps += [
-      "//media/base/android",
-      # TODO(GYP)
-      #"//testing/android/native_test:native_test_native_code"
-    ]
+    deps += [ "//media/base/android:unittests" ]
     sources -= [
       "filters/decrypting_audio_decoder_unittest.cc",
       "filters/decrypting_video_decoder_unittest.cc",
+    ]
+    apk_deps = [
+      "//media/base/android:media_java",
+      "//ui/android:ui_java",
     ]
   }
 
