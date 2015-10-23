@@ -36,6 +36,36 @@ namespace {
 const DWORD kFileShareAll =
     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
 
+// Deletes all files and directories in a path.
+// Returns false on the first failure it encounters.
+bool DeleteFileRecursive(const FilePath& path,
+                         const FilePath::StringType& pattern,
+                         bool recursive) {
+  FileEnumerator traversal(path, false,
+                           FileEnumerator::FILES | FileEnumerator::DIRECTORIES,
+                           pattern);
+  for (FilePath current = traversal.Next(); !current.empty();
+       current = traversal.Next()) {
+    // Try to clear the read-only bit if we find it.
+    FileEnumerator::FileInfo info = traversal.GetInfo();
+    if ((info.find_data().dwFileAttributes & FILE_ATTRIBUTE_READONLY) &&
+        (recursive || !info.IsDirectory())) {
+      SetFileAttributes(
+          current.value().c_str(),
+          info.find_data().dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
+    }
+
+    if (info.IsDirectory()) {
+      if (recursive && (!DeleteFileRecursive(current, pattern, true) ||
+                        !RemoveDirectory(current.value().c_str())))
+        return false;
+    } else if (!::DeleteFile(current.value().c_str())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 FilePath MakeAbsoluteFilePath(const FilePath& input) {
@@ -49,56 +79,36 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
 bool DeleteFile(const FilePath& path, bool recursive) {
   ThreadRestrictions::AssertIOAllowed();
 
-  if (path.value().length() >= MAX_PATH)
-    return false;
-
-  // On XP SHFileOperation will return ERROR_ACCESS_DENIED instead of
-  // ERROR_FILE_NOT_FOUND, so just shortcut this here.
   if (path.empty())
     return true;
 
-  if (!recursive) {
-    // If not recursing, then first check to see if |path| is a directory.
-    // If it is, then remove it with RemoveDirectory.
-    File::Info file_info;
-    if (GetFileInfo(path, &file_info) && file_info.is_directory)
-      return RemoveDirectory(path.value().c_str()) != 0;
-
-    // Otherwise, it's a file, wildcard or non-existant. Try DeleteFile first
-    // because it should be faster. If DeleteFile fails, then we fall through
-    // to SHFileOperation, which will do the right thing.
-    if (::DeleteFile(path.value().c_str()) != 0)
-      return true;
-  }
-
-  // SHFILEOPSTRUCT wants the path to be terminated with two NULLs,
-  // so we have to use wcscpy because wcscpy_s writes non-NULLs
-  // into the rest of the buffer.
-  wchar_t double_terminated_path[MAX_PATH + 1] = {0};
-#pragma warning(suppress:4996)  // don't complain about wcscpy deprecation
-  wcscpy(double_terminated_path, path.value().c_str());
-
-  SHFILEOPSTRUCT file_operation = {0};
-  file_operation.wFunc = FO_DELETE;
-  file_operation.pFrom = double_terminated_path;
-  file_operation.fFlags = FOF_NOERRORUI | FOF_SILENT | FOF_NOCONFIRMATION;
-  if (!recursive)
-    file_operation.fFlags |= FOF_NORECURSION | FOF_FILESONLY;
-  int err = SHFileOperation(&file_operation);
-
-  // Since we're passing flags to the operation telling it to be silent,
-  // it's possible for the operation to be aborted/cancelled without err
-  // being set (although MSDN doesn't give any scenarios for how this can
-  // happen).  See MSDN for SHFileOperation and SHFILEOPTSTRUCT.
-  if (file_operation.fAnyOperationsAborted)
+  if (path.value().length() >= MAX_PATH)
     return false;
 
-  // Some versions of Windows return ERROR_FILE_NOT_FOUND (0x2) when deleting
-  // an empty directory and some return 0x402 when they should be returning
-  // ERROR_FILE_NOT_FOUND. MSDN says Vista and up won't return 0x402.  Windows 7
-  // can return DE_INVALIDFILES (0x7C) for nonexistent directories.
-  return (err == 0 || err == ERROR_FILE_NOT_FOUND || err == 0x402 ||
-          err == 0x7C);
+  // Handle any path with wildcards.
+  if (path.BaseName().value().find_first_of(L"*?") !=
+      FilePath::StringType::npos) {
+    return DeleteFileRecursive(path.DirName(), path.BaseName().value(),
+                               recursive);
+  }
+  DWORD attr = GetFileAttributes(path.value().c_str());
+  // We're done if we can't find the path.
+  if (attr == INVALID_FILE_ATTRIBUTES)
+    return true;
+  // We may need to clear the read-only bit.
+  if ((attr & FILE_ATTRIBUTE_READONLY) &&
+      !SetFileAttributes(path.value().c_str(),
+                          attr & ~FILE_ATTRIBUTE_READONLY)) {
+    return false;
+  }
+  // Directories are handled differently if they're recursive.
+  if (!(attr & FILE_ATTRIBUTE_DIRECTORY))
+    return !!::DeleteFile(path.value().c_str());
+  // Handle a simple, single file delete.
+  if (!recursive || DeleteFileRecursive(path, L"*", true))
+    return !!RemoveDirectory(path.value().c_str());
+
+  return false;
 }
 
 bool DeleteFileAfterReboot(const FilePath& path) {
