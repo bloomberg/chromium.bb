@@ -31,36 +31,29 @@ namespace base {
 class FilePath;
 
 // Options for creating a shared memory object.
-struct SharedMemoryCreateOptions {
-  SharedMemoryCreateOptions()
-      : size(0),
-        executable(false),
-        share_read_only(false) {
-#if !defined(OS_MACOSX) || defined(OS_IOS)
-    name_deprecated = nullptr;
-    open_existing_deprecated = false;
-#endif
-  }
+struct BASE_EXPORT SharedMemoryCreateOptions {
+  SharedMemoryCreateOptions();
 
-#if !defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // The type of OS primitive that should back the SharedMemory object.
+  SharedMemoryHandle::Type type;
+#else
   // DEPRECATED (crbug.com/345734):
   // If NULL, the object is anonymous.  This pointer is owned by the caller
   // and must live through the call to Create().
   const std::string* name_deprecated;
-#endif
 
-  // Size of the shared memory object to be created.
-  // When opening an existing object, this has no effect.
-  size_t size;
-
-#if !defined(OS_MACOSX) || defined(OS_IOS)
   // DEPRECATED (crbug.com/345734):
   // If true, and the shared memory already exists, Create() will open the
   // existing shared memory and ignore the size parameter.  If false,
   // shared memory must not exist.  This flag is meaningless unless
   // name_deprecated is non-NULL.
   bool open_existing_deprecated;
-#endif
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+  // Size of the shared memory object to be created.
+  // When opening an existing object, this has no effect.
+  size_t size;
 
   // If true, mappings might need to be made executable later.
   bool executable;
@@ -138,6 +131,16 @@ class BASE_EXPORT SharedMemory {
   // Creates and maps an anonymous shared memory segment of size size.
   // Returns true on success and false on failure.
   bool CreateAndMapAnonymous(size_t size);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // These two methods are analogs of CreateAndMapAnonymous and CreateAnonymous
+  // that force the underlying OS primitive to be a POSIX fd. Do not add new
+  // uses of these methods unless absolutely necessary, since constructing a
+  // fd-backed SharedMemory object frequently takes 100ms+.
+  // http://crbug.com/466437.
+  bool CreateAndMapAnonymousPosix(size_t size);
+  bool CreateAnonymousPosix(size_t size);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Creates an anonymous shared memory segment of size size.
   // Returns true on success and false on failure.

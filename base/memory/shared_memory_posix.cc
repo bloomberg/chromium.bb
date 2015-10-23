@@ -97,6 +97,13 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
 #endif  // !defined(OS_ANDROID)
 }
 
+SharedMemoryCreateOptions::SharedMemoryCreateOptions()
+    : name_deprecated(nullptr),
+      open_existing_deprecated(false),
+      size(0),
+      executable(false),
+      share_read_only(false) {}
+
 SharedMemory::SharedMemory()
     : mapped_file_(-1),
       readonly_mapped_file_(-1),

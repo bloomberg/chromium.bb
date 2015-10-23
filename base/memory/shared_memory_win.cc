@@ -27,6 +27,13 @@ size_t GetMemorySectionSize(void* address) {
 
 namespace base {
 
+SharedMemoryCreateOptions::SharedMemoryCreateOptions()
+    : name_deprecated(nullptr),
+      open_existing_deprecated(false),
+      size(0),
+      executable(false),
+      share_read_only(false) {}
+
 SharedMemory::SharedMemory()
     : mapped_file_(NULL),
       mapped_size_(0),

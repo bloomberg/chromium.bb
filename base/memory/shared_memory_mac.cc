@@ -94,6 +94,12 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
 
 }  // namespace
 
+SharedMemoryCreateOptions::SharedMemoryCreateOptions()
+    : type(SharedMemoryHandle::POSIX),
+      size(0),
+      executable(false),
+      share_read_only(false) {}
+
 SharedMemory::SharedMemory()
     : mapped_memory_mechanism_(SharedMemoryHandle::POSIX),
       readonly_mapped_file_(-1),
@@ -166,6 +172,17 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }
 
+bool SharedMemory::CreateAndMapAnonymousPosix(size_t size) {
+  return CreateAnonymousPosix(size) && Map(size);
+}
+
+bool SharedMemory::CreateAnonymousPosix(size_t size) {
+  SharedMemoryCreateOptions options;
+  options.type = SharedMemoryHandle::POSIX;
+  options.size = size;
+  return Create(options);
+}
+
 // static
 bool SharedMemory::GetSizeFromSharedMemoryHandle(
     const SharedMemoryHandle& handle,
@@ -187,9 +204,15 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   if (options.size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
 
-  // This function theoretically can block on the disk, but realistically
-  // the temporary files we create will just go into the buffer cache
-  // and be deleted before they ever make it out to disk.
+  if (options.type == SharedMemoryHandle::MACH) {
+    shm_ = SharedMemoryHandle(options.size);
+    requested_size_ = options.size;
+    return shm_.IsValid();
+  }
+
+  // This function theoretically can block on the disk. Both profiling of real
+  // users and local instrumentation shows that this is a real problem.
+  // https://code.google.com/p/chromium/issues/detail?id=466437
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   ScopedFILE fp;
