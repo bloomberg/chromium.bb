@@ -163,6 +163,7 @@ void ResolutionNotificationController::PrepareNotification(
     const DisplayMode& old_resolution,
     const DisplayMode& new_resolution,
     const base::Closure& accept_callback) {
+  DCHECK(!gfx::Display::IsInternalDisplayId(display_id));
   // If multiple resolution changes are invoked for the same display,
   // the original resolution for the first resolution change has to be used
   // instead of the specified |old_resolution|.

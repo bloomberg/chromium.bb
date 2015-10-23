@@ -421,7 +421,8 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   ash::DisplayManager* display_manager = GetDisplayManager();
   ash::DisplayMode current_mode =
       display_manager->GetActiveModeForDisplayId(display_id);
-  if (display_manager->SetDisplayMode(display_id, mode)) {
+  if (display_manager->SetDisplayMode(display_id, mode) &&
+      !gfx::Display::IsInternalDisplayId(display_id)) {
     ash::Shell::GetInstance()->resolution_notification_controller()->
         PrepareNotification(
             display_id, current_mode, mode, base::Bind(&StoreDisplayPrefs));
