@@ -16,13 +16,11 @@ using ui::KeycodeConverter;
 namespace {
 
 #if defined(OS_WIN)
-const size_t kExpectedMappedKeyCount = 139;
-#elif defined(OS_LINUX)
-const size_t kExpectedMappedKeyCount = 168;
+const size_t kExpectedMappedKeyCount = 157;
+#elif defined(OS_LINUX) || defined(OS_ANDROID)
+const size_t kExpectedMappedKeyCount = 178;
 #elif defined(OS_MACOSX)
 const size_t kExpectedMappedKeyCount = 118;
-#elif defined(OS_ANDROID)
-const size_t kExpectedMappedKeyCount = 168;
 #else
 const size_t kExpectedMappedKeyCount = 0;
 #endif
