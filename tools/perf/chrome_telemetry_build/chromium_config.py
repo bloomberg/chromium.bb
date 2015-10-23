@@ -21,7 +21,7 @@ CLIENT_CONFIG_PATH = os.path.join(
 class ChromiumConfig(project_config.ProjectConfig):
   def __init__(self, top_level_dir=None, benchmark_dirs=None,
                client_config=CLIENT_CONFIG_PATH,
-               chromium_src_dir=CHROMIUM_SRC_DIR):
+               default_chrome_root=CHROMIUM_SRC_DIR):
 
     perf_dir = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
     if not benchmark_dirs:
@@ -35,6 +35,4 @@ class ChromiumConfig(project_config.ProjectConfig):
 
     super(ChromiumConfig, self).__init__(
         top_level_dir=top_level_dir, benchmark_dirs=benchmark_dirs,
-        client_config=client_config)
-
-    self._chromium_src_dir = chromium_src_dir
+        client_config=client_config, default_chrome_root=default_chrome_root)

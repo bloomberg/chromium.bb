@@ -142,15 +142,6 @@ class PageRunExecutionTest(unittest.TestCase):
     self.assertEquals(mock_shared_state.mock_calls, expected)
 
 class PageExecutionTest(unittest.TestCase):
-  def setUp(self):
-    self.patcher = mock.patch(
-        'telemetry.internal.story_runner.browser_finder.FindBrowser')
-    find_browser_mock = self.patcher.start()
-    find_browser_mock.return_value = fakes.FakePossibleBrowser()
-
-  def tearDown(self):
-    mock.patch.stopall()
-
   def setupTest(self, num_test_failures=0, manager_mock=None):
     finder_options = fakes.CreateBrowserFinderOptions()
     finder_options.browser_options.platform = fakes.FakeLinuxPlatform()

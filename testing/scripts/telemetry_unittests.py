@@ -21,7 +21,7 @@ def main_run(args):
     test_args += ['--browser', 'android-chromium', '--device', 'android']
   else:
     test_args += ['--browser', args.build_config_fs.lower()]
-
+  test_args += ['--chrome-root', common.SRC_DIR]
   with common.temporary_file() as tempfile_path:
     test_args += ['--write-full-results-to', tempfile_path]
     rc = common.run_runtest(args, [
