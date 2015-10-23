@@ -10,6 +10,10 @@ component("blimp_net") {
     "blimp_message_dispatcher.h",
     "blimp_message_receiver.h",
     "blimp_net_export.h",
+    "common.cc",
+    "common.h",
+    "packet_reader.cc",
+    "packet_reader.h",
   ]
 
   defines = [ "BLIMP_NET_IMPLEMENTATION=1" ]
@@ -26,6 +30,10 @@ source_set("unit_tests") {
 
   sources = [
     "blimp_message_dispatcher_unittest.cc",
+    "packet_reader_unittest.cc",
+    "packet_reader_unittest.h",
+    "test_common.cc",
+    "test_common.h",
   ]
 
   deps = [
