@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/common/client_native_pixmap_factory_gbm.h"
+#include "ui/ozone/platform/drm/client_native_pixmap_factory_gbm.h"
 
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 
 #if defined(USE_VGEM_MAP)
-#include "ui/ozone/platform/drm/gpu/client_native_pixmap_vgem.h"
+#include "ui/ozone/platform/drm/common/client_native_pixmap_vgem.h"
 #endif
 
 namespace ui {

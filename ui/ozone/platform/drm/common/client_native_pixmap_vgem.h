@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_CLIENT_NATIVE_PIXMAP_VGEM_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_CLIENT_NATIVE_PIXMAP_VGEM_H_
+#ifndef UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_VGEM_H_
+#define UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_VGEM_H_
 
 #include "base/file_descriptor_posix.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/public/client_native_pixmap.h"
@@ -43,4 +44,4 @@ class ClientNativePixmapVgem : public ClientNativePixmap {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_CLIENT_NATIVE_PIXMAP_VGEM_H_
+#endif  // UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_VGEM_H_

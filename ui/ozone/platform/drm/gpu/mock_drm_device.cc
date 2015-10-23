@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/test/mock_drm_device.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 
 #include <drm_fourcc.h>
 #include <xf86drm.h>
@@ -88,8 +88,7 @@ MockDrmDevice::MockDrmDevice(bool use_sync_flips,
       new MockHardwareDisplayPlaneManager(this, crtcs, planes_per_crtc));
 }
 
-MockDrmDevice::~MockDrmDevice() {
-}
+MockDrmDevice::~MockDrmDevice() {}
 
 ScopedDrmCrtcPtr MockDrmDevice::GetCrtc(uint32_t crtc_id) {
   get_crtc_call_count_++;

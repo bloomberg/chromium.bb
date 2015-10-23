@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_TEST_MOCK_BUFFER_GENERATOR_H_
-#define UI_OZONE_PLATFORM_DRM_TEST_MOCK_BUFFER_GENERATOR_H_
+#ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_BUFFER_GENERATOR_H_
+#define UI_OZONE_PLATFORM_DRM_GPU_MOCK_BUFFER_GENERATOR_H_
 
 #include "base/macros.h"
 
@@ -27,4 +27,4 @@ class MockBufferGenerator : public ScanoutBufferGenerator {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_TEST_MOCK_BUFFER_GENERATOR_H_
+#endif  // UI_OZONE_PLATFORM_DRM_GPU_MOCK_BUFFER_GENERATOR_H_

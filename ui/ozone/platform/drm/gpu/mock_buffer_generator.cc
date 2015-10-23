@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/test/mock_buffer_generator.h"
+#include "ui/ozone/platform/drm/gpu/mock_buffer_generator.h"
 
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 

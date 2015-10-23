@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/client_native_pixmap_vgem.h"
+#include "ui/ozone/platform/drm/common/client_native_pixmap_vgem.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -69,8 +69,7 @@ void* ClientNativePixmapVgem::Map() {
   return data_;
 }
 
-void ClientNativePixmapVgem::Unmap() {
-}
+void ClientNativePixmapVgem::Unmap() {}
 
 void ClientNativePixmapVgem::GetStride(int* stride) const {
   *stride = stride_;

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_TEST_MOCK_DRM_DEVICE_H_
-#define UI_OZONE_PLATFORM_DRM_TEST_MOCK_DRM_DEVICE_H_
+#ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_DRM_DEVICE_H_
+#define UI_OZONE_PLATFORM_DRM_GPU_MOCK_DRM_DEVICE_H_
 
 #include <map>
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -146,4 +147,4 @@ class MockDrmDevice : public ui::DrmDevice {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_TEST_MOCK_DRM_DEVICE_H_
+#endif  // UI_OZONE_PLATFORM_DRM_GPU_MOCK_DRM_DEVICE_H_

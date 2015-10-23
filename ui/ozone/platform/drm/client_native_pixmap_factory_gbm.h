@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
-#define UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
+#ifndef UI_OZONE_PLATFORM_DRM_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
+#define UI_OZONE_PLATFORM_DRM_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
 
 namespace ui {
 
@@ -14,4 +14,4 @@ ClientNativePixmapFactory* CreateClientNativePixmapFactoryGbm();
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
+#endif  // UI_OZONE_PLATFORM_DRM_CLIENT_NATIVE_PIXMAP_FACTORY_GBM_H_
