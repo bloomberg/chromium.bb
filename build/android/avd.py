@@ -37,12 +37,25 @@ def main(argv):
   opt_parser.add_option('--api-level', dest='api_level',
                         help='API level for the image, e.g. 19 for Android 4.4',
                         type='int', default=constants.ANDROID_SDK_VERSION)
+  opt_parser.add_option('--kill-existing-emulators', action='store_true',
+                        dest='kill', default=False,
+                        help='Shutdown all existing emulators')
 
   options, _ = opt_parser.parse_args(argv[1:])
 
   logging.root.setLevel(logging.INFO)
 
-  # Check if SDK exist in ANDROID_SDK_ROOT
+  # Make sure --kill-existing-emulators is mutually exclusive with other options
+  if options.kill and len(argv[1:]) > 1:
+    logging.error('--kill-existing-emulators was specified. '
+                  'Ignoring all other arguments.')
+
+  if options.kill:
+    logging.info('Killing all existing emulator and existing the program')
+    emulator.KillAllEmulators()
+    return
+
+ # Check if SDK exist in ANDROID_SDK_ROOT
   if not install_emulator_deps.CheckSDK():
     raise Exception('Emulator SDK not installed in %s'
                      % constants.ANDROID_SDK_ROOT)

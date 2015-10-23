@@ -79,7 +79,7 @@ class EmulatorLaunchException(Exception):
   """Emulator failed to launch."""
   pass
 
-def _KillAllEmulators():
+def KillAllEmulators():
   """Kill all running emulators that look like ones we started.
 
   There are odd 'sticky' cases where there can be no emulator process
@@ -334,7 +334,7 @@ class Emulator(object):
     If fails, an exception will be raised.
     """
     if kill_all_emulators:
-      _KillAllEmulators()  # just to be sure
+      KillAllEmulators()  # just to be sure
     self._AggressiveImageCleanup()
     (self.device_serial, port) = self._DeviceName()
     emulator_command = [
