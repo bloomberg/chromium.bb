@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "base/mac/mac_util.h"
 #include "base/posix/eintr_wrapper.h"
 
 namespace base {
@@ -44,12 +45,17 @@ SharedMemoryHandle::SharedMemoryHandle(mach_vm_size_t size) {
   memory_object_ = named_right;
   size_ = size;
   pid_ = GetCurrentProcId();
+  ownership_passes_to_ipc_ = false;
 }
 
 SharedMemoryHandle::SharedMemoryHandle(mach_port_t memory_object,
                                        mach_vm_size_t size,
                                        base::ProcessId pid)
-    : type_(MACH), memory_object_(memory_object), size_(size), pid_(pid) {}
+    : type_(MACH),
+      memory_object_(memory_object),
+      size_(size),
+      pid_(pid),
+      ownership_passes_to_ipc_(false) {}
 
 SharedMemoryHandle::SharedMemoryHandle(const SharedMemoryHandle& handle)
     : type_(handle.type_) {
@@ -171,6 +177,9 @@ bool SharedMemoryHandle::MapAt(off_t offset,
 
       return *memory && *memory != reinterpret_cast<void*>(-1);
     case SharedMemoryHandle::MACH:
+      // The flag VM_PROT_IS_MASK is only supported on OSX 10.7+.
+      DCHECK(mac::IsOSLionOrLater());
+
       DCHECK_EQ(pid_, GetCurrentProcId());
       kern_return_t kr = mach_vm_map(
           mach_task_self(),
@@ -182,7 +191,7 @@ bool SharedMemoryHandle::MapAt(off_t offset,
           offset,
           FALSE,                                           // Copy
           VM_PROT_READ | (read_only ? 0 : VM_PROT_WRITE),  // Current protection
-          VM_PROT_READ | VM_PROT_WRITE,                    // Maximum protection
+          VM_PROT_WRITE | VM_PROT_READ | VM_PROT_IS_MASK,  // Maximum protection
           VM_INHERIT_NONE);
       return kr == KERN_SUCCESS;
   }
@@ -205,6 +214,16 @@ void SharedMemoryHandle::Close() const {
   }
 }
 
+void SharedMemoryHandle::SetOwnershipPassesToIPC(bool ownership_passes) {
+  DCHECK_EQ(type_, MACH);
+  ownership_passes_to_ipc_ = ownership_passes;
+}
+
+bool SharedMemoryHandle::OwnershipPassesToIPC() const {
+  DCHECK_EQ(type_, MACH);
+  return ownership_passes_to_ipc_;
+}
+
 void SharedMemoryHandle::CopyRelevantData(const SharedMemoryHandle& handle) {
   switch (type_) {
     case POSIX:
@@ -214,6 +233,7 @@ void SharedMemoryHandle::CopyRelevantData(const SharedMemoryHandle& handle) {
       memory_object_ = handle.memory_object_;
       size_ = handle.size_;
       pid_ = handle.pid_;
+      ownership_passes_to_ipc_ = handle.ownership_passes_to_ipc_;
       break;
   }
 }

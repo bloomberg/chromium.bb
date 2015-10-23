@@ -156,6 +156,9 @@ class BASE_EXPORT SharedMemoryHandle {
   // Closes the underlying OS primitive.
   void Close() const;
 
+  void SetOwnershipPassesToIPC(bool ownership_passes);
+  bool OwnershipPassesToIPC() const;
+
  private:
   // Shared code between copy constructor and operator=.
   void CopyRelevantData(const SharedMemoryHandle& handle);
@@ -177,6 +180,12 @@ class BASE_EXPORT SharedMemoryHandle {
       // The pid of the process in which |memory_object_| is usable. Only
       // relevant if |memory_object_| is not |MACH_PORT_NULL|.
       base::ProcessId pid_;
+
+      // Whether passing this object as a parameter to an IPC message passes
+      // ownership of |memory_object_| to the IPC stack. This is meant to mimic
+      // the behavior of the |auto_close| parameter of FileDescriptor.
+      // Defaults to |false|.
+      bool ownership_passes_to_ipc_;
     };
   };
 };
