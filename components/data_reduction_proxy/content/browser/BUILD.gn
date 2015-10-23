@@ -57,7 +57,7 @@ source_set("unit_tests") {
 
   if (is_android) {
     sources += [
-      "content_data_reduction_proxy_lofi_helper_unittest.cc",
+      "content_lofi_decider_unittest.cc",
       "data_reduction_proxy_debug_blocking_page_unittest.cc",
       "data_reduction_proxy_debug_resource_throttle_unittest.cc",
       "data_reduction_proxy_debug_ui_manager_unittest.cc",
