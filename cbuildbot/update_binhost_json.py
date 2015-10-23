@@ -34,7 +34,7 @@ def main(argv):
   cros_build_lib.AssertInsideChroot()
   opts = _ParseArguments(argv)
 
-  site_config = config_lib.LoadConfigFromFile()
+  site_config = config_lib.GetConfig()
 
   logging.info('Generating board configs. This takes about 2m...')
   for key in sorted(binhost.GetChromePrebuiltConfigs(site_config)):

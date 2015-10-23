@@ -40,7 +40,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   # TODO(davidjames): Empty this list.
   BOARDS_WITHOUT_CHROMIUM_PFQS = ['rush_ryu', 'smaug']
 
-  site_config = config_lib.LoadConfigFromFile()
+  site_config = config_lib.GetConfig()
 
   @classmethod
   def setUpClass(cls):

@@ -61,7 +61,7 @@ def _ParseArguments(argv):
 def main(argv):
   opts = _ParseArguments(argv)
 
-  site_config = config_lib.LoadConfigFromFile()
+  site_config = config_lib.GetConfig()
 
   layout = {}
   for config_name, config in site_config.iteritems():

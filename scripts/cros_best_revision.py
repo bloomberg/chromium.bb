@@ -49,7 +49,7 @@ class ChromeCommitter(object):
     self._dryrun = dryrun
     self._lkgm = None
     self._old_lkgm = None
-    self.site_config = config_lib.LoadConfigFromFile()
+    self.site_config = config_lib.GetConfig()
 
 
   def CheckoutChromeLKGM(self):
