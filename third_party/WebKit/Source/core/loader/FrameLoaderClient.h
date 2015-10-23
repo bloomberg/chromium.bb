@@ -67,6 +67,7 @@ class WebApplicationCacheHostClient;
 class WebCookieJar;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebMediaSession;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class WebSocketHandle;
@@ -152,6 +153,8 @@ public:
     virtual PassRefPtrWillBeRawPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
     virtual PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) = 0;
+
+    virtual PassOwnPtr<WebMediaSession> createWebMediaSession() = 0;
 
     virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 

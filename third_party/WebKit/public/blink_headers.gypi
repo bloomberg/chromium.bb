@@ -297,6 +297,8 @@
       "platform/modules/indexeddb/WebIDBMetadata.h",
       "platform/modules/indexeddb/WebIDBTypes.h",
       "platform/modules/indexeddb/WebIDBValue.h",
+      "platform/modules/mediasession/WebMediaSession.h",
+      "platform/modules/mediasession/WebMediaSessionError.h",
       "platform/modules/navigator_services/WebServicePort.h",
       "platform/modules/navigator_services/WebServicePortProvider.h",
       "platform/modules/navigator_services/WebServicePortProviderClient.h",

@@ -175,6 +175,7 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
+#include "content/renderer/media/android/webmediasession_android.h"
 #else
 #include "cc/blink/context_provider_web_context.h"
 #include "content/renderer/usb/web_usb_client_impl.h"
@@ -219,6 +220,7 @@ using blink::WebLocalFrame;
 using blink::WebMediaPlayer;
 using blink::WebMediaPlayerClient;
 using blink::WebMediaPlayerEncryptedMediaClient;
+using blink::WebMediaSession;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
@@ -2161,6 +2163,14 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       frame, client, encrypted_client, weak_factory_.GetWeakPtr(),
       media_renderer_factory.Pass(), GetCdmFactory(), params);
 #endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+}
+
+blink::WebMediaSession* RenderFrameImpl::createMediaSession() {
+#if defined(OS_ANDROID)
+  return new WebMediaSessionAndroid();
+#else
+  return nullptr;
+#endif  // defined(OS_ANDROID)
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
