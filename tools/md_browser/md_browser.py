@@ -10,6 +10,7 @@ import SocketServer
 import argparse
 import codecs
 import os
+import re
 import socket
 import sys
 
@@ -34,6 +35,35 @@ def main(argv):
     return 0
   except KeyboardInterrupt:
     return 130
+
+
+def _gitiles_slugify(value, _separator):
+  """Convert a string (representing a section title) to URL anchor name.
+
+  This function is passed to "toc" extension as an extension option, so we
+  can emulate the way how Gitiles converts header titles to URL anchors.
+
+  Gitiles' official documentation about the conversion is at:
+
+  https://gerrit.googlesource.com/gitiles/+/master/Documentation/markdown.md#Named-anchors
+
+  Args:
+    value: The name of a section that is to be converted.
+    _separator: Unused. This is actually a configurable string that is used
+        as a replacement character for spaces in the title, typically set to
+        '-'. Since we emulate Gitiles' way of slugification here, it makes
+        little sense to have the separator charactor configurable.
+  """
+
+  # TODO(yutak): Implement accent removal. This does not seem easy without
+  # some library. For now we just make accented characters turn into
+  # underscores, just like other non-ASCII characters.
+
+  value = value.encode('ascii', 'replace')  # Non-ASCII turns into '?'.
+  value = re.sub(r'[^- a-zA-Z0-9]', '_', value)  # Non-alphanumerics to '_'.
+  value = value.replace(u' ', u'-')
+  value = re.sub(r'([-_])[-_]+', r'\1', value)  # Fold hyphens and underscores.
+  return value
 
 
 class Server(SocketServer.TCPServer):
@@ -76,10 +106,16 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         'markdown.extensions.toc',
         'gitiles_ext_blocks',
     ]
+    extension_configs = {
+        'markdown.extensions.toc': {
+            'slugify': _gitiles_slugify
+        },
+    }
 
     contents = self._Read(path[1:])
     md_fragment = markdown.markdown(contents,
                                     extensions=extensions,
+                                    extension_configs=extension_configs,
                                     output_format='html4').encode('utf-8')
     try:
       self._WriteTemplate('header.html')
