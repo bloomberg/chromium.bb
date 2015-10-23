@@ -72,6 +72,14 @@ void SimRequest::finish()
     reset();
 }
 
+void SimRequest::complete(const String& data)
+{
+    start();
+    if (!data.isEmpty())
+        write(data);
+    finish();
+}
+
 void SimRequest::reset()
 {
     m_isReady = false;

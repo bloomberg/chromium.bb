@@ -34,6 +34,9 @@ public:
     // Finish the response, this is as if the server closed the connection.
     void finish();
 
+    // Shorthand to complete a request (start/write/finish) sequence in order.
+    void complete(const String& data = String());
+
     const String& url() const { return m_url; }
     const WebURLError& error() const { return m_error; }
     const WebURLResponse& response() const { return m_response; }
