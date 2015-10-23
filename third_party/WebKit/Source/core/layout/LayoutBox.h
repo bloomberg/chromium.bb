@@ -116,6 +116,7 @@ public:
 // - non-overlay scrollbars take space from the content box.
 // - overlay scrollbars don't and just overlay hang off from the border box,
 //   potentially overlapping with the padding box's content.
+// For more details on scrollbars, see PaintLayerScrollableArea.
 //
 //
 // ***** THE BOX MODEL *****

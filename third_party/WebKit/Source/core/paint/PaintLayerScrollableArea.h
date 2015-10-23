@@ -62,6 +62,41 @@ class LayoutBox;
 class PaintLayer;
 class LayoutScrollbarPart;
 
+// PaintLayerScrollableArea represents the scrollable area of a LayoutBox.
+//
+// To be scrollable, an element requires ‘overflow’ != visible. Note that this
+// doesn’t imply having scrollbars as you can always programmatically scroll
+// when ‘overflow’ is hidden (using JavaScript's element.scrollTo or
+// scrollLeft).
+//
+// The size and scroll origin of the scrollable area are based on layout
+// dimensions. They are recomputed after layout in updateScrollDimensions.
+//
+// updateScrollDimensions also determines if scrollbars need to be allocated,
+// destroyed or updated as a result of layout. This is based on the value of the
+// 'overflow' property. Having non-overlay scrollbars automatically allocates a
+// scrollcorner (m_scrollCorner), which is used to style the intersection of the
+// two scrollbars.
+//
+// Note that scrollbars are placed based on the LayoutBox's computed
+// 'direction'. See https://webkit.org/b/54623 for some context.
+//
+// The ‘resize' property allocates a resizer (m_resizer), which is overlaid on
+// top of the scroll corner. It is used to resize an element using the mouse.
+//
+// The scrollbars and scroll corner can also be hardware accelerated
+// and thus get their own GraphicsLayer (see the layerFor* functions).
+// This only happens if the associated PaintLayer is itself composited.
+//
+//
+// ***** OVERLAY SCROLLBARS *****
+// Overlay scrollbars are painted on top of the box's content. As such they
+// don't use any space in the box. Software overlay scrollbars are painted by
+// PaintLayerPainter::paintOverlayScrollbars after all content as part of a
+// separate tree traversal. The reason for this 2nd traversal is that they need
+// to be painted on top of everything. Hardware accelerated overlay scrollbars
+// are painted by their associated GraphicsLayer that sets the paint flag
+// PaintLayerPaintingOverlayScrollbars.
 class CORE_EXPORT PaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<PaintLayerScrollableArea>, public ScrollableArea {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PaintLayerScrollableArea);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
@@ -109,8 +144,11 @@ private:
 
     private:
         RawPtrWillBeMember<PaintLayerScrollableArea> m_scrollableArea;
+
+        // The scrollbars associated with m_scrollableArea. Both can nullptr.
         RefPtrWillBeMember<Scrollbar> m_hBar;
         RefPtrWillBeMember<Scrollbar> m_vBar;
+
         unsigned m_canDetachScrollbars: 1;
         unsigned m_hBarIsAttached: 1;
         unsigned m_vBarIsAttached: 1;
@@ -135,10 +173,20 @@ public:
 
     HostWindow* hostWindow() const override;
 
+    // For composited scrolling, we allocate an extra GraphicsLayer to hold
+    // onto the scrolling content. The layer can be shifted on the GPU and
+    // composited at little cost.
+    // Note that this is done in CompositedLayerMapping, this function being
+    // only a helper.
     GraphicsLayer* layerForScrolling() const override;
+
+    // GraphicsLayers for the scrolling components.
+    //
+    // Any function can return nullptr if they are not accelerated.
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
     GraphicsLayer* layerForScrollCorner() const override;
+
     bool usesCompositedScrolling() const override;
     void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
     void invalidateScrollCornerRect(const IntRect&) override;
@@ -333,6 +381,9 @@ private:
     unsigned m_needsCompositedScrolling : 1;
 
     // The width/height of our scrolled area.
+    // This is OverflowModel's layout overflow translated to physical
+    // coordinates. See OverflowModel for the different overflow and
+    // LayoutBoxModelObject for the coordinate systems.
     LayoutRect m_overflowRect;
 
     // ScrollbarManager holds the Scrollbar instances.
