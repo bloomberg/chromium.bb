@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_AGGREGATOR_TEST_HELPERS_H_
-#define CC_SURFACES_SURFACE_AGGREGATOR_TEST_HELPERS_H_
+#ifndef CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_
+#define CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/quads/draw_quad.h"
@@ -91,4 +91,4 @@ void TestPassesMatchExpectations(Pass* expected_passes,
 }  // namespace test
 }  // namespace cc
 
-#endif  // CC_SURFACES_SURFACE_AGGREGATOR_TEST_HELPERS_H_
+#endif  // CC_TEST_SURFACE_AGGREGATOR_TEST_HELPERS_H_

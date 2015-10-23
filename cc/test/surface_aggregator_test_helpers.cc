@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface_aggregator_test_helpers.h"
+#include "cc/test/surface_aggregator_test_helpers.h"
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -41,33 +41,19 @@ void AddSurfaceQuad(RenderPass* pass,
       pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   gfx::Rect quad_rect = gfx::Rect(surface_size);
   surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                       gfx::Rect(surface_size),
-                       gfx::Rect(surface_size),
+                       gfx::Rect(surface_size), gfx::Rect(surface_size),
                        surface_id);
 }
 void AddRenderPassQuad(RenderPass* pass, RenderPassId render_pass_id) {
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(),
-                       output_rect.size(),
-                       output_rect,
-                       output_rect,
-                       false,
-                       1,
-                       SkXfermode::kSrcOver_Mode,
-                       0);
+  shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
+                       output_rect, false, 1, SkXfermode::kSrcOver_Mode, 0);
   RenderPassDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_state,
-               output_rect,
-               output_rect,
-               render_pass_id,
-               0,
-               gfx::Vector2dF(),
-               gfx::Size(),
-               FilterOperations(),
-               gfx::Vector2dF(),
-               FilterOperations());
+  quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
+               gfx::Vector2dF(), gfx::Size(), FilterOperations(),
+               gfx::Vector2dF(), FilterOperations());
 }
 
 void AddQuadInPass(RenderPass* pass, Quad desc) {
