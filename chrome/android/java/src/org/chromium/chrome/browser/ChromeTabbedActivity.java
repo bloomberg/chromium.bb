@@ -159,6 +159,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private boolean mIsOnFirstRun = false;
 
+    private Boolean mIsAccessibilityEnabled;
+
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
@@ -606,9 +608,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 getCompositorViewHolder().onAccessibilityStatusChanged(enabled);
             }
         }
-        if (mLayoutManager != null && mLayoutManager.overviewVisible()) {
+        if (mLayoutManager != null && mLayoutManager.overviewVisible()
+                && mIsAccessibilityEnabled != enabled) {
             mLayoutManager.hideOverview(false);
+            if (getTabModelSelector().getCurrentModel().getCount() == 0) {
+                getCurrentTabCreator().launchNTP();
+            }
         }
+        mIsAccessibilityEnabled = enabled;
     }
 
     /**
