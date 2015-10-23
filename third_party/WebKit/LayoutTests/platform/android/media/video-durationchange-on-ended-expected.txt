@@ -1,8 +1,0 @@
-Verify there is a 'durationchange' event just before 'ended' event if the initially reported duration exceeds the actual data.
-
-EVENT(durationchange)
-EVENT(durationchange)
-EVENT(ended)
-EXPECTED (video.duration < initialReportedDuration == 'true') OK
-END OF TEST
-

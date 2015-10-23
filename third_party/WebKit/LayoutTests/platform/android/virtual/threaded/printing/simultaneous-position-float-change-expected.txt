@@ -1,5 +1,0 @@
-layer at (0,0) size 1000x8
-  LayoutView at (0,0) size 1000x8
-layer at (0,0) size 1000x8
-  LayoutBlockFlow {HTML} at (0,0) size 1000x8
-    LayoutBlockFlow {BODY} at (8,8) size 984x0

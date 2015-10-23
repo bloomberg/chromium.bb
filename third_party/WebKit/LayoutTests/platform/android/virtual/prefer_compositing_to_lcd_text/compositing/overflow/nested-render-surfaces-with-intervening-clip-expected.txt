@@ -1,3 +1,0 @@
-
-'fixed' is an unclipped descendant.
-PASS

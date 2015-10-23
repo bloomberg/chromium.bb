@@ -1,4 +1,0 @@
-CONSOLE ERROR: The shape-outside image is too large.
-CONSOLE ERROR: The shape-outside image is too large.
-CONSOLE ERROR: The shape-outside image is too large.
-This test passes if it doesn't crash.

@@ -1,8 +1,0 @@
-layer at (0,0) size 800x600
-  LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x51
-  LayoutBlockFlow {HTML} at (0,0) size 800x51
-    LayoutBlockFlow {BODY} at (8,8) size 784x35
-      LayoutTextControl {INPUT} at (0,0) size 100x2 [bgcolor=#FFFFFF]
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

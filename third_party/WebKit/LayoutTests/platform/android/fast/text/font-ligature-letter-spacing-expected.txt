@@ -1,8 +1,0 @@
-CACACACA
-CACACACA
-CACACACA
-This is a testharness.js-based test.
-PASS Ligature expected not to be applied due to letter spacing. 
-PASS Ligature expected not to be applied due to letter spacing. 
-Harness: the test ran to completion.
-

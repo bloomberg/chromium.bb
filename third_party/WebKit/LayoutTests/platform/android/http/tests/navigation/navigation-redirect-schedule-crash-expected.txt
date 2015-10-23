@@ -1,2 +1,0 @@
-CONSOLE WARNING: Failed to decode downloaded font: http://127.0.0.1:8000/navigation/navigation-redirect-schedule-crash.html
-PASS
