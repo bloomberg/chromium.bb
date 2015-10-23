@@ -140,6 +140,7 @@
           'target_name': 'translate_content_browser',
           'type': 'static_library',
           'dependencies': [
+            'translate_content_common',
             'translate_core_browser',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
