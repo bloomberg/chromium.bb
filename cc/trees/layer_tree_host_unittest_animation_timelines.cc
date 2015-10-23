@@ -998,9 +998,17 @@ class LayerTreeHostTimelinesTestAnimationFinishesDuringCommit
 // compositor thread.
 MULTI_THREAD_TEST_F(LayerTreeHostTimelinesTestAnimationFinishesDuringCommit);
 
+#if defined(OS_ANDROID)
+#define MAYBE_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction \
+  DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
+#else
+#define MAYBE_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction \
+  LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
+#endif
+
 // Check that SetTransformIsPotentiallyAnimatingChanged is called
 // if we destroy LayerAnimationController and ElementAnimations.
-class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
+class MAYBE_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
     : public LayerTreeHostTimelinesTest {
  public:
   void SetupTree() override {
@@ -1049,7 +1057,7 @@ class LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
 };
 
 MULTI_THREAD_TEST_F(
-    LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction);
+    MAYBE_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction);
 
 // Check that we invalidate property trees on AnimationPlayer::SetNeedsCommit.
 class LayerTreeHostTimelinesTestRebuildPropertyTreesOnAnimationSetNeedsCommit
