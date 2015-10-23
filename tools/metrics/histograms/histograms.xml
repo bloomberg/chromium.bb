@@ -45865,6 +45865,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.ModelTypeCount" units="entries">
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Counts the number of entries for each model type in sync DB at startup.
+  </summary>
+</histogram>
+
 <histogram name="Sync.NigoriMigrationState" enum="SyncNigoriMigrationState">
   <owner>zea@chromium.org</owner>
   <summary>Breakdown of sync's nigori node keystore migration state.</summary>
@@ -80388,6 +80395,45 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="WebRTC.Stun.SuccessPercent.NonSymNAT"/>
   <affected-histogram name="WebRTC.Stun.SuccessPercent.SymNAT"/>
   <affected-histogram name="WebRTC.Stun.SuccessPercent.UnknownNAT"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SyncModelType" separator=".">
+  <suffix name="APP" label="APP"/>
+  <suffix name="APP_LIST" label="APP_LIST"/>
+  <suffix name="APP_NOTIFICATION" label="APP_NOTIFICATION"/>
+  <suffix name="APP_SETTING" label="APP_SETTING"/>
+  <suffix name="ARTICLE" label="ARTICLE"/>
+  <suffix name="AUTOFILL" label="AUTOFILL"/>
+  <suffix name="AUTOFILL_PROFILE" label="AUTOFILL_PROFILE"/>
+  <suffix name="AUTOFILL_WALLET" label="AUTOFILL_WALLET"/>
+  <suffix name="AUTOFILL_WALLET_METADATA" label="AUTOFILL_WALLET_METADATA"/>
+  <suffix name="BOOKMARK" label="BOOKMARK"/>
+  <suffix name="DEVICE_INFO" label="DEVICE_INFO"/>
+  <suffix name="DICTIONARY" label="DICTIONARY"/>
+  <suffix name="EXPERIMENTS" label="EXPERIMENTS"/>
+  <suffix name="EXTENSION" label="EXTENSION"/>
+  <suffix name="EXTENSION_SETTING" label="EXTENSION_SETTING"/>
+  <suffix name="FAVICON_IMAGE" label="FAVICON_IMAGE"/>
+  <suffix name="FAVICON_TRACKING" label="FAVICON_TRACKING"/>
+  <suffix name="HISTORY_DELETE_DIRECTIVE" label="HISTORY_DELETE_DIRECTIVE"/>
+  <suffix name="MANAGED_USER" label="MANAGED_USER"/>
+  <suffix name="MANAGED_USER_SETTING" label="MANAGED_USER_SETTING"/>
+  <suffix name="MANAGED_USER_SHARED_SETTING"
+      label="MANAGED_USER_SHARED_SETTING"/>
+  <suffix name="MANAGED_USER_WHITELIST" label="MANAGED_USER_WHITELIST"/>
+  <suffix name="NIGORI" label="NIGORI"/>
+  <suffix name="PASSWORD" label="PASSWORD"/>
+  <suffix name="PREFERENCE" label="PREFERENCE"/>
+  <suffix name="SEARCH_ENGINE" label="SEARCH_ENGINE"/>
+  <suffix name="SESSION" label="SESSION"/>
+  <suffix name="SYNCED_NOTIFICATION" label="SYNCED_NOTIFICATION"/>
+  <suffix name="SYNCED_NOTIFICATION_APP_INFO"
+      label="SYNCED_NOTIFICATION_APP_INFO"/>
+  <suffix name="PRIORITY_PREFERENCE" label="PRIORITY_PREFERENCE"/>
+  <suffix name="THEME" label="THEME"/>
+  <suffix name="TYPED_URL" label="TYPED_URL"/>
+  <suffix name="WIFI_CREDENTIAL" label="WIFI_CREDENTIAL"/>
+  <affected-histogram name="Sync.ModelTypeCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyzygyStartupTime">

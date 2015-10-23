@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -218,6 +219,20 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
   save_statement->Reset(true);
   BindFields(entry, save_statement);
   return save_statement->Run();
+}
+
+void UploadModelTypeEntryCount(const int(&entries_counts)[MODEL_TYPE_COUNT]) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    std::string model_type;
+    if (RealModelTypeToNotificationType((ModelType)i, &model_type)) {
+      std::string full_histogram_name = "Sync.ModelTypeCount." + model_type;
+      base::HistogramBase* histogram = base::Histogram::FactoryGet(
+          full_histogram_name, 1, 1000000, 50,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+      if (histogram)
+        histogram->Add(entries_counts[i]);
+    }
+  }
 }
 
 }  // namespace
@@ -619,6 +634,10 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
   select.append("SELECT ");
   AppendColumnList(&select);
   select.append(" FROM metas");
+  int model_type_entry_count[MODEL_TYPE_COUNT];
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    model_type_entry_count[i] = 0;
+  }
 
   sql::Statement s(db_->GetUniqueStatement(select.c_str()));
 
@@ -629,11 +648,16 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
       return false;
 
     int64 handle = kernel->ref(META_HANDLE);
-    if (SafeToPurgeOnLoading(*kernel))
+    if (SafeToPurgeOnLoading(*kernel)) {
       metahandles_to_purge->insert(handle);
-    else
+    } else {
+      ++model_type_entry_count[kernel->GetModelType()];
       (*handles_map)[handle] = kernel.release();
+    }
   }
+
+  UploadModelTypeEntryCount(model_type_entry_count);
+
   return s.Succeeded();
 }
 
