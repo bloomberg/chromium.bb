@@ -46,10 +46,15 @@
                     scalar: true },
                   12.15
               ],
-              actions: [{ action: 'one', title: 'Action 1' },
-                        { action: 'two', title: 'Action 2' },
-                        { action: 'three', title: 'Action 3' }]
+              actions: []
           };
+          // Deliberately add more actions than are supported.
+          for (var i = 0; i < 2 * Notification.maxActions; i++) {
+              options.actions.push({
+                  action: "a" + i,
+                  title: "Action " + i
+              });
+          }
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
@@ -89,6 +94,18 @@
                   workerInfo.registration.getNotifications().then(function(notifications) {
                       assert_equals(notifications.length, 1);
                       assert_object_is_superset(notifications[0], options, 'The Notification object properties must be the same in getNotifications.');
+
+                      notifications[0].actions.foo = "bar";
+                      notifications[0].actions.push({ title: "Foo" });
+                      if (notifications[0].actions.length) {
+                          notifications[0].actions[0].title = "Changed";
+                          notifications[0].actions[0].foo = "bar";
+                      }
+                      assert_object_equals(notifications[0].actions, options.actions, 'The actions field should be immutable.');
+
+                      // TODO(johnme): This should pass before shipping Notification.actions; this is blocked on https://crbug.com/515920.
+                      //assert_equals(notifications[0].actions, notifications[0].actions, 'The actions field should === itself.');
+
                       test.done();
                   });
               });

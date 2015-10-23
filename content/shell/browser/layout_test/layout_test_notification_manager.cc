@@ -113,7 +113,8 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title,
   // First check for page-notifications with the given title.
   const auto& page_iterator = page_notifications_.find(title);
   if (page_iterator != page_notifications_.end()) {
-    // TODO(johnme): Pass action_index once it's supported.
+    DCHECK_EQ(action_index, -1) << "Action buttons are only supported for "
+                                   "persistent notifications";
     page_iterator->second->NotificationClick();
     return;
   }

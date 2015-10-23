@@ -27,13 +27,6 @@
                 data: "my data",
                 actions: []
             };
-            // Deliberately add more actions than are supported.
-            for (var i = 0; i < 2 * Notification.maxActions; i++) {
-                options.actions.push({
-                    action: "" + i,
-                    title: "Action " + i
-                });
-            }
 
             var notification = new Notification("My Notification", options);
 
@@ -46,17 +39,7 @@
             assert_true(notification.silent);
             assert_true(notification.requireInteraction);
             assert_equals(notification.data, options.data);
-            // Only the first maxActions actions should be reflected.
-            assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
-
-            // Notification.actions should be immutable.
-            notification.actions.push({ title: "Foo" });
-            notification.actions.foo = "bar";
-            if (notification.actions.length) {
-                notification.actions[0].title = "Changed";
-                notification.actions[0].foo = "bar";
-            }
-            assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
+            assert_array_equals(notification.actions, options.actions);
 
             var emptyNotification = new Notification("My Notification");
 
@@ -74,11 +57,7 @@
 
             var equalNotification = new Notification("My Notification", {
                 vibrate: [50, 10, 50, 10, 50],
-                data: { hello: "World!" },
-                actions: [
-                  { action: "foo", title: "Foo" },
-                  { action: "bar", title: "Bar" }
-                ]
+                data: { hello: "World!" }
             });
 
             // Test equality of the object attributes.
@@ -86,9 +65,6 @@
 
             // TODO(peter): This should pass before shipping Notification.vibrate.
             //assert_true(equalNotification.vibrate === equalNotification.vibrate, '`vibrate` object equality');
-
-            // TODO(johnme): This should pass before shipping Notification.actions.
-            //assert_true(equalNotification.actions === equalNotification.actions, '`actions` object equality');
 
             var serializedUrlNotification = new Notification("My Notification", {
                 icon: "http://example.com"
@@ -122,6 +98,13 @@
                 vibrate: [100, 200, "invalid"]
             });
             assert_array_equals(invalidVibrateNotification.vibrate, [100, 200, 0]);
+
+            // Notification actions should only be supported for persistent notifications.
+            assert_throws(new TypeError(), function() {
+                new Notification("My Notification", {
+                    actions: [{ action: "foo", title: "Foo" }]
+                });
+            }, 'Providing non-empty `actions` for a non-persistent notification should throw a TypeError.');
 
       }, 'Checks the properties exposed on the Notification object.');
     </script>
