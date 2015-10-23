@@ -494,6 +494,13 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext* context, const Layout
         && !m_inlineTextBox.isLineBreak())
         expandToIncludeNewlineForSelection(selectionRect);
 
+    // Line breaks report themselves as having zero width for layout purposes,
+    // and so will end up positioned at (0, 0), even though we paint their
+    // selection highlight with character width. For RTL then, we have to
+    // explicitly shift the selection rect over to paint in the right location.
+    if (!m_inlineTextBox.isLeftToRightDirection() && m_inlineTextBox.isLineBreak())
+        selectionRect.move(-selectionRect.width(), 0);
+
     context->fillRect(FloatRect(selectionRect), c);
 }
 
