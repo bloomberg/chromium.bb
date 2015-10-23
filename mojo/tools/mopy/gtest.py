@@ -197,6 +197,9 @@ def _run_test_with_timeout(config, shell, args, apptest, env, seconds=10):
                             stderr=subprocess42.STDOUT, env=env)
   try:
     output = proc.communicate(timeout=seconds)[0] or ''
+    if proc.duration() > seconds:
+      error.append('ERROR: Test timeout with duration: %s.' % proc.duration())
+      raise subprocess42.TimeoutExpired(proc.args, seconds, output, None)
   except subprocess42.TimeoutExpired as e:
     output = e.output or ''
     logging.getLogger().debug('Terminating the test for timeout.')
