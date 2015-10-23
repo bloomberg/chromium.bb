@@ -78,9 +78,30 @@ source_set("proxy") {
   ]
 }
 
+source_set("media_client") {
+  if (is_android) {
+    sources = [
+      "android_mojo_media_client.cc",
+    ]
+  } else {
+    sources = [
+      "default_mojo_media_client.cc",
+    ]
+  }
+
+  public_configs = [ ":enable_mojo_media_config" ]
+
+  deps = [
+    "//base",
+    "//media",
+    "//media:shared_memory_support",
+  ]
+}
+
 source_set("cdm_service") {
   deps = [
     ":converters",
+    ":media_client",
     "//base",
     "//media",
     "//media/mojo/interfaces",
@@ -103,8 +124,7 @@ source_set("cdm_service") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-# Renderer service; without a specific config.
-source_set("renderer_service_generic") {
+source_set("renderer_service") {
   sources = [
     "demuxer_stream_provider_shim.cc",
     "demuxer_stream_provider_shim.h",
@@ -118,27 +138,12 @@ source_set("renderer_service_generic") {
 
   deps = [
     ":converters",
+    ":media_client",
     "//base",
     "//media",
     "//media/mojo/interfaces",
     "//media:shared_memory_support",
     "//mojo/common",
-  ]
-}
-
-# Renderer service with a default config.
-source_set("renderer_service") {
-  sources = [
-    "default_mojo_media_client.cc",
-  ]
-
-  public_configs = [ ":enable_mojo_media_config" ]
-
-  deps = [
-    ":renderer_service_generic",
-    "//base",
-    "//media",
-    "//media:shared_memory_support",
   ]
 }
 

@@ -6,6 +6,45 @@
 
 namespace media {
 
+// PlatformMojoMediaClient default implementations.
+
+PlatformMojoMediaClient::~PlatformMojoMediaClient(){};
+
+scoped_ptr<RendererFactory> PlatformMojoMediaClient::CreateRendererFactory(
+    const scoped_refptr<MediaLog>& media_log) {
+  return nullptr;
+};
+
+ScopedVector<AudioDecoder> PlatformMojoMediaClient::CreateAudioDecoders(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<MediaLog>& media_log) {
+  return ScopedVector<AudioDecoder>();
+};
+
+ScopedVector<VideoDecoder> PlatformMojoMediaClient::CreateVideoDecoders(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<MediaLog>& media_log) {
+  return ScopedVector<VideoDecoder>();
+}
+
+scoped_refptr<AudioRendererSink>
+PlatformMojoMediaClient::CreateAudioRendererSink() {
+  return nullptr;
+};
+
+scoped_ptr<VideoRendererSink> PlatformMojoMediaClient::CreateVideoRendererSink(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  return nullptr;
+}
+
+const AudioHardwareConfig* PlatformMojoMediaClient::GetAudioHardwareConfig() {
+  return nullptr;
+}
+
+scoped_ptr<CdmFactory> PlatformMojoMediaClient::CreateCdmFactory() {
+  return nullptr;
+}
+
 namespace internal {
 extern scoped_ptr<PlatformMojoMediaClient> CreatePlatformMojoMediaClient();
 }  // namespace internal
@@ -44,7 +83,7 @@ scoped_ptr<VideoRendererSink> MojoMediaClient::CreateVideoRendererSink(
   return mojo_media_client_->CreateVideoRendererSink(task_runner);
 }
 
-const AudioHardwareConfig& MojoMediaClient::GetAudioHardwareConfig() {
+const AudioHardwareConfig* MojoMediaClient::GetAudioHardwareConfig() {
   return mojo_media_client_->GetAudioHardwareConfig();
 }
 
@@ -54,6 +93,7 @@ scoped_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory() {
 
 MojoMediaClient::MojoMediaClient()
     : mojo_media_client_(internal::CreatePlatformMojoMediaClient().Pass()) {
+  DCHECK(mojo_media_client_);
 }
 
 MojoMediaClient::~MojoMediaClient() {

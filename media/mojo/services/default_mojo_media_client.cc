@@ -44,20 +44,6 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
                                                       *audio_hardware_config_));
   }
 
-  ScopedVector<AudioDecoder> CreateAudioDecoders(
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<MediaLog>& media_log) override {
-    NOTREACHED();
-    return ScopedVector<AudioDecoder>();
-  }
-
-  ScopedVector<VideoDecoder> CreateVideoDecoders(
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<MediaLog>& media_log) override {
-    NOTREACHED();
-    return ScopedVector<VideoDecoder>();
-  }
-
   scoped_refptr<AudioRendererSink> CreateAudioRendererSink() override {
     return new AudioOutputStreamSink();
   }
@@ -69,8 +55,8 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
                           NullVideoSink::NewFrameCB(), task_runner));
   }
 
-  const AudioHardwareConfig& GetAudioHardwareConfig() override {
-    return *audio_hardware_config_;
+  const AudioHardwareConfig* GetAudioHardwareConfig() override {
+    return audio_hardware_config_.get();
   }
 
   scoped_ptr<CdmFactory> CreateCdmFactory() override {

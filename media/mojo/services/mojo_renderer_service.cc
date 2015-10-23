@@ -53,10 +53,11 @@ MojoRendererService::MojoRendererService(
                                                  audio_renderer_sink_.get(),
                                                  video_renderer_sink_.get());
   } else {
+    DCHECK(mojo_media_client->GetAudioHardwareConfig());
     scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
         task_runner, audio_renderer_sink_.get(),
         mojo_media_client->CreateAudioDecoders(task_runner, media_log).Pass(),
-        mojo_media_client->GetAudioHardwareConfig(), media_log));
+        *mojo_media_client->GetAudioHardwareConfig(), media_log));
     scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
         task_runner, task_runner, video_renderer_sink_.get(),
         mojo_media_client->CreateVideoDecoders(task_runner, media_log).Pass(),

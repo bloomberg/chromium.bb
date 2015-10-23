@@ -190,10 +190,13 @@
 
 #if defined(ENABLE_MOJO_MEDIA)
 #include "media/mojo/services/mojo_cdm_factory.h"
-#include "media/mojo/services/mojo_renderer_factory.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+#endif
+
+#if defined(ENABLE_MOJO_MEDIA) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+#include "media/mojo/services/mojo_renderer_factory.h"
 #else
 #include "media/renderers/default_renderer_factory.h"
 #endif
@@ -2141,10 +2144,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       GetMediaPermission(), initial_cdm);
 
+// TODO(xhwang, watk): Find a better way to specify these ifdef conditions.
 #if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
 #else
-#if defined(ENABLE_MOJO_MEDIA)
+#if defined(ENABLE_MOJO_MEDIA) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaServiceFactory()));
 #else
@@ -2157,7 +2161,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         media_log, render_thread->GetGpuFactories(),
         *render_thread->GetAudioHardwareConfig()));
   }
-#endif  // defined(ENABLE_MOJO_MEDIA)
+#endif  // defined(ENABLE_MOJO_MEDIA) &&
+  // !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 
   return new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, weak_factory_.GetWeakPtr(),

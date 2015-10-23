@@ -165,7 +165,6 @@ CdmContext* MojoCdm::GetCdmContext() {
 }
 
 media::Decryptor* MojoCdm::GetDecryptor() {
-  NOTIMPLEMENTED();
   return nullptr;
 }
 

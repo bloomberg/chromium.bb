@@ -22,7 +22,7 @@ ScopedBrowserCdmPtr BrowserCdmFactoryAndroid::CreateBrowserCdm(
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
   if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
-    NOTREACHED() << "Unsupported key system: " << key_system;
+    NOTREACHED() << "Key system not supported unexpectedly: " << key_system;
     return ScopedBrowserCdmPtr();
   }
 

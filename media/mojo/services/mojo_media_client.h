@@ -23,13 +23,13 @@ namespace media {
 // default configurations for mojo media services.
 class PlatformMojoMediaClient {
  public:
-  virtual ~PlatformMojoMediaClient() {};
+  virtual ~PlatformMojoMediaClient();
 
   // Returns the RendererFactory to be used by MojoRendererService. If returns
   // null, a RendererImpl will be used with audio/video decoders provided in
   // CreateAudioDecoders() and CreateVideoDecoders().
   virtual scoped_ptr<RendererFactory> CreateRendererFactory(
-      const scoped_refptr<MediaLog>& media_log) = 0;
+      const scoped_refptr<MediaLog>& media_log);
 
   // The list of audio or video decoders for use with RendererImpl when
   // CreateRendererFactory() returns null. Ownership of the decoders is passed
@@ -38,22 +38,22 @@ class PlatformMojoMediaClient {
   // status information.
   virtual ScopedVector<AudioDecoder> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<MediaLog>& media_log) = 0;
+      const scoped_refptr<MediaLog>& media_log);
   virtual ScopedVector<VideoDecoder> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<MediaLog>& media_log) = 0;
+      const scoped_refptr<MediaLog>& media_log);
 
   // The output sink used for rendering audio or video respectively.
-  virtual scoped_refptr<AudioRendererSink> CreateAudioRendererSink() = 0;
+  virtual scoped_refptr<AudioRendererSink> CreateAudioRendererSink();
   virtual scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // The platform's audio hardware configuration.  Note, this must remain
   // constant for the lifetime of the PlatformMojoMediaClient.
-  virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
+  virtual const AudioHardwareConfig* GetAudioHardwareConfig();
 
   // Returns the CdmFactory to be used by MojoCdmService.
-  virtual scoped_ptr<CdmFactory> CreateCdmFactory() = 0;
+  virtual scoped_ptr<CdmFactory> CreateCdmFactory();
 };
 
 class MojoMediaClient {
@@ -74,7 +74,7 @@ class MojoMediaClient {
   scoped_refptr<AudioRendererSink> CreateAudioRendererSink();
   scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  const AudioHardwareConfig& GetAudioHardwareConfig();
+  const AudioHardwareConfig* GetAudioHardwareConfig();
   scoped_ptr<CdmFactory> CreateCdmFactory();
 
  private:
