@@ -328,6 +328,7 @@ source_set("test_support") {
   ]
 }
 
+# GYP: blink_heap_unittests
 test("heap_unittests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
@@ -354,6 +355,14 @@ test("heap_unittests") {
     "//third_party/WebKit/Source/wtf:test_support",
     "//content/test:test_support",
   ]
+  if (is_android) {
+    apk_deps = [
+      "//base:base_java",
+      "//content/shell/android:copy_content_shell_assets",
+      "//net/android:net_java",
+    ]
+    apk_asset_location = "$root_build_dir/content_shell/assets"
+  }
 }
 
 test("platform_unittests") {
