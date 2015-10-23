@@ -99,7 +99,7 @@ message TabNavigation {
   // Content state is an opaque blob created by WebKit that represents the
   // state of the page. This includes form entries and scroll position for each
   // frame.
-  optional string state = 5;
+  // optional string state = 5;  // obsolete.
   // The core transition type.
   optional SyncEnums.PageTransition page_transition = 6 [default = TYPED];
   // If this transition was triggered by a redirect, the redirect type.

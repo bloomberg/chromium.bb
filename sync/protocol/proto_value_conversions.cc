@@ -190,7 +190,6 @@ scoped_ptr<base::DictionaryValue> TabNavigationToValue(
   SET_STR(virtual_url);
   SET_STR(referrer);
   SET_STR(title);
-  SET_STR(state);
   SET_ENUM(page_transition, GetPageTransitionString);
   SET_ENUM(redirect_type, GetPageTransitionRedirectTypeString);
   SET_INT32(unique_id);

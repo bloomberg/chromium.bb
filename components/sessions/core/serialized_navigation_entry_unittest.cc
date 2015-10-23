@@ -33,7 +33,6 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_obsolete_referrer_policy(test_data::kReferrerPolicy);
   sync_data.set_correct_referrer_policy(test_data::kReferrerPolicy);
   sync_data.set_title(base::UTF16ToUTF8(test_data::kTitle));
-  sync_data.set_state(test_data::kEncodedPageState);
   sync_data.set_page_transition(
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
   sync_data.set_unique_id(test_data::kUniqueID);
@@ -87,7 +86,6 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(test_data::kReferrerPolicy, navigation.referrer_policy());
   EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
-  EXPECT_EQ(test_data::kEncodedPageState, navigation.encoded_page_state());
   EXPECT_EQ(test_data::kTransitionType, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());
@@ -148,7 +146,6 @@ TEST(SerializedNavigationEntryTest, ToSyncData) {
   EXPECT_EQ(test_data::kVirtualURL.spec(), sync_data.virtual_url());
   EXPECT_EQ(test_data::kReferrerURL.spec(), sync_data.referrer());
   EXPECT_EQ(test_data::kTitle, base::ASCIIToUTF16(sync_data.title()));
-  EXPECT_TRUE(sync_data.state().empty());
   EXPECT_EQ(sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME,
             sync_data.page_transition());
   EXPECT_TRUE(sync_data.has_redirect_type());
