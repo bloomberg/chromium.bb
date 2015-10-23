@@ -204,7 +204,6 @@ interface Document : Node {
     // Non-standard APIs
     [MeasureAs=DocumentDefaultCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);
-    [CallWith=ScriptState, DeprecateAs=DocumentGetCSSCanvasContext] any getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting

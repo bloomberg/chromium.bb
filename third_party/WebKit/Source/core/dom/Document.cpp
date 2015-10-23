@@ -592,8 +592,6 @@ void Document::dispose()
 
     m_markers->clear();
 
-    m_cssCanvasElements.clear();
-
     // FIXME: consider using ActiveDOMObject.
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->clearDocumentPointer();
@@ -4910,28 +4908,6 @@ void Document::detachRange(Range* range)
     // We don't ASSERT m_ranges.contains(range) to allow us to call this
     // unconditionally to fix: https://bugs.webkit.org/show_bug.cgi?id=26044
     m_ranges.remove(range);
-}
-
-ScriptValue Document::getCSSCanvasContext(ScriptState* scriptState, const String& type, const String& name, int width, int height)
-{
-    HTMLCanvasElement& element = getCSSCanvasElement(name);
-    element.setSize(IntSize(width, height));
-    CanvasRenderingContext* context = element.getCanvasRenderingContext(type, CanvasContextCreationAttributes());
-    if (!context) {
-        return ScriptValue::createNull(scriptState);
-    }
-
-    return ScriptValue(scriptState, toV8(context, scriptState->context()->Global(), scriptState->isolate()));
-}
-
-HTMLCanvasElement& Document::getCSSCanvasElement(const String& name)
-{
-    RefPtrWillBeMember<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, nullptr).storedValue->value;
-    if (!element) {
-        element = HTMLCanvasElement::create(*this);
-        element->setAccelerationDisabled(true);
-    }
-    return *element;
 }
 
 void Document::initDNSPrefetch()

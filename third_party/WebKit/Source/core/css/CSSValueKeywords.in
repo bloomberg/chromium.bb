@@ -970,7 +970,6 @@ linear-gradient
 radial-gradient
 repeating-linear-gradient
 repeating-radial-gradient
--webkit-canvas
 -webkit-cross-fade
 -webkit-gradient
 -webkit-linear-gradient

@@ -788,7 +788,6 @@ interface Document
     method evaluate
     method execCommand
     method exitPointerLock
-    method getCSSCanvasContext
     method getElementById
     method getElementsByClassName
     method getElementsByName

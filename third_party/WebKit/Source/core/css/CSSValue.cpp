@@ -29,7 +29,6 @@
 
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCounterValue.h"
@@ -109,8 +108,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSBasicShapeInsetValue>(*this, other);
         case BorderImageSliceClass:
             return compareCSSValues<CSSBorderImageSliceValue>(*this, other);
-        case CanvasClass:
-            return compareCSSValues<CSSCanvasValue>(*this, other);
         case ColorClass:
             return compareCSSValues<CSSColorValue>(*this, other);
         case CounterClass:
@@ -193,8 +190,6 @@ String CSSValue::cssText() const
         return toCSSBasicShapeInsetValue(this)->customCSSText();
     case BorderImageSliceClass:
         return toCSSBorderImageSliceValue(this)->customCSSText();
-    case CanvasClass:
-        return toCSSCanvasValue(this)->customCSSText();
     case ColorClass:
         return toCSSColorValue(this)->customCSSText();
     case CounterClass:
@@ -279,9 +274,6 @@ void CSSValue::destroy()
         return;
     case BorderImageSliceClass:
         delete toCSSBorderImageSliceValue(this);
-        return;
-    case CanvasClass:
-        delete toCSSCanvasValue(this);
         return;
     case ColorClass:
         delete toCSSColorValue(this);
@@ -398,9 +390,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
         return;
-    case CanvasClass:
-        toCSSCanvasValue(this)->~CSSCanvasValue();
-        return;
     case ColorClass:
         toCSSColorValue(this)->~CSSColorValue();
         return;
@@ -515,9 +504,6 @@ DEFINE_TRACE(CSSValue)
         return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->traceAfterDispatch(visitor);
-        return;
-    case CanvasClass:
-        toCSSCanvasValue(this)->traceAfterDispatch(visitor);
         return;
     case ColorClass:
         toCSSColorValue(this)->traceAfterDispatch(visitor);

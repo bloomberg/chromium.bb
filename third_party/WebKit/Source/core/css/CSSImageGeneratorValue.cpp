@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/css/CSSImageGeneratorValue.h"
 
-#include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "platform/graphics/Image.h"
@@ -130,8 +129,6 @@ void CSSImageGeneratorValue::putImage(const IntSize& size, PassRefPtr<Image> ima
 PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject* layoutObject, const IntSize& size)
 {
     switch (classType()) {
-    case CanvasClass:
-        return toCSSCanvasValue(this)->image(layoutObject, size);
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->image(layoutObject, size);
     case LinearGradientClass:
@@ -147,8 +144,6 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject* layoutObject
 bool CSSImageGeneratorValue::isFixedSize() const
 {
     switch (classType()) {
-    case CanvasClass:
-        return toCSSCanvasValue(this)->isFixedSize();
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->isFixedSize();
     case LinearGradientClass:
@@ -164,8 +159,6 @@ bool CSSImageGeneratorValue::isFixedSize() const
 IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject)
 {
     switch (classType()) {
-    case CanvasClass:
-        return toCSSCanvasValue(this)->fixedSize(layoutObject);
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->fixedSize(layoutObject);
     case LinearGradientClass:
@@ -183,8 +176,6 @@ bool CSSImageGeneratorValue::isPending() const
     switch (classType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->isPending();
-    case CanvasClass:
-        return toCSSCanvasValue(this)->isPending();
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->isPending();
     case RadialGradientClass:
@@ -200,8 +191,6 @@ bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* layoutObject) c
     switch (classType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->knownToBeOpaque(layoutObject);
-    case CanvasClass:
-        return false;
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->knownToBeOpaque(layoutObject);
     case RadialGradientClass:
@@ -217,9 +206,6 @@ void CSSImageGeneratorValue::loadSubimages(Document* document)
     switch (classType()) {
     case CrossfadeClass:
         toCSSCrossfadeValue(this)->loadSubimages(document);
-        break;
-    case CanvasClass:
-        toCSSCanvasValue(this)->loadSubimages(document);
         break;
     case LinearGradientClass:
         toCSSLinearGradientValue(this)->loadSubimages(document);

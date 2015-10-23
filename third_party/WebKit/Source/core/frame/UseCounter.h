@@ -324,7 +324,7 @@ public:
         PrefixedMouseEventMovementY = 383,
         PrefixedFileRelativePath = 386,
         DocumentCaretRangeFromPoint = 387,
-        DocumentGetCSSCanvasContext = 388,
+        // DocumentGetCSSCanvasContext = 388,
         ElementScrollIntoViewIfNeeded = 389,
         RangeExpand = 393,
         HTMLImageElementX = 396,

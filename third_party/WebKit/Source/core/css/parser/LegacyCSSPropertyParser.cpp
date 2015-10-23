@@ -30,7 +30,6 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImage.h"
-#include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
@@ -305,7 +304,6 @@ static bool isGeneratedImageValue(CSSParserValue* val)
         || id == CSSValueWebkitRepeatingLinearGradient
         || id == CSSValueWebkitRepeatingRadialGradient
         || id == CSSValueWebkitGradient
-        || id == CSSValueWebkitCanvas
         || id == CSSValueWebkitCrossFade;
 }
 
@@ -5722,9 +5720,6 @@ bool CSSPropertyParser::parseGeneratedImage(CSSParserValueList* valueList, RefPt
     if (val->function->id == CSSValueRepeatingRadialGradient)
         return parseRadialGradient(valueList, value, Repeating);
 
-    if (val->function->id == CSSValueWebkitCanvas)
-        return parseCanvas(valueList, value);
-
     if (val->function->id == CSSValueWebkitCrossFade)
         return parseCrossfade(valueList, value);
 
@@ -5771,22 +5766,6 @@ bool CSSPropertyParser::parseCrossfade(CSSParserValueList* valueList, RefPtrWill
 
     crossfade = CSSCrossfadeValue::create(fromImageValue, toImageValue, percentage);
 
-    return true;
-}
-
-bool CSSPropertyParser::parseCanvas(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& canvas)
-{
-    // Walk the arguments.
-    CSSParserValueList* args = valueList->current()->function->args.get();
-    if (!args || args->size() != 1)
-        return false;
-
-    // The first argument is the canvas name.  It is an identifier.
-    CSSParserValue* value = args->current();
-    if (!value || value->m_unit != CSSParserValue::Identifier)
-        return false;
-
-    canvas = CSSCanvasValue::create(value->string);
     return true;
 }
 

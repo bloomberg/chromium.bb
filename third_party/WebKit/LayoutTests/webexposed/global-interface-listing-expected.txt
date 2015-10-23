@@ -1078,7 +1078,6 @@ interface Document
     method execCommand
     method exitFullscreen
     method exitPointerLock
-    method getCSSCanvasContext
     method getElementById
     method getElementsByClassName
     method getElementsByName

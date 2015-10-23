@@ -104,14 +104,11 @@ PassRefPtr<Image> createTransparentImage(const IntSize& size)
 
 } // namespace
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CanvasObserver);
-
 inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(canvasTag, document)
     , DocumentVisibilityObserver(document)
     , m_size(DefaultWidth, DefaultHeight)
     , m_ignoreReset(false)
-    , m_accelerationDisabled(false)
     , m_externallyAllocatedMemory(0)
     , m_originClean(true)
     , m_didFailToCreateImageBuffer(false)
@@ -126,8 +123,6 @@ HTMLCanvasElement::~HTMLCanvasElement()
 {
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
 #if !ENABLE(OILPAN)
-    for (CanvasObserver* canvasObserver : m_observers)
-        canvasObserver->canvasDestroyed(this);
     // Ensure these go away before the ImageBuffer.
     m_context.clear();
 #endif
@@ -179,16 +174,6 @@ Node::InsertionNotificationRequest HTMLCanvasElement::insertedInto(ContainerNode
 {
     setIsInCanvasSubtree(true);
     return HTMLElement::insertedInto(node);
-}
-
-void HTMLCanvasElement::addObserver(CanvasObserver* observer)
-{
-    m_observers.add(observer);
-}
-
-void HTMLCanvasElement::removeObserver(CanvasObserver* observer)
-{
-    m_observers.remove(observer);
 }
 
 void HTMLCanvasElement::setHeight(int value)
@@ -298,7 +283,6 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
     m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
         buffer()->didDraw(rect);
-    notifyObserversCanvasChanged(rect);
 }
 
 void HTMLCanvasElement::didFinalizeFrame()
@@ -355,12 +339,6 @@ void HTMLCanvasElement::doDeferredPaintInvalidation()
     ASSERT(m_dirtyRect.isEmpty());
 }
 
-void HTMLCanvasElement::notifyObserversCanvasChanged(const FloatRect& rect)
-{
-    for (CanvasObserver* canvasObserver : m_observers)
-        canvasObserver->canvasChanged(this, rect);
-}
-
 void HTMLCanvasElement::reset()
 {
     if (m_ignoreReset)
@@ -411,9 +389,6 @@ void HTMLCanvasElement::reset()
                 layoutObject->setShouldDoFullPaintInvalidation();
         }
     }
-
-    for (CanvasObserver* canvasObserver : m_observers)
-        canvasObserver->canvasResized(this);
 }
 
 bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
@@ -630,9 +605,6 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (m_context && !m_context->is2d())
         return false;
 
-    if (m_accelerationDisabled)
-        return false;
-
     if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
         return false;
 
@@ -695,13 +667,8 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
     *msaaSampleCount = 0;
     if (is3D()) {
         // If 3d, but the use of the canvas will be for non-accelerated content
-        // (such as -webkit-canvas, then then make a non-accelerated
-        // ImageBuffer. This means copying the internal Image will require a
-        // pixel readback, but that is unavoidable in this case.
-        // FIXME: Actually, avoid setting m_accelerationDisabled at all when
-        // doing GPU-based rasterization.
-        if (m_accelerationDisabled)
-            return adoptPtr(new UnacceleratedImageBufferSurface(deviceSize, opacityMode));
+        // then make a non-accelerated ImageBuffer. This means copying the internal
+        // Image will require a pixel readback, but that is unavoidable in this case.
         return adoptPtr(new AcceleratedImageBufferSurface(deviceSize, opacityMode));
     }
 

@@ -898,9 +898,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case EncryptedMediaInsecureOrigin:
         return "requestMediaKeySystemAccess() is deprecated on insecure origins in the specification. Support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
-    case DocumentGetCSSCanvasContext:
-        return "The -webkit-canvas CSS feature is deprecated. Please use a positioned <canvas> element instead.";
-
     case ElementCreateShadowRootMultiple:
         return "Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
 

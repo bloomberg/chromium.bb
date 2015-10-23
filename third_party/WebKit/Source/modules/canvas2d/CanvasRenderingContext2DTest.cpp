@@ -174,30 +174,6 @@ public:
 
 //============================================================================
 
-class MockCanvasObserver final : public NoBaseWillBeGarbageCollectedFinalized<MockCanvasObserver>, public CanvasObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockCanvasObserver);
-public:
-    static PassOwnPtrWillBeRawPtr<MockCanvasObserver> create()
-    {
-        return adoptPtrWillBeNoop(new MockCanvasObserver);
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        CanvasObserver::trace(visitor);
-    }
-
-
-    virtual ~MockCanvasObserver() { }
-    MOCK_METHOD2(canvasChanged, void(HTMLCanvasElement*, const FloatRect&));
-    MOCK_METHOD1(canvasResized, void(HTMLCanvasElement*));
-#if !ENABLE(OILPAN)
-    void canvasDestroyed(HTMLCanvasElement*) override { }
-#endif
-};
-
-//============================================================================
-
 #define TEST_OVERDRAW_SETUP(EXPECTED_OVERDRAWS) \
         OwnPtr<MockImageBufferSurfaceForOverwriteTesting> mockSurface = adoptPtr(new MockImageBufferSurfaceForOverwriteTesting(IntSize(10, 10), NonOpaque)); \
         MockImageBufferSurfaceForOverwriteTesting* surfacePtr = mockSurface.get(); \
@@ -613,21 +589,6 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
         context2d()->translate(1.0f, 0.0f);
     }
     canvasElement().doDeferredPaintInvalidation(); // To close the current frame
-}
-
-TEST_F(CanvasRenderingContext2DTest, CanvasObserver)
-{
-    createContext(NonOpaque);
-    OwnPtrWillBeRawPtr<MockCanvasObserver> observer = MockCanvasObserver::create();
-    canvasElement().addObserver(observer.get());
-
-    // The canvasChanged notification must be immediate, and not deferred until paint time
-    // because offscreen canvases, which are not painted, also need to emit notifications.
-    EXPECT_CALL(*observer, canvasChanged(&canvasElement(), FloatRect(0, 0, 1, 1))).Times(1);
-    context2d()->fillRect(0, 0, 1, 1);
-    Mock::VerifyAndClearExpectations(observer.get());
-
-    canvasElement().removeObserver(observer.get());
 }
 
 } // namespace blink

@@ -232,8 +232,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValueList> parsePositionList(CSSParserValueList*);
 
     // Image generators
-    bool parseCanvas(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
-
     bool parseDeprecatedGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
     bool parseDeprecatedLinearGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
     bool parseDeprecatedRadialGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
