@@ -60,6 +60,8 @@ public:
 
     void onMemoryDump(WebProcessMemoryDump*) const override;
 
+    void destroyDecodedDataForFailedRevalidation() override;
+
     const String& script();
 
     AtomicString mimeType() const;

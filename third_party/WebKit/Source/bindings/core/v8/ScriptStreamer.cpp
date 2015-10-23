@@ -650,7 +650,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, PendingScript
         Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), NotHTTP, NotStreamingReasonEnd);
         return false;
     }
-    if (resource->resourceToRevalidate()) {
+    if (resource->isCacheValidator()) {
         Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), Reload, NotStreamingReasonEnd);
         // This happens e.g., during reloads. We're actually not going to load
         // the current Resource of the PendingScript but switch to another

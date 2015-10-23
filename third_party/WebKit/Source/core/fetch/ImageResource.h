@@ -119,6 +119,7 @@ public:
 protected:
     bool isSafeToUnlock() const override;
     void destroyDecodedDataIfPossible() override;
+    void destroyDecodedDataForFailedRevalidation() override;
 
 private:
     class ImageResourceFactory : public ResourceFactory {
