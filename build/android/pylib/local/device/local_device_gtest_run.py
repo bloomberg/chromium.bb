@@ -91,7 +91,7 @@ def _ExtractTestsFromFilter(gtest_filter):
 
   if '*' in gtest_filter:
     return None
-  return patterns
+  return [p for p in patterns if p]  # Ignore empty entries.
 
 
 class _ApkDelegate(object):
