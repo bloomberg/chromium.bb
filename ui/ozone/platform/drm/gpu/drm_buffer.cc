@@ -13,8 +13,6 @@ namespace ui {
 
 namespace {
 
-// Modesetting cannot happen from a buffer with transparencies. Return the size
-// of a pixel without alpha.
 uint8_t GetColorDepth(SkColorType type) {
   switch (type) {
     case kUnknown_SkColorType:
@@ -25,16 +23,15 @@ uint8_t GetColorDepth(SkColorType type) {
     case kRGB_565_SkColorType:
       return 16;
     case kARGB_4444_SkColorType:
-      return 12;
+      return 16;
     case kN32_SkColorType:
-      return 24;
+      return 32;
     default:
       NOTREACHED();
       return 0;
   }
 }
 
-// We always ignore Alpha.
 uint32_t GetFourCCCodeForSkColorType(SkColorType type) {
   switch (type) {
     case kUnknown_SkColorType:
@@ -45,9 +42,9 @@ uint32_t GetFourCCCodeForSkColorType(SkColorType type) {
     case kRGB_565_SkColorType:
       return DRM_FORMAT_RGB565;
     case kARGB_4444_SkColorType:
-      return DRM_FORMAT_XRGB4444;
+      return DRM_FORMAT_ARGB4444;
     case kN32_SkColorType:
-      return DRM_FORMAT_XRGB8888;
+      return DRM_FORMAT_ARGB8888;
     default:
       NOTREACHED();
       return 0;
