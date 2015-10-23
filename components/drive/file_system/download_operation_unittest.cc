@@ -120,6 +120,7 @@ TEST_F(DownloadOperationTest,
   fake_free_disk_space_getter()->set_default_value(
       file_size + drive::internal::kMinFreeSpaceInBytes);
   fake_free_disk_space_getter()->PushFakeValue(0);
+  fake_free_disk_space_getter()->PushFakeValue(0);
 
   operation_->EnsureFileDownloadedByPath(
       file_in_root,

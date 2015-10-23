@@ -69,6 +69,10 @@ class FileCache {
             base::SequencedTaskRunner* blocking_task_runner,
             FreeDiskSpaceGetterInterface* free_disk_space_getter);
 
+  // Sets maximum number of evicted cache files for test.
+  void SetMaxNumOfEvictedCacheFilesForTest(
+      size_t max_num_of_evicted_cache_files);
+
   // Returns true if the given path is under drive cache directory, i.e.
   // <user_profile_dir>/GCache/v1
   //
@@ -165,10 +169,9 @@ class FileCache {
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
 
-  // Returns true if we have sufficient space to store the given number of
-  // bytes, while keeping drive::internal::kMinFreeSpaceInBytes bytes on the
-  // disk.
-  bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
+  // Returns available space, while keeping
+  // drive::internal::kMinFreeSpaceInBytes bytes on the disk.
+  int64 GetAvailableSpace();
 
   // Renames cache files from old "prefix:id.md5" format to the new format.
   // TODO(hashimoto): Remove this method at some point.
@@ -190,6 +193,11 @@ class FileCache {
   ResourceMetadataStorage* storage_;
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
+
+  // Maximum number of cache files which can be evicted by a single call of
+  // FreeDiskSpaceIfNeededFor. That method takes O(n) memory space, we need to
+  // set this value not to use up memory.
+  size_t max_num_of_evicted_cache_files_;
 
   // IDs of files being write-opened.
   std::map<std::string, int> write_opened_files_;

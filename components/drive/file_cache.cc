@@ -4,6 +4,7 @@
 
 #include "components/drive/file_cache.h"
 
+#include <queue>
 #include <vector>
 
 #include "base/bind.h"
@@ -35,6 +36,17 @@ std::string GetIdFromPath(const base::FilePath& path) {
   return util::UnescapeCacheFileName(path.BaseName().AsUTF8Unsafe());
 }
 
+typedef std::pair<base::File::Info, ResourceEntry> CacheInfo;
+
+class CacheInfoLatestCompare {
+ public:
+  bool operator()(const CacheInfo& info_a, const CacheInfo& info_b) {
+    return info_a.first.last_accessed < info_b.first.last_accessed;
+  }
+};
+
+const size_t kMaxNumOfEvictedCacheFiles = 30000;
+
 }  // namespace
 
 FileCache::FileCache(ResourceMetadataStorage* storage,
@@ -45,6 +57,7 @@ FileCache::FileCache(ResourceMetadataStorage* storage,
       blocking_task_runner_(blocking_task_runner),
       storage_(storage),
       free_disk_space_getter_(free_disk_space_getter),
+      max_num_of_evicted_cache_files_(kMaxNumOfEvictedCacheFiles),
       weak_ptr_factory_(this) {
   DCHECK(blocking_task_runner_.get());
 }
@@ -53,6 +66,11 @@ FileCache::~FileCache() {
   // Must be on the sequenced worker pool, as |metadata_| must be deleted on
   // the sequenced worker pool.
   AssertOnSequencedWorkerPool();
+}
+
+void FileCache::SetMaxNumOfEvictedCacheFilesForTest(
+    size_t max_num_of_evicted_cache_files) {
+  max_num_of_evicted_cache_files_ = max_num_of_evicted_cache_files;
 }
 
 base::FilePath FileCache::GetCacheFilePath(const std::string& id) const {
@@ -72,23 +90,11 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 
   // Do nothing and return if we have enough space.
-  if (HasEnoughSpaceFor(num_bytes, cache_file_directory_))
+  if (GetAvailableSpace() >= num_bytes)
     return true;
 
   // Otherwise, try to free up the disk space.
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
-
-  // Remove all entries unless specially marked.
-  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
-  for (; !it->IsAtEnd(); it->Advance()) {
-    if (IsEvictable(it->GetID(), it->GetValue())) {
-      ResourceEntry entry(it->GetValue());
-      entry.mutable_file_specific_info()->clear_cache_state();
-      storage_->PutEntry(entry);
-    }
-  }
-  if (it->HasError())
-    return false;
 
   // Remove all files which have no corresponding cache entries.
   base::FileEnumerator enumerator(cache_file_directory_,
@@ -97,18 +103,83 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   ResourceEntry entry;
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
-    std::string id = GetIdFromPath(current);
-    FileError error = storage_->GetEntry(id, &entry);
-    if (error == FILE_ERROR_NOT_FOUND ||
-        (error == FILE_ERROR_OK &&
-         !entry.file_specific_info().cache_state().is_present()))
+    const std::string id = GetIdFromPath(current);
+    const FileError error = storage_->GetEntry(id, &entry);
+
+    if (error == FILE_ERROR_NOT_FOUND)
       base::DeleteFile(current, false /* recursive */);
     else if (error != FILE_ERROR_OK)
       return false;
   }
 
+  // Check available space again. If we have enough space here, do nothing.
+  const int64 available_space = GetAvailableSpace();
+  if (available_space >= num_bytes)
+    return true;
+
+  const int64 requested_space = num_bytes - available_space;
+
+  // Put all entries in priority queue where latest entry becomes top.
+  std::priority_queue<CacheInfo, std::vector<CacheInfo>, CacheInfoLatestCompare>
+      cache_info_queue;
+  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (IsEvictable(it->GetID(), it->GetValue())) {
+      const ResourceEntry& entry = it->GetValue();
+
+      const base::FilePath& cache_path = GetCacheFilePath(entry.local_id());
+      base::File::Info info;
+      // If it fails to get file info of |cache_path|, use default value as its
+      // file info. i.e. the file becomes least recently used one.
+      base::GetFileInfo(cache_path, &info);
+
+      CacheInfo cache_info = std::make_pair(info, entry);
+
+      if (cache_info_queue.size() < max_num_of_evicted_cache_files_) {
+        cache_info_queue.push(cache_info);
+      } else if (cache_info_queue.size() >= max_num_of_evicted_cache_files_ &&
+                 cache_info.first.last_accessed <
+                     cache_info_queue.top().first.last_accessed) {
+        // Do not enqueue more than max_num_of_evicted_cache_files_ not to use
+        // up memory with this queue.
+        cache_info_queue.pop();
+        cache_info_queue.push(cache_info);
+      }
+    }
+  }
+  if (it->HasError())
+    return false;
+
+  // Copy entries to the vector. This becomes last-accessed desc order.
+  std::vector<CacheInfo> cache_info_list;
+  while (!cache_info_queue.empty()) {
+    cache_info_list.push_back(cache_info_queue.top());
+    cache_info_queue.pop();
+  }
+
+  // Update DB and delete files with accessing to the vector in ascending order.
+  int64 evicted_cache_size = 0;
+  auto iter = cache_info_list.rbegin();
+  while (evicted_cache_size < requested_space &&
+         iter != cache_info_list.rend()) {
+    const CacheInfo& cache_info = *iter;
+
+    // Update DB.
+    ResourceEntry entry = cache_info.second;
+    entry.mutable_file_specific_info()->clear_cache_state();
+    storage_->PutEntry(entry);
+
+    // Delete cache file.
+    const base::FilePath& path = GetCacheFilePath(entry.local_id());
+
+    if (base::DeleteFile(path, false /* recursive */))
+      evicted_cache_size += cache_info.first.size;
+
+    ++iter;
+  }
+
   // Check the disk space again.
-  return HasEnoughSpaceFor(num_bytes, cache_file_directory_);
+  return GetAvailableSpace() >= num_bytes;
 }
 
 uint64_t FileCache::CalculateEvictableCacheSize() {
@@ -569,17 +640,16 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
   return FILE_ERROR_OK;
 }
 
-bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
-                                  const base::FilePath& path) {
+int64 FileCache::GetAvailableSpace() {
   int64 free_space = 0;
   if (free_disk_space_getter_)
     free_space = free_disk_space_getter_->AmountOfFreeDiskSpace();
   else
-    free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
+    free_space = base::SysInfo::AmountOfFreeDiskSpace(cache_file_directory_);
 
   // Subtract this as if this portion does not exist.
   free_space -= drive::internal::kMinFreeSpaceInBytes;
-  return (free_space >= num_bytes);
+  return free_space;
 }
 
 bool FileCache::RenameCacheFilesToNewFormat() {

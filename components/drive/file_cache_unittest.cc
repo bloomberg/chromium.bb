@@ -14,7 +14,9 @@
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_test_util.h"
 #include "components/drive/fake_free_disk_space_getter.h"
@@ -29,6 +31,7 @@ namespace internal {
 namespace {
 
 const char kCacheFileDirectory[] = "files";
+const int kTemporaryFileSizeInBytes = 10;
 
 }  // namespace
 
@@ -50,16 +53,35 @@ class FileCacheTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
-    cache_.reset(new FileCache(
-        metadata_storage_.get(),
-        cache_files_dir_,
-        base::ThreadTaskRunnerHandle::Get().get(),
-        fake_free_disk_space_getter_.get()));
+    cache_.reset(new FileCache(metadata_storage_.get(), cache_files_dir_,
+                               base::ThreadTaskRunnerHandle::Get().get(),
+                               fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
   }
 
   static bool RenameCacheFilesToNewFormat(FileCache* cache) {
     return cache->RenameCacheFilesToNewFormat();
+  }
+
+  base::FilePath AddTestEntry(const std::string id,
+                              const std::string md5,
+                              const time_t last_accessed,
+                              const base::FilePath& src_file) {
+    ResourceEntry entry;
+    entry.set_local_id(id);
+    entry.mutable_file_info()->set_last_accessed(last_accessed);
+    EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
+    EXPECT_EQ(FILE_ERROR_OK,
+              cache_->Store(id, md5, src_file, FileCache::FILE_OPERATION_COPY));
+
+    base::FilePath path;
+    EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(id, &path));
+
+    // Update last modified and accessed time.
+    base::Time time = base::Time::FromTimeT(last_accessed);
+    EXPECT_TRUE(base::TouchFile(path, time, time));
+
+    return path;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -130,35 +152,26 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
 
   // Store a file as a 'temporary' file and remember the path.
   const std::string id_tmp = "id_tmp", md5_tmp = "md5_tmp";
-
-  ResourceEntry entry;
-  entry.set_local_id(id_tmp);
-  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
-  ASSERT_EQ(FILE_ERROR_OK,
-            cache_->Store(id_tmp, md5_tmp, src_file,
-                          FileCache::FILE_OPERATION_COPY));
-  base::FilePath tmp_path;
-  ASSERT_EQ(FILE_ERROR_OK, cache_->GetFile(id_tmp, &tmp_path));
+  const time_t last_accessed_tmp = 1;
+  const base::FilePath& tmp_path =
+      AddTestEntry(id_tmp, md5_tmp, last_accessed_tmp, src_file);
 
   // Store a file as a pinned file and remember the path.
   const std::string id_pinned = "id_pinned", md5_pinned = "md5_pinned";
-  entry.Clear();
-  entry.set_local_id(id_pinned);
-  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
-  ASSERT_EQ(FILE_ERROR_OK,
-            cache_->Store(id_pinned, md5_pinned, src_file,
-                          FileCache::FILE_OPERATION_COPY));
+  const time_t last_accessed_pinned = 1;
+  const base::FilePath& pinned_path =
+      AddTestEntry(id_pinned, md5_pinned, last_accessed_pinned, src_file);
   ASSERT_EQ(FILE_ERROR_OK, cache_->Pin(id_pinned));
-  base::FilePath pinned_path;
-  ASSERT_EQ(FILE_ERROR_OK, cache_->GetFile(id_pinned, &pinned_path));
 
   // Call FreeDiskSpaceIfNeededFor().
   fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
+  fake_free_disk_space_getter_->PushFakeValue(0);
   fake_free_disk_space_getter_->PushFakeValue(0);
   const int64 kNeededBytes = 1;
   EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 
   // Only 'temporary' file gets removed.
+  ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_tmp, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_present());
   EXPECT_FALSE(base::PathExists(tmp_path));
@@ -170,6 +183,147 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   // Returns false when disk space cannot be freed.
   fake_free_disk_space_getter_->set_default_value(0);
   EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
+}
+
+TEST_F(FileCacheTest, EvictDriveCacheInLRU) {
+  // Create temporary file.
+  base::FilePath src_file;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+  ASSERT_EQ(kTemporaryFileSizeInBytes,
+            base::WriteFile(src_file, "abcdefghij", kTemporaryFileSizeInBytes));
+
+  // Add entries.
+  const std::string id_a = "id_a", md5_a = "md5_a";
+  const time_t last_accessed_a = 1;
+  const base::FilePath& a_path =
+      AddTestEntry(id_a, md5_a, last_accessed_a, src_file);
+
+  const std::string id_pinned = "id_pinned", md5_pinned = "md5_pinned";
+  const time_t last_accessed_pinned = 2;
+  const base::FilePath& pinned_path =
+      AddTestEntry(id_pinned, md5_pinned, last_accessed_pinned, src_file);
+  ASSERT_EQ(FILE_ERROR_OK, cache_->Pin(id_pinned));
+
+  const std::string id_b = "id_b", md5_b = "md5_b";
+  const time_t last_accessed_b = 3;
+  const base::FilePath& b_path =
+      AddTestEntry(id_b, md5_b, last_accessed_b, src_file);
+
+  const std::string id_c = "id_c", md5_c = "md5_c";
+  const time_t last_accessed_c = 4;
+  const base::FilePath& c_path =
+      AddTestEntry(id_c, md5_c, last_accessed_c, src_file);
+
+  // Call FreeDiskSpaceIfNeededFor.
+  fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
+  fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
+  fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
+  const int64 kNeededBytes = kTemporaryFileSizeInBytes * 3 / 2;
+  EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
+
+  // Entry A is evicted.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_a, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_FALSE(base::PathExists(a_path));
+
+  // Pinned entry should not be evicted.
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_pinned, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_TRUE(base::PathExists(pinned_path));
+
+  // Entry B is evicted.
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_b, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_FALSE(base::PathExists(b_path));
+
+  // Entry C should not be evicted.
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_c, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_TRUE(base::PathExists(c_path));
+}
+
+// Test case for deleting invalid cache files which don't have corresponding
+// metadata.
+TEST_F(FileCacheTest, EvictInvalidCacheFile) {
+  base::FilePath src_file;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+
+  // Add entries.
+  const std::string id_a = "id_a", md5_a = "md5_a";
+  const time_t last_accessed_a = 1;
+  const base::FilePath& a_path =
+      AddTestEntry(id_a, md5_a, last_accessed_a, src_file);
+
+  const std::string id_b = "id_b", md5_b = "md5_b";
+  const time_t last_accessed_b = 2;
+  const base::FilePath& b_path =
+      AddTestEntry(id_b, md5_b, last_accessed_b, src_file);
+
+  // Remove metadata of entry B.
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->RemoveEntry(id_b));
+
+  // Confirm cache file of entry B exists.
+  ASSERT_TRUE(base::PathExists(b_path));
+
+  // Run FreeDiskSpaceIfNeededFor.
+  fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
+  fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
+  const int64 kNeededBytes = 1;
+  EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
+
+  // Entry A is not evicted.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_a, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_TRUE(base::PathExists(a_path));
+
+  // Entry B is evicted.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, metadata_storage_->GetEntry(id_b, &entry));
+  EXPECT_FALSE(base::PathExists(b_path));
+}
+
+TEST_F(FileCacheTest, TooManyCacheFiles) {
+  const size_t kMaxNumOfEvictedCacheFiles = 50;
+  cache_->SetMaxNumOfEvictedCacheFilesForTest(kMaxNumOfEvictedCacheFiles);
+
+  // Create temporary file.
+  base::FilePath src_file;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+  ASSERT_EQ(kTemporaryFileSizeInBytes,
+            base::WriteFile(src_file, "abcdefghij", kTemporaryFileSizeInBytes));
+
+  // Add kNumOfTestFiles=kMaxNumOfEvictedCacheFiles*2 entries.
+  std::vector<base::FilePath> paths;
+  const int32 kNumOfTestFiles = kMaxNumOfEvictedCacheFiles * 2;
+  for (int i = 0; i < kNumOfTestFiles; ++i) {
+    // Set last accessed in reverse order to the file name. i.e. If you sort
+    // files in name-asc order, they will be last access desc order.
+    paths.push_back(AddTestEntry(
+        base::StringPrintf("id_%02d", i), base::StringPrintf("md5_%02d", i),
+        kNumOfTestFiles - i /* last accessed */, src_file));
+  }
+
+  // Confirm cache files of kNumOfTestFiles actually exist.
+  for (const auto& path : paths) {
+    ASSERT_TRUE(base::PathExists(path)) << path.value();
+  }
+
+  // Try to free kMaxNumOfEvictedCacheFiles * 3 / 2.
+  fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
+  fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
+  fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
+  fake_free_disk_space_getter_->PushFakeValue(
+      kMinFreeSpaceInBytes +
+      (kMaxNumOfEvictedCacheFiles * kTemporaryFileSizeInBytes));
+  const int64 kNeededBytes =
+      (kMaxNumOfEvictedCacheFiles * 3 / 2) * kTemporaryFileSizeInBytes;
+  EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
+
+  for (uint32 i = 0; i < kNumOfTestFiles; ++i) {
+    // Assert that only first kMaxNumOfEvictedCacheFiles exist.
+    ASSERT_EQ(i < kMaxNumOfEvictedCacheFiles, base::PathExists(paths[i]));
+  }
 }
 
 TEST_F(FileCacheTest, GetFile) {
