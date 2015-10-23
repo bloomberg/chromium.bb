@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.ui;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -89,6 +90,7 @@ public class MediaSessionTabHelper {
                                 .setOrigin(origin)
                                 .setTabId(mTab.getId())
                                 .setPrivate(mTab.isIncognito())
+                                .setIcon(R.drawable.audio_playing)
                                 .setListener(mControlsListener));
             }
         };

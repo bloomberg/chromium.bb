@@ -358,13 +358,13 @@ public class MediaNotificationManager {
         // running the app under the Work profile.
         if (mNotificationIcon == null) {
             Drawable notificationIconDrawable = ApiCompatibilityUtils.getUserBadgedIcon(
-                    mContext, R.drawable.audio_playing);
+                    mContext, mMediaNotificationInfo.icon);
             mNotificationIcon = drawableToBitmap(notificationIconDrawable);
         }
 
         if (mNotificationBuilder == null) {
             mNotificationBuilder = new NotificationCompat.Builder(mContext)
-                .setSmallIcon(R.drawable.audio_playing)
+                .setSmallIcon(mMediaNotificationInfo.icon)
                 .setAutoCancel(false)
                 .setLocalOnly(true)
                 .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP));
@@ -384,7 +384,7 @@ public class MediaNotificationManager {
         if (mNotificationIcon != null) {
             contentView.setImageViewBitmap(R.id.icon, mNotificationIcon);
         } else {
-            contentView.setImageViewResource(R.id.icon, R.drawable.audio_playing);
+            contentView.setImageViewResource(R.id.icon, mMediaNotificationInfo.icon);
         }
 
         if (mMediaNotificationInfo.isPaused) {

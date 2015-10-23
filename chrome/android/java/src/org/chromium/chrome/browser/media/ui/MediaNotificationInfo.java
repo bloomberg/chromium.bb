@@ -21,6 +21,7 @@ public class MediaNotificationInfo {
         private String mOrigin = "";
         private int mTabId = Tab.INVALID_TAB_ID;
         private boolean mIsPrivate = true;
+        private int mIcon = -1;
         private MediaNotificationListener mListener = null;
 
         /**
@@ -34,7 +35,13 @@ public class MediaNotificationInfo {
             assert mOrigin != null;
             assert mListener != null;
 
-            return new MediaNotificationInfo(mTitle, mIsPaused, mOrigin, mTabId, mIsPrivate,
+            return new MediaNotificationInfo(
+                    mTitle,
+                    mIsPaused,
+                    mOrigin,
+                    mTabId,
+                    mIsPrivate,
+                    mIcon,
                     mListener);
         }
 
@@ -60,6 +67,11 @@ public class MediaNotificationInfo {
 
         public Builder setPrivate(boolean isPrivate) {
             mIsPrivate = isPrivate;
+            return this;
+        }
+
+        public Builder setIcon(int icon) {
+            mIcon = icon;
             return this;
         }
 
@@ -95,6 +107,11 @@ public class MediaNotificationInfo {
     public final boolean isPrivate;
 
     /**
+     * The id of the notification icon from R.drawable.
+     */
+    public final int icon;
+
+    /**
      * The listener for the control events.
      */
     public final MediaNotificationListener listener;
@@ -114,12 +131,14 @@ public class MediaNotificationInfo {
             String origin,
             int tabId,
             boolean isPrivate,
+            int icon,
             MediaNotificationListener listener) {
         this.title = title;
         this.isPaused = isPaused;
         this.origin = origin;
         this.tabId = tabId;
         this.isPrivate = isPrivate;
+        this.icon = icon;
         this.listener = listener;
     }
 
@@ -132,6 +151,7 @@ public class MediaNotificationInfo {
         return isPaused == other.isPaused
                 && isPrivate == other.isPrivate
                 && tabId == other.tabId
+                && icon == other.icon
                 && TextUtils.equals(title, other.title)
                 && TextUtils.equals(origin, other.origin)
                 && listener.equals(other.listener);
@@ -144,6 +164,7 @@ public class MediaNotificationInfo {
         result = 31 * result + (title == null ? 0 : title.hashCode());
         result = 31 * result + (origin == null ? 0 : origin.hashCode());
         result = 31 * result + tabId;
+        result = 31 * result + icon;
         result = 31 * result + listener.hashCode();
         return result;
     }
