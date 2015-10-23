@@ -10,35 +10,54 @@ function prepareShadowTree() {
     parent.appendChild(
         createDOM('div', {id: 'toplevel'},
             createDOM('div', {id: 'openhost'},
-                createShadowRoot({mode: 'open'},
+                attachShadow({mode: 'open'},
+                    createDOM('div', {id: 'v0host_in_openshadow'},
+                        createShadowRoot(
+                            createDOM('div', {id: 'div_v0_in_open'}))),
                     createDOM('div', {id: 'openhost_in_openshadow'},
-                        createShadowRoot({'mode': 'open'},
+                        attachShadow({'mode': 'open'},
                             createDOM('div', {id: 'div_open_in_open'}))),
                     createDOM('div', {id: 'closedhost_in_openshadow'},
-                        createShadowRoot({'mode': 'closed'},
+                        attachShadow({'mode': 'closed'},
                             createDOM('div', {id: 'div_closed_in_open'}))))),
             createDOM('div', {id: 'closedhost'},
-                createShadowRoot({mode: 'closed'},
+                attachShadow({mode: 'closed'},
+                    createDOM('div', {id: 'v0host_in_closedshadow'},
+                        createShadowRoot(
+                            createDOM('div', {id: 'div_v0_in_closed'}))),
                     createDOM('div', {id: 'openhost_in_closedshadow'},
-                        createShadowRoot({'mode': 'open'},
+                        attachShadow({'mode': 'open'},
                             createDOM('div', {id: 'div_open_in_closed'}))),
                     createDOM('div', {id: 'closedhost_in_closedshadow'},
-                        createShadowRoot({'mode': 'closed'},
-                            createDOM('div', {id: 'div_closed_in_closed'})))))));
+                        attachShadow({'mode': 'closed'},
+                            createDOM('div', {id: 'div_closed_in_closed'}))))),
+            createDOM('div', {id: 'v0host'},
+                createShadowRoot(
+                    createDOM('div', {id: 'v0host_in_v0host'},
+                        createShadowRoot(
+                            createDOM('div', {id: 'div_v0_in_v0'}))),
+                    createDOM('div', {id: 'openhost_in_v0host'},
+                        attachShadow({'mode': 'open'},
+                            createDOM('div', {id: 'div_open_in_v0'}))),
+                    createDOM('div', {id: 'closedhost_in_v0host'},
+                        attachShadow({'mode': 'closed'},
+                            createDOM('div', {id: 'div_closed_in_v0'})))))));
 }
 
 prepareShadowTree();
 
 var parent = document.getElementById('parent');
 var result = parent.querySelectorAll("div /deep/ div /deep/ div");
-shouldBe('result.length', '5');
+shouldBe('result.length', '7');
 
 var expected = [
     'openhost',
-    'openhost_in_openshadow',
-    'div_open_in_open',
-    'closedhost_in_openshadow',
-    'closedhost'
+    'closedhost',
+    'v0host',
+    'v0host_in_v0host',
+    'div_v0_in_v0',
+    'openhost_in_v0host',
+    'closedhost_in_v0host'
 ];
 
 var node;

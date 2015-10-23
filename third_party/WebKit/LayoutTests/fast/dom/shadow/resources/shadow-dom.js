@@ -1,23 +1,29 @@
-// TODO(hayato): Have both createShadowRoot and attachShadow.
 function createShadowRoot()
 {
     var children = Array.prototype.slice.call(arguments);
-    if ((children[0] instanceof Object) && !(children[0] instanceof Node)) {
-        var attributes = {};
-        var parameter = {};
-        for (var key in children[0]) {
-            if (key == 'mode' || key == 'delegatesFocus')
-                parameter[key] = children[0][key];
-            else
-                attributes[key] = children[0][key];
-        }
-        return {'isShadowRoot': true,
-                'parameter': parameter,
-                'attributes': attributes,
-                'children': children.slice(1)};
-    }
+    if ((children[0] instanceof Object) && !(children[0] instanceof Node))
+        return attachShadow.apply(null, children);
     return {'isShadowRoot': true,
             'children': children};
+}
+
+// TODO(kochi): This is not pure attachShadow wrapper, but also handles createShadowRoot()
+// with attributes.
+function attachShadow()
+{
+    var children = Array.prototype.slice.call(arguments);
+    var attributes = {};
+    var parameter = {};
+    for (var key in children[0]) {
+        if (key == 'mode' || key == 'delegatesFocus')
+            parameter[key] = children[0][key];
+        else
+            attributes[key] = children[0][key];
+    }
+    return {'isShadowRoot': true,
+            'parameter': parameter,
+            'attributes': attributes,
+            'children': children.slice(1)};
 }
 
 function createUserAgentShadowRoot()

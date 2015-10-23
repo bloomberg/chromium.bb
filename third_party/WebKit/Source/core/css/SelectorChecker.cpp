@@ -295,24 +295,24 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     return matchSelector(nextContext, result);
 }
 
-static inline bool isOpenShadowRoot(const Node* node)
+static inline bool isV0ShadowRoot(const Node* node)
 {
-    return node && node->isShadowRoot() && toShadowRoot(node)->isOpen();
+    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRootType::V0;
 }
 
 SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult& result) const
 {
-    if (!isOpenShadowRoot(node))
+    if (!isV0ShadowRoot(node))
         return SelectorFailsCompletely;
     if (!context.previousElement)
         return SelectorFailsCompletely;
     return matchSelector(context, result);
 }
 
-static inline Element* parentOrShadowHostElementButDisallowClosedShadowTree(const Element& element)
+static inline Element* parentOrV0ShadowHostElement(const Element& element)
 {
     if (element.parentNode() && element.parentNode()->isShadowRoot()) {
-        if (!toShadowRoot(element.parentNode())->isOpen())
+        if (toShadowRoot(element.parentNode())->type() != ShadowRootType::V0)
             return nullptr;
     }
     return element.parentOrShadowHostElement();
@@ -443,7 +443,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.isSubSelector = false;
             nextContext.inRightmostCompound = false;
 
-            for (nextContext.element = parentOrShadowHostElementButDisallowClosedShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostElementButDisallowClosedShadowTree(*nextContext.element)) {
+            for (nextContext.element = parentOrV0ShadowHostElement(*context.element); nextContext.element; nextContext.element = parentOrV0ShadowHostElement(*nextContext.element)) {
                 Match match = matchSelector(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;

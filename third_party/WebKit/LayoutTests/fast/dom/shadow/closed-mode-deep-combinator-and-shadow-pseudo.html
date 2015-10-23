@@ -9,9 +9,9 @@ function prepareShadowTree(hostId, mode1, mode2, div1, div2, div3) {
     var parent = document.body;
     parent.appendChild(
         createDOM('div', {'id': hostId},
-            createShadowRoot({'mode': mode1},
+            attachShadow({'mode': mode1},
                 createDOM('div', {'id': div1},
-                    createShadowRoot({'mode': mode2},
+                    attachShadow({'mode': mode2},
                         createDOM('div', {'id': div2})),
                     createDOM('div', {'id': div3})))));
 }
@@ -39,13 +39,13 @@ var styleElement = document.getElementById('style1');
 styleElement.textContent = 'div /deep/ div { background-color: blue; }';
 
 backgroundColorShouldBe('host_open_open', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_open/div1', 'rgb(0, 0, 255)');
-backgroundColorShouldBe('host_open_open/div1/div2', 'rgb(0, 0, 255)');
-backgroundColorShouldBe('host_open_open/div1b', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('host_open_open/div1', 'rgba(0, 0, 0, 0)');
+backgroundColorShouldBe('host_open_open/div1/div2', 'rgba(0, 0, 0, 0)');
+backgroundColorShouldBe('host_open_open/div1b', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_closed', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_closed/div3', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('host_open_closed/div3', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_closed/div3/div4', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_closed/div3b', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('host_open_closed/div3b', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5/div6', 'rgba(0, 0, 0, 0)');
@@ -59,13 +59,13 @@ debug('(2/6) ::shadow style rule on top-level document.');
 styleElement.innerHTML = 'div::shadow div { background-color: green; }';
 
 backgroundColorShouldBe('host_open_open', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_open/div1', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host_open_open/div1', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_open/div1/div2', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_open/div1b', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host_open_open/div1b', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_closed', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_closed/div3', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host_open_closed/div3', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_closed/div3/div4', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_closed/div3b', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host_open_closed/div3b', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5/div6', 'rgba(0, 0, 0, 0)');
@@ -80,7 +80,7 @@ styleElement.innerHTML = '';
 var div1 = getNodeInTreeOfTrees('host_open_open/div1');
 div1.insertAdjacentHTML('afterbegin', '<style>div /deep/ div { background-color: blue; }</style>');
 backgroundColorShouldBe('host_open_open/div1', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_open/div1/div2', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('host_open_open/div1/div2', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_open/div1b', 'rgb(0, 0, 255)');
 div1.removeChild(div1.firstElementChild);
 
@@ -94,7 +94,7 @@ div3.removeChild(div3.firstElementChild);
 var div5 = getNodeInTreeOfTrees('host_closed_open/div5');
 div5.insertAdjacentHTML('afterbegin', '<style>div /deep/ div { background-color: blue; }</style>');
 backgroundColorShouldBe('host_closed_open/div5', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_closed_open/div5/div6', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('host_closed_open/div5/div6', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5b', 'rgb(0, 0, 255)');
 div5.removeChild(div5.firstElementChild);
 
@@ -108,7 +108,7 @@ div7.removeChild(div7.firstElementChild);
 debug('(4/6) ::shadow style on shadow tree.');
 div1.insertAdjacentHTML('afterbegin', '<style>div::shadow div { background-color: green; }</style>');
 backgroundColorShouldBe('host_open_open/div1', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_open_open/div1/div2', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host_open_open/div1/div2', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_open_open/div1b', 'rgba(0, 0, 0, 0)');
 div1.removeChild(div1.firstElementChild);
 
@@ -120,7 +120,7 @@ div3.removeChild(div3.firstElementChild);
 
 div5.insertAdjacentHTML('afterbegin', '<style>div::shadow div { background-color: green; }</style>');
 backgroundColorShouldBe('host_closed_open/div5', 'rgba(0, 0, 0, 0)');
-backgroundColorShouldBe('host_closed_open/div5/div6', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host_closed_open/div5/div6', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host_closed_open/div5b', 'rgba(0, 0, 0, 0)');
 div5.removeChild(div5.firstElementChild);
 
@@ -131,24 +131,24 @@ backgroundColorShouldBe('host_closed_closed/div7b', 'rgba(0, 0, 0, 0)');
 div7.removeChild(div7.firstElementChild);
 
 debug('(5/6) /deep/ selector in querySelectorAll()');
-queryResultsShouldBe(host_open_open, 'div /deep/ div', ['div1', 'div2', 'div1b']);
-queryResultsShouldBe(host_open_closed, 'div /deep/ div', ['div3', 'div3b']);
+shouldBe('host_open_open.querySelectorAll("div /deep/ div").length', '0');
+shouldBe('host_open_closed.querySelectorAll("div /deep/ div").length', '0');
 shouldBe('host_closed_open.querySelectorAll("div /deep/ div").length', '0');
 shouldBe('host_closed_closed.querySelectorAll("div /deep/ div").length', '0');
 
-queryResultsShouldBe(div1, 'div /deep/ div', ['div2', 'div1b']);
+queryResultsShouldBe(div1, 'div /deep/ div', ['div1b']);
 queryResultsShouldBe(div3, 'div /deep/ div', ['div3b']);
-queryResultsShouldBe(div5, 'div /deep/ div', ['div6', 'div5b']);
+queryResultsShouldBe(div5, 'div /deep/ div', ['div5b']);
 queryResultsShouldBe(div7, 'div /deep/ div', ['div7b']);
 
 debug('(6/6) ::shadow selector in querySelectorAll()');
-queryResultsShouldBe(host_open_open, 'div::shadow div', ['div1', 'div1b']);
-queryResultsShouldBe(host_open_closed, 'div::shadow div', ['div3', 'div3b']);
+shouldBe('host_open_open.querySelectorAll("div::shadow div").length', '0');
+shouldBe('host_open_closed.querySelectorAll("div::shadow div").length', '0');
 shouldBe('host_closed_open.querySelectorAll("div::shadow div").length', '0');
 shouldBe('host_closed_closed.querySelectorAll("div::shadow div").length', '0');
 
-queryResultsShouldBe(div1, 'div::shadow div', ['div2']);
+shouldBe('div1.querySelectorAll("div::shadow div").length', '0');
 shouldBe('div3.querySelectorAll("div::shadow div").length', '0');
-queryResultsShouldBe(div5, 'div::shadow div', ['div6']);
+shouldBe('div5.querySelectorAll("div::shadow div").length', '0');
 shouldBe('div7.querySelectorAll("div::shadow div").length', '0');
 </script>
