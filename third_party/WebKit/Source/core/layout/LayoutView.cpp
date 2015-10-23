@@ -135,13 +135,12 @@ void LayoutView::clearHitTestCache()
 
 void LayoutView::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit, LogicalExtentComputedValues& computedValues) const
 {
-    computedValues.m_extent = (!shouldUsePrintingLayout() && m_frameView) ? LayoutUnit(viewLogicalHeightForBoxSizing()) : logicalHeight;
+    computedValues.m_extent = viewLogicalHeightForBoxSizing();
 }
 
 void LayoutView::updateLogicalWidth()
 {
-    if (!shouldUsePrintingLayout() && m_frameView)
-        setLogicalWidth(viewLogicalWidthForBoxSizing());
+    setLogicalWidth(viewLogicalWidthForBoxSizing());
 }
 
 bool LayoutView::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
@@ -838,7 +837,10 @@ IntRect LayoutView::documentRect() const
 
 IntSize LayoutView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    if (!m_frameView || shouldUsePrintingLayout())
+    if (shouldUsePrintingLayout())
+        return IntSize(size().width(), pageLogicalHeight());
+
+    if (!m_frameView)
         return IntSize();
 
     IntSize result = m_frameView->layoutSize(IncludeScrollbars);
