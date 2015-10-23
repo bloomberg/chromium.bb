@@ -26,6 +26,10 @@ class SyncServiceObserver {
   // they can use this function.  By default, it re-routes to OnStateChanged().
   virtual void OnSyncCycleCompleted();
 
+  // Called when the sync service has finished the datatype configuration
+  // process.
+  virtual void OnSyncConfigurationCompleted() {}
+
  protected:
   virtual ~SyncServiceObserver() {}
 };

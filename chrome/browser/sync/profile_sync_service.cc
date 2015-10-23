@@ -1504,6 +1504,11 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Notify listeners that configuration is done.
+  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
+                    OnSyncConfigurationCompleted());
+
+  // TODO(blundell): Change listeners of this notification to observe the PSS
+  // instead and remove this notification entirely.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
       content::Source<ProfileSyncService>(this),
