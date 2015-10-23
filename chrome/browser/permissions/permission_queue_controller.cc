@@ -7,15 +7,15 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
+#include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/midi_permission_infobar_delegate.h"
-#include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
+#include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
+#include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/storage/durable_storage_permission_infobar_delegate.h"
+#include "chrome/browser/storage/durable_storage_permission_infobar_delegate_android.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -124,9 +124,9 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
                  embedder_);
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      infobar_ = GeolocationInfoBarDelegate::Create(
-          GetInfoBarService(id_), requesting_frame_,
-          display_languages, callback);
+      infobar_ = GeolocationInfoBarDelegateAndroidAndroid::Create(
+          GetInfoBarService(id_), requesting_frame_, display_languages,
+          callback);
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
@@ -136,19 +136,19 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
       break;
 #endif  // ENABLE_NOTIFICATIONS
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      infobar_ = MidiPermissionInfoBarDelegate::Create(
-          GetInfoBarService(id_), requesting_frame_,
-          display_languages, type_, callback);
+      infobar_ = MidiPermissionInfoBarDelegateAndroid::Create(
+          GetInfoBarService(id_), requesting_frame_, display_languages, type_,
+          callback);
       break;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      infobar_ = ProtectedMediaIdentifierInfoBarDelegate::Create(
-          GetInfoBarService(id_), requesting_frame_,
-          display_languages, callback);
+      infobar_ = ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
+          GetInfoBarService(id_), requesting_frame_, display_languages,
+          callback);
       break;
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      infobar_ = DurableStoragePermissionInfoBarDelegate::Create(
-          GetInfoBarService(id_), requesting_frame_,
-          display_languages, type_, callback);
+      infobar_ = DurableStoragePermissionInfoBarDelegateAndroid::Create(
+          GetInfoBarService(id_), requesting_frame_, display_languages, type_,
+          callback);
       break;
     default:
       NOTREACHED();

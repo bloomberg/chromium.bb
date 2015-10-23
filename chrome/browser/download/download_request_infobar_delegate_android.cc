@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_request_infobar_delegate.h"
+#include "chrome/browser/download/download_request_infobar_delegate_android.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
@@ -10,21 +10,23 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-DownloadRequestInfoBarDelegate::FakeCreateCallback*
-    DownloadRequestInfoBarDelegate::callback_ = NULL;
+DownloadRequestInfoBarDelegateAndroid::FakeCreateCallback*
+    DownloadRequestInfoBarDelegateAndroid::callback_ = NULL;
 
-DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
+DownloadRequestInfoBarDelegateAndroid::
+    ~DownloadRequestInfoBarDelegateAndroid() {
   if (!responded_ && host_)
     host_->CancelOnce();
 }
 
 // static
-void DownloadRequestInfoBarDelegate::Create(
+void DownloadRequestInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
-  if (DownloadRequestInfoBarDelegate::callback_ &&
-      !DownloadRequestInfoBarDelegate::callback_->is_null()) {
-    DownloadRequestInfoBarDelegate::callback_->Run(infobar_service, host);
+  if (DownloadRequestInfoBarDelegateAndroid::callback_ &&
+      !DownloadRequestInfoBarDelegateAndroid::callback_->is_null()) {
+    DownloadRequestInfoBarDelegateAndroid::callback_->Run(infobar_service,
+                                                          host);
   } else if (!infobar_service) {
     // |web_contents| may not have a InfoBarService if it's actually a
     // WebContents like those used for extension popups/bubbles and hosted apps
@@ -38,38 +40,36 @@ void DownloadRequestInfoBarDelegate::Create(
   } else {
     infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
         scoped_ptr<ConfirmInfoBarDelegate>(
-            new DownloadRequestInfoBarDelegate(host))));
+            new DownloadRequestInfoBarDelegateAndroid(host))));
   }
 }
 
 // static
-void DownloadRequestInfoBarDelegate::SetCallbackForTesting(
+void DownloadRequestInfoBarDelegateAndroid::SetCallbackForTesting(
     FakeCreateCallback* callback) {
-  DownloadRequestInfoBarDelegate::callback_ = callback;
+  DownloadRequestInfoBarDelegateAndroid::callback_ = callback;
 }
 
-DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
+DownloadRequestInfoBarDelegateAndroid::DownloadRequestInfoBarDelegateAndroid(
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
-    : ConfirmInfoBarDelegate(),
-      responded_(false),
-      host_(host) {
-}
+    : ConfirmInfoBarDelegate(), responded_(false), host_(host) {}
 
-int DownloadRequestInfoBarDelegate::GetIconId() const {
+int DownloadRequestInfoBarDelegateAndroid::GetIconId() const {
   return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
 }
 
-base::string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
+base::string16 DownloadRequestInfoBarDelegateAndroid::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
 }
 
-base::string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
+base::string16 DownloadRequestInfoBarDelegateAndroid::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_MULTI_DOWNLOAD_WARNING_ALLOW : IDS_MULTI_DOWNLOAD_WARNING_BLOCK);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK)
+                                       ? IDS_MULTI_DOWNLOAD_WARNING_ALLOW
+                                       : IDS_MULTI_DOWNLOAD_WARNING_BLOCK);
 }
 
-bool DownloadRequestInfoBarDelegate::Accept() {
+bool DownloadRequestInfoBarDelegateAndroid::Accept() {
   DCHECK(!responded_);
   responded_ = true;
   if (host_) {
@@ -79,7 +79,7 @@ bool DownloadRequestInfoBarDelegate::Accept() {
   return !host_;
 }
 
-bool DownloadRequestInfoBarDelegate::Cancel() {
+bool DownloadRequestInfoBarDelegateAndroid::Cancel() {
   DCHECK(!responded_);
   responded_ = true;
   if (host_) {

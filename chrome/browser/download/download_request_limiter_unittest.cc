@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/download/download_request_infobar_delegate.h"
+#include "chrome/browser/download/download_request_infobar_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #else
 #include "chrome/browser/download/download_permission_request.h"
@@ -107,7 +107,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     InfoBarService::CreateForWebContents(web_contents());
     fake_create_callback_ = base::Bind(
         &DownloadRequestLimiterTest::FakeCreate, base::Unretained(this));
-    DownloadRequestInfoBarDelegate::SetCallbackForTesting(
+    DownloadRequestInfoBarDelegateAndroid::SetCallbackForTesting(
         &fake_create_callback_);
 #endif
 
@@ -151,7 +151,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void UnsetDelegate() {
-    DownloadRequestInfoBarDelegate::SetCallbackForTesting(NULL);
+    DownloadRequestInfoBarDelegateAndroid::SetCallbackForTesting(NULL);
   }
 #endif
 
@@ -233,7 +233,8 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
  private:
 #if defined(OS_ANDROID)
-  DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
+  DownloadRequestInfoBarDelegateAndroid::FakeCreateCallback
+      fake_create_callback_;
 #endif
 
   scoped_ptr<TestingProfile> profile_;

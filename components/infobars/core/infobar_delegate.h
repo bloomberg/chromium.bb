@@ -12,7 +12,6 @@
 class ConfirmInfoBarDelegate;
 class HungRendererInfoBarDelegate;
 class InsecureContentInfoBarDelegate;
-class MediaStreamInfoBarDelegate;
 class NativeAppInfoBarDelegate;
 class PermissionInfobarDelegate;
 class PopupBlockedInfoBarDelegate;
@@ -22,6 +21,7 @@ class ThemeInstalledInfoBarDelegate;
 class ThreeDAPIInfoBarDelegate;
 
 #if defined(OS_ANDROID)
+class MediaStreamInfoBarDelegateAndroid;
 class MediaThrottleInfoBarDelegate;
 #endif
 
@@ -124,7 +124,6 @@ class InfoBarDelegate {
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
-  virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate();
   virtual NativeAppInfoBarDelegate* AsNativeAppInfoBarDelegate();
   virtual PermissionInfobarDelegate* AsPermissionInfobarDelegate();
   virtual PopupBlockedInfoBarDelegate* AsPopupBlockedInfoBarDelegate();
@@ -135,6 +134,8 @@ class InfoBarDelegate {
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 #if defined(OS_ANDROID)
+  virtual MediaStreamInfoBarDelegateAndroid*
+  AsMediaStreamInfoBarDelegateAndroid();
   virtual MediaThrottleInfoBarDelegate* AsMediaThrottleInfoBarDelegate();
 #endif
 

@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -22,6 +21,10 @@
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/media/media_stream_infobar_delegate_android.h"
+#endif
 
 // InfoBarService -------------------------------------------------------------
 
@@ -67,9 +70,10 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
   if (delegate->AsPermissionInfobarDelegate()) {
     content_settings.push_back(
         delegate->AsPermissionInfobarDelegate()->content_setting());
-  } else if (delegate->AsMediaStreamInfoBarDelegate()) {
-    MediaStreamInfoBarDelegate* media_delegate =
-        delegate->AsMediaStreamInfoBarDelegate();
+#if defined(OS_ANDROID)
+  } else if (delegate->AsMediaStreamInfoBarDelegateAndroid()) {
+    MediaStreamInfoBarDelegateAndroid* media_delegate =
+        delegate->AsMediaStreamInfoBarDelegateAndroid();
     if (media_delegate->IsRequestingVideoAccess()) {
       content_settings.push_back(
           ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
@@ -78,6 +82,7 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
       content_settings.push_back(
           ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
     }
+#endif
   }
 
   content::WebContents* web_contents =

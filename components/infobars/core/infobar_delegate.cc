@@ -90,10 +90,6 @@ InsecureContentInfoBarDelegate*
   return nullptr;
 }
 
-MediaStreamInfoBarDelegate* InfoBarDelegate::AsMediaStreamInfoBarDelegate() {
-  return nullptr;
-}
-
 NativeAppInfoBarDelegate* InfoBarDelegate::AsNativeAppInfoBarDelegate() {
   return nullptr;
 }
@@ -131,6 +127,11 @@ translate::TranslateInfoBarDelegate*
 }
 
 #if defined(OS_ANDROID)
+MediaStreamInfoBarDelegateAndroid*
+InfoBarDelegate::AsMediaStreamInfoBarDelegateAndroid() {
+  return nullptr;
+}
+
 MediaThrottleInfoBarDelegate*
     InfoBarDelegate::AsMediaThrottleInfoBarDelegate() {
   return nullptr;

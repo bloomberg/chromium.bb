@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_infobar_delegate.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
 class DataReductionProxyInfoBar : public ConfirmInfoBar {
@@ -20,7 +20,7 @@ class DataReductionProxyInfoBar : public ConfirmInfoBar {
   static bool Register(JNIEnv* env);
 
   explicit DataReductionProxyInfoBar(
-      scoped_ptr<DataReductionProxyInfoBarDelegate> delegate);
+      scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate);
 
   ~DataReductionProxyInfoBar() override;
 
@@ -29,7 +29,7 @@ class DataReductionProxyInfoBar : public ConfirmInfoBar {
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
 
-  DataReductionProxyInfoBarDelegate* GetDelegate();
+  DataReductionProxyInfoBarDelegateAndroid* GetDelegate();
 
   base::android::ScopedJavaGlobalRef<jobject>
   java_data_reduction_proxy_delegate_;

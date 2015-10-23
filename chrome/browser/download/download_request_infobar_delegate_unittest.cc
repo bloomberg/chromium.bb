@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/download/download_request_infobar_delegate.h"
+#include "chrome/browser/download/download_request_infobar_delegate_android.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +27,7 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
 
  private:
   // The actual infobar delegate we're listening to.
-  scoped_ptr<DownloadRequestInfoBarDelegate> infobar_delegate_;
+  scoped_ptr<DownloadRequestInfoBarDelegateAndroid> infobar_delegate_;
 
   // True if we have gotten some sort of response.
   bool responded_;
@@ -46,8 +46,8 @@ MockTabDownloadState::MockTabDownloadState()
     : responded_(false),
       accepted_(false),
       weak_ptr_factory_(this) {
-  infobar_delegate_ =
-      DownloadRequestInfoBarDelegate::Create(weak_ptr_factory_.GetWeakPtr());
+  infobar_delegate_ = DownloadRequestInfoBarDelegateAndroid::Create(
+      weak_ptr_factory_.GetWeakPtr());
 }
 
 MockTabDownloadState::~MockTabDownloadState() {
@@ -74,21 +74,21 @@ void MockTabDownloadState::CancelOnce() {
 
 // Tests ----------------------------------------------------------------------
 
-TEST(DownloadRequestInfoBarDelegate, AcceptTest) {
+TEST(DownloadRequestInfoBarDelegateAndroid, AcceptTest) {
   MockTabDownloadState state;
   if (state.infobar_delegate()->Accept())
     state.delete_infobar_delegate();
   EXPECT_TRUE(state.accepted());
 }
 
-TEST(DownloadRequestInfoBarDelegate, CancelTest) {
+TEST(DownloadRequestInfoBarDelegateAndroid, CancelTest) {
   MockTabDownloadState state;
   if (state.infobar_delegate()->Cancel())
     state.delete_infobar_delegate();
   EXPECT_FALSE(state.accepted());
 }
 
-TEST(DownloadRequestInfoBarDelegate, CloseTest) {
+TEST(DownloadRequestInfoBarDelegateAndroid, CloseTest) {
   MockTabDownloadState state;
   state.delete_infobar_delegate();
   EXPECT_FALSE(state.accepted());

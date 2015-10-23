@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/media_stream_infobar_delegate_android.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -31,14 +31,12 @@ enum DevicePermissionActions {
 
 }  // namespace
 
-MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {
-}
+MediaStreamInfoBarDelegateAndroid::~MediaStreamInfoBarDelegateAndroid() {}
 
 // static
-bool MediaStreamInfoBarDelegate::Create(
+bool MediaStreamInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents,
     scoped_ptr<MediaStreamDevicesController> controller) {
-
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   if (!infobar_service) {
@@ -50,10 +48,10 @@ bool MediaStreamInfoBarDelegate::Create(
 
   scoped_ptr<infobars::InfoBar> infobar(
       infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new MediaStreamInfoBarDelegate(controller.Pass()))));
+          new MediaStreamInfoBarDelegateAndroid(controller.Pass()))));
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);
-    if (old_infobar->delegate()->AsMediaStreamInfoBarDelegate()) {
+    if (old_infobar->delegate()->AsMediaStreamInfoBarDelegateAndroid()) {
       infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
       return true;
     }
@@ -62,46 +60,45 @@ bool MediaStreamInfoBarDelegate::Create(
   return true;
 }
 
-bool MediaStreamInfoBarDelegate::IsRequestingVideoAccess() const {
+bool MediaStreamInfoBarDelegateAndroid::IsRequestingVideoAccess() const {
   return controller_->IsAskingForVideo();
 }
 
-bool MediaStreamInfoBarDelegate::IsRequestingMicrophoneAccess() const {
+bool MediaStreamInfoBarDelegateAndroid::IsRequestingMicrophoneAccess() const {
   return controller_->IsAskingForAudio();
 }
 
-MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
+MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
     scoped_ptr<MediaStreamDevicesController> controller)
-    : ConfirmInfoBarDelegate(),
-      controller_(controller.Pass()) {
+    : ConfirmInfoBarDelegate(), controller_(controller.Pass()) {
   DCHECK(controller_.get());
   DCHECK(controller_->IsAskingForAudio() || controller_->IsAskingForVideo());
 }
 
 infobars::InfoBarDelegate::Type
-MediaStreamInfoBarDelegate::GetInfoBarType() const {
+MediaStreamInfoBarDelegateAndroid::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-int MediaStreamInfoBarDelegate::GetIconId() const {
+int MediaStreamInfoBarDelegateAndroid::GetIconId() const {
   return controller_->IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
                                          : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }
 
-void MediaStreamInfoBarDelegate::InfoBarDismissed() {
+void MediaStreamInfoBarDelegateAndroid::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.
-  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
-                            kCancel, kPermissionActionsMax);
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions", kCancel,
+                            kPermissionActionsMax);
   controller_->Cancelled();
 }
 
-MediaStreamInfoBarDelegate*
-    MediaStreamInfoBarDelegate::AsMediaStreamInfoBarDelegate() {
+MediaStreamInfoBarDelegateAndroid*
+MediaStreamInfoBarDelegateAndroid::AsMediaStreamInfoBarDelegateAndroid() {
   return this;
 }
 
-base::string16 MediaStreamInfoBarDelegate::GetMessageText() const {
+base::string16 MediaStreamInfoBarDelegateAndroid::GetMessageText() const {
   int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
   if (!controller_->IsAskingForAudio())
     message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
@@ -111,36 +108,37 @@ base::string16 MediaStreamInfoBarDelegate::GetMessageText() const {
       message_id, base::UTF8ToUTF16(controller_->GetSecurityOriginSpec()));
 }
 
-base::string16 MediaStreamInfoBarDelegate::GetButtonLabel(
+base::string16 MediaStreamInfoBarDelegateAndroid::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_MEDIA_CAPTURE_ALLOW : IDS_MEDIA_CAPTURE_BLOCK);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK)
+                                       ? IDS_MEDIA_CAPTURE_ALLOW
+                                       : IDS_MEDIA_CAPTURE_BLOCK);
 }
 
-bool MediaStreamInfoBarDelegate::Accept() {
+bool MediaStreamInfoBarDelegateAndroid::Accept() {
   GURL origin(controller_->GetSecurityOriginSpec());
   if (content::IsOriginSecure(origin)) {
-    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
-                              kAllowHttps, kPermissionActionsMax);
+    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions", kAllowHttps,
+                              kPermissionActionsMax);
   } else {
-    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
-                              kAllowHttp, kPermissionActionsMax);
+    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions", kAllowHttp,
+                              kPermissionActionsMax);
   }
   controller_->PermissionGranted();
   return true;
 }
 
-bool MediaStreamInfoBarDelegate::Cancel() {
-  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
-                            kDeny, kPermissionActionsMax);
+bool MediaStreamInfoBarDelegateAndroid::Cancel() {
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions", kDeny,
+                            kPermissionActionsMax);
   controller_->PermissionDenied();
   return true;
 }
 
-base::string16 MediaStreamInfoBarDelegate::GetLinkText() const {
+base::string16 MediaStreamInfoBarDelegateAndroid::GetLinkText() const {
   return base::string16();
 }
 
-GURL MediaStreamInfoBarDelegate::GetLinkURL() const {
+GURL MediaStreamInfoBarDelegateAndroid::GetLinkURL() const {
   return GURL(chrome::kMediaAccessLearnMoreUrl);
 }

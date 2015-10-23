@@ -21,7 +21,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #else
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
@@ -159,7 +159,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   }
 
 #if defined(OS_ANDROID)
-  MediaStreamInfoBarDelegate::Create(web_contents, controller.Pass());
+  MediaStreamInfoBarDelegateAndroid::Create(web_contents, controller.Pass());
 #else
   PermissionBubbleManager* bubble_manager =
       PermissionBubbleManager::FromWebContents(web_contents);

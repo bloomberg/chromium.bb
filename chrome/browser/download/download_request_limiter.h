@@ -19,7 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class HostContentSettingsMap;
-class DownloadRequestInfoBarDelegate;
+class DownloadRequestInfoBarDelegateAndroid;
 
 namespace content {
 class NavigationController;

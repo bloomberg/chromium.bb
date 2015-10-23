@@ -25,7 +25,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/download/download_request_infobar_delegate.h"
+#include "chrome/browser/download/download_request_infobar_delegate_android.h"
 #else
 #include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
@@ -134,7 +134,7 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     return;
 
 #if defined(OS_ANDROID)
-  DownloadRequestInfoBarDelegate::Create(
+  DownloadRequestInfoBarDelegateAndroid::Create(
       InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
 #else
   PermissionBubbleManager* bubble_manager =

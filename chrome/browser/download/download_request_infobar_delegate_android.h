@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
@@ -16,14 +16,14 @@ class InfoBarService;
 // multiple downloads from the same site. This confirmation step protects
 // against "carpet-bombing", where a malicious site forces multiple downloads
 // on an unsuspecting user.
-class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
+class DownloadRequestInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
  public:
   typedef base::Callback<void(
       InfoBarService* infobar_service,
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)>
-    FakeCreateCallback;
+      FakeCreateCallback;
 
-  ~DownloadRequestInfoBarDelegate() override;
+  ~DownloadRequestInfoBarDelegateAndroid() override;
 
   // Creates a download request delegate and adds it to |infobar_service|.
   static void Create(
@@ -31,10 +31,10 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
 
 #if defined(UNIT_TEST)
-  static scoped_ptr<DownloadRequestInfoBarDelegate> Create(
+  static scoped_ptr<DownloadRequestInfoBarDelegateAndroid> Create(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
-    return scoped_ptr<DownloadRequestInfoBarDelegate>(
-        new DownloadRequestInfoBarDelegate(host));
+    return scoped_ptr<DownloadRequestInfoBarDelegateAndroid>(
+        new DownloadRequestInfoBarDelegateAndroid(host));
   }
 #endif
 
@@ -43,7 +43,7 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   static FakeCreateCallback* callback_;
 
-  explicit DownloadRequestInfoBarDelegate(
+  explicit DownloadRequestInfoBarDelegateAndroid(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
 
   // ConfirmInfoBarDelegate:
@@ -56,7 +56,7 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool responded_;
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfoBarDelegateAndroid);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID_H_

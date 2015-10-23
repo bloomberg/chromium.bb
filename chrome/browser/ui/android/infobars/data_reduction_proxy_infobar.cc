@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_infobar_delegate.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_infobar_delegate_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/DataReductionProxyInfoBarDelegate_jni.h"
 
@@ -20,7 +20,7 @@ void DataReductionProxyInfoBar::Launch(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  DataReductionProxyInfoBarDelegate::Create(
+  DataReductionProxyInfoBarDelegateAndroid::Create(
       web_contents, base::android::ConvertJavaStringToUTF8(env, jlink_url));
 }
 
@@ -30,9 +30,8 @@ bool DataReductionProxyInfoBar::Register(JNIEnv* env) {
 }
 
 DataReductionProxyInfoBar::DataReductionProxyInfoBar(
-    scoped_ptr<DataReductionProxyInfoBarDelegate> delegate)
-    : ConfirmInfoBar(delegate.Pass()), java_data_reduction_proxy_delegate_() {
-}
+    scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate)
+    : ConfirmInfoBar(delegate.Pass()), java_data_reduction_proxy_delegate_() {}
 
 DataReductionProxyInfoBar::~DataReductionProxyInfoBar() {
 }
@@ -46,21 +45,21 @@ DataReductionProxyInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, java_data_reduction_proxy_delegate_.obj(), GetEnumeratedIconId());
 }
 
-DataReductionProxyInfoBarDelegate* DataReductionProxyInfoBar::GetDelegate() {
-  return static_cast<DataReductionProxyInfoBarDelegate*>(delegate());
+DataReductionProxyInfoBarDelegateAndroid*
+DataReductionProxyInfoBar::GetDelegate() {
+  return static_cast<DataReductionProxyInfoBarDelegateAndroid*>(delegate());
 }
-
 
 // DataReductionProxyInfoBarDelegate:
 
 // static
-scoped_ptr<infobars::InfoBar> DataReductionProxyInfoBarDelegate::CreateInfoBar(
+scoped_ptr<infobars::InfoBar>
+DataReductionProxyInfoBarDelegateAndroid::CreateInfoBar(
     infobars::InfoBarManager* infobar_manager,
-    scoped_ptr<DataReductionProxyInfoBarDelegate> delegate) {
+    scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate) {
   return scoped_ptr<infobars::InfoBar>(
       new DataReductionProxyInfoBar(delegate.Pass()));
 }
-
 
 // JNI for DataReductionProxyInfoBarDelegate.
 void Launch(JNIEnv* env,
