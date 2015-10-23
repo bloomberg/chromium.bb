@@ -14,7 +14,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimLayerTreeView.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -44,8 +43,9 @@ static void paintFrames(LocalFrame& root, SimDisplayItemList& displayList)
     }
 }
 
-SimCompositor::SimCompositor(SimLayerTreeView& layerTreeView)
-    : m_layerTreeView(&layerTreeView)
+SimCompositor::SimCompositor()
+    : m_needsAnimate(false)
+    , m_deferCommits(true)
     , m_webViewImpl(0)
     , m_lastFrameTimeMonotonic(0)
 {
@@ -66,12 +66,22 @@ void SimCompositor::setWebViewImpl(WebViewImpl& webViewImpl)
     m_webViewImpl = &webViewImpl;
 }
 
+void SimCompositor::setNeedsAnimate()
+{
+    m_needsAnimate = true;
+}
+
+void SimCompositor::setDeferCommits(bool deferCommits)
+{
+    m_deferCommits = deferCommits;
+}
+
 SimDisplayItemList SimCompositor::beginFrame()
 {
     ASSERT(m_webViewImpl);
-    ASSERT(!m_layerTreeView->deferCommits());
-    ASSERT(m_layerTreeView->needsAnimate());
-    m_layerTreeView->clearNeedsAnimate();
+    ASSERT(!m_deferCommits);
+    ASSERT(m_needsAnimate);
+    m_needsAnimate = false;
 
     // Always advance the time as if the compositor was running at 60fps.
     m_lastFrameTimeMonotonic = monotonicallyIncreasingTime() + 0.016;

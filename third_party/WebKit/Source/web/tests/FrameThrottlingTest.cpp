@@ -12,7 +12,6 @@
 #include "public/web/WebHitTestResult.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimLayerTreeView.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
 #include <gtest/gtest.h>
@@ -179,12 +178,12 @@ TEST_F(FrameThrottlingTest, UnthrottlingFrameSchedulesAnimation)
     frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
     compositeFrame();
     EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
-    EXPECT_FALSE(layerTreeView().needsAnimate());
+    EXPECT_FALSE(compositor().needsAnimate());
 
     // Then bring it back on-screen. This should schedule an animation update.
     frameElement->setAttribute(styleAttr, "");
     compositeFrame();
-    EXPECT_TRUE(layerTreeView().needsAnimate());
+    EXPECT_TRUE(compositor().needsAnimate());
 }
 
 TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
@@ -209,11 +208,11 @@ TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
 
     // Mutating the throttled frame should not cause an animation to be scheduled.
     frameElement->contentDocument()->documentElement()->setAttribute(styleAttr, "background: green");
-    EXPECT_FALSE(layerTreeView().needsAnimate());
+    EXPECT_FALSE(compositor().needsAnimate());
 
     // Moving the frame back on screen to unthrottle it.
     frameElement->setAttribute(styleAttr, "");
-    EXPECT_TRUE(layerTreeView().needsAnimate());
+    EXPECT_TRUE(compositor().needsAnimate());
 
     // The first frame we composite after unthrottling won't contain the
     // frame's new contents because unthrottling happens at the end of the
@@ -221,7 +220,7 @@ TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
     // contents.
     auto displayItems2 = compositeFrame();
     EXPECT_FALSE(displayItems2.contains(SimCanvas::Rect, "green"));
-    EXPECT_TRUE(layerTreeView().needsAnimate());
+    EXPECT_TRUE(compositor().needsAnimate());
 
     auto displayItems3 = compositeFrame();
     EXPECT_TRUE(displayItems3.contains(SimCanvas::Rect, "green"));

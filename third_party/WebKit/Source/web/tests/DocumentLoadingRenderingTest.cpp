@@ -8,7 +8,6 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimLayerTreeView.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
 #include <gtest/gtest.h>
@@ -30,18 +29,18 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterBodyParsedWithoutSh
 
     // Still in the head, should not resume commits.
     mainResource.write("<!DOCTYPE html>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
     mainResource.write("<title>Test</title><style>div { color red; }</style>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Implicitly inserts the body. Since there's no loading stylesheets we
     // should resume commits.
     mainResource.write("<p>Hello World</p>");
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 
     // Finish the load, should stay resumed.
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterBodyIfSheetsLoaded)
@@ -55,24 +54,24 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterBodyIfSheetsLoaded)
 
     // Still in the head, should not resume commits.
     mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet is streaming in, but not ready yet.
     cssResource.start();
     cssResource.write("a { color: red; }");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet finished, but no body yet, so don't resume.
     cssResource.finish();
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Body inserted and sheet is loaded so resume commits.
     mainResource.write("<body>");
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 
     // Finish the load, should stay resumed.
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded)
@@ -86,24 +85,24 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded)
 
     // Still in the head, should not resume commits.
     mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet is streaming in, but not ready yet.
     cssResource.start();
     cssResource.write("a { color: red; }");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Body inserted, but sheet is still loading so don't resume.
     mainResource.write("<body>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet finished and there's a body so resume.
     cssResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 
     // Finish the load, should stay resumed.
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterDocumentElementWithNoSheets)
@@ -117,19 +116,19 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterDocumentElementWith
 
     // Sheet loading and no documentElement, so don't resume.
     mainResource.write("<?xml-stylesheet type='text/css' href='test.css'?>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet finishes loading, but no documentElement yet so don't resume.
     cssResource.complete("a { color: red; }");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Root inserted so resume.
     mainResource.write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 
     // Finish the load, should stay resumed.
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoadForXml)
@@ -143,24 +142,24 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoadForXml)
 
     // Not done parsing.
     mainResource.write("<?xml-stylesheet type='text/css' href='test.css'?>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet is streaming in, but not ready yet.
     cssResource.start();
     cssResource.write("a { color: red; }");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Root inserted, but sheet is still loading so don't resume.
     mainResource.write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Finish the load, but sheets still loading so don't resume.
     mainResource.finish();
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Sheet finished, so resume commits.
     cssResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterFinishParsingXml)
@@ -173,7 +172,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterFinishParsingXml)
 
     // Finish parsing, no sheets loading so resume.
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeImmediatelyForImageDocuments)
@@ -183,15 +182,15 @@ TEST_F(DocumentLoadingRenderingTest, ShouldResumeImmediatelyForImageDocuments)
     loadURL("https://example.com/test.png");
 
     mainResource.start();
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     // Not really a valid image but enough for the test. ImageDocuments should
     // resume painting as soon as the first bytes arrive.
     mainResource.write("image data");
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
@@ -206,7 +205,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
 
     // Load a stylesheet.
     mainResource.write("<!DOCTYPE html><link id=link rel=stylesheet href=first.css>");
-    EXPECT_TRUE(layerTreeView().deferCommits());
+    EXPECT_TRUE(compositor().deferCommits());
 
     firstCssResource.start();
     firstCssResource.write("body { color: red; }");
@@ -214,7 +213,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
     firstCssResource.finish();
 
     // Sheet finished and there's a body so resume.
-    EXPECT_FALSE(layerTreeView().deferCommits());
+    EXPECT_FALSE(compositor().deferCommits());
 
     mainResource.finish();
     compositor().beginFrame();
@@ -223,10 +222,10 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
     auto* element = document().getElementById("link");
     EXPECT_NE(nullptr, element);
     element->setAttribute(hrefAttr, "second.css");
-    EXPECT_FALSE(layerTreeView().needsAnimate());
+    EXPECT_FALSE(compositor().needsAnimate());
 
     secondCssResource.complete("body { color: red; }");
-    EXPECT_TRUE(layerTreeView().needsAnimate());
+    EXPECT_TRUE(compositor().needsAnimate());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheets)

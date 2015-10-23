@@ -7,7 +7,6 @@
 
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/sim/SimCompositor.h"
-#include "web/tests/sim/SimLayerTreeView.h"
 #include "web/tests/sim/SimNetwork.h"
 #include "web/tests/sim/SimWebViewClient.h"
 #include <gtest/gtest.h>
@@ -23,18 +22,15 @@ protected:
     ~SimTest() override;
 
     void loadURL(const String& url);
-    void loadHTML(const String& html);
 
     Document& document();
     WebViewImpl& webView();
-    SimLayerTreeView& layerTreeView();
     SimCompositor& compositor();
 
 private:
     SimNetwork m_network;
-    SimLayerTreeView m_layerTreeView;
-    SimWebViewClient m_webViewClient;
     SimCompositor m_compositor;
+    SimWebViewClient m_webViewClient;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 

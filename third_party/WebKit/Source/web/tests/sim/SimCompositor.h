@@ -5,10 +5,11 @@
 #ifndef SimCompositor_h
 #define SimCompositor_h
 
+#include "public/platform/WebLayerTreeView.h"
+
 namespace blink {
 
 class SimDisplayItemList;
-class SimLayerTreeView;
 class WebViewImpl;
 
 // Simulated very basic compositor that's capable of running the BeginMainFrame
@@ -20,9 +21,9 @@ class WebViewImpl;
 // only part of the layer was invalid.
 //
 // Note: This also does not support compositor driven animations.
-class SimCompositor final {
+class SimCompositor final : public WebLayerTreeView {
 public:
-    explicit SimCompositor(SimLayerTreeView&);
+    explicit SimCompositor();
     ~SimCompositor();
 
     void setWebViewImpl(WebViewImpl&);
@@ -31,8 +32,15 @@ public:
     // cc::ThreadProxy::BeginMainFrame would do.
     SimDisplayItemList beginFrame();
 
+    bool needsAnimate() const { return m_needsAnimate; }
+    bool deferCommits() const { return m_deferCommits; }
+
 private:
-    SimLayerTreeView* m_layerTreeView;
+    void setNeedsAnimate() override;
+    void setDeferCommits(bool) override;
+
+    bool m_needsAnimate;
+    bool m_deferCommits;
     WebViewImpl* m_webViewImpl;
     double m_lastFrameTimeMonotonic;
 };

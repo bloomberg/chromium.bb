@@ -310,8 +310,6 @@
       'tests/sim/SimCompositor.h',
       'tests/sim/SimDisplayItemList.cpp',
       'tests/sim/SimDisplayItemList.h',
-      'tests/sim/SimLayerTreeView.cpp',
-      'tests/sim/SimLayerTreeView.h',
       'tests/sim/SimNetwork.cpp',
       'tests/sim/SimNetwork.h',
       'tests/sim/SimRequest.cpp',

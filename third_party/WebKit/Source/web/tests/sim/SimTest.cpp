@@ -14,8 +14,7 @@
 namespace blink {
 
 SimTest::SimTest()
-    : m_webViewClient(m_layerTreeView)
-    , m_compositor(m_layerTreeView)
+    : m_webViewClient(m_compositor)
 {
     Document::setThreadedParsingEnabledForTesting(false);
     // Use the mock theme to get more predictable code paths, this also avoids
@@ -53,11 +52,6 @@ Document& SimTest::document()
 WebViewImpl& SimTest::webView()
 {
     return *m_webViewHelper.webViewImpl();
-}
-
-SimLayerTreeView& SimTest::layerTreeView()
-{
-    return m_layerTreeView;
 }
 
 SimCompositor& SimTest::compositor()
