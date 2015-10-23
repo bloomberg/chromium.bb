@@ -217,6 +217,13 @@ const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
 
   if (entry->GetURL() == visible_url_ &&
       entry->GetSSL().Equals(visible_ssl_status_)) {
+    // A cert must be present in the CertStore in order for the site to
+    // be considered EV_SECURE, and the cert might have been removed
+    // since the security level was last computed.
+    if (security_info_.security_level == EV_SECURE &&
+        !GetCertForSSLStatus(visible_ssl_status_)) {
+      security_info_.security_level = SECURE;
+    }
     return security_info_;
   }
 
