@@ -86,7 +86,6 @@ if (enable_nacl) {
     deps = [
       ":nacl_common",
       ":nacl_switches",
-      ":nacl_helper",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//content/public/browser",
@@ -97,7 +96,6 @@ if (enable_nacl) {
       "//ppapi/host",
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
-      "//sandbox/linux:sandbox_services",
     ]
 
     if (is_linux) {
@@ -106,7 +104,11 @@ if (enable_nacl) {
         "zygote/nacl_fork_delegate_linux.h",
       ]
 
-      deps += [ "//sandbox/linux:suid_sandbox_client" ]
+      deps += [
+        ":nacl_helper",
+        "//sandbox/linux:sandbox_services",
+        "//sandbox/linux:suid_sandbox_client",
+      ]
     }
   }
 
