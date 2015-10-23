@@ -174,8 +174,8 @@ test("gl_tests") {
   libs = []
 
   if (is_android) {
-    deps += [ "//testing/android/native_test:native_test_native_code" ]
     libs += [ "android" ]
+    apk_deps = [ "//ui/android:ui_java" ]
   }
 }
 
