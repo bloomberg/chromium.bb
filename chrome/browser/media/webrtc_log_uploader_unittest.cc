@@ -37,44 +37,49 @@ class WebRtcLogUploaderTest : public testing::Test {
       return false;
     std::vector<std::string> line_parts = base::SplitString(
         last_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    EXPECT_EQ(3u, line_parts.size());
-    if (3u != line_parts.size())
+    EXPECT_EQ(4u, line_parts.size());
+    if (4u != line_parts.size())
       return false;
-    // The time (line_parts[0]) is the time when the info was written to the
+    // The times (indices 0 and 3) is the time when the info was written to the
     // file which we don't know, so just verify that it's not empty.
     EXPECT_FALSE(line_parts[0].empty());
     EXPECT_STREQ(kTestReportId, line_parts[1].c_str());
     EXPECT_STREQ(kTestLocalId, line_parts[2].c_str());
+    EXPECT_FALSE(line_parts[3].empty());
     return true;
   }
 
-  bool VerifyLastLineHasLocalIdOnly() {
+  // Verify that the last line contains the correct info for a local storage.
+  bool VerifyLastLineHasLocalStorageInfoOnly() {
     std::string last_line = GetLastLineFromListFile();
     if (last_line.empty())
       return false;
     std::vector<std::string> line_parts = base::SplitString(
         last_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    EXPECT_EQ(3u, line_parts.size());
-    if (3u != line_parts.size())
+    EXPECT_EQ(4u, line_parts.size());
+    if (4u != line_parts.size())
       return false;
     EXPECT_TRUE(line_parts[0].empty());
     EXPECT_TRUE(line_parts[1].empty());
     EXPECT_STREQ(kTestLocalId, line_parts[2].c_str());
+    EXPECT_FALSE(line_parts[3].empty());
     return true;
   }
 
-  bool VerifyLastLineHasUploadTimeAndIdOnly() {
+  // Verify that the last line contains the correct info for an upload.
+  bool VerifyLastLineHasUploadInfoOnly() {
     std::string last_line = GetLastLineFromListFile();
     if (last_line.empty())
       return false;
     std::vector<std::string> line_parts = base::SplitString(
         last_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    EXPECT_EQ(3u, line_parts.size());
-    if (3u != line_parts.size())
+    EXPECT_EQ(4u, line_parts.size());
+    if (4u != line_parts.size())
       return false;
     EXPECT_FALSE(line_parts[0].empty());
     EXPECT_STREQ(kTestReportId, line_parts[1].c_str());
     EXPECT_TRUE(line_parts[2].empty());
+    EXPECT_FALSE(line_parts[3].empty());
     return true;
   }
 
@@ -97,6 +102,10 @@ class WebRtcLogUploaderTest : public testing::Test {
       EXPECT_EQ(static_cast<int>(sizeof(kTestLocalId)) - 1,
                 test_list_file.WriteAtCurrentPos(kTestLocalId,
                                                  sizeof(kTestLocalId) - 1));
+      EXPECT_EQ(1, test_list_file.WriteAtCurrentPos(",", 1));
+      EXPECT_EQ(static_cast<int>(sizeof(kTestTime)) - 1,
+                test_list_file.WriteAtCurrentPos(kTestTime,
+                                                 sizeof(kTestTime) - 1));
       EXPECT_EQ(1, test_list_file.WriteAtCurrentPos("\n", 1));
     }
     return true;
@@ -175,7 +184,7 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
                                                                kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(2));
-  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+  ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
   const int expected_line_limit = 50;
   ASSERT_TRUE(AddLinesToTestFile(expected_line_limit - 2));
@@ -185,7 +194,7 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
                                                                kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
-  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+  ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
   ASSERT_TRUE(AddLinesToTestFile(10));
   ASSERT_TRUE(VerifyNumberOfLines(60));
@@ -194,7 +203,7 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
                                                                kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
-  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+  ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
   webrtc_log_uploader->StartShutdown();
 }
@@ -209,7 +218,7 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
                                                                kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(1));
-  ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+  ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
   webrtc_log_uploader->AddUploadedLogInfoToUploadListFile(
       test_list_path_, kTestLocalId, kTestReportId);
@@ -220,7 +229,7 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   webrtc_log_uploader->AddUploadedLogInfoToUploadListFile(
       test_list_path_, "dummy id", kTestReportId);
   ASSERT_TRUE(VerifyNumberOfLines(2));
-  ASSERT_TRUE(VerifyLastLineHasUploadTimeAndIdOnly());
+  ASSERT_TRUE(VerifyLastLineHasUploadInfoOnly());
 
   webrtc_log_uploader->StartShutdown();
 }

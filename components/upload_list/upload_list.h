@@ -20,25 +20,32 @@ class SequencedWorkerPool;
 }
 
 // Loads and parses an upload list text file of the format
-// time,id[,local_id]
-// time,id[,local_id]
+// upload_time,upload_id[,local_id[,capture_time]]
+// upload_time,upload_id[,local_id[,capture_time]]
 // etc.
-// where each line represents an upload and "time" is Unix time. Must be used
-// from the UI thread. The loading and parsing is done on a blocking pool task
-// runner. A line may or may not contain "local_id".
+// where each line represents an upload. |upload_time| and |capture_time| are
+// in Unix time. Must be used from the UI thread. The loading and parsing is
+// done on a blocking pool task runner. A line may or may not contain
+// |local_id| and |capture_time|.
 class UploadList : public base::RefCountedThreadSafe<UploadList> {
  public:
   struct UploadInfo {
-    UploadInfo(const std::string& id,
-               const base::Time& t,
-               const std::string& local_id);
-    UploadInfo(const std::string& id, const base::Time& t);
+    UploadInfo(const std::string& upload_id,
+               const base::Time& upload_time,
+               const std::string& local_id,
+               const base::Time& capture_time);
+    UploadInfo(const std::string& upload_id, const base::Time& upload_time);
     ~UploadInfo();
 
-    std::string id;
-    base::Time time;
-    // ID for a locally stored object that may or may not be uploaded.
+    std::string upload_id;
+    base::Time upload_time;
+
+    // ID for locally stored data that may or may not be uploaded.
     std::string local_id;
+
+    // The time the data was captured. This is useful if the data is stored
+    // locally when captured and uploaded at a later time.
+    base::Time capture_time;
   };
 
   class Delegate {
@@ -83,8 +90,13 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
 
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntries);
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntriesWithLocalId);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseUploadTimeUploadId);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseUploadTimeUploadIdLocalId);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseUploadTimeUploadIdCaptureTime);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLocalIdCaptureTime);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest,
+                           ParseUploadTimeUploadIdLocalIdCaptureTime);
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseMultipleEntries);
 
   // Manages the background thread work for LoadUploadListAsynchronously().
   void LoadUploadListAndInformDelegateOfCompletion(

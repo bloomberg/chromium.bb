@@ -302,9 +302,9 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
     for (std::vector<CrashUploadList::UploadInfo>::iterator i = crashes.begin();
          i != crashes.end(); ++i) {
-      base::string16 crash_string(ASCIIToUTF16(i->id));
+      base::string16 crash_string(ASCIIToUTF16(i->upload_id));
       crash_string += ASCIIToUTF16(" ");
-      crash_string += base::TimeFormatFriendlyDateAndTime(i->time);
+      crash_string += base::TimeFormatFriendlyDateAndTime(i->upload_time);
       AddPair(list, ASCIIToUTF16("crash id"), crash_string);
     }
   } else {

@@ -43,8 +43,9 @@ void UploadListToValue(UploadList* upload_list, base::ListValue* out_value) {
 
   for (const auto& info : crashes) {
     base::DictionaryValue* crash = new base::DictionaryValue();
-    crash->SetString("id", info.id);
-    crash->SetString("time", base::TimeFormatFriendlyDateAndTime(info.time));
+    crash->SetString("id", info.upload_id);
+    crash->SetString("time",
+                     base::TimeFormatFriendlyDateAndTime(info.upload_time));
     crash->SetString("local_id", info.local_id);
     out_value->Append(crash);
   }

@@ -31,9 +31,7 @@ function updateWebRtcLogsList(uploads, version) {
     var title = document.createElement('h3');
     title.textContent =
         loadTimeData.getStringF('webrtcLogHeaderFormat',
-                                upload['capture_time'].length != 0 ?
-                                    upload['capture_time'] :
-                                    upload['upload_time']);
+                                upload['capture_time']);
     logBlock.appendChild(title);
 
     var localFileLine = document.createElement('p');

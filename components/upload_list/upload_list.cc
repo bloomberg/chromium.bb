@@ -16,13 +16,16 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 
-UploadList::UploadInfo::UploadInfo(const std::string& id,
-                                   const base::Time& t,
-                                   const std::string& local_id)
-    : id(id), time(t), local_id(local_id) {}
+UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
+                                   const base::Time& upload_time,
+                                   const std::string& local_id,
+                                   const base::Time& capture_time)
+    : upload_id(upload_id), upload_time(upload_time),
+      local_id(local_id), capture_time(capture_time) {}
 
-UploadList::UploadInfo::UploadInfo(const std::string& id, const base::Time& t)
-    : id(id), time(t) {}
+UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
+                                   const base::Time& upload_time)
+    : upload_id(upload_id), upload_time(upload_time) {}
 
 UploadList::UploadInfo::~UploadInfo() {}
 
@@ -84,7 +87,7 @@ void UploadList::ParseLogEntries(
     std::vector<std::string> components = base::SplitString(
         *i, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     // Skip any blank (or corrupted) lines.
-    if (components.size() != 2 && components.size() != 3)
+    if (components.size() < 2 || components.size() > 4)
       continue;
     base::Time upload_time;
     double seconds_since_epoch;
@@ -94,8 +97,18 @@ void UploadList::ParseLogEntries(
       upload_time = base::Time::FromDoubleT(seconds_since_epoch);
     }
     UploadInfo info(components[1], upload_time);
-    if (components.size() == 3)
+
+    // Add local ID if present.
+    if (components.size() > 2)
       info.local_id = components[2];
+
+    // Add capture time if present.
+    if (components.size() > 3 &&
+        !components[3].empty() &&
+        base::StringToDouble(components[3], &seconds_since_epoch)) {
+      info.capture_time = base::Time::FromDoubleT(seconds_since_epoch);
+    }
+
     uploads_.push_back(info);
   }
 }

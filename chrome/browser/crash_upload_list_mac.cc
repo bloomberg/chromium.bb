@@ -28,6 +28,7 @@ void CrashUploadListMac::LoadUploadList() {
     AppendUploadInfo(
         UploadInfo(uploaded_report.remote_id,
                    base::Time::FromTimeT(uploaded_report.creation_time),
-                   uploaded_report.local_id));
+                   uploaded_report.local_id,
+                   base::Time()));
   }
 }
