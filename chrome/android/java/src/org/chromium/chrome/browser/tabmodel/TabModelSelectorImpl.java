@@ -14,8 +14,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
-import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
@@ -56,51 +54,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     private ChromeTabCreator mRegularTabCreator;
     private ChromeTabCreator mIncognitoTabCreator;
-
-    private static class TabModelImplCreator implements OffTheRecordTabModelDelegate {
-        private final TabCreator mRegularTabCreator;
-        private final TabCreator mIncognitoTabCreator;
-        private final TabModelSelectorUma mUma;
-        private final TabModelOrderController mOrderController;
-        private final TabContentManager mTabContentManager;
-        private final TabPersistentStore mTabSaver;
-        private final TabModelDelegate mModelDelegate;
-
-        /**
-         * Constructor for an Incognito TabModelImpl.
-         *
-         * @param regularTabCreator   Creates regular tabs.
-         * @param incognitoTabCreator Creates incognito tabs.
-         * @param uma                 Handles UMA tracking for the model.
-         * @param orderController     Determines the order for inserting new Tabs.
-         * @param tabContentManager   Manages the display content of the tab.
-         * @param tabSaver            Handler for saving tabs.
-         * @param modelDelegate       Delegate to handle external dependencies and interactions.
-         */
-        public TabModelImplCreator(TabCreator regularTabCreator, TabCreator incognitoTabCreator,
-                TabModelSelectorUma uma, TabModelOrderController orderController,
-                TabContentManager tabContentManager, TabPersistentStore tabSaver,
-                TabModelDelegate modelDelegate) {
-            mRegularTabCreator = regularTabCreator;
-            mIncognitoTabCreator = incognitoTabCreator;
-            mUma = uma;
-            mOrderController = orderController;
-            mTabContentManager = tabContentManager;
-            mTabSaver = tabSaver;
-            mModelDelegate = modelDelegate;
-        }
-
-        @Override
-        public TabModel createTabModel() {
-            return new TabModelImpl(true, mRegularTabCreator, mIncognitoTabCreator, mUma,
-                    mOrderController, mTabContentManager, mTabSaver, mModelDelegate);
-        }
-
-        @Override
-        public boolean doOffTheRecordTabsExist() {
-            return TabWindowManager.getInstance().getIncognitoTabCount() > 0;
-        }
-    }
 
     /**
      * Builds a {@link TabModelSelectorImpl} instance.
@@ -188,7 +141,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
         TabModel normalModel = new TabModelImpl(false, mRegularTabCreator, mIncognitoTabCreator,
                 mUma, mOrderController, mTabContentManager, mTabSaver, this);
-        TabModel incognitoModel = new OffTheRecordTabModel(new TabModelImplCreator(
+        TabModel incognitoModel = new OffTheRecordTabModel(new OffTheRecordTabModelImplCreator(
                 mRegularTabCreator, mIncognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
