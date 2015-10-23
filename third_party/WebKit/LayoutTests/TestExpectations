@@ -1026,11 +1026,6 @@ crbug.com/321237 [ Win ] fast/text/international/complex-text-leading-space-wrap
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 
-crbug.com/546043 virtual/spv2/paint/selection/text-selection-newline-rtl-double-linebreak.html [ NeedsRebaseline ]
-crbug.com/546043 paint/selection/text-selection-newline-rtl-double-linebreak.html [ NeedsRebaseline ]
-crbug.com/546043 editing/selection/vertical-rl-rtl-extend-line-backward-br.html [ NeedsRebaseline ]
-crbug.com/546043 editing/selection/vertical-rl-rtl-extend-line-forward-br.html [ NeedsRebaseline ]
-
 # This new test will need a Chrome-side change before it passes.
 crbug.com/240827 css3/filters/filterRegions.html [ Failure ]
 
