@@ -77,8 +77,8 @@ class MediaPipelineBackend {
   class AudioDecoder : public Decoder {
    public:
     // Info on pipeline latency: amount of data in pipeline not rendered yet,
-    // and timestamp of system clock (must be CLOCK_MONOTONIC) at which delay
-    // measurement was taken.  Both times in microseconds.
+    // and timestamp of system clock (must be CLOCK_MONOTONIC_RAW) at which
+    // delay measurement was taken. Both times in microseconds.
     struct RenderingDelay {
       RenderingDelay()
           : delay_microseconds(INT64_MIN), timestamp_microseconds(INT64_MIN) {}
