@@ -260,7 +260,11 @@ bool DevToolsEventForwarder::ForwardEvent(
 
   int key_code = ui::LocatedToNonLocatedKeyboardCode(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode));
-  int key = CombineKeyCodeAndModifiers(key_code, event.modifiers);
+  int modifiers = event.modifiers & (WebInputEvent::ShiftKey |
+                                     WebInputEvent::ControlKey |
+                                     WebInputEvent::AltKey |
+                                     WebInputEvent::MetaKey);
+  int key = CombineKeyCodeAndModifiers(key_code, modifiers);
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
 
@@ -268,7 +272,7 @@ bool DevToolsEventForwarder::ForwardEvent(
   event_data.SetString("type", event_type);
   event_data.SetString("keyIdentifier", event.keyIdentifier);
   event_data.SetInteger("keyCode", key_code);
-  event_data.SetInteger("modifiers", event.modifiers);
+  event_data.SetInteger("modifiers", modifiers);
   devtools_window_->bindings_->CallClientFunction(
       "DevToolsAPI.keyEventUnhandled", &event_data, NULL, NULL);
   return true;
