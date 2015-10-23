@@ -267,12 +267,6 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
 
   buffering_controller_->Reset();
 
-  // Stop the backend
-  if (!media_pipeline_backend_->Stop()) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
-  }
-
   // Flush both the audio and video pipeline.
   ::media::SerialRunner::Queue bound_fns;
   if (audio_pipeline_) {
@@ -286,7 +280,7 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
         base::Unretained(video_pipeline_.get())));
   }
   ::media::PipelineStatusCB transition_cb =
-      base::Bind(&MediaPipelineImpl::StateTransition, weak_this_, status_cb);
+      base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, status_cb);
   pending_flush_callbacks_ =
       ::media::SerialRunner::Run(bound_fns, transition_cb);
 }
@@ -342,9 +336,15 @@ void MediaPipelineImpl::SetVolume(float volume) {
   audio_pipeline_->SetVolume(volume);
 }
 
-void MediaPipelineImpl::StateTransition(
+void MediaPipelineImpl::OnFlushDone(
     const ::media::PipelineStatusCB& status_cb,
     ::media::PipelineStatus status) {
+  // Stop the backend
+  if (!media_pipeline_backend_->Stop()) {
+    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
+    return;
+  }
+
   pending_flush_callbacks_.reset();
   status_cb.Run(status);
 }

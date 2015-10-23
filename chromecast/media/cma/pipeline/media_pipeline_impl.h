@@ -69,8 +69,8 @@ class MediaPipelineImpl : public MediaPipelineBackend::Delegate {
   void SetCdm(BrowserCdmCast* cdm);
 
  private:
-  void StateTransition(const ::media::PipelineStatusCB& status_cb,
-                       ::media::PipelineStatus status);
+  void OnFlushDone(const ::media::PipelineStatusCB& status_cb,
+                   ::media::PipelineStatus status);
 
   // Invoked to notify about a change of buffering state.
   void OnBufferingNotification(bool is_buffering);
