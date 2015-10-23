@@ -1536,7 +1536,8 @@ void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
             display_dest.device_scale_factor());
   gfx::Vector2d offset = GetLocationOnNativeScreen() -
                          host->GetLocationOnNativeScreen();
-  gfx::Point location_in_pixel_in_host = located_event->location() + offset;
+  gfx::PointF location_in_pixel_in_host =
+      located_event->location_f() + gfx::Vector2dF(offset);
   located_event->set_location(location_in_pixel_in_host);
 }
 

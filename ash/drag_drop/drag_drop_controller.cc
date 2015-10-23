@@ -263,10 +263,8 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_,
-                            event.location(),
-                            event.root_location(),
-                            drag_operation_);
+      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+                            event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       delegate->OnDragEntered(e);
     }
@@ -274,10 +272,8 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_,
-                            event.location(),
-                            event.root_location(),
-                            drag_operation_);
+      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+                            event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       op = delegate->OnDragUpdated(e);
       gfx::NativeCursor cursor = ui::kCursorNoDrop;
@@ -316,8 +312,8 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
-    ui::DropTargetEvent e(
-        *drag_data_, event.location(), event.root_location(), drag_operation_);
+    ui::DropTargetEvent e(*drag_data_, event.location_f(),
+                          event.root_location_f(), drag_operation_);
     e.set_flags(event.flags());
     drag_operation_ = delegate->OnPerformDrop(e);
     if (drag_operation_ == 0)
@@ -420,8 +416,8 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   ui::GestureEvent touch_offset_event(*event,
                                       static_cast<aura::Window*>(NULL),
                                       static_cast<aura::Window*>(NULL));
-  gfx::Point touch_offset_location = touch_offset_event.location();
-  gfx::Point touch_offset_root_location = touch_offset_event.root_location();
+  gfx::PointF touch_offset_location = touch_offset_event.location_f();
+  gfx::PointF touch_offset_root_location = touch_offset_event.root_location_f();
   touch_offset_location.Offset(0, kTouchDragImageVerticalOffset);
   touch_offset_root_location.Offset(0, kTouchDragImageVerticalOffset);
   touch_offset_event.set_location(touch_offset_location);

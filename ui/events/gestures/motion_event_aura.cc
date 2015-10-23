@@ -54,7 +54,7 @@ bool MotionEventAura::OnTouch(const TouchEvent& touch) {
     // crbug.com/446852 for details.
 
     // Cancel the existing touch, before handling the touch press.
-    TouchEvent cancel(ET_TOUCH_CANCELLED, touch.location(), touch.touch_id(),
+    TouchEvent cancel(ET_TOUCH_CANCELLED, touch.location_f(), touch.touch_id(),
                       touch.time_stamp());
     OnTouch(cancel);
     CleanupRemovedTouchPoints(cancel);
