@@ -78897,6 +78897,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Shortcuts"/>
   <suffix name="ZeroSuggest"/>
   <affected-histogram name="Omnibox.ProviderTime"/>
+  <affected-histogram name="Omnibox.ProviderTime2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OobeScreenName" separator=".">
