@@ -8343,6 +8343,58 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsVisibleRects) {
   EXPECT_EQ(gfx::Rect(50, 50), content_layer->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
+  const gfx::Size layer_size(100, 100);
+  SetupScrollAndContentsLayers(layer_size);
+  LayerImpl* content_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer()->children()[0];
+  content_layer->AddChild(LayerImpl::Create(host_impl_->active_tree(), 100));
+  LayerImpl* test_layer = host_impl_->active_tree()->LayerById(100);
+  test_layer->SetHasRenderSurface(true);
+  test_layer->SetDrawsContent(true);
+  test_layer->SetBounds(layer_size);
+  gfx::Transform perspective_transform;
+  perspective_transform.ApplyPerspectiveDepth(2);
+  test_layer->SetTransform(perspective_transform);
+
+  RebuildPropertyTrees();
+  bool update_lcd_text = false;
+
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  TransformNode* node =
+      host_impl_->active_tree()->property_trees()->transform_tree.Node(
+          test_layer->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+
+  gfx::Transform external_transform;
+  external_transform.Translate(10, 10);
+  external_transform.Scale(2, 2);
+  gfx::Rect external_viewport;
+  gfx::Rect external_clip(layer_size);
+  bool resourceless_software_draw = false;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip, external_viewport,
+      external_transform, resourceless_software_draw);
+
+  // Transform node's sublayer scale should include the device transform scale.
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
+      test_layer->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+
+  // Clear the external transform.
+  external_transform = gfx::Transform();
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip, external_viewport,
+      external_transform, resourceless_software_draw);
+
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
+      test_layer->transform_tree_index());
+  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
 

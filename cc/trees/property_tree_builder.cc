@@ -357,8 +357,9 @@ bool AddTransformNodeIfNeeded(
   if (is_root) {
     data_for_children->transform_tree->SetDeviceTransform(
         *data_from_ancestor.device_transform, layer->position());
+    data_for_children->transform_tree->SetDeviceTransformScaleFactor(
+        *data_from_ancestor.device_transform);
   } else {
-    node->data.post_local_scale_factor = post_local_scale_factor;
     node->data.source_offset = source_offset;
     node->data.update_post_local_transform(layer->position(),
                                            layer->transform_origin());

@@ -330,6 +330,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   void SetDeviceTransform(const gfx::Transform& transform,
                           gfx::PointF root_position);
+  void SetDeviceTransformScaleFactor(const gfx::Transform& transform);
 
   void SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta);
   gfx::Vector2dF inner_viewport_bounds_delta() const {
@@ -383,8 +384,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool NeedsSourceToParentUpdate(TransformNode* node);
 
   bool source_to_parent_updates_allowed_;
+  // When to_screen transform has perspective, the transform node's sublayer
+  // scale is calculated using page scale factor, device scale factor and the
+  // scale factor of device transform. So we need to store them explicitly.
   float page_scale_factor_;
   float device_scale_factor_;
+  float device_transform_scale_factor_;
   gfx::Vector2dF inner_viewport_bounds_delta_;
   gfx::Vector2dF outer_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;

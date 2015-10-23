@@ -26,7 +26,8 @@ PropertyTree<T>::~PropertyTree() {
 TransformTree::TransformTree()
     : source_to_parent_updates_allowed_(true),
       page_scale_factor_(1.f),
-      device_scale_factor_(1.f) {}
+      device_scale_factor_(1.f),
+      device_transform_scale_factor_(1.f) {}
 
 TransformTree::~TransformTree() {
 }
@@ -395,7 +396,8 @@ void TransformTree::UpdateSublayerScale(TransformNode* node) {
     return;
   }
 
-  float layer_scale_factor = device_scale_factor_;
+  float layer_scale_factor =
+      device_scale_factor_ * device_transform_scale_factor_;
   if (node->data.in_subtree_of_page_scale_layer)
     layer_scale_factor *= page_scale_factor_;
   node->data.sublayer_scale = MathUtil::ComputeTransform2dScaleComponents(
@@ -565,6 +567,17 @@ void TransformTree::SetDeviceTransform(const gfx::Transform& transform,
   node->data.post_local = root_post_local;
   node->data.needs_local_transform_update = true;
   set_needs_update(true);
+}
+
+void TransformTree::SetDeviceTransformScaleFactor(
+    const gfx::Transform& transform) {
+  gfx::Vector2dF device_transform_scale_components =
+      MathUtil::ComputeTransform2dScaleComponents(transform, 1.f);
+
+  // Not handling the rare case of different x and y device scale.
+  device_transform_scale_factor_ =
+      std::max(device_transform_scale_components.x(),
+               device_transform_scale_components.y());
 }
 
 void TransformTree::SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta) {

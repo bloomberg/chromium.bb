@@ -2714,6 +2714,8 @@ void CalculateDrawPropertiesAndVerify(
             gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
         inputs->property_trees->transform_tree.SetDeviceTransform(
             inputs->device_transform, inputs->root_layer->position());
+        inputs->property_trees->transform_tree.SetDeviceTransformScaleFactor(
+            inputs->device_transform);
         ComputeVisibleRectsUsingPropertyTrees(
             inputs->root_layer, inputs->property_trees,
             inputs->can_render_to_separate_surface, &update_layer_list);
