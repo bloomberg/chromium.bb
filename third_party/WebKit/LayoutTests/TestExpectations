@@ -155,6 +155,8 @@ crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scrol
 crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded_animation_timelines/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
+crbug.com/502088 fast/forms/basic-selects.html [ NeedsRebaseline ]
+
 crbug.com/518972 [ Linux XP ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure Pass ]
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Failure Pass ]
 crbug.com/518974 http/tests/navigatorconnect/postmessage.html [ Failure Pass Timeout ]
