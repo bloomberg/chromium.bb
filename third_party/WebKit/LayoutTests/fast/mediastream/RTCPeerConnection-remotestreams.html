@@ -48,6 +48,8 @@ function requestFailedUnexpectedly()
 
 function gotStream(stream) {
     local_stream = stream;
+    shouldBeFalse('local_stream.getAudioTracks()[0].remote');
+    shouldBeFalse('local_stream.getVideoTracks()[0].remote');
     pc.addStream(local_stream);
 
     sessionDescription = new RTCSessionDescription({type:"answer", sdp:"remote"});
@@ -59,6 +61,8 @@ function onAddStream(event) {
     shouldBeEqualToNumber('event.stream.getVideoTracks().length', 1);
     shouldBeEqualToNumber('event.stream.getAudioTracks().length', 1);
     shouldBeTrue('event.stream.active')
+    shouldBeTrue('event.stream.getAudioTracks()[0].remote');
+    shouldBeTrue('event.stream.getVideoTracks()[0].remote');
     pc.removeStream(local_stream);
 }
 

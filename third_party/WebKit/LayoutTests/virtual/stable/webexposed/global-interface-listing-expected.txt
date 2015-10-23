@@ -2862,6 +2862,7 @@ interface MediaStreamTrack
     getter onmute
     getter onunmute
     getter readyState
+    getter remote
     method clone
     method constructor
     method stop
