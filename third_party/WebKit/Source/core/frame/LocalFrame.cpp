@@ -127,8 +127,14 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 } // namespace
 
+bool LocalFrame::s_inDocumentLoaderDetach = false;
+
 PassRefPtrWillBeRawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
+    // TODO(bokan): Temporarily added to determine how frames are being created
+    // during DocumentLoader detachment. crbug.com/519752.
+    RELEASE_ASSERT(!s_inDocumentLoaderDetach);
+
     RefPtrWillBeRawPtr<LocalFrame> frame = adoptRefWillBeNoop(new LocalFrame(client, host, owner));
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();

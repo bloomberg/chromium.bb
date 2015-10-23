@@ -1053,10 +1053,20 @@ bool FrameLoader::prepareForCommit()
     // we need to abandon the current load.
     if (pdl != m_provisionalDocumentLoader)
         return false;
+
+    // TODO(bokan): detachDocumentLoader is creating new frames. Added some
+    // temporary debug info to find out how this is happening. Remove once we
+    // get some data.
+    LocalFrame::s_inDocumentLoaderDetach = true;
+
     if (m_documentLoader) {
         FrameNavigationDisabler navigationDisabler(m_frame);
         detachDocumentLoader(m_documentLoader);
     }
+
+    LocalFrame::s_inDocumentLoaderDetach = false;
+    RELEASE_ASSERT(m_frame->tree().childCount() == 0);
+
     // detachFromFrame() will abort XHRs that haven't completed, which can
     // trigger event listeners for 'abort'. These event listeners might detach
     // the frame.
