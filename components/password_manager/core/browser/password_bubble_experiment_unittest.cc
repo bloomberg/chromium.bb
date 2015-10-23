@@ -46,7 +46,7 @@ struct ShouldShowSavePromptFirstRunExperienceTestcase {
 
 class TestSyncService : public sync_driver::FakeSyncService {
  public:
-  TestSyncService(){};
+  TestSyncService() {}
 
   ~TestSyncService() override {}
 

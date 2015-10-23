@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -372,28 +376,30 @@ void ManagePasswordsBubbleModel::UpdateManageStateTitle() {
                                     &title_);
 }
 
-password_manager::metrics_util::UpdatePasswordSubmissionEvent
+metrics_util::UpdatePasswordSubmissionEvent
 ManagePasswordsBubbleModel::GetUpdateDismissalReason(
     UserBehaviorOnUpdateBubble behavior) const {
-  using namespace password_manager::metrics_util;
-  static const password_manager::metrics_util::UpdatePasswordSubmissionEvent
-      update_events[4][3] = {
-          {NO_ACCOUNTS_CLICKED_UPDATE, NO_ACCOUNTS_CLICKED_NOPE,
-           NO_ACCOUNTS_NO_INTERACTION},
-          {ONE_ACCOUNT_CLICKED_UPDATE, ONE_ACCOUNT_CLICKED_NOPE,
-           ONE_ACCOUNT_NO_INTERACTION},
-          {MULTIPLE_ACCOUNTS_CLICKED_UPDATE, MULTIPLE_ACCOUNTS_CLICKED_NOPE,
-           MULTIPLE_ACCOUNTS_NO_INTERACTION},
-          {PASSWORD_OVERRIDDEN_CLICKED_UPDATE, PASSWORD_OVERRIDDEN_CLICKED_NOPE,
-           PASSWORD_OVERRIDDEN_NO_INTERACTION}};
+  static const metrics_util::UpdatePasswordSubmissionEvent update_events[4][3] =
+      {{metrics_util::NO_ACCOUNTS_CLICKED_UPDATE,
+        metrics_util::NO_ACCOUNTS_CLICKED_NOPE,
+        metrics_util::NO_ACCOUNTS_NO_INTERACTION},
+       {metrics_util::ONE_ACCOUNT_CLICKED_UPDATE,
+        metrics_util::ONE_ACCOUNT_CLICKED_NOPE,
+        metrics_util::ONE_ACCOUNT_NO_INTERACTION},
+       {metrics_util::MULTIPLE_ACCOUNTS_CLICKED_UPDATE,
+        metrics_util::MULTIPLE_ACCOUNTS_CLICKED_NOPE,
+        metrics_util::MULTIPLE_ACCOUNTS_NO_INTERACTION},
+       {metrics_util::PASSWORD_OVERRIDDEN_CLICKED_UPDATE,
+        metrics_util::PASSWORD_OVERRIDDEN_CLICKED_NOPE,
+        metrics_util::PASSWORD_OVERRIDDEN_NO_INTERACTION}};
 
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     if (pending_password_.IsPossibleChangePasswordFormWithoutUsername())
       return update_events[0][behavior];
-    return NO_UPDATE_SUBMISSION;
+    return metrics_util::NO_UPDATE_SUBMISSION;
   }
   if (state_ != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
-    return NO_UPDATE_SUBMISSION;
+    return metrics_util::NO_UPDATE_SUBMISSION;
   if (password_overridden_)
     return update_events[3][behavior];
   if (ShouldShowMultipleAccountUpdateUI())
