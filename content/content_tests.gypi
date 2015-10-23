@@ -489,6 +489,7 @@
       'browser/loader/upload_data_stream_builder_unittest.cc',
       'browser/mach_broker_mac_unittest.cc',
       'browser/media/android/media_session_uma_helper_unittest.cc',
+      'browser/media/audio_stream_monitor_unittest.cc',
       'browser/media/capture/audio_mirroring_manager_unittest.cc',
       'browser/media/capture/web_contents_audio_input_stream_unittest.cc',
       'browser/media/capture/web_contents_video_capture_device_unittest.cc',
@@ -1196,7 +1197,6 @@
           'sources!': [
             'browser/geolocation/network_location_provider_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
-            'browser/media/audio_stream_monitor_unittest.cc',
             'browser/power_usage_monitor_impl_unittest.cc',
             'browser/renderer_host/begin_frame_observer_proxy_unittest.cc',
             'browser/webui/url_data_manager_backend_unittest.cc',
