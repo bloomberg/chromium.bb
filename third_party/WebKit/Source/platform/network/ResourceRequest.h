@@ -221,6 +221,9 @@ public:
     WebURLRequest::FetchRedirectMode fetchRedirectMode() const { return m_fetchRedirectMode; }
     void setFetchRedirectMode(WebURLRequest::FetchRedirectMode redirect) { m_fetchRedirectMode = redirect; }
 
+    WebURLRequest::LoFiState loFiState() const { return m_loFiState; }
+    void setLoFiState(WebURLRequest::LoFiState loFiState) { m_loFiState = loFiState; }
+
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
     bool hasCacheValidatorFields() const;
@@ -274,6 +277,7 @@ private:
     WebURLRequest::FetchRequestMode m_fetchRequestMode;
     WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     WebURLRequest::FetchRedirectMode m_fetchRedirectMode;
+    WebURLRequest::LoFiState m_loFiState;
     ReferrerPolicy m_referrerPolicy;
     bool m_didSetHTTPReferrer;
     bool m_checkForBrowserSideNavigation;
@@ -324,6 +328,7 @@ public:
     WebURLRequest::FetchRequestMode m_fetchRequestMode;
     WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     WebURLRequest::FetchRedirectMode m_fetchRedirectMode;
+    WebURLRequest::LoFiState m_loFiState;
     ReferrerPolicy m_referrerPolicy;
     bool m_didSetHTTPReferrer;
     bool m_checkForBrowserSideNavigation;

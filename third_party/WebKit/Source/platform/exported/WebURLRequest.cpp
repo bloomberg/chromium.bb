@@ -370,6 +370,16 @@ void WebURLRequest::setFetchRedirectMode(WebURLRequest::FetchRedirectMode redire
     return m_private->m_resourceRequest->setFetchRedirectMode(redirect);
 }
 
+WebURLRequest::LoFiState WebURLRequest::loFiState() const
+{
+    return m_private->m_resourceRequest->loFiState();
+}
+
+void WebURLRequest::setLoFiState(WebURLRequest::LoFiState loFiState)
+{
+    return m_private->m_resourceRequest->setLoFiState(loFiState);
+}
+
 WebURLRequest::ExtraData* WebURLRequest::extraData() const
 {
     RefPtr<ResourceRequest::ExtraData> data = m_private->m_resourceRequest->extraData();

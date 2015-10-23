@@ -315,7 +315,9 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
         if (updateBehavior == UpdateForcedReload) {
             resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
-            // ImageLoader defers the load of images when in an ImageDocument. Don't defer this load on a forced reload.
+            resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
+            // ImageLoader defers the load of images when in an ImageDocument.
+            // Don't defer this load on a forced reload.
             m_loadingImageDocument = false;
         }
 

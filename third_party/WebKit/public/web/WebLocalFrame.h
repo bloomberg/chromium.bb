@@ -167,7 +167,7 @@ public:
 
     // Image reload -----------------------------------------------------------
 
-    // If the provided node is an image, reload the image bypassing the cache.
+    // If the provided node is an image, reload the image disabling Lo-Fi.
     virtual void reloadImage(const WebNode&) = 0;
 
     // Feature usage logging --------------------------------------------------

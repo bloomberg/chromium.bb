@@ -3423,10 +3423,12 @@ void RenderFrameImpl::willSendRequest(
       navigation_state->start_params().transferred_request_request_id);
   extra_data->set_service_worker_provider_id(provider_id);
   extra_data->set_stream_override(stream_override.Pass());
-  // TODO(megjablon): Set the navigation params for single image loads to
-  // LOFI_OFF and remove the dependency on ReloadBypassingCache.
+  // TODO(megjablon): Remove once reloading a page without Lo-Fi uses
+  // ReloadDisableLoFi rather than ReloadBypassingCache.
   if (request.cachePolicy() == WebURLRequest::ReloadBypassingCache)
     extra_data->set_lofi_state(LOFI_OFF);
+  else if (request.loFiState() != WebURLRequest::LoFiUnspecified)
+    extra_data->set_lofi_state(static_cast<LoFiState>(request.loFiState()));
   else if (is_main_frame_ && !navigation_state->request_committed())
     extra_data->set_lofi_state(navigation_state->common_params().lofi_state);
   else
