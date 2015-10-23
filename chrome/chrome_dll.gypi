@@ -304,7 +304,7 @@
               ],
             }],
             # This step currently fails when using LTO. TODO(pcc): Re-enable.
-            ['OS=="mac" and use_lto==0 and component=="static_library"', {
+            ['OS=="mac" and use_lto==0', {
               'postbuilds': [
                 {
                   # This step causes an error to be raised if the .order file
