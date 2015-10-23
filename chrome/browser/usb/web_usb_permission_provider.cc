@@ -60,27 +60,14 @@ bool EnableWebUsbOnAnyOrigin() {
 
 }  // namespace
 
-// static
-void WebUSBPermissionProvider::Create(
-    content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<PermissionProvider> request) {
+WebUSBPermissionProvider::WebUSBPermissionProvider(
+    content::RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(render_frame_host);
-
-  // The created object is owned by its bindings.
-  new WebUSBPermissionProvider(render_frame_host, request.Pass());
+  DCHECK(render_frame_host_);
 }
 
 WebUSBPermissionProvider::~WebUSBPermissionProvider() {}
-
-WebUSBPermissionProvider::WebUSBPermissionProvider(
-    content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<PermissionProvider> request)
-    : render_frame_host_(render_frame_host) {
-  bindings_.set_connection_error_handler(base::Bind(
-      &WebUSBPermissionProvider::OnConnectionError, base::Unretained(this)));
-  bindings_.AddBinding(this, request.Pass());
-}
 
 void WebUSBPermissionProvider::HasDevicePermission(
     mojo::Array<device::usb::DeviceInfoPtr> requested_devices,
@@ -124,10 +111,6 @@ void WebUSBPermissionProvider::HasInterfacePermission(
 
 void WebUSBPermissionProvider::Bind(
     mojo::InterfaceRequest<device::usb::PermissionProvider> request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bindings_.AddBinding(this, request.Pass());
-}
-
-void WebUSBPermissionProvider::OnConnectionError() {
-  if (bindings_.empty())
-    delete this;
 }

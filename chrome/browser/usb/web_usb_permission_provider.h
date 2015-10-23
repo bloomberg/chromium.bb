@@ -14,17 +14,16 @@ namespace content {
 class RenderFrameHost;
 }
 
+// This implementation of the permission provider interface enforces the rules
+// of the WebUSB permission model. Devices are checked for WebUSB descriptors
+// granting access to the render frame's current origin as well as permission
+// granted by the user through a device chooser UI.
 class WebUSBPermissionProvider : public device::usb::PermissionProvider {
  public:
-  static void Create(
-      content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<device::usb::PermissionProvider> request);
+  explicit WebUSBPermissionProvider(
+      content::RenderFrameHost* render_frame_host);
 
   ~WebUSBPermissionProvider() override;
-
- private:
-  WebUSBPermissionProvider(content::RenderFrameHost* render_frame_host,
-                           mojo::InterfaceRequest<PermissionProvider> request);
 
   // device::usb::PermissionProvider implementation.
   void HasDevicePermission(
@@ -42,8 +41,7 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
   void Bind(
       mojo::InterfaceRequest<device::usb::PermissionProvider> request) override;
 
-  void OnConnectionError();
-
+ private:
   mojo::WeakBindingSet<PermissionProvider> bindings_;
   content::RenderFrameHost* const render_frame_host_;
 };

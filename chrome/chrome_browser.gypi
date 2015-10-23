@@ -1294,6 +1294,8 @@
       'browser/tracing/chrome_tracing_delegate.h',
       'browser/upgrade_detector.cc',
       'browser/upgrade_detector.h',
+      'browser/usb/usb_tab_helper.cc',
+      'browser/usb/usb_tab_helper.h',
       'browser/usb/web_usb_permission_provider.cc',
       'browser/usb/web_usb_permission_provider.h',
     ],

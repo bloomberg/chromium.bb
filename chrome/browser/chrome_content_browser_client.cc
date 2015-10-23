@@ -86,7 +86,7 @@
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
-#include "chrome/browser/usb/web_usb_permission_provider.h"
+#include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -142,7 +142,7 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/devices_app/usb/device_manager_impl.h"
+#include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
 #include "gin/v8_initializer.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "net/base/mime_util.h"
@@ -634,11 +634,16 @@ void CreateUsbDeviceManager(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::DeviceManager> request) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  device::usb::PermissionProviderPtr permission_provider;
-  WebUSBPermissionProvider::Create(render_frame_host,
-                                   mojo::GetProxy(&permission_provider));
-  device::usb::DeviceManagerImpl::Create(permission_provider.Pass(),
-                                         request.Pass());
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents) {
+    NOTREACHED();
+    return;
+  }
+
+  UsbTabHelper* tab_helper =
+      UsbTabHelper::GetOrCreateForWebContents(web_contents);
+  tab_helper->CreateDeviceManager(render_frame_host, request.Pass());
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 }
 
