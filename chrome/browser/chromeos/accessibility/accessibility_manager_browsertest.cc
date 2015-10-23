@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -565,13 +566,12 @@ class AccessibilityManagerUserTypeTest
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManagerUserTypeTest);
 };
 
-// TODO(yoshiki): Enable a test for retail mode.
+// TODO(yoshiki): Enable a test for retail mode (i.e. RetailAccountId).
 INSTANTIATE_TEST_CASE_P(
     UserTypeInstantiation,
     AccessibilityManagerUserTypeTest,
     ::testing::Values(kTestUserName,
-                      chromeos::login::kGuestUserName,
-                      // chromeos::login::kRetailModeUserName,
+                      login::GuestAccountId().GetUserEmail().c_str(),
                       kTestSupervisedUserName));
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,

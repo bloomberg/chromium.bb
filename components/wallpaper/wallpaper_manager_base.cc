@@ -27,6 +27,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
@@ -658,7 +659,7 @@ void WallpaperManagerBase::UpdateWallpaper(bool clear_cache) {
   // be set. It could result a black screen on external monitors.
   // See http://crbug.com/265689 for detail.
   if (last_selected_user_.empty()) {
-    SetDefaultWallpaperNow(chromeos::login::kSignInUser);
+    SetDefaultWallpaperNow(chromeos::login::SignInAccountId().GetUserEmail());
     return;
   }
   SetUserWallpaperNow(last_selected_user_);

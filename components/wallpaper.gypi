@@ -31,6 +31,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
+            '../components/components.gyp:signin_core_account_id',
             '../components/components.gyp:user_manager',
           ],
           'sources': [

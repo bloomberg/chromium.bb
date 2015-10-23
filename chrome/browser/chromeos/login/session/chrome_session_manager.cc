@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
 
@@ -44,8 +45,8 @@ ChromeSessionManager::CreateSessionManager(
   bool force_login_screen_in_test =
       parsed_command_line.HasSwitch(switches::kForceLoginManagerInTests);
 
-  std::string login_user_id =
-      parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
+  const AccountId login_account_id(AccountId::FromUserEmail(
+      parsed_command_line.GetSwitchValueASCII(switches::kLoginUser)));
 
   KioskAppManager::RemoveObsoleteCryptohomes();
 
@@ -59,10 +60,11 @@ ChromeSessionManager::CreateSessionManager(
     return scoped_ptr<session_manager::SessionManager>(
         new ChromeSessionManager(new LoginOobeSessionManagerDelegate()));
   } else if (!base::SysInfo::IsRunningOnChromeOS() &&
-             login_user_id == login::kStubUser) {
+             login_account_id == login::StubAccountId()) {
     VLOG(1) << "Starting Chrome with StubLoginSessionManagerDelegate";
-    return scoped_ptr<session_manager::SessionManager>(new ChromeSessionManager(
-        new StubLoginSessionManagerDelegate(profile, login_user_id)));
+    return scoped_ptr<session_manager::SessionManager>(
+        new ChromeSessionManager(new StubLoginSessionManagerDelegate(
+            profile, login_account_id.GetUserEmail())));
   } else {
     VLOG(1) << "Starting Chrome with  RestoreAfterCrashSessionManagerDelegate";
     // Restarting Chrome inside existing user session. Possible cases:
@@ -72,8 +74,9 @@ ChromeSessionManager::CreateSessionManager(
     // 4. Chrome is started on dev machine i.e. not on Chrome OS device w/o
     //    login flow. In that case --login-user=[chromeos::login::kStubUser] is
     //    added. See PreEarlyInitialization().
-    return scoped_ptr<session_manager::SessionManager>(new ChromeSessionManager(
-        new RestoreAfterCrashSessionManagerDelegate(profile, login_user_id)));
+    return scoped_ptr<session_manager::SessionManager>(
+        new ChromeSessionManager(new RestoreAfterCrashSessionManagerDelegate(
+            profile, login_account_id.GetUserEmail())));
   }
 }
 

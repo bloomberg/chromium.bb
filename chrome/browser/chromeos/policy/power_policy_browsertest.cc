@@ -45,6 +45,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -194,7 +195,8 @@ void PowerPolicyBrowserTestBase::SetUpOnMainThread() {
 
   // Initialize user policy.
   InstallUserKey();
-  user_policy_.policy_data().set_username(chromeos::login::kStubUser);
+  user_policy_.policy_data().set_username(
+      chromeos::login::StubAccountId().GetUserEmail());
 }
 
 void PowerPolicyBrowserTestBase::InstallUserKey() {
@@ -202,7 +204,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
   ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
-          chromeos::login::kStubUser);
+          chromeos::login::StubAccountId().GetUserEmail());
   base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username)
                    .AppendASCII("policy.pub");

@@ -18,6 +18,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "grit/components_strings.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -237,7 +238,7 @@ void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
   WallpaperManager::Get()->SetDefaultWallpaperDelayed(
-      chromeos::login::kSignInUser);
+      login::SignInAccountId().GetUserEmail());
 }
 
 void WebUILoginDisplay::OnSigninScreenReady() {

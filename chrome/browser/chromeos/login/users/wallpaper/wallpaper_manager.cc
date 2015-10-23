@@ -42,6 +42,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
@@ -373,7 +374,7 @@ void WallpaperManager::InitializeWallpaper() {
 
   if (!user_manager->IsUserLoggedIn()) {
     if (!StartupUtils::IsDeviceRegistered())
-      SetDefaultWallpaperDelayed(chromeos::login::kSignInUser);
+      SetDefaultWallpaperDelayed(login::SignInAccountId().GetUserEmail());
     else
       InitializeRegisteredDeviceWallpaper();
     return;
@@ -791,7 +792,7 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   int public_session_user_index = FindPublicSession(users);
   if ((!show_users && public_session_user_index == -1) || users.empty()) {
     // Boot into sign in form, preload default wallpaper.
-    SetDefaultWallpaperDelayed(chromeos::login::kSignInUser);
+    SetDefaultWallpaperDelayed(login::SignInAccountId().GetUserEmail());
     return;
   }
 

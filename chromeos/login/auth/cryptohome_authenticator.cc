@@ -25,6 +25,7 @@
 #include "chromeos/login/user_names.h"
 #include "chromeos/login_event_recorder.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -460,7 +461,7 @@ void CryptohomeAuthenticator::LoginOffTheRecord() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   current_state_.reset(
       new AuthAttemptState(UserContext(user_manager::USER_TYPE_GUEST,
-                                       chromeos::login::kGuestUserName),
+                                       login::GuestAccountId().GetUserEmail()),
                            false,    // unlock
                            false,    // online_complete
                            false));  // user_is_new
@@ -493,7 +494,7 @@ void CryptohomeAuthenticator::LoginAsKioskAccount(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   const std::string user_id =
-      use_guest_mount ? chromeos::login::kGuestUserName : app_user_id;
+      use_guest_mount ? login::GuestAccountId().GetUserEmail() : app_user_id;
   current_state_.reset(new AuthAttemptState(
       UserContext(user_manager::USER_TYPE_KIOSK_APP, user_id),
       false,    // unlock

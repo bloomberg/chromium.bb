@@ -659,7 +659,8 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
       false);
 
   // Initializes wallpaper after active_user_ is set.
-  WallpaperManager::Get()->SetUserWallpaperNow(chromeos::login::kGuestUserName);
+  WallpaperManager::Get()->SetUserWallpaperNow(
+      login::GuestAccountId().GetUserEmail());
 }
 
 void ChromeUserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {

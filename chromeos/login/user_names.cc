@@ -14,6 +14,9 @@ namespace {
 // Username for Demo session user.
 constexpr const char kDemoUserName[] = "demouser@demo.app.local";
 
+// Username for Signin account id.
+constexpr const char kSignInUser[] = "sign-in-user-id";
+
 // This is a singleton object that is used to store several
 // global AccountIds for special accounts.
 class FixedAccountManager {
@@ -42,8 +45,7 @@ class FixedAccountManager {
 
 FixedAccountManager::FixedAccountManager()
     : stub_account_id_(AccountId::FromUserEmail(chromeos::login::kStubUser)),
-      signin_account_id_(
-          AccountId::FromUserEmail(chromeos::login::kSignInUser)),
+      signin_account_id_(AccountId::FromUserEmail(kSignInUser)),
       guest_account_id_(
           AccountId::FromUserEmail(chromeos::login::kGuestUserName)),
       demo_account_id_(AccountId::FromUserEmail(kDemoUserName)) {}
@@ -55,8 +57,6 @@ namespace chromeos {
 namespace login {
 
 constexpr const char kStubUser[] = "stub-user@example.com";
-
-constexpr const char kSignInUser[] = "sign-in-user-id";
 
 // Should match cros constant in platform/libchromeos/chromeos/cryptohome.h
 constexpr const char kGuestUserName[] = "$guest";

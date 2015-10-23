@@ -31,6 +31,7 @@ component("wallpaper") {
     public_deps += [ "//third_party/icu" ]
     deps += [
       "//chromeos",
+      "//components/signin/core/account_id",
       "//components/user_manager",
       "//content/public/browser",
     ]

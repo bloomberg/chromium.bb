@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace policy {
@@ -65,7 +66,7 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
                               DeviceLocalAccount::Type* type) {
   // For historical reasons, the guest user ID does not contain an @ symbol and
   // therefore, cannot be parsed by gaia::ExtractDomainName().
-  if (user_id == chromeos::login::kGuestUserName)
+  if (user_id == chromeos::login::GuestAccountId().GetUserEmail())
     return false;
   const std::string domain = gaia::ExtractDomainName(user_id);
   if (!base::EndsWith(domain, kDeviceLocalAccountDomainSuffix,

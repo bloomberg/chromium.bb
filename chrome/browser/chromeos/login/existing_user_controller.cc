@@ -61,6 +61,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -732,7 +733,7 @@ bool ExistingUserController::password_changed() const {
 
 void ExistingUserController::LoginAsGuest() {
   PerformPreLoginActions(UserContext(user_manager::USER_TYPE_GUEST,
-                                     chromeos::login::kGuestUserName));
+                                     login::GuestAccountId().GetUserEmail()));
 
   bool allow_guest;
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);

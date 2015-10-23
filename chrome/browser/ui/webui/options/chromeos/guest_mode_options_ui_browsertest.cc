@@ -8,6 +8,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace {
 
@@ -19,8 +20,9 @@ class GuestModeOptionsBrowserTest : public options::OptionsUIBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::login::kGuestUserName);
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        chromeos::login::GuestAccountId().GetUserEmail());
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
     command_line->AppendSwitch(switches::kIncognito);

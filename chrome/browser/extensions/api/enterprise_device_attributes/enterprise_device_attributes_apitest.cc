@@ -12,6 +12,7 @@
 #include "chromeos/login/user_names.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
@@ -54,7 +55,8 @@ class EnterpriseDeviceAttributesTest : public ExtensionApiTest {
         new policy::StubEnterpriseInstallAttributes());
 
     attributes->SetDomain(test_domain_);
-    attributes->SetRegistrationUser(chromeos::login::kStubUser);
+    attributes->SetRegistrationUser(
+        chromeos::login::StubAccountId().GetUserEmail());
     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
         attributes.release());
 

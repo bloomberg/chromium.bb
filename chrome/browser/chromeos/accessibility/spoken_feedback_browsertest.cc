@@ -35,6 +35,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -246,8 +247,8 @@ class SpokenFeedbackTest
       command_line->AppendSwitch(::switches::kIncognito);
       command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                       "user");
-      command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                      chromeos::login::kGuestUserName);
+      command_line->AppendSwitchASCII(switches::kLoginUser,
+                                      login::GuestAccountId().GetUserEmail());
     }
   }
 };
@@ -590,8 +591,8 @@ class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::login::kGuestUserName);
+    command_line->AppendSwitchASCII(switches::kLoginUser,
+                                    login::GuestAccountId().GetUserEmail());
   }
 
  private:

@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -157,15 +158,17 @@ TEST_F(ExtensionGarbageCollectorChromeOSUnitTest, SharedExtensions) {
   // Version for current user but the extension is not installed.
   base::FilePath path_id1_2 = CreateSharedExtensionDir(
       kExtensionId1, "2.0", cache_dir());
-  CreateSharedExtensionPrefs(
-      kExtensionId1, "2.0", chromeos::login::kStubUser, path_id1_2);
+  CreateSharedExtensionPrefs(kExtensionId1, "2.0",
+                             chromeos::login::StubAccountId().GetUserEmail(),
+                             path_id1_2);
   EXPECT_TRUE(base::PathExists(path_id1_2));
 
   // Version for current user that delayed install.
   base::FilePath path_id2_1 = CreateSharedExtensionDir(
       kExtensionId2, "1.0", cache_dir());
-  CreateSharedExtensionPrefs(
-      kExtensionId2, "1.0", chromeos::login::kStubUser, path_id2_1);
+  CreateSharedExtensionPrefs(kExtensionId2, "1.0",
+                             chromeos::login::StubAccountId().GetUserEmail(),
+                             path_id2_1);
   scoped_refptr<Extension> extension2 = CreateExtension(kExtensionId2, "1.0",
                                                         path_id2_1);
   GetExtensionPrefs()->SetDelayedInstallInfo(
