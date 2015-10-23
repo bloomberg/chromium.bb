@@ -90,6 +90,10 @@ public:
 
     // When true, setWebConnectionType calls are ignored and only setWebConnectionTypeForTest
     // can update the connection type. This is used for layout tests (see crbug.com/377736).
+    //
+    // Since this class is a singleton, tests must call this with false when completed to
+    // avoid indeterminate state across the test harness. When switching in or out of test
+    // mode, all state will be reset to default values.
     void setTestUpdatesOnly(bool);
     // Tests should call this as it will change the type regardless of the value of m_testUpdatesOnly.
     void setWebConnectionForTest(WebConnectionType, double maxBandwidthMbps);

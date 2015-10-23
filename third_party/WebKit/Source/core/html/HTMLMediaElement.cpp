@@ -65,6 +65,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/NetworkStateNotifier.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
@@ -1907,6 +1908,12 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
 
 WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
 {
+    // Force preload to none for cellular connections.
+    if (networkStateNotifier().connectionType() == WebConnectionTypeCellular) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadForcedNone);
+        return WebMediaPlayer::PreloadNone;
+    }
+
     const AtomicString& preload = fastGetAttribute(preloadAttr);
     if (equalIgnoringCase(preload, "none")) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadNone);

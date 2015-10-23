@@ -60761,6 +60761,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="977" label="CSSAtRuleViewport"/>
   <int value="978" label="CSSAtRuleWebkitKeyframes"/>
   <int value="979" label="V8HTMLFieldSetElement_Elements_AttributeGetter"/>
+  <int value="980" label="HTMLMediaElementPreloadForcedNone"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

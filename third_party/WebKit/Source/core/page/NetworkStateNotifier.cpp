@@ -104,6 +104,15 @@ void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer, Execut
 void NetworkStateNotifier::setTestUpdatesOnly(bool updatesOnly)
 {
     ASSERT(isMainThread());
+    MutexLocker locker(m_mutex);
+
+    // Reset state to default when entering or leaving test mode.
+    if (updatesOnly != m_testUpdatesOnly) {
+        m_isOnLine = true;
+        m_type = WebConnectionTypeOther;
+        m_maxBandwidthMbps = std::numeric_limits<double>::infinity();
+    }
+
     m_testUpdatesOnly = updatesOnly;
 }
 
