@@ -169,12 +169,13 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     }
 
     /**
-     * Calls {@link BookmarksBridge#moveBookmark(BookmarkId, BookmarkId, int)} in a reversed
-     * order of the list, in order to let the last item appear at the top.
+     * Calls {@link BookmarksBridge#moveBookmark(BookmarkId, BookmarkId, int)} for the given
+     * bookmark list. The bookmarks are appended at the end.
      */
     public void moveBookmarks(List<BookmarkId> bookmarkIds, BookmarkId newParentId) {
-        for (int i = bookmarkIds.size() - 1; i >= 0; i--) {
-            moveBookmark(bookmarkIds.get(i), newParentId, 0);
+        int appenedIndex = getChildCount(newParentId);
+        for (int i = 0; i < bookmarkIds.size(); ++i) {
+            moveBookmark(bookmarkIds.get(i), newParentId, appenedIndex + i);
         }
     }
 

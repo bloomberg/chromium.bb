@@ -85,6 +85,8 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
                    jboolean get_bookmarks,
                    jobject j_result_obj);
 
+  jint GetChildCount(JNIEnv* env, jobject obj, jlong id, jint type);
+
   base::android::ScopedJavaLocalRef<jobject> GetChildAt(JNIEnv* env,
                                                         jobject obj,
                                                         jlong id,

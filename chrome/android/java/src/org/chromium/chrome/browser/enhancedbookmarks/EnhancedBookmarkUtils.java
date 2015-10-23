@@ -81,7 +81,8 @@ public class EnhancedBookmarkUtils {
             return;
         }
 
-        bookmarkModel.addBookmarkAsync(bookmarkModel.getDefaultFolder(), 0, tab.getTitle(),
+        BookmarkId parent = bookmarkModel.getDefaultFolder();
+        bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
                 tab.getUrl(), tab.getWebContents(),
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
     }

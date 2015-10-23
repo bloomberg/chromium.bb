@@ -373,6 +373,15 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetDesktopFolderId(JNIEnv* env,
   return folder_id_obj;
 }
 
+jint BookmarksBridge::GetChildCount(JNIEnv* env,
+                                    jobject obj,
+                                    jlong id,
+                                    jint type) {
+  DCHECK(IsLoaded());
+  const BookmarkNode* node = GetNodeByID(id, type);
+  return node->child_count();
+}
+
 void BookmarksBridge::GetChildIDs(JNIEnv* env,
                                   jobject obj,
                                   jlong id,
