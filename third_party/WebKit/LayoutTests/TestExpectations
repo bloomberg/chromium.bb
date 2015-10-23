@@ -1044,6 +1044,13 @@ crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Fail
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ Failure ]
 
+crbug.com/530964 css2.1/t0905-c414-flt-wrap-00-e.html [ NeedsRebaseline ]
+crbug.com/530964 fast/backgrounds/background-position-parsing.html [ NeedsRebaseline ]
+crbug.com/530964 fast/backgrounds/size/contain-and-cover-zoomed.html [ NeedsRebaseline ]
+crbug.com/530964 fast/block/float/016.html [ NeedsRebaseline ]
+crbug.com/530964 [ Mac ] fast/block/margin-collapse/103.html [ NeedsRebaseline ]
+crbug.com/530964 [ Mac Win ] fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
+
 crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-match.html [ Pass Failure ]
 crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-put.html [ Pass Failure Timeout ]
 crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-storage-match.html [ Pass Failure Timeout ]

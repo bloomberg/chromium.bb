@@ -99,7 +99,7 @@ class ComputeFloatOffsetAdapter {
 public:
     typedef FloatingObjectInterval IntervalType;
 
-    ComputeFloatOffsetAdapter(const LayoutBlockFlow* layoutObject, int lineTop, int lineBottom, LayoutUnit offset)
+    ComputeFloatOffsetAdapter(const LayoutBlockFlow* layoutObject, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
         : m_layoutObject(layoutObject)
         , m_lineTop(lineTop)
         , m_lineBottom(lineBottom)
@@ -110,8 +110,8 @@ public:
 
     virtual ~ComputeFloatOffsetAdapter() { }
 
-    int lowValue() const { return m_lineTop; }
-    int highValue() const { return m_lineBottom; }
+    LayoutUnit lowValue() const { return m_lineTop; }
+    LayoutUnit highValue() const { return m_lineBottom; }
     void collectIfNeeded(const IntervalType&);
 
     LayoutUnit offset() const { return m_offset; }
@@ -120,8 +120,8 @@ protected:
     virtual bool updateOffsetIfNeeded(const FloatingObject&) = 0;
 
     const LayoutBlockFlow* m_layoutObject;
-    int m_lineTop;
-    int m_lineBottom;
+    LayoutUnit m_lineTop;
+    LayoutUnit m_lineBottom;
     LayoutUnit m_offset;
     const FloatingObject* m_outermostFloat;
 };
@@ -323,8 +323,8 @@ inline void FloatingObjects::decreaseObjectsCount(FloatingObject::Type type)
 inline FloatingObjectInterval FloatingObjects::intervalForFloatingObject(FloatingObject& floatingObject)
 {
     if (m_horizontalWritingMode)
-        return FloatingObjectInterval(floatingObject.frameRect().pixelSnappedY(), floatingObject.frameRect().pixelSnappedMaxY(), &floatingObject);
-    return FloatingObjectInterval(floatingObject.frameRect().pixelSnappedX(), floatingObject.frameRect().pixelSnappedMaxX(), &floatingObject);
+        return FloatingObjectInterval(floatingObject.frameRect().y(), floatingObject.frameRect().maxY(), &floatingObject);
+    return FloatingObjectInterval(floatingObject.frameRect().x(), floatingObject.frameRect().maxX(), &floatingObject);
 }
 
 void FloatingObjects::addPlacedObject(FloatingObject& floatingObject)
@@ -396,8 +396,7 @@ void FloatingObjects::computePlacedFloatsTree()
 
 LayoutUnit FloatingObjects::logicalLeftOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit *heightRemaining)
 {
-    int logicalTopAsInt = roundToInt(logicalTop);
-    ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft> adapter(m_layoutObject, logicalTopAsInt, logicalTopAsInt, fixedOffset);
+    ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft> adapter(m_layoutObject, logicalTop, logicalTop, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     if (heightRemaining)
@@ -408,8 +407,7 @@ LayoutUnit FloatingObjects::logicalLeftOffsetForPositioningFloat(LayoutUnit fixe
 
 LayoutUnit FloatingObjects::logicalRightOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit *heightRemaining)
 {
-    int logicalTopAsInt = roundToInt(logicalTop);
-    ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight> adapter(m_layoutObject, logicalTopAsInt, logicalTopAsInt, fixedOffset);
+    ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight> adapter(m_layoutObject, logicalTop, logicalTop, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     if (heightRemaining)
@@ -420,7 +418,7 @@ LayoutUnit FloatingObjects::logicalRightOffsetForPositioningFloat(LayoutUnit fix
 
 LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
 {
-    ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft> adapter(m_layoutObject, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
+    ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft> adapter(m_layoutObject, logicalTop, logicalTop + logicalHeight, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     return adapter.offset();
@@ -428,7 +426,7 @@ LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit
 
 LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
 {
-    ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight> adapter(m_layoutObject, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
+    ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight> adapter(m_layoutObject, logicalTop, logicalTop + logicalHeight, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     return std::min(fixedOffset, adapter.offset());
@@ -440,7 +438,7 @@ FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
 {
 }
 
-inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int objectBottom)
+inline static bool rangesIntersect(LayoutUnit floatTop, LayoutUnit floatBottom, LayoutUnit objectTop, LayoutUnit objectBottom)
 {
     if (objectTop >= floatBottom || objectBottom < floatTop)
         return false;
@@ -497,8 +495,8 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
 
     // Make sure the float hasn't changed since it was added to the placed floats tree.
     ASSERT(floatingObject.isPlaced());
-    ASSERT(interval.low() == m_layoutObject->pixelSnappedLogicalTopForFloat(floatingObject));
-    ASSERT(interval.high() == m_layoutObject->pixelSnappedLogicalBottomForFloat(floatingObject));
+    ASSERT(interval.low() == m_layoutObject->logicalTopForFloat(floatingObject));
+    ASSERT(interval.high() == m_layoutObject->logicalBottomForFloat(floatingObject));
 
     bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
     if (floatIsNewExtreme)
@@ -545,14 +543,14 @@ inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::
 
 #ifndef NDEBUG
 // These helpers are only used by the PODIntervalTree for debugging purposes.
-String ValueToString<int>::string(const int value)
+String ValueToString<LayoutUnit>::string(const LayoutUnit value)
 {
-    return String::number(value);
+    return String::number(value.toFloat());
 }
 
 String ValueToString<FloatingObject*>::string(const FloatingObject* floatingObject)
 {
-    return String::format("%p (%dx%d %dx%d)", floatingObject, floatingObject->frameRect().pixelSnappedX(), floatingObject->frameRect().pixelSnappedY(), floatingObject->frameRect().pixelSnappedMaxX(), floatingObject->frameRect().pixelSnappedMaxY());
+    return String::format("%p (%gx%g %gx%g)", floatingObject, floatingObject->frameRect().x().toFloat(), floatingObject->frameRect().y().toFloat(), floatingObject->frameRect().maxX().toFloat(), floatingObject->frameRect().maxY().toFloat());
 }
 #endif
 

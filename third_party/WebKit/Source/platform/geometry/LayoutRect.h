@@ -76,12 +76,8 @@ public:
     LayoutUnit width() const { return m_size.width(); }
     LayoutUnit height() const { return m_size.height(); }
 
-    int pixelSnappedX() const { return x().round(); }
-    int pixelSnappedY() const { return y().round(); }
     int pixelSnappedWidth() const { return snapSizeToPixel(width(), x()); }
     int pixelSnappedHeight() const { return snapSizeToPixel(height(), y()); }
-    int pixelSnappedMaxX() const { return (m_location.x() + m_size.width()).round(); }
-    int pixelSnappedMaxY() const { return (m_location.y() + m_size.height()).round(); }
 
     void setX(LayoutUnit x) { m_location.setX(x); }
     void setY(LayoutUnit y) { m_location.setY(y); }
