@@ -610,8 +610,10 @@ using content::WebContents;
 - (void)windowDidBecomeMain:(NSNotification*)notification {
   if (chrome::GetLastActiveBrowser() != browser_) {
     BrowserList::SetLastActive(browser_.get());
-    [self saveWindowPositionIfNeeded];
   }
+  // Always saveWindowPositionIfNeeded when becoming main, not just
+  // when |browser_| is not the last active browser. See crbug.com/536280 .
+  [self saveWindowPositionIfNeeded];
 
   NSView* rootView = [[[self window] contentView] superview];
   [rootView cr_recursivelyInvokeBlock:^(id view) {
