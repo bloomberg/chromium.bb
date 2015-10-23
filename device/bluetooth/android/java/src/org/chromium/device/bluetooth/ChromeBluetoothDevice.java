@@ -165,6 +165,8 @@ final class ChromeBluetoothDevice {
                                 mBluetoothGatt.getServices()) {
                             // Create a device unique service ID. getInstanceId only differs
                             // between service instances with the same UUID.
+                            // TODO(scheib): Make instance IDs unique to the whole adapter.
+                            // http://crbug.com/546747
                             String serviceInstanceId =
                                     service.getUuid().toString() + service.getInstanceId();
                             nativeCreateGattRemoteService(

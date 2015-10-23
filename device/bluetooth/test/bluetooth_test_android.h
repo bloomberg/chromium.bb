@@ -35,6 +35,8 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) override;
   void SimulateGattServicesDiscoveryError(BluetoothDevice* device) override;
+  void SimulateGattCharacteristic(BluetoothGattService* service,
+                                  const std::string& uuid) override;
 
   // Records that Java FakeBluetoothDevice connectGatt was called.
   void OnFakeBluetoothDeviceConnectGattCalled(JNIEnv* env, jobject caller);

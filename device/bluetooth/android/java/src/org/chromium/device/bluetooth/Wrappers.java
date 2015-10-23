@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
@@ -331,12 +332,41 @@ class Wrappers {
             mService = service;
         }
 
+        public List<BluetoothGattCharacteristicWrapper> getCharacteristics() {
+            List<BluetoothGattCharacteristic> characteristics = mService.getCharacteristics();
+            ArrayList<BluetoothGattCharacteristicWrapper> characteristicsWrapped =
+                    new ArrayList<BluetoothGattCharacteristicWrapper>(characteristics.size());
+            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                characteristicsWrapped.add(new BluetoothGattCharacteristicWrapper(characteristic));
+            }
+            return characteristicsWrapped;
+        }
+
         public int getInstanceId() {
             return mService.getInstanceId();
         }
 
         public UUID getUuid() {
             return mService.getUuid();
+        }
+    }
+
+    /**
+     * Wraps android.bluetooth.BluetoothGattCharacteristic.
+     */
+    static class BluetoothGattCharacteristicWrapper {
+        private final BluetoothGattCharacteristic mCharacteristic;
+
+        public BluetoothGattCharacteristicWrapper(BluetoothGattCharacteristic characteristic) {
+            mCharacteristic = characteristic;
+        }
+
+        public int getInstanceId() {
+            return mCharacteristic.getInstanceId();
+        }
+
+        public UUID getUuid() {
+            return mCharacteristic.getUuid();
         }
     }
 }

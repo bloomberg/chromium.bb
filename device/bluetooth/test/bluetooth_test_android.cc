@@ -12,6 +12,7 @@
 #include "device/bluetooth/android/wrappers.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_device_android.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "jni/Fakes_jni.h"
 
@@ -138,6 +139,18 @@ void BluetoothTestAndroid::SimulateGattServicesDiscoveryError(
       AttachCurrentThread(), device_android->GetJavaObject().obj(),
       0x00000101,  // android.bluetooth.BluetoothGatt.GATT_FAILURE
       nullptr);
+}
+
+void BluetoothTestAndroid::SimulateGattCharacteristic(
+    BluetoothGattService* service,
+    const std::string& uuid) {
+  BluetoothRemoteGattServiceAndroid* service_android =
+      static_cast<BluetoothRemoteGattServiceAndroid*>(service);
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_FakeBluetoothGattService_addCharacteristic(
+      env, service_android->GetJavaObject().obj(),
+      base::android::ConvertUTF8ToJavaString(env, uuid).obj());
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled(

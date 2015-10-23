@@ -12,7 +12,7 @@
 
 namespace device {
 
-// BluetoothDeviceAndroid along with the Java class
+// BluetoothDeviceAndroid along with its owned Java class
 // org.chromium.device.bluetooth.ChromeBluetoothDevice implement
 // BluetoothDevice.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final

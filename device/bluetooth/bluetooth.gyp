@@ -101,6 +101,8 @@
         'bluetooth_low_energy_win.h',
         'bluetooth_pairing_chromeos.cc',
         'bluetooth_pairing_chromeos.h',
+        'bluetooth_remote_gatt_characteristic_android.cc',
+        'bluetooth_remote_gatt_characteristic_android.h',
         'bluetooth_remote_gatt_characteristic_chromeos.cc',
         'bluetooth_remote_gatt_characteristic_chromeos.h',
         'bluetooth_remote_gatt_descriptor_chromeos.cc',

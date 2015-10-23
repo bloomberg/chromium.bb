@@ -10,20 +10,21 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
-class BluetoothAdapter;
-class BluetoothGattCharacteristic;
-
 class BluetoothAdapterAndroid;
 class BluetoothDeviceAndroid;
+class BluetoothRemoteGattCharacteristicAndroid;
 
-// The BluetoothRemoteGattServiceAndroid class implements BluetootGattService
-// for remote GATT services on Android.
-class BluetoothRemoteGattServiceAndroid : public device::BluetoothGattService {
+// BluetoothRemoteGattServiceAndroid along with its owned Java class
+// org.chromium.device.bluetooth.ChromeBluetoothRemoteGattService implement
+// BluetoothGattService.
+class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
+    : public device::BluetoothGattService {
  public:
   // Create a BluetoothRemoteGattServiceAndroid instance and associated Java
   // ChromeBluetoothRemoteGattService using the provided
@@ -43,6 +44,9 @@ class BluetoothRemoteGattServiceAndroid : public device::BluetoothGattService {
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
+
+  // Returns the associated ChromeBluetoothRemoteGattService Java object.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // device::BluetoothGattService overrides.
   std::string GetIdentifier() const override;
@@ -64,6 +68,15 @@ class BluetoothRemoteGattServiceAndroid : public device::BluetoothGattService {
   void Unregister(const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
 
+  // Creates a Bluetooth GATT characteristic object and adds it to
+  // |characteristics_| if it is not already there.
+  void CreateGattRemoteCharacteristic(
+      JNIEnv* env,
+      jobject caller,
+      const jstring& instanceId,
+      jobject /* BluetoothGattCharacteristicWrapper */
+      bluetooth_gatt_characteristic_wrapper);
+
  private:
   friend class BluetoothDeviceAndroid;
 
@@ -71,6 +84,9 @@ class BluetoothRemoteGattServiceAndroid : public device::BluetoothGattService {
                                     BluetoothDeviceAndroid* device,
                                     std::string instanceId);
   ~BluetoothRemoteGattServiceAndroid() override;
+
+  // Populates |characteristics_| from Java objects if necessary.
+  void EnsureCharacteristicsCreated() const;
 
   // Java object org.chromium.device.bluetooth.ChromeBluetoothRemoteGattService.
   base::android::ScopedJavaGlobalRef<jobject> j_service_;
@@ -86,9 +102,14 @@ class BluetoothRemoteGattServiceAndroid : public device::BluetoothGattService {
   // Instance ID, cached from Android object.
   std::string instanceId_;
 
+  // Map of characteristics, keyed by characteristic identifier.
+  base::ScopedPtrHashMap<std::string,
+                         scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>>
+      characteristics_;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceAndroid);
 };
 
-}  // namespace android
+}  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_ANDROID_H_

@@ -305,8 +305,62 @@ class Fakes {
     static class FakeBluetoothGattService extends Wrappers.BluetoothGattServiceWrapper {
         final int mInstanceId;
         final UUID mUuid;
+        final ArrayList<Wrappers.BluetoothGattCharacteristicWrapper> mCharacteristics;
 
         public FakeBluetoothGattService(UUID uuid, int instanceId) {
+            super(null);
+            mUuid = uuid;
+            mInstanceId = instanceId;
+            mCharacteristics = new ArrayList<Wrappers.BluetoothGattCharacteristicWrapper>();
+        }
+
+        // Create a characteristic and add it to this service.
+        @CalledByNative("FakeBluetoothGattService")
+        private static void addCharacteristic(
+                ChromeBluetoothRemoteGattService chromeService, String uuidString) {
+            FakeBluetoothGattService fakeService =
+                    (FakeBluetoothGattService) chromeService.mService;
+            UUID uuid = UUID.fromString(uuidString);
+
+            int countOfDuplicateUUID = 0;
+            for (Wrappers.BluetoothGattCharacteristicWrapper characteristic :
+                    fakeService.mCharacteristics) {
+                if (characteristic.getUuid().equals(uuid)) {
+                    countOfDuplicateUUID++;
+                }
+            }
+            fakeService.mCharacteristics.add(new FakeBluetoothGattCharacteristic(
+                    uuid, /* instanceId */ countOfDuplicateUUID));
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // Wrappers.BluetoothGattServiceWrapper overrides:
+
+        @Override
+        public List<Wrappers.BluetoothGattCharacteristicWrapper> getCharacteristics() {
+            return mCharacteristics;
+        }
+
+        @Override
+        public int getInstanceId() {
+            return mInstanceId;
+        }
+
+        @Override
+        public UUID getUuid() {
+            return mUuid;
+        }
+    }
+
+    /**
+     * Fakes android.bluetooth.BluetoothGattCharacteristic.
+     */
+    static class FakeBluetoothGattCharacteristic
+            extends Wrappers.BluetoothGattCharacteristicWrapper {
+        final UUID mUuid;
+        final int mInstanceId;
+
+        public FakeBluetoothGattCharacteristic(UUID uuid, int instanceId) {
             super(null);
             mUuid = uuid;
             mInstanceId = instanceId;
