@@ -52,7 +52,7 @@ void ServicePortServiceImpl::PostMessageToClient(
   std::vector<int> new_routing_ids;
   message_port_message_filter_->UpdateMessagePortsWithNewRoutes(
       sent_message_ports, &new_routing_ids);
-  client_->PostMessage(
+  client_->PostMessageToPort(
       port_id, mojo::String::From(message.message_as_string),
       mojo::Array<MojoTransferredMessagePortPtr>::From(sent_message_ports),
       mojo::Array<int32_t>::From(new_routing_ids));
@@ -94,7 +94,7 @@ void ServicePortServiceImpl::Connect(const mojo::String& target_url,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void ServicePortServiceImpl::PostMessage(
+void ServicePortServiceImpl::PostMessageToPort(
     int32_t port_id,
     const mojo::String& message,
     mojo::Array<MojoTransferredMessagePortPtr> ports) {

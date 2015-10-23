@@ -62,10 +62,10 @@ class ServicePortProvider
   void closePort(blink::WebServicePortID port_id) override;
 
   // ServicePortServiceClient implementation.
-  void PostMessage(int32_t port_id,
-                   const mojo::String& message,
-                   mojo::Array<MojoTransferredMessagePortPtr> ports,
-                   mojo::Array<int32_t> new_routing_ids) override;
+  void PostMessageToPort(int32_t port_id,
+                         const mojo::String& message,
+                         mojo::Array<MojoTransferredMessagePortPtr> ports,
+                         mojo::Array<int32_t> new_routing_ids) override;
 
  private:
   ~ServicePortProvider() override;

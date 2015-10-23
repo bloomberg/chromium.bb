@@ -17,6 +17,7 @@
 #include "gin/v8_initializer.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/logging/init_logging.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -78,7 +79,9 @@ GlobalState::GlobalState(mojo::ApplicationImpl* app)
       device_pixel_ratio_(1.f),
       discardable_memory_allocator_(kDesiredMaxMemory),
       compositor_thread_("compositor thread"),
-      blink_settings_(new BlinkSettingsImpl()) {}
+      blink_settings_(new BlinkSettingsImpl()) {
+  tracing_.Initialize(app);
+}
 
 GlobalState::~GlobalState() {
   if (blink_platform_) {

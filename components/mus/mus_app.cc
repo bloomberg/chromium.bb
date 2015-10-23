@@ -48,7 +48,6 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
 
 void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
   app_impl_ = app;
-  tracing_.Initialize(app);
   surfaces_state_ = new SurfacesState;
 
 #if defined(USE_X11)

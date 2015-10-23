@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "components/clipboard/clipboard_application_delegate.h"
 #include "components/filesystem/file_system_app.h"
@@ -16,6 +17,7 @@
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/logging/init_logging.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/tracing_app.h"
 #include "url/gurl.h"
 
@@ -91,7 +93,9 @@ void CoreServicesApplicationDelegate::ApplicationThreadDestroyed(
 }
 
 void CoreServicesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+  base::PlatformThread::SetName("CoreServicesDispatcher");
   mojo::logging::InitLogging();
+  tracing_.Initialize(app);
 }
 
 bool CoreServicesApplicationDelegate::ConfigureIncomingConnection(

@@ -7,6 +7,7 @@ include_rules = [
   "+mojo/converters/geometry",
   "+mojo/converters/surfaces",
   "+mojo/public",
+  "+mojo/services/tracing/public/cpp",
   "+third_party/pdfium/public",
   "+ui/gfx/geometry",
   "+ui/mojo",

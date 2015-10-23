@@ -80,7 +80,7 @@ void ServicePortProvider::closePort(blink::WebServicePortID port_id) {
   GetServicePortServicePtr()->ClosePort(port_id);
 }
 
-void ServicePortProvider::PostMessage(
+void ServicePortProvider::PostMessageToPort(
     int32_t port_id,
     const mojo::String& message,
     mojo::Array<MojoTransferredMessagePortPtr> ports,
@@ -98,7 +98,7 @@ void ServicePortProvider::PostMessageToBrowser(
     int port_id,
     const base::string16& message,
     const std::vector<TransferredMessagePort> ports) {
-  GetServicePortServicePtr()->PostMessage(
+  GetServicePortServicePtr()->PostMessageToPort(
       port_id, mojo::String::From(message),
       mojo::Array<MojoTransferredMessagePortPtr>::From(ports));
 }

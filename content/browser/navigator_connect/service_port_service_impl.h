@@ -57,9 +57,10 @@ class ServicePortServiceImpl : public ServicePortService {
   void Connect(const mojo::String& target_url,
                const mojo::String& origin,
                const ConnectCallback& callback) override;
-  void PostMessage(int32_t port_id,
-                   const mojo::String& message,
-                   mojo::Array<MojoTransferredMessagePortPtr> ports) override;
+  void PostMessageToPort(
+      int32_t port_id,
+      const mojo::String& message,
+      mojo::Array<MojoTransferredMessagePortPtr> ports) override;
   void ClosePort(int32_t port_id) override;
 
   // Callback called when a connection to a service has been establised or

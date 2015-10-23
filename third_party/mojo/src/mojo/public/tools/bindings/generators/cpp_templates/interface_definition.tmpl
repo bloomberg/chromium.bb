@@ -194,6 +194,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
       {{alloc_params(method.param_struct)|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
+      TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
       sink_->{{method.name}}({{pass_params(method.parameters)}});
       return true;
 {%-     else %}
@@ -228,6 +229,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
       {{alloc_params(method.param_struct)|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
+      TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");
       sink_->{{method.name}}(
 {%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback);
       return true;

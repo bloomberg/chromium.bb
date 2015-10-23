@@ -71,6 +71,7 @@
   'conditions': [
     ['require_interface_bindings==1', {
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_interface_bindings_generation',
       ],
     }],

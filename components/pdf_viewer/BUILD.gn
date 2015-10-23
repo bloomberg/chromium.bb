@@ -27,6 +27,8 @@ mojo_native_application("pdf_viewer") {
     "//mojo/platform_handle",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/services/tracing/public/cpp",
+    "//mojo/services/tracing/public/interfaces",
     "//third_party/mojo/src/mojo/public/c/gles2",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/pdfium",

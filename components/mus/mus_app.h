@@ -85,7 +85,6 @@ class MandolineUIServicesApp
   mojo::WeakBindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
   mojo::ApplicationImpl* app_impl_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
-  mojo::TracingImpl tracing_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
 

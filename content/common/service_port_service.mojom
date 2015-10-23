@@ -20,15 +20,15 @@ interface ServicePortService {
   Connect(string target_url, string origin)
       => (ServicePortConnectResult result, int32 port_id);
 
-  PostMessage(int32 port_id, string message,
-              array<MojoTransferredMessagePort> ports);
+  PostMessageToPort(int32 port_id, string message,
+                    array<MojoTransferredMessagePort> ports);
   ClosePort(int32 port_id);
 };
 
 interface ServicePortServiceClient {
-  PostMessage(int32 port_id, string message,
-              array<MojoTransferredMessagePort> ports,
-              array<int32> new_routing_ids);
+  PostMessageToPort(int32 port_id, string message,
+                    array<MojoTransferredMessagePort> ports,
+                    array<int32> new_routing_ids);
 };
 
 interface ServicePortDispatcher {

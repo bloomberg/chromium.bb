@@ -1,3 +1,4 @@
+
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -107,5 +108,5 @@ interface Service {
 // This interface is referenced above where it is defined. It also refers to
 // itself from a method.
 interface Port {
-  PostMessage@0(string message_text@0, Port port@1);
+  PostMessageToPort@0(string message_text@0, Port port@1);
 };

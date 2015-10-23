@@ -260,6 +260,7 @@ template("mojom") {
           rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
       deps = [
         ":$generator_target_name",
+        "//base",
         rebase_path("mojo/public/interfaces/bindings:bindings__generator",
                     ".",
                     mojo_root),
