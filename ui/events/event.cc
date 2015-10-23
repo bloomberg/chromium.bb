@@ -812,7 +812,9 @@ base::char16 KeyEvent::GetCharacter() const {
     DomKey::Base utf32_character = key_.ToCharacter();
     base::char16 ucs2_character = static_cast<base::char16>(utf32_character);
     DCHECK(static_cast<DomKey::Base>(ucs2_character) == utf32_character);
-    if (flags() & EF_CONTROL_DOWN) {
+    // Check if the control character is down. Note that ALTGR is represented
+    // on Windows as CTRL|ALT, so we need to make sure that is not set.
+    if ((flags() & (EF_ALTGR_DOWN | EF_CONTROL_DOWN)) == EF_CONTROL_DOWN) {
       // For a control character, key_ contains the corresponding printable
       // character. To preserve existing behaviour for now, return the control
       // character here; this will likely change -- see e.g. crbug.com/471488.
