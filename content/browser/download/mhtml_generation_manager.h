@@ -20,65 +20,62 @@ namespace content {
 
 class WebContents;
 
+// The class and all of its members live on the UI thread.  Only static methods
+// are executed on other threads.
 class MHTMLGenerationManager {
  public:
   static MHTMLGenerationManager* GetInstance();
 
-  typedef base::Callback<void(int64 /* size of the file */)>
-      GenerateMHTMLCallback;
+  // GenerateMHTMLCallback is called to report completion and status of MHTML
+  // generation.  On success |file_size| indicates the size of the
+  // generated file.  On failure |file_size| is -1.
+  typedef base::Callback<void(int64 file_size)> GenerateMHTMLCallback;
 
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
   void SaveMHTML(WebContents* web_contents,
-                 const base::FilePath& file,
+                 const base::FilePath& file_path,
                  const GenerateMHTMLCallback& callback);
 
-  // Instructs the render view to generate a MHTML representation of the current
-  // page for |web_contents|.
-  void StreamMHTML(WebContents* web_contents,
-                   base::File file,
-                   const GenerateMHTMLCallback& callback);
-
-  // Notification from the renderer that the MHTML generation finished.
-  // |mhtml_data_size| contains the size in bytes of the generated MHTML data,
-  // or -1 in case of failure.
-  void MHTMLGenerated(int job_id, int64 mhtml_data_size);
+  // Handler for ViewHostMsg_SavedPageAsMHTML (a notification from the renderer
+  // that the MHTML generation finished).
+  void OnSavedPageAsMHTML(int job_id,
+                          bool mhtml_generation_in_renderer_succeeded);
 
  private:
   friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;
   class Job;
+  enum class JobStatus { SUCCESS, FAILURE };
 
   MHTMLGenerationManager();
   virtual ~MHTMLGenerationManager();
 
   // Called on the file thread to create |file|.
-  void CreateFile(int job_id,
-                  const base::FilePath& file,
-                  base::ProcessHandle renderer_process);
+  static base::File CreateFile(const base::FilePath& file_path);
 
   // Called on the UI thread when the file that should hold the MHTML data has
-  // been created.  This receives a handle to that file for the browser process
-  // and one for the renderer process.
-  void FileAvailable(int job_id,
-                     base::File browser_file,
-                     IPC::PlatformFileForTransit renderer_file);
+  // been created.
+  void OnFileAvailable(int job_id, base::File browser_file);
 
-  // Called on the file thread to close the file the MHTML was saved to.
-  void CloseFile(base::File file);
+  // Called on the UI thread when a job has been finished.
+  void JobFinished(int job_id, JobStatus job_status);
 
-  // Called on the UI thread when a job has been processed (successfully or
-  // not).  Closes the file and removes the job from the job map.
-  // |mhtml_data_size| is -1 if the MHTML generation failed.
-  void JobFinished(int job_id, int64 mhtml_data_size);
+  // Called on the UI thread after the file got finalized and we have its size.
+  void OnFileClosed(int job_id, JobStatus job_status, int64 file_size);
 
-  // Creates an register a new job.
+  // Creates and registers a new job.
   int NewJob(WebContents* web_contents, const GenerateMHTMLCallback& callback);
+
+  // Finds job by id.  Returns nullptr if no job with a given id was found.
+  Job* FindJob(int job_id);
 
   // Called when the render process connected to a job exits.
   void RenderProcessExited(Job* job);
 
   typedef std::map<int, Job*> IDToJobMap;
   IDToJobMap id_to_job_;
+
+  int next_job_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLGenerationManager);
 };

@@ -2479,7 +2479,9 @@ void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
 }
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
-  MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);
+  bool mhtml_generation_in_renderer_succeeded = data_size >= 0;
+  MHTMLGenerationManager::GetInstance()->OnSavedPageAsMHTML(
+      job_id, mhtml_generation_in_renderer_succeeded);
 }
 
 void RenderProcessHostImpl::OnGpuSwitched() {

@@ -26,10 +26,10 @@ namespace content {
 
 class MHTMLGenerationTest : public ContentBrowserTest {
  public:
-  MHTMLGenerationTest() : mhtml_generated_(false), file_size_(0) {}
+  MHTMLGenerationTest() : has_mhtml_callback_run_(false), file_size_(0) {}
 
   void MHTMLGenerated(base::Closure quit_closure, int64 size) {
-    mhtml_generated_ = true;
+    has_mhtml_callback_run_ = true;
     file_size_ = size;
     quit_closure.Run();
   }
@@ -40,13 +40,13 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
-  bool mhtml_generated() const { return mhtml_generated_; }
+  bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
   int64 file_size() const { return file_size_; }
 
   base::ScopedTempDir temp_dir_;
 
  private:
-  bool mhtml_generated_;
+  bool has_mhtml_callback_run_;
   int64 file_size_;
 };
 
@@ -70,13 +70,32 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   // Block until the MHTML is generated.
   run_loop.Run();
 
-  EXPECT_TRUE(mhtml_generated());
+  EXPECT_TRUE(has_mhtml_callback_run());
   EXPECT_GT(file_size(), 0);
 
   // Make sure the actual generated file has some contents.
   int64 file_size;
   ASSERT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_GT(file_size, 100);
+}
+
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  base::FilePath path(FILE_PATH_LITERAL("/invalid/file/path"));
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
+
+  base::RunLoop run_loop;
+  shell()->web_contents()->GenerateMHTML(
+      path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
+                       run_loop.QuitClosure()));
+
+  // Block until the MHTML is generated.
+  run_loop.Run();
+
+  EXPECT_TRUE(has_mhtml_callback_run());
+  EXPECT_EQ(file_size(), -1);  // Expecting failure.
 }
 
 // Test suite that allows testing --site-per-process against cross-site frames.
@@ -125,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest,
   // Block until the MHTML is generated.
   run_loop.Run();
 
-  EXPECT_TRUE(mhtml_generated());
+  EXPECT_TRUE(has_mhtml_callback_run());
   EXPECT_GT(file_size(), 0);
 
   std::string mhtml;
