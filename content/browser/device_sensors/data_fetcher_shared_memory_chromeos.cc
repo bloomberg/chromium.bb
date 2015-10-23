@@ -28,6 +28,7 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       sensor_manager_->StartFetchingDeviceOrientationData(
           static_cast<DeviceOrientationHardwareBuffer*>(buffer));
       return true;
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
     case CONSUMER_TYPE_LIGHT:
       NOTIMPLEMENTED();
       return false;
@@ -42,6 +43,7 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       return sensor_manager_->StopFetchingDeviceMotionData();
     case CONSUMER_TYPE_ORIENTATION:
       return sensor_manager_->StopFetchingDeviceOrientationData();
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
     case CONSUMER_TYPE_LIGHT:
       NOTIMPLEMENTED();
       return false;

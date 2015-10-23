@@ -558,6 +558,8 @@
       'browser/device_sensors/device_light_message_filter.h',
       'browser/device_sensors/device_motion_message_filter.cc',
       'browser/device_sensors/device_motion_message_filter.h',
+      'browser/device_sensors/device_orientation_absolute_message_filter.cc',
+      'browser/device_sensors/device_orientation_absolute_message_filter.h',
       'browser/device_sensors/device_orientation_message_filter.cc',
       'browser/device_sensors/device_orientation_message_filter.h',
       'browser/device_sensors/device_sensors_consts.h',

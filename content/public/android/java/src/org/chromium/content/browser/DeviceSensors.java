@@ -163,6 +163,10 @@ class DeviceSensors implements SensorEventListener {
                 case ConsumerType.ORIENTATION:
                     success = registerOrientationSensorsWithFallback(rateInMicroseconds);
                     break;
+                case ConsumerType.ORIENTATION_ABSOLUTE:
+                    // not implemented
+                    assert false;
+                    return false;
                 case ConsumerType.MOTION:
                     // note: device motion spec does not require all sensors to be available
                     success = registerSensors(DEVICE_MOTION_SENSORS, rateInMicroseconds, false);
