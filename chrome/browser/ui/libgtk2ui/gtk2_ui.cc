@@ -340,24 +340,6 @@ const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
-
-
-// Get ChromeGtkFrame theme colors. No-op in GTK3.
-void GetChromeStyleColor(const char* style_property, SkColor* ret_color) {
-#if GTK_MAJOR_VERSION == 2
-  GdkColor* style_color = NULL;
-
-  gtk_widget_style_get(NativeThemeGtk2::instance()->GetWindow(),
-                       style_property, &style_color,
-                       NULL);
-
-  if (style_color) {
-    *ret_color = GdkColorToSkColor(*style_color);
-    gdk_color_free(style_color);
-  }
-#endif
-}
-
 // Picks a button tint from a set of background colors. While
 // |accent_color| will usually be the same color through a theme, this
 // function will get called with the normal GtkLabel |text_color|/GtkWindow
@@ -908,9 +890,12 @@ void Gtk2UI::SetScrollbarColors() {
   thumb_inactive_color_ = SkColorSetRGB(234, 234, 234);
   track_color_ = SkColorSetRGB(211, 211, 211);
 
-  GetChromeStyleColor("scrollbar-slider-prelight-color", &thumb_active_color_);
-  GetChromeStyleColor("scrollbar-slider-normal-color", &thumb_inactive_color_);
-  GetChromeStyleColor("scrollbar-trough-color", &track_color_);
+  NativeThemeGtk2::instance()->GetChromeStyleColor(
+      "scrollbar-slider-prelight-color", &thumb_active_color_);
+  NativeThemeGtk2::instance()->GetChromeStyleColor(
+      "scrollbar-slider-normal-color", &thumb_inactive_color_);
+  NativeThemeGtk2::instance()->GetChromeStyleColor("scrollbar-trough-color",
+                                                   &track_color_);
 }
 
 void Gtk2UI::LoadGtkValues() {
@@ -991,10 +976,8 @@ void Gtk2UI::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_NTP_SECTION] = toolbar_color;
   colors_[ThemeProperties::COLOR_NTP_SECTION_TEXT] = label_color;
 
-  // Default link color, taken from gtklinkbutton.c.
-  SkColor link_color = SkColorSetRGB(0, 0, 0xee);
-  GetChromeStyleColor("link-color", &link_color);
-
+  SkColor link_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
   colors_[ThemeProperties::COLOR_NTP_LINK] = link_color;
   colors_[ThemeProperties::COLOR_NTP_LINK_UNDERLINE] = link_color;
   colors_[ThemeProperties::COLOR_NTP_SECTION_LINK] = link_color;
@@ -1039,7 +1022,7 @@ SkColor Gtk2UI::BuildFrameColors() {
   GtkStyle* style = gtk_rc_get_style(NativeThemeGtk2::instance()->GetWindow());
 
   frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
-  GetChromeStyleColor("frame-color", &frame_color);
+  NativeThemeGtk2::instance()->GetChromeStyleColor("frame-color", &frame_color);
 
   temp_color = frame_color;
   colors_[ThemeProperties::COLOR_FRAME] = temp_color;
@@ -1048,21 +1031,24 @@ SkColor Gtk2UI::BuildFrameColors() {
   temp_color = color_utils::HSLShift(
       GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]),
       kDefaultFrameShift);
-  GetChromeStyleColor("inactive-frame-color", &temp_color);
+  NativeThemeGtk2::instance()->GetChromeStyleColor("inactive-frame-color",
+                                                   &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
   SetThemeTint(ThemeProperties::TINT_FRAME_INACTIVE, temp_color);
 
   temp_color = color_utils::HSLShift(
       frame_color,
       GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO));
-  GetChromeStyleColor("incognito-frame-color", &temp_color);
+  NativeThemeGtk2::instance()->GetChromeStyleColor("incognito-frame-color",
+                                                   &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
   SetThemeTint(ThemeProperties::TINT_FRAME_INCOGNITO, temp_color);
 
   temp_color = color_utils::HSLShift(
       frame_color,
       GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE));
-  GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
+  NativeThemeGtk2::instance()->GetChromeStyleColor(
+      "incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
   SetThemeTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE, temp_color);
 #else
@@ -1262,7 +1248,8 @@ SkBitmap Gtk2UI::GenerateFrameImage(
   SkColor gradient_top_color = color_utils::HSLShift(base, kGtkFrameShift);
   int gradient_size;
 
-  GetChromeStyleColor(gradient_name, &gradient_top_color);
+  NativeThemeGtk2::instance()->GetChromeStyleColor(gradient_name,
+                                                   &gradient_top_color);
   gtk_widget_style_get(NativeThemeGtk2::instance()->GetWindow(),
                        "frame-gradient-size", &gradient_size,
                        NULL);

@@ -278,11 +278,16 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetBGColor(GetWindow(), NORMAL);
 
     // Link
-    // TODO(estade): get these from the gtk theme instead of hardcoding.
     case kColorId_LinkDisabled:
-      return SK_ColorBLACK;
-    case kColorId_LinkEnabled:
-      return SkColorSetRGB(0x33, 0x67, 0xD6);
+      return SkColorSetA(GetSystemColor(kColorId_LinkEnabled), 0xBB);
+    case kColorId_LinkEnabled: {
+      SkColor link_color = SK_ColorTRANSPARENT;
+      GetChromeStyleColor("link-color", &link_color);
+      if (link_color != SK_ColorTRANSPARENT)
+        return link_color;
+      // Default color comes from gtklinkbutton.c.
+      return SkColorSetRGB(0x00, 0x00, 0xEE);
+    }
     case kColorId_LinkPressed:
       return SK_ColorRED;
 
@@ -439,6 +444,22 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
   }
 
   return kInvalidColorIdColor;
+}
+
+// Get ChromeGtkFrame theme colors. No-op in GTK3.
+bool NativeThemeGtk2::GetChromeStyleColor(const char* style_property,
+                                          SkColor* ret_color) const {
+#if GTK_MAJOR_VERSION == 2
+  GdkColor* style_color = nullptr;
+  gtk_widget_style_get(GetWindow(), style_property, &style_color, nullptr);
+  if (style_color) {
+    *ret_color = GdkColorToSkColor(*style_color);
+    gdk_color_free(style_color);
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 GtkWidget* NativeThemeGtk2::GetWindow() const {

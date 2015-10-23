@@ -31,6 +31,11 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
       const gfx::Rect& rect,
       const MenuListExtraParams& menu_list) const override;
 
+  // Gets a ChromeGtkFrame theme color; returns true on success. Always returns
+  // false in GTK3.
+  bool GetChromeStyleColor(const char* style_property,
+                           SkColor* ret_color) const;
+
   // Returns various widgets for theming use.
   GtkWidget* GetWindow() const;
   GtkWidget* GetEntry() const;
