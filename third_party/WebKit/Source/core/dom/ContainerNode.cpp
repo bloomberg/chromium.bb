@@ -78,8 +78,9 @@ static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes,
 #if !ENABLE(OILPAN)
 void ContainerNode::removeDetachedChildren()
 {
-    ASSERT(!connectedSubframeCount());
-    ASSERT(needsAttach());
+    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
+    RELEASE_ASSERT(!connectedSubframeCount());
+    RELEASE_ASSERT(needsAttach());
     removeDetachedChildrenInContainer(*this);
 }
 #endif
