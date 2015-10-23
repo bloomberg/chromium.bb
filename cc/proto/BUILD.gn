@@ -27,15 +27,17 @@ proto_library("proto_internal") {
   visibility = [ ":cc_proto" ]
 
   sources = [
-    # TODO(dtrainor): Move the ui/gfx related protos to ui/gfx/proto once it is
-    # possible to include protos from other directories/targets (see
-    # crbug.com/542423).
+    # TODO(dtrainor): Move protos to their correct packages once it's possible
+    # to include protos from other directories/targets (crbug.com/542423).
     "point.proto",
     "pointf.proto",
     "rect.proto",
     "rectf.proto",
     "size.proto",
     "sizef.proto",
+    "skregion.proto",
+    "skrrect.proto",
+    "skxfermode.proto",
     "transform.proto",
   ]
 

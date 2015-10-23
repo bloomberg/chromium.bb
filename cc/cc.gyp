@@ -373,6 +373,8 @@
         'playback/transform_display_item.h',
         'proto/gfx_conversions.cc',
         'proto/gfx_conversions.h',
+        'proto/skia_conversions.cc',
+        'proto/skia_conversions.h',
         'quads/content_draw_quad_base.cc',
         'quads/content_draw_quad_base.h',
         'quads/debug_border_draw_quad.cc',
@@ -585,6 +587,9 @@
         'proto/rectf.proto',
         'proto/size.proto',
         'proto/sizef.proto',
+        'proto/skregion.proto',
+        'proto/skrrect.proto',
+        'proto/skxfermode.proto',
         'proto/transform.proto',
       ],
       'defines': [
