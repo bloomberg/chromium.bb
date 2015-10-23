@@ -65,7 +65,7 @@ public:
 private:
     explicit SVGPatternElement(Document&);
 
-    bool isValid() const override { return SVGTests::isValid(document()); }
+    bool isValid() const override { return SVGTests::isValid(); }
     bool needsPendingResourceHandling() const override { return false; }
 
     void svgAttributeChanged(const QualifiedName&) override;

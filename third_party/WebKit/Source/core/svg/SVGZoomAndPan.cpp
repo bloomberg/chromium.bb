@@ -41,11 +41,6 @@ bool SVGZoomAndPan::isKnownAttribute(const QualifiedName& attrName)
     return attrName == SVGNames::zoomAndPanAttr;
 }
 
-void SVGZoomAndPan::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
-{
-    supportedAttributes.add(SVGNames::zoomAndPanAttr);
-}
-
 static const LChar disable[] =  {'d', 'i', 's', 'a', 'b', 'l', 'e'};
 static const LChar magnify[] =  {'m', 'a', 'g', 'n', 'i', 'f', 'y'};
 

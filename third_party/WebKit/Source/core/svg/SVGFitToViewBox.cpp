@@ -96,12 +96,6 @@ bool SVGFitToViewBox::isKnownAttribute(const QualifiedName& attrName)
     return attrName == SVGNames::viewBoxAttr || attrName == SVGNames::preserveAspectRatioAttr;
 }
 
-void SVGFitToViewBox::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
-{
-    supportedAttributes.add(SVGNames::viewBoxAttr);
-    supportedAttributes.add(SVGNames::preserveAspectRatioAttr);
-}
-
 void SVGFitToViewBox::updateViewBox(const FloatRect& rect)
 {
     ASSERT(m_viewBox);

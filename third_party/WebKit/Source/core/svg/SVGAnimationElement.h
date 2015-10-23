@@ -178,7 +178,7 @@ protected:
     static bool parseValues(const String&, Vector<String>& result);
 
 private:
-    bool isValid() const final { return SVGTests::isValid(document()); }
+    bool isValid() const final { return SVGTests::isValid(); }
 
     void animationAttributeChanged() override;
     void setAttributeType(const AtomicString&);

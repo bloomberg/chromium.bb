@@ -35,7 +35,6 @@ public:
     virtual ~SVGURIReference() { }
 
     bool isKnownAttribute(const QualifiedName&);
-    void addSupportedAttributes(HashSet<QualifiedName>&);
 
     static AtomicString fragmentIdentifierFromIRIString(const String&, const TreeScope&);
     static Element* targetElementFromIRIString(const String&, const TreeScope&, AtomicString* = 0, Document* = 0);

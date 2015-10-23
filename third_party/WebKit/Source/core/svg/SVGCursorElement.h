@@ -54,7 +54,7 @@ public:
 private:
     explicit SVGCursorElement(Document&);
 
-    bool isValid() const override { return SVGTests::isValid(document()); }
+    bool isValid() const override { return SVGTests::isValid(); }
 
     void svgAttributeChanged(const QualifiedName&) override;
 

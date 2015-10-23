@@ -37,6 +37,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGSVGElement.h"

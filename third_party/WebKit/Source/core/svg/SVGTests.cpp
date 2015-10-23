@@ -46,7 +46,7 @@ DEFINE_TRACE(SVGTests)
     visitor->trace(m_systemLanguage);
 }
 
-bool SVGTests::isValid(Document& document) const
+bool SVGTests::isValid() const
 {
     // No need to check requiredFeatures since hasFeature always returns true.
 
@@ -71,38 +71,11 @@ bool SVGTests::isValid(Document& document) const
     return true;
 }
 
-bool SVGTests::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    // FIXME: Should handle exceptions here.
-    // This is safe as of now, as the current impl of SVGStringList::setValueAsString never fails.
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::requiredFeaturesAttr)
-        m_requiredFeatures->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::requiredExtensionsAttr)
-        m_requiredExtensions->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::systemLanguageAttr)
-        m_systemLanguage->setBaseValueAsString(value, parseError);
-    else
-        return false;
-
-    ASSERT(parseError == NoError);
-
-    return true;
-}
-
 bool SVGTests::isKnownAttribute(const QualifiedName& attrName)
 {
     return attrName == SVGNames::requiredFeaturesAttr
         || attrName == SVGNames::requiredExtensionsAttr
         || attrName == SVGNames::systemLanguageAttr;
-}
-
-void SVGTests::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
-{
-    supportedAttributes.add(SVGNames::requiredFeaturesAttr);
-    supportedAttributes.add(SVGNames::requiredExtensionsAttr);
-    supportedAttributes.add(SVGNames::systemLanguageAttr);
 }
 
 }

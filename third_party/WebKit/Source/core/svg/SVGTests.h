@@ -24,7 +24,6 @@
 #include "core/CoreExport.h"
 #include "core/svg/SVGStaticStringList.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 
@@ -39,12 +38,9 @@ public:
     SVGStringListTearOff* requiredExtensions() { return m_requiredExtensions->tearOff(); }
     SVGStringListTearOff* systemLanguage() { return m_systemLanguage->tearOff(); }
 
-    bool isValid(Document&) const;
+    bool isValid() const;
 
-    bool parseAttribute(const QualifiedName&, const AtomicString&);
     bool isKnownAttribute(const QualifiedName&);
-
-    void addSupportedAttributes(HashSet<QualifiedName>&);
 
     DECLARE_VIRTUAL_TRACE();
 

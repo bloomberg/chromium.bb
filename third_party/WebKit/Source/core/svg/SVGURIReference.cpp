@@ -105,9 +105,4 @@ Element* SVGURIReference::targetElementFromIRIString(const String& iri, const Tr
     return treeScope.getElementById(id);
 }
 
-void SVGURIReference::addSupportedAttributes(HashSet<QualifiedName>& supportedAttributes)
-{
-    supportedAttributes.add(XLinkNames::hrefAttr);
-}
-
 }

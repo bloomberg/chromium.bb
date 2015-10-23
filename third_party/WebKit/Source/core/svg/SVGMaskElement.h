@@ -50,7 +50,7 @@ public:
 private:
     explicit SVGMaskElement(Document&);
 
-    bool isValid() const override { return SVGTests::isValid(document()); }
+    bool isValid() const override { return SVGTests::isValid(); }
     bool needsPendingResourceHandling() const override { return false; }
 
     bool isPresentationAttribute(const QualifiedName&) const override;

@@ -24,7 +24,6 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/QualifiedName.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 
@@ -48,7 +47,6 @@ public:
     virtual ~SVGZoomAndPan() { }
 
     static bool isKnownAttribute(const QualifiedName&);
-    static void addSupportedAttributes(HashSet<QualifiedName>&);
 
     static SVGZoomAndPanType parseFromNumber(unsigned short number)
     {

@@ -61,7 +61,7 @@ public:
     virtual FloatRect getBBox();
     PassRefPtrWillBeRawPtr<SVGRectTearOff> getBBoxFromJavascript();
 
-    bool isValid() const final { return SVGTests::isValid(document()); }
+    bool isValid() const final { return SVGTests::isValid(); }
 
     SVGAnimatedTransformList* transform() { return m_transform.get(); }
     const SVGAnimatedTransformList* transform() const { return m_transform.get(); }

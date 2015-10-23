@@ -42,6 +42,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/svg/SVGAngleTearOff.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRectTearOff.h"
