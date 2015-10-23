@@ -256,9 +256,8 @@ TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   CheckResponse(consumer, "HTTP/1.1 200 OK", response);
 }
 
-// http://crbug.com/307284
-TEST_F(QuicEndToEndTest, DISABLED_LargePostWithNoPacketLoss) {
-  InitializePostRequest(10 * 1024 * 1024);
+TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
+  InitializePostRequest(1024 * 1024);
 
   AddToCache(request_.url.PathForRequest(), 200, "OK", kResponseBody);
 
