@@ -146,8 +146,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
                                            ResponseCallback callback,
                                            ErrorCallback error_callback);
 
-  // Requests to connect to the signal from the remote object, replacing
-  // any previous |signal_callback| connected to that signal.
+  // Requests to connect to the signal from the remote object.
   //
   // |signal_callback| will be called in the origin thread, when the
   // signal is received from the remote object. As it's called in the
@@ -156,6 +155,11 @@ class CHROME_DBUS_EXPORT ObjectProxy
   //
   // |on_connected_callback| is called when the object proxy is connected
   // to the signal, or failed to be connected, in the origin thread.
+  //
+  // If a SignalCallback has already been registered for the given
+  // |interface_name| and |signal_name|, |signal_callback| will be
+  // added to the list of callbacks for |interface_name| and
+  // |signal_name|.
   //
   // Must be called in the origin thread.
   virtual void ConnectToSignal(const std::string& interface_name,
