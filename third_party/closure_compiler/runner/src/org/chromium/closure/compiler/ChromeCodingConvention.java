@@ -68,20 +68,9 @@ public class ChromeCodingConvention extends CodingConventions.Proxy {
     );
   }
 
-  // TODO(dbeam): combine this with ClosureCodingConvention?
   @Override
   public boolean isFunctionCallThatAlwaysThrows(Node n) {
-    if (n.isExprResult()) {
-      if (!n.getFirstChild().isCall()) {
-        return false;
-      }
-    } else if (!n.isCall()) {
-      return false;
-    }
-    if (n.isExprResult()) {
-      n = n.getFirstChild();
-    }
-    // n is a call
-    return n.getFirstChild().matchesQualifiedName("assertNotReached");
+    return CodingConventions.defaultIsFunctionCallThatAlwaysThrows(
+        n, "assertNotReached");
   }
 }
