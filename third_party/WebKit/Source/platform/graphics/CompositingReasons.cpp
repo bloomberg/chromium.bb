@@ -145,6 +145,9 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
     { CompositingReasonIsolateCompositedDescendants,
         "isolateCompositedDescendants",
         "Should isolate descendants to apply a blend effect" },
+    { CompositingReasonPositionFixedWithCompositedDescendants,
+        "positionFixedWithCompositedDescendants"
+        "Is a position:fixed element with composited descendants" },
     { CompositingReasonRoot,
         "root",
         "Is the root layer" },

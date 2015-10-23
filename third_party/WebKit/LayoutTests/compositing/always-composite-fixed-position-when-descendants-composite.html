@@ -1,0 +1,16 @@
+<!doctype HTML>
+Any errors will show below this line.
+<!-- Having a composited child should always be a position:fixed compositing trigger -->
+<div style="position: fixed; width: 100px; height: 100px; background: lightgray">
+    <div style="will-change: transform; margin: 50px; width: 50px; height: 50px; background: lightblue">
+    </div>
+</div>
+<script src="../resources/testharness.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+if (window.internals) {
+    var layers = JSON.parse(internals.layerTreeAsText(document));
+    assert_true(layers.children.length == 1 && layers.children[0].children.length == 1);
+}
+</script>

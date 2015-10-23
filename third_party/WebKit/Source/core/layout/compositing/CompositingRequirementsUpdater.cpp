@@ -168,6 +168,9 @@ static CompositingReasons subtreeReasonsForCompositing(PaintLayer* layer, bool h
         // theres a poor interaction with LayoutTextControlSingleLine, which sets this hasOverflowClip directly.
         if (layer->layoutObject()->hasClipOrOverflowClip())
             subtreeReasons |= CompositingReasonClipsCompositingDescendants;
+
+        if (layer->layoutObject()->style()->position() == FixedPosition)
+            subtreeReasons |= CompositingReasonPositionFixedWithCompositedDescendants;
     }
 
     // A layer with preserve-3d or perspective only needs to be composited if there are descendant layers that
