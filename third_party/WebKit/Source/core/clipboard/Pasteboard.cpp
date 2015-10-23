@@ -81,11 +81,10 @@ void Pasteboard::writeImage(Image* image, const KURL& url, const String& title)
 {
     ASSERT(image);
 
-    SkBitmap bitmap;
-    if (!image->deprecatedBitmapForCurrentFrame(&bitmap))
+    const WebImage webImage(image);
+    if (webImage.isNull())
         return;
 
-    WebImage webImage = bitmap;
     Platform::current()->clipboard()->writeImage(webImage, WebURL(url), WebString(title));
 }
 

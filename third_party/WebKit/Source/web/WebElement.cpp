@@ -164,15 +164,7 @@ WebImage WebElement::imageContents()
     if (isNull())
         return WebImage();
 
-    Image* image = unwrap<Element>()->imageContents();
-    if (!image)
-        return WebImage();
-
-    SkBitmap bitmap;
-    if (!image->deprecatedBitmapForCurrentFrame(&bitmap))
-        return WebImage();
-
-    return WebImage(bitmap);
+    return WebImage(unwrap<Element>()->imageContents());
 }
 
 WebElement::WebElement(const PassRefPtrWillBeRawPtr<Element>& elem)

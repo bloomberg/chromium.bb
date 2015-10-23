@@ -132,8 +132,6 @@ public:
 
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-    bool deprecatedBitmapForCurrentFrame(SkBitmap*) WARN_UNUSED_RETURN;
-
     virtual PassRefPtr<SkImage> imageForCurrentFrame() = 0;
     virtual PassRefPtr<Image> imageForDefaultFrame();
 

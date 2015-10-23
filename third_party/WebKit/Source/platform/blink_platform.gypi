@@ -290,7 +290,7 @@
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
       'exported/WebImageGenerator.cpp',
-      'exported/WebImageSkia.cpp',
+      'exported/WebImage.cpp',
       'exported/WebMediaConstraints.cpp',
       'exported/WebMediaDeviceInfo.cpp',
       'exported/WebMediaPlayerClient.cpp',

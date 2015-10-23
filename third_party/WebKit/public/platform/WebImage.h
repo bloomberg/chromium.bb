@@ -81,7 +81,6 @@ public:
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebImage(const WTF::PassRefPtr<Image>&);
-    BLINK_PLATFORM_EXPORT WebImage& operator=(const WTF::PassRefPtr<Image>&);
 #endif
 
     WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) { }

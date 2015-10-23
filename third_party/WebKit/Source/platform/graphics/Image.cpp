@@ -274,11 +274,4 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
     return image.release();
 }
 
-bool Image::deprecatedBitmapForCurrentFrame(SkBitmap* bitmap)
-{
-    RefPtr<SkImage> image = imageForCurrentFrame();
-
-    return image && image->asLegacyBitmap(bitmap, SkImage::kRO_LegacyBitmapMode);
-}
-
 } // namespace blink

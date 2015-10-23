@@ -37,6 +37,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -146,17 +147,11 @@ WebSize WebImage::size() const
 
 WebImage::WebImage(const PassRefPtr<Image>& image)
 {
-    operator=(image);
-}
+    if (!image)
+        return;
 
-WebImage& WebImage::operator=(const PassRefPtr<Image>& image)
-{
-    SkBitmap p;
-    if (image && image->deprecatedBitmapForCurrentFrame(&p))
-        assign(p);
-    else
-        reset();
-    return *this;
+    if (RefPtr<SkImage> skImage = image->imageForCurrentFrame())
+        skImage->asLegacyBitmap(&m_bitmap, SkImage::kRO_LegacyBitmapMode);
 }
 
 } // namespace blink
