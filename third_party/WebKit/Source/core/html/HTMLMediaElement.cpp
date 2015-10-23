@@ -1050,7 +1050,7 @@ void HTMLMediaElement::startPlayerLoad()
 
     if (isFullscreen()) {
         // This handles any transition to or from fullscreen overlay mode.
-        document().frame()->chromeClient().enterFullScreenForElement(this);
+        frame->chromeClient().enterFullScreenForElement(this);
     }
 }
 
