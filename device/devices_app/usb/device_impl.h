@@ -28,11 +28,6 @@ namespace usb {
 // lifetime.
 class DeviceImpl : public Device {
  public:
-  using MojoTransferInCallback =
-      mojo::Callback<void(TransferStatus, mojo::Array<uint8_t>)>;
-
-  using MojoTransferOutCallback = mojo::Callback<void(TransferStatus)>;
-
   DeviceImpl(scoped_refptr<UsbDevice> device,
              PermissionProviderPtr permission_provider,
              mojo::InterfaceRequest<Device> request);
