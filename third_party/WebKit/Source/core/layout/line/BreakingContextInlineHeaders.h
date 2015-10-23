@@ -568,6 +568,13 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     bool breakAll = m_currentStyle->wordBreak() == BreakAllWordBreak && m_autoWrap;
     bool keepAll = m_currentStyle->wordBreak() == KeepAllWordBreak && m_autoWrap;
     bool prohibitBreakInside = m_currentStyle->hasTextCombine() && layoutText.isCombineText() && LineLayoutTextCombine(layoutText).isCombined();
+
+    // This is currently only used for word-break: break-all, specifically for the case
+    // where we have a break opportunity within a word, then a string of non-breakable
+    // content that ends up making our word wider than the current line.
+    // See: fast/css3-text/css3-word-break/word-break-all-wrap-with-floats.html
+    float widthMeasurementAtLastBreakOpportunity = 0;
+
     float hyphenWidth = 0;
 
     if (isSVGText) {
@@ -672,7 +679,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
             applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
 
-            if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine())
+            if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() && !widthMeasurementAtLastBreakOpportunity)
                 m_width.fitBelowFloats(m_lineInfo.isFirstLine());
 
             if (m_autoWrap || breakWords) {
@@ -740,6 +747,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 // Auto-wrapping text should not wrap in the middle of a word once it has had an
                 // opportunity to break after a word.
                 breakWords = false;
+                widthMeasurementAtLastBreakOpportunity = lastWidthMeasurement;
             }
 
             if (midWordBreak && !U16_IS_TRAIL(c) && !(WTF::Unicode::category(c) & (WTF::Unicode::Mark_NonSpacing | WTF::Unicode::Mark_Enclosing | WTF::Unicode::Mark_SpacingCombining))) {
@@ -835,6 +843,11 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     m_includeEndWidth = false;
 
     if (!m_width.fitsOnLine()) {
+        if (breakAll && widthMeasurementAtLastBreakOpportunity) {
+            m_width.addUncommittedWidth(widthMeasurementAtLastBreakOpportunity);
+            m_width.commit();
+            return true;
+        }
         if (!hyphenated && m_lineBreak.previousInSameNode() == softHyphenCharacter) {
             hyphenated = true;
             m_atEnd = true;
