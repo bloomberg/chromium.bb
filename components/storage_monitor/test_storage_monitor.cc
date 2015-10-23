@@ -10,7 +10,7 @@
 
 #if defined(OS_LINUX)
 #include "components/storage_monitor/test_media_transfer_protocol_manager_linux.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"  // nogncheck
 #endif
 
 namespace storage_monitor {

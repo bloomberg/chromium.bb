@@ -28,10 +28,13 @@ source_set("sync_sessions") {
   deps = [
     "//base",
     "//components/bookmarks/browser",
+    "//components/favicon/core",
     "//components/history/core/browser",
     "//components/sessions",
     "//components/sync_driver",
     "//sync",
+    "//ui/gfx",
+    "//url",
   ]
 }
 
@@ -50,7 +53,13 @@ source_set("unit_tests") {
     ":sync_sessions",
     "//base/test:test_support",
     "//testing/gmock",
+    "//components/bookmarks/browser",
+    "//components/history/core/browser",
+    "//components/sessions:test_support",
+    "//components/sync_driver",
     "//testing/gtest",
     "//sync",
+    "//sync:test_support_sync_api",
+    "//url",
   ]
 }

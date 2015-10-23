@@ -74,7 +74,6 @@ source_set("sync_driver") {
     "pref_names.h",
     "profile_sync_auth_provider.cc",
     "profile_sync_auth_provider.h",
-    "profile_sync_components_factory.h",
     "protocol_event_observer.cc",
     "protocol_event_observer.h",
     "proxy_data_type_controller.cc",
@@ -121,11 +120,15 @@ source_set("sync_driver") {
 
   deps = [
     "//base",
+    "//base:prefs",
+    "//base/third_party/dynamic_annotations",
     "//components/invalidation/public",
     "//components/os_crypt",
+    "//components/pref_registry",
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/version_info",
+    "//google_apis",
     "//net",
     "//sync",
     "//third_party/cacheinvalidation",
@@ -184,7 +187,10 @@ source_set("test_support") {
 
   deps = [
     "//base",
+    "//components/autofill/core/browser",
+    "//components/password_manager/core/browser",
     "//components/sessions",
+    "//google_apis",
     "//sync:test_support_sync_internal_api",
     "//testing/gmock",
     "//testing/gtest",
@@ -218,8 +224,20 @@ source_set("unit_tests") {
   ]
   deps = [
     ":test_support",
+    "//base",
+    "//base:prefs_test_support",
+    "//base/test:test_support",
+    "//components/os_crypt",
+    "//components/policy",
+    "//components/policy:policy_component",
+    "//components/pref_registry:test_support",
+    "//components/version_info",
+    "//net:test_support",
+    "//sync:test_support_sync_internal_api",
+    "//sync:test_support_sync_api",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 
   if (enable_configuration_policy) {

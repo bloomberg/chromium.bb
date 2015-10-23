@@ -44,8 +44,11 @@ source_set("test_support") {
   ]
 
   deps = [
-    "//testing/gtest",
     ":syncable_prefs",
+    "//base",
+    "//base:prefs_test_support",
+    "//components/pref_registry",
+    "//testing/gtest",
   ]
 }
 
@@ -59,6 +62,8 @@ source_set("unit_tests") {
   deps = [
     ":syncable_prefs",
     ":test_support",
+    "//base:prefs",
+    "//components/pref_registry",
     "//testing/gtest",
     "//sync:test_support_sync_api",
   ]

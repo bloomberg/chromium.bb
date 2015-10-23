@@ -44,6 +44,8 @@ source_set("storage_monitor") {
 
   deps = [
     "//base",
+    "//content/public/browser",
+    "//ui/base",
   ]
 
   if (is_mac) {
@@ -81,6 +83,7 @@ source_set("storage_monitor") {
       "storage_monitor_linux.cc",
       "storage_monitor_linux.h",
     ]
+    deps += [ "//chromeos" ]
   }
 }
 
@@ -105,6 +108,7 @@ source_set("test_support") {
   public_deps = [
     ":storage_monitor",
     "//base",
+    "//content/public/browser",
   ]
 
   if (is_linux) {
@@ -138,11 +142,15 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
+    "//content/test:test_support",
     "//testing/gtest",
   ]
 
-  if (is_linux && !is_chromeos) {
-    sources += [ "storage_monitor_linux_unittest.cc" ]
+  if (is_linux) {
+    deps += [ "//device/media_transfer_protocol" ]
+    if (!is_chromeos) {
+      sources += [ "storage_monitor_linux_unittest.cc" ]
+    }
   }
   if (is_chromeos) {
     sources += [ "storage_monitor_chromeos_unittest.cc" ]
