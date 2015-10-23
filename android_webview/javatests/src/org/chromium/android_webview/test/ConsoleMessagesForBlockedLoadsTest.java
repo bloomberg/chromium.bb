@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 import android.webkit.ConsoleMessage;
+import android.webkit.WebSettings;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
@@ -83,7 +84,7 @@ public class ConsoleMessagesForBlockedLoadsTest extends AwTestBase {
         startWebServer();
         TestWebServer httpsServer = null;
         AwSettings settings = getAwSettingsOnUiThread(mAwContents);
-        settings.setMixedContentMode(AwSettings.MIXED_CONTENT_NEVER_ALLOW);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         try {
             httpsServer = TestWebServer.startSsl();
             final String imageUrl = mWebServer.setResponseBase64(

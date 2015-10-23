@@ -2806,19 +2806,19 @@ public class AwSettingsTest extends AwTestBase {
 
             String fullSecureUrl = httpsServer.setResponse(secureUrl, secureHtml, null);
 
-            awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_NEVER_ALLOW);
+            awSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), fullSecureUrl);
             assertEquals(1, httpsServer.getRequestCount(secureUrl));
             assertEquals(0, httpServer.getRequestCount(jsUrl));
             assertEquals(0, httpServer.getRequestCount(imageUrl));
 
-            awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            awSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
             loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), fullSecureUrl);
             assertEquals(2, httpsServer.getRequestCount(secureUrl));
             assertEquals(1, httpServer.getRequestCount(jsUrl));
             assertEquals(1, httpServer.getRequestCount(imageUrl));
 
-            awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+            awSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
             loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), fullSecureUrl);
             assertEquals(3, httpsServer.getRequestCount(secureUrl));
             assertEquals(1, httpServer.getRequestCount(jsUrl));

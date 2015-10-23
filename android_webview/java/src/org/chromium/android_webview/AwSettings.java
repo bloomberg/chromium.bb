@@ -34,14 +34,6 @@ public class AwSettings {
     private static final String LOGTAG = AwSettings.class.getSimpleName();
     private static final boolean TRACE = false;
 
-    // These constants must be kept in sync with the Android framework, defined in WebSettimgs.
-    @VisibleForTesting
-    public static final int MIXED_CONTENT_ALWAYS_ALLOW = 0;
-    @VisibleForTesting
-    public static final int MIXED_CONTENT_NEVER_ALLOW = 1;
-    @VisibleForTesting
-    public static final int MIXED_CONTENT_COMPATIBILITY_MODE = 2;
-
     private static final String TAG = "AwSettings";
 
     // This class must be created on the UI thread. Afterwards, it can be
@@ -91,7 +83,7 @@ public class AwSettings {
     private float mInitialPageScalePercent = 0;
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
     private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
-    private int mMixedContentMode = MIXED_CONTENT_NEVER_ALLOW;
+    private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
     private boolean mVideoOverlayForEmbeddedVideoEnabled = false;
     private boolean mForceVideoOverlayForTests = false;
     private boolean mOffscreenPreRaster = false;
@@ -1619,14 +1611,14 @@ public class AwSettings {
     @CalledByNative
     private boolean getAllowRunningInsecureContentLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mMixedContentMode == MIXED_CONTENT_ALWAYS_ALLOW;
+        return mMixedContentMode == WebSettings.MIXED_CONTENT_ALWAYS_ALLOW;
     }
 
     @CalledByNative
     private boolean getAllowDisplayingInsecureContentLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mMixedContentMode == MIXED_CONTENT_ALWAYS_ALLOW
-                || mMixedContentMode == MIXED_CONTENT_COMPATIBILITY_MODE;
+        return mMixedContentMode == WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                || mMixedContentMode == WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE;
     }
 
     public boolean getOffscreenPreRaster() {
