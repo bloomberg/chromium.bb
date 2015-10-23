@@ -34,17 +34,12 @@ OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
 // static
 OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  if (context->IsOffTheRecord())
-    return nullptr;
-
   return static_cast<OfflinePageModel*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  DCHECK(!context->IsOffTheRecord());
-
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
