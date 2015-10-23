@@ -1,0 +1,17 @@
+--- src/cxa_default_handlers.cpp    (revision 245965)
++++ src/cxa_default_handlers.cpp    (working copy)
+@@ -46,13 +46,7 @@
+                         exception_header + 1;
+                 const __shim_type_info* thrown_type =
+                     static_cast<const __shim_type_info*>(exception_header->exceptionType);
+-                // Try to get demangled name of thrown_type
+-                int status;
+-                char buf[1024];
+-                size_t len = sizeof(buf);
+-                const char* name = __cxa_demangle(thrown_type->name(), buf, &len, &status);
+-                if (status != 0)
+-                    name = thrown_type->name();
++                const char* name = thrown_type->name();
+                 // If the uncaught exception can be caught with std::exception&
+                 const __shim_type_info* catch_type =
+ 				 static_cast<const __shim_type_info*>(&typeid(std::exception));

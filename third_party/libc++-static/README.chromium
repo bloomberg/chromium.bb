@@ -1,0 +1,30 @@
+Short Name: libcxx
+Name: Descriptive name of the package
+Short Name: Name the package is distributed under (ex. libxml, openssl, etc)
+Security Critical: Yes
+License: MIT
+License File: LICENSE.TXT
+Version: 0
+Revision: 245965
+URL: http://libcxx.llvm.org/
+
+To upload:
+  python ~/depot_tools/upload_to_google_storage.py -b chromium-libcpp third_party/libc++-static.a
+
+To initialize gsutil's credentials:
+  python ~/depot_tools/third_party/gsutil/gsutil config
+
+  That will give a URL which you should log into with your web browser. The
+  username should be the one that is on the ACL for the "chromium-libcpp"
+  bucket (probably your @google.com address). Contact the build team for help
+  getting access if necessary.
+
+  Copy the code back to the command line util. Ignore the project ID (it's OK
+  to just leave blank when prompted).
+
+gsutil documentation:
+  https://developers.google.com/storage/docs/gsutil
+
+
+To build: Run `third_party/libc++-static/build.sh`.  It'll upload to google
+storage and update the .sha1 file.

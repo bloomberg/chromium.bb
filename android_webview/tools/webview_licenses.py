@@ -12,7 +12,7 @@ be used to generate an Android NOTICE file for the third-party code.
 
 It makes use of src/tools/licenses.py and the README.chromium files on which
 it depends. It also makes use of a data file, third_party_files_whitelist.txt,
-which whitelists indicidual files which contain third-party code but which
+which whitelists individual files which contain third-party code but which
 aren't in a third-party directory with a README.chromium file.
 """
 

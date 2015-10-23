@@ -673,6 +673,18 @@ hooks = [
                 '-s', 'src/buildtools/linux64/clang-format.sha1',
     ],
   },
+  # Pull the prebuilt libc++ static library for mac.
+  {
+    'name': 'libcpp_mac',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=darwin',
+                '--no_auth',
+                '--bucket', 'chromium-libcpp',
+                '-s', 'src/third_party/libc++-static/libc++-static.a.sha1',
+    ],
+  },
   # Pull luci-go binaries (isolate, swarming) using checked-in hashes.
   {
     'name': 'luci-go_win',

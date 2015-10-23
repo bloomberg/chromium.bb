@@ -335,6 +335,7 @@ v8.log
 /third_party/khronos_glcts
 /third_party/leveldatabase/src
 /third_party/leveldb
+/third_party/libc++-static/libc++-static.a
 /third_party/libaddressinput/src
 /third_party/libexif/sources
 /third_party/libjingle/source
