@@ -25,12 +25,12 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None):
     jar_cmd.append(os.path.abspath(manifest_file))
   jar_cmd.extend(class_files_rel)
 
-  with build_utils.TempDir() as temp_dir:
-    empty_file = os.path.join(temp_dir, '.empty')
+  if not class_files_rel:
+    empty_file = os.path.join(classes_dir, '.empty')
     build_utils.Touch(empty_file)
     jar_cmd.append(os.path.relpath(empty_file, jar_cwd))
-    build_utils.CheckOutput(jar_cmd, cwd=jar_cwd)
-    build_utils.Touch(jar_path, fail_if_missing=True)
+  build_utils.CheckOutput(jar_cmd, cwd=jar_cwd)
+  build_utils.Touch(jar_path, fail_if_missing=True)
 
 
 def JarDirectory(classes_dir, jar_path, manifest_file=None, predicate=None):
