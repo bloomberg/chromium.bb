@@ -44,6 +44,10 @@ int gbm_bpp_from_format(uint32_t format)
 		case GBM_FORMAT_BGRA5551:
 		case GBM_FORMAT_RGB565:
 		case GBM_FORMAT_BGR565:
+		case GBM_FORMAT_YUYV:
+		case GBM_FORMAT_YVYU:
+		case GBM_FORMAT_UYVY:
+		case GBM_FORMAT_VYUY:
 			return 16;
 
 		case GBM_FORMAT_RGB888:
@@ -66,10 +70,6 @@ int gbm_bpp_from_format(uint32_t format)
 		case GBM_FORMAT_ABGR2101010:
 		case GBM_FORMAT_RGBA1010102:
 		case GBM_FORMAT_BGRA1010102:
-		case GBM_FORMAT_YUYV:
-		case GBM_FORMAT_YVYU:
-		case GBM_FORMAT_UYVY:
-		case GBM_FORMAT_VYUY:
 		case GBM_FORMAT_AYUV:
 			return 32;
 	}
