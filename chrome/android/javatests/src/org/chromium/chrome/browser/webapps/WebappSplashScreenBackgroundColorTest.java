@@ -23,7 +23,8 @@ public class WebappSplashScreenBackgroundColorTest extends WebappActivityTestBas
     @Override
     protected Intent createIntent() {
         Intent intent = super.createIntent();
-        intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, (long) Color.GREEN);
+        // This is setting Color.GREEN with 50% opacity.
+        intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, (long) Color.argb(128, 0, 255, 0));
         return intent;
     }
 
