@@ -41,6 +41,7 @@ class NonClassTests(cros_test_lib.MockTestCase):
 
     git_log = 'Marking test_one as stable\nMarking test_two as stable\n'
     fake_description = 'Marking set of ebuilds as stable\n\n%s' % git_log
+    self.PatchObject(git, 'DoesCommitExistInRepo', return_value=True)
     self.PatchObject(cros_mark_as_stable, '_DoWeHaveLocalCommits',
                      return_value=True)
     self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch',

@@ -104,8 +104,12 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   Raises:
     OSError: Error occurred while pushing.
   """
+  if not git.DoesCommitExistInRepo(cwd, stable_branch):
+    logging.debug('No branch created for %s.  Exiting', cwd)
+    return
+
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
-    logging.info('No work found to push in %s.  Exiting', cwd)
+    logging.debug('No work found to push in %s.  Exiting', cwd)
     return
 
   # For the commit queue, our local branch may contain commits that were
