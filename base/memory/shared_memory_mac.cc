@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/mac/scoped_mach_vm.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/process_metrics.h"
@@ -28,49 +27,6 @@
 namespace base {
 
 namespace {
-
-// Returns whether the operation succeeded.
-// |new_handle| is an output variable, populated on success. The caller takes
-// ownership of the underlying memory object.
-// |handle| is the handle to copy.
-// If |handle| is already mapped, |mapped_addr| is its mapped location.
-// Otherwise, |mapped_addr| should be |nullptr|.
-bool MakeMachSharedMemoryHandleReadOnly(SharedMemoryHandle* new_handle,
-                                        SharedMemoryHandle handle,
-                                        void* mapped_addr) {
-  if (!handle.IsValid())
-    return false;
-
-  size_t size;
-  CHECK(handle.GetSize(&size));
-
-  // Map if necessary.
-  void* temp_addr = mapped_addr;
-  base::mac::ScopedMachVM scoper;
-  if (!temp_addr) {
-    // Intentionally lower current prot and max prot to |VM_PROT_READ|.
-    kern_return_t kr = mach_vm_map(
-        mach_task_self(), reinterpret_cast<mach_vm_address_t*>(&temp_addr),
-        size, 0, VM_FLAGS_ANYWHERE, handle.GetMemoryObject(), 0, FALSE,
-        VM_PROT_READ, VM_PROT_READ, VM_INHERIT_NONE);
-    if (kr != KERN_SUCCESS)
-      return false;
-    scoper.reset(reinterpret_cast<vm_address_t>(temp_addr),
-                 mach_vm_round_page(size));
-  }
-
-  // Make new memory object.
-  mach_port_t named_right;
-  kern_return_t kr = mach_make_memory_entry_64(
-      mach_task_self(), reinterpret_cast<memory_object_size_t*>(&size),
-      reinterpret_cast<memory_object_offset_t>(temp_addr), VM_PROT_READ,
-      &named_right, MACH_PORT_NULL);
-  if (kr != KERN_SUCCESS)
-    return false;
-
-  *new_handle = SharedMemoryHandle(named_right, size, base::GetCurrentProcId());
-  return true;
-}
 
 struct ScopedPathUnlinkerTraits {
   static FilePath* InvalidValue() { return nullptr; }
@@ -389,31 +345,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle* new_handle,
                                         bool close_self,
                                         ShareMode share_mode) {
-  if (shm_.GetType() == SharedMemoryHandle::MACH) {
-    DCHECK(shm_.IsValid());
-
-    bool success = false;
-    switch (share_mode) {
-      case SHARE_CURRENT_MODE:
-        *new_handle = shm_.Duplicate();
-        success = true;
-        break;
-      case SHARE_READONLY:
-        success = MakeMachSharedMemoryHandleReadOnly(new_handle, shm_, memory_);
-        break;
-    }
-
-    if (success)
-      new_handle->SetOwnershipPassesToIPC(true);
-
-    if (close_self) {
-      Unmap();
-      Close();
-    }
-
-    return success;
-  }
-
+  DCHECK_NE(shm_.GetType(), SharedMemoryHandle::MACH);
   int handle_to_dup = -1;
   switch (share_mode) {
     case SHARE_CURRENT_MODE:

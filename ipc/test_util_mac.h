@@ -50,11 +50,6 @@ mach_port_urefs_t GetMachRefCount(mach_port_name_t name,
 // Increments the ref count for the right/name pair.
 void IncrementMachRefCount(mach_port_name_t name, mach_port_right_t right);
 
-// Gets the current and maximum protection levels of the memory region.
-// Returns whether the operation was successful.
-// |current| and |max| are output variables only populated on success.
-bool GetMachProtections(void* address, size_t size, int* current, int* max);
-
 }  // namespace IPC
 
 #endif  // IPC_TEST_UTIL_MAC_H_
