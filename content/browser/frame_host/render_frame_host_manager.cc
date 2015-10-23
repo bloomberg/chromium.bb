@@ -1793,7 +1793,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
       // If we are reusing the RenderViewHost and it doesn't already have a
       // RenderWidgetHostView, we need to create one if this is the main frame.
-      if (!render_view_host->GetWidget()->GetView() &&
+      if (render_view_host->IsRenderViewLive() &&
+          !render_view_host->GetWidget()->GetView() &&
           frame_tree_node_->IsMainFrame()) {
         delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
       }
@@ -1802,7 +1803,6 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     // Create a new RenderFrameHost if we don't find an existing one.
 
     int32 widget_routing_id = MSG_ROUTING_NONE;
-    proxy = nullptr;
 
     // A RenderFrame in a different process from its parent RenderFrame
     // requires a RenderWidget for input/layout/painting.

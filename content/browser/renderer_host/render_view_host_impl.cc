@@ -295,6 +295,8 @@ bool RenderViewHostImpl::CreateRenderView(
     return false;
   DCHECK(GetProcess()->HasConnection());
   DCHECK(GetProcess()->GetBrowserContext());
+  CHECK(main_frame_routing_id_ != MSG_ROUTING_NONE ||
+        proxy_route_id != MSG_ROUTING_NONE);
 
   GetWidget()->set_renderer_initialized(true);
 
