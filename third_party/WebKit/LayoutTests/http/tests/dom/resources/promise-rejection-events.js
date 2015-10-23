@@ -271,7 +271,7 @@ async_test(function(t) {
    'a promise created from returning a Promise.reject-created promise in a fulfillment handler');
 
 //
-// Negative unhandledrejection/rejectionhandled tests with delayed attachment
+// Negative unhandledrejection/rejectionhandled tests with microtask-delayed attachment
 //
 
 async_test(function(t) {
@@ -449,6 +449,90 @@ async_test(function(t) {
 }, 'microtask nesting: attaching a handler inside a combination of promise microtasks + mutationObserverMicrotask, ' +
    'all inside a setTimeout');
 
+
+// For workers, postMessageTask() involves posting tasks to other threads, so
+// the following tests don't work there.
+
+if ('document' in self) {
+  //
+  // Negative unhandledrejection/rejectionhandled tests with task-delayed attachment
+  //
+
+  async_test(function(t) {
+    var e = new Error();
+    var p;
+
+    onUnhandledFail(t, function() { return p; });
+
+    var _reject;
+    p = new Promise(function(_, reject) {
+      _reject = reject;
+    });
+    _reject(e);
+    postMessageTask(function() {
+      var unreached = t.unreached_func('promise should not be fulfilled');
+      p.then(unreached, function() {});
+    });
+  }, 'delayed handling: a task delay before attaching a handler prevents unhandledrejection');
+
+  async_test(function(t) {
+    var e = new Error();
+    var p;
+
+    onUnhandledFail(t, function() { return p; });
+
+    p = Promise.reject(e);
+    postMessageTask(function() {
+      Promise.resolve().then(function() {
+        p.catch(function() {});
+      });
+    });
+  }, 'delayed handling: postMessageTask after promise creation/rejection, plus promise microtasks, is not too late to ' +
+     'attach a rejection handler');
+
+  async_test(function(t) {
+    var e = new Error();
+    var p;
+
+    onUnhandledFail(t, function() { return p; });
+
+    postMessageTask(function() {
+      Promise.resolve().then(function() {
+        Promise.resolve().then(function() {
+          Promise.resolve().then(function() {
+            Promise.resolve().then(function() {
+              p.catch(function() {});
+            });
+          });
+        });
+      });
+    });
+    p = Promise.reject(e);
+  }, 'delayed handling: postMessageTask before promise creation/rejection, plus many promise microtasks, is not too ' +
+     'late to attach a rejection handler');
+
+  async_test(function(t) {
+    var e = new Error();
+    var p;
+
+    onUnhandledFail(t, function() { return p; });
+
+    p = Promise.reject(e);
+    postMessageTask(function() {
+      Promise.resolve().then(function() {
+        Promise.resolve().then(function() {
+          Promise.resolve().then(function() {
+            Promise.resolve().then(function() {
+              p.catch(function() {});
+            });
+          });
+        });
+      });
+    });
+  }, 'delayed handling: postMessageTask after promise creation/rejection, plus many promise microtasks, is not too ' +
+     'late to attach a rejection handler');
+}
+
 //
 // Positive unhandledrejection/rejectionhandled tests with delayed attachment
 //
@@ -465,10 +549,75 @@ async_test(function(t) {
   });
   _reject(e);
   postMessageTask(function() {
-    var unreached = t.unreached_func('promise should not be fulfilled');
-    p.then(unreached, function() {});
+    postMessageTask(function() {
+      var unreached = t.unreached_func('promise should not be fulfilled');
+      p.then(unreached, function() {});
+    });
   });
-}, 'delayed handling: a task delay before attaching a handler does not prevent unhandledrejection');
+}, 'delayed handling: a nested-task delay before attaching a handler causes unhandledrejection');
+
+async_test(function(t) {
+  var e = new Error();
+  var p;
+
+  onUnhandledSucceed(t, e, function() { return p; });
+
+  p = Promise.reject(e);
+  postMessageTask(function() {
+    postMessageTask(function() {
+      Promise.resolve().then(function() {
+        p.catch(function() {});
+      });
+    });
+  });
+}, 'delayed handling: a nested-postMessageTask after promise creation/rejection, plus promise microtasks, is too ' +
+   'late to attach a rejection handler');
+
+async_test(function(t) {
+  var e = new Error();
+  var p;
+
+  onUnhandledSucceed(t, e, function() { return p; });
+
+  postMessageTask(function() {
+    postMessageTask(function() {
+      Promise.resolve().then(function() {
+        Promise.resolve().then(function() {
+          Promise.resolve().then(function() {
+            Promise.resolve().then(function() {
+              p.catch(function() {});
+            });
+          });
+        });
+      });
+    });
+  });
+  p = Promise.reject(e);
+}, 'delayed handling: a nested-postMessageTask before promise creation/rejection, plus many promise microtasks, is ' +
+   'too late to attach a rejection handler');
+
+async_test(function(t) {
+  var e = new Error();
+  var p;
+
+  onUnhandledSucceed(t, e, function() { return p; });
+
+  p = Promise.reject(e);
+  postMessageTask(function() {
+    postMessageTask(function() {
+      Promise.resolve().then(function() {
+        Promise.resolve().then(function() {
+          Promise.resolve().then(function() {
+            Promise.resolve().then(function() {
+              p.catch(function() {});
+            });
+          });
+        });
+      });
+    });
+  });
+}, 'delayed handling: a nested-postMessageTask after promise creation/rejection, plus many promise microtasks, is ' +
+   'too late to attach a rejection handler');
 
 async_test(function(t) {
   var unhandledPromises = [];
@@ -510,62 +659,6 @@ async_test(function(t) {
   }, 10);
 }, 'delayed handling: delaying handling by setTimeout(,10) will cause both events to fire');
 
-async_test(function(t) {
-  var e = new Error();
-  var p;
-
-  onUnhandledSucceed(t, e, function() { return p; });
-
-  p = Promise.reject(e);
-  postMessageTask(function() {
-    Promise.resolve().then(function() {
-      p.catch(function() {});
-    });
-  });
-}, 'delayed handling: postMessageTask after promise creation/rejection, plus promise microtasks, is too late to ' +
-   'attach a rejection handler');
-
-async_test(function(t) {
-  var e = new Error();
-  var p;
-
-  onUnhandledSucceed(t, e, function() { return p; });
-  postMessageTask(function() {
-    Promise.resolve().then(function() {
-      Promise.resolve().then(function() {
-        Promise.resolve().then(function() {
-          Promise.resolve().then(function() {
-            p.catch(function() {});
-          });
-        });
-      });
-    });
-  });
-  p = Promise.reject(e);
-}, 'delayed handling: postMessageTask before promise creation/rejection, plus many promise microtasks, is too late ' +
-   'to attach a rejection handler');
-
-async_test(function(t) {
-  var e = new Error();
-  var p;
-
-  onUnhandledSucceed(t, e, function() { return p; });
-
-  p = Promise.reject(e);
-  postMessageTask(function() {
-    Promise.resolve().then(function() {
-      Promise.resolve().then(function() {
-        Promise.resolve().then(function() {
-          Promise.resolve().then(function() {
-            p.catch(function() {});
-          });
-        });
-      });
-    });
-  });
-}, 'delayed handling: postMessageTask after promise creation/rejection, plus many promise microtasks, is too late ' +
-   'to attach a rejection handler');
-
 //
 // Miscellaneous tests about integration with the rest of the platform
 //
@@ -590,18 +683,153 @@ async_test(function(t) {
   Promise.reject(e);
 }, 'mutationObserverMicrotask vs. postMessageTask ordering is not disturbed inside unhandledrejection events');
 
+// For workers, postMessageTask() involves posting tasks to other threads, so
+// the following tests don't work there.
+
+if ('document' in self) {
+
+  // For the next two see https://github.com/domenic/unhandled-rejections-browser-spec/issues/2#issuecomment-121121695
+  // and the following comments.
+
+  async_test(function(t) {
+    var sequenceOfEvents = [];
+
+    addEventListener('unhandledrejection', l);
+    ensureCleanup(t, l);
+
+    var p1 = Promise.reject();
+    var p2;
+    postMessageTask(function() {
+      p2 = Promise.reject();
+      postMessageTask(function() {
+        sequenceOfEvents.push('postMessageTask');
+        checkSequence();
+      });
+    });
+
+    function l(ev) {
+      if (ev.promise === p1 || ev.promise === p2) {
+        sequenceOfEvents.push(ev.promise);
+        checkSequence();
+      }
+    }
+
+    function checkSequence() {
+      if (sequenceOfEvents.length === 3) {
+        t.step(function() {
+          assert_array_equals(sequenceOfEvents, [p1, 'postMessageTask', p2]);
+        });
+        t.done();
+      }
+    }
+  }, 'postMessageTask ordering vs. the task queued for unhandled rejection notification (1)');
+
+  async_test(function(t) {
+    var sequenceOfEvents = [];
+
+    addEventListener('unhandledrejection', l);
+    ensureCleanup(t, l);
+
+    var p2;
+    postMessageTask(function() {
+      p2 = Promise.reject();
+      postMessageTask(function() {
+        sequenceOfEvents.push('postMessageTask');
+        checkSequence();
+      });
+    });
+
+    function l(ev) {
+      if (ev.promise == p2) {
+        sequenceOfEvents.push(ev.promise);
+        checkSequence();
+      }
+    }
+
+    function checkSequence() {
+      if (sequenceOfEvents.length === 2) {
+        t.step(function() {
+          assert_array_equals(sequenceOfEvents, ['postMessageTask', p2]);
+        });
+        t.done();
+      }
+    }
+  }, 'postMessageTask ordering vs. the task queued for unhandled rejection notification (2)');
+
+  async_test(function(t) {
+    var sequenceOfEvents = [];
+
+
+    addEventListener('unhandledrejection', unhandled);
+    addEventListener('rejectionhandled', handled);
+    ensureCleanup(t, unhandled, handled);
+
+    var p = Promise.reject();
+
+    setTimeout(function() {
+      postMessageTask(function() {
+        sequenceOfEvents.push('task before catch');
+        checkSequence();
+      });
+
+      p.catch(function() {
+        sequenceOfEvents.push('catch');
+        checkSequence();
+      });
+
+      postMessageTask(function() {
+        sequenceOfEvents.push('task after catch');
+        checkSequence();
+      });
+
+      sequenceOfEvents.push('after catch');
+      checkSequence();
+    }, 10);
+
+    function unhandled(ev) {
+      if (ev.promise === p) {
+        sequenceOfEvents.push('unhandled');
+        checkSequence();
+      }
+    }
+
+    function handled(ev) {
+      if (ev.promise === p) {
+        sequenceOfEvents.push('handled');
+        checkSequence();
+      }
+    }
+
+    function checkSequence() {
+      if (sequenceOfEvents.length === 6) {
+        t.step(function() {
+          assert_array_equals(sequenceOfEvents,
+            ['unhandled', 'after catch', 'catch', 'task before catch', 'handled', 'task after catch']);
+        });
+        t.done();
+      }
+    }
+  }, 'rejectionhandled is dispatched from a queued task, and not immediately');
+}
+
 //
 // HELPERS
 //
 
+var globalPostMessageCounter = 0;
+
 function postMessageTask(f) {
   if ('document' in self) {
-    var l = function() {
-      removeEventListener('message', l);
-      f();
+    var message = 'abusingpostmessageforfunandprofit' + globalPostMessageCounter;
+    globalPostMessageCounter++;
+    var l = function(ev) {
+      if (ev.data === message) {
+        removeEventListener('message', l);
+        f();
+      }
     };
     addEventListener('message', l);
-    postMessage('abusingpostmessageforfunandprofit', '*');
+    postMessage(message, '*');
   } else {
     var channel = new MessageChannel();
     channel.port1.onmessage = function() { channel.port1.close(); f(); };
@@ -640,12 +868,16 @@ function onUnhandledSucceed(t, expectedReason, expectedPromiseGetter) {
 function onUnhandledFail(t, expectedPromiseGetter) {
   var unhandled = function(evt) {
     if (evt.promise === expectedPromiseGetter()) {
-      t.unreached_func('unhandledrejection event is not supposed to be triggered');
+      t.step(function() {
+        assert_unreached('unhandledrejection event is not supposed to be triggered');
+      });
     }
   };
   var handled = function(evt) {
     if (evt.promise === expectedPromiseGetter()) {
-      t.unreached_func('rejectionhandled event is not supposed to be triggered');
+      t.step(function() {
+        assert_unreached('rejectionhandled event is not supposed to be triggered');
+      });
     }
   };
   addEventListener('unhandledrejection', unhandled);

@@ -111,7 +111,7 @@ private:
     bool m_executionScheduledToTerminate;
     mutable Mutex m_scheduledTerminationMutex;
 
-    OwnPtrWillBeMember<RejectedPromises> m_rejectedPromises;
+    RefPtrWillBeMember<RejectedPromises> m_rejectedPromises;
 
     // |m_globalScopeExecutionState| refers to a stack object
     // that evaluate() allocates; evaluate() ensuring that the
