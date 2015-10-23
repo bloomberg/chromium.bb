@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'includes': ['../build/android/v8_external_startup_data_arch_suffix.gypi'],
   'variables': {
     'chrome_android_pak_output_folder': '<@(PRODUCT_DIR)/assets/<(package_name)',
     'chrome_android_pak_input_resources': [
@@ -69,9 +68,13 @@
         ],
       }],
       ['v8_use_external_startup_data==1', {
+        'chrome_android_pak_input_resources': [
+          '<(PRODUCT_DIR)/natives_blob.bin',
+          '<(PRODUCT_DIR)/snapshot_blob.bin',
+        ],
         'chrome_android_pak_output_resources': [
-          '<(chrome_android_pak_output_folder)/natives_blob_<(arch_suffix).bin',
-          '<(chrome_android_pak_output_folder)/snapshot_blob_<(arch_suffix).bin',
+          '<(chrome_android_pak_output_folder)/natives_blob.bin',
+          '<(chrome_android_pak_output_folder)/snapshot_blob.bin',
         ],
       }],
     ],
@@ -90,18 +93,6 @@
           '<@(chrome_android_pak_input_resources)',
         ],
         'clear': 1,
-        'conditions': [
-          ['v8_use_external_startup_data==1', {
-             'renaming_sources': [
-               '<(PRODUCT_DIR)/snapshot_blob.bin',
-               '<(PRODUCT_DIR)/natives_blob.bin',
-             ],
-             'renaming_destinations': [
-               'snapshot_blob_<(arch_suffix).bin',
-               'natives_blob_<(arch_suffix).bin',
-             ],
-          }],
-        ],
       },
       'includes': ['../build/android/copy_ex.gypi'],
     },

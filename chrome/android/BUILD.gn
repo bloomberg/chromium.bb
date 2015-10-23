@@ -357,8 +357,10 @@ copy_ex("chrome_public_apk_assets") {
   ]
 
   if (v8_use_external_startup_data) {
-    renaming_sources = v8_external_startup_data_renaming_sources
-    renaming_destinations = v8_external_startup_data_renaming_destinations
+    sources += [
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
+    ]
     deps += [ "//v8" ]
   }
 
