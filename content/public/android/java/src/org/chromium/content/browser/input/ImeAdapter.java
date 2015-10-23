@@ -52,7 +52,7 @@ import org.chromium.ui.picker.InputDialogContainer;
  */
 @JNINamespace("content")
 public class ImeAdapter {
-    private static final String TAG = "cr.Ime";
+    private static final String TAG = "cr_Ime";
 
     private static final int COMPOSITION_KEY_CODE = 229;
 

@@ -21,13 +21,15 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.blink_public.web.WebTextInputFlags;
 import org.chromium.ui.base.ime.TextInputType;
 
+import java.util.Locale;
+
 /**
  * InputConnection is created by ContentView.onCreateInputConnection.
  * It then adapts android's IME to chrome's RenderWidgetHostView using the
  * native ImeAdapterAndroid via the class ImeAdapter.
  */
 public class AdapterInputConnection extends BaseInputConnection {
-    private static final String TAG = "cr.Ime";
+    private static final String TAG = "cr_Ime";
     /**
      * Selection value should be -1 if not known. See EditorInfo.java for details.
      */
@@ -139,11 +141,20 @@ public class AdapterInputConnection extends BaseInputConnection {
         Selection.setSelection(mEditable, outAttrs.initialSelStart, outAttrs.initialSelEnd);
     }
 
-    private String dumpEditorInfo(EditorInfo editorInfo) {
+    private static String dumpEditorInfo(EditorInfo editorInfo) {
         StringBuilder builder = new StringBuilder();
         StringBuilderPrinter printer = new StringBuilderPrinter(builder);
         editorInfo.dump(printer, "");
         return builder.toString();
+    }
+
+    private static String dumpEditable(Editable editable) {
+        return String.format(Locale.US, "Editable {[%s] SEL[%d %d] COM[%d %d]}",
+                editable.toString(),
+                Selection.getSelectionStart(editable),
+                Selection.getSelectionEnd(editable),
+                getComposingSpanStart(editable),
+                getComposingSpanEnd(editable));
     }
 
     /**
@@ -202,6 +213,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public Editable getEditable() {
+        Log.d(TAG, "getEditable: %s", dumpEditable(mEditable));
         return mEditable;
     }
 

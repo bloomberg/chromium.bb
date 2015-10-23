@@ -19,7 +19,7 @@ import org.chromium.base.Log;
  * Wrapper around Android's InputMethodManager
  */
 public class InputMethodManagerWrapper {
-    private static final String TAG = "cr.Ime";
+    private static final String TAG = "cr_Ime";
 
     private final Context mContext;
 
