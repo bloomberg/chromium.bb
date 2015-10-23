@@ -259,6 +259,10 @@ crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
 crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
 
+crbug.com/546454 svg/text/non-bmp-positioning-lists.svg [ NeedsRebaseline ]
+crbug.com/546454 [ Win ] fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
+crbug.com/546454 [ Win ] fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
+
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]

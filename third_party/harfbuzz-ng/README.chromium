@@ -2,7 +2,7 @@ Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
 Version: 1.0.6
-Date: 20151015
+Date: 20151022
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -19,3 +19,6 @@ and update our build recipes in BUILD.gn and harfbuzz.gyp accordingly, update
 the NEWS file from HarfBuzz' release notes, and bump the version numbers
 in README.chromium.
 
+Cherry-picked f6799700404c49ae0a for solving an issue with shaper driven run
+segmentation caused by compatibility decomposition.
+See https://github.com/behdad/harfbuzz/issues/152
