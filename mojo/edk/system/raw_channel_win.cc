@@ -517,7 +517,7 @@ class RawChannelWin final : public RawChannel {
       // We could have been given messages to write before OnInit.
       SerializeWriteBuffer(0u, 0u, serialized_write_buffer);
 
-      return ScopedPlatformHandle(PlatformHandle(handle_.release().handle));
+      return handle_.Pass();
     }
 
     return io_handler_->ReleaseHandle(serialized_read_buffer,
