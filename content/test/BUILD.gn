@@ -486,6 +486,25 @@ test("content_browsertests") {
   }
 }
 
+if (is_android) {
+  _content_unittests_apk_assets_dir =
+      "$root_out_dir/content_unittests_apk/assets"
+  copy_ex("copy_content_unittests_apk_assets") {
+    clear_dir = true
+    dest = _content_unittests_apk_assets_dir
+
+    if (v8_use_external_startup_data) {
+      sources = [
+        "$root_out_dir/natives_blob.bin",
+        "$root_out_dir/snapshot_blob.bin",
+      ]
+      deps = [
+        "//v8",
+      ]
+    }
+  }
+}
+
 # TODO(GYP): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("content_unittests_run") {
@@ -671,7 +690,13 @@ test("content_unittests") {
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]
     deps -= [ "//device/battery" ]
-    deps += [ "//testing/android/native_test:native_test_native_code" ]
+    deps += [ ":copy_content_unittests_apk_assets" ]
+
+    apk_asset_location = _content_unittests_apk_assets_dir
+    apk_deps = [
+      "//base:base_java_unittest_support",
+      "//content/public/android:content_java",
+    ]
 
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
   }
