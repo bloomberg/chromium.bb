@@ -102,7 +102,8 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
     // Check the hidden files are displayed.
     function(result) {
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(
-          hiddenEntrySet)).then(this.next);
+          hiddenEntrySet), {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
     },
     // Repeat steps to toggle again.
     function(inAppId) {
@@ -114,8 +115,8 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
     },
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
-      .then(this.next);
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])').then(
+          this.next);
     },
     function(result) {
       remoteCall.waitForElement(appId,
@@ -136,8 +137,8 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
           '#gear-menu-toggle-hidden-files:not([checked])').then(this.next);
     },
     function(result) {
-      remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(basicSet))
-      .then(this.next);
+      remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(basicSet),
+          {ignoreFileSize: true, ignoreLastModifiedTime: true}).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -244,7 +245,8 @@ testcase.hideGoogleDocs = function() {
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(
-          BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS)).then(this.next);
+          BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS), {ignoreFileSize: true,
+          ignoreLastModifiedTime: true}).then(this.next);
     },
     function(inAppId) {
       remoteCall.waitForElement(appId, '#gear-button').then(this.next);
@@ -268,7 +270,8 @@ testcase.hideGoogleDocs = function() {
     },
     function(result) {
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(
-          BASIC_DRIVE_ENTRY_SET)).then(this.next);
+          BASIC_DRIVE_ENTRY_SET), {ignoreFileSize: true,
+          ignoreLastModifiedTime: true}).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
