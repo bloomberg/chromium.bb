@@ -160,6 +160,12 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   bool HasHitTestMask() const override;
   void GetHitTestMask(gfx::Path* mask) const override;
 
+  // Overridden from ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
   mus::Window* window_;
 
   mojo::Shell* shell_;

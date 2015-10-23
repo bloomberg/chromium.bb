@@ -7,7 +7,6 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -56,28 +55,6 @@ class NativeWidgetWindowObserver : public mus::WindowObserver {
     view_manager_->window_ = nullptr;
     // TODO(sky): WindowTreeHostMojo assumes the View outlives it.
     // NativeWidgetWindowObserver needs to deal, likely by deleting this.
-  }
-
-  void OnWindowFocusChanged(mus::Window* gained_focus,
-                            mus::Window* lost_focus) override {
-    if (gained_focus == view_manager_->window_)
-      view_manager_->window_tree_host_->GetInputMethod()->OnFocus();
-    else if (lost_focus == view_manager_->window_)
-      view_manager_->window_tree_host_->GetInputMethod()->OnBlur();
-  }
-
-  void OnWindowInputEvent(mus::Window* view,
-                          const mojo::EventPtr& event) override {
-    scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
-    if (!ui_event)
-      return;
-
-    if (ui_event->IsKeyEvent()) {
-      view_manager_->window_tree_host_->GetInputMethod()->DispatchKeyEvent(
-          static_cast<ui::KeyEvent*>(ui_event.get()));
-    } else {
-      view_manager_->window_tree_host_->SendEventToProcessor(ui_event.get());
-    }
   }
 
   NativeWidgetViewManager* const view_manager_;

@@ -211,7 +211,8 @@ class DesktopNativeWidgetAuraWindowTreeClient :
 
 class FocusManagerEventHandler : public ui::EventHandler {
  public:
-  FocusManagerEventHandler(DesktopNativeWidgetAura* desktop_native_widget_aura)
+  explicit FocusManagerEventHandler(
+      DesktopNativeWidgetAura* desktop_native_widget_aura)
       : desktop_native_widget_aura_(desktop_native_widget_aura) {}
 
   // Implementation of ui::EventHandler:

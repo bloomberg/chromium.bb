@@ -186,11 +186,11 @@ TooltipManager* NativeWidgetMus::GetTooltipManager() const {
 }
 
 void NativeWidgetMus::SetCapture() {
-  window_tree_host_->window()->SetCapture();
+  content_->SetCapture();
 }
 
 void NativeWidgetMus::ReleaseCapture() {
-  window_tree_host_->window()->ReleaseCapture();
+  content_->ReleaseCapture();
 }
 
 bool NativeWidgetMus::HasCapture() const {
@@ -537,6 +537,55 @@ bool NativeWidgetMus::HasHitTestMask() const {
 
 void NativeWidgetMus::GetHitTestMask(gfx::Path* mask) const {
   native_widget_delegate_->GetHitTestMask(mask);
+}
+
+void NativeWidgetMus::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->is_char()) {
+    // If a ui::InputMethod object is attached to the root window, character
+    // events are handled inside the object and are not passed to this function.
+    // If such object is not attached, character events might be sent (e.g. on
+    // Windows). In this case, we just skip these.
+    return;
+  }
+  // Renderer may send a key event back to us if the key event wasn't handled,
+  // and the window may be invisible by that time.
+  if (!content_->IsVisible())
+    return;
+
+  native_widget_delegate_->OnKeyEvent(event);
+  if (event->handled())
+    return;
+
+  if (GetWidget()->HasFocusManager() &&
+      !GetWidget()->GetFocusManager()->OnKeyEvent(*event))
+    event->SetHandled();
+}
+
+void NativeWidgetMus::OnMouseEvent(ui::MouseEvent* event) {
+  // TODO(sky): forward to tooltipmanager. See NativeWidgetDesktopAura.
+  DCHECK(content_->IsVisible());
+  native_widget_delegate_->OnMouseEvent(event);
+  // WARNING: we may have been deleted.
+}
+
+void NativeWidgetMus::OnScrollEvent(ui::ScrollEvent* event) {
+  if (event->type() == ui::ET_SCROLL) {
+    native_widget_delegate_->OnScrollEvent(event);
+    if (event->handled())
+      return;
+
+    // Convert unprocessed scroll events into wheel events.
+    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
+    native_widget_delegate_->OnMouseEvent(&mwe);
+    if (mwe.handled())
+      event->SetHandled();
+  } else {
+    native_widget_delegate_->OnScrollEvent(event);
+  }
+}
+
+void NativeWidgetMus::OnGestureEvent(ui::GestureEvent* event) {
+  native_widget_delegate_->OnGestureEvent(event);
 }
 
 }  // namespace views

@@ -57,6 +57,10 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   void OnWindowBoundsChanged(mus::Window* window,
                              const mojo::Rect& old_bounds,
                              const mojo::Rect& new_bounds) override;
+  void OnWindowFocusChanged(mus::Window* gained_focus,
+                            mus::Window* lost_focus) override;
+  void OnWindowInputEvent(mus::Window* view,
+                          const mojo::EventPtr& event) override;
 
   mus::Window* mus_window_;
 

@@ -7,6 +7,7 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -114,6 +115,28 @@ void WindowTreeHostMojo::OnWindowBoundsChanged(mus::Window* window,
     OnHostMoved(new_bounds2.origin());
   if (old_bounds2.size() != new_bounds2.size())
     OnHostResized(new_bounds2.size());
+}
+
+void WindowTreeHostMojo::OnWindowFocusChanged(mus::Window* gained_focus,
+                                              mus::Window* lost_focus) {
+  if (gained_focus == mus_window_)
+    GetInputMethod()->OnFocus();
+  else if (lost_focus == mus_window_)
+    GetInputMethod()->OnBlur();
+}
+
+void WindowTreeHostMojo::OnWindowInputEvent(mus::Window* view,
+                                            const mojo::EventPtr& event) {
+  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
+  if (!ui_event)
+    return;
+
+  if (ui_event->IsKeyEvent()) {
+    GetInputMethod()->DispatchKeyEvent(
+        static_cast<ui::KeyEvent*>(ui_event.get()));
+  } else {
+    SendEventToProcessor(ui_event.get());
+  }
 }
 
 }  // namespace views
