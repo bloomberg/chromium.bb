@@ -8305,6 +8305,44 @@ TEST_F(LayerTreeHostImplTest, ExternalViewportAffectsVisibleRects) {
   EXPECT_EQ(gfx::Rect(90, 90), content_layer->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsVisibleRects) {
+  const gfx::Size layer_size(100, 100);
+  SetupScrollAndContentsLayers(layer_size);
+  LayerImpl* content_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer()->children()[0];
+  RebuildPropertyTrees();
+
+  bool update_lcd_text = false;
+
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  EXPECT_EQ(gfx::Rect(50, 50), content_layer->visible_layer_rect());
+
+  gfx::Transform external_transform;
+  external_transform.Translate(10, 10);
+  external_transform.Scale(2, 2);
+  gfx::Rect external_viewport;
+  gfx::Rect external_clip(layer_size);
+  bool resourceless_software_draw = false;
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip, external_viewport,
+      external_transform, resourceless_software_draw);
+
+  // Visible rects should now be shifted and scaled because of the external
+  // transform.
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  EXPECT_EQ(gfx::Rect(20, 20), content_layer->visible_layer_rect());
+
+  // Clear the external transform.
+  external_transform = gfx::Transform();
+  host_impl_->SetExternalDrawConstraints(
+      external_transform, external_viewport, external_clip, external_viewport,
+      external_transform, resourceless_software_draw);
+
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
+  EXPECT_EQ(gfx::Rect(50, 50), content_layer->visible_layer_rect());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
 

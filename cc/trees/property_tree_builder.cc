@@ -339,11 +339,9 @@ bool AddTransformNodeIfNeeded(
   }
 
   float post_local_scale_factor = 1.0f;
-  if (is_root) {
-    node->data.post_local = *data_from_ancestor.device_transform;
+  if (is_root)
     post_local_scale_factor =
         data_for_children->transform_tree->device_scale_factor();
-  }
 
   if (is_page_scale_layer) {
     post_local_scale_factor *= data_from_ancestor.page_scale_factor;
@@ -355,11 +353,10 @@ bool AddTransformNodeIfNeeded(
     node->data.needs_sublayer_scale = true;
 
   node->data.source_node_id = source_index;
+  node->data.post_local_scale_factor = post_local_scale_factor;
   if (is_root) {
-    node->data.post_local.Scale(post_local_scale_factor,
-                                post_local_scale_factor);
-    node->data.post_local.Translate(layer->position().x(),
-                                    layer->position().y());
+    data_for_children->transform_tree->SetDeviceTransform(
+        *data_from_ancestor.device_transform, layer->position());
   } else {
     node->data.post_local_scale_factor = post_local_scale_factor;
     node->data.source_offset = source_offset;
@@ -537,6 +534,8 @@ void BuildPropertyTreesTopLevelInternal(
                                          page_scale_factor, device_scale_factor,
                                          device_transform);
     property_trees->clip_tree.SetViewportClip(gfx::RectF(viewport));
+    property_trees->transform_tree.SetDeviceTransform(device_transform,
+                                                      root_layer->position());
     return;
   }
 

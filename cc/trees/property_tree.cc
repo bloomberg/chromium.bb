@@ -552,6 +552,21 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   node->data.scroll_snap = translation;
 }
 
+void TransformTree::SetDeviceTransform(const gfx::Transform& transform,
+                                       gfx::PointF root_position) {
+  gfx::Transform root_post_local = transform;
+  TransformNode* node = Node(1);
+  root_post_local.Scale(node->data.post_local_scale_factor,
+                        node->data.post_local_scale_factor);
+  root_post_local.Translate(root_position.x(), root_position.y());
+  if (node->data.post_local == root_post_local)
+    return;
+
+  node->data.post_local = root_post_local;
+  node->data.needs_local_transform_update = true;
+  set_needs_update(true);
+}
+
 void TransformTree::SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta) {
   if (inner_viewport_bounds_delta_ == bounds_delta)
     return;

@@ -328,6 +328,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   float device_scale_factor() const { return device_scale_factor_; }
 
+  void SetDeviceTransform(const gfx::Transform& transform,
+                          gfx::PointF root_position);
+
   void SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta);
   gfx::Vector2dF inner_viewport_bounds_delta() const {
     return inner_viewport_bounds_delta_;
