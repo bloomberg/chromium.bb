@@ -190,11 +190,6 @@ void WebSettingsImpl::setInvertViewportScrollOrder(bool enabled)
     m_settings->setInvertViewportScrollOrder(enabled);
 }
 
-void WebSettingsImpl::setInertVisualViewport(bool enabled)
-{
-    m_settings->setInertVisualViewport(enabled);
-}
-
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
     m_devToolsEmulator->setDeviceScaleAdjustment(deviceScaleAdjustment);

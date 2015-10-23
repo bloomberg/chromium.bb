@@ -175,7 +175,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool navigate_on_drag_drop;
   V8CacheOptions v8_cache_options;
   bool slimming_paint_v2_enabled;
-  bool inert_visual_viewport;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly

@@ -432,9 +432,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
 
-  prefs.inert_visual_viewport =
-      command_line.HasSwitch(switches::kInertVisualViewport);
-
   prefs.pinch_overlay_scrollbar_thickness = 10;
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 

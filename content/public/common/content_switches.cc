@@ -543,9 +543,6 @@ const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
 // Ignores GPU blacklist.
 const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 
-// Makes all APIs reflect the layout viewport.
-const char kInertVisualViewport[]           = "inert-visual-viewport";
-
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 

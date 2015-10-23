@@ -5372,12 +5372,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION" desc="Description of the 'Ignore GPU blacklist' lab.">
         Overrides the built-in software rendering list and enables GPU-acceleration on unsupported system configurations.
       </message>
-      <message name="IDS_FLAGS_INERT_VISUAL_VIEWPORT_NAME" desc="Title of the flag to enable the inert visual viewport experiment.">
-        Inert visual viewport.
-      </message>
-      <message name="IDS_FLAGS_INERT_VISUAL_VIEWPORT_DESCRIPTION" desc="Description of the flag to enable the inert visual viewport experiment.">
-        Experiment to have all APIs reflect the layout viewport. This will make window.scroll properties relative to the layout viewport.
-      </message>
       <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_NAME" desc="Name of the 'Threaded compositing mode' lab.">
         Threaded compositing
       </message>

@@ -162,7 +162,6 @@ extern const char kGpuVendorID[];
 CONTENT_EXPORT extern const char kHostResolverRules[];
 CONTENT_EXPORT extern const char kIgnoreCertificateErrors[];
 CONTENT_EXPORT extern const char kIgnoreGpuBlacklist[];
-CONTENT_EXPORT extern const char kInertVisualViewport[];
 CONTENT_EXPORT extern const char kInProcessGPU[];
 CONTENT_EXPORT extern const char kIPCConnectionTimeout[];
 CONTENT_EXPORT extern const char kJavaScriptFlags[];
