@@ -424,7 +424,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // In one finger passthrough, the touch is displaced relative to the
   // last touch exploration location.
-  gfx::Vector2d passthrough_offset_;
+  gfx::Vector2dF passthrough_offset_;
 
   // Stores the most recent event from a finger that is currently not
   // sending events through, but might in the future (e.g. before a finger
