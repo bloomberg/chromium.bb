@@ -61,9 +61,12 @@ BOOL CALLBACK AlwaysOnTopWindowProc(HWND hwnd, LPARAM l_param) {
         // These windows may be problematic as well, but in theory tests should
         // not be creating an always on top window that outlives the test. Log
         // the window in case there are problems.
+        DWORD process_id = 0;
+        DWORD thread_id = GetWindowThreadProcessId(hwnd, &process_id);
         LOG(ERROR) << (run_type == RunType::BEFORE_TEST ? kWindowFoundBeforeTest
                                                         : kWindowFoundPostTest)
-                   << class_name;
+                   << class_name << " process_id=" << process_id
+                   << " thread_id=" << thread_id;
         return kContinueIterating;
       }
     }
