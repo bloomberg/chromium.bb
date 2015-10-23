@@ -13,7 +13,7 @@ PASS $("listbox").selectedIndex is 1
 Click disabled option - doesn't change selectedIndex
 PASS $("listbox").selectedIndex is 1
 
-Menu list with arrow key
+Menu list with arrow key. The test is expected to fail on OSX because of a key binding difference.
 PASS $("menulist").selectedIndex is 8
 PASS successfullyParsed is true
 

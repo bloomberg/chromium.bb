@@ -53,8 +53,6 @@ function test()
         return;
     }
 
-    testRunner.dumpAsText();
-
     debug("\nClick enabled option");
     $("listbox").selectedIndex = 2;
     mouseMoveToIndexInListbox(1 + 1, 'listbox'); // +1 for optgroup
@@ -74,7 +72,7 @@ function test()
     eventSender.mouseUp();
     shouldBe('$("listbox").selectedIndex', '1');
 
-    debug("\nMenu list with arrow key");
+    debug("\nMenu list with arrow key. The test is expected to fail on OSX because of a key binding difference.");
     $("menulist").selectedIndex = 3;
     $("menulist").focus();
     eventSender.keyDown("downArrow");
