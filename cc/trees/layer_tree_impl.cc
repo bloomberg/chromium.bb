@@ -760,7 +760,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     if (tile_priorities_updated)
       DidModifyTilePriorities();
 
-    TRACE_EVENT_END1("cc", "LayerTreeImpl::UpdateTilePriorities",
+    TRACE_EVENT_END1("cc", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
                      "layers_updated_count", layers_updated_count);
   }
 
