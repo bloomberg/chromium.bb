@@ -403,16 +403,6 @@
             'browser/devtools/devtools_resources.gyp:devtools_resources',
           ],
         }],
-        ['OS=="android"', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'
-              ],
-            },
-          ],
-        }],
         ['toolkit_views==1', {
           'dependencies': [
             '<(DEPTH)/ui/views/resources/views_resources.gyp:views_resources'
@@ -437,6 +427,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
+            'pak_output': '<(PRODUCT_DIR)/content_shell.pak',
             'conditions': [
               ['toolkit_views==1', {
                 'pak_inputs': [
@@ -445,9 +436,6 @@
               }],
               ['OS!="android"', {
                 'pak_inputs': ['<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',],
-                'pak_output': '<(PRODUCT_DIR)/content_shell.pak',
-              }, {
-                'pak_output': '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
               }],
             ],
           },
@@ -920,9 +908,8 @@
           'target_name': 'content_shell_apk',
           'type': 'none',
           'dependencies': [
-            'content.gyp:content_icudata',
+            'content.gyp:content_shell_assets_copy',
             'content.gyp:content_java',
-            'content.gyp:content_v8_external_data',
             'content_java_test_support',
             'content_shell_java',
             'libcontent_shell_content_view',

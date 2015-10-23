@@ -302,9 +302,9 @@ if (is_android) {
     sources = [
       "$root_build_dir/html_viewer.pak",
       "$root_build_dir/icudtl.dat",
-      "$root_out_dir/natives_blob.bin",
-      "$root_out_dir/snapshot_blob.bin",
     ]
+    renaming_sources = v8_external_startup_data_renaming_sources
+    renaming_destinations = v8_external_startup_data_renaming_destinations
   }
 
   generate_mojo_shell_assets_list("build_unittest_assets") {

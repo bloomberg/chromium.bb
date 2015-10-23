@@ -141,17 +141,9 @@
                 'type': 'none',
                 'dependencies': [
                     '<(DEPTH)/base/base.gyp:base_java',
-                    '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_pak',
+                    '<(DEPTH)/content/content.gyp:content_shell_assets_copy',
                     '<(DEPTH)/net/net.gyp:net_java',
                     'webkit_unit_tests',
-                ],
-                'conditions': [
-                  ['v8_use_external_startup_data==1', {
-                    'dependencies': [
-                      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8_external_snapshot',
-                      '<(DEPTH)/content/content.gyp:content_v8_external_data',
-                    ],
-                  }],
                 ],
                 'variables': {
                     'test_suite_name': 'webkit_unit_tests',
@@ -161,13 +153,16 @@
                     'conditions': [
                       ['v8_use_external_startup_data==1', {
                         'additional_input_paths': [
-                          '<(PRODUCT_DIR)/content_shell/assets/natives_blob.bin',
-                          '<(PRODUCT_DIR)/content_shell/assets/snapshot_blob.bin',
+                          '<(PRODUCT_DIR)/content_shell/assets/natives_blob_<(arch_suffix).bin',
+                          '<(PRODUCT_DIR)/content_shell/assets/snapshot_blob_<(arch_suffix).bin',
                         ],
                       }],
                     ],
                 },
-                'includes': [ '../../../../build/apk_test.gypi' ],
+                'includes': [
+                  '../../../../build/apk_test.gypi',
+                  '../../../../build/android/v8_external_startup_data_arch_suffix.gypi',
+                ],
             }],
         }],
         ['test_isolation_mode != "noop"', {
