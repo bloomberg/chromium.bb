@@ -1100,19 +1100,6 @@ crbug.com/509025 [ Yosemite ] fast/text/glyph-reordering.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/text/large-text-composed-char.html [ Failure ]
 crbug.com/509025 [ Yosemite ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure ]
 crbug.com/509025 [ Yosemite ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
-# TODO(chrishtr): uncomment after fixing crbug.com/529038
-#crbug.com/509025 [ Yosemite ] media/video-paint-invalidation.html [ Failure ]
-
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-1.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-3.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-6.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-Bug(wangxianzhu) fast/repaint/line-flow-with-floats-10.html [ NeedsRebaseline ]
 
 #crbug.com/509025 [ Yosemite ] fast/text/emphasis.html [ Failure ]
 
