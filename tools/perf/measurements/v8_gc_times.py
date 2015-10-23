@@ -66,7 +66,13 @@ class V8GCTimes(page_test.PageTest):
                     'scavenges'),
         V8EventStat('V8.GCCompactor',
                     'v8_gc_mark_compactor',
-                    'mark-sweep-compactor')]
+                    'mark-sweep-compactor'),
+        V8EventStat('V8.GCFinalizeMC',
+                    'v8_gc_finalize_incremental',
+                    'finalization of incremental marking'),
+        V8EventStat('V8.GCFinalizeMCReduceMemory',
+                    'v8_gc_finalize_incremental_reduce_memory',
+                    'finalization of incremental marking with memory reducer')]
     # Find all V8 GC events in the trace.
     for event in thread.IterAllSlices():
       event_stat = _FindV8EventStatForEvent(v8_event_stats, event.name)
