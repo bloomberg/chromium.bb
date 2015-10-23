@@ -1286,17 +1286,27 @@ def CMDrun(parser, args):
     return 1
 
 
-@subcommand.usage('task_id')
+@subcommand.usage('task_id -- <extra_args>')
 def CMDreproduce(parser, args):
   """Runs a task locally that was triggered on the server.
 
   This running locally the same commands that have been run on the bot. The data
   downloaded will be in a subdirectory named 'work' of the current working
   directory.
+
+  You can pass further additional arguments to the target command by passing
+  them after --.
   """
   options, args = parser.parse_args(args)
-  if len(args) != 1:
+  extra_args = []
+  if not args:
     parser.error('Must specify exactly one task id.')
+  if len(args) > 1:
+    if args[1] == '--':
+      if len(args) > 2:
+        extra_args = args[2:]
+    else:
+      extra_args = args[1:]
 
   url = options.swarming + '/_ah/api/swarming/v1/task/%s/request' % args[0]
   request = net.url_read_json(url)
@@ -1334,7 +1344,7 @@ def CMDreproduce(parser, args):
   else:
     command = properties['command']
   try:
-    return subprocess.call(command, env=env, cwd=workdir)
+    return subprocess.call(command + extra_args, env=env, cwd=workdir)
   except OSError as e:
     print >> sys.stderr, 'Failed to run: %s' % ' '.join(command)
     print >> sys.stderr, str(e)

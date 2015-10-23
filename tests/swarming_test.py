@@ -980,7 +980,7 @@ class TestMain(NetTestCase):
       os.chdir(self.tempdir)
 
       def call(cmd, env, cwd):
-        self.assertEqual(['foo'], cmd)
+        self.assertEqual(['foo', '--bar'], cmd)
         expected = os.environ.copy()
         expected['aa'] = 'bb'
         self.assertEqual(expected, env)
@@ -1006,7 +1006,8 @@ class TestMain(NetTestCase):
           ])
       ret = main(
           [
-            'reproduce', '--swarming', 'https://localhost:1', '123',
+            'reproduce', '--swarming', 'https://localhost:1', '123', '--',
+            '--bar',
           ])
       self._check_output('', '')
       self.assertEqual(0, ret)
