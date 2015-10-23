@@ -542,6 +542,8 @@ willPositionSheet:(NSWindow*)sheet
   fullscreen_mac::SlidingStyle style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   [self adjustUIForSlidingFullscreenStyle:style];
 
+  [fullscreenWindow_ display];
+
   // AppKit is helpful and prevents NSWindows from having the same height as
   // the screen while the menu bar is showing. This only applies to windows on
   // a secondary screen, in a separate space. Calling [NSWindow
