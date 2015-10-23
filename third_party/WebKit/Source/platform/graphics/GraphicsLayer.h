@@ -255,7 +255,7 @@ public:
     PaintController* paintController() override;
 
     // Exposed for tests.
-    virtual WebLayer* contentsLayer() const { return m_contentsLayer; }
+    WebLayer* contentsLayer() const { return m_contentsLayer; }
 
     static void setDrawDebugRedFillForTesting(bool);
     ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }

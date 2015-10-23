@@ -54,8 +54,6 @@ class GraphicsLayerForTesting : public GraphicsLayer {
 public:
     explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
         : GraphicsLayer(client) { }
-
-    WebLayer* contentsLayer() const override { return GraphicsLayer::contentsLayer(); }
 };
 
 } // anonymous namespace

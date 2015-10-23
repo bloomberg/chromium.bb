@@ -103,8 +103,6 @@ public:
         : GraphicsLayer(client)
     {
     }
-
-    WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };
 
 } // anonymous namespace
