@@ -907,8 +907,9 @@ TEST(MessageLoopTest, ThreadMainTaskRunner) {
       &Foo::Test1ConstRef, foo.get(), a));
 
   // Post quit task;
-  MessageLoop::current()->PostTask(FROM_HERE, Bind(
-      &MessageLoop::Quit, Unretained(MessageLoop::current())));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&MessageLoop::QuitWhenIdle, Unretained(MessageLoop::current())));
 
   // Now kick things off
   MessageLoop::current()->Run();
@@ -983,7 +984,7 @@ LRESULT CALLBACK TestWndProcThunk(HWND hwnd, UINT message,
         break;
     }
     EXPECT_TRUE(did_run);
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
     break;
   }
   return 0;

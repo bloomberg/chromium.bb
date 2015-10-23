@@ -141,9 +141,9 @@ int32_t MessageLoopResource::PostQuit(PP_Bool should_destroy) {
     should_destroy_ = true;
 
   if (IsCurrent() && nested_invocations_ > 0)
-    loop_->Quit();
+    loop_->QuitWhenIdle();
   else
-    PostClosure(FROM_HERE, base::MessageLoop::QuitClosure(), 0);
+    PostClosure(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), 0);
   return PP_OK;
 }
 

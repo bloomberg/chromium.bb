@@ -262,7 +262,7 @@ void Thread::ThreadMain() {
   com_initializer.reset();
 #endif
 
-  // Assert that MessageLoop::Quit was called by ThreadQuitHelper.
+  // Assert that MessageLoop::QuitWhenIdle was called by ThreadQuitHelper.
   DCHECK(GetThreadWasQuitProperly());
 
   // We can't receive messages anymore.

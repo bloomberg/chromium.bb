@@ -180,7 +180,7 @@ class TileTaskWorkerPoolTest
 
   void AllTileTasksFinished() {
     tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   // Overriden from TileTaskWorkerPoolClient:
@@ -303,7 +303,7 @@ class TileTaskWorkerPoolTest
 
   void OnTimeout() {
     timed_out_ = true;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  protected:

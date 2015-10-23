@@ -972,7 +972,7 @@ void TestLauncher::RunTestIteration() {
       CommandLine::ForCurrentProcess()->HasSwitch(kGTestBreakOnFailure);
   if (cycles_ == 0 ||
       (stop_on_failure && test_success_count_ != test_finished_count_)) {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
     return;
   }
 

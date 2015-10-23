@@ -434,8 +434,7 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsRetryDuringLogin) {
 
   // Pump the loop, to ensure the pending backoff retry has no effect.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1));
   WaitForConnections();
 }

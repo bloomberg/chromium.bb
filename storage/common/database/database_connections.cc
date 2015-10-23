@@ -169,7 +169,7 @@ void DatabaseConnectionsWrapper::RemoveOpenConnection(
   base::AutoLock auto_lock(open_connections_lock_);
   open_connections_.RemoveConnection(origin_identifier, database_name);
   if (waiting_for_dbs_to_close_ && open_connections_.IsEmpty())
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace storage

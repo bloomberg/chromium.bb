@@ -104,8 +104,9 @@ void RunTest_PostTask(MessagePumpFactory factory) {
   MessageLoop::current()->PostTask(FROM_HERE, Bind(
       &Foo::Test2Mixed, foo.get(), a, &d));
   // After all tests, post a message that will shut down the message loop
-  MessageLoop::current()->PostTask(FROM_HERE, Bind(
-      &MessageLoop::Quit, Unretained(MessageLoop::current())));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&MessageLoop::QuitWhenIdle, Unretained(MessageLoop::current())));
 
   // Now kick things off
   MessageLoop::current()->Run();

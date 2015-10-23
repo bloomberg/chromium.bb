@@ -148,8 +148,7 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
       .WillOnce(DeleteMessageData());
 
   message_loop_.PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(kMaxTestDelay));
   message_loop_.Run();
 }
@@ -200,8 +199,7 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
       .WillOnce(DeleteMessageData());
 
   message_loop_.PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(kMaxTestDelay));
   message_loop_.Run();
 }

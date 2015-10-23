@@ -51,7 +51,7 @@ class ServiceStateURLRequestDelegate : public net::URLRequest::Delegate {
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
     Read(request);
     if (!request->status().is_io_pending())
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
   }
 
   const std::string& data() const {
@@ -190,8 +190,7 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   request->Start();
 
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(kRequestTimeoutMs));
 
   base::MessageLoop::current()->Run();

@@ -325,7 +325,7 @@ class Simulator {
 
     if (!sims_remaining_.size()) {
       DumpOutput();
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
       return false;
     }
 

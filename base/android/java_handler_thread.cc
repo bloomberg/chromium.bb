@@ -64,7 +64,7 @@ void JavaHandlerThread::InitializeThread(JNIEnv* env, jobject obj,
 }
 
 void JavaHandlerThread::StopThread(JNIEnv* env, jobject obj, jlong event) {
-  static_cast<MessageLoopForUI*>(message_loop_.get())->Quit();
+  static_cast<MessageLoopForUI*>(message_loop_.get())->QuitWhenIdle();
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
 

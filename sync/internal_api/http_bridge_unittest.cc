@@ -170,7 +170,8 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
               http_bridge->GetRequestContextGetterForTest()->
                   GetURLRequestContext()->
                   http_transaction_factory()->GetSession());
-    main_message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    main_message_loop->PostTask(FROM_HERE,
+                                base::MessageLoop::QuitWhenIdleClosure());
   }
 
   base::MessageLoop* GetIOThreadLoop() { return io_thread_.message_loop(); }

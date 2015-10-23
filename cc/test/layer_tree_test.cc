@@ -823,7 +823,7 @@ void LayerTreeTest::RealEndTest() {
     return;
   }
 
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,

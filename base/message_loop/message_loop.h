@@ -242,9 +242,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Return as soon as all items that can be run are taken care of.
   void RunUntilIdle();
 
-  // TODO(jbates) remove this. crbug.com/131220. See QuitWhenIdle().
-  void Quit() { QuitWhenIdle(); }
-
   // Deprecated: use RunLoop instead.
   //
   // Signals the Run method to return when it becomes idle. It will continue to
@@ -267,9 +264,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // This method is a variant of Quit, that does not wait for pending messages
   // to be processed before returning from Run.
   void QuitNow();
-
-  // TODO(jbates) remove this. crbug.com/131220. See QuitWhenIdleClosure().
-  static Closure QuitClosure() { return QuitWhenIdleClosure(); }
 
   // Deprecated: use RunLoop instead.
   // Construct a Closure that will call QuitWhenIdle(). Useful to schedule an

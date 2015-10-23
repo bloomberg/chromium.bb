@@ -280,8 +280,8 @@ LRESULT SetupDialog::OnCancel(UINT, INT nIdentifier, HWND, BOOL& handled) {
 
 LRESULT SetupDialog::OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
                                BOOL& handled) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   return 1;
 }
 

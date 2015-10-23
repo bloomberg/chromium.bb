@@ -23,7 +23,7 @@ class GetSessionNameTest : public ::testing::Test {
  public:
   void SetSessionNameAndQuit(const std::string& session_name) {
     session_name_ = session_name;
-    message_loop_.Quit();
+    message_loop_.QuitWhenIdle();
   }
 
  protected:

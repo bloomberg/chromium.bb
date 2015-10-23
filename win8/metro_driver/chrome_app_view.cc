@@ -765,7 +765,7 @@ void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
           ::CoreProcessEventsOption_ProcessUntilQuit);
 
   // Wind down the thread's chrome message loop.
-  base::MessageLoop::current()->Quit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void ChromeAppView::CheckForOSKActivation() {
