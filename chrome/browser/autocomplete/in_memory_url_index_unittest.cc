@@ -500,13 +500,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   EXPECT_EQ(17U, private_data.word_map_.size());
 }
 
-#if defined(OS_WIN)
-// Flaky on windows trybots: http://crbug.com/351500
-#define MAYBE_Retrieval DISABLED_Retrieval
-#else
-#define MAYBE_Retrieval Retrieval
-#endif
-TEST_F(InMemoryURLIndexTest, MAYBE_Retrieval) {
+TEST_F(InMemoryURLIndexTest, Retrieval) {
   // See if a very specific term gives a single result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport"), base::string16::npos, kMaxMatches);
@@ -725,13 +719,7 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
   ASSERT_EQ(kMaxMatches, private_data.post_scoring_item_count_);
 }
 
-#if defined(OS_WIN)
-// Flaky on windows trybots: http://crbug.com/351500
-#define MAYBE_TitleSearch DISABLED_TitleSearch
-#else
-#define MAYBE_TitleSearch TitleSearch
-#endif
-TEST_F(InMemoryURLIndexTest, MAYBE_TitleSearch) {
+TEST_F(InMemoryURLIndexTest, TitleSearch) {
   // Signal if someone has changed the test DB.
   EXPECT_EQ(29U, GetPrivateData()->history_info_map_.size());
 
@@ -1139,13 +1127,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   ExpectPrivateDataEqual(*old_data.get(), new_data);
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/351500
-#define MAYBE_RebuildFromHistoryIfCacheOld DISABLED_RebuildFromHistoryIfCacheOld
-#else
-#define MAYBE_RebuildFromHistoryIfCacheOld RebuildFromHistoryIfCacheOld
-#endif
-TEST_F(InMemoryURLIndexTest, MAYBE_RebuildFromHistoryIfCacheOld) {
+TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   set_history_dir(temp_directory.path());
