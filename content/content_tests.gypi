@@ -1015,7 +1015,7 @@
           'dependencies': [
             '../ui/android/ui_android.gyp:ui_android',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
-            'content.gyp:content_shell_assets_copy',
+            'content.gyp:content_v8_external_data',
           ],
         }],
         ['v8_use_external_startup_data==1 and OS!="ios"', {
@@ -1872,19 +1872,15 @@
               'dependencies': [
                 '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
               ],
-              'variables': {
-                'dest_path': '<(asset_location)',
-                'renaming_sources': [
-                  '<(PRODUCT_DIR)/natives_blob.bin',
-                  '<(PRODUCT_DIR)/snapshot_blob.bin',
-                ],
-                'renaming_destinations': [
-                  'natives_blob_<(arch_suffix).bin',
-                  'snapshot_blob_<(arch_suffix).bin',
-                ],
-                'clear': 1,
-              },
-              'includes': ['../build/android/copy_ex.gypi'],
+              'copies': [
+                {
+                'destination': '<(asset_location)',
+                  'files': [
+                    '<(PRODUCT_DIR)/natives_blob.bin',
+                    '<(PRODUCT_DIR)/snapshot_blob.bin',
+                  ],
+                },
+              ],
             }],
           ],
           'variables': {
@@ -1894,16 +1890,13 @@
               ['v8_use_external_startup_data==1', {
                 'asset_location': '<(PRODUCT_DIR)/content_unittests_apk/assets',
                 'additional_input_paths': [
-                  '<(PRODUCT_DIR)/content_unittests_apk/assets/natives_blob_<(arch_suffix).bin',
-                  '<(PRODUCT_DIR)/content_unittests_apk/assets/snapshot_blob_<(arch_suffix).bin',
+                  '<(PRODUCT_DIR)/content_unittests_apk/assets/natives_blob.bin',
+                  '<(PRODUCT_DIR)/content_unittests_apk/assets/snapshot_blob.bin',
                 ],
               }],
             ],
           },
-          'includes': [
-            '../build/apk_test.gypi',
-            '../build/android/v8_external_startup_data_arch_suffix.gypi',
-          ],
+          'includes': [ '../build/apk_test.gypi' ],
         },
         {
           'target_name': 'content_shell_browsertests_java',
@@ -1935,8 +1928,9 @@
           'target_name': 'content_browsertests_apk',
           'type': 'none',
           'dependencies': [
-            'content.gyp:content_shell_assets_copy',
+            'content.gyp:content_icudata',
             'content.gyp:content_java',
+            'content.gyp:content_v8_external_data',
             'content_browsertests',
             'content_shell_browsertests_java',
             'content_java_test_support',
@@ -2002,8 +1996,9 @@
             ['target_arch != "x64"', {
               'dependencies': [
                 'chromium_android_linker_test',
-                'content.gyp:content_shell_assets_copy',
+                'content.gyp:content_icudata',
                 'content.gyp:content_java',
+                'content.gyp:content_v8_external_data',
                 'content_shell_java',
               ],
               'variables': {
