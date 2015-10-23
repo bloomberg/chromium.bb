@@ -13,8 +13,7 @@ import sys
 
 from util import build_utils
 
-BUILD_ANDROID_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..'))
+BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
 from devil.android import device_errors

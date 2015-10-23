@@ -14,9 +14,7 @@ import posixpath
 import shutil
 import sys
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
-import devil_chromium
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from devil.android import apk_helper
 from devil.android import device_utils
 from devil.android import device_errors
@@ -233,8 +231,6 @@ def main():
   constants.SetBuildType('Debug')
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
-
-  devil_chromium.Initialize(output_directory=constants.GetOutputDirectory())
 
   if args.device:
     # Retries are annoying when commands fail for legitimate reasons. Might want

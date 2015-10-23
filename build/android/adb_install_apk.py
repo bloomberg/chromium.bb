@@ -12,8 +12,6 @@ import logging
 import os
 import sys
 
-import devil_chromium
-
 from devil.android import apk_helper
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -63,8 +61,6 @@ def main():
 
   run_tests_helper.SetLogLevel(args.verbose)
   constants.SetBuildType(args.build_type)
-
-  devil_chromium.Initialize(output_directory=constants.GetOutDirectory())
 
   apk = args.apk_path or args.apk_name
   if not apk.endswith('.apk'):

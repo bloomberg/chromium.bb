@@ -12,8 +12,7 @@ import optparse
 import os
 import sys
 
-BUILD_ANDROID_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir))
+BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(BUILD_ANDROID_DIR)
 
 from pylib import constants

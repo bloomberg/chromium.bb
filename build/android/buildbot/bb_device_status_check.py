@@ -16,7 +16,6 @@ import signal
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import devil_chromium
 from devil.android import battery_utils
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -306,8 +305,6 @@ def main():
   args = parser.parse_args()
 
   run_tests_helper.SetLogLevel(args.verbose)
-
-  devil_chromium.Initialize()
 
   blacklist = (device_blacklist.Blacklist(args.blacklist_file)
                if args.blacklist_file
