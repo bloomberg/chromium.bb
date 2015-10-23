@@ -41,6 +41,26 @@
 // which is a shorthand for DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, MyType).
 
 namespace mus {
+
+template <typename T>
+void Window::SetSharedProperty(const std::string& name, const T& data) {
+  const std::vector<uint8_t> bytes =
+      mojo::TypeConverter<const std::vector<uint8_t>, T>::Convert(data);
+  SetSharedPropertyInternal(name, &bytes);
+}
+
+void Window::ClearSharedProperty(const std::string& name) {
+  SetSharedPropertyInternal(name, nullptr);
+}
+
+template <typename T>
+T Window::GetSharedProperty(const std::string& name) const {
+  DCHECK(HasSharedProperty(name));
+  auto it = properties_.find(name);
+  return mojo::TypeConverter<T, const std::vector<uint8_t>>::Convert(
+      it->second);
+}
+
 namespace {
 
 // No single new-style cast works for every conversion to/from int64_t, so we

@@ -243,6 +243,10 @@ scoped_ptr<WindowSurface> Window::RequestSurface() {
       new WindowSurface(surface.PassInterface(), client_request.Pass()));
 }
 
+bool Window::HasSharedProperty(const std::string& name) const {
+  return properties_.count(name) > 0;
+}
+
 bool Window::IsDrawn() const {
   if (!visible_)
     return false;

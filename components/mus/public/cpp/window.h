@@ -72,26 +72,28 @@ class Window {
 
   scoped_ptr<WindowSurface> RequestSurface();
 
-  // Returns the set of string to bag of byte properties. These properties are
-  // shared with the window manager.
-  const SharedProperties& shared_properties() const { return properties_; }
-
+  // The template-ized versions of the following methods rely on the presence
+  // of a mojo::TypeConverter<const std::vector<uint8_t>, T>.
+  // Sets a shared property on the window which is sent to the window server and
+  // shared with other clients that can view this window.
   template <typename T>
-  void SetSharedProperty(const std::string& name, T* data) {
-    if (!data) {
-      SetSharedPropertyInternal(name, nullptr);
-    } else {
-      const std::vector<uint8_t> bytes =
-          mojo::TypeConverter<const std::vector<uint8_t>, T>::Convert(*data);
-      SetSharedPropertyInternal(name, &bytes);
-    }
-  }
+  void SetSharedProperty(const std::string& name, const T& data);
+  // Gets a shared property set on the window. The property must exist. Call
+  // HasSharedProperty() before calling.
+  template <typename T>
+  T GetSharedProperty(const std::string& name) const;
+  // Removes the shared property.
+  void ClearSharedProperty(const std::string& name);
+  bool HasSharedProperty(const std::string& name) const;
+
+  // TODO(beng): Test only, should move to a helper.
+  const SharedProperties& shared_properties() { return properties_; }
 
   // Sets the |value| of the given window |property|. Setting to the default
   // value (e.g., NULL) removes the property. The caller is responsible for the
   // lifetime of any object set as a property on the Window.
   //
-  // These properties are not visible to the window manager.
+  // These properties are not visible to the window server.
   template <typename T>
   void SetLocalProperty(const WindowProperty<T>* property, T value);
 

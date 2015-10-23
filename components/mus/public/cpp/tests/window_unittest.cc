@@ -811,7 +811,7 @@ TEST_F(WindowObserverTest, SetSharedProperty) {
   {
     // Change visibility from true to false and make sure we get notifications.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty<gfx::Size>("size", &size);
+    w1.SetSharedProperty<gfx::Size>("size", size);
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
     EXPECT_EQ(
@@ -819,19 +819,22 @@ TEST_F(WindowObserverTest, SetSharedProperty) {
         "new_value=100,100",
         changes[0]);
     EXPECT_EQ(1U, w1.shared_properties().size());
+    EXPECT_EQ(w1.GetSharedProperty<gfx::Size>("size"), size);
+    EXPECT_TRUE(w1.HasSharedProperty("size"));
   }
   {
     // Set visible to existing value and verify no notifications.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty<gfx::Size>("size", &size);
+    w1.SetSharedProperty<gfx::Size>("size", size);
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
     EXPECT_EQ(1U, w1.shared_properties().size());
+    EXPECT_TRUE(w1.HasSharedProperty("size"));
   }
   {
-    // Set the value to null to delete it.
+    // Clear the shared property.
     // Change visibility from true to false and make sure we get notifications.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty<gfx::Size>("size", nullptr);
+    w1.ClearSharedProperty("size");
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
     EXPECT_EQ(
@@ -839,13 +842,15 @@ TEST_F(WindowObserverTest, SetSharedProperty) {
         "new_value=NULL",
         changes[0]);
     EXPECT_EQ(0U, w1.shared_properties().size());
+    EXPECT_FALSE(w1.HasSharedProperty("size"));
   }
   {
-    // Setting a null property to null shouldn't update us.
+    // Clearing a non-existent property shouldn't update us.
     SharedPropertyChangeObserver observer(&w1);
-    w1.SetSharedProperty<gfx::Size>("size", nullptr);
+    w1.ClearSharedProperty("size");
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
     EXPECT_EQ(0U, w1.shared_properties().size());
+    EXPECT_FALSE(w1.HasSharedProperty("size"));
   }
 }
 
