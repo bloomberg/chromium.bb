@@ -5,7 +5,7 @@ function loaded()
 {
     loadCount++;
     if (loadCount == 2)
-        runRepaintTest();
+        runRepaintAndPixelTest();
 }
 
 function repaintTest()
