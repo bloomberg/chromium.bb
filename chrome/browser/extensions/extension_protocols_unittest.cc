@@ -137,7 +137,8 @@ class ExtensionProtocolTest : public testing::Test {
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,  // is_main_frame
         false,   // parent_is_main_frame
         true,    // allow_download
-        false);  // is_async
+        false,   // is_async
+        false);  // is_using_lofi
     request->Start();
     base::MessageLoop::current()->Run();
   }

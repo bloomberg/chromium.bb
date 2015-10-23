@@ -87,16 +87,16 @@ TEST(WebRequestConditionTest, CreateCondition) {
   request_data.url_match_ids = matcher.MatchURL(http_url);
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      match_request.get(),
-      content::RESOURCE_TYPE_MAIN_FRAME,
+      match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
       NULL,    // context
       -1,      // render_process_id
       -1,      // render_view_id
       -1,      // render_frame_id
       true,    // is_main_frame
       false,   // parent_is_main_frame
-      true,   // allow_download
-      false);  // is_async
+      true,    // allow_download
+      false,   // is_async
+      false);  // is_using_lofi
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
@@ -107,16 +107,16 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Make sure IsFulfilled does not fail because of URL matching.
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      wrong_resource_type.get(),
-      content::RESOURCE_TYPE_SUB_FRAME,
+      wrong_resource_type.get(), content::RESOURCE_TYPE_SUB_FRAME,
       NULL,    // context
       -1,      // render_process_id
       -1,      // render_view_id
       -1,      // render_frame_id
       false,   // is_main_frame
       false,   // parent_is_main_frame
-      true,   // allow_download
-      false);  // is_async
+      true,    // allow_download
+      false,   // is_async
+      false);  // is_using_lofi
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
@@ -156,16 +156,16 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   request_data.first_party_url_match_ids = matcher.MatchURL(first_party_url);
   EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      match_request.get(),
-      content::RESOURCE_TYPE_MAIN_FRAME,
+      match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
       NULL,    // context
       -1,      // render_process_id
       -1,      // render_view_id
       -1,      // render_frame_id
       true,    // is_main_frame
       false,   // parent_is_main_frame
-      true,   // allow_download
-      false);  // is_async
+      true,    // allow_download
+      false,   // is_async
+      false);  // is_using_lofi
   EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 

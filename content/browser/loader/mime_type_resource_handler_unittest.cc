@@ -248,7 +248,8 @@ bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
       is_main_frame,    // is_main_frame
       false,            // parent_is_main_frame
       allow_download,   // allow_download
-      true);            // is_async
+      true,             // is_async
+      false);           // is_using_lofi
 
   TestResourceDispatcherHost host(stream_has_handler_);
   TestResourceDispatcherHostDelegate host_delegate(must_download);

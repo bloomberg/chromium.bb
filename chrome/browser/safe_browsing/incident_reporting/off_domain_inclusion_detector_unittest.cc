@@ -248,7 +248,8 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
         is_main_frame,         // is_main_frame
         parent_is_main_frame,  // parent_is_main_frame
         true,                  // allow_download
-        false);                // is_async
+        false,                 // is_async
+        false);                // is_using_lofi
 
     off_domain_inclusion_detector_->OnResourceRequest(url_request.get());
 

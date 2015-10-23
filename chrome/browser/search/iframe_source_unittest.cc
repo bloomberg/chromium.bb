@@ -110,7 +110,8 @@ class IframeSourceTest : public testing::Test {
           false,   // is_main_frame
           false,   // parent_is_main_frame
           true,    // allow_download
-          false);  // is_async
+          false,   // is_async
+          false);  // is_using_lofi
     }
     return request.Pass();
   }

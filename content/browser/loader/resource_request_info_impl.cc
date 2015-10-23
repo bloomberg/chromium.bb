@@ -32,7 +32,8 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
                                              bool is_main_frame,
                                              bool parent_is_main_frame,
                                              bool allow_download,
-                                             bool is_async) {
+                                             bool is_async,
+                                             bool is_using_lofi) {
   // Make sure both |is_main_frame| and |parent_is_main_frame| aren't set at the
   // same time.
   DCHECK(!(is_main_frame && parent_is_main_frame));
@@ -69,7 +70,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           base::WeakPtr<ResourceMessageFilter>(),  // filter
           false,                             // report_raw_headers
           is_async,                          // is_async
-          false);                            // is_using_lofi
+          is_using_lofi);                    // is_using_lofi
   info->AssociateWithRequest(request);
 }
 

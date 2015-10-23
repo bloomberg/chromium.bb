@@ -565,7 +565,7 @@ class ResourceLoaderTest : public testing::Test,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
         rfh->GetRoutingID(), true /* is_main_frame */,
         false /* parent_is_main_frame */, true /* allow_download */,
-        false /* is_async */);
+        false /* is_async */, false /* is_using_lofi_ */);
     scoped_ptr<ResourceHandlerStub> resource_handler(
         new ResourceHandlerStub(request.get()));
     raw_ptr_resource_handler_ = resource_handler.get();

@@ -82,7 +82,7 @@ scoped_ptr<net::URLRequest> RequestURL(
   if (from_user) {
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-        true, false, true, true);
+        true, false, true, true, false);
   } else {
     request->SetUserData(
         data_use_measurement::DataUseUserData::kUserDataKey,

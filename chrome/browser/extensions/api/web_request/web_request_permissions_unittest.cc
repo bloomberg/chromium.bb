@@ -137,7 +137,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             false,   // is_main_frame
                                             false,   // parent_is_main_frame
                                             true,    // allow_download
-                                            false);  // is_async
+                                            false,   // is_async
+                                            false);  // is_using_lofi
     extension_info_map_->RegisterExtensionProcess(
         extensions::kWebStoreAppId, process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(

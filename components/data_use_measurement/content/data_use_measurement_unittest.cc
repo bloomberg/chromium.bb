@@ -82,7 +82,7 @@ class DataUseMeasurementTest : public testing::Test {
         GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-        true, false, true, true);
+        true, false, true, true, false);
     request->Start();
     loop_.RunUntilIdle();
 

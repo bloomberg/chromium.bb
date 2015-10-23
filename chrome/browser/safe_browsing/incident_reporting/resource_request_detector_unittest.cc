@@ -75,7 +75,8 @@ class ResourceRequestDetectorTest : public testing::Test {
         true,              // is_main_frame
         false,             // parent_is_main_frame
         true,              // allow_download
-        false);            // is_async
+        false,             // is_async
+        false);            // is_using_lofi
 
     return url_request.Pass();
   }
