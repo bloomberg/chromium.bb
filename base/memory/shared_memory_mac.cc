@@ -338,6 +338,10 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
 
   const int new_fd = HANDLE_EINTR(dup(handle_to_dup));
   if (new_fd < 0) {
+    if (close_self) {
+      Unmap();
+      Close();
+    }
     DPLOG(ERROR) << "dup() failed.";
     return false;
   }
