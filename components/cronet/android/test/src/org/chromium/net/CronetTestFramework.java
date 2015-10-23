@@ -102,6 +102,8 @@ public class CronetTestFramework {
         }
     }
 
+    // TODO(crbug.com/547160): Fix this findbugs error and remove the suppression.
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public CronetTestFramework(String appUrl, String[] commandLine, Context context) {
         mCommandLine = commandLine;
         mContext = context;
