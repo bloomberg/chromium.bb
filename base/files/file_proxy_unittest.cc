@@ -83,10 +83,10 @@ class FileProxyTest : public testing::Test {
   const FilePath& test_dir_path() const { return dir_.path(); }
   const FilePath test_path() const { return dir_.path().AppendASCII("test"); }
 
+  ScopedTempDir dir_;
   MessageLoopForIO message_loop_;
   Thread file_thread_;
 
-  ScopedTempDir dir_;
   File::Error error_;
   FilePath path_;
   File::Info file_info_;
