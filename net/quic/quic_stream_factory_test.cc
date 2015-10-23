@@ -247,7 +247,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         threshold_public_resets_post_handshake_(2),
         receive_buffer_size_(0),
         delay_tcp_race_(false),
-        store_server_configs_in_properties_(false) {
+        store_server_configs_in_properties_(false),
+        close_sessions_on_ip_change_(false) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
@@ -266,7 +267,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         max_number_of_lossy_connections_, packet_loss_threshold_,
         max_disabled_reasons_, threshold_timeouts_with_open_streams_,
         threshold_public_resets_post_handshake_, receive_buffer_size_,
-        delay_tcp_race_, store_server_configs_in_properties_, QuicTagVector()));
+        delay_tcp_race_, store_server_configs_in_properties_,
+        close_sessions_on_ip_change_, QuicTagVector()));
     factory_->set_require_confirmation(false);
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
   }
@@ -364,6 +366,13 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     return verify_details;
   }
 
+  void NotifyIPAddressChanged() {
+    NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+    // For thread safety, the NCN queues tasks to do the actual notifications,
+    // so we need to spin the message loop so the notification is delivered.
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
   MockHostResolver host_resolver_;
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
@@ -398,6 +407,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   int receive_buffer_size_;
   bool delay_tcp_race_;
   bool store_server_configs_in_properties_;
+  bool close_sessions_on_ip_change_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
@@ -1307,7 +1317,9 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
 }
 
 TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
+  close_sessions_on_ip_change_ = true;
   Initialize();
+
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -1341,7 +1353,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
                                          net_log_, CompletionCallback()));
 
   // Change the IP address and verify that stream saw the error.
-  factory_->OnIPAddressChanged();
+  NotifyIPAddressChanged();
   EXPECT_EQ(ERR_NETWORK_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_TRUE(factory_->require_confirmation());

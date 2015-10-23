@@ -116,6 +116,7 @@ HttpNetworkSession::Params::Params()
       quic_max_recent_disabled_reasons(kQuicMaxRecentDisabledReasons),
       quic_threshold_public_resets_post_handshake(0),
       quic_threshold_timeouts_streams_open(0),
+      quic_close_sessions_on_ip_change(false),
       proxy_delegate(NULL) {
   quic_supported_versions.push_back(QUIC_VERSION_27);
 }
@@ -168,6 +169,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_socket_receive_buffer_size,
           params.quic_delay_tcp_race,
           params.quic_store_server_configs_in_properties,
+          params.quic_close_sessions_on_ip_change,
           params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,

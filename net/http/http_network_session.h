@@ -166,8 +166,10 @@ class NET_EXPORT HttpNetworkSession
     int quic_max_recent_disabled_reasons;
     int quic_threshold_public_resets_post_handshake;
     int quic_threshold_timeouts_streams_open;
-    // Set of QUIC tags to send in the handshakes connection options.
+    // Set of QUIC tags to send in the handshake's connection options.
     QuicTagVector quic_connection_options;
+    // If true, all QUIC sessions are closed when any local IP address changes.
+    bool quic_close_sessions_on_ip_change;
     ProxyDelegate* proxy_delegate;
   };
 

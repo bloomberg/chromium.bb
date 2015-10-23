@@ -171,6 +171,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(0, params.quic_max_number_of_lossy_connections);
   EXPECT_EQ(1.0f, params.quic_packet_loss_threshold);
   EXPECT_FALSE(params.quic_delay_tcp_race);
+  EXPECT_FALSE(params.quic_close_sessions_on_ip_change);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
@@ -256,6 +257,15 @@ TEST_F(IOThreadTest, PacketLengthFromCommandLine) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(1450u, params.quic_max_packet_length);
+}
+
+TEST_F(IOThreadTest, QuicCloseSessionsOnIpChangeFromFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["close_sessions_on_ip_change"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_close_sessions_on_ip_change);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {

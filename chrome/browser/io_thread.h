@@ -207,6 +207,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<std::string> quic_user_agent_id;
     Optional<net::QuicVersionVector> quic_supported_versions;
     Optional<net::HostPortPair> origin_to_force_quic_on;
+    Optional<bool> quic_close_sessions_on_ip_change;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
@@ -406,6 +407,11 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Returns true if QUIC should delay TCP connection when QUIC works.
   static bool ShouldQuicDelayTcpRace(
+      const VariationParameters& quic_trial_params);
+
+  // Returns true if QUIC should close sessions when any of the client's
+  // IP addresses change.
+  static bool ShouldQuicCloseSessionsOnIpChange(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

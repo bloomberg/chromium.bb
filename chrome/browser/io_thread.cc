@@ -1081,6 +1081,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   globals.quic_supported_versions.CopyToIfSet(
       &params->quic_supported_versions);
   params->quic_connection_options = globals.quic_connection_options;
+  globals.quic_close_sessions_on_ip_change.CopyToIfSet(
+      &params->quic_close_sessions_on_ip_change);
 
   globals.origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
@@ -1214,6 +1216,8 @@ void IOThread::ConfigureQuicGlobals(
         ShouldEnableQuicPortSelection(command_line));
     globals->quic_connection_options =
         GetQuicConnectionOptions(command_line, quic_trial_params);
+    globals->quic_close_sessions_on_ip_change.set(
+        ShouldQuicCloseSessionsOnIpChange(quic_trial_params));
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
@@ -1446,6 +1450,13 @@ bool IOThread::ShouldQuicDelayTcpRace(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "delay_tcp_race"), "true");
+}
+
+bool IOThread::ShouldQuicCloseSessionsOnIpChange(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "close_sessions_on_ip_change"),
+      "true");
 }
 
 size_t IOThread::GetQuicMaxPacketLength(

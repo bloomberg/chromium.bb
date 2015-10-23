@@ -137,6 +137,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int socket_receive_buffer_size,
       bool delay_tcp_race,
       bool store_server_configs_in_properties,
+      bool close_sessions_on_ip_change,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -436,6 +437,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if server configs are to be stored in HttpServerProperties.
   bool store_server_configs_in_properties_;
+
+  // Set if all sessions should be closed when any local IP address changes.
+  const bool close_sessions_on_ip_change_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so

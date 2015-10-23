@@ -568,6 +568,7 @@ QuicStreamFactory::QuicStreamFactory(
     int socket_receive_buffer_size,
     bool delay_tcp_race,
     bool store_server_configs_in_properties,
+    bool close_sessions_on_ip_change,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -608,6 +609,7 @@ QuicStreamFactory::QuicStreamFactory(
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
       store_server_configs_in_properties_(store_server_configs_in_properties),
+      close_sessions_on_ip_change_(close_sessions_on_ip_change),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
@@ -647,6 +649,10 @@ QuicStreamFactory::QuicStreamFactory(
     quic_server_info_factory_.reset(
         new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
   }
+
+  if (close_sessions_on_ip_change_) {
+    NetworkChangeNotifier::AddIPAddressObserver(this);
+  }
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -659,6 +665,9 @@ QuicStreamFactory::~QuicStreamFactory() {
     const QuicServerId server_id = active_jobs_.begin()->first;
     STLDeleteElements(&(active_jobs_[server_id]));
     active_jobs_.erase(server_id);
+  }
+  if (close_sessions_on_ip_change_) {
+    NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
 }
 
