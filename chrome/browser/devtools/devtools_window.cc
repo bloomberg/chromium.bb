@@ -867,9 +867,14 @@ WebContents* DevToolsWindow::OpenURLFromTab(
 }
 
 void DevToolsWindow::ShowCertificateViewer(int certificate_id) {
-  ::ShowCertificateViewerByID(
-      is_docked_ ? GetInspectedWebContents() : main_web_contents_,
-      nullptr, certificate_id);
+  WebContents* inspected_contents = is_docked_ ?
+      GetInspectedWebContents() : main_web_contents_;
+  Browser* browser = NULL;
+  int tab = 0;
+  if (!FindInspectedBrowserAndTabIndex(inspected_contents, &browser, &tab))
+    return;
+  gfx::NativeWindow parent = browser->window()->GetNativeWindow();
+  ::ShowCertificateViewerByID(inspected_contents, parent, certificate_id);
 }
 
 void DevToolsWindow::ActivateContents(WebContents* contents) {
