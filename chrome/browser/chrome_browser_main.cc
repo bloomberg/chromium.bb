@@ -541,6 +541,18 @@ void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
   }
 }
 
+class ScopedMainMessageLoopRunEvent {
+ public:
+  ScopedMainMessageLoopRunEvent() {
+    TRACE_EVENT_ASYNC_BEGIN0(
+        "toplevel", "ChromeBrowserMainParts::MainMessageLoopRun", this);
+  }
+  ~ScopedMainMessageLoopRunEvent() {
+    TRACE_EVENT_ASYNC_END0("toplevel",
+                           "ChromeBrowserMainParts::MainMessageLoopRun", this);
+  }
+};
+
 }  // namespace
 
 namespace chrome_browser {
@@ -1729,7 +1741,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  TRACE_EVENT0("startup", "ChromeBrowserMainParts::MainMessageLoopRun");
+  // Trace the entry and exit of this method. We don't use the TRACE_EVENT0
+  // macro because the tracing infrastructure doesn't expect a synchronous event
+  // around the main loop of a thread.
+  ScopedMainMessageLoopRunEvent scoped_main_message_loop_run_event;
 #if defined(OS_ANDROID)
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop
