@@ -10,7 +10,6 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
@@ -46,7 +45,7 @@ def GetBaseUploadURI(config, archive_base=None, bot_id=None,
   if archive_base:
     return '%s/%s' % (archive_base, bot_id)
   elif remote_trybot or config.gs_path == config_lib.GS_PATH_DEFAULT:
-    return '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET, bot_id)
+    return '%s/%s' % (config_lib.GetConfig().params.ARCHIVE_URL, bot_id)
   else:
     return config.gs_path
 

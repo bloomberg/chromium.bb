@@ -721,7 +721,6 @@ def ImageBinToGceTar(image_bin):
                                       image_bin)
   return '%s_gce.tar.gz' % os.path.splitext(image_bin)[0]
 
-DEFAULT_ARCHIVE_BUCKET = 'gs://chromeos-image-archive'
 RELEASE_BUCKET = 'gs://chromeos-releases'
 TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
 CHROME_SYSROOT_TAR = 'sysroot_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)

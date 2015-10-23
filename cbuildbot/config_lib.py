@@ -876,7 +876,10 @@ def DefaultSiteParameters():
       INTERNAL_MANIFEST_VERSIONS_PATH=None,
 
       # URL of the repo project.
-      REPO_URL='https://chromium.googlesource.com/external/repo'
+      REPO_URL='https://chromium.googlesource.com/external/repo',
+
+      # GS URL in which to archive build artifacts.
+      ARCHIVE_URL='gs://chromeos-image-archive',
   )
 
   return default_site_params

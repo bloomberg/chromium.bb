@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import config_lib
 
 
 # Metadata keys to tag our GCE artifacts with.
@@ -23,7 +23,8 @@ DEFAULT_SCOPES = ('https://www.googleapis.com/auth/devstorage.full_control',
 # TODO: We do not archive the official images to Google Storage yet
 # because the imaging creating process for this path does not allow
 # the rootfs to be larger than 10GB.
-GS_IMAGE_ARCHIVE_BASE_URL = '%s/gce-images' % constants.DEFAULT_ARCHIVE_BUCKET
+GS_IMAGE_ARCHIVE_BASE_URL = ('%s/gce-images' %
+                             config_lib.GetConfig().params.ARCHIVE_URL)
 IMAGE_SUFFIX = '.tar.gz'
 
 BOOT_DISK = '/dev/sda'
