@@ -314,15 +314,17 @@ public final class OfflinePageBridge {
 
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
-            String url, long bookmarkId, String offlineUrl, long fileSize, int accessCount) {
-        offlinePagesList.add(createOfflinePageItem(url, bookmarkId, offlineUrl, fileSize,
-                accessCount));
+            String url, long bookmarkId, String offlineUrl, long fileSize, int accessCount,
+            long lastAccessTimeMs) {
+        offlinePagesList.add(createOfflinePageItem(
+                url, bookmarkId, offlineUrl, fileSize, accessCount, lastAccessTimeMs));
     }
 
     @CalledByNative
-    private static OfflinePageItem createOfflinePageItem(
-            String url, long bookmarkId, String offlineUrl, long fileSize, int accessCount) {
-        return new OfflinePageItem(url, bookmarkId, offlineUrl, fileSize, accessCount);
+    private static OfflinePageItem createOfflinePageItem(String url, long bookmarkId,
+            String offlineUrl, long fileSize, int accessCount, long lastAccessTimeMs) {
+        return new OfflinePageItem(
+                url, bookmarkId, offlineUrl, fileSize, accessCount, lastAccessTimeMs);
     }
 
     private static native boolean nativeIsOfflinePagesEnabled();

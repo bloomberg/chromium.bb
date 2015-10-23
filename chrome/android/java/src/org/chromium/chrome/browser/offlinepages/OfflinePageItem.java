@@ -17,14 +17,16 @@ public class OfflinePageItem {
     private final String mOfflineUrl;
     private final long mFileSize;
     private final int mAccessCount;
+    private final long mLastAccessTimeMs;
 
     public OfflinePageItem(String url, long bookmarkId, String offlineUrl, long fileSize,
-            int accessCount) {
+            int accessCount, long lastAccessTimeMs) {
         mUrl = url;
         mBookmarId = new BookmarkId(bookmarkId, BookmarkType.NORMAL);
         mOfflineUrl = offlineUrl;
         mFileSize = fileSize;
         mAccessCount = accessCount;
+        mLastAccessTimeMs = lastAccessTimeMs;
     }
 
     /** @return URL of the offline page. */
@@ -51,9 +53,14 @@ public class OfflinePageItem {
         return mFileSize;
     }
 
-    /** @return Number of times that the offline archive has been accessed. */
+    /** @return Number of times that the offline page has been accessed. */
     @VisibleForTesting
     public int getAccessCount() {
         return mAccessCount;
+    }
+
+    /** @return Last time in milliseconds the offline page has been accessed. */
+    public long getLastAccessTimeMs() {
+        return mLastAccessTimeMs;
     }
 }

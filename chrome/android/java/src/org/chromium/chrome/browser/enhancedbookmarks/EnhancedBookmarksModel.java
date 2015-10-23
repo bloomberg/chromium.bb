@@ -23,6 +23,8 @@ import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -63,6 +65,21 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
          */
         void onDeleteBookmarks(String[] titles, boolean isUndoable);
     }
+
+    /** A comparator to sort the offline pages according to the most recent access time. */
+    private static final Comparator<OfflinePageItem> sOfflinePageComparator =
+            new Comparator<OfflinePageItem>() {
+                @Override
+                public int compare(OfflinePageItem o1, OfflinePageItem o2) {
+                    if (o1.getLastAccessTimeMs() > o2.getLastAccessTimeMs()) {
+                        return -1;
+                    } else if (o1.getLastAccessTimeMs() < o2.getLastAccessTimeMs()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            };
 
     private ObserverList<EnhancedBookmarkDeleteObserver> mDeleteObservers = new ObserverList<>();
     private OfflinePageBridge mOfflinePageBridge;
@@ -282,8 +299,10 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
         assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
         assert mOfflinePageBridge != null;
 
+        List<OfflinePageItem> offlinePages = mOfflinePageBridge.getAllPages();
+        Collections.sort(offlinePages, sOfflinePageComparator);
         List<BookmarkId> bookmarkIds = new ArrayList<BookmarkId>();
-        for (OfflinePageItem offlinePage : mOfflinePageBridge.getAllPages()) {
+        for (OfflinePageItem offlinePage : offlinePages) {
             bookmarkIds.add(offlinePage.getBookmarkId());
         }
         return bookmarkIds;
