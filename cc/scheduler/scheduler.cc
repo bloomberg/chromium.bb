@@ -732,6 +732,13 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   }
 
   state->BeginDictionary("scheduler_state");
+  state->SetBoolean("external_frame_source_", !!external_frame_source_);
+  state->SetBoolean("throttle_frame_production_", throttle_frame_production_);
+  state->SetDouble("authoritative_vsync_interval_ms",
+                   authoritative_vsync_interval_.InMillisecondsF());
+  state->SetDouble(
+      "last_vsync_timebase_ms",
+      (last_vsync_timebase_ - base::TimeTicks()).InMillisecondsF());
   state->SetDouble("estimated_parent_draw_time_ms",
                    estimated_parent_draw_time_.InMillisecondsF());
   state->SetBoolean("last_set_needs_begin_frame_",
