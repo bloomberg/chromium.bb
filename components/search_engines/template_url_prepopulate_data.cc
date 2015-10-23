@@ -104,7 +104,7 @@ const PrepopulatedEngine* engines_BR[] =
 
 // Belarus
 const PrepopulatedEngine* engines_BY[] =
-    { &google, &yahoo_ru, &bing, };
+    { &google, &yandex_by, &mail_ru, };
 
 // Belize
 const PrepopulatedEngine* engines_BZ[] =
@@ -268,7 +268,7 @@ const PrepopulatedEngine* engines_KR[] =
 
 // Kazakhstan
 const PrepopulatedEngine* engines_KZ[] =
-    { &google, &bing, &yahoo, };
+    { &google, &mail_ru, &yandex_kz, };
 
 // Lebanon
 const PrepopulatedEngine* engines_LB[] =
@@ -490,9 +490,9 @@ const PrepopulatedEngine* kAllEngines[] = {
   &yahoo_fr,     &yahoo_gr,     &yahoo_hk,     &yahoo_id,     &yahoo_in,
   &yahoo_jp,     &yahoo_maktoob,&yahoo_mx,     &yahoo_my,     &yahoo_nl,
   &yahoo_nz,     &yahoo_pe,     &yahoo_ph,     &yahoo_qc,     &yahoo_ro,
-  &yahoo_ru,     &yahoo_se,     &yahoo_sg,     &yahoo_th,     &yahoo_tr,
-  &yahoo_tw,     &yahoo_uk,     &yahoo_ve,     &yahoo_vn,     &yandex_ru,
-  &yandex_tr,    &yandex_ua,
+  &yahoo_se,     &yahoo_sg,     &yahoo_th,     &yahoo_tr,     &yahoo_tw,
+  &yahoo_uk,     &yahoo_ve,     &yahoo_vn,     &yandex_by,    &yandex_kz,
+  &yandex_ru,    &yandex_tr,    &yandex_ua,
 
   // UMA-only engines:
   &atlas_cz,     &atlas_sk,     &avg,          &babylon,      &conduit,

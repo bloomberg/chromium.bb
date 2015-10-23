@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 84
+    "kCurrentDataVersion": 85
   },
 
   // The following engines are included in country lists and are added to the
@@ -494,15 +494,6 @@
       "id": 2
     },
 
-    "yahoo_ru": {
-      "name": "Yahoo! \u043f\u043e-\u0440\u0443\u0441\u0441\u043a\u0438",
-      "keyword": "ru.yahoo.com",
-      "favicon_url": "https://ru.search.yahoo.com/favicon.ico",
-      "search_url": "https://ru.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
     "yahoo_se": {
       "name": "Yahoo! Sverige",
       "keyword": "se.yahoo.com",
@@ -579,6 +570,30 @@
       "suggest_url": "https://vn.search.yahoo.com/sugg/chrome?output=fxjson&appid=crmas&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
+    },
+
+    "yandex_by": {
+      "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
+      "keyword": "yandex.by",
+      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "search_url": "http://yandex.by/{yandex:searchPath}?text={searchTerms}",
+      "suggest_url": "https://api.browser.yandex.by/suggest/get?part={searchTerms}",
+      "image_url": "http://yandex.by/images/search/?rpt=imageview",
+      "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
+      "type": "SEARCH_ENGINE_YANDEX",
+      "id": 15
+    },
+
+    "yandex_kz": {
+      "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
+      "keyword": "yandex.kz",
+      "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "search_url": "http://yandex.kz/{yandex:searchPath}?text={searchTerms}",
+      "suggest_url": "https://api.browser.yandex.kz/suggest/get?part={searchTerms}",
+      "image_url": "http://yandex.kz/images/search/?rpt=imageview",
+      "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
+      "type": "SEARCH_ENGINE_YANDEX",
+      "id": 15
     },
 
     "yandex_ru": {
