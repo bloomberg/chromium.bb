@@ -40,6 +40,7 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/normalizing_input_filter_cros.h"
 #include "remoting/client/normalizing_input_filter_mac.h"
+#include "remoting/client/normalizing_input_filter_win.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_main_thread_task_runner.h"
@@ -632,6 +633,9 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   } else if (key_filter == "cros") {
     normalizing_input_filter_.reset(
         new NormalizingInputFilterCros(&key_mapper_));
+  } else if (key_filter == "windows") {
+    normalizing_input_filter_.reset(
+        new NormalizingInputFilterWin(&key_mapper_));
   } else {
     DCHECK(key_filter.empty());
     normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));

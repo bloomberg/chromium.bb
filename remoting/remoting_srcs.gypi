@@ -246,6 +246,8 @@
       'client/normalizing_input_filter_cros.h',
       'client/normalizing_input_filter_mac.cc',
       'client/normalizing_input_filter_mac.h',
+      'client/normalizing_input_filter_win.cc',
+      'client/normalizing_input_filter_win.h',
       'client/server_log_entry_client.cc',
       'client/server_log_entry_client.h',
       'client/software_video_renderer.cc',

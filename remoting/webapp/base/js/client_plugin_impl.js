@@ -429,6 +429,8 @@ remoting.ClientPluginImpl.prototype.connectWithExperiments_ = function(
     keyFilter = 'mac';
   } else if (remoting.platformIsChromeOS()) {
     keyFilter = 'cros';
+  } else if (remoting.platformIsWindows()) {
+    keyFilter = 'windows';
   }
 
   this.plugin_.postMessage(JSON.stringify(

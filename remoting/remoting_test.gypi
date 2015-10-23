@@ -229,6 +229,7 @@
         'client/key_event_mapper_unittest.cc',
         'client/normalizing_input_filter_cros_unittest.cc',
         'client/normalizing_input_filter_mac_unittest.cc',
+        'client/normalizing_input_filter_win_unittest.cc',
         'client/server_log_entry_client_unittest.cc',
         'client/software_video_renderer_unittest.cc',
         'client/touch_input_scaler_unittest.cc',
