@@ -26,7 +26,6 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.metrics.MediaSessionUMA;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -35,9 +34,6 @@ import org.chromium.chrome.browser.tab.Tab;
  * {@link MediaNotificationListener} calls for all registered listeners.
  */
 public class MediaNotificationManager {
-    private static final int PLAYBACK_STATE_PAUSED = 0;
-    private static final int PLAYBACK_STATE_PLAYING = 1;
-
     private static final Object LOCK = new Object();
     private static MediaNotificationManager sInstance;
 
@@ -109,27 +105,20 @@ public class MediaNotificationManager {
 
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
-                        if (!sInstance.mMediaNotificationInfo.isPaused) break;
-                        MediaSessionUMA.recordPlay(
-                                MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
-                        sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
+                        sInstance.onPlay(
+                                MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        if (sInstance.mMediaNotificationInfo.isPaused) break;
-                        MediaSessionUMA.recordPause(
-                                MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
-                        sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
+                        sInstance.onPause(
+                                MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         break;
                     case KeyEvent.KEYCODE_HEADSETHOOK:
                     case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                         if (sInstance.mMediaNotificationInfo.isPaused) {
-                            MediaSessionUMA.recordPlay(
-                                    MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
-                            sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
+                            sInstance.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         } else {
-                            MediaSessionUMA.recordPause(
-                                    MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
-                            sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
+                            sInstance.onPause(
+                                    MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         }
                         break;
                     default:
@@ -139,21 +128,16 @@ public class MediaNotificationManager {
             }
 
             if (ACTION_STOP.equals(action)) {
-                MediaSessionUMA.recordStop(
-                        MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION);
-                sInstance.mMediaNotificationInfo.listener.onStop();
+                sInstance.onStop(
+                        MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
                 stopSelf();
                 return START_NOT_STICKY;
             }
 
             if (ACTION_PLAY.equals(action)) {
-                MediaSessionUMA.recordPlay(
-                        MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION);
-                sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
+                sInstance.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             } else if (ACTION_PAUSE.equals(action)) {
-                MediaSessionUMA.recordPause(
-                        MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION);
-                sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
+                sInstance.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             }
 
             return START_NOT_STICKY;
@@ -166,7 +150,7 @@ public class MediaNotificationManager {
      * changed from the last one.
      *
      * @param applicationContext context to create the notification with
-     * @param mediaNotificationInfo information to show in the notification
+     * @param notificationInfoBuilder information to show in the notification
      */
     public static void show(Context applicationContext,
                             MediaNotificationInfo.Builder notificationInfoBuilder) {
@@ -245,18 +229,12 @@ public class MediaNotificationManager {
             new MediaSessionCompat.Callback() {
                 @Override
                 public void onPlay() {
-                    if (!sInstance.mMediaNotificationInfo.isPaused) return;
-                    MediaSessionUMA.recordPlay(
-                            MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
-                    sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
+                    sInstance.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                 }
 
                 @Override
                 public void onPause() {
-                    if (sInstance.mMediaNotificationInfo.isPaused) return;
-                    MediaSessionUMA.recordPause(
-                            MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
-                    sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
+                    sInstance.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                 }
     };
 
@@ -272,6 +250,37 @@ public class MediaNotificationManager {
                 context.getResources(), R.color.media_session_icon_color));
     }
 
+    private void onPlay(int actionSource) {
+        if (!mMediaNotificationInfo.isPaused) return;
+
+        mMediaNotificationInfo = mNotificationInfoBuilder.setPaused(false).build();
+        updateNotification();
+
+        mMediaNotificationInfo.listener.onPlay(actionSource);
+    }
+
+    private void onPause(int actionSource) {
+        if (mMediaNotificationInfo.isPaused) return;
+
+        mMediaNotificationInfo = mNotificationInfoBuilder.setPaused(true).build();
+        updateNotification();
+
+        mMediaNotificationInfo.listener.onPause(actionSource);
+    }
+
+    private void onStop(int actionSource) {
+        // hideNotification() below will clear |mMediaNotificationInfo| but {@link
+        // MediaNotificationListener}.onStop() might also clear it so keep the listener and call it
+        // later.
+        // TODO(avayvod): make the notification delegate update its state, not the notification
+        // manager. See https://crbug.com/546981
+        MediaNotificationListener listener = mMediaNotificationInfo.listener;
+
+        hideNotification(mMediaNotificationInfo.tabId);
+
+        listener.onStop(actionSource);
+    }
+
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
         mContext.startService(new Intent(mContext, ListenerService.class));
 
@@ -279,9 +288,7 @@ public class MediaNotificationManager {
 
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
-        mMediaNotificationInfo = mNotificationInfoBuilder
-                .setTitle(sanitizeMediaTitle(mediaNotificationInfo.title))
-                .build();
+        mMediaNotificationInfo = mediaNotificationInfo;
         updateNotification();
     }
 
@@ -303,22 +310,6 @@ public class MediaNotificationManager {
         clearNotification();
     }
 
-    private void onPlaybackStateChanged(int playbackState) {
-        assert mMediaNotificationInfo != null;
-        assert playbackState == PLAYBACK_STATE_PLAYING || playbackState == PLAYBACK_STATE_PAUSED;
-
-        mMediaNotificationInfo = mNotificationInfoBuilder
-                .setPaused(playbackState == PLAYBACK_STATE_PAUSED)
-                .build();
-        updateNotification();
-
-        if (playbackState == PLAYBACK_STATE_PAUSED) {
-            mMediaNotificationInfo.listener.onPause();
-        } else {
-            mMediaNotificationInfo.listener.onPlay();
-        }
-    }
-
     private RemoteViews createContentView() {
         RemoteViews contentView =
                 new RemoteViews(mContext.getPackageName(), R.layout.playback_notification_bar);
@@ -331,13 +322,6 @@ public class MediaNotificationManager {
                     mService.getPendingIntent(ListenerService.ACTION_STOP));
         }
         return contentView;
-    }
-
-    private String sanitizeMediaTitle(String title) {
-        // Improve the visibility of the title by removing all the leading/trailing white spaces
-        // and the quite common unicode play icon.
-        title = title.trim();
-        return title.startsWith("\u25B6") ? title.substring(1).trim() : title;
     }
 
     private MediaMetadataCompat createMetadata() {

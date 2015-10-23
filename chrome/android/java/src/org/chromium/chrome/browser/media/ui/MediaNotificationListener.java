@@ -8,18 +8,32 @@ package org.chromium.chrome.browser.media.ui;
  * Interface for classes that need to be notified about media events.
  */
 public interface MediaNotificationListener {
+
+    /**
+     * The media action was caused by direct interaction with the notification.
+     */
+    public static final int ACTION_SOURCE_MEDIA_NOTIFICATION = 1000;
+
+    /**
+     * The media action was received via the MediaSession Android API, e.g. a headset, a watch, etc.
+     */
+    public static final int ACTION_SOURCE_MEDIA_SESSION = 1001;
+
     /**
      * Called when the user wants to resume the playback.
+     * @param actionSource The source the listener got the action from.
      */
-    void onPlay();
+    void onPlay(int actionSource);
 
     /**
      * Called when the user wants to pause the playback.
+     * @param actionSource The source the listener got the action from.
      */
-    void onPause();
+    void onPause(int actionSource);
 
     /**
      * Called when the user wants to stop the playback.
+     * @param actionSource The source the listener got the action from.
      */
-    void onStop();
+    void onStop(int actionSource);
 }

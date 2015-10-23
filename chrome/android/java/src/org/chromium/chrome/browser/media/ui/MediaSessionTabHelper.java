@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.ui;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.metrics.MediaSessionUMA;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -23,26 +24,34 @@ import java.net.URISyntaxException;
 public class MediaSessionTabHelper {
     private static final String TAG = "cr.MediaSession";
 
+    private static final String UNICODE_PLAY_CHARACTER = "\u25B6";
+
     private Tab mTab;
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
 
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
-        public void onPlay() {
-            assert mWebContents != null;
+        public void onPlay(int actionSource) {
+            MediaSessionUMA
+                    .recordPlay(MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
+
             mWebContents.resumeMediaSession();
         }
 
         @Override
-        public void onPause() {
-            assert mWebContents != null;
+        public void onPause(int actionSource) {
+            MediaSessionUMA.recordPause(
+                    MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
+
             mWebContents.suspendMediaSession();
         }
 
         @Override
-        public void onStop() {
-            assert mWebContents != null;
+        public void onStop(int actionSource) {
+            MediaSessionUMA
+                    .recordStop(MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
+
             mWebContents.stopMediaSession();
         }
     };
@@ -61,7 +70,6 @@ public class MediaSessionTabHelper {
 
             @Override
             public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
-                assert mTab != null;
                 if (!isControllable) {
                     MediaNotificationManager.hide(mTab.getId());
                     return;
@@ -73,10 +81,10 @@ public class MediaSessionTabHelper {
                     Log.e(TAG, "Unable to parse the origin from the URL. "
                             + "Showing the full URL instead.");
                 }
-                MediaNotificationManager.show(
-                        ApplicationStatus.getApplicationContext(),
+
+                MediaNotificationManager.show(ApplicationStatus.getApplicationContext(),
                         new MediaNotificationInfo.Builder()
-                                .setTitle(mTab.getTitle())
+                                .setTitle(sanitizeMediaTitle(mTab.getTitle()))
                                 .setPaused(isPaused)
                                 .setOrigin(origin)
                                 .setTabId(mTab.getId())
@@ -132,5 +140,35 @@ public class MediaSessionTabHelper {
      */
     public static void createForTab(Tab tab) {
         new MediaSessionTabHelper(tab);
+    }
+
+    /**
+     * Removes all the leading/trailing white spaces and the quite common unicode play character.
+     * It improves the visibility of the title in the notification.
+     *
+     * @param title The original tab title, e.g. "   ▶   Foo - Bar  "
+     * @return The sanitized tab title, e.g. "Foo - Bar"
+     */
+    private String sanitizeMediaTitle(String title) {
+        title = title.trim();
+        return title.startsWith(UNICODE_PLAY_CHARACTER) ? title.substring(1).trim() : title;
+    }
+
+    /**
+     * Converts the {@link MediaNotificationListener} action source enum into the
+     * {@link MediaSessionUMA} one to ensure matching the histogram values.
+     * @param source the source id, must be one of the ACTION_SOURCE_* constants defined in the
+     *               {@link MediaNotificationListener} interface.
+     * @return the corresponding histogram value.
+     */
+    public static int convertMediaActionSourceToUMA(int source) {
+        if (source == MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION) {
+            return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION;
+        } else if (source == MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION) {
+            return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION;
+        }
+
+        assert false;
+        return MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MAX;
     }
 }
