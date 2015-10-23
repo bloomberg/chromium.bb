@@ -2836,7 +2836,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
         return containingBlockLogicalHeightForPositioned(containingBlock, false);
 
     // Use viewport as container for top-level fixed-position elements.
-    if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
+    if (style()->position() == FixedPosition && containingBlock->isLayoutView() && !document().printing()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
             // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
@@ -2880,7 +2880,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         return containingBlockLogicalWidthForPositioned(containingBlock, false);
 
     // Use viewport as container for top-level fixed-position elements.
-    if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
+    if (style()->position() == FixedPosition && containingBlock->isLayoutView() && !document().printing()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
             // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
