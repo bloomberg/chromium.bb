@@ -19,29 +19,19 @@ namespace ws {
 
 class ServerWindow;
 
-// Find the deepest visible child of |root| that contains |location|. If a
-// child is found |location| is reset to the coordinates of the child.
-ServerWindow* FindDeepestVisibleWindow(ServerWindow* root,
+// Find the deepest visible child of |root| that contains |location| using
+// a previously submitted frame. |location| is initially in the coordinate
+// space of |root_window|. On return it is converted to the coordinates of the
+// return value.
+ServerWindow* FindDeepestVisibleWindow(ServerWindow* root_window,
+                                       cc::SurfaceId display_surface_id,
                                        gfx::Point* location);
 
-// Find the deepest visible child of |root| that contains |location| using
-// a previously submitted frame.
-ServerWindow* FindDeepestVisibleWindowFromSurface(
-    ServerWindow* root_window,
-    cc::SurfaceId display_surface_id,
-    const gfx::Point& location,
-    gfx::Transform* transform);
+// Retrieve the transform to the provided |window|'s coordinate space from the
+// root.
+gfx::Transform GetTransformToWindow(cc::SurfaceId display_surface_id,
+                                    ServerWindow* window);
 
-// Retrieve the transform to the provided |target_window|'s coordinate
-// space.
-void GetTransformToTargetWindow(ServerWindow* target_window,
-                                gfx::Transform* transform);
-
-// Retrieve the transform to the provided |target_window|'s coordinate
-// space. Returns whether a transform was successfully retrieved.
-bool GetTransformToTargetWindowFromSurface(cc::SurfaceId display_surface_id,
-                                           ServerWindow* target_window,
-                                           gfx::Transform* transform);
 }  // namespace ws
 }  // namespace mus
 

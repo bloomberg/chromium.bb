@@ -207,8 +207,8 @@ TEST(EventDispatcherTest, Capture) {
        &child, gfx::Point(50, 50), gfx::Point(40, 40)},
       // Release the mouse and verify that the mouse up event goes to the child.
       {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::PointF(50.f, 50.f),
-                      gfx::PointF(50.f, 50.f), base::TimeDelta(), ui::EF_NONE,
-                      ui::EF_NONE),
+                      gfx::PointF(50.f, 50.f), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        &child, gfx::Point(50, 50), gfx::Point(40, 40)},
       // A mouse move at (50, 50) should now go to the root window.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::PointF(50.f, 50.f),

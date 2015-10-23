@@ -172,20 +172,25 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
     }
   }
 
+  // If there is a MoveLoop all pointer events are forwarded to it.
   if (move_loop_ && IsPointerEvent(*event)) {
     if (move_loop_->Move(*event) == MoveLoop::DONE) {
       move_loop_.reset();
-      if (event->action == mojo::EVENT_TYPE_POINTER_UP &&
-          IsOnlyOneMouseButtonDown(event->flags)) {
-        capture_window_ = nullptr;
-      }
+      ResetCaptureWindowIfPointerUp(*event);
     }
 
-    // Move loop eats all pointer events.
     return;
   }
 
   ServerWindow* target = FindEventTarget(event.get());
+
+  if (IsMouseEventFlag(event->flags)) {
+    if (!capture_window_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN))
+      capture_window_ = target;
+    else
+      ResetCaptureWindowIfPointerUp(*event);
+  }
+
   if (target) {
     if (event->action == mojo::EVENT_TYPE_POINTER_DOWN) {
       delegate_->SetFocusedWindowFromEventDispatcher(target);
@@ -233,32 +238,11 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
 
   ServerWindow* target = capture_window_;
 
-  gfx::Transform transform;
   if (!target) {
-    target = FindDeepestVisibleWindowFromSurface(root_, surface_id_, location,
-                                                 &transform);
-    if (target) {
-      transform.TransformPoint(&location);
-    } else {
-      // Surface-based hit-testing will not return a valid target if no
-      // CompositorFrame has been submitted (e.g. in unit-tests).
-      target = FindDeepestVisibleWindow(root_, &location);
-    }
+    target = FindDeepestVisibleWindow(root_, surface_id_, &location);
   } else {
-    if (!GetTransformToTargetWindowFromSurface(surface_id_, target, &transform))
-      GetTransformToTargetWindow(target, &transform);
+    gfx::Transform transform(GetTransformToWindow(surface_id_, target));
     transform.TransformPoint(&location);
-  }
-
-  if (IsMouseEventFlag(event->flags)) {
-    if (!capture_window_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN)) {
-      capture_window_ = target;
-    } else if (event->action == mojo::EVENT_TYPE_POINTER_UP &&
-               IsOnlyOneMouseButtonDown(event->flags)) {
-      capture_window_ = nullptr;
-    }
-  } else {
-    capture_window_ = nullptr;
   }
 
   event_location->x = location.x();
@@ -266,6 +250,12 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
   return target;
 }
 
-// static
+void EventDispatcher::ResetCaptureWindowIfPointerUp(const mojo::Event& event) {
+  if (event.action == mojo::EVENT_TYPE_POINTER_UP &&
+      IsOnlyOneMouseButtonDown(event.flags)) {
+    capture_window_ = nullptr;
+  }
+}
+
 }  // namespace ws
 }  // namespace mus

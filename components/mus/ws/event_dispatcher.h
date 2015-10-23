@@ -55,6 +55,8 @@ class EventDispatcher {
   // make sure it is in the returned target's coordinate space.
   ServerWindow* FindEventTarget(mojo::Event* event);
 
+  void ResetCaptureWindowIfPointerUp(const mojo::Event& event);
+
   EventDispatcherDelegate* delegate_;
   ServerWindow* root_;
 

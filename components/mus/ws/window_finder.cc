@@ -15,9 +15,10 @@
 
 namespace mus {
 namespace ws {
+namespace {
 
-ServerWindow* FindDeepestVisibleWindow(ServerWindow* window,
-                                       gfx::Point* location) {
+ServerWindow* FindDeepestVisibleWindowNonSurface(ServerWindow* window,
+                                                 gfx::Point* location) {
   for (ServerWindow* child : window->GetChildren()) {
     if (!child->visible())
       continue;
@@ -29,55 +30,63 @@ ServerWindow* FindDeepestVisibleWindow(ServerWindow* window,
         child_location.x() < child->bounds().width() &&
         child_location.y() < child->bounds().height()) {
       *location = child_location;
-      return FindDeepestVisibleWindow(child, location);
+      return FindDeepestVisibleWindowNonSurface(child, location);
     }
   }
   return window;
 }
 
-ServerWindow* FindDeepestVisibleWindowFromSurface(
-    ServerWindow* root_window,
-    cc::SurfaceId display_surface_id,
-    const gfx::Point& location,
-    gfx::Transform* transform) {
-  if (display_surface_id.is_null())
-    return nullptr;
+gfx::Transform GetTransformToWindowNonSurface(ServerWindow* window) {
+  gfx::Transform transform;
+  ServerWindow* current = window;
+  while (current->parent()) {
+    transform.Translate(-current->bounds().x(), -current->bounds().y());
+    current = current->parent();
+  }
+  return transform;
+}
 
+}  // namespace
+
+ServerWindow* FindDeepestVisibleWindow(ServerWindow* root_window,
+                                       cc::SurfaceId display_surface_id,
+                                       gfx::Point* location) {
+  if (display_surface_id.is_null()) {
+    // Surface-based hit-testing will not return a valid target if no
+    // CompositorFrame has been submitted (e.g. in unit-tests).
+    return FindDeepestVisibleWindowNonSurface(root_window, location);
+  }
+
+  gfx::Transform transform;
   cc::SurfaceId target_surface =
       root_window->delegate()
           ->GetSurfacesState()
           ->hit_tester()
-          ->GetTargetSurfaceAtPoint(display_surface_id, location, transform);
+          ->GetTargetSurfaceAtPoint(display_surface_id, *location, &transform);
   WindowId id = WindowIdFromTransportId(
       cc::SurfaceIdAllocator::NamespaceForId(target_surface));
   // TODO(fsamuel): This should be a DCHECK but currently we use stale
   // information to decide where to route input events. This should be fixed
   // once we implement a UI scheduler.
-  return root_window->GetChildWindow(id);
+  ServerWindow* target = root_window->GetChildWindow(id);
+  if (target)
+    transform.TransformPoint(location);
+  return target;
 }
 
-void GetTransformToTargetWindow(ServerWindow* target_window,
-                                gfx::Transform* transform) {
-  *transform = gfx::Transform();
-  ServerWindow* current = target_window;
-  while (current->parent()) {
-    transform->Translate(-current->bounds().x(), -current->bounds().y());
-    current = current->parent();
+gfx::Transform GetTransformToWindow(cc::SurfaceId display_surface_id,
+                                    ServerWindow* window) {
+  gfx::Transform transform;
+  if (!display_surface_id.is_null() &&
+      window->delegate()
+          ->GetSurfacesState()
+          ->hit_tester()
+          ->GetTransformToTargetSurface(display_surface_id,
+                                        window->surface()->id(), &transform)) {
+    return transform;
   }
-}
 
-bool GetTransformToTargetWindowFromSurface(cc::SurfaceId display_surface_id,
-                                           ServerWindow* target_window,
-                                           gfx::Transform* transform) {
-  *transform = gfx::Transform();
-  if (display_surface_id.is_null())
-    return false;
-
-  return target_window->delegate()
-      ->GetSurfacesState()
-      ->hit_tester()
-      ->GetTransformToTargetSurface(display_surface_id,
-                                    target_window->surface()->id(), transform);
+  return GetTransformToWindowNonSurface(window);
 }
 
 }  // namespace ws
