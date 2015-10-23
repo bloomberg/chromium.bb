@@ -327,6 +327,7 @@ Element* unsplittableElementForPosition(const Position& p)
 template <typename Strategy>
 PositionTemplate<Strategy> nextCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
+    TRACE_EVENT0("input", "EditingUtility::nextCandidateAlgorithm");
     PositionIteratorAlgorithm<Strategy> p(position);
 
     p.increment();
@@ -357,6 +358,7 @@ PositionInComposedTree nextCandidate(const PositionInComposedTree& position)
 template <typename Strategy>
 static PositionTemplate<Strategy> nextVisuallyDistinctCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
+    TRACE_EVENT0("input", "EditingUtility::nextVisuallyDistinctCandidateAlgorithm");
     if (position.isNull())
         return PositionTemplate<Strategy>();
 
@@ -388,6 +390,7 @@ PositionInComposedTree nextVisuallyDistinctCandidate(const PositionInComposedTre
 template <typename Strategy>
 PositionTemplate<Strategy> previousCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
+    TRACE_EVENT0("input", "EditingUtility::previousCandidateAlgorithm");
     PositionIteratorAlgorithm<Strategy> p(position);
 
     p.decrement();
@@ -418,6 +421,7 @@ PositionInComposedTree previousCandidate(const PositionInComposedTree& position)
 template <typename Strategy>
 PositionTemplate<Strategy> previousVisuallyDistinctCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
+    TRACE_EVENT0("input", "EditingUtility::previousVisuallyDistinctCandidateAlgorithm");
     if (position.isNull())
         return PositionTemplate<Strategy>();
 
