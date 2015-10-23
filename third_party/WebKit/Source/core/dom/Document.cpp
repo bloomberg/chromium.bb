@@ -986,6 +986,7 @@ PassRefPtrWillBeRawPtr<Node> Document::adoptNode(PassRefPtrWillBeRawPtr<Node> so
             source->parentNode()->removeChild(source.get(), exceptionState);
             if (exceptionState.hadException())
                 return nullptr;
+            RELEASE_ASSERT(!source->parentNode());
         }
     }
 

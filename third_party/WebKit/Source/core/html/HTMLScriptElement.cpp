@@ -68,7 +68,8 @@ const QualifiedName& HTMLScriptElement::subResourceAttributeName() const
 void HTMLScriptElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
-    m_loader->childrenChanged();
+    if (change.isChildInsertion())
+        m_loader->childrenChanged();
 }
 
 void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
