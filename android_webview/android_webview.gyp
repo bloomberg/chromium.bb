@@ -28,6 +28,7 @@
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/android_webview',
       },
       'actions': [
+        # GN version: //android_webview:generate_aw_resources
         {
           'action_name': 'generate_aw_resources',
           'variables': {
@@ -51,6 +52,7 @@
           },
          'includes': [ '../build/repack_action.gypi' ],
         },
+        # GN version: //android_webview:generate_aw_strings
         {
           'action_name': 'generate_aw_strings',
           'variables': {
@@ -58,6 +60,7 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        # GN version: //android_webview:generate_components_strings
         {
           'action_name': 'generate_components_strings',
           'variables': {
@@ -188,6 +191,7 @@
         },
       ],
     },
+    # GN version: //android_webview:common
     {
       'target_name': 'android_webview_common',
       'type': 'static_library',
