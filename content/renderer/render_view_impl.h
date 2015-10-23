@@ -235,6 +235,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Indicates whether this page has been focused by the browser.
   bool has_focus() const { return has_focus_; }
 
+  // Sets page-level focus in this view and notifies plugins and Blink's
+  // FocusController.
+  void SetFocus(bool enable);
+
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)

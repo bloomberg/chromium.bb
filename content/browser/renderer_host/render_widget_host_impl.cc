@@ -705,6 +705,11 @@ void RenderWidgetHostImpl::Focus() {
   is_focused_ = true;
 
   Send(new InputMsg_SetFocus(routing_id_, true));
+
+  // Also send page-level focus state to other SiteInstances involved in
+  // rendering the current FrameTree.
+  if (IsRenderView() && delegate_)
+    delegate_->ReplicatePageFocus(true);
 }
 
 void RenderWidgetHostImpl::Blur() {
@@ -720,6 +725,11 @@ void RenderWidgetHostImpl::Blur() {
     touch_emulator_->CancelTouch();
 
   Send(new InputMsg_SetFocus(routing_id_, false));
+
+  // Also send page-level focus state to other SiteInstances involved in
+  // rendering the current FrameTree.
+  if (IsRenderView() && delegate_)
+    delegate_->ReplicatePageFocus(false);
 }
 
 void RenderWidgetHostImpl::LostCapture() {

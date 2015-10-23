@@ -158,6 +158,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDispatchLoad();
   void OnDidUpdateName(const std::string& name);
   void OnDidUpdateOrigin(const url::Origin& origin);
+  void OnSetPageFocus(bool is_focused);
 
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;

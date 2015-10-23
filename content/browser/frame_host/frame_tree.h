@@ -146,6 +146,12 @@ class CONTENT_EXPORT FrameTree {
   // Returns true if at least one of the nodes in this FrameTree is loading.
   bool IsLoading();
 
+  // Set page-level focus in all SiteInstances involved in rendering
+  // this FrameTree, not including the current main frame's
+  // SiteInstance. The focus update will be sent via the main frame's proxies
+  // in those SiteInstances.
+  void ReplicatePageFocus(bool is_focused);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;

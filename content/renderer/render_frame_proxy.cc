@@ -11,6 +11,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
+#include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -219,6 +220,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
+    IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -331,6 +333,10 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
 
 void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {
   web_frame_->setReplicatedOrigin(origin);
+}
+
+void RenderFrameProxy::OnSetPageFocus(bool is_focused) {
+  render_view_->SetFocus(is_focused);
 }
 
 void RenderFrameProxy::frameDetached(DetachType type) {

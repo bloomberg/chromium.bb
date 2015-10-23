@@ -18,6 +18,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
@@ -2478,6 +2479,120 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
               nodes_with_back_links.end());
   EXPECT_TRUE(nodes_with_back_links.find(root4->child_at(0)) !=
               nodes_with_back_links.end());
+}
+
+// Check that when a window is focused/blurred, the message that sets
+// page-level focus updates is sent to each process involved in rendering the
+// current page.
+//
+// TODO(alexmos): Move this test to FrameTree unit tests once NavigateToEntry
+// is moved to a common place.
+TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
+  // This test only makes sense when cross-site subframes use separate
+  // processes.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+  const GURL kUrlC("http://c.com/");
+
+  // Set up a page at a.com with three subframes: two for b.com and one for
+  // c.com.
+  contents()->NavigateAndCommit(kUrlA);
+  main_test_rfh()->OnCreateChildFrame(
+      main_test_rfh()->GetProcess()->GetNextRoutingID(),
+      blink::WebTreeScopeType::Document, "frame1",
+      blink::WebSandboxFlags::None);
+  main_test_rfh()->OnCreateChildFrame(
+      main_test_rfh()->GetProcess()->GetNextRoutingID(),
+      blink::WebTreeScopeType::Document, "frame2",
+      blink::WebSandboxFlags::None);
+  main_test_rfh()->OnCreateChildFrame(
+      main_test_rfh()->GetProcess()->GetNextRoutingID(),
+      blink::WebTreeScopeType::Document, "frame3",
+      blink::WebSandboxFlags::None);
+
+  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  RenderFrameHostManager* child1 = root->child_at(0)->render_manager();
+  RenderFrameHostManager* child2 = root->child_at(1)->render_manager();
+  RenderFrameHostManager* child3 = root->child_at(2)->render_manager();
+
+  // Navigate first two subframes to B.
+  NavigationEntryImpl entryB(nullptr /* instance */, -1 /* page_id */, kUrlB,
+                             Referrer(kUrlA, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  TestRenderFrameHost* host1 =
+      static_cast<TestRenderFrameHost*>(NavigateToEntry(child1, entryB));
+  TestRenderFrameHost* host2 =
+      static_cast<TestRenderFrameHost*>(NavigateToEntry(child2, entryB));
+  child1->DidNavigateFrame(host1, true);
+  child2->DidNavigateFrame(host2, true);
+
+  // Navigate the third subframe to C.
+  NavigationEntryImpl entryC(nullptr /* instance */, -1 /* page_id */, kUrlC,
+                             Referrer(kUrlA, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  TestRenderFrameHost* host3 =
+      static_cast<TestRenderFrameHost*>(NavigateToEntry(child3, entryC));
+  child3->DidNavigateFrame(host3, true);
+
+  // Make sure the first two subframes and the third subframe are placed in
+  // distinct processes.
+  EXPECT_NE(host1->GetProcess(), main_test_rfh()->GetProcess());
+  EXPECT_EQ(host1->GetProcess(), host2->GetProcess());
+  EXPECT_NE(host3->GetProcess(), main_test_rfh()->GetProcess());
+  EXPECT_NE(host3->GetProcess(), host1->GetProcess());
+
+  // The main frame should have proxies for B and C.
+  RenderFrameProxyHost* proxyB =
+      root->render_manager()->GetRenderFrameProxyHost(host1->GetSiteInstance());
+  EXPECT_TRUE(proxyB);
+  RenderFrameProxyHost* proxyC =
+      root->render_manager()->GetRenderFrameProxyHost(host3->GetSiteInstance());
+  EXPECT_TRUE(proxyC);
+
+  // Helper to check that the provided RenderProcessHost received exactly one
+  // page focus message with the provided focus and routing ID values.
+  auto verify_focus_message = [](MockRenderProcessHost* rph,
+                                 bool expected_focus,
+                                 int expected_routing_id) {
+    const IPC::Message* message =
+        rph->sink().GetUniqueMessageMatching(InputMsg_SetFocus::ID);
+    EXPECT_TRUE(message);
+    EXPECT_EQ(expected_routing_id, message->routing_id());
+    InputMsg_SetFocus::Param params;
+    EXPECT_TRUE(InputMsg_SetFocus::Read(message, &params));
+    EXPECT_EQ(expected_focus, base::get<0>(params));
+  };
+
+  // Focus the main page, and verify that the focus message was sent to all
+  // processes.  The message to A should be sent through the main frame's
+  // RenderViewHost, and the message to B and C should be send through proxies
+  // that the main frame has for B and C.
+  main_test_rfh()->GetProcess()->sink().ClearMessages();
+  host1->GetProcess()->sink().ClearMessages();
+  host3->GetProcess()->sink().ClearMessages();
+  main_test_rfh()->GetRenderWidgetHost()->Focus();
+  verify_focus_message(main_test_rfh()->GetProcess(), true,
+                       main_test_rfh()->GetRenderViewHost()->GetRoutingID());
+  verify_focus_message(host1->GetProcess(), true, proxyB->GetRoutingID());
+  verify_focus_message(host3->GetProcess(), true, proxyC->GetRoutingID());
+
+  // Similarly, simulate focus loss on main page, and verify that the focus
+  // message was sent to all processes.
+  main_test_rfh()->GetProcess()->sink().ClearMessages();
+  host1->GetProcess()->sink().ClearMessages();
+  host3->GetProcess()->sink().ClearMessages();
+  main_test_rfh()->GetRenderWidgetHost()->Blur();
+  verify_focus_message(main_test_rfh()->GetProcess(), false,
+                       main_test_rfh()->GetRenderViewHost()->GetRoutingID());
+  verify_focus_message(host1->GetProcess(), false, proxyB->GetRoutingID());
+  verify_focus_message(host3->GetProcess(), false, proxyC->GetRoutingID());
 }
 
 }  // namespace content

@@ -3067,7 +3067,10 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   // This message must always be received when the main frame is a
   // WebLocalFrame.
   CHECK(webview()->mainFrame()->isWebLocalFrame());
+  SetFocus(enable);
+}
 
+void RenderViewImpl::SetFocus(bool enable) {
   has_focus_ = enable;
   RenderWidget::OnSetFocus(enable);
 

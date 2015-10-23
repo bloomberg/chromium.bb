@@ -589,6 +589,7 @@ class CONTENT_EXPORT WebContentsImpl
   void AdjustSelectionByCharacterOffset(int start_adjust, int end_adjust)
       override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
+  void ReplicatePageFocus(bool is_focused) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

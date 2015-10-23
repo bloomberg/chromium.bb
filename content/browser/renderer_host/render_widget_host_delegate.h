@@ -95,6 +95,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   virtual RenderWidgetHostInputEventRouter* GetInputEventRouter();
 
+  // Send page-level focus state to all SiteInstances involved in rendering the
+  // current FrameTree, not including the main frame's SiteInstance.
+  virtual void ReplicatePageFocus(bool is_focused) {}
+
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif

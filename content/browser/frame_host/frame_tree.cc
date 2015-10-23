@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
@@ -91,6 +92,14 @@ bool IsNodeLoading(bool* is_loading, FrameTreeNode* node) {
     *is_loading = true;
     return false;
   }
+  return true;
+}
+
+// Helper function used with FrameTree::ForEach to collect SiteInstances
+// involved in rendering a single FrameTree (which is a subset of SiteInstances
+// in main frame's proxy_hosts_ because of openers).
+bool CollectSiteInstances(std::set<SiteInstance*>* set, FrameTreeNode* node) {
+  set->insert(node->current_frame_host()->GetSiteInstance());
   return true;
 }
 
@@ -409,6 +418,25 @@ bool FrameTree::IsLoading() {
   bool is_loading = false;
   ForEach(base::Bind(&IsNodeLoading, &is_loading));
   return is_loading;
+}
+
+void FrameTree::ReplicatePageFocus(bool is_focused) {
+  std::set<SiteInstance*> frame_tree_site_instances;
+  ForEach(base::Bind(&CollectSiteInstances, &frame_tree_site_instances));
+
+  // Send the focus update to main frame's proxies in all SiteInstances of
+  // other frames in this FrameTree. Note that the main frame might also know
+  // about proxies in SiteInstances for frames in a different FrameTree (e.g.,
+  // for window.open), so we can't just iterate over its proxy_hosts_ in
+  // RenderFrameHostManager.
+  for (const auto& instance : frame_tree_site_instances) {
+    if (instance == root_->current_frame_host()->GetSiteInstance())
+      continue;
+
+    RenderFrameProxyHost* proxy =
+        root_->render_manager()->GetRenderFrameProxyHost(instance);
+    proxy->Send(new InputMsg_SetFocus(proxy->GetRoutingID(), is_focused));
+  }
 }
 
 }  // namespace content
