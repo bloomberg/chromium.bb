@@ -434,16 +434,6 @@ void SensorManagerAndroid::StopFetchingOrientationDataOnUI() {
   }
 }
 
-bool SensorManagerAndroid::StartFetchingDeviceOrientationAbsoluteData(
-    DeviceOrientationHardwareBuffer* buffer) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void SensorManagerAndroid::StopFetchingDeviceOrientationAbsoluteData() {
-  NOTIMPLEMENTED();
-}
-
 void SensorManagerAndroid::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   is_shutdown_ = true;

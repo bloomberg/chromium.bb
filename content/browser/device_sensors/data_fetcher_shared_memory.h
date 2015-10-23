@@ -46,7 +46,6 @@ class CONTENT_EXPORT DataFetcherSharedMemory
 #if !defined(OS_ANDROID)
   DeviceMotionHardwareBuffer* motion_buffer_;
   DeviceOrientationHardwareBuffer* orientation_buffer_;
-  DeviceOrientationHardwareBuffer* orientation_absolute_buffer_;
   DeviceLightHardwareBuffer* light_buffer_;
 #endif
 

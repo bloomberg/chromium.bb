@@ -24,10 +24,3 @@ IPC_MESSAGE_CONTROL1(DeviceOrientationMsg_DidStartPolling,
 // Device Orientation data anymore. The number of Starts should match the
 // number of Stops.
 IPC_MESSAGE_CONTROL0(DeviceOrientationHostMsg_StopPolling)
-
-// Same as above except the messages relate to Absolute Device Orientation,
-// where orientation is provided w.r.t. a predefined coordinate frame.
-IPC_MESSAGE_CONTROL0(DeviceOrientationAbsoluteHostMsg_StartPolling)
-IPC_MESSAGE_CONTROL1(DeviceOrientationAbsoluteMsg_DidStartPolling,
-                     base::SharedMemoryHandle /* handle */)
-IPC_MESSAGE_CONTROL0(DeviceOrientationAbsoluteHostMsg_StopPolling)

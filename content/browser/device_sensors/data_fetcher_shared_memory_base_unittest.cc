@@ -23,19 +23,15 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
       : start_light_(false, false),
         start_motion_(false, false),
         start_orientation_(false, false),
-        start_orientation_absolute_(false, false),
         stop_light_(false, false),
         stop_motion_(false, false),
         stop_orientation_(false, false),
-        stop_orientation_absolute_(false, false),
         updated_light_(false, false),
         updated_motion_(false, false),
         updated_orientation_(false, false),
-        updated_orientation_absolute_(false, false),
         light_buffer_(nullptr),
         motion_buffer_(nullptr),
-        orientation_buffer_(nullptr),
-        orientation_absolute_buffer_(nullptr) {}
+        orientation_buffer_(nullptr) {}
   ~FakeDataFetcher() override {}
 
   bool Init(ConsumerType consumer_type, void* buffer) {
@@ -47,10 +43,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         break;
       case CONSUMER_TYPE_ORIENTATION:
         orientation_buffer_ =
-            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
-        break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        orientation_absolute_buffer_ =
             static_cast<DeviceOrientationHardwareBuffer*>(buffer);
         break;
       case CONSUMER_TYPE_LIGHT:
@@ -89,16 +81,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     updated_orientation_.Signal();
   }
 
-  void UpdateOrientationAbsolute() {
-    DeviceOrientationHardwareBuffer* buffer = GetOrientationAbsoluteBuffer();
-    ASSERT_TRUE(buffer);
-    buffer->seqlock.WriteBegin();
-    buffer->data.alpha = 1;
-    buffer->data.absolute = true;
-    buffer->seqlock.WriteEnd();
-    updated_orientation_absolute_.Signal();
-  }
-
   DeviceLightHardwareBuffer* GetLightBuffer() const { return light_buffer_; }
 
   DeviceMotionHardwareBuffer* GetMotionBuffer() const {
@@ -109,10 +91,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     return orientation_buffer_;
   }
 
-  DeviceOrientationHardwareBuffer* GetOrientationAbsoluteBuffer() const {
-    return orientation_absolute_buffer_;
-  }
-
   void WaitForStart(ConsumerType consumer_type) {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
@@ -120,9 +98,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         break;
       case CONSUMER_TYPE_ORIENTATION:
         start_orientation_.Wait();
-        break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        start_orientation_absolute_.Wait();
         break;
       case CONSUMER_TYPE_LIGHT:
         start_light_.Wait();
@@ -138,9 +113,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
       case CONSUMER_TYPE_ORIENTATION:
         stop_orientation_.Wait();
         break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        stop_orientation_absolute_.Wait();
-        break;
       case CONSUMER_TYPE_LIGHT:
         stop_light_.Wait();
         break;
@@ -155,9 +127,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
       case CONSUMER_TYPE_ORIENTATION:
         updated_orientation_.Wait();
         break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        updated_orientation_absolute_.Wait();
-        break;
       case CONSUMER_TYPE_LIGHT:
         updated_light_.Wait();
         break;
@@ -168,21 +137,17 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
   base::WaitableEvent start_light_;
   base::WaitableEvent start_motion_;
   base::WaitableEvent start_orientation_;
-  base::WaitableEvent start_orientation_absolute_;
   base::WaitableEvent stop_light_;
   base::WaitableEvent stop_motion_;
   base::WaitableEvent stop_orientation_;
-  base::WaitableEvent stop_orientation_absolute_;
   base::WaitableEvent updated_light_;
   base::WaitableEvent updated_motion_;
   base::WaitableEvent updated_orientation_;
-  base::WaitableEvent updated_orientation_absolute_;
 
  private:
   DeviceLightHardwareBuffer* light_buffer_;
   DeviceMotionHardwareBuffer* motion_buffer_;
   DeviceOrientationHardwareBuffer* orientation_buffer_;
-  DeviceOrientationHardwareBuffer* orientation_absolute_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDataFetcher);
 };
@@ -203,10 +168,6 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
         UpdateOrientation();
         start_orientation_.Signal();
         break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        UpdateOrientationAbsolute();
-        start_orientation_absolute_.Signal();
-        break;
       case CONSUMER_TYPE_LIGHT:
         UpdateLight();
         start_light_.Signal();
@@ -224,9 +185,6 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
         break;
       case CONSUMER_TYPE_ORIENTATION:
         stop_orientation_.Signal();
-        break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        stop_orientation_absolute_.Signal();
         break;
       case CONSUMER_TYPE_LIGHT:
         stop_light_.Signal();
@@ -264,9 +222,6 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       case CONSUMER_TYPE_ORIENTATION:
         start_orientation_.Signal();
         break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        start_orientation_absolute_.Signal();
-        break;
       case CONSUMER_TYPE_LIGHT:
         start_light_.Signal();
         break;
@@ -286,9 +241,6 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       case CONSUMER_TYPE_ORIENTATION:
         stop_orientation_.Signal();
         break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        stop_orientation_absolute_.Signal();
-        break;
       case CONSUMER_TYPE_LIGHT:
         stop_light_.Signal();
         break;
@@ -301,14 +253,11 @@ class FakePollingDataFetcher : public FakeDataFetcher {
   void Fetch(unsigned consumer_bitmask) override {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
     EXPECT_TRUE(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
-                consumer_bitmask & CONSUMER_TYPE_ORIENTATION_ABSOLUTE ||
                 consumer_bitmask & CONSUMER_TYPE_MOTION ||
                 consumer_bitmask & CONSUMER_TYPE_LIGHT);
 
     if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION)
       UpdateOrientation();
-    if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION_ABSOLUTE)
-      UpdateOrientationAbsolute();
     if (consumer_bitmask & CONSUMER_TYPE_MOTION)
       UpdateMotion();
     if (consumer_bitmask & CONSUMER_TYPE_LIGHT)
@@ -337,9 +286,6 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
       case CONSUMER_TYPE_ORIENTATION:
         start_orientation_.Signal();
         break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        start_orientation_absolute_.Signal();
-        break;
       case CONSUMER_TYPE_LIGHT:
         start_light_.Signal();
         break;
@@ -358,9 +304,6 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
         break;
       case CONSUMER_TYPE_ORIENTATION:
         stop_orientation_.Signal();
-        break;
-      case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        stop_orientation_absolute_.Signal();
         break;
       case CONSUMER_TYPE_LIGHT:
         stop_light_.Signal();
@@ -416,22 +359,6 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
 }
 
-TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientationAbsolute) {
-  FakeNonPollingDataFetcher fake_data_fetcher;
-  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
-      fake_data_fetcher.GetType());
-
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION_ABSOLUTE));
-  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-
-  EXPECT_EQ(1, fake_data_fetcher.GetOrientationAbsoluteBuffer()->data.alpha);
-  EXPECT_TRUE(fake_data_fetcher.GetOrientationAbsoluteBuffer()->data.absolute);
-
-  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-}
-
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartLight) {
   FakeNonPollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
@@ -476,23 +403,6 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
-}
-
-TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientationAbsolute) {
-  FakePollingDataFetcher fake_data_fetcher;
-  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
-      fake_data_fetcher.GetType());
-
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
-      CONSUMER_TYPE_ORIENTATION_ABSOLUTE));
-  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-  fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-
-  EXPECT_EQ(1, fake_data_fetcher.GetOrientationAbsoluteBuffer()->data.alpha);
-  EXPECT_TRUE(fake_data_fetcher.GetOrientationAbsoluteBuffer()->data.absolute);
-
-  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollLight) {

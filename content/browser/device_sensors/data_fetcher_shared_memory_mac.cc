@@ -202,10 +202,6 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       }
       return sudden_motion_sensor_available;
     }
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE: {
-      NOTIMPLEMENTED();
-      break;
-    }
     case CONSUMER_TYPE_LIGHT: {
       if (!ambient_light_sensor_)
         ambient_light_sensor_ = AmbientLightSensor::Create();
@@ -246,9 +242,6 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
         orientation_buffer_ = nullptr;
       }
       return true;
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      NOTIMPLEMENTED();
-      break;
     case CONSUMER_TYPE_LIGHT:
       if (light_buffer_) {
         light_buffer_->seqlock.WriteBegin();

@@ -24,7 +24,6 @@ size_t GetConsumerSharedMemoryBufferSize(ConsumerType consumer_type) {
     case CONSUMER_TYPE_MOTION:
       return sizeof(DeviceMotionHardwareBuffer);
     case CONSUMER_TYPE_ORIENTATION:
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       return sizeof(DeviceOrientationHardwareBuffer);
     case CONSUMER_TYPE_LIGHT:
       return sizeof(DeviceLightHardwareBuffer);
@@ -169,7 +168,6 @@ bool DataFetcherSharedMemoryBase::StopFetchingDeviceData(
 void DataFetcherSharedMemoryBase::Shutdown() {
   StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
   StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
-  StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
   StopFetchingDeviceData(CONSUMER_TYPE_LIGHT);
 }
 

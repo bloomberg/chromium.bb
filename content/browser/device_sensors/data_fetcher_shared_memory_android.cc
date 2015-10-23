@@ -30,10 +30,6 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       return SensorManagerAndroid::GetInstance()->
           StartFetchingDeviceOrientationData(
               static_cast<DeviceOrientationHardwareBuffer*>(buffer));
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      return SensorManagerAndroid::GetInstance()->
-          StartFetchingDeviceOrientationAbsoluteData(
-              static_cast<DeviceOrientationHardwareBuffer*>(buffer));
     case CONSUMER_TYPE_LIGHT:
       return SensorManagerAndroid::GetInstance()->StartFetchingDeviceLightData(
           static_cast<DeviceLightHardwareBuffer*>(buffer));
@@ -50,10 +46,6 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       return true;
     case CONSUMER_TYPE_ORIENTATION:
       SensorManagerAndroid::GetInstance()->StopFetchingDeviceOrientationData();
-      return true;
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      SensorManagerAndroid::GetInstance()
-          ->StopFetchingDeviceOrientationAbsoluteData();
       return true;
     case CONSUMER_TYPE_LIGHT:
       SensorManagerAndroid::GetInstance()->StopFetchingDeviceLightData();

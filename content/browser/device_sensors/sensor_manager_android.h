@@ -56,10 +56,6 @@ class CONTENT_EXPORT SensorManagerAndroid {
       DeviceOrientationHardwareBuffer* buffer);
   void StopFetchingDeviceOrientationData();
 
-  bool StartFetchingDeviceOrientationAbsoluteData(
-      DeviceOrientationHardwareBuffer* buffer);
-  void StopFetchingDeviceOrientationAbsoluteData();
-
   void Shutdown();
 
   // A Java counterpart will be generated for this enum.

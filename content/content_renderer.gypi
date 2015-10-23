@@ -147,8 +147,6 @@
       'renderer/device_sensors/device_light_event_pump.h',
       'renderer/device_sensors/device_motion_event_pump.cc',
       'renderer/device_sensors/device_motion_event_pump.h',
-      'renderer/device_sensors/device_orientation_absolute_event_pump.cc',
-      'renderer/device_sensors/device_orientation_absolute_event_pump.h',
       'renderer/device_sensors/device_orientation_event_pump.cc',
       'renderer/device_sensors/device_orientation_event_pump.h',
       'renderer/device_sensors/device_sensor_event_pump.h',
