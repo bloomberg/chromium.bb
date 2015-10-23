@@ -47,6 +47,7 @@ class CONTENT_EXPORT PluginInstanceThrottler {
   // How the throttled power saver is unthrottled, if ever.
   // These numeric values are used in UMA logs; do not change them.
   enum PowerSaverUnthrottleMethod {
+    UNTHROTTLE_METHOD_DO_NOT_RECORD = -1,  // Sentinel value to skip recording.
     UNTHROTTLE_METHOD_NEVER = 0,
     UNTHROTTLE_METHOD_BY_CLICK = 1,
     UNTHROTTLE_METHOD_BY_WHITELIST = 2,
@@ -73,10 +74,6 @@ class CONTENT_EXPORT PluginInstanceThrottler {
   static scoped_ptr<PluginInstanceThrottler> Create();
 
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
-
-  // Returns true if content is considered "large", and thus essential.
-  // |width| and |height| are zoom and device scale independent logical pixels.
-  static bool IsLargeContent(int width, int height);
 
   virtual ~PluginInstanceThrottler() {}
 

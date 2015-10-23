@@ -360,9 +360,13 @@ class CONTENT_EXPORT RenderFrameImpl
   void RegisterPeripheralPlugin(
       const url::Origin& content_origin,
       const base::Closure& unthrottle_callback) override;
-  PluginPowerSaverHelper* plugin_power_saver_helper() {
-    return plugin_power_saver_helper_;
-  }
+  bool ShouldThrottleContent(const url::Origin& main_frame_origin,
+                             const url::Origin& content_origin,
+                             const std::string& plugin_module_name,
+                             int width,
+                             int height,
+                             bool* cross_origin_main_content) const override;
+  void WhitelistContentOrigin(const url::Origin& content_origin) override;
 #endif
   bool IsFTPDirectoryListing() override;
   void AttachGuest(int element_instance_id) override;

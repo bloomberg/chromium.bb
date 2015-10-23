@@ -75,8 +75,8 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       allow_loading_(false),
       finished_loading_(false),
       in_size_recheck_(false),
-      weak_factory_(this) {
-}
+      heuristic_run_before_(premade_throttler_ != nullptr),
+      weak_factory_(this) {}
 
 LoadablePluginPlaceholder::~LoadablePluginPlaceholder() {
 }
@@ -90,7 +90,7 @@ void LoadablePluginPlaceholder::MarkPluginEssential(
 
   if (premade_throttler_)
     premade_throttler_->MarkPluginEssential(method);
-  else
+  else if (method != PluginInstanceThrottler::UNTHROTTLE_METHOD_DO_NOT_RECORD)
     PluginInstanceThrottler::RecordUnthrottleMethodMetric(method);
 
   if (is_blocked_for_power_saver_poster_) {
@@ -328,29 +328,38 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
   plugin()->container()->reportGeometry();
 
   float zoom_factor = plugin()->container()->pageZoomFactor();
+  int width = roundf(unobscured_rect_.width() / zoom_factor);
+  int height = roundf(unobscured_rect_.height() / zoom_factor);
 
-  // Adjust poster container padding and dimensions to center play button for
-  // plugins and plugin posters that have their top or left portions obscured.
   if (is_blocked_for_power_saver_poster_) {
+    // Adjust poster container padding and dimensions to center play button for
+    // plugins and plugin posters that have their top or left portions obscured.
     int x = roundf(unobscured_rect_.x() / zoom_factor);
     int y = roundf(unobscured_rect_.y() / zoom_factor);
-    int width = roundf(unobscured_rect_.width() / zoom_factor);
-    int height = roundf(unobscured_rect_.height() / zoom_factor);
     std::string script = base::StringPrintf(
         "window.resizePoster('%dpx', '%dpx', '%dpx', '%dpx')", x, y, width,
         height);
     plugin()->web_view()->mainFrame()->executeScript(
         blink::WebScriptSource(base::UTF8ToUTF16(script)));
-  }
 
-  // Only unthrottle on size increase for plugins without poster.
-  // TODO(tommycli): Address this unfairness to plugins that specify a poster.
-  if (premade_throttler_ &&
-      PluginInstanceThrottler::IsLargeContent(
-          roundf(unobscured_rect_.width() / zoom_factor),
-          roundf(unobscured_rect_.height() / zoom_factor))) {
-    MarkPluginEssential(
-        PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE);
+    // On a size update check if we now qualify as a essential plugin.
+    url::Origin content_origin = url::Origin(GetPluginParams().url);
+    bool cross_origin_main_content = false;
+    std::string plugin_module_name = base::UTF16ToUTF8(GetPluginInfo().name);
+    if (!render_frame()->ShouldThrottleContent(
+            render_frame()->GetWebFrame()->top()->securityOrigin(),
+            content_origin, plugin_module_name, width, height,
+            &cross_origin_main_content)) {
+      MarkPluginEssential(
+          heuristic_run_before_
+              ? PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE
+              : PluginInstanceThrottler::UNTHROTTLE_METHOD_DO_NOT_RECORD);
+
+      if (cross_origin_main_content && !heuristic_run_before_)
+        render_frame()->WhitelistContentOrigin(content_origin);
+    }
+
+    heuristic_run_before_ = true;
   }
 
   in_size_recheck_ = false;

@@ -25,41 +25,9 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   explicit PluginPowerSaverHelper(RenderFrame* render_frame);
   ~PluginPowerSaverHelper() override;
 
-  // See RenderFrame for documentation.
-  void RegisterPeripheralPlugin(const url::Origin& content_origin,
-                                const base::Closure& unthrottle_callback);
-
-  // Returns true if this plugin should have power saver enabled.
-  //
-  // Power Saver is enabled for plugin content that are cross-origin and
-  // heuristically determined to be not essential to the web page content.
-  //
-  // Plugin content is defined to be cross-origin when the plugin source's
-  // origin differs from the top level frame's origin. For example:
-  //  - Cross-origin:  a.com -> b.com/plugin.swf
-  //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
-  //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
-  //
-  // |main_frame_origin| is the origin of the main frame.
-  //
-  // |content_origin| is the origin of the plugin content.
-  //
-  // |width| and |height| are zoom and device scale independent logical pixels.
-  //
-  // |cross_origin_main_content| may be NULL. It is set to true if the
-  // plugin content is cross-origin but still the "main attraction" of the page.
-  bool ShouldThrottleContent(const url::Origin& main_frame_origin,
-                             const url::Origin& content_origin,
-                             const std::string& plugin_module_name,
-                             int width,
-                             int height,
-                             bool* cross_origin_main_content) const;
-
-  // Whitelists a |content_origin| so its content will never be throttled in
-  // this RenderFrame. Whitelist is cleared by top level navigation.
-  void WhitelistContentOrigin(const url::Origin& content_origin);
-
  private:
+  friend class RenderFrameImpl;
+
   struct PeripheralPlugin {
     PeripheralPlugin(const url::Origin& content_origin,
                      const base::Closure& unthrottle_callback);
@@ -75,6 +43,17 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
     IgnoreList,
     Always
   };
+
+  // See RenderFrame for documentation.
+  void RegisterPeripheralPlugin(const url::Origin& content_origin,
+                                const base::Closure& unthrottle_callback);
+  bool ShouldThrottleContent(const url::Origin& main_frame_origin,
+                             const url::Origin& content_origin,
+                             const std::string& plugin_module_name,
+                             int width,
+                             int height,
+                             bool* cross_origin_main_content) const;
+  void WhitelistContentOrigin(const url::Origin& content_origin);
 
   // RenderFrameObserver implementation.
   void DidCommitProvisionalLoad(bool is_new_navigation,

@@ -123,6 +123,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   gfx::Rect unobscured_rect_;
   base::OneShotTimer size_update_timer_;
 
+  // True if the power saver heuristic has already been run on this content.
+  bool heuristic_run_before_;
+
   base::WeakPtrFactory<LoadablePluginPlaceholder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadablePluginPlaceholder);

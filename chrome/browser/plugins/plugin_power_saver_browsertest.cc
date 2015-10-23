@@ -225,6 +225,29 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
   EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_embed_srcset"));
 }
 
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
+  // This test verifies that small posters are throttled, large posters are not,
+  // and that large posters can whitelist origins for other plugins.
+  LoadHTML(
+      "<object id='poster_small' data='http://a.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='50' height='50' "
+      "    poster='click_me.png'></object>"
+      "<object id='poster_whitelisted_origin' data='http://b.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='50' height='50' "
+      "    poster='click_me.png'></object>"
+      "<object id='plugin_whitelisted_origin' data='http://b.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='50' height='50'></object>"
+      "<br>"
+      "<object id='poster_large' data='http://b.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='400' height='300' "
+      "    poster='click_me.png'></object>");
+
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "poster_small"));
+  VerifyPluginMarkedEssential(GetActiveWebContents(),
+                              "plugin_whitelisted_origin");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "poster_large");
+}
+
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
                        PluginMarkedEssentialAfterPosterClicked) {
   LoadHTML(
@@ -237,13 +260,17 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
   LoadHTML(
-      "<object id='plugin1' data='http://otherorigin.com/fake1.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='100'></object>"
-      "<object id='plugin2' data='http://otherorigin.com/fake2.swf' "
+      "<object id='plugin_small' data='http://a.com/fake1.swf' "
+      "    type='application/x-ppapi-tests' width='100' height='100'></object>"
+      "<object id='plugin_small_poster' data='http://a.com/fake1.swf' "
+      "    type='application/x-ppapi-tests' width='100' height='100' "
+      "    poster='click_me.png'></object>"
+      "<object id='plugin_large' data='http://a.com/fake2.swf' "
       "    type='application/x-ppapi-tests' width='400' height='500'>"
       "</object>");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin1");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin2");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_small");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_small_poster");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_large");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOriginObscured) {
