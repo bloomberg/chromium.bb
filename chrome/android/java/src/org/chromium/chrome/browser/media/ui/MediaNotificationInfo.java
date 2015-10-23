@@ -12,16 +12,36 @@ import org.chromium.chrome.browser.tab.Tab;
  * Exposes information about the current media notification to the external clients.
  */
 public class MediaNotificationInfo {
+    // Bits defining various user actions supported by the media notification.
+
+    /**
+     * If set, play/pause controls are shown and handled via notification UI and MediaSession.
+     */
+    public static final int ACTION_PLAY_PAUSE = 1 << 0;
+
+    /**
+     * If set, a stop button is shown and handled via the notification UI.
+     */
+    public static final int ACTION_STOP = 1 << 1;
+
+    /**
+     * If set, a user can swipe the notification away when it's paused.
+     * If notification swipe is not supported, it will behave like {@link #ACTION_STOP}.
+     */
+    public static final int ACTION_SWIPEAWAY = 1 << 2;
+
     /**
      * Use this class to construct an instance of {@link MediaNotificationInfo}.
      */
     public static final class Builder {
+
         private String mTitle = "";
         private boolean mIsPaused = false;
         private String mOrigin = "";
         private int mTabId = Tab.INVALID_TAB_ID;
         private boolean mIsPrivate = true;
         private int mIcon = -1;
+        private int mActions = ACTION_PLAY_PAUSE | ACTION_SWIPEAWAY;
         private MediaNotificationListener mListener = null;
 
         /**
@@ -42,6 +62,7 @@ public class MediaNotificationInfo {
                     mTabId,
                     mIsPrivate,
                     mIcon,
+                    mActions,
                     mListener);
         }
 
@@ -75,11 +96,21 @@ public class MediaNotificationInfo {
             return this;
         }
 
+        public Builder setActions(int actions) {
+            mActions = actions;
+            return this;
+        }
+
         public Builder setListener(MediaNotificationListener listener) {
             mListener = listener;
             return this;
         }
     }
+
+    /**
+     * The bitset defining user actions handled by the notification.
+     */
+    private final int mActions;
 
     /**
      * The title of the media.
@@ -117,6 +148,27 @@ public class MediaNotificationInfo {
     public final MediaNotificationListener listener;
 
     /**
+     * @return if play/pause actions are supported by this notification.
+     */
+    public boolean supportsPlayPause() {
+        return (mActions & ACTION_PLAY_PAUSE) != 0;
+    }
+
+    /**
+     * @return if stop action is supported by this notification.
+     */
+    public boolean supportsStop() {
+        return (mActions & ACTION_STOP) != 0;
+    }
+
+    /**
+     * @return if notification should be dismissable by swiping it away when paused.
+     */
+    public boolean supportsSwipeAway() {
+        return (mActions & ACTION_SWIPEAWAY) != 0;
+    }
+
+    /**
      * Create a new MediaNotificationInfo.
      * @param title The title of the media.
      * @param isPaused The current state of the media, paused or not.
@@ -132,6 +184,7 @@ public class MediaNotificationInfo {
             int tabId,
             boolean isPrivate,
             int icon,
+            int actions,
             MediaNotificationListener listener) {
         this.title = title;
         this.isPaused = isPaused;
@@ -139,6 +192,7 @@ public class MediaNotificationInfo {
         this.tabId = tabId;
         this.isPrivate = isPrivate;
         this.icon = icon;
+        this.mActions = actions;
         this.listener = listener;
     }
 
@@ -152,6 +206,7 @@ public class MediaNotificationInfo {
                 && isPrivate == other.isPrivate
                 && tabId == other.tabId
                 && icon == other.icon
+                && mActions == other.mActions
                 && TextUtils.equals(title, other.title)
                 && TextUtils.equals(origin, other.origin)
                 && listener.equals(other.listener);
@@ -165,6 +220,7 @@ public class MediaNotificationInfo {
         result = 31 * result + (origin == null ? 0 : origin.hashCode());
         result = 31 * result + tabId;
         result = 31 * result + icon;
+        result = 31 * result + mActions;
         result = 31 * result + listener.hashCode();
         return result;
     }

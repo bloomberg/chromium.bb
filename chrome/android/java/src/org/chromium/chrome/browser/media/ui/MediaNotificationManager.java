@@ -316,7 +316,9 @@ public class MediaNotificationManager {
 
         // On Android pre-L, dismissing the notification when the service is no longer in foreground
         // doesn't work. Instead, a STOP button is shown.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+        if (mMediaNotificationInfo.supportsSwipeAway()
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                || mMediaNotificationInfo.supportsStop()) {
             contentView.setViewVisibility(R.id.stop, View.VISIBLE);
             contentView.setOnClickPendingIntent(R.id.stop,
                     mService.getPendingIntent(ListenerService.ACTION_STOP));
@@ -369,7 +371,10 @@ public class MediaNotificationManager {
                 .setLocalOnly(true)
                 .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP));
         }
-        mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
+
+        if (mMediaNotificationInfo.supportsSwipeAway()) {
+            mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
+        }
 
         int tabId = mMediaNotificationInfo.tabId;
         Intent tabIntent = Tab.createBringTabToFrontIntent(tabId);
@@ -387,12 +392,15 @@ public class MediaNotificationManager {
             contentView.setImageViewResource(R.id.icon, mMediaNotificationInfo.icon);
         }
 
-        if (mMediaNotificationInfo.isPaused) {
+        if (!mMediaNotificationInfo.supportsPlayPause()) {
+            contentView.setViewVisibility(R.id.playpause, View.GONE);
+        } else if (mMediaNotificationInfo.isPaused) {
             contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
             contentView.setContentDescription(R.id.playpause, mPlayDescription);
             contentView.setOnClickPendingIntent(R.id.playpause,
                     mService.getPendingIntent(ListenerService.ACTION_PLAY));
         } else {
+            // If we're here, the notification supports play/pause button and is playing.
             contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_pause);
             contentView.setContentDescription(R.id.playpause, mPauseDescription);
             contentView.setOnClickPendingIntent(R.id.playpause,
@@ -404,42 +412,23 @@ public class MediaNotificationManager {
                 mMediaNotificationInfo.isPrivate ? NotificationCompat.VISIBILITY_PRIVATE
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
 
-        if (mMediaSession == null) {
-            mMediaSession = new MediaSessionCompat(mContext, mContext.getString(R.string.app_name),
-                    new ComponentName(mContext.getPackageName(),
-                            MediaButtonReceiver.class.getName()),
-                    null);
-            mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-                    | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-            mMediaSession.setCallback(mMediaSessionCallback);
+        if (mMediaNotificationInfo.supportsPlayPause()) {
+            if (mMediaSession == null) mMediaSession = createMediaSession();
 
-            // TODO(mlamouri): the following code is to work around a bug that hopefully
-            // MediaSessionCompat will handle directly. see b/24051980.
-            try {
-                mMediaSession.setActive(true);
-            } catch (NullPointerException e) {
-                // Some versions of KitKat do not support AudioManager.registerMediaButtonIntent
-                // with a PendingIntent. They will throw a NullPointerException, in which case
-                // they should be able to activate a MediaSessionCompat with only transport
-                // controls.
-                mMediaSession.setActive(false);
-                mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-                mMediaSession.setActive(true);
+            mMediaSession.setMetadata(createMetadata());
+
+            PlaybackStateCompat.Builder playbackStateBuilder = new PlaybackStateCompat.Builder()
+                    .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE);
+            if (mMediaNotificationInfo.isPaused) {
+                playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
+                        PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+            } else {
+                // If notification only supports stop, still pretend
+                playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
+                        PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
             }
+            mMediaSession.setPlaybackState(playbackStateBuilder.build());
         }
-
-        mMediaSession.setMetadata(createMetadata());
-
-        PlaybackStateCompat.Builder playbackStateBuilder = new PlaybackStateCompat.Builder()
-                .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PAUSE);
-        if (mMediaNotificationInfo.isPaused) {
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
-                    PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
-        } else {
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
-                    PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
-        }
-        mMediaSession.setPlaybackState(playbackStateBuilder.build());
 
         Notification notification = mNotificationBuilder.build();
 
@@ -447,7 +436,7 @@ public class MediaNotificationManager {
         // the service isn't stopped but is no longer in foreground, thus at a lower priority.
         // While the service is in foreground, the associated notification can't be swipped away.
         // Moving it back to background allows the user to remove the notification.
-        if (mMediaNotificationInfo.isPaused) {
+        if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
             mService.stopForeground(false /* removeNotification */);
 
             NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
@@ -455,6 +444,33 @@ public class MediaNotificationManager {
         } else {
             mService.startForeground(R.id.media_playback_notification, notification);
         }
+    }
+
+    private MediaSessionCompat createMediaSession() {
+        MediaSessionCompat mediaSession = new MediaSessionCompat(
+                mContext,
+                mContext.getString(R.string.app_name),
+                new ComponentName(mContext.getPackageName(),
+                        MediaButtonReceiver.class.getName()),
+                null);
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
+                | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setCallback(mMediaSessionCallback);
+
+        // TODO(mlamouri): the following code is to work around a bug that hopefully
+        // MediaSessionCompat will handle directly. see b/24051980.
+        try {
+            mediaSession.setActive(true);
+        } catch (NullPointerException e) {
+            // Some versions of KitKat do not support AudioManager.registerMediaButtonIntent
+            // with a PendingIntent. They will throw a NullPointerException, in which case
+            // they should be able to activate a MediaSessionCompat with only transport
+            // controls.
+            mediaSession.setActive(false);
+            mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+            mediaSession.setActive(true);
+        }
+        return mediaSession;
     }
 
     private Bitmap drawableToBitmap(Drawable drawable) {

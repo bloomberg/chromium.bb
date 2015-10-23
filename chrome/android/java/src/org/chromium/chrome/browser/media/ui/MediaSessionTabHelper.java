@@ -91,6 +91,8 @@ public class MediaSessionTabHelper {
                                 .setTabId(mTab.getId())
                                 .setPrivate(mTab.isIncognito())
                                 .setIcon(R.drawable.audio_playing)
+                                .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
+                                        | MediaNotificationInfo.ACTION_SWIPEAWAY)
                                 .setListener(mControlsListener));
             }
         };
