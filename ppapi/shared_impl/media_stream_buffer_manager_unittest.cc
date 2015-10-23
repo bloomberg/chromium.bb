@@ -56,6 +56,7 @@ TEST(MediaStreamBufferManager, General) {
 
     EXPECT_EQ(kNumberOfBuffers, manager.number_of_buffers());
     EXPECT_EQ(kBufferSize, manager.buffer_size());
+    EXPECT_TRUE(manager.HasAvailableBuffer());
 
     // Test DequeueBuffer() and GetBufferPointer()
     for (int32_t i = 0; i < kNumberOfBuffers; ++i) {
@@ -78,6 +79,7 @@ TEST(MediaStreamBufferManager, General) {
     EXPECT_EQ(2, manager.DequeueBuffer());
     EXPECT_EQ(PP_ERROR_FAILED, manager.DequeueBuffer());
     EXPECT_EQ(PP_ERROR_FAILED, manager.DequeueBuffer());
+    EXPECT_FALSE(manager.HasAvailableBuffer());
 
     // Returns NULL for invalid index to GetBufferPointer()
     EXPECT_EQ(NULL, manager.GetBufferPointer(-1));

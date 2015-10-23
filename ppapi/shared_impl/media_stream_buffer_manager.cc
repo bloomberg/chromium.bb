@@ -72,6 +72,10 @@ void MediaStreamBufferManager::EnqueueBuffer(int32_t index) {
   delegate_->OnNewBufferEnqueued();
 }
 
+bool MediaStreamBufferManager::HasAvailableBuffer() {
+  return !buffer_queue_.empty();
+}
+
 MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(int32_t index) {
   if (index < 0 || index >= number_of_buffers_)
     return NULL;
