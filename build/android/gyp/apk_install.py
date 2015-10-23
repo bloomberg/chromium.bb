@@ -17,9 +17,11 @@ from util import build_device
 from util import build_utils
 from util import md5_check
 
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
+BUILD_ANDROID_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(BUILD_ANDROID_DIR)
 
+import devil_chromium
 from devil.android import apk_helper
 from pylib import constants
 
@@ -74,14 +76,19 @@ def main():
       help='Path to touch on success.')
   parser.add_option('--configuration-name',
       help='The build CONFIGURATION_NAME')
+  parser.add_option('--output-directory',
+      help='The output directory.')
   options, _ = parser.parse_args()
+
+  constants.SetBuildType(options.configuration_name)
+
+  devil_chromium.Initialize(
+      output_directory=os.path.abspath(options.output_directory))
 
   device = build_device.GetBuildDeviceFromPath(
       options.build_device_configuration)
   if not device:
     return
-
-  constants.SetBuildType(options.configuration_name)
 
   serial_number = device.GetSerialNumber()
   apk_package = apk_helper.GetPackageName(options.apk_path)

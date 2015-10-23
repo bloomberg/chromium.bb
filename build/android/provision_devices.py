@@ -21,6 +21,7 @@ import subprocess
 import sys
 import time
 
+import devil_chromium
 from devil.android import battery_utils
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -483,6 +484,8 @@ def main():
   constants.SetBuildType(args.target)
 
   run_tests_helper.SetLogLevel(args.verbose)
+
+  devil_chromium.Initialize()
 
   return ProvisionDevices(args)
 

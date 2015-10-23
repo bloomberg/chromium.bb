@@ -542,6 +542,7 @@
                 '--apk=<(incomplete_apk_path)',
                 '--stamp=<(link_stamp)',
                 '--configuration-name=<(CONFIGURATION_NAME)',
+                '--output-directory=<(PRODUCT_DIR)',
               ],
             },
           ],
@@ -689,6 +690,7 @@
             '--install-record=<(apk_install_record)',
             '--configuration-name=<(CONFIGURATION_NAME)',
             '--android-sdk-tools', '<(android_sdk_tools)',
+            '--output-directory', '<(PRODUCT_DIR)',
           ],
           'conditions': [
             ['create_abi_split == 1', {
