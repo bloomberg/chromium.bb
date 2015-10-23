@@ -246,8 +246,7 @@ class SchedulerTest : public testing::Test {
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
 
-    // Use large estimates by default to avoid latency recovery
-    // in most tests.
+    // Use large estimates by default to avoid latency recovery in most tests.
     base::TimeDelta slow_duration = base::TimeDelta::FromSeconds(1);
     fake_compositor_timing_history_->SetAllEstimatesTo(slow_duration);
 
@@ -2153,92 +2152,6 @@ TEST_F(SchedulerTest, BeginRetroFrame) {
   client_->Reset();
 }
 
-TEST_F(SchedulerTest, BeginRetroFrame_SwapThrottled) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  scheduler_->SetEstimatedParentDrawTime(base::TimeDelta::FromMicroseconds(1));
-
-  // To test swap ack throttling, this test disables automatic swap acks.
-  scheduler_->SetMaxSwapsPending(1);
-  client_->SetAutomaticSwapAck(false);
-
-  // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
-  client_->Reset();
-  scheduler_->SetNeedsBeginMainFrame();
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
-  client_->Reset();
-
-  EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // Queue BeginFrame while we are still handling the previous BeginFrame.
-  SendNextBeginFrame();
-  EXPECT_NO_ACTION(client_);
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // NotifyReadyToCommit should trigger the pending commit.
-  scheduler_->NotifyBeginMainFrameStarted();
-  scheduler_->NotifyReadyToCommit();
-  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // NotifyReadyToActivate should trigger the activation and draw.
-  scheduler_->NotifyReadyToActivate();
-  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // Swapping will put us into a swap throttled state.
-  // Run posted deadline.
-  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  EXPECT_ACTION("ScheduledActionAnimate", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
-  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // While swap throttled, BeginRetroFrames should trigger BeginImplFrames
-  // but not a BeginMainFrame or draw.
-  scheduler_->SetNeedsBeginMainFrame();
-  scheduler_->SetNeedsRedraw();
-  // Run posted BeginRetroFrame.
-  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(false));
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // Let time pass sufficiently beyond the regular deadline but not beyond the
-  // late deadline.
-  now_src()->Advance(BeginFrameArgs::DefaultInterval() -
-                     base::TimeDelta::FromMicroseconds(1));
-  task_runner().RunUntilTime(now_src()->NowTicks());
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-
-  // Take us out of a swap throttled state.
-  scheduler_->DidSwapBuffersComplete();
-  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-
-  // Verify that the deadline was rescheduled.
-  task_runner().RunUntilTime(now_src()->NowTicks());
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
-  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  EXPECT_TRUE(client_->needs_begin_frames());
-  client_->Reset();
-}
-
 TEST_F(SchedulerTest, RetroFrameDoesNotExpireTooEarly) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
@@ -2498,7 +2411,11 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   scheduler_settings_.throttle_frame_production = throttle_frame_production;
   SetUpScheduler(true);
 
-  scheduler_->SetEstimatedParentDrawTime(base::TimeDelta::FromMicroseconds(1));
+  scheduler_->SetEstimatedParentDrawTime(
+      BeginFrameArgs::DefaultEstimatedParentDrawTime());
+
+  // Set the draw duration estimate to zero so that deadlines are accurate.
+  fake_compositor_timing_history_->SetDrawDurationEstimate(base::TimeDelta());
 
   // To test swap ack throttling, this test disables automatic swap acks.
   scheduler_->SetMaxSwapsPending(1);
@@ -2546,12 +2463,25 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  // Let time pass sufficiently beyond the regular deadline but not beyond the
-  // late deadline.
-  now_src()->Advance(BeginFrameArgs::DefaultInterval() -
-                     base::TimeDelta::FromMicroseconds(1));
-  task_runner().RunUntilTime(now_src()->NowTicks());
+  base::TimeTicks before_deadline, after_deadline;
+
+  // The deadline is set to the regular deadline.
+  before_deadline = now_src()->NowTicks();
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  after_deadline = now_src()->NowTicks();
+  // We can't do an equality comparison here because the scheduler uses a fudge
+  // factor that's an internal implementation detail.
+  EXPECT_GT(after_deadline, before_deadline);
+  EXPECT_LT(after_deadline,
+            before_deadline + BeginFrameArgs::DefaultInterval());
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  EXPECT_SCOPED(AdvanceFrame());  // Run posted BeginFrame.
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
 
   // Take us out of a swap throttled state.
   scheduler_->DidSwapBuffersComplete();
@@ -2559,13 +2489,15 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  // Verify that the deadline was rescheduled.
-  // We can't use RunUntilTime(now) here because the next frame is also
-  // scheduled if throttle_frame_production = false.
-  base::TimeTicks before_deadline = now_src()->NowTicks();
+  // The deadline is set to the regular deadline.
+  before_deadline = now_src()->NowTicks();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  base::TimeTicks after_deadline = now_src()->NowTicks();
-  EXPECT_EQ(after_deadline, before_deadline);
+  after_deadline = now_src()->NowTicks();
+  // We can't do an equality comparison here because the scheduler uses a fudge
+  // factor that's an internal implementation detail.
+  EXPECT_GT(after_deadline, before_deadline);
+  EXPECT_LT(after_deadline,
+            before_deadline + BeginFrameArgs::DefaultInterval());
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 }
