@@ -10,15 +10,6 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 
-namespace {
-
-mus::Id GetWindowIdForContainer(mus::WindowTreeConnection* connection,
-                                Container container) {
-  return connection->GetConnectionId() << 16 | static_cast<uint16>(container);
-}
-
-}  // namespace
-
 WindowManagerImpl::WindowManagerImpl(
     WindowManagerApplication* state,
     mojo::InterfaceRequest<mus::mojom::WindowManager> request)
@@ -31,9 +22,6 @@ WindowManagerImpl::~WindowManagerImpl() {}
 void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   mus::Window* root = state_->root();
   DCHECK(root);
-  mus::Id container_window_id =
-      GetWindowIdForContainer(root->connection(), Container::USER_WINDOWS);
-  mus::Window* container_window = root->GetChildById(container_window_id);
 
   const int width = (root->bounds().width - 240);
   const int height = (root->bounds().height - 240);
@@ -46,7 +34,8 @@ void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   bounds.width = width;
   bounds.height = height;
   child_window->SetBounds(bounds);
-  container_window->AddChild(child_window);
+  state_->GetWindowForContainer(Container::USER_WINDOWS)
+      ->AddChild(child_window);
   child_window->Embed(client.Pass());
 
   state_->IncrementWindowCount();
@@ -62,16 +51,14 @@ void WindowManagerImpl::CenterWindow(
     return;
   }
 
-  mus::Window* root = state_->root();
-  mus::Id container_window_id =
-      GetWindowIdForContainer(root->connection(), Container::USER_WINDOWS);
-  mus::Window* container = root->GetChildById(container_window_id);
+  mus::Window* container =
+      state_->GetWindowForContainer(Container::USER_WINDOWS);
   mojo::Rect rect;
   rect.x = (container->bounds().width - size->width) / 2;
   rect.y = (container->bounds().height - size->height) / 2;
   rect.width = size->width;
   rect.height = size->height;
-  mus::Window* window = root->GetChildById(window_id);
+  mus::Window* window = state_->root()->GetChildById(window_id);
   DCHECK(window->parent() == container);
   window->SetBounds(rect);
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);

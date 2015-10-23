@@ -16,6 +16,13 @@ WindowManagerApplication::WindowManagerApplication()
     : root_(nullptr), window_count_(0) {}
 WindowManagerApplication::~WindowManagerApplication() {}
 
+mus::Window* WindowManagerApplication::GetWindowForContainer(
+    Container container) {
+  const mus::Id window_id = root_->connection()->GetConnectionId() << 16 |
+                            static_cast<uint16_t>(container);
+  return root_->GetChildById(window_id);
+}
+
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   mus::CreateSingleWindowTreeHost(app, this, &host_);
 }
@@ -29,6 +36,9 @@ bool WindowManagerApplication::ConfigureIncomingConnection(
 void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_ = root;
   CreateContainers();
+
+  host_->EnableWindowDraggingForChildren(
+      GetWindowForContainer(Container::USER_WINDOWS)->id());
 
   for (auto request : requests_)
     new WindowManagerImpl(this, request->Pass());
@@ -52,8 +62,9 @@ void WindowManagerApplication::Create(
 }
 
 void WindowManagerApplication::CreateContainers() {
-  for (uint16 container = static_cast<uint16>(Container::ALL_USER_BACKGROUND);
-       container < static_cast<uint16>(Container::COUNT); ++container) {
+  for (uint16_t container =
+           static_cast<uint16_t>(Container::ALL_USER_BACKGROUND);
+       container < static_cast<uint16_t>(Container::COUNT); ++container) {
     mus::Window* window = root_->connection()->NewWindow();
     DCHECK_EQ(mus::LoWord(window->id()), container)
         << "Containers must be created before other windows!";

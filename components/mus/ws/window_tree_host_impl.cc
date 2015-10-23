@@ -117,6 +117,14 @@ void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {
   event_dispatcher_.RemoveAccelerator(id);
 }
 
+void WindowTreeHostImpl::EnableWindowDraggingForChildren(
+    Id transport_window_id) {
+  ServerWindow* window =
+      root_->GetChildWindow(WindowIdFromTransportId(transport_window_id));
+  if (window)
+    window->set_is_draggable_window_container(true);
+}
+
 void WindowTreeHostImpl::OnClientClosed() {
   // |display_manager_.reset()| destroys the display-manager first, and then
   // sets |display_manager_| to nullptr. However, destroying |display_manager_|

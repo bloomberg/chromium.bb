@@ -28,7 +28,7 @@ class WindowManagerConnection : public ViewsDelegate,
 
   mus::Window* CreateWindow();
 
-private:
+ private:
   WindowManagerConnection(mus::mojom::WindowManagerPtr window_manager,
                           mojo::ApplicationImpl* app);
   ~WindowManagerConnection() override;

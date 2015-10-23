@@ -52,6 +52,8 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   }
 
  private:
+  void UpdateClientAreaInWindowManager();
+
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   NonClientFrameView* CreateNonClientFrameView() override;
@@ -157,6 +159,8 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   void OnWindowTargetVisibilityChanged(bool visible) override;
   bool HasHitTestMask() const override;
   void GetHitTestMask(gfx::Path* mask) const override;
+
+  mus::Window* window_;
 
   mojo::Shell* shell_;
 

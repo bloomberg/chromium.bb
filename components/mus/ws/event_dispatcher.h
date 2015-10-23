@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
@@ -23,6 +23,7 @@ namespace mus {
 namespace ws {
 
 class EventDispatcherDelegate;
+class MoveLoop;
 class ServerWindow;
 
 class EventMatcher;
@@ -62,6 +63,8 @@ class EventDispatcher {
 
   using Entry = std::pair<uint32_t, EventMatcher>;
   std::map<uint32_t, EventMatcher> accelerators_;
+
+  scoped_ptr<MoveLoop> move_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

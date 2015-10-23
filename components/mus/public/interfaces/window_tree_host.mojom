@@ -26,6 +26,12 @@ interface WindowTreeHost {
   // easily identify the accelerator's action.
   AddAccelerator(uint32 id, mojo.EventMatcher matcher);
   RemoveAccelerator(uint32 id);
+
+  // If set pointer events in the non-client area of child windows of
+  // |window_id| start a move or resize. The move is handled entirely by the
+  // window service. Clients see the changes by way of the bounds of the
+  // window changing (WindowTreeClient::OnWindowBoundsChanged()).
+  EnableWindowDraggingForChildren(uint32 window_id);
 };
 
 interface WindowTreeHostClient {

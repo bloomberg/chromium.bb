@@ -84,6 +84,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void AddAccelerator(uint32_t id,
                       mojo::EventMatcherPtr event_matcher) override;
   void RemoveAccelerator(uint32_t id) override;
+  void EnableWindowDraggingForChildren(Id transport_window_id) override;
 
  private:
   void OnClientClosed();

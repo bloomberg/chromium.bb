@@ -21,6 +21,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
       parent_(nullptr),
       visible_(false),
       opacity_(1),
+      is_draggable_window_container_(false),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerWindowDrawTracker).
@@ -116,6 +117,8 @@ void ServerWindow::Reorder(ServerWindow* child,
 void ServerWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
+
+  // TODO(fsamuel): figure out how will this work with CompositorFrames.
 
   // |client_area_| is relative to the bounds. If the size of bounds change
   // we have to reset the client area. We assume any size change is quicky

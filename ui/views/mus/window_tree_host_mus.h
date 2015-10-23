@@ -27,8 +27,8 @@ class InputMethodMUS;
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
-  public mus::WindowObserver {
-public:
+                           public mus::WindowObserver {
+ public:
   WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window);
   ~WindowTreeHostMojo() override;
 

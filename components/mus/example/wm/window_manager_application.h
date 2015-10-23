@@ -14,6 +14,8 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 
+enum class Container;
+
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
       public mus::WindowTreeDelegate,
@@ -26,6 +28,8 @@ class WindowManagerApplication
 
   int window_count() { return window_count_; }
   void IncrementWindowCount() { ++window_count_; }
+
+  mus::Window* GetWindowForContainer(Container container);
 
  private:
   // ApplicationDelegate:

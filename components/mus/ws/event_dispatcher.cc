@@ -7,6 +7,7 @@
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
+#include "components/mus/ws/move_loop.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
@@ -17,6 +18,16 @@
 
 namespace mus {
 namespace ws {
+namespace {
+
+bool IsPointerEvent(const mojo::Event& event) {
+  return event.action == mojo::EVENT_TYPE_POINTER_CANCEL ||
+         event.action == mojo::EVENT_TYPE_POINTER_DOWN ||
+         event.action == mojo::EVENT_TYPE_POINTER_MOVE ||
+         event.action == mojo::EVENT_TYPE_POINTER_UP;
+}
+
+}  // namespace
 
 namespace {
 
@@ -24,6 +35,12 @@ bool IsMouseEventFlag(int32_t event_flags) {
   return !!(event_flags & (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
                            mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
                            mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
+}
+
+bool IsOnlyOneMouseButtonDown(mojo::EventFlags flags) {
+  return flags == mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
+         flags == mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
+         flags == mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON;
 }
 
 }  // namespace
@@ -155,11 +172,31 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
     }
   }
 
+  if (move_loop_ && IsPointerEvent(*event)) {
+    if (move_loop_->Move(*event) == MoveLoop::DONE) {
+      move_loop_.reset();
+      if (event->action == mojo::EVENT_TYPE_POINTER_UP &&
+          IsOnlyOneMouseButtonDown(event->flags)) {
+        capture_window_ = nullptr;
+      }
+    }
+
+    // Move loop eats all pointer events.
+    return;
+  }
+
   ServerWindow* target = FindEventTarget(event.get());
   if (target) {
-    // Update focus on pointer-down.
-    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN)
+    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN) {
       delegate_->SetFocusedWindowFromEventDispatcher(target);
+
+      if (!move_loop_) {
+        move_loop_ = MoveLoop::Create(target, *event);
+        if (move_loop_)
+          return;
+      }
+    }
+
     delegate_->DispatchInputEventToWindow(target, event.Pass());
   }
 }
@@ -214,8 +251,12 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
   }
 
   if (IsMouseEventFlag(event->flags)) {
-    if (!capture_window_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN))
+    if (!capture_window_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN)) {
       capture_window_ = target;
+    } else if (event->action == mojo::EVENT_TYPE_POINTER_UP &&
+               IsOnlyOneMouseButtonDown(event->flags)) {
+      capture_window_ = nullptr;
+    }
   } else {
     capture_window_ = nullptr;
   }

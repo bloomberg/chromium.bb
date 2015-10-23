@@ -71,16 +71,28 @@ void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                                  mojo::Shell* shell,
                                  mus::Window* window)
-    : shell_(shell),
+    : window_(window),
+      shell_(shell),
       native_widget_delegate_(delegate),
+      window_manager_(nullptr),
       content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
+
+void NativeWidgetMus::UpdateClientAreaInWindowManager() {
+  NonClientView* non_client_view =
+      native_widget_delegate_->AsWidget()->non_client_view();
+  if (!non_client_view || !non_client_view->client_view())
+    return;
+
+  window_->SetClientArea(
+      *mojo::Rect::From(non_client_view->client_view()->bounds()));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
-  window_tree_host_.reset(new WindowTreeHostMojo(shell_, nullptr));
+  window_tree_host_.reset(new WindowTreeHostMojo(shell_, window_));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
@@ -469,8 +481,10 @@ void NativeWidgetMus::OnBoundsChanged(const gfx::Rect& old_bounds,
       (old_bounds == gfx::Rect(0, 0, 0, 0) && !new_bounds.IsEmpty())) {
     native_widget_delegate_->OnNativeWidgetMove();
   }
-  if (old_bounds.size() != new_bounds.size())
+  if (old_bounds.size() != new_bounds.size()) {
     native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
+    UpdateClientAreaInWindowManager();
+  }
 }
 
 gfx::NativeCursor NativeWidgetMus::GetCursor(const gfx::Point& point) {

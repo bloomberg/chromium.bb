@@ -101,6 +101,13 @@ class ServerWindow {
   }
   void SetProperty(const std::string& name, const std::vector<uint8_t>* value);
 
+  bool is_draggable_window_container() const {
+    return is_draggable_window_container_;
+  }
+  void set_is_draggable_window_container(bool value) {
+    is_draggable_window_container_ = value;
+  }
+
   void SetTextInputState(const ui::TextInputState& state);
   const ui::TextInputState& text_input_state() const {
     return text_input_state_;
@@ -139,6 +146,8 @@ class ServerWindow {
   float opacity_;
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;
+
+  bool is_draggable_window_container_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 
