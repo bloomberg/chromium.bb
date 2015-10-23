@@ -83,9 +83,7 @@ class StartupPagesHandler : public OptionsPageUIHandler,
   // on startup, which can be updated via sync.
   PrefChangeRegistrar pref_change_registrar_;
 
-  // TODO(stuartmorgan): Once there are no other clients of
-  // CustomHomePagesTableModel, consider changing it to something more like
-  // TemplateURLService.
+  // The set of pages to launch on startup.
   scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupPagesHandler);

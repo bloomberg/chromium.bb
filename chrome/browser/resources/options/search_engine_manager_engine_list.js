@@ -303,8 +303,6 @@ cr.define('options.search_engines', function() {
      */
     validationComplete: function(validity) {
       this.waitingForValidation_ = false;
-      // TODO(stuartmorgan): Implement the full validation UI with
-      // checkmark/exclamation mark icons and tooltips showing the errors.
       if (validity.name) {
         this.nameField_.setCustomValidity('');
       } else {

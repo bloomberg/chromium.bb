@@ -191,9 +191,8 @@ list:not([disabled]) > :hover {
   background-color: rgb(228, 236, 247);
 }
 
-/* TODO(stuartmorgan): Once this becomes the list style for other WebUI pages
- * these rules can be simplified (since they wont need to override other rules).
- */
+/* Note: If this becomes the list style for other WebUI pages these rules can be
+ * simplified (since they wont need to override other rules). */
 
 list:not([has-element-focus]) > [selected],
 list:not([has-element-focus]) > [lead][selected] {
@@ -258,7 +257,6 @@ list .deletable-item > :first-child {
 list .row-delete-button {
   -webkit-transition: 150ms opacity;
   background-color: transparent;
-  /* TODO(stuartmorgan): Replace with real images once they are available. */
   background-image: -webkit-image-set(
       url(../../../../ui/resources/default_100_percent/close_2.png) 1x,
       url(../../../../ui/resources/default_200_percent/close_2.png) 2x);
@@ -331,7 +329,6 @@ list > [editing] [displaymode='static'] {
 }
 
 list > [editing] input:invalid {
-  /* TODO(stuartmorgan): Replace with validity badge */
   background-color: pink;
 }
 

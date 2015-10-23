@@ -63,8 +63,6 @@ cr.define('options.contentSettings', function() {
         this.patternLabel = patternCell.querySelector('.static-text');
       var input = patternCell.querySelector('input');
 
-      // TODO(stuartmorgan): Create an createEditableSelectCell abstracting
-      // this code.
       // Setting label for display mode. |pattern| will be null for the 'add new
       // exception' row.
       if (this.pattern) {
