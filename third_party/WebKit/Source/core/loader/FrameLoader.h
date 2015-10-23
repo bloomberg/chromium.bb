@@ -53,7 +53,6 @@ namespace blink {
 class DocumentLoader;
 class Frame;
 class FrameLoaderClient;
-class HTMLFrameOwnerElement;
 class ProgressTracker;
 class ResourceError;
 class SerializedScriptValue;
@@ -217,15 +216,6 @@ private:
     void scheduleCheckCompleted();
 
     void detachDocumentLoader(RefPtrWillBeMember<DocumentLoader>&);
-
-    // TODO(bokan): Temporarily added to help diagnose crbug.com/519752.
-    void collectDebugDataRemoveSoon();
-    volatile int m_numChildFramesBeforeDetach;
-    volatile int m_connectedSubframeCount;
-    volatile LocalFrame* m_debugNonDisconnectedFrame1;
-    volatile LocalFrame* m_debugNonDisconnectedFrame2;
-    volatile HTMLFrameOwnerElement* m_debugNonDisconnectedFrameOwner1;
-    volatile HTMLFrameOwnerElement* m_debugNonDisconnectedFrameOwner2;
 
     RawPtrWillBeMember<LocalFrame> m_frame;
 

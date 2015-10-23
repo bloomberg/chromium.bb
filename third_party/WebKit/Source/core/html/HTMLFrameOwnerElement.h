@@ -103,10 +103,11 @@ private:
     SandboxFlags m_sandboxFlags;
 
     // TODO(bokan): Temporarily added to help debug crbug.com/519752.
-    volatile int m_wasConnected;
-    volatile int m_wasDisconnected;
+    volatile bool m_wasDisconnected;
     volatile bool m_wasWidgetAttached;
     volatile bool m_wasWidgetDetached;
+    volatile LocalDOMWindow* m_domWindow;
+    volatile Document* m_document;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, isFrameOwnerElement());

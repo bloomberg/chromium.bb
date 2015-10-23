@@ -158,13 +158,7 @@ ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadTyp
 }
 
 FrameLoader::FrameLoader(LocalFrame* frame)
-    : m_numChildFramesBeforeDetach(0)
-    , m_connectedSubframeCount(0)
-    , m_debugNonDisconnectedFrame1(nullptr)
-    , m_debugNonDisconnectedFrame2(nullptr)
-    , m_debugNonDisconnectedFrameOwner1(nullptr)
-    , m_debugNonDisconnectedFrameOwner2(nullptr)
-    , m_frame(frame)
+    : m_frame(frame)
     , m_progressTracker(ProgressTracker::create(frame))
     , m_loadType(FrameLoadTypeStandard)
     , m_inStopAllLoaders(false)
@@ -1031,28 +1025,6 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
     }
 }
 
-// TODO(bokan): Temporarily added some additional debugging information in
-// release builds to diagnose crbug.com/519752.
-void FrameLoader::collectDebugDataRemoveSoon()
-{
-    if (m_frame->tree().childCount()) {
-        Frame* first = m_frame->tree().firstChild();
-        if (first->isLocalFrame())
-            m_debugNonDisconnectedFrame1 = toLocalFrame(first);
-        m_debugNonDisconnectedFrameOwner1 = first->deprecatedLocalOwner();
-
-        if (Frame* second = first->tree().nextSibling()) {
-            if (second->isLocalFrame())
-                m_debugNonDisconnectedFrame2 = toLocalFrame(second);
-            m_debugNonDisconnectedFrameOwner2 = second->deprecatedLocalOwner();
-        }
-
-        m_connectedSubframeCount = m_frame->document()->connectedSubframeCount();
-    }
-
-    RELEASE_ASSERT(!m_frame->tree().childCount());
-}
-
 bool FrameLoader::prepareForCommit()
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
@@ -1074,15 +1046,7 @@ bool FrameLoader::prepareForCommit()
         client()->dispatchWillClose();
         dispatchUnloadEvent();
     }
-
-    // TODO(bokan): Temporarily added some additional debugging information in
-    // release builds to diagnose crbug.com/519752.
-    m_numChildFramesBeforeDetach = m_frame->tree().childCount();
-
     m_frame->detachChildren();
-
-    collectDebugDataRemoveSoon();
-
     // The previous calls to dispatchUnloadEvent() and detachChildren() can
     // execute arbitrary script via things like unload events. If the executed
     // script intiates a new load or causes the current frame to be detached,
@@ -1100,9 +1064,6 @@ bool FrameLoader::prepareForCommit()
     // m_provisionalDocumentLoader hasn't changed.
     if (!m_frame->client())
         return false;
-
-    collectDebugDataRemoveSoon();
-
     // No more events will be dispatched so detach the Document.
     if (m_frame->document())
         m_frame->document()->detach();
