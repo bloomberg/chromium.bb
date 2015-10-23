@@ -213,6 +213,8 @@ class EVENTS_BASE_EXPORT LatencyInfo {
 
   // Converts latencyinfo into format that can be dumped into trace buffer.
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData();
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+    CoordinatesAsTraceableData();
 
   // Shown as part of the name of the trace event for this LatencyInfo.
   // String is empty if no tracing is enabled.
