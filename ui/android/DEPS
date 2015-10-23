@@ -1,4 +1,6 @@
 include_rules = [
+  "+cc/layers/layer.h",
+  "+cc/layers/ui_resource_layer.h",
   "+cc/output/copy_output_request.h",
   "+cc/resources/scoped_ui_resource.h",
   "+cc/resources/ui_resource_client.h",
@@ -6,6 +8,7 @@ include_rules = [
   "+cc/test/fake_layer_tree_host_client.h",
   "+cc/test/test_task_graph_runner.h",
   "+cc/trees/layer_tree_host.h",
+  "+cc/trees/layer_tree_settings.h",
   "+jni",
   "+skia/ext",
   "+third_party/skia",

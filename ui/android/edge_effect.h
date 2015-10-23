@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_EDGE_EFFECT_H_
-#define CONTENT_BROWSER_ANDROID_EDGE_EFFECT_H_
+#ifndef UI_ANDROID_EDGE_EFFECT_H_
+#define UI_ANDROID_EDGE_EFFECT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/android/edge_effect_base.h"
+#include "ui/android/edge_effect_base.h"
+#include "ui/android/ui_android_export.h"
 
 namespace cc {
 class Layer;
@@ -16,13 +18,13 @@ namespace ui {
 class ResourceManager;
 }
 
-namespace content {
+namespace ui {
 
 // |EdgeEffect| mirrors its Android counterpart, EdgeEffect.java.
 // Conscious tradeoffs were made to align this as closely as possible with the
 // the original Android java version.
 // All coordinates and dimensions are in device pixels.
-class EdgeEffect : public EdgeEffectBase {
+class UI_ANDROID_EXPORT EdgeEffect : public EdgeEffectBase {
  public:
   explicit EdgeEffect(ui::ResourceManager* resource_manager,
                       float device_scale_factor);
@@ -79,6 +81,6 @@ class EdgeEffect : public EdgeEffectBase {
   DISALLOW_COPY_AND_ASSIGN(EdgeEffect);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_ANDROID_EDGE_EFFECT_H_
+#endif  // UI_ANDROID_EDGE_EFFECT_H_

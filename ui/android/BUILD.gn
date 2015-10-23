@@ -10,6 +10,17 @@ assert(is_android)
 component("android") {
   output_name = "ui_android"
   sources = [
+    "animation_utils.h",
+    "edge_effect.cc",
+    "edge_effect.h",
+    "edge_effect_base.cc",
+    "edge_effect_base.h",
+    "edge_effect_l.cc",
+    "edge_effect_l.h",
+    "overscroll_glow.cc",
+    "overscroll_glow.h",
+    "overscroll_refresh.cc",
+    "overscroll_refresh.h",
     "resources/resource_manager.cc",
     "resources/resource_manager.h",
     "resources/resource_manager_impl.cc",
@@ -22,6 +33,7 @@ component("android") {
     "view_android.h",
     "window_android.cc",
     "window_android.h",
+    "window_android_compositor.cc",
     "window_android_compositor.h",
     "window_android_observer.h",
   ]
@@ -148,6 +160,7 @@ android_library("ui_javatests") {
 
 test("ui_android_unittests") {
   sources = [
+    "overscroll_refresh_unittest.cc",
     "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",
   ]

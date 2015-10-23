@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_ANDROID_OVERSCROLL_CONTROLLER_ANDROID_H_
 
 #include "base/time/time.h"
-#include "content/browser/android/overscroll_glow.h"
-#include "content/browser/android/overscroll_refresh.h"
 #include "content/common/input/input_event_ack_state.h"
+#include "ui/android/overscroll_glow.h"
+#include "ui/android/overscroll_refresh.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ struct DidOverscrollParams;
 // Glue class for handling all inputs into Android-specific overscroll effects,
 // both the passive overscroll glow and the active overscroll pull-to-refresh.
 // Note that all input coordinates (both for events and overscroll) are in DIPs.
-class OverscrollControllerAndroid : public OverscrollGlowClient {
+class OverscrollControllerAndroid : public ui::OverscrollGlowClient {
  public:
   explicit OverscrollControllerAndroid(ContentViewCoreImpl* content_view_core);
   ~OverscrollControllerAndroid() override;
@@ -62,7 +62,7 @@ class OverscrollControllerAndroid : public OverscrollGlowClient {
 
  private:
   // OverscrollGlowClient implementation.
-  scoped_ptr<EdgeEffectBase> CreateEdgeEffect() override;
+  scoped_ptr<ui::EdgeEffectBase> CreateEdgeEffect() override;
 
   void SetNeedsAnimate();
 
@@ -72,8 +72,8 @@ class OverscrollControllerAndroid : public OverscrollGlowClient {
   bool enabled_;
 
   // TODO(jdduke): Factor out a common API from the two overscroll effects.
-  scoped_ptr<OverscrollGlow> glow_effect_;
-  scoped_ptr<OverscrollRefresh> refresh_effect_;
+  scoped_ptr<ui::OverscrollGlow> glow_effect_;
+  scoped_ptr<ui::OverscrollRefresh> refresh_effect_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerAndroid);
 };

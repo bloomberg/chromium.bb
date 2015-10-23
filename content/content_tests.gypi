@@ -790,7 +790,6 @@
       'browser/android/java/gin_java_method_invocation_helper_unittest.cc',
       'browser/android/java/java_type_unittest.cc',
       'browser/android/java/jni_helper_unittest.cc',
-      'browser/android/overscroll_refresh_unittest.cc',
       'browser/android/url_request_content_job_unittest.cc',
       'browser/renderer_host/input/motion_event_android_unittest.cc',
       'common/gpu/client/gpu_memory_buffer_impl_surface_texture_unittest.cc',

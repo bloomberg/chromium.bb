@@ -179,9 +179,6 @@ class SingleThreadTaskGraphRunner
 base::LazyInstance<SingleThreadTaskGraphRunner> g_task_graph_runner =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<cc::LayerSettings> g_layer_settings =
-    LAZY_INSTANCE_INITIALIZER;
-
 } // anonymous namespace
 
 // static
@@ -199,12 +196,12 @@ void Compositor::Initialize() {
 
 // static
 const cc::LayerSettings& Compositor::LayerSettings() {
-  return g_layer_settings.Get();
+  return ui::WindowAndroidCompositor::LayerSettings();
 }
 
 // static
 void Compositor::SetLayerSettings(const cc::LayerSettings& settings) {
-  g_layer_settings.Get() = settings;
+  ui::WindowAndroidCompositor::SetLayerSettings(settings);
 }
 
 // static

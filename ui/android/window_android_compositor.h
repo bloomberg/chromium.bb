@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 namespace cc {
 class Layer;
+class LayerSettings;
 }
 
 namespace ui {
@@ -19,6 +20,9 @@ class ResourceManager;
 // Android interface for compositor-related tasks.
 class UI_ANDROID_EXPORT WindowAndroidCompositor {
  public:
+  static const cc::LayerSettings& LayerSettings();
+  static void SetLayerSettings(const cc::LayerSettings& settings);
+
   virtual ~WindowAndroidCompositor() {}
 
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;

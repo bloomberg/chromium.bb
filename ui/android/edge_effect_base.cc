@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/edge_effect_base.h"
+#include "ui/android/edge_effect_base.h"
 
-namespace content {
+namespace ui {
 
 // static
 gfx::Transform EdgeEffectBase::ComputeTransform(Edge edge,
@@ -46,4 +46,4 @@ gfx::SizeF EdgeEffectBase::ComputeOrientedSize(
   };
 }
 
-}  // namespace content
+}  // namespace ui

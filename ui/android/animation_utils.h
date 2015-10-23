@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_ANIMATION_UTILS_H_
-#define CONTENT_BROWSER_ANDROID_ANIMATION_UTILS_H_
+#ifndef UI_ANDROID_ANIMATION_UTILS_H_
+#define UI_ANDROID_ANIMATION_UTILS_H_
 
-namespace content {
+namespace ui {
 
 template <typename T>
 T Lerp(T a, T b, T t) {
@@ -28,6 +28,6 @@ T Damp(T input, T factor) {
   return result;
 }
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_ANDROID_ANIMATION_UTILS_H_
+#endif  // UI_ANDROID_ANIMATION_UTILS_H_

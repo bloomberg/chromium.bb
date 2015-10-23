@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_OVERSCROLL_GLOW_H_
-#define CONTENT_BROWSER_ANDROID_OVERSCROLL_GLOW_H_
+#ifndef UI_ANDROID_OVERSCROLL_GLOW_H_
+#define UI_ANDROID_OVERSCROLL_GLOW_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/android/edge_effect_base.h"
+#include "ui/android/edge_effect_base.h"
+#include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -16,10 +18,10 @@ namespace cc {
 class Layer;
 }
 
-namespace content {
+namespace ui {
 
 // Provides lazy, customized EdgeEffect creation.
-class OverscrollGlowClient {
+class UI_ANDROID_EXPORT OverscrollGlowClient {
  public:
   virtual ~OverscrollGlowClient() {}
 
@@ -31,7 +33,7 @@ class OverscrollGlowClient {
  * Conscious tradeoffs were made to align this as closely as possible with the
  * original Android Java version.
  */
-class OverscrollGlow {
+class UI_ANDROID_EXPORT OverscrollGlow {
  public:
   // |client| must be valid for the duration of the effect's lifetime.
   // The effect is enabled by default, but will remain dormant until the first
@@ -105,6 +107,6 @@ class OverscrollGlow {
   DISALLOW_COPY_AND_ASSIGN(OverscrollGlow);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_ANDROID_OVERSCROLL_GLOW_H_
+#endif  // UI_ANDROID_OVERSCROLL_GLOW_H_

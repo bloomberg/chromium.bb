@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/edge_effect.h"
+#include "ui/android/edge_effect.h"
 
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
-#include "content/browser/android/animation_utils.h"
-#include "content/public/browser/android/compositor.h"
+#include "ui/android/animation_utils.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/system_ui_resource_type.h"
+#include "ui/android/window_android_compositor.h"
 
-namespace content {
+namespace ui {
 
 namespace {
 
@@ -64,8 +64,8 @@ class EdgeEffect::EffectLayer {
  public:
   EffectLayer(ui::SystemUIResourceType resource_type,
               ui::ResourceManager* resource_manager)
-      : ui_resource_layer_(
-            cc::UIResourceLayer::Create(Compositor::LayerSettings())),
+      : ui_resource_layer_(cc::UIResourceLayer::Create(
+            WindowAndroidCompositor::LayerSettings())),
         resource_type_(resource_type),
         resource_manager_(resource_manager) {}
 
@@ -357,4 +357,4 @@ void EdgeEffect::PreloadResources(ui::ResourceManager* resource_manager) {
                                     kGlowResourceId);
 }
 
-}  // namespace content
+}  // namespace ui

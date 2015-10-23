@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
-#define CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
+#ifndef UI_ANDROID_OVERSCROLL_REFRESH_H_
+#define UI_ANDROID_OVERSCROLL_REFRESH_H_
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
+#include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace content {
+namespace ui {
 
-class CONTENT_EXPORT OverscrollRefreshHandler {
+class UI_ANDROID_EXPORT OverscrollRefreshHandler {
  public:
   // Signals the start of an overscrolling pull. Returns whether the handler
   // will consume the overscroll gesture, in which case it will receive the
@@ -41,7 +41,7 @@ class CONTENT_EXPORT OverscrollRefreshHandler {
 //   3) The initial scroll direction is upward.
 // The actuall pull response, animation and action are delegated to the
 // provided refresh handler.
-class CONTENT_EXPORT OverscrollRefresh {
+class UI_ANDROID_EXPORT OverscrollRefresh {
  public:
   // Minmum number of overscrolling pull events required to activate the effect.
   // Useful for avoiding accidental triggering when a scroll janks (is delayed),
@@ -101,4 +101,4 @@ class CONTENT_EXPORT OverscrollRefresh {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
+#endif  // UI_ANDROID_OVERSCROLL_REFRESH_H_

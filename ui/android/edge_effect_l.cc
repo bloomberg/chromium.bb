@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/edge_effect_l.h"
+#include "ui/android/edge_effect_l.h"
 
 #include "cc/layers/ui_resource_layer.h"
-#include "content/browser/android/animation_utils.h"
-#include "content/public/browser/android/compositor.h"
+#include "ui/android/animation_utils.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/system_ui_resource_type.h"
+#include "ui/android/window_android_compositor.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-namespace content {
+namespace ui {
 
 namespace {
 
@@ -51,7 +51,8 @@ const ui::SystemUIResourceType kResourceId = ui::OVERSCROLL_GLOW_L;
 
 EdgeEffectL::EdgeEffectL(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
-      glow_(cc::UIResourceLayer::Create(Compositor::LayerSettings())),
+      glow_(cc::UIResourceLayer::Create(
+          WindowAndroidCompositor::LayerSettings())),
       glow_alpha_(0),
       glow_scale_y_(0),
       glow_alpha_start_(0),
@@ -298,4 +299,4 @@ void EdgeEffectL::PreloadResources(ui::ResourceManager* resource_manager) {
                                     kResourceId);
 }
 
-}  // namespace content
+}  // namespace ui

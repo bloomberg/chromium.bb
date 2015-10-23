@@ -9,17 +9,25 @@
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/edge_effect.h"
-#include "content/browser/android/edge_effect_l.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/android/edge_effect.h"
+#include "ui/android/edge_effect_l.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/l10n/l10n_util_android.h"
+
+using ui::EdgeEffect;
+using ui::EdgeEffectBase;
+using ui::EdgeEffectL;
+using ui::OverscrollGlow;
+using ui::OverscrollGlowClient;
+using ui::OverscrollRefresh;
+using ui::OverscrollRefreshHandler;
 
 namespace content {
 namespace {

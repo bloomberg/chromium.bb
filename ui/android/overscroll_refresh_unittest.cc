@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "cc/layers/layer.h"
-#include "content/browser/android/overscroll_refresh.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/android/overscroll_refresh.h"
 
-namespace content {
+namespace ui {
 
 class OverscrollRefreshTest : public OverscrollRefreshHandler,
                               public testing::Test {
@@ -238,4 +238,4 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReset) {
   EXPECT_FALSE(GetAndResetPullReleased());
 }
 
-}  // namespace content
+}  // namespace ui

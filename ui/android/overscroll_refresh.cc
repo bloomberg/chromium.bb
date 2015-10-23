@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/overscroll_refresh.h"
+#include "ui/android/overscroll_refresh.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace ui {
 namespace {
 
 // Experimentally determined constant used to allow activation even if touch
@@ -101,4 +101,4 @@ void OverscrollRefresh::Release(bool allow_refresh) {
   scroll_consumption_state_ = DISABLED;
 }
 
-}  // namespace content
+}  // namespace ui

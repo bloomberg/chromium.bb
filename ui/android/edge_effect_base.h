@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_EDGE_EFFECT_BASE_H_
-#define CONTENT_BROWSER_ANDROID_EDGE_EFFECT_BASE_H_
+#ifndef UI_ANDROID_EDGE_EFFECT_BASE_H_
+#define UI_ANDROID_EDGE_EFFECT_BASE_H_
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
@@ -14,7 +14,7 @@ namespace cc {
 class Layer;
 }
 
-namespace content {
+namespace ui {
 
 // A base class for overscroll-related Android effects.
 class EdgeEffectBase {
@@ -62,6 +62,6 @@ class EdgeEffectBase {
                                         const gfx::SizeF& viewport_size);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_ANDROID_EDGE_EFFECT_BASE_H_
+#endif  // UI_ANDROID_EDGE_EFFECT_BASE_H_

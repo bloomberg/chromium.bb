@@ -36,8 +36,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/edge_effect.h"
-#include "content/browser/android/edge_effect_l.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"

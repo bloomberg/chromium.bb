@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/overscroll_glow.h"
+#include "ui/android/overscroll_glow.h"
 
 #include "cc/layers/layer.h"
-#include "content/browser/android/edge_effect_base.h"
-#include "content/public/browser/android/compositor.h"
+#include "ui/android/edge_effect_base.h"
+#include "ui/android/window_android_compositor.h"
 
 using std::max;
 using std::min;
 
-namespace content {
+namespace ui {
 
 namespace {
 
@@ -192,7 +192,7 @@ bool OverscrollGlow::InitializeIfNecessary() {
     return true;
 
   DCHECK(!root_layer_.get());
-  root_layer_ = cc::Layer::Create(Compositor::LayerSettings());
+  root_layer_ = cc::Layer::Create(WindowAndroidCompositor::LayerSettings());
   for (size_t i = 0; i < EDGE_COUNT; ++i) {
     edge_effects_[i] = client_->CreateEdgeEffect();
     DCHECK(edge_effects_[i]);
@@ -276,4 +276,4 @@ EdgeEffectBase* OverscrollGlow::GetOppositeEdge(int edge_index) {
   return edge_effects_[(edge_index + 2) % EDGE_COUNT].get();
 }
 
-}  // namespace content
+}  // namespace ui
