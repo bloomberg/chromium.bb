@@ -45,6 +45,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ExecutingJavascriptTest.testShouldThrowAnExceptionWithMessageAndStacktraceWhenTheJavascriptIsBad',
     'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
     'FrameSwitchingTest.testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs',
+    # https://code.google.com/p/chromedriver/issues/detail?id=1249
+    'FrameSwitchingTest.testGetCurrentUrl',
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
     # Broken because AddWebStorage.java is broken.
     'LocalStorageTest.*',
