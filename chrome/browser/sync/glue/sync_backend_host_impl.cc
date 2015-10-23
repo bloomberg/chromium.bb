@@ -483,13 +483,6 @@ syncer::UserShare* SyncBackendHostImpl::GetUserShare() const {
   return core_->sync_manager()->GetUserShare();
 }
 
-scoped_ptr<syncer_v2::SyncContextProxy>
-SyncBackendHostImpl::GetSyncContextProxy() {
-  return sync_context_proxy_.get() ? scoped_ptr<syncer_v2::SyncContextProxy>(
-                                         sync_context_proxy_->Clone())
-                                   : scoped_ptr<syncer_v2::SyncContextProxy>();
-}
-
 SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
   DCHECK(initialized());
   return core_->sync_manager()->GetDetailedStatus();

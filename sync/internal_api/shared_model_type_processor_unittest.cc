@@ -125,7 +125,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
   int64 GetServerVersion(const std::string& tag);
   void SetServerVersion(const std::string& tag, int64 version);
 
-  void StartDone(/*syncer::SyncError,*/ scoped_ptr<ActivationContext> context);
+  void StartDone(syncer::SyncError error,
+                 scoped_ptr<ActivationContext> context);
 
   // The current mock queue which might be owned by either |mock_queue_ptr_| or
   // |type_processor_|.
@@ -185,7 +186,8 @@ void SharedModelTypeProcessorTest::Restart() {
 }
 
 void SharedModelTypeProcessorTest::StartDone(
-    /*syncer::SyncError,*/ scoped_ptr<ActivationContext> context) {
+    syncer::SyncError error,
+    scoped_ptr<ActivationContext> context) {
   // Hand off ownership of |mock_queue_ptr_|, while keeping
   // an unsafe pointer to it.  This is why we can only connect once.
   DCHECK(mock_queue_ptr_);

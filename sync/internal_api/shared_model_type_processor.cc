@@ -43,7 +43,7 @@ void SharedModelTypeProcessor::Start(StartCallback callback) {
   activation_context->type_task_runner = base::ThreadTaskRunnerHandle::Get();
   activation_context->type_processor = weak_ptr_factory_for_sync_.GetWeakPtr();
 
-  callback.Run(/*syncer::SyncError(), */ activation_context.Pass());
+  callback.Run(syncer::SyncError(), activation_context.Pass());
 }
 
 bool SharedModelTypeProcessor::IsEnabled() const {

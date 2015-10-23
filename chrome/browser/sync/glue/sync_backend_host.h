@@ -17,7 +17,6 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/shutdown_reason.h"
-#include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -154,12 +153,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // creating transactions.  Should not be called before we signal
   // initialization is complete with OnBackendInitialized().
   virtual syncer::UserShare* GetUserShare() const = 0;
-
-  // Called on |frontend_loop_| to obtain a handle to the SyncContext needed by
-  // the non-blocking sync types to communicate with the server.
-  //
-  // Should be called only when the backend is initialized.
-  virtual scoped_ptr<syncer_v2::SyncContextProxy> GetSyncContextProxy() = 0;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.

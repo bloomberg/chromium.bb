@@ -48,8 +48,8 @@ class SyncContextProxyImplTest : public ::testing::Test {
                                 base::Unretained(this)));
   }
 
-  void StartDone(
-      /*syncer::SyncError,*/ scoped_ptr<ActivationContext> context) {
+  void StartDone(syncer::SyncError error,
+                 scoped_ptr<ActivationContext> context) {
     context_proxy_->ConnectTypeToSync(syncer::THEMES, context.Pass());
   }
 

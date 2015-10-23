@@ -125,7 +125,6 @@ class SyncBackendHostImpl
   void DeactivateNonBlockingDataType(syncer::ModelType type) override;
   void EnableEncryptEverything() override;
   syncer::UserShare* GetUserShare() const override;
-  scoped_ptr<syncer_v2::SyncContextProxy> GetSyncContextProxy() override;
   Status GetDetailedStatus() override;
   syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
   bool HasUnsyncedItems() const override;

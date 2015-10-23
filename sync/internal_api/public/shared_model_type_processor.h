@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/model_type_change_processor.h"
+#include "sync/api/sync_error.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/model_type_processor.h"
@@ -33,8 +34,8 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
                            base::WeakPtr<ModelTypeStore> store);
   ~SharedModelTypeProcessor() override;
 
-  typedef base::Callback<void(
-      /*syncer::SyncError,*/ scoped_ptr<ActivationContext>)> StartCallback;
+  typedef base::Callback<void(syncer::SyncError, scoped_ptr<ActivationContext>)>
+      StartCallback;
 
   // Called by DataTypeController to begins asynchronous operation of preparing
   // the model to sync. Once the model is ready to be activated with Sync the
@@ -152,6 +153,6 @@ class SYNC_EXPORT_PRIVATE SharedModelTypeProcessor
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_for_sync_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_SYNC_PROXY_IMPL_H_

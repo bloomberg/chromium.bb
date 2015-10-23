@@ -80,8 +80,6 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   syncer::UserShare* GetUserShare() const override;
 
-  scoped_ptr<syncer_v2::SyncContextProxy> GetSyncContextProxy() override;
-
   Status GetDetailedStatus() override;
 
   syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
