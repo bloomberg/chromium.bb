@@ -92,24 +92,24 @@ DEFINE_NODE_FACTORY(SVGPathElement)
 Path SVGPathElement::asPath() const
 {
     Path path;
-    buildPathFromByteStream(*pathByteStream(), path);
+    buildPathFromByteStream(pathByteStream(), path);
     return path;
 }
 
 float SVGPathElement::getTotalLength()
 {
-    return getTotalLengthOfSVGPathByteStream(*pathByteStream());
+    return getTotalLengthOfSVGPathByteStream(pathByteStream());
 }
 
 PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
 {
-    FloatPoint point = getPointAtLengthOfSVGPathByteStream(*pathByteStream(), length);
+    FloatPoint point = getPointAtLengthOfSVGPathByteStream(pathByteStream(), length);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length)
 {
-    return getSVGPathSegAtLengthFromSVGPathByteStream(*pathByteStream(), length);
+    return getSVGPathSegAtLengthFromSVGPathByteStream(pathByteStream(), length);
 }
 
 PassRefPtrWillBeRawPtr<SVGPathSegClosePath> SVGPathElement::createSVGPathSegClosePath()

@@ -92,7 +92,7 @@ public:
     SVGPathSegListTearOff* normalizedPathSegList() { return nullptr; }
     SVGPathSegListTearOff* animatedNormalizedPathSegList() { return nullptr; }
 
-    const SVGPathByteStream* pathByteStream() const { return m_pathSegList->currentValue()->byteStream(); }
+    const SVGPathByteStream& pathByteStream() const { return m_pathSegList->currentValue()->byteStream(); }
 
     void pathSegListChanged(ListModification = ListModificationUnknown);
 

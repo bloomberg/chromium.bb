@@ -5,26 +5,10 @@
 #include "config.h"
 #include "core/animation/PathSVGInterpolation.h"
 
+#include "core/svg/SVGPathByteStreamBuilder.h"
+#include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathElement.h"
-#include "core/svg/SVGPathSegArcAbs.h"
-#include "core/svg/SVGPathSegArcRel.h"
-#include "core/svg/SVGPathSegClosePath.h"
-#include "core/svg/SVGPathSegCurvetoCubicAbs.h"
-#include "core/svg/SVGPathSegCurvetoCubicRel.h"
-#include "core/svg/SVGPathSegCurvetoCubicSmoothAbs.h"
-#include "core/svg/SVGPathSegCurvetoCubicSmoothRel.h"
-#include "core/svg/SVGPathSegCurvetoQuadraticAbs.h"
-#include "core/svg/SVGPathSegCurvetoQuadraticRel.h"
-#include "core/svg/SVGPathSegCurvetoQuadraticSmoothAbs.h"
-#include "core/svg/SVGPathSegCurvetoQuadraticSmoothRel.h"
-#include "core/svg/SVGPathSegLinetoAbs.h"
-#include "core/svg/SVGPathSegLinetoHorizontalAbs.h"
-#include "core/svg/SVGPathSegLinetoHorizontalRel.h"
-#include "core/svg/SVGPathSegLinetoRel.h"
-#include "core/svg/SVGPathSegLinetoVerticalAbs.h"
-#include "core/svg/SVGPathSegLinetoVerticalRel.h"
-#include "core/svg/SVGPathSegMovetoAbs.h"
-#include "core/svg/SVGPathSegMovetoRel.h"
+#include "core/svg/SVGPathParser.h"
 
 namespace blink {
 
@@ -36,16 +20,6 @@ struct SubPathCoordinates {
     double currentX = 0;
     double currentY = 0;
 };
-
-SVGPathSegType absolutePathSegType(const SVGPathSeg& item)
-{
-    return toAbsolutePathSegType(static_cast<SVGPathSegType>(item.pathSegType()));
-}
-
-bool isAbsolutePathSegType(const SVGPathSeg& item)
-{
-    return isAbsolutePathSegType(static_cast<SVGPathSegType>(item.pathSegType()));
-}
 
 PassOwnPtr<InterpolableNumber> controlToInterpolableValue(double value, bool isAbsolute, double currentValue)
 {
@@ -82,7 +56,7 @@ double specifiedFromInterpolableValue(const InterpolableValue* number, bool isAb
     return currentValue - previousValue;
 }
 
-PassOwnPtr<InterpolableValue> pathSegClosePathToInterpolableValue(const SVGPathSeg& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegClosePathToInterpolableValue(const PathSegmentData&, SubPathCoordinates& coordinates)
 {
     coordinates.currentX = coordinates.initialX;
     coordinates.currentY = coordinates.initialY;
@@ -91,22 +65,24 @@ PassOwnPtr<InterpolableValue> pathSegClosePathToInterpolableValue(const SVGPathS
     return InterpolableBool::create(false);
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegClosePathFromInterpolableValue(const InterpolableValue&, SVGPathSegType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegClosePathFromInterpolableValue(const InterpolableValue&, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     coordinates.currentX = coordinates.initialX;
     coordinates.currentY = coordinates.initialY;
 
-    return SVGPathSegClosePath::create(element);
+    PathSegmentData segment;
+    segment.command = segType;
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegSingleCoordinateToInterpolableValue(const SVGPathSegSingleCoordinate& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegSingleCoordinateToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
-    result->set(0, specifiedToInterpolableValue(item.x(), isAbsolute, coordinates.currentX));
-    result->set(1, specifiedToInterpolableValue(item.y(), isAbsolute, coordinates.currentY));
+    result->set(0, specifiedToInterpolableValue(segment.x(), isAbsolute, coordinates.currentX));
+    result->set(1, specifiedToInterpolableValue(segment.y(), isAbsolute, coordinates.currentY));
 
-    if (absolutePathSegType(item) == PathSegMoveToAbs) {
+    if (toAbsolutePathSegType(segment.command) == PathSegMoveToAbs) {
         // Any upcoming 'closepath' commands bring us back to the location we have just moved to.
         coordinates.initialX = coordinates.currentX;
         coordinates.initialY = coordinates.currentY;
@@ -115,12 +91,14 @@ PassOwnPtr<InterpolableValue> pathSegSingleCoordinateToInterpolableValue(const S
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegSingleCoordinateFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegSingleCoordinateFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     const InterpolableList& list = toInterpolableList(value);
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float x = specifiedFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX);
-    float y = specifiedFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY);
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.targetPoint.setX(specifiedFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX));
+    segment.targetPoint.setY(specifiedFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY));
 
     if (toAbsolutePathSegType(segType) == PathSegMoveToAbs) {
         // Any upcoming 'closepath' commands bring us back to the location we have just moved to.
@@ -128,210 +106,153 @@ PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegSingleCoordinateFromInterpolableValue(
         coordinates.initialY = coordinates.currentY;
     }
 
-    switch (segType) {
-    case PathSegMoveToAbs:
-        return SVGPathSegMovetoAbs::create(element, x, y);
-    case PathSegMoveToRel:
-        return SVGPathSegMovetoRel::create(element, x, y);
-    case PathSegLineToAbs:
-        return SVGPathSegLinetoAbs::create(element, x, y);
-    case PathSegLineToRel:
-        return SVGPathSegLinetoRel::create(element, x, y);
-    case PathSegCurveToQuadraticSmoothAbs:
-        return SVGPathSegCurvetoQuadraticSmoothAbs::create(element, x, y);
-    case PathSegCurveToQuadraticSmoothRel:
-        return SVGPathSegCurvetoQuadraticSmoothRel::create(element, x, y);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegCurvetoCubicToInterpolableValue(const SVGPathSegCurvetoCubic& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegCurvetoCubicToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
     OwnPtr<InterpolableList> result = InterpolableList::create(6);
-    result->set(0, controlToInterpolableValue(item.x1(), isAbsolute, coordinates.currentX));
-    result->set(1, controlToInterpolableValue(item.y1(), isAbsolute, coordinates.currentY));
-    result->set(2, controlToInterpolableValue(item.x2(), isAbsolute, coordinates.currentX));
-    result->set(3, controlToInterpolableValue(item.y2(), isAbsolute, coordinates.currentY));
-    result->set(4, specifiedToInterpolableValue(item.x(), isAbsolute, coordinates.currentX));
-    result->set(5, specifiedToInterpolableValue(item.y(), isAbsolute, coordinates.currentY));
+    result->set(0, controlToInterpolableValue(segment.x1(), isAbsolute, coordinates.currentX));
+    result->set(1, controlToInterpolableValue(segment.y1(), isAbsolute, coordinates.currentY));
+    result->set(2, controlToInterpolableValue(segment.x2(), isAbsolute, coordinates.currentX));
+    result->set(3, controlToInterpolableValue(segment.y2(), isAbsolute, coordinates.currentY));
+    result->set(4, specifiedToInterpolableValue(segment.x(), isAbsolute, coordinates.currentX));
+    result->set(5, specifiedToInterpolableValue(segment.y(), isAbsolute, coordinates.currentY));
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegCurvetoCubicFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegCurvetoCubicFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     const InterpolableList& list = toInterpolableList(value);
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float x1 = controlFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX);
-    float y1 = controlFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY);
-    float x2 = controlFromInterpolableValue(list.get(2), isAbsolute, coordinates.currentX);
-    float y2 = controlFromInterpolableValue(list.get(3), isAbsolute, coordinates.currentY);
-    float x = specifiedFromInterpolableValue(list.get(4), isAbsolute, coordinates.currentX);
-    float y = specifiedFromInterpolableValue(list.get(5), isAbsolute, coordinates.currentY);
-
-    switch (segType) {
-    case PathSegCurveToCubicAbs:
-        return SVGPathSegCurvetoCubicAbs::create(element, x, y, x1, y1, x2, y2);
-    case PathSegCurveToCubicRel:
-        return SVGPathSegCurvetoCubicRel::create(element, x, y, x1, y1, x2, y2);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.point1.setX(controlFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX));
+    segment.point1.setY(controlFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY));
+    segment.point2.setX(controlFromInterpolableValue(list.get(2), isAbsolute, coordinates.currentX));
+    segment.point2.setY(controlFromInterpolableValue(list.get(3), isAbsolute, coordinates.currentY));
+    segment.targetPoint.setX(specifiedFromInterpolableValue(list.get(4), isAbsolute, coordinates.currentX));
+    segment.targetPoint.setY(specifiedFromInterpolableValue(list.get(5), isAbsolute, coordinates.currentY));
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegCurvetoQuadraticToInterpolableValue(const SVGPathSegCurvetoQuadratic& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegCurvetoQuadraticToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
     OwnPtr<InterpolableList> result = InterpolableList::create(4);
-    result->set(0, controlToInterpolableValue(item.x1(), isAbsolute, coordinates.currentX));
-    result->set(1, controlToInterpolableValue(item.y1(), isAbsolute, coordinates.currentY));
-    result->set(2, specifiedToInterpolableValue(item.x(), isAbsolute, coordinates.currentX));
-    result->set(3, specifiedToInterpolableValue(item.y(), isAbsolute, coordinates.currentY));
+    result->set(0, controlToInterpolableValue(segment.x1(), isAbsolute, coordinates.currentX));
+    result->set(1, controlToInterpolableValue(segment.y1(), isAbsolute, coordinates.currentY));
+    result->set(2, specifiedToInterpolableValue(segment.x(), isAbsolute, coordinates.currentX));
+    result->set(3, specifiedToInterpolableValue(segment.y(), isAbsolute, coordinates.currentY));
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegCurvetoQuadraticFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegCurvetoQuadraticFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     const InterpolableList& list = toInterpolableList(value);
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float x1 = controlFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX);
-    float y1 = controlFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY);
-    float x = specifiedFromInterpolableValue(list.get(2), isAbsolute, coordinates.currentX);
-    float y = specifiedFromInterpolableValue(list.get(3), isAbsolute, coordinates.currentY);
-    switch (segType) {
-    case PathSegCurveToQuadraticAbs:
-        return SVGPathSegCurvetoQuadraticAbs::create(element, x, y, x1, y1);
-    case PathSegCurveToQuadraticRel:
-        return SVGPathSegCurvetoQuadraticRel::create(element, x, y, x1, y1);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.point1.setX(controlFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX));
+    segment.point1.setY(controlFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY));
+    segment.targetPoint.setX(specifiedFromInterpolableValue(list.get(2), isAbsolute, coordinates.currentX));
+    segment.targetPoint.setY(specifiedFromInterpolableValue(list.get(3), isAbsolute, coordinates.currentY));
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegArcToInterpolableValue(const SVGPathSegArc& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegArcToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
     OwnPtr<InterpolableList> result = InterpolableList::create(7);
-    result->set(0, specifiedToInterpolableValue(item.x(), isAbsolute, coordinates.currentX));
-    result->set(1, specifiedToInterpolableValue(item.y(), isAbsolute, coordinates.currentY));
-    result->set(2, InterpolableNumber::create(item.r1()));
-    result->set(3, InterpolableNumber::create(item.r2()));
-    result->set(4, InterpolableNumber::create(item.angle()));
-    result->set(5, InterpolableBool::create(item.largeArcFlag()));
-    result->set(6, InterpolableBool::create(item.sweepFlag()));
+    result->set(0, specifiedToInterpolableValue(segment.x(), isAbsolute, coordinates.currentX));
+    result->set(1, specifiedToInterpolableValue(segment.y(), isAbsolute, coordinates.currentY));
+    result->set(2, InterpolableNumber::create(segment.r1()));
+    result->set(3, InterpolableNumber::create(segment.r2()));
+    result->set(4, InterpolableNumber::create(segment.arcAngle()));
+    result->set(5, InterpolableBool::create(segment.largeArcFlag()));
+    result->set(6, InterpolableBool::create(segment.sweepFlag()));
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegArcFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegArcFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     const InterpolableList& list = toInterpolableList(value);
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float x = specifiedFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX);
-    float y = specifiedFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY);
-    float r1 = toInterpolableNumber(list.get(2))->value();
-    float r2 = toInterpolableNumber(list.get(3))->value();
-    float angle = toInterpolableNumber(list.get(4))->value();
-    bool largeArcFlag = toInterpolableBool(list.get(5))->value();
-    bool sweepFlag = toInterpolableBool(list.get(6))->value();
-    switch (segType) {
-    case PathSegArcAbs:
-        return SVGPathSegArcAbs::create(element, x, y, r1, r2, angle, largeArcFlag, sweepFlag);
-    case PathSegArcRel:
-        return SVGPathSegArcRel::create(element, x, y, r1, r2, angle, largeArcFlag, sweepFlag);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.targetPoint.setX(specifiedFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX));
+    segment.targetPoint.setY(specifiedFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY));
+    segment.point1.setX(toInterpolableNumber(list.get(2))->value());
+    segment.point1.setY(toInterpolableNumber(list.get(3))->value());
+    segment.point2.setX(toInterpolableNumber(list.get(4))->value());
+    segment.arcLarge = toInterpolableBool(list.get(5))->value();
+    segment.arcSweep = toInterpolableBool(list.get(6))->value();
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegLinetoHorizontalToInterpolableValue(const SVGPathSegLinetoHorizontal& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegLinetoHorizontalToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
-    return specifiedToInterpolableValue(item.x(), isAbsolute, coordinates.currentX);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
+    return specifiedToInterpolableValue(segment.x(), isAbsolute, coordinates.currentX);
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegLinetoHorizontalFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegLinetoHorizontalFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float x = specifiedFromInterpolableValue(&value, isAbsolute, coordinates.currentX);
-
-    switch (segType) {
-    case PathSegLineToHorizontalAbs:
-        return SVGPathSegLinetoHorizontalAbs::create(element, x);
-    case PathSegLineToHorizontalRel:
-        return SVGPathSegLinetoHorizontalRel::create(element, x);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.targetPoint.setX(specifiedFromInterpolableValue(&value, isAbsolute, coordinates.currentX));
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegLinetoVerticalToInterpolableValue(const SVGPathSegLinetoVertical& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegLinetoVerticalToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
-    return specifiedToInterpolableValue(item.y(), isAbsolute, coordinates.currentY);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
+    return specifiedToInterpolableValue(segment.y(), isAbsolute, coordinates.currentY);
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegLinetoVerticalFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegLinetoVerticalFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float y = specifiedFromInterpolableValue(&value, isAbsolute, coordinates.currentY);
-
-    switch (segType) {
-    case PathSegLineToVerticalAbs:
-        return SVGPathSegLinetoVerticalAbs::create(element, y);
-    case PathSegLineToVerticalRel:
-        return SVGPathSegLinetoVerticalRel::create(element, y);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.targetPoint.setY(specifiedFromInterpolableValue(&value, isAbsolute, coordinates.currentY));
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegCurvetoCubicSmoothToInterpolableValue(const SVGPathSegCurvetoCubicSmooth& item, SubPathCoordinates& coordinates)
+PassOwnPtr<InterpolableValue> pathSegCurvetoCubicSmoothToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates)
 {
-    bool isAbsolute = isAbsolutePathSegType(item);
+    bool isAbsolute = isAbsolutePathSegType(segment.command);
     OwnPtr<InterpolableList> result = InterpolableList::create(4);
-    result->set(0, controlToInterpolableValue(item.x2(), isAbsolute, coordinates.currentX));
-    result->set(1, controlToInterpolableValue(item.y2(), isAbsolute, coordinates.currentY));
-    result->set(2, specifiedToInterpolableValue(item.x(), isAbsolute, coordinates.currentX));
-    result->set(3, specifiedToInterpolableValue(item.y(), isAbsolute, coordinates.currentY));
+    result->set(0, controlToInterpolableValue(segment.x2(), isAbsolute, coordinates.currentX));
+    result->set(1, controlToInterpolableValue(segment.y2(), isAbsolute, coordinates.currentY));
+    result->set(2, specifiedToInterpolableValue(segment.x(), isAbsolute, coordinates.currentX));
+    result->set(3, specifiedToInterpolableValue(segment.y(), isAbsolute, coordinates.currentY));
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegCurvetoCubicSmoothFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegCurvetoCubicSmoothFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     const InterpolableList& list = toInterpolableList(value);
     bool isAbsolute = isAbsolutePathSegType(segType);
-    float x2 = controlFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX);
-    float y2 = controlFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY);
-    float x = specifiedFromInterpolableValue(list.get(2), isAbsolute, coordinates.currentX);
-    float y = specifiedFromInterpolableValue(list.get(3), isAbsolute, coordinates.currentY);
-    switch (segType) {
-    case PathSegCurveToCubicSmoothAbs:
-        return SVGPathSegCurvetoCubicSmoothAbs::create(element, x, y, x2, y2);
-    case PathSegCurveToCubicSmoothRel:
-        return SVGPathSegCurvetoCubicSmoothRel::create(element, x, y, x2, y2);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    PathSegmentData segment;
+    segment.command = segType;
+    segment.point2.setX(controlFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX));
+    segment.point2.setY(controlFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY));
+    segment.targetPoint.setX(specifiedFromInterpolableValue(list.get(2), isAbsolute, coordinates.currentX));
+    segment.targetPoint.setY(specifiedFromInterpolableValue(list.get(3), isAbsolute, coordinates.currentY));
+    return segment;
 }
 
-PassOwnPtr<InterpolableValue> pathSegToInterpolableValue(const SVGPathSeg& item, SubPathCoordinates& coordinates, SVGPathSegType* ptrSegType)
+PassOwnPtr<InterpolableValue> pathSegToInterpolableValue(const PathSegmentData& segment, SubPathCoordinates& coordinates, SVGPathSegType* ptrSegType)
 {
-    SVGPathSegType segType = static_cast<SVGPathSegType>(item.pathSegType());
-
     if (ptrSegType)
-        *ptrSegType = segType;
+        *ptrSegType = segment.command;
 
-    switch (segType) {
+    switch (segment.command) {
     case PathSegClosePath:
-        return pathSegClosePathToInterpolableValue(item, coordinates);
+        return pathSegClosePathToInterpolableValue(segment, coordinates);
 
     case PathSegMoveToAbs:
     case PathSegMoveToRel:
@@ -339,31 +260,31 @@ PassOwnPtr<InterpolableValue> pathSegToInterpolableValue(const SVGPathSeg& item,
     case PathSegLineToRel:
     case PathSegCurveToQuadraticSmoothAbs:
     case PathSegCurveToQuadraticSmoothRel:
-        return pathSegSingleCoordinateToInterpolableValue(static_cast<const SVGPathSegSingleCoordinate&>(item), coordinates);
+        return pathSegSingleCoordinateToInterpolableValue(segment, coordinates);
 
     case PathSegCurveToCubicAbs:
     case PathSegCurveToCubicRel:
-        return pathSegCurvetoCubicToInterpolableValue(static_cast<const SVGPathSegCurvetoCubic&>(item), coordinates);
+        return pathSegCurvetoCubicToInterpolableValue(segment, coordinates);
 
     case PathSegCurveToQuadraticAbs:
     case PathSegCurveToQuadraticRel:
-        return pathSegCurvetoQuadraticToInterpolableValue(static_cast<const SVGPathSegCurvetoQuadratic&>(item), coordinates);
+        return pathSegCurvetoQuadraticToInterpolableValue(segment, coordinates);
 
     case PathSegArcAbs:
     case PathSegArcRel:
-        return pathSegArcToInterpolableValue(static_cast<const SVGPathSegArc&>(item), coordinates);
+        return pathSegArcToInterpolableValue(segment, coordinates);
 
     case PathSegLineToHorizontalAbs:
     case PathSegLineToHorizontalRel:
-        return pathSegLinetoHorizontalToInterpolableValue(static_cast<const SVGPathSegLinetoHorizontal&>(item), coordinates);
+        return pathSegLinetoHorizontalToInterpolableValue(segment, coordinates);
 
     case PathSegLineToVerticalAbs:
     case PathSegLineToVerticalRel:
-        return pathSegLinetoVerticalToInterpolableValue(static_cast<const SVGPathSegLinetoVertical&>(item), coordinates);
+        return pathSegLinetoVerticalToInterpolableValue(segment, coordinates);
 
     case PathSegCurveToCubicSmoothAbs:
     case PathSegCurveToCubicSmoothRel:
-        return pathSegCurvetoCubicSmoothToInterpolableValue(static_cast<const SVGPathSegCurvetoCubicSmooth&>(item), coordinates);
+        return pathSegCurvetoCubicSmoothToInterpolableValue(segment, coordinates);
 
     case PathSegUnknown:
         ASSERT_NOT_REACHED();
@@ -372,11 +293,11 @@ PassOwnPtr<InterpolableValue> pathSegToInterpolableValue(const SVGPathSeg& item,
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates, SVGPathElement* element)
+PathSegmentData pathSegFromInterpolableValue(const InterpolableValue& value, SVGPathSegType segType, SubPathCoordinates& coordinates)
 {
     switch (segType) {
     case PathSegClosePath:
-        return pathSegClosePathFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegClosePathFromInterpolableValue(value, segType, coordinates);
 
     case PathSegMoveToAbs:
     case PathSegMoveToRel:
@@ -384,37 +305,87 @@ PassRefPtrWillBeRawPtr<SVGPathSeg> pathSegFromInterpolableValue(const Interpolab
     case PathSegLineToRel:
     case PathSegCurveToQuadraticSmoothAbs:
     case PathSegCurveToQuadraticSmoothRel:
-        return pathSegSingleCoordinateFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegSingleCoordinateFromInterpolableValue(value, segType, coordinates);
 
     case PathSegCurveToCubicAbs:
     case PathSegCurveToCubicRel:
-        return pathSegCurvetoCubicFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegCurvetoCubicFromInterpolableValue(value, segType, coordinates);
 
     case PathSegCurveToQuadraticAbs:
     case PathSegCurveToQuadraticRel:
-        return pathSegCurvetoQuadraticFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegCurvetoQuadraticFromInterpolableValue(value, segType, coordinates);
 
     case PathSegArcAbs:
     case PathSegArcRel:
-        return pathSegArcFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegArcFromInterpolableValue(value, segType, coordinates);
 
     case PathSegLineToHorizontalAbs:
     case PathSegLineToHorizontalRel:
-        return pathSegLinetoHorizontalFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegLinetoHorizontalFromInterpolableValue(value, segType, coordinates);
 
     case PathSegLineToVerticalAbs:
     case PathSegLineToVerticalRel:
-        return pathSegLinetoVerticalFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegLinetoVerticalFromInterpolableValue(value, segType, coordinates);
 
     case PathSegCurveToCubicSmoothAbs:
     case PathSegCurveToCubicSmoothRel:
-        return pathSegCurvetoCubicSmoothFromInterpolableValue(value, segType, coordinates, element);
+        return pathSegCurvetoCubicSmoothFromInterpolableValue(value, segType, coordinates);
 
     case PathSegUnknown:
         ASSERT_NOT_REACHED();
     }
     ASSERT_NOT_REACHED();
-    return nullptr;
+    return PathSegmentData();
+}
+
+class InterpolatedPathSource : public SVGPathSource {
+public:
+    InterpolatedPathSource(const InterpolableList& listValue, const Vector<SVGPathSegType>& pathSegTypes)
+        : m_currentIndex(0)
+        , m_list(listValue)
+        , m_segmentTypes(pathSegTypes)
+    {
+        ASSERT(m_list.length() == m_segmentTypes.size());
+    }
+
+private:
+    bool hasMoreData() const override;
+    SVGPathSegType peekSegmentType() override;
+    PathSegmentData parseSegment() override;
+
+    SubPathCoordinates m_normalizationState;
+    size_t m_currentIndex;
+    const InterpolableList& m_list;
+    const Vector<SVGPathSegType>& m_segmentTypes;
+};
+
+bool InterpolatedPathSource::hasMoreData() const
+{
+    return m_currentIndex < m_list.length();
+}
+
+SVGPathSegType InterpolatedPathSource::peekSegmentType()
+{
+    ASSERT(hasMoreData());
+    return m_segmentTypes.at(m_currentIndex);
+}
+
+PathSegmentData InterpolatedPathSource::parseSegment()
+{
+    PathSegmentData segment = pathSegFromInterpolableValue(*m_list.get(m_currentIndex), m_segmentTypes.at(m_currentIndex), m_normalizationState);
+    ++m_currentIndex;
+    return segment;
+}
+
+size_t countPathCommands(const SVGPathByteStream& path)
+{
+    size_t count = 0;
+    SVGPathByteStreamSource pathSource(path);
+    while (pathSource.hasMoreData()) {
+        pathSource.parseSegment();
+        ++count;
+    }
+    return count;
 }
 
 } // namespace
@@ -424,36 +395,50 @@ PassRefPtr<PathSVGInterpolation> PathSVGInterpolation::maybeCreate(SVGPropertyBa
     ASSERT(start->type() == SVGPathSegList::classType());
     ASSERT(end->type() == SVGPathSegList::classType());
 
-    SVGPathSegList* startList = static_cast<SVGPathSegList*>(start);
-    SVGPathSegList* endList = static_cast<SVGPathSegList*>(end);
-    size_t length = startList->length();
-    if (length != endList->length())
+    const SVGPathByteStream& startPath = static_cast<SVGPathSegList*>(start)->byteStream();
+    const SVGPathByteStream& endPath = static_cast<SVGPathSegList*>(end)->byteStream();
+
+    if (startPath.size() != endPath.size())
         return nullptr;
+
+    size_t length = countPathCommands(startPath);
+
+    SVGPathByteStreamSource startPathSource(startPath);
+    SVGPathByteStreamSource endPathSource(endPath);
 
     Vector<SVGPathSegType> pathSegTypes(length);
     OwnPtr<InterpolableList> startValue = InterpolableList::create(length);
     OwnPtr<InterpolableList> endValue = InterpolableList::create(length);
     SubPathCoordinates startCoordinates;
     SubPathCoordinates endCoordinates;
-    for (size_t i = 0; i < length; i++) {
-        if (absolutePathSegType(*startList->at(i)) != absolutePathSegType(*endList->at(i)))
+    size_t i = 0;
+    while (startPathSource.hasMoreData()) {
+        if (toAbsolutePathSegType(startPathSource.peekSegmentType()) != toAbsolutePathSegType(endPathSource.peekSegmentType()))
             return nullptr;
 
         // Like Firefox SMIL, we use the final path seg type.
-        startValue->set(i, pathSegToInterpolableValue(*startList->at(i), startCoordinates, nullptr));
-        endValue->set(i, pathSegToInterpolableValue(*endList->at(i), endCoordinates, &pathSegTypes.at(i)));
+        const PathSegmentData startSeg = startPathSource.parseSegment();
+        startValue->set(i, pathSegToInterpolableValue(startSeg, startCoordinates, nullptr));
+
+        const PathSegmentData endSeg = endPathSource.parseSegment();
+        endValue->set(i, pathSegToInterpolableValue(endSeg, endCoordinates, &pathSegTypes.at(i)));
+
+        ++i;
     }
+    ASSERT(!endPathSource.hasMoreData());
+    ASSERT(i == length);
 
     return adoptRef(new PathSVGInterpolation(startValue.release(), endValue.release(), attribute, pathSegTypes));
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::fromInterpolableValue(const InterpolableValue& value, const Vector<SVGPathSegType>& pathSegTypes, SVGPathElement* element)
 {
-    const InterpolableList& listValue = toInterpolableList(value);
     RefPtrWillBeRawPtr<SVGPathSegList> result = SVGPathSegList::create(element);
-    SubPathCoordinates coordinates;
-    for (size_t i = 0; i < listValue.length(); i++)
-        result->append(pathSegFromInterpolableValue(*listValue.get(i), pathSegTypes.at(i), coordinates, element));
+    result->invalidateList();
+    InterpolatedPathSource source(toInterpolableList(value), pathSegTypes);
+    SVGPathByteStreamBuilder builder(result->mutableByteStream());
+    SVGPathParser parser(&source, &builder);
+    parser.parsePathDataFromSource(UnalteredParsing, false);
     return result.release();
 }
 

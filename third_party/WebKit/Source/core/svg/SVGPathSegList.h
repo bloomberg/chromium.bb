@@ -60,7 +60,8 @@ public:
 
     ~SVGPathSegList() override;
 
-    const SVGPathByteStream* byteStream() const;
+    const SVGPathByteStream& byteStream() const;
+    SVGPathByteStream& mutableByteStream();
     void clearByteStream() { m_byteStream.clear(); }
 
     // SVGListPropertyHelper methods with |m_byteStream| sync:
@@ -147,6 +148,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    void invalidateList();
+
 private:
     explicit SVGPathSegList(SVGPathElement*);
     SVGPathSegList(SVGPathElement*, PassOwnPtr<SVGPathByteStream>);
@@ -159,7 +162,6 @@ private:
     }
 
     void updateListFromByteStream();
-    void invalidateList();
 
     // FIXME: This pointer should be removed after SVGPathSeg has a tear-off.
     //

@@ -6,7 +6,7 @@
 #define PathSVGInterpolation_h
 
 #include "core/animation/SVGInterpolation.h"
-#include "core/svg/SVGPathSegList.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 

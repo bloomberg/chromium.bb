@@ -368,7 +368,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape)
     } else if (isSVGPathElement(*svgElement)) {
         String pathString;
         // FIXME: We should switch to UnalteredParsing here - this will affect the path dumping output of dozens of tests.
-        buildStringFromByteStream(*toSVGPathElement(*svgElement).pathByteStream(), pathString, NormalizedParsing);
+        buildStringFromByteStream(toSVGPathElement(*svgElement).pathByteStream(), pathString, NormalizedParsing);
         writeNameAndQuotedValue(ts, "data", pathString);
     } else {
         ASSERT_NOT_REACHED();

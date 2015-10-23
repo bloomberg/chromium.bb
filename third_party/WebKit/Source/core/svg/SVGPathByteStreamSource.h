@@ -34,11 +34,11 @@ public:
     {
     }
 
-private:
     bool hasMoreData() const override;
     SVGPathSegType peekSegmentType() override;
     PathSegmentData parseSegment() override;
 
+private:
 #if COMPILER(MSVC)
 #pragma warning(disable: 4701)
 #endif
