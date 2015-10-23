@@ -122,7 +122,7 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
     SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
     SelectorChecker::SelectorCheckingContext selectorCheckingContext(&element, SelectorChecker::VisitedMatchDisabled);
     selectorCheckingContext.selector = &selector;
-    selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : nullptr;
+    selectorCheckingContext.scope = &rootNode;
     return selectorChecker.match(selectorCheckingContext);
 }
 

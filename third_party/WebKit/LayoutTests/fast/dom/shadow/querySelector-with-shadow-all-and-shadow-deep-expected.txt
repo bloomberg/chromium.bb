@@ -50,6 +50,10 @@ PASS fooHost.querySelectorAll("::shadow span").length is 3
 PASS fooHost.querySelectorAll("::shadow span")[0].id is "not-top"
 PASS fooHost.querySelectorAll("::shadow span")[1].id is "top"
 PASS fooHost.querySelectorAll("::shadow span")[2].id is "inner-host"
+PASS document.querySelectorAll("::shadow span").length is 3
+PASS document.querySelectorAll("::shadow span")[0].id is "not-top"
+PASS document.querySelectorAll("::shadow span")[1].id is "top"
+PASS document.querySelectorAll("::shadow span")[2].id is "inner-host"
 PASS successfullyParsed is true
 
 TEST COMPLETE
