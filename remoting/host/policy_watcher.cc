@@ -62,19 +62,6 @@ scoped_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     to->Set(i.key(), value->DeepCopy());
   }
 
-#if !defined(NDEBUG)
-  // Replace values with those specified in DebugOverridePolicies, if present.
-  std::string policy_overrides;
-  if (from.GetString(key::kRemoteAccessHostDebugOverridePolicies,
-                     &policy_overrides)) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(policy_overrides);
-    const base::DictionaryValue* override_values;
-    if (value && value->GetAsDictionary(&override_values)) {
-      to->MergeDictionary(override_values);
-    }
-  }
-#endif  // defined(NDEBUG)
-
   return to.Pass();
 }
 
@@ -202,10 +189,6 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetBoolean(key::kRemoteAccessHostAllowRelayedConnection,
                               true);
   default_values_->SetString(key::kRemoteAccessHostUdpPortRange, "");
-#if !defined(NDEBUG)
-  default_values_->SetString(key::kRemoteAccessHostDebugOverridePolicies,
-                             std::string());
-#endif
 }
 
 PolicyWatcher::~PolicyWatcher() {

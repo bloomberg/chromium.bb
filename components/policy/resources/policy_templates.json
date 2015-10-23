@@ -934,7 +934,7 @@
           'name': 'RemoteAccessHostDebugOverridePolicies',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:25-','chrome_os:42-'],
+          'supported_on': ['chrome.*:25-47','chrome_os:42-47'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
