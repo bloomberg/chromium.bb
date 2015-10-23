@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/traced_value.h"
-#include "cc/playback/display_item_list_bounds_calculator.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -32,8 +31,6 @@ class CC_EXPORT DisplayItem {
                       const gfx::Rect& canvas_target_playback_rect,
                       SkPicture::AbortCallback* callback) const = 0;
   virtual void AsValueInto(base::trace_event::TracedValue* array) const = 0;
-  virtual void ProcessForBounds(
-      DisplayItemListBoundsCalculator* calculator) const = 0;
 
   bool is_suitable_for_gpu_rasterization() const {
     return is_suitable_for_gpu_rasterization_;

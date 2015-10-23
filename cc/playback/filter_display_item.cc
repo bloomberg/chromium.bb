@@ -60,12 +60,6 @@ void FilterDisplayItem::Raster(SkCanvas* canvas,
   canvas->translate(-bounds_.x(), -bounds_.y());
 }
 
-void FilterDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddStartingDisplayItem();
-  calculator->Save();
-}
-
 void FilterDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("FilterDisplayItem bounds: [%s]",
@@ -85,12 +79,6 @@ void EndFilterDisplayItem::Raster(SkCanvas* canvas,
                                   SkPicture::AbortCallback* callback) const {
   canvas->restore();
   canvas->restore();
-}
-
-void EndFilterDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->Restore();
-  calculator->AddEndingDisplayItem();
 }
 
 void EndFilterDisplayItem::AsValueInto(

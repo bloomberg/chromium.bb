@@ -48,11 +48,6 @@ void ClipDisplayItem::Raster(SkCanvas* canvas,
   }
 }
 
-void ClipDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddStartingDisplayItem();
-}
-
 void ClipDisplayItem::AsValueInto(base::trace_event::TracedValue* array) const {
   std::string value = base::StringPrintf("ClipDisplayItem rect: [%s]",
                                          clip_rect_.ToString().c_str());
@@ -91,11 +86,6 @@ void EndClipDisplayItem::Raster(SkCanvas* canvas,
                                 const gfx::Rect& canvas_target_playback_rect,
                                 SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndClipDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddEndingDisplayItem();
 }
 
 void EndClipDisplayItem::AsValueInto(

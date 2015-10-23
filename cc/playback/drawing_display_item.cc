@@ -51,11 +51,6 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
     canvas->drawPicture(picture_.get());
 }
 
-void DrawingDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddDisplayItemWithBounds(picture_->cullRect());
-}
-
 void DrawingDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->BeginDictionary();

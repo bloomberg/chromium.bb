@@ -32,13 +32,6 @@ void TransformDisplayItem::Raster(SkCanvas* canvas,
     canvas->concat(transform_.matrix());
 }
 
-void TransformDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddStartingDisplayItem();
-  calculator->Save();
-  calculator->matrix()->postConcat(transform_.matrix());
-}
-
 void TransformDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("TransformDisplayItem transform: [%s]",
@@ -58,12 +51,6 @@ void EndTransformDisplayItem::Raster(
     const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndTransformDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->Restore();
-  calculator->AddEndingDisplayItem();
 }
 
 void EndTransformDisplayItem::AsValueInto(

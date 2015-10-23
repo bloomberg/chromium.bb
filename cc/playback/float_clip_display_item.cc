@@ -31,11 +31,6 @@ void FloatClipDisplayItem::Raster(SkCanvas* canvas,
   canvas->clipRect(gfx::RectFToSkRect(clip_rect_));
 }
 
-void FloatClipDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddStartingDisplayItem();
-}
-
 void FloatClipDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("FloatClipDisplayItem rect: [%s]",
@@ -55,11 +50,6 @@ void EndFloatClipDisplayItem::Raster(
     const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndFloatClipDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddEndingDisplayItem();
 }
 
 void EndFloatClipDisplayItem::AsValueInto(

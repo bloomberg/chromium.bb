@@ -27,8 +27,6 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-  void ProcessForBounds(
-      DisplayItemListBoundsCalculator* calculator) const override;
 
   void CloneTo(DrawingDisplayItem* item) const;
 

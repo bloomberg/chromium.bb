@@ -290,8 +290,6 @@ component("cc") {
     "playback/display_item.h",
     "playback/display_item_list.cc",
     "playback/display_item_list.h",
-    "playback/display_item_list_bounds_calculator.cc",
-    "playback/display_item_list_bounds_calculator.h",
     "playback/display_item_list_settings.cc",
     "playback/display_item_list_settings.h",
     "playback/display_list_raster_source.cc",

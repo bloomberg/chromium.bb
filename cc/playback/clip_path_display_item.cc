@@ -36,11 +36,6 @@ void ClipPathDisplayItem::Raster(SkCanvas* canvas,
   canvas->clipPath(clip_path_, clip_op_, antialias_);
 }
 
-void ClipPathDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddStartingDisplayItem();
-}
-
 void ClipPathDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf("ClipPathDisplayItem length: %d",
@@ -60,11 +55,6 @@ void EndClipPathDisplayItem::Raster(
     const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndClipPathDisplayItem::ProcessForBounds(
-    DisplayItemListBoundsCalculator* calculator) const {
-  calculator->AddEndingDisplayItem();
 }
 
 void EndClipPathDisplayItem::AsValueInto(

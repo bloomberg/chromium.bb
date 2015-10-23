@@ -25,8 +25,6 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-  void ProcessForBounds(
-      DisplayItemListBoundsCalculator* calculator) const override;
 
  private:
   gfx::Transform transform_;
@@ -45,8 +43,6 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-  void ProcessForBounds(
-      DisplayItemListBoundsCalculator* calculator) const override;
 };
 
 }  // namespace cc

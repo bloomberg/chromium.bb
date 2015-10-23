@@ -29,8 +29,6 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-  void ProcessForBounds(
-      DisplayItemListBoundsCalculator* calculator) const override;
 
  private:
   gfx::Rect clip_rect_;
@@ -46,8 +44,6 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-  void ProcessForBounds(
-      DisplayItemListBoundsCalculator* calculator) const override;
 };
 
 }  // namespace cc
