@@ -1,93 +1,69 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <style type="text/css" media="screen">
-          body { overflow: hidden; }
-          html {
-            zoom: 120%;
-          }
-        </style>
-        <script>
-            function setup() {
-                var results = document.createElement('div');
-                results.id = "res";
-                results.appendChild(document.createTextNode("Results:"));
-                document.body.appendChild(results);
-            }
-            function test() {
-                setup();
-                
-                mouseDownOnSelect("sl1", 1);
-                var expectedSelectionResults = new Array(false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false);
-                testResults("sl1", expectedSelectionResults, 1);
+<head>
+<style type="text/css" media="screen">
+body { overflow: hidden; }
+html {
+    zoom: 120%;
+}
+#sl1 option {
+    font-size: 15px;
+    padding: 0;
+}
+</style>
+<script>
+var sl;
+window.jsTestIsAsync = true;
 
-                mouseDownOnSelect("sl1", 6);
-                expectedSelectionResults = new Array(false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false);
-                testResults("sl1", expectedSelectionResults, 2);
-            }
-            
-            function mouseDownOnSelect(selId, index) {
-                var sl = document.getElementById(selId);
-                var itemHeight = 14 * 1.2;
-                var borderPaddingTop = 20 * 1.2;
-                var borderPaddingLeft = 20 * 1.2;
-                var y = index * itemHeight - window.pageYOffset + borderPaddingTop + itemHeight / 2;
+function test() {
+    description("Make sure mouse operations on listbox SELECT element work well even if it is zoomed.");
+    sl = document.getElementById("sl1");
 
-                var clickX = sl.offsetLeft + borderPaddingLeft + 5;
-                var clickY = sl.offsetTop + y;
-                eventSender.mouseMoveTo(clickX, clickY);
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-            }
-            
-            function testResults(selId, expectedArr, testNum) {
-                var sl = document.getElementById(selId);
-                var res = document.getElementById('res');
-                var resultsArr = new Array(sl.options.length);
-                
-                var i;
-                for (i=0; i < sl.options.length; i++) {
-                    resultsArr[i] = sl.options[i].selected;
-                }
-                var successString = "Failed";
-                var success = false;
-                if (expectedArr.join() == resultsArr.join()) {
-                    success = true;
-                    successString = "Passed";
-                }
-                
-               log("Test " + testNum + " " + successString);
-                if (!success) {
-                    log("<pre>     Expected: " + expectedArr.join() + "<br>" + "     Actual: " + resultsArr.join() + "</pre>");
-                }
-            }
-            
-            function log(msg) {
-                var r = document.getElementById('res');
-                r.innerHTML = r.innerHTML + "<br>" + msg;
-            }
-        </script>
-    </head>
-    <body onload="test()">
+    mouseDownOnSelect(1);
+    shouldBe("sl.selectedIndex", "1");
 
-    <select id="sl1" multiple style="height: 135px; border: 10px solid; padding: 10px;">
-        <option>one</option>
-        <option>two</option>
-        <option>three</option>
-        <option>four</option>
-        <option>five</option>
-        <option>six</option>
-        <option>seven</option>
-        <option>eight</option>
-        <option>nine</option>
-        <option>ten</option>
-        <option>eleven</option>
-        <option>twelve</option>
-        <option>thirteen</option>
-        <option>fourteen</option>
-        <option>fifteen</option>
-        <option>sixteen</option>
-        <option>seventeen</option>
-    </select>
+    mouseDownOnSelect(6);
+    shouldBe("sl.selectedIndex", "6");
+
+    finishJSTest();
+}
+            
+function mouseDownOnSelect(index) {
+    var itemHeight = (sl.scrollHeight - 20) * 1.2 / sl.length;
+    var borderPaddingTop = 20 * 1.2;
+    var borderPaddingLeft = 20 * 1.2;
+    var y = index * itemHeight - window.pageYOffset + borderPaddingTop + itemHeight / 2;
+
+    var clickX = sl.offsetLeft * 1.2 + borderPaddingLeft + 5;
+    var clickY = sl.offsetTop * 1.2 + y;
+    eventSender.mouseMoveTo(clickX, clickY);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+</script>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body onload="test()">
+
+<select id="sl1" multiple style="height: 160px; border: 10px solid; padding: 10px;">
+<option>one</option>
+<option>two</option>
+<option>three</option>
+<option>four</option>
+<option>five</option>
+<option>six</option>
+<option>seven</option>
+<option>eight</option>
+<option>nine</option>
+<option>ten</option>
+<option>eleven</option>
+<option>twelve</option>
+<option>thirteen</option>
+<option>fourteen</option>
+<option>fifteen</option>
+<option>sixteen</option>
+<option>seventeen</option>
+</select>
     
-    </body>
+</body>
 </html>
