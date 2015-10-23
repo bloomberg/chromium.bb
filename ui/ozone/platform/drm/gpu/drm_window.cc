@@ -140,10 +140,9 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
     return;
   }
 
-  if (!controller_->SchedulePageFlip(last_submitted_planes_,
-                                     false /* test_only */, callback)) {
-    callback.Run(gfx::SwapResult::SWAP_FAILED);
-  }
+  // Controller should call the callback in all cases.
+  controller_->SchedulePageFlip(last_submitted_planes_, false /* test_only */,
+                                callback);
 }
 
 std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(

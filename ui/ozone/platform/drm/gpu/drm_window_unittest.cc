@@ -61,6 +61,11 @@ class DrmWindowTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  void OnSwapBuffers(gfx::SwapResult result) {
+    on_swap_buffers_count_++;
+    last_swap_buffers_result_ = result;
+  }
+
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<ui::MockDrmDevice> drm_;
@@ -68,11 +73,17 @@ class DrmWindowTest : public testing::Test {
   scoped_ptr<ui::ScreenManager> screen_manager_;
   scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
 
+  int on_swap_buffers_count_;
+  gfx::SwapResult last_swap_buffers_result_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DrmWindowTest);
 };
 
 void DrmWindowTest::SetUp() {
+  on_swap_buffers_count_ = 0;
+  last_swap_buffers_result_ = gfx::SwapResult::SWAP_FAILED;
+
   message_loop_.reset(new base::MessageLoopForUI);
   drm_ = new ui::MockDrmDevice();
   buffer_generator_.reset(new ui::MockBufferGenerator());
@@ -145,4 +156,28 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
   EXPECT_EQ(2u, GetCursorBuffers(drm).size());
   // Make sure the cursor is showing on the new display.
   EXPECT_NE(0u, drm->get_cursor_handle_for_crtc(kDefaultCrtc));
+}
+
+TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
+  const gfx::Size window_size(6, 4);
+  ui::MockBufferGenerator buffer_generator;
+  ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
+  ui::OverlayPlane plane(
+      buffer_generator.Create(drm_, gfx::BufferFormat::BGRX_8888, window_size));
+
+  drm_->set_page_flip_expectation(false);
+
+  // Window was re-sized, so the expectation is to re-create the buffers first.
+  window->SchedulePageFlip(
+      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
+      base::Bind(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
+  EXPECT_EQ(1, on_swap_buffers_count_);
+  EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
+            last_swap_buffers_result_);
+
+  window->SchedulePageFlip(
+      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
+      base::Bind(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
+  EXPECT_EQ(2, on_swap_buffers_count_);
+  EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);
 }

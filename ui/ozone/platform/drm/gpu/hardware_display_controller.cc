@@ -94,8 +94,10 @@ bool HardwareDisplayController::SchedulePageFlip(
             [](const OverlayPlane& l, const OverlayPlane& r) {
               return l.z_order < r.z_order;
             });
-  if (pending_planes.front().z_order != 0)
+  if (pending_planes.front().z_order != 0) {
+    callback.Run(gfx::SwapResult::SWAP_FAILED);
     return false;
+  }
 
   for (const auto& planes : owned_hardware_planes_)
     planes.first->plane_manager()->BeginFrame(planes.second);
