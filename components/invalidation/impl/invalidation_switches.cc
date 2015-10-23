@@ -7,12 +7,8 @@
 namespace invalidation {
 namespace switches {
 
-// Invalidation service should use GCM network channel even if experiment is not
-// enabled.
-const char kInvalidationUseGCMChannel[] = "invalidation-use-gcm-channel";
-
 // Overrides the default host:port used for notifications.
-const char kSyncNotificationHostPort[] = "sync-notification-host-port";
+const char kSyncNotificationHostPort[]      = "sync-notification-host-port";
 
 // Allows insecure XMPP connections for sync (for testing).
 const char kSyncAllowInsecureXmppConnection[] =

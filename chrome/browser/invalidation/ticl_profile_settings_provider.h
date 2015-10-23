@@ -2,42 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_INVALIDATION_IMPL_TICL_PROFILE_SETTINGS_PROVIDER_H_
-#define COMPONENTS_INVALIDATION_IMPL_TICL_PROFILE_SETTINGS_PROVIDER_H_
+#ifndef CHROME_BROWSER_INVALIDATION_TICL_PROFILE_SETTINGS_PROVIDER_H_
+#define CHROME_BROWSER_INVALIDATION_TICL_PROFILE_SETTINGS_PROVIDER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/invalidation/impl/ticl_settings_provider.h"
 
-class PrefService;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
+class Profile;
 
 namespace invalidation {
 
 // A specialization of TiclSettingsProvider that reads settings from user prefs.
 class TiclProfileSettingsProvider : public TiclSettingsProvider {
  public:
-  explicit TiclProfileSettingsProvider(PrefService* prefs);
+  explicit TiclProfileSettingsProvider(Profile* profile);
   ~TiclProfileSettingsProvider() override;
-
-  // Register prefs to be used by per-Profile instances of this class which
-  // store invalidation state in Profile prefs.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // TiclInvalidationServiceSettingsProvider:
   bool UseGCMChannel() const override;
 
  private:
   PrefChangeRegistrar registrar_;
-  PrefService* const prefs_;
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(TiclProfileSettingsProvider);
 };
 
 }  // namespace invalidation
 
-#endif  // COMPONENTS_INVALIDATION_IMPL_TICL_PROFILE_SETTINGS_PROVIDER_H_
+#endif  // CHROME_BROWSER_INVALIDATION_TICL_PROFILE_SETTINGS_PROVIDER_H_

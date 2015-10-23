@@ -44,9 +44,9 @@
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -1158,9 +1158,8 @@ void ProfileSyncService::OnExperimentsChanged(
 
   current_experiments_ = experiments;
 
-  profile()->GetPrefs()->SetBoolean(
-      invalidation::prefs::kInvalidationServiceUseGCMChannel,
-      experiments.gcm_invalidations_enabled);
+  profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
+                                    experiments.gcm_invalidations_enabled);
   profile()->GetPrefs()->SetBoolean(
       autofill::prefs::kAutofillWalletSyncExperimentEnabled,
       experiments.wallet_sync_enabled);

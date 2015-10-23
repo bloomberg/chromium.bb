@@ -533,6 +533,8 @@ extern const char kDevToolsRemoteEnabled[];
 
 extern const char kGoogleServicesPasswordHash[];
 
+extern const char kInvalidationServiceUseGCMChannel[];
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kSignInPromoStartupCount[];
 extern const char kSignInPromoUserSkipped[];

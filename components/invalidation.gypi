@@ -120,8 +120,6 @@
               'invalidation/impl/sync_system_resources.h',
               'invalidation/impl/ticl_invalidation_service.cc',
               'invalidation/impl/ticl_invalidation_service.h',
-              'invalidation/impl/ticl_profile_settings_provider.cc',
-              'invalidation/impl/ticl_profile_settings_provider.h',
               'invalidation/impl/ticl_settings_provider.cc',
               'invalidation/impl/ticl_settings_provider.h',
             ],

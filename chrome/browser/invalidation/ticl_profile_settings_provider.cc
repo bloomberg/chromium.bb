@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/impl/ticl_profile_settings_provider.h"
+#include "chrome/browser/invalidation/ticl_profile_settings_provider.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
-#include "components/invalidation/impl/invalidation_prefs.h"
-#include "components/invalidation/impl/invalidation_switches.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace invalidation {
 
-TiclProfileSettingsProvider::TiclProfileSettingsProvider(PrefService* prefs)
-    : prefs_(prefs) {
-  registrar_.Init(prefs_);
+TiclProfileSettingsProvider::TiclProfileSettingsProvider(Profile* profile)
+    : profile_(profile) {
+  registrar_.Init(profile->GetPrefs());
   registrar_.Add(
       prefs::kInvalidationServiceUseGCMChannel,
       base::Bind(&TiclProfileSettingsProvider::FireOnUseGCMChannelChanged,
@@ -28,18 +29,12 @@ TiclProfileSettingsProvider::TiclProfileSettingsProvider(PrefService* prefs)
                  base::Unretained(this)));
 }
 
-TiclProfileSettingsProvider::~TiclProfileSettingsProvider() {}
-
-// static
-void TiclProfileSettingsProvider::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kInvalidationServiceUseGCMChannel,
-      true);  // if no value in prefs, use GCM channel.
+TiclProfileSettingsProvider::~TiclProfileSettingsProvider() {
 }
 
 bool TiclProfileSettingsProvider::UseGCMChannel() const {
-  if (prefs_->GetBoolean(prefs::kInvalidationServiceUseGCMChannel)) {
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kInvalidationServiceUseGCMChannel)) {
     // Use GCM channel if it was enabled via prefs.
     return true;
   }
