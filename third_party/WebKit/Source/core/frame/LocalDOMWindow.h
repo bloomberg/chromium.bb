@@ -252,11 +252,9 @@ private:
     RefPtrWillBeMember<Document> m_document;
 
     bool m_shouldPrintWhenFinishedLoading;
-
-// TODO(bokan): Temporarily enabled in release to trackdown crbug.com/519752.
-// #if ENABLE(ASSERT)
+#if ENABLE(ASSERT)
     bool m_hasBeenReset;
-// #endif
+#endif
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty>> m_properties;
 

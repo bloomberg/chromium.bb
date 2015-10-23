@@ -137,11 +137,6 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Docum
     , m_contentFrame(nullptr)
     , m_widget(nullptr)
     , m_sandboxFlags(SandboxNone)
-    , m_wasDisconnected(false)
-    , m_wasWidgetAttached(false)
-    , m_wasWidgetDetached(false)
-    , m_domWindow(nullptr)
-    , m_document(nullptr)
 {
 }
 
@@ -162,11 +157,6 @@ void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
     ASSERT(inDocument());
     m_contentFrame = &frame;
 
-    if (m_contentFrame->isLocalFrame()) {
-        m_domWindow = toLocalFrame(m_contentFrame)->localDOMWindow();
-        m_document = toLocalFrame(m_contentFrame)->localDOMWindow()->document();
-    }
-
     for (ContainerNode* node = this; node; node = node->parentOrShadowHostNode())
         node->incrementConnectedSubframeCount();
 }
@@ -184,7 +174,6 @@ void HTMLFrameOwnerElement::clearContentFrame()
 
 void HTMLFrameOwnerElement::disconnectContentFrame()
 {
-    m_wasDisconnected = true;
     // FIXME: Currently we don't do this in removedFrom because this causes an
     // unload event in the subframe which could execute script that could then
     // reach up into this document and then attempt to look back down. We should
@@ -206,12 +195,9 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
 {
-#if !ENABLE(OILPAN)
     // An owner must by now have been informed of detachment
     // when the frame was closed.
-    // TODO(bokan): Temporarily made RELEASE_ASSERT to trackdown crbug.com/519752.
-    RELEASE_ASSERT(!m_contentFrame);
-#endif
+    ASSERT(!m_contentFrame);
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const
@@ -261,11 +247,6 @@ void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
             moveWidgetToParentSoon(m_widget.get(), 0);
         m_widget = nullptr;
     }
-
-    if (widget)
-        m_wasWidgetAttached = true;
-    else
-        m_wasWidgetDetached = true;
 
     m_widget = widget;
 
