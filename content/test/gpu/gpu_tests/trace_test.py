@@ -95,6 +95,9 @@ class TraceTest(TraceTestBase):
   def _CreateExpectations(self):
     return trace_test_expectations.TraceTestExpectations()
 
+  def CustomizeBrowserOptions(self, options):
+    options.enable_logging = True
+
 
 class DeviceTraceTest(TraceTestBase):
   """Tests GPU Device traces show up on devices that support it."""
