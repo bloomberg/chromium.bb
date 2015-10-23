@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.signin.AccountAdder;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.List;
@@ -36,11 +35,6 @@ public class FirstRunGlueImpl implements FirstRunGlue {
         PrivacyPreferencesManager.getInstance(appContext)
                 .initCrashUploadPreference(allowCrashUpload);
         PrefServiceBridge.getInstance().setEulaAccepted();
-    }
-
-    @Override
-    public boolean isDocumentModeEligible(Context appContext) {
-        return FeatureUtilities.isDocumentModeEligible(appContext);
     }
 
     @Override

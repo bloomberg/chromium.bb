@@ -31,12 +31,6 @@ public interface FirstRunGlue {
     void acceptTermsOfService(Context appContext, boolean allowCrashUpload);
 
     /**
-     * @return Whether the application is eligible for the Document mode.
-     * @param appContext An application context.
-     */
-    boolean isDocumentModeEligible(Context appContext);
-
-    /**
      * @return Whether a given account name is the default (first) Android account name.
      * @param appContext An application context.
      * @param accountName An account name.
