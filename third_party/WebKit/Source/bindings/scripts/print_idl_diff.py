@@ -297,7 +297,7 @@ def print_consts(consts, out):
     for const in consts:
         out.write('    ')
         print_member_with_color(const, out)
-        out.write(const['Type'])
+        out.write(str(const['Type']))
         out.write(' ')
         out.write(const['Name'])
         out.write(' ')
@@ -341,7 +341,7 @@ def print_attributes(attributes, out):
         print_member_with_color(attribute, out)
         if attribute['ExtAttributes']:
             print_extattributes_in_member(attribute['ExtAttributes'], out)
-        out.write(attribute['Type'])
+        out.write(str(attribute['Type']))
         out.write(' ')
         out.writeln(attribute['Name'])
 
@@ -368,7 +368,7 @@ def print_operations(operations, out):
         print_member_with_color(operation, out)
         if operation['ExtAttributes']:
             print_extattributes_in_member(operation['ExtAttributes'], out)
-        out.write(operation['Type'])
+        out.write(str(operation['Type']))
         out.write(' ')
         if operation['Arguments']:
             out.write(operation['Name'])
