@@ -119,5 +119,16 @@ chrome.test.runTests([
     ]);
 
     chrome.tabs.create({ url: getURL('favicon/a.html') });
+  },
+
+  function titleUpdated() {
+    expect([
+      { status: 'loading', url: getURL('title/test.html') },
+      { status: 'complete' },
+      { title: 'foo' },
+      { title: 'bar' }
+    ]);
+
+    chrome.tabs.create({ url: getURL('title/test.html') });
   }
 ]);

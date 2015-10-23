@@ -95,7 +95,9 @@ testCases.push({
   expected_activity: [
     'tabs.onUpdated',
     'tabs.onUpdated',
+    'tabs.onUpdated',
     'tabs.executeScript',
+    'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.move',
@@ -112,8 +114,10 @@ testCases.push({
     'windows.create',
     'tabs.onUpdated',
     'tabs.onUpdated',
+    'tabs.onUpdated',
     'tabs.executeScript',
     'windows.create',
+    'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.move',
@@ -135,6 +139,7 @@ testCases.push({
     'webRequest.onHeadersReceived/2',
     'webRequestInternal.eventHandled',
     'webRequest.onHeadersReceived',
+    'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.remove'
@@ -159,6 +164,7 @@ testCases.push({
     'webRequest.onHeadersReceived',
     'tabs.onUpdated',
     'tabs.onUpdated',
+    'tabs.onUpdated',
     'tabs.remove'
   ],
 });
@@ -169,6 +175,7 @@ testCases.push({
                                'api_tab_updated', function response() { });
   },
   expected_activity: [
+    'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.connect',
@@ -187,6 +194,7 @@ testCases.push({
   is_incognito: true,
   expected_activity: [
     'windows.create',
+    'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.connect',
@@ -210,6 +218,7 @@ testCases.push({
 });
 
 var domExpectedActivity = [
+    'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',

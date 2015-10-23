@@ -5,12 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_EVENT_ROUTER_H_
 
-#include <map>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
+#include "base/containers/scoped_ptr_map.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -19,7 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/ui/zoom/zoom_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/event_router.h"
 
 namespace content {
@@ -39,7 +37,6 @@ namespace extensions {
 class TabsEventRouter : public TabStripModelObserver,
                         public BrowserTabStripTrackerDelegate,
                         public chrome::BrowserListObserver,
-                        public content::NotificationObserver,
                         public favicon::FaviconDriverObserver,
                         public ui_zoom::ZoomObserver {
  public:
@@ -79,11 +76,6 @@ class TabsEventRouter : public TabStripModelObserver,
   void TabPinnedStateChanged(content::WebContents* contents,
                              int index) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // ZoomObserver:
   void OnZoomChanged(
       const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
@@ -97,10 +89,10 @@ class TabsEventRouter : public TabStripModelObserver,
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
   void TabCreatedAt(content::WebContents* contents, int index, bool active);
 
-  // Internal processing of tab updated events. Is called by both TabChangedAt
-  // and Observe/NAV_ENTRY_COMMITTED.
+  // Internal processing of tab updated events. Intended to be called when
+  // there's any changed property.
   class TabEntry;
-  void TabUpdated(linked_ptr<TabEntry> entry,
+  void TabUpdated(TabEntry* entry,
                   scoped_ptr<base::DictionaryValue> changed_properties);
 
   // Triggers a tab updated event if the favicon URL changes.
@@ -128,13 +120,11 @@ class TabsEventRouter : public TabStripModelObserver,
       scoped_ptr<base::DictionaryValue> changed_properties);
 
   // Register ourselves to receive the various notifications we are interested
-  // in for a tab.
+  // in for a tab. Also create tab entry to observe web contents notifications.
   void RegisterForTabNotifications(content::WebContents* contents);
 
-  // Removes notifications added in RegisterForTabNotifications.
+  // Removes notifications and tab entry added in RegisterForTabNotifications.
   void UnregisterForTabNotifications(content::WebContents* contents);
-
-  content::NotificationRegistrar registrar_;
 
   // Maintain some information about known tabs, so we can:
   //
@@ -142,11 +132,13 @@ class TabsEventRouter : public TabStripModelObserver,
   //  - not send tab-detached after tab-removed
   //  - reduce the "noise" of TabChangedAt() when sending events to extensions
   //  - remember last muted and audible states to know if there was a change
-  class TabEntry {
+  //  - listen to WebContentsObserver notifications and forward them to the
+  //    event router.
+  class TabEntry : public content::WebContentsObserver {
    public:
     // Create a TabEntry associated with, and tracking state changes to,
     // |contents|.
-    explicit TabEntry(content::WebContents* contents);
+    TabEntry(TabsEventRouter* router, content::WebContents* contents);
 
     // Indicate via a list of key/value pairs if a tab is loading based on its
     // WebContents. Whether the state has changed or not is used to determine
@@ -162,15 +154,21 @@ class TabsEventRouter : public TabStripModelObserver,
     // is empty if no updates should be sent.
     scoped_ptr<base::DictionaryValue> DidNavigate();
 
+    // Indicate via a list of key/value pairs if the title of a tab is changed.
+    scoped_ptr<base::DictionaryValue> TitleChanged();
+
     // Update the audible and muted states and return whether they were changed
     bool SetAudible(bool new_val);
     bool SetMuted(bool new_val);
 
-    content::WebContents* web_contents() { return contents_; }
+    // content::WebContentsObserver:
+    void NavigationEntryCommitted(
+        const content::LoadCommittedDetails& load_details) override;
+    void TitleWasSet(content::NavigationEntry* entry,
+                     bool explicit_set) override;
+    void WebContentsDestroyed() override;
 
    private:
-    content::WebContents* contents_;
-
     // Whether we are waiting to fire the 'complete' status change. This will
     // occur the first time the WebContents stops loading after the
     // NAV_ENTRY_COMMITTED was fired. The tab may go back into and out of the
@@ -182,13 +180,18 @@ class TabsEventRouter : public TabStripModelObserver,
     bool was_muted_;
 
     GURL url_;
+
+    // Event router that the WebContents's noficiations are forwarded to.
+    TabsEventRouter* router_;
+
+    DISALLOW_COPY_AND_ASSIGN(TabEntry);
   };
 
   // Gets the TabEntry for the given |contents|. Returns linked_ptr<TabEntry>
   // if found, NULL if not.
-  linked_ptr<TabEntry> GetTabEntry(content::WebContents* contents);
+  TabEntry* GetTabEntry(content::WebContents* contents);
 
-  using TabEntryMap = std::map<int, linked_ptr<TabEntry>>;
+  using TabEntryMap = base::ScopedPtrMap<int, scoped_ptr<TabEntry>>;
   TabEntryMap tab_entries_;
 
   // The main profile that owns this event router.

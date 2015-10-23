@@ -955,6 +955,11 @@
                 "type": "string",
                 "optional": true,
                 "description": "The tab's new favicon URL."
+              },
+              "title": {
+                "type": "string",
+                "optional": true,
+                "description": "The tab's new title."
               }
             }
           },
