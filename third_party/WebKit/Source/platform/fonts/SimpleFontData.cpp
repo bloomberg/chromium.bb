@@ -452,33 +452,6 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
     return SkScalarToFloat(width);
 }
 
-bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters, size_t length) const
-{
-    if (!m_combiningCharacterSequenceSupport)
-        m_combiningCharacterSequenceSupport = adoptPtr(new HashMap<String, bool>);
-
-    WTF::HashMap<String, bool>::AddResult addResult = m_combiningCharacterSequenceSupport->add(String(characters, length), false);
-    if (!addResult.isNewEntry)
-        return addResult.storedValue->value;
-
-    UErrorCode error = U_ZERO_ERROR;
-    Vector<UChar, 4> normalizedCharacters(length);
-    size_t normalizedLength = unorm_normalize(characters, length, UNORM_NFC, UNORM_UNICODE_3_2, &normalizedCharacters[0], length, &error);
-    // Can't render if we have an error or no composition occurred.
-    if (U_FAILURE(error) || normalizedLength == length)
-        return false;
-
-    for (size_t offset = 0; offset < normalizedLength;) {
-        UChar32 character;
-        U16_NEXT(normalizedCharacters, offset, normalizedLength, character);
-        if (!glyphForCharacter(character))
-            return false;
-    }
-
-    addResult.storedValue->value = true;
-    return true;
-}
-
 bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const
 {
     if (SkUTF16_IsHighSurrogate(buffer[bufferLength-1])) {

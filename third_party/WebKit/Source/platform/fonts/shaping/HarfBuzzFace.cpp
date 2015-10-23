@@ -112,10 +112,12 @@ HarfBuzzFace::~HarfBuzzFace()
 }
 
 struct HarfBuzzFontData {
-    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face)
+    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face, unsigned rangeFrom, unsigned rangeTo)
         : m_glyphCacheForFaceCacheEntry(glyphCacheForFaceCacheEntry)
         , m_face(face)
         , m_hbOpenTypeFont(nullptr)
+        , m_rangeFrom(rangeFrom)
+        , m_rangeTo(rangeTo)
     { }
 
     ~HarfBuzzFontData()
@@ -129,6 +131,8 @@ struct HarfBuzzFontData {
     WTF::HashMap<uint32_t, uint16_t>* m_glyphCacheForFaceCacheEntry;
     hb_face_t* m_face;
     hb_font_t* m_hbOpenTypeFont;
+    unsigned m_rangeFrom;
+    unsigned m_rangeTo;
 };
 
 static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value)
@@ -174,6 +178,10 @@ static void SkiaGetGlyphWidthAndExtents(SkPaint* paint, hb_codepoint_t codepoint
 static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoint_t unicode, hb_codepoint_t variationSelector, hb_codepoint_t* glyph, void* userData)
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
+
+    RELEASE_ASSERT(hbFontData);
+    if (unicode < hbFontData->m_rangeFrom || unicode > hbFontData->m_rangeTo)
+        return false;
 
     if (variationSelector) {
 #if !HB_VERSION_ATLEAST(0, 9, 28)
@@ -338,9 +346,9 @@ hb_face_t* HarfBuzzFace::createFace()
     return face;
 }
 
-hb_font_t* HarfBuzzFace::createFont() const
+hb_font_t* HarfBuzzFace::createFont(unsigned rangeFrom, unsigned rangeTo) const
 {
-    HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry, m_face);
+    HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry, m_face, rangeFrom, rangeTo);
     m_platformData->setupPaint(&hbFontData->m_paint);
     hbFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
     ASSERT(hbFontData->m_simpleFontData);

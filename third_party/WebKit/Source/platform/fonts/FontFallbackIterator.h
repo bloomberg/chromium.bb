@@ -39,13 +39,15 @@ public:
     // Some system fallback APIs (Windows, Android) require a character, or a
     // portion of the string to be passed.  On Mac and Linux, we get a list of
     // fonts without passing in characters.
-    const SimpleFontData* next(const Vector<UChar32>& hintList);
+    const FontDataRange next(const Vector<UChar32>& hintList);
 
 private:
     FontFallbackIterator(const FontDescription&, PassRefPtr<FontFallbackList>);
+    bool rangeContributesForHint(const Vector<UChar32> hintList, const FontDataRange&);
+    bool alreadyLoadingRangeForHintChar(UChar32 hintChar);
     void willUseRange(const AtomicString& family, const FontDataRange&);
 
-    const SimpleFontData* uniqueSystemFontForHint(UChar32 hint);
+    const PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
 
     const FontDescription& m_fontDescription;
     RefPtr<FontFallbackList> m_fontFallbackList;
@@ -63,6 +65,7 @@ private:
     FallbackStage m_fallbackStage;
     const FontFamily* m_currentFamily;
     HashMap<UChar32, RefPtr<SimpleFontData>> m_visitedSystemFonts;
+    Vector<FontDataRange> m_loadingCustomFontForRanges;
 };
 
 } // namespace blink

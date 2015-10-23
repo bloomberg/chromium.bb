@@ -182,7 +182,6 @@ private:
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
     RefPtr<CustomFontData> m_customFontData;
-    mutable OwnPtr<HashMap<String, bool>> m_combiningCharacterSequenceSupport;
 };
 
 ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const

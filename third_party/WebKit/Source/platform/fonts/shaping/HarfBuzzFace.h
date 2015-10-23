@@ -35,6 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/CharacterNames.h"
 
 #include <hb.h>
 
@@ -53,7 +54,10 @@ public:
     }
     ~HarfBuzzFace();
 
-    hb_font_t* createFont() const;
+    // In order to support the restricting effect of unicode-range optionally a
+    // range restriction can be passed in, which will restrict which glyphs we
+    // return in the harfBuzzGetGlyph function.
+    hb_font_t* createFont(unsigned rangeFrom = 0, unsigned rangeTo = kMaxCodepoint) const;
     hb_face_t* face() const { return m_face; }
 
 private:

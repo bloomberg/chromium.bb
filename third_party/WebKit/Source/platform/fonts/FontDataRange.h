@@ -59,6 +59,7 @@ struct FontDataRange {
 
     UChar32 from() const { return m_from; }
     UChar32 to() const { return m_to; }
+    bool contains(UChar32 testChar) { return testChar >= m_from && testChar <= m_to; }
     bool isEntireRange() const { return !m_from && m_to >= kMaxCodepoint; }
     PassRefPtr<SimpleFontData> fontData() const { return m_fontData; }
 
