@@ -73,7 +73,8 @@ def AddCommonOptions(parser):
                            ' located (must include build type). This will take'
                            ' precedence over --debug, --release and'
                            ' --build-directory'))
-  group.add_argument('--num_retries', dest='num_retries', type=int, default=2,
+  group.add_argument('--num_retries', '--num-retries', dest='num_retries',
+                     type=int, default=2,
                      help=('Number of retries for a test before '
                            'giving up (default: %(default)s).'))
   group.add_argument('-v',
