@@ -149,5 +149,6 @@ void WebURLLoaderMock::setDefersLoading(bool deferred) {
 }
 
 void WebURLLoaderMock::setLoadingTaskRunner(blink::WebTaskRunner*) {
-  NOTIMPLEMENTED();
+  // In principle this is NOTIMPLEMENTED(), but if we put that here it floods
+  // the console during webkit unit tests, so we leave the function empty.
 }
