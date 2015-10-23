@@ -514,11 +514,18 @@ void GuestLanguageSetCallbackData::Callback(
       input_method::InputMethodManager::Get();
   scoped_refptr<input_method::InputMethodManager::State> ime_state =
       manager->GetActiveIMEState();
+  // For guest mode, we should always use the first login input methods.
+  // This is to keep consistency with UserSessionManager::SetFirstLoginPrefs().
+  // See crbug.com/530808.
+  std::vector<std::string> input_methods;
+  manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
+      result.loaded_locale, ime_state->GetCurrentInputMethod(), &input_methods);
+  ime_state->ReplaceEnabledInputMethods(input_methods);
+
   // Active layout must be hardware "login layout".
   // The previous one must be "locale default layout".
   // First, enable all hardware input methods.
-  const std::vector<std::string>& input_methods =
-      manager->GetInputMethodUtil()->GetHardwareInputMethodIds();
+  input_methods = manager->GetInputMethodUtil()->GetHardwareInputMethodIds();
   for (size_t i = 0; i < input_methods.size(); ++i)
     ime_state->EnableInputMethod(input_methods[i]);
 
