@@ -279,6 +279,11 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   notification.delegate()->SettingsClick();
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents));
+  ASSERT_EQ("chrome://settings/contentExceptions#notifications",
+            web_contents->GetLastCommittedURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
