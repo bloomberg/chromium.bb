@@ -4,14 +4,13 @@
 
 package org.chromium.net;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
+import android.os.ConditionVariable;
 import android.os.Environment;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
@@ -27,11 +26,11 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 
 /**
- * Activity for managing the Cronet Test.
+ * Framework for testing Cronet.
  */
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-public class CronetTestActivity extends Activity {
-    private static final String TAG = "CronetTestActivity";
+public class CronetTestFramework {
+    private static final String TAG = "CronetTestFramework";
 
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
     public static final String POST_DATA_KEY = "postData";
@@ -70,21 +69,22 @@ public class CronetTestActivity extends Activity {
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
     public CronetEngine mCronetEngine;
     HttpUrlRequestFactory mRequestFactory;
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
-    HistogramManager mHistogramManager;
+    @SuppressFBWarnings("URF_UNREAD_FIELD") HistogramManager mHistogramManager;
 
-    String mUrl;
+    private final String[] mCommandLine;
+    private final Context mContext;
 
-    boolean mLoading = false;
-
-    int mHttpStatusCode = 0;
+    private String mUrl;
+    private boolean mLoading = false;
+    private int mHttpStatusCode = 0;
 
     // CronetEngine.Builder used for this activity.
     private CronetEngine.Builder mCronetEngineBuilder;
 
-    class TestHttpUrlRequestListener implements HttpUrlRequestListener {
-        public TestHttpUrlRequestListener() {
-        }
+    private class TestHttpUrlRequestListener implements HttpUrlRequestListener {
+        private final ConditionVariable mComplete = new ConditionVariable();
+
+        public TestHttpUrlRequestListener() {}
 
         @Override
         public void onResponseStarted(HttpUrlRequest request) {
@@ -94,26 +94,25 @@ public class CronetTestActivity extends Activity {
         @Override
         public void onRequestComplete(HttpUrlRequest request) {
             mLoading = false;
+            mComplete.open();
+        }
+
+        public void blockForComplete() {
+            mComplete.block();
         }
     }
 
-    @Override
-    protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public CronetTestFramework(String appUrl, String[] commandLine, Context context) {
+        mCommandLine = commandLine;
+        mContext = context;
         prepareTestStorage();
 
         // Print out extra arguments passed in starting this activity.
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        Log.i(TAG, "Cronet extras: " + extras);
-        if (extras != null) {
-            String[] commandLine = extras.getStringArray(COMMAND_LINE_ARGS_KEY);
-            if (commandLine != null) {
-                assertEquals(0, commandLine.length % 2);
-                for (int i = 0; i < commandLine.length / 2; i++) {
-                    Log.i(TAG, "Cronet commandLine %s = %s", commandLine[i * 2],
-                            commandLine[i * 2 + 1]);
-                }
+        if (commandLine != null) {
+            assertEquals(0, commandLine.length % 2);
+            for (int i = 0; i < commandLine.length / 2; i++) {
+                Log.i(TAG, "Cronet commandLine %s = %s", commandLine[i * 2],
+                        commandLine[i * 2 + 1]);
             }
         }
 
@@ -139,7 +138,6 @@ public class CronetTestActivity extends Activity {
         }
 
         mRequestFactory = initRequestFactory();
-        String appUrl = getUrlFromIntent(getIntent());
         if (appUrl != null) {
             startWithURL(appUrl);
         }
@@ -157,7 +155,7 @@ public class CronetTestActivity extends Activity {
     }
 
     String getTestStorage() {
-        return PathUtils.getDataDirectory(getApplicationContext()) + "/test_storage";
+        return PathUtils.getDataDirectory(mContext) + "/test_storage";
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
@@ -177,7 +175,7 @@ public class CronetTestActivity extends Activity {
     }
 
     private CronetEngine.Builder initializeCronetEngineBuilder() {
-        return createCronetEngineBuilder(this);
+        return createCronetEngineBuilder(mContext);
     }
 
     CronetEngine.Builder createCronetEngineBuilder(Context context) {
@@ -188,10 +186,9 @@ public class CronetTestActivity extends Activity {
         String configString = getCommandLineArg(CONFIG_KEY);
         if (configString != null) {
             try {
-                cronetEngineBuilder = new CronetEngine.Builder(this, configString);
+                cronetEngineBuilder = new CronetEngine.Builder(mContext, configString);
             } catch (org.json.JSONException e) {
-                Log.e(TAG, "Invalid Config.", e);
-                finish();
+                fail("Invalid Config." + e);
                 return null;
             }
         }
@@ -226,23 +223,14 @@ public class CronetTestActivity extends Activity {
 
     // Helper function to initialize request factory. Also used in testing.
     public HttpUrlRequestFactory initRequestFactory() {
-        return HttpUrlRequestFactory.createFactory(this, mCronetEngineBuilder);
-    }
-
-    private static String getUrlFromIntent(Intent intent) {
-        return intent != null ? intent.getDataString() : null;
+        return HttpUrlRequestFactory.createFactory(mContext, mCronetEngineBuilder);
     }
 
     private String getCommandLineArg(String key) {
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null) {
-            String[] commandLine = extras.getStringArray(COMMAND_LINE_ARGS_KEY);
-            if (commandLine != null) {
-                for (int i = 0; i < commandLine.length; ++i) {
-                    if (commandLine[i].equals(key)) {
-                        return commandLine[++i];
-                    }
+        if (mCommandLine != null) {
+            for (int i = 0; i < mCommandLine.length; ++i) {
+                if (mCommandLine[i].equals(key)) {
+                    return mCommandLine[++i];
                 }
             }
         }
@@ -252,11 +240,9 @@ public class CronetTestActivity extends Activity {
     private void applyCommandLineToHttpUrlRequest(HttpUrlRequest request) {
         String postData = getCommandLineArg(POST_DATA_KEY);
         if (postData != null) {
-            InputStream dataStream = new ByteArrayInputStream(
-                    postData.getBytes());
+            InputStream dataStream = new ByteArrayInputStream(postData.getBytes());
             ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
-            request.setUploadChannel("text/plain", dataChannel,
-                    postData.length());
+            request.setUploadChannel("text/plain", dataChannel, postData.length());
             request.setHttpMethod("POST");
         }
     }
@@ -267,11 +253,12 @@ public class CronetTestActivity extends Activity {
         mLoading = true;
 
         HashMap<String, String> headers = new HashMap<String, String>();
-        HttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = mRequestFactory.createRequest(
                 url, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         applyCommandLineToHttpUrlRequest(request);
         request.start();
+        listener.blockForComplete();
     }
 
     public String getUrl() {
@@ -289,7 +276,7 @@ public class CronetTestActivity extends Activity {
     public void startNetLog() {
         if (mRequestFactory != null) {
             mRequestFactory.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
-                    + "/cronet_sample_netlog_old_api.json",
+                            + "/cronet_sample_netlog_old_api.json",
                     false);
         }
         if (mCronetEngine != null) {

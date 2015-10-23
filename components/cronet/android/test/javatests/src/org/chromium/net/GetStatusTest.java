@@ -16,7 +16,7 @@ import org.chromium.net.UrlRequest.StatusListener;
  * Tests that {@link CronetUrlRequest#getStatus} works as expected.
  */
 public class GetStatusTest extends CronetTestBase {
-    private CronetTestActivity mActivity;
+    private CronetTestFramework mTestFramework;
 
     private static class TestStatusListener extends StatusListener {
         boolean mOnStatusCalled = false;
@@ -38,14 +38,14 @@ public class GetStatusTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = launchCronetTestApp();
-        assertTrue(NativeTestServer.startNativeTestServer(getInstrumentation().getTargetContext()));
+        mTestFramework = startCronetTestFramework();
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
     @Override
     protected void tearDown() throws Exception {
         NativeTestServer.shutdownNativeTestServer();
-        mActivity.mCronetEngine.shutdown();
+        mTestFramework.mCronetEngine.shutdown();
         super.tearDown();
     }
 
@@ -56,7 +56,7 @@ public class GetStatusTest extends CronetTestBase {
         TestUrlRequestListener listener = new TestUrlRequestListener();
         listener.setAutoAdvance(false);
         UrlRequest.Builder builder = new UrlRequest.Builder(
-                url, listener, listener.getExecutor(), mActivity.mCronetEngine);
+                url, listener, listener.getExecutor(), mTestFramework.mCronetEngine);
         UrlRequest urlRequest = builder.build();
         // Calling before request is started should give Status.INVALID,
         // since the native adapter is not created.

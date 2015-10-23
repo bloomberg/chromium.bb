@@ -15,15 +15,5 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application android:name="CronetTestApplication"
             android:label="Cronet Test">
-        <activity android:name="CronetTestActivity"
-                  android:launchMode="singleTask"
-                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
-                  android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
-                  android:hardwareAccelerated="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
     </application>
 </manifest>

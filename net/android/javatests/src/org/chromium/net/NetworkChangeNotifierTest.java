@@ -200,7 +200,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // Verify last notification was the expected one.
         public void assertLastChange(ChangeType type, int netId) throws Exception {
             // Make sure notification processed.
-            flushUiThreadTaskQueue();
+            NetworkChangeNotifierTestUtil.flushUiThreadTaskQueue();
             assertEquals(type, mLastChangeSeen);
             assertEquals(netId, mLastNetIdSeen);
             mLastChangeSeen = ChangeType.NONE;
@@ -260,15 +260,6 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     // Create Network object given a NetID.
     private Network netIdToNetwork(int netId) throws Exception {
         return mNetworkConstructor.newInstance(netId);
-    }
-
-    // Flush UI thread task queue.
-    private static void flushUiThreadTaskQueue() throws Exception {
-        FutureTask<Void> task = new FutureTask<Void>(new Runnable() {
-            public void run() {}
-        }, null);
-        ThreadUtils.postOnUiThread(task);
-        task.get();
     }
 
     @Override

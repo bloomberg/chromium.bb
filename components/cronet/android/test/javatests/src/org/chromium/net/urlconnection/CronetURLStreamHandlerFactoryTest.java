@@ -16,7 +16,7 @@ public class CronetURLStreamHandlerFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testRequireConfig() throws Exception {
-        launchCronetTestApp();
+        startCronetTestFramework();
         try {
             new CronetURLStreamHandlerFactory(null);
         } catch (NullPointerException e) {

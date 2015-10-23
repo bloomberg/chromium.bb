@@ -17,20 +17,20 @@ public class HistogramManagerTest extends CronetTestBase {
     // URLs used for tests.
     private static final String TEST_URL = "http://127.0.0.1:8000";
 
-    CronetTestActivity mActivity;
+    CronetTestFramework mTestFramework;
 
     @SmallTest
     @Feature({"Cronet"})
     public void testHistogramManager() throws Exception {
-        mActivity = launchCronetTestApp();
-        byte delta1[] = mActivity.mHistogramManager.getHistogramDeltas();
+        mTestFramework = startCronetTestFramework();
+        byte delta1[] = mTestFramework.mHistogramManager.getHistogramDeltas();
 
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest.Builder builder = new UrlRequest.Builder(
-                TEST_URL, listener, listener.getExecutor(), mActivity.mCronetEngine);
+                TEST_URL, listener, listener.getExecutor(), mTestFramework.mCronetEngine);
         builder.build().start();
         listener.blockForDone();
-        byte delta2[] = mActivity.mHistogramManager.getHistogramDeltas();
+        byte delta2[] = mTestFramework.mHistogramManager.getHistogramDeltas();
         assertTrue(delta2.length != 0);
         assertFalse(Arrays.equals(delta1, delta2));
     }

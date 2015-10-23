@@ -47,6 +47,7 @@ android_library("net_javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     ":net_java",
+    ":net_java_test_support",
   ]
 }
 

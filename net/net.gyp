@@ -1442,6 +1442,7 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
             'net_java',
+            'net_java_test_support',
           ],
           'includes': [ '../build/java.gypi' ],
         },

@@ -9,8 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
+import org.chromium.net.CronetTestFramework;
 import org.chromium.net.MockUrlRequestJobFactory;
 import org.chromium.net.NativeTestServer;
 import org.chromium.net.UrlRequestException;
@@ -45,12 +45,11 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         String[] commandLineArgs = {
-                CronetTestActivity.CACHE_KEY, CronetTestActivity.CACHE_DISK,
-                CronetTestActivity.LIBRARY_INIT_KEY, CronetTestActivity.LIBRARY_INIT_WRAPPER,
+                CronetTestFramework.CACHE_KEY, CronetTestFramework.CACHE_DISK,
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LIBRARY_INIT_WRAPPER,
         };
-        launchCronetTestAppWithUrlAndCommandLineArgs(null, commandLineArgs);
-        assertTrue(NativeTestServer.startNativeTestServer(
-                getInstrumentation().getTargetContext()));
+        startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
     @Override
@@ -174,8 +173,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         }
         checkExceptionsAreThrown(secondConnection);
         // Starts the server to avoid crashing on shutdown in tearDown().
-        assertTrue(NativeTestServer.startNativeTestServer(
-                getInstrumentation().getTargetContext()));
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
     @SmallTest

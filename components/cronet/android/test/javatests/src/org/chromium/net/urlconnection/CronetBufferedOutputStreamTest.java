@@ -8,8 +8,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 
-import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
+import org.chromium.net.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
 
 import java.io.ByteArrayOutputStream;
@@ -31,11 +31,10 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         String[] commandLineArgs = {
-                CronetTestActivity.LIBRARY_INIT_KEY, CronetTestActivity.LIBRARY_INIT_WRAPPER,
+                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LIBRARY_INIT_WRAPPER,
         };
-        launchCronetTestAppWithUrlAndCommandLineArgs(null, commandLineArgs);
-        assertTrue(NativeTestServer.startNativeTestServer(
-                getInstrumentation().getTargetContext()));
+        startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
     @Override
