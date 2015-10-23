@@ -61,6 +61,7 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   }
 
   // Accessors for testing.
+  bool HasDumps() { return SynchronizedMinidumpManager::HasDumps(); }
   const std::string& dump_path() { return dump_path_.value(); }
   const std::string& lockfile_path() { return lockfile_path_; }
   bool work_done() { return work_done_; }
@@ -100,11 +101,8 @@ class FakeSynchronizedMinidumpUploader : public SynchronizedMinidumpManager {
     return 0;
   }
 
-  bool LockFileHasDumps() {
-    return SynchronizedMinidumpManager::LockFileHasDumps();
-  }
-
   // Accessors for testing.
+  bool HasDumps() { return SynchronizedMinidumpManager::HasDumps(); }
   bool can_upload_return_val() { return can_upload_return_val_; }
 
  private:
@@ -509,12 +507,12 @@ TEST_F(SynchronizedMinidumpManagerTest, UploadSucceedsAfterRateLimitPeriodEnd) {
   consume_dumps(uploader, 1);
 }
 
-TEST_F(SynchronizedMinidumpManagerTest, LockFileHasDumpsWithoutDumps) {
+TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithoutDumps) {
   FakeSynchronizedMinidumpUploader uploader;
-  ASSERT_FALSE(uploader.LockFileHasDumps());
+  ASSERT_FALSE(uploader.HasDumps());
 }
 
-TEST_F(SynchronizedMinidumpManagerTest, LockFileHasDumpsWithDumps) {
+TEST_F(SynchronizedMinidumpManagerTest, HasDumpsWithDumps) {
   // Sample parameters.
   time_t now = time(0);
   MinidumpParams params;
@@ -529,15 +527,29 @@ TEST_F(SynchronizedMinidumpManagerTest, LockFileHasDumpsWithDumps) {
   const int kNumDumps = 3;
   for (int i = 0; i < kNumDumps; ++i) {
     produce_dumps(producer, 1);
-    ASSERT_TRUE(uploader.LockFileHasDumps());
+    ASSERT_TRUE(uploader.HasDumps());
   }
 
   for (int i = 0; i < kNumDumps; ++i) {
-    ASSERT_TRUE(uploader.LockFileHasDumps());
+    ASSERT_TRUE(uploader.HasDumps());
     consume_dumps(uploader, 1);
   }
 
-  ASSERT_FALSE(uploader.LockFileHasDumps());
+  ASSERT_FALSE(uploader.HasDumps());
+}
+
+TEST_F(SynchronizedMinidumpManagerTest, HasDumpsNotInLockFile) {
+  SynchronizedMinidumpManagerSimple manager;
+  ASSERT_FALSE(manager.HasDumps());
+
+  // Create file in dump path.
+  const base::FilePath path =
+      base::FilePath(manager.dump_path()).Append("hello123");
+  const char kFileContents[] = "foobar";
+  ASSERT_EQ(static_cast<int>(sizeof(kFileContents)),
+            WriteFile(path, kFileContents, sizeof(kFileContents)));
+
+  ASSERT_TRUE(manager.HasDumps());
 }
 
 }  // namespace chromecast

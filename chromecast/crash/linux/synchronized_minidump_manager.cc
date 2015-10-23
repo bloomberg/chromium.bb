@@ -14,6 +14,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
@@ -403,13 +404,29 @@ bool SynchronizedMinidumpManager::CanUploadDump() {
   return period_dumps_count < kRatelimitPeriodMaxDumps;
 }
 
-bool SynchronizedMinidumpManager::LockFileHasDumps() {
+bool SynchronizedMinidumpManager::HasDumps() {
+  // Check if lockfile has entries.
   int64 size = 0;
-  if (!GetFileSize(base::FilePath(lockfile_path_), &size)) {
+  if (GetFileSize(base::FilePath(lockfile_path_), &size) && size > 0)
+    return true;
+
+  // Check if any files are in minidump directory
+  base::DirReaderPosix reader(dump_path_.value().c_str());
+  if (!reader.IsValid()) {
+    DLOG(FATAL) << "Could not open minidump dir: " << dump_path_.value();
     return false;
   }
 
-  return size > 0;
+  while (reader.Next()) {
+    if (strcmp(reader.name(), ".") == 0 || strcmp(reader.name(), "..") == 0)
+      continue;
+
+    const std::string file_path = dump_path_.Append(reader.name()).value();
+    if (file_path != lockfile_path_ && file_path != metadata_path_)
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace chromecast

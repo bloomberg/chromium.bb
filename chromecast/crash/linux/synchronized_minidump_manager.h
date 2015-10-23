@@ -106,9 +106,10 @@ class SynchronizedMinidumpManager {
   // elapsed.
   bool CanUploadDump();
 
-  // Returns true when there are dumps in the lockfile, false otherwise.
+  // Returns true when there are dumps in the lockfile or extra files in the
+  // dump directory, false otherwise.
   // Used to avoid unnecessary file locks in consumers.
-  bool LockFileHasDumps();
+  bool HasDumps();
 
   // If true, the flock on the lockfile will be nonblocking.
   bool non_blocking_;
