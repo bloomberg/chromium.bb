@@ -265,6 +265,10 @@ void WebContentsAndroid::Paste(JNIEnv* env, jobject obj) {
   web_contents_->Paste();
 }
 
+void WebContentsAndroid::Replace(JNIEnv* env, jobject obj, jstring jstr) {
+  web_contents_->Replace(base::android::ConvertJavaStringToUTF16(env, jstr));
+}
+
 void WebContentsAndroid::SelectAll(JNIEnv* env, jobject obj) {
   web_contents_->SelectAll();
 }

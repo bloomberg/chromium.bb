@@ -50,6 +50,7 @@ class CONTENT_EXPORT WebContentsAndroid
   void Cut(JNIEnv* env, jobject obj);
   void Copy(JNIEnv* env, jobject obj);
   void Paste(JNIEnv* env, jobject obj);
+  void Replace(JNIEnv* env, jobject obj, jstring jstr);
   void SelectAll(JNIEnv* env, jobject obj);
   void Unselect(JNIEnv* env, jobject obj);
   jint GetBackgroundColor(JNIEnv* env, jobject obj);

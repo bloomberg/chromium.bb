@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.URLUtil;
@@ -101,6 +102,16 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
 
     @Override
     public void setSystemUiVisibility(boolean enterFullscreen) {
+    }
+
+    @Override
+    public boolean doesPerformProcessText() {
+        return true;
+    }
+
+    @Override
+    public void startProcessTextIntent(Intent intent) {
+        mAwContents.startProcessTextIntent(intent);
     }
 
     /**

@@ -100,6 +100,8 @@ public class AwContents implements SmartClipProvider,
     private static final int WARN = 1;
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
+    // The request code should be unique per WebView/AwContents object.
+    private static final int PROCESS_TEXT_REQUEST_CODE = 100;
 
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.
@@ -2210,7 +2212,7 @@ public class AwContents implements SmartClipProvider,
      * be thrown by Android framework if startActivityForResult is called with
      * a non-Activity context.
      */
-    public void startActivityForResult(Intent intent, int requestCode) {
+    void startActivityForResult(Intent intent, int requestCode) {
         // Even in fullscreen mode, startActivityForResult will still use the
         // initial internal access delegate because it has access to
         // the hidden API View#startActivityForResult.
@@ -2218,9 +2220,27 @@ public class AwContents implements SmartClipProvider,
                 .super_startActivityForResult(intent, requestCode);
     }
 
+    void startProcessTextIntent(Intent intent) {
+        // on Android M, WebView is not able to replace the text with the processed text.
+        // So set the readonly flag for M.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+            intent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
+        }
+
+        if (ContentViewCore.activityFromContext(mContext) == null) {
+            mContext.startActivity(intent);
+            return;
+        }
+
+        startActivityForResult(intent, PROCESS_TEXT_REQUEST_CODE);
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO(hush): Forward the activity result to content view core and
-        // replace the text with translated text.
+        if (requestCode == PROCESS_TEXT_REQUEST_CODE) {
+            mContentViewCore.onReceivedProcessTextResult(resultCode, data);
+        } else {
+            Log.e(TAG, "Received activity result for an unknown request code " + requestCode);
+        }
     }
 
     /**

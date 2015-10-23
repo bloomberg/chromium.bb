@@ -9,6 +9,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -102,10 +103,8 @@ import java.util.Map.Entry;
  * being tied to the view system.
  */
 @JNINamespace("content")
-public class ContentViewCore implements
-        AccessibilityStateChangeListener, ScreenOrientationObserver,
-        SystemCaptioningBridge.SystemCaptioningBridgeListener {
-
+public class ContentViewCore implements AccessibilityStateChangeListener, ScreenOrientationObserver,
+                                        SystemCaptioningBridge.SystemCaptioningBridgeListener {
     private static final String TAG = "cr.ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
@@ -2091,7 +2090,19 @@ public class ContentViewCore implements
 
                     intent.putExtra(Intent.EXTRA_PROCESS_TEXT, query);
                     try {
-                        getContext().startActivity(intent);
+                        if (getContentViewClient().doesPerformProcessText()) {
+                            getContentViewClient().startProcessTextIntent(intent);
+                        } else {
+                            getWindowAndroid().showIntent(
+                                    intent, new WindowAndroid.IntentCallback() {
+                                        @Override
+                                        public void onIntentCompleted(WindowAndroid window,
+                                                int resultCode, ContentResolver contentResolver,
+                                                Intent data) {
+                                            onReceivedProcessTextResult(resultCode, data);
+                                        }
+                                    }, null);
+                        }
                     } catch (android.content.ActivityNotFoundException ex) {
                         // If no app handles it, do nothing.
                     }
@@ -3042,6 +3053,26 @@ public class ContentViewCore implements
                 settings.getTextTrackFontFamily(), settings.getTextTrackFontStyle(),
                 settings.getTextTrackFontVariant(), settings.getTextTrackTextColor(),
                 settings.getTextTrackTextShadow(), settings.getTextTrackTextSize());
+    }
+
+    /**
+     * Called when the processed text is replied from an activity that supports
+     * Intent.ACTION_PROCESS_TEXT.
+     * @param resultCode the code that indicates if the activity successfully processed the text
+     * @param data the reply that contains the processed text.
+     */
+    public void onReceivedProcessTextResult(int resultCode, Intent data) {
+        if (mWebContents == null || !isSelectionEditable() || resultCode != Activity.RESULT_OK
+                || data == null) {
+            return;
+        }
+
+        CharSequence result = data.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+        if (result != null) {
+            // TODO(hush): Use a variant of replace that re-selects the replaced text.
+            // crbug.com/546710
+            mWebContents.replace(result.toString());
+        }
     }
 
     /**

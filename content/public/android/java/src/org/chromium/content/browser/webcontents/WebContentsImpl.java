@@ -181,6 +181,11 @@ import java.util.UUID;
     }
 
     @Override
+    public void replace(String word) {
+        nativeReplace(mNativeWebContentsAndroid, word);
+    }
+
+    @Override
     public void selectAll() {
         nativeSelectAll(mNativeWebContentsAndroid);
     }
@@ -421,6 +426,7 @@ import java.util.UUID;
     private native void nativeCut(long nativeWebContentsAndroid);
     private native void nativeCopy(long nativeWebContentsAndroid);
     private native void nativePaste(long nativeWebContentsAndroid);
+    private native void nativeReplace(long nativeWebContentsAndroid, String word);
     private native void nativeSelectAll(long nativeWebContentsAndroid);
     private native void nativeUnselect(long nativeWebContentsAndroid);
     private native void nativeInsertCSS(long nativeWebContentsAndroid, String css);

@@ -169,15 +169,12 @@ public class WebActionModeCallback implements ActionMode.Callback {
             new MenuInflater(getContext()).inflate(R.menu.select_action_menu, menu);
         }
 
-        initializeTextProcessingMenu(menu);
-
         if (mIsInsertion) {
             menu.removeItem(R.id.select_action_menu_select_all);
             menu.removeItem(R.id.select_action_menu_cut);
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_share);
             menu.removeItem(R.id.select_action_menu_web_search);
-            menu.removeGroup(R.id.select_action_menu_text_processing_menus);
             return;
         }
 
@@ -200,8 +197,10 @@ public class WebActionModeCallback implements ActionMode.Callback {
         if (mIsPasswordType) {
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_cut);
-            menu.removeGroup(R.id.select_action_menu_text_processing_menus);
+            return;
         }
+
+        initializeTextProcessingMenu(menu);
     }
 
     @Override
@@ -230,7 +229,8 @@ public class WebActionModeCallback implements ActionMode.Callback {
             mode.finish();
         } else if (groupId == R.id.select_action_menu_text_processing_menus) {
             mActionHandler.processText(item.getIntent());
-            mode.finish();
+            // The ActionMode is not dismissed to match the behavior with
+            // TextView in Android M.
         } else {
             return false;
         }
@@ -288,10 +288,9 @@ public class WebActionModeCallback implements ActionMode.Callback {
 
     @TargetApi(Build.VERSION_CODES.M)
     private Intent createProcessTextIntentForResolveInfo(ResolveInfo info) {
+        boolean isReadOnly = !mActionHandler.isSelectionEditable();
         return createProcessTextIntent()
-            // TODO(hush crbug.com/521027): should be !isSelectionEditable(),
-            // when WebView supports replacing the text.
-                .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
+                .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, isReadOnly)
                 .setClassName(info.activityInfo.packageName, info.activityInfo.name);
     }
 }

@@ -90,6 +90,11 @@ public interface WebContents extends Parcelable {
     void paste();
 
     /**
+     * Replace the selected text with the {@code word}.
+     */
+    void replace(String word);
+
+    /**
      * Select all content.
      */
     void selectAll();

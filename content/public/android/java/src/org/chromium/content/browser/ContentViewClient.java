@@ -106,6 +106,22 @@ public class ContentViewClient {
     }
 
     /**
+     * If this returns {@code true} the text processing intents should be forwarded to {@link
+     * startProcessTextIntent(Intent)}, otherwise these intents should be sent by WindowAndroid by
+     * default.
+     * @return {@code true} iff this {@link ContentViewClient} wants to send the processing intents
+     * and override the default intent behavior.
+     */
+    public boolean doesPerformProcessText() {
+        return false;
+    }
+
+    /**
+     * Send the intent to process the current selected text.
+     */
+    public void startProcessTextIntent(Intent intent) {}
+
+    /**
      * Called when a new content intent is requested to be started.
      */
     public void onStartContentIntent(Context context, String intentUrl) {
