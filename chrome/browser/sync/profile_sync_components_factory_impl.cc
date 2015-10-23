@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/history_delete_directives_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
-#include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
@@ -31,6 +30,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
+#include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
@@ -261,8 +261,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
-    sync_service->RegisterDataTypeController(
-        new PasswordDataTypeController(error_callback, sync_client, profile_));
+    sync_service->RegisterDataTypeController(new PasswordDataTypeController(
+        ui_thread, error_callback, sync_client,
+        sync_client->GetPasswordStateChangedCallback()));
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {

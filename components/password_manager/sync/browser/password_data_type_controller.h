@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_PASSWORD_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_PASSWORD_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H__
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 #include "components/sync_driver/sync_service_observer.h"
-
-class Profile;
 
 namespace password_manager {
 class PasswordStore;
@@ -27,9 +26,11 @@ namespace browser_sync {
 class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
                                    public sync_driver::SyncServiceObserver {
  public:
-  PasswordDataTypeController(const base::Closure& error_callback,
-                             sync_driver::SyncClient* sync_client,
-                             Profile* profile);
+  PasswordDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const base::Closure& error_callback,
+      sync_driver::SyncClient* sync_client,
+      const base::Closure& state_changed_callback);
 
   // NonFrontendDataTypeController implementation
   syncer::ModelType type() const override;
@@ -49,12 +50,12 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
 
  private:
   sync_driver::SyncClient* const sync_client_;
-  Profile* const profile_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
+  const base::Closure state_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDataTypeController);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_PASSWORD_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_DATA_TYPE_CONTROLLER_H__

@@ -4,6 +4,8 @@
 
 source_set("browser") {
   sources = [
+    "password_data_type_controller.cc",
+    "password_data_type_controller.h",
     "password_model_worker.cc",
     "password_model_worker.h",
     "password_sync_util.cc",

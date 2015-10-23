@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/fake_sync_client.h"
 
+#include "base/bind.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/sync_driver/fake_sync_service.h"
@@ -45,6 +46,10 @@ history::HistoryService* FakeSyncClient::GetHistoryService() {
 scoped_refptr<password_manager::PasswordStore>
 FakeSyncClient::GetPasswordStore() {
   return scoped_refptr<password_manager::PasswordStore>();
+}
+
+base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {
+  return base::Bind(&base::DoNothing);
 }
 
 autofill::PersonalDataManager* FakeSyncClient::GetPersonalDataManager() {

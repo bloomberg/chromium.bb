@@ -33,6 +33,7 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
   scoped_refptr<password_manager::PasswordStore> GetPasswordStore() override;
+  base::Closure GetPasswordStateChangedCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;

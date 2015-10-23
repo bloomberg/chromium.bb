@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/chrome_sync_client.h"
 
+#include "base/bind.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -131,6 +132,12 @@ ChromeSyncClient::GetPasswordStore() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return PasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
+  return base::Bind(
+      &PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged,
+      base::Unretained(profile_));
 }
 
 scoped_refptr<autofill::AutofillWebDataService>

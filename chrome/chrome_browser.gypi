@@ -2861,8 +2861,6 @@
       'browser/sync/glue/history_delete_directives_data_type_controller.h',
       'browser/sync/glue/local_device_info_provider_impl.cc',
       'browser/sync/glue/local_device_info_provider_impl.h',
-      'browser/sync/glue/password_data_type_controller.cc',
-      'browser/sync/glue/password_data_type_controller.h',
       'browser/sync/glue/sync_backend_host.cc',
       'browser/sync/glue/sync_backend_host.h',
       'browser/sync/glue/sync_backend_host_core.cc',

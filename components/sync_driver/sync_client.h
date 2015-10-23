@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_CLIENT_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_CLIENT_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -72,6 +73,11 @@ class SyncClient {
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
   virtual scoped_refptr<password_manager::PasswordStore> GetPasswordStore() = 0;
+
+  // Returns a callback that will be invoked when password sync state has
+  // potentially been changed.
+  virtual base::Closure GetPasswordStateChangedCallback() = 0;
+
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual scoped_refptr<autofill::AutofillWebDataService>
   GetWebDataService() = 0;
