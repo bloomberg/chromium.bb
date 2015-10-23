@@ -50,8 +50,11 @@ void UserModel::DidStartProcessingInputEvent(blink::WebInputEvent::Type type,
     }
 
     // If there has been a previous gesture, record a UMA metric for the time
-    // interval between then and now.
-    if (!last_continuous_gesture_time_.is_null()) {
+    // interval between then and now.  We ignore TouchStart because a
+    // GestureScrollBegin or GesturePinchBegin can follow immediatly after.
+    if (!last_continuous_gesture_time_.is_null() &&
+        (type == blink::WebInputEvent::GestureScrollBegin ||
+         type == blink::WebInputEvent::GesturePinchBegin)) {
       base::TimeDelta time_since_last_gesture =
           now - last_continuous_gesture_time_;
       UMA_HISTOGRAM_MEDIUM_TIMES(
