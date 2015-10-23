@@ -527,8 +527,10 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
   def testGetCurrentUrl(self):
-    url = 'data:,%s' % uuid.uuid4()
+    url = self.GetHttpUrlForFile('/chromedriver/frame_test.html')
     self._driver.Load(url)
+    self.assertEquals(url, self._driver.GetCurrentUrl())
+    self._driver.SwitchToFrame(self._driver.FindElement('tagName', 'iframe'))
     self.assertEquals(url, self._driver.GetCurrentUrl())
 
   def testGoBackAndGoForward(self):
@@ -1145,12 +1147,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/nested.html'))
     a = self._driver.FindElement('tag name', 'a')
     a.Click()
-    self.assertTrue(self._driver.GetCurrentUrl().endswith('#one'))
+    frame_url = self._driver.ExecuteScript('return window.location.href')
+    self.assertTrue(frame_url.endswith('#one'))
     frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
     a = self._driver.FindElement('tag name', 'a')
     a.Click()
-    self.assertTrue(self._driver.GetCurrentUrl().endswith('#two'))
+    frame_url = self._driver.ExecuteScript('return window.location.href')
+    self.assertTrue(frame_url.endswith('#two'))
 
   def testDoesntHangOnFragmentNavigation(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
