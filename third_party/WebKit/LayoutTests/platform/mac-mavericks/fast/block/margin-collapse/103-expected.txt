@@ -117,14 +117,14 @@ layer at (0,0) size 785x1707 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
                 LayoutText (anonymous) at (8,2) size 98x13
                   text run at (8,2) width 98: "Sections of the ISE"
-            LayoutBlockFlow (floating) {SPAN} at (0,435.97) size 325x20 [color=#333333]
+            LayoutBlockFlow (floating) {SPAN} at (0,435.98) size 325x20 [color=#333333]
               LayoutText {#text} at (0,2) size 257x16
                 text run at (0,2) width 257: "How did you find the navigation of the ISE?"
             LayoutMenuList {SELECT} at (325,433.98) size 180x18 [bgcolor=#F8F8F8]
               LayoutBlockFlow (anonymous) at (0,0) size 180x18
                 LayoutText (anonymous) at (8,2) size 92x13
                   text run at (8,2) width 92: "Level of difficulty"
-            LayoutBlockFlow (floating) {SPAN} at (0,455.95) size 325x20 [color=#333333]
+            LayoutBlockFlow (floating) {SPAN} at (0,455.98) size 325x20 [color=#333333]
               LayoutText {#text} at (0,2) size 213x16
                 text run at (0,2) width 213: "Please describe your use of the ISE."
             LayoutBlockFlow {H2} at (0,607.98) size 560x16 [color=#333333]
