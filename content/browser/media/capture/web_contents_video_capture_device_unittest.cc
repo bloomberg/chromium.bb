@@ -430,7 +430,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     }
     void* data(int plane) override { return buffer_handle_->data(plane); }
     ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
     base::FileDescriptor AsPlatformFile() override {
       return base::FileDescriptor();
     }

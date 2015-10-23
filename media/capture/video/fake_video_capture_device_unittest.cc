@@ -40,7 +40,7 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
   size_t mapped_size() const override { return mapped_size_; }
   void* data(int plane) override { return data_; }
   ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
   base::FileDescriptor AsPlatformFile() override {
     return base::FileDescriptor();
   }

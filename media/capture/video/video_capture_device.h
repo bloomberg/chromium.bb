@@ -186,7 +186,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
       virtual void* data(int plane) = 0;
       void* data() { return data(0); }
       virtual ClientBuffer AsClientBuffer(int plane) = 0;
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
       virtual base::FileDescriptor AsPlatformFile() = 0;
 #endif
     };
