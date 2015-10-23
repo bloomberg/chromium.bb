@@ -89,6 +89,11 @@ void FindPagesMissingArchiveFile(
 
 }  // namespace
 
+// static
+bool OfflinePageModel::CanSavePage(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS();
+}
+
 OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -125,6 +130,14 @@ void OfflinePageModel::SavePage(const GURL& url,
                                 scoped_ptr<OfflinePageArchiver> archiver,
                                 const SavePageCallback& callback) {
   DCHECK(is_loaded_);
+
+  // Skip saving the page that is not intended to be saved, like local file
+  // page.
+  if (!CanSavePage(url)) {
+    InformSavePageDone(callback, SavePageResult::SKIPPED);
+    return;
+  }
+
   DCHECK(archiver.get());
   archiver->CreateArchive(base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,

@@ -65,6 +65,9 @@ class OfflinePageModel : public KeyedService,
     ARCHIVE_CREATION_FAILED,
     STORE_FAILURE,
     ALREADY_EXISTS,
+    // Certain pages, i.e. file URL or NTP, will not be saved because these
+    // are already locally accisible.
+    SKIPPED,
     // NOTE: always keep this entry at the end. Add new result types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
@@ -114,6 +117,9 @@ class OfflinePageModel : public KeyedService,
 
   typedef base::Callback<void(SavePageResult)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
+
+  // Returns true if an offline copy can be saved for the given URL.
+  static bool CanSavePage(const GURL& url);
 
   // All blocking calls/disk access will happen on the provided |task_runner|.
   OfflinePageModel(

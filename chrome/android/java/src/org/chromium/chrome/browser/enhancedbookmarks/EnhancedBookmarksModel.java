@@ -37,13 +37,16 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
      * Callback for use with addBookmarkAsync / saveOfflinePage.
      */
     public interface AddBookmarkCallback {
+        static final int SAVED = 0;
+        static final int SKIPPED = 1;
+        static final int ERROR = 2;
+
         /**
          * Called when the bookmark has been added.
          * @param bookmarkId ID of the bookmark that has been added.
-         * @param whether an offline copy of the bookmarked page was successfully saved. This could
-         *        be false due to, e.g. save not requested or storage full.
+         * @param result of saving an offline copy of the bookmarked page.
          */
-        void onBookmarkAdded(BookmarkId bookmarkId, boolean pageSavedOffline);
+        void onBookmarkAdded(BookmarkId bookmarkId, int saveResult);
     }
 
     /**
@@ -196,7 +199,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
 
         // If there is no need to save offline page, return now.
         if (mOfflinePageBridge == null) {
-            callback.onBookmarkAdded(enhancedId, false);
+            callback.onBookmarkAdded(enhancedId, AddBookmarkCallback.SKIPPED);
             return;
         }
 
@@ -217,7 +220,15 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
             mOfflinePageBridge.savePage(webContents, bookmarkId, new SavePageCallback() {
                 @Override
                 public void onSavePageDone(int savePageResult, String url) {
-                    callback.onBookmarkAdded(bookmarkId, savePageResult == SavePageResult.SUCCESS);
+                    int saveResult;
+                    if (savePageResult == SavePageResult.SUCCESS) {
+                        saveResult = AddBookmarkCallback.SAVED;
+                    } else if (savePageResult == SavePageResult.SKIPPED) {
+                        saveResult = AddBookmarkCallback.SKIPPED;
+                    } else {
+                        saveResult = AddBookmarkCallback.ERROR;
+                    }
+                    callback.onBookmarkAdded(bookmarkId, saveResult);
                 }
             });
         }

@@ -130,7 +130,8 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             }
         });
 
-        if (OfflinePageBridge.isEnabled()) {
+        if (OfflinePageBridge.isEnabled() && OfflinePageBridge.canSavePage(
+                mEnhancedBookmarksModel.getBookmarkById(mBookmarkId).getUrl())) {
             mOfflinePageModelObserver = new OfflinePageModelObserver() {
                 @Override
                 public void offlinePageDeleted(BookmarkId bookmarkId) {

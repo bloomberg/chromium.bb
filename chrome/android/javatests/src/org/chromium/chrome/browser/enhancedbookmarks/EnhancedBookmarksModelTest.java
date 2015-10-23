@@ -237,7 +237,7 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
                         parent, index, title, url, null, new AddBookmarkCallback() {
                             @Override
                             public void onBookmarkAdded(
-                                    final BookmarkId bookmarkId, boolean savePageSucceeded) {
+                                    final BookmarkId bookmarkId, int saveResult) {
                                 result.set(bookmarkId);
                                 semaphore.release();
                             }

@@ -23,8 +23,6 @@
 #include "jni/OfflinePageBridge_jni.h"
 #include "net/base/filename_util.h"
 
-using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -71,6 +69,13 @@ void ToJavaOfflinePageList(JNIEnv* env,
 static jboolean IsOfflinePagesEnabled(JNIEnv* env,
                                       const JavaParamRef<jclass>& clazz) {
   return offline_pages::IsOfflinePagesEnabled();
+}
+
+static jboolean CanSavePage(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jstring>& j_url) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
+  return url.is_valid() && OfflinePageModel::CanSavePage(url);
 }
 
 OfflinePageBridge::OfflinePageBridge(JNIEnv* env,

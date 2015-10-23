@@ -109,19 +109,18 @@ public class EnhancedBookmarkUtils {
             final Activity activity) {
         return new AddBookmarkCallback() {
             @Override
-            public void onBookmarkAdded(BookmarkId bookmarkId, boolean pageSavedOffline) {
-                SnackbarController snackbarController;
+            public void onBookmarkAdded(BookmarkId bookmarkId, int saveResult) {
+                SnackbarController snackbarController = null;
                 int messageId;
-                int buttonId;
+                int buttonId = 0;
 
                 OfflinePageBridge offlinePageBridge = bookmarkModel.getOfflinePageBridge();
                 if (offlinePageBridge == null) {
                     messageId = R.string.enhanced_bookmark_page_saved;
-                    buttonId = R.string.enhanced_bookmark_item_edit;
-                    snackbarController = createSnackbarControllerForEditButton(
-                            bookmarkModel, activity, bookmarkId);
+                } else if (saveResult == AddBookmarkCallback.SKIPPED) {
+                    messageId = R.string.offline_pages_page_skipped;
                 } else if (OfflinePageUtils.isStorageAlmostFull()) {
-                    messageId = pageSavedOffline
+                    messageId = saveResult == AddBookmarkCallback.SAVED
                             ? R.string.offline_pages_page_saved_storage_near_full
                             : R.string.offline_pages_page_failed_to_save_storage_near_full;
                     // Show "Free up space" button.
@@ -129,10 +128,15 @@ public class EnhancedBookmarkUtils {
                     snackbarController = createSnackbarControllerForFreeUpSpaceButton(
                             bookmarkModel, snackbarManager, activity);
                 } else {
-                    messageId = pageSavedOffline ? R.string.offline_pages_page_saved
-                                                 : R.string.offline_pages_page_failed_to_save;
-                    // Show "Edit" button even if offline page was not saved here, because a
-                    // bookmark was created and user might want to edit title.
+                    messageId = saveResult == AddBookmarkCallback.SAVED
+                            ? R.string.offline_pages_page_saved
+                            : R.string.offline_pages_page_failed_to_save;
+                }
+
+                // Show "Edit" button when "Free up space" button is not desired, regardless whether
+                // the offline page was saved successfuly, because a bookmark was created and user
+                // might want to edit title.
+                if (buttonId == 0) {
                     buttonId = R.string.enhanced_bookmark_item_edit;
                     snackbarController = createSnackbarControllerForEditButton(
                             bookmarkModel, activity, bookmarkId);
@@ -140,8 +144,7 @@ public class EnhancedBookmarkUtils {
 
                 snackbarManager.showSnackbar(
                         Snackbar.make(activity.getString(messageId), snackbarController)
-                                .setAction(
-                                        buttonId == 0 ? null : activity.getString(buttonId), null)
+                                .setAction(activity.getString(buttonId), null)
                                 .setSingleLine(false));
             }
         };

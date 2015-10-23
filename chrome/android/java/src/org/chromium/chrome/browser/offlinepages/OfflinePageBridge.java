@@ -123,6 +123,13 @@ public final class OfflinePageBridge {
     }
 
     /**
+     * @return True if an offline copy of the given URL can be saved.
+     */
+    public static boolean canSavePage(String url) {
+        return nativeCanSavePage(url);
+    }
+
+    /**
      * Destroys native offline pages bridge. It should be called during
      * destruction to ensure proper cleanup.
      */
@@ -319,6 +326,7 @@ public final class OfflinePageBridge {
     }
 
     private static native boolean nativeIsOfflinePagesEnabled();
+    private static native boolean nativeCanSavePage(String url);
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeOfflinePageBridge);
