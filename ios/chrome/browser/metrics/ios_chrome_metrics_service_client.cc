@@ -189,6 +189,10 @@ base::string16 IOSChromeMetricsServiceClient::GetRegistryBackupKey() {
   return base::string16();
 }
 
+void IOSChromeMetricsServiceClient::OnRendererProcessCrash() {
+  stability_metrics_provider_->LogRendererCrash();
+}
+
 void IOSChromeMetricsServiceClient::WebStateDidStartLoading(
     web::WebState* web_state) {
   metrics_service_->OnApplicationNotIdle();
@@ -197,10 +201,6 @@ void IOSChromeMetricsServiceClient::WebStateDidStartLoading(
 void IOSChromeMetricsServiceClient::WebStateDidStopLoading(
     web::WebState* web_state) {
   metrics_service_->OnApplicationNotIdle();
-}
-
-void IOSChromeMetricsServiceClient::LogRendererProcessCrash() {
-  stability_metrics_provider_->LogRendererCrash();
 }
 
 void IOSChromeMetricsServiceClient::Initialize() {

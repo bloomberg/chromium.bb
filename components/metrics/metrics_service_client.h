@@ -93,6 +93,11 @@ class MetricsServiceClient {
 
   // Called on plugin loading errors.
   virtual void OnPluginLoadingError(const base::FilePath& plugin_path) {}
+
+  // Called on renderer crashes in some embedders (e.g., those that do not use
+  // //content and thus do not have //content's notification system available
+  // as a mechanism for observing renderer crashes).
+  virtual void OnRendererProcessCrash() {}
 };
 
 }  // namespace metrics

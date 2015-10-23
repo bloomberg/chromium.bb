@@ -67,16 +67,11 @@ class IOSChromeMetricsServiceClient
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
+  void OnRendererProcessCrash() override;
 
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;
   void WebStateDidStopLoading(web::WebState* web_state) override;
-
-  // Records an unexpected renderer (web) process termination.
-  // This path only exists on iOS because the other platforms use the (now
-  // deprecated) content::Notification system to get this information into the
-  // stability provider.
-  void LogRendererProcessCrash();
 
  private:
   explicit IOSChromeMetricsServiceClient(

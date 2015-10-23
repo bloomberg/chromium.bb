@@ -48,6 +48,10 @@ void MetricsServicesManager::OnPluginLoadingError(
   GetMetricsServiceClient()->OnPluginLoadingError(plugin_path);
 }
 
+void MetricsServicesManager::OnRendererProcessCrash() {
+  GetMetricsServiceClient()->OnRendererProcessCrash();
+}
+
 metrics::MetricsServiceClient*
 MetricsServicesManager::GetMetricsServiceClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
