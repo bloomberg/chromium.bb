@@ -112,7 +112,10 @@ private:
     void setWebConnectionImpl(WebConnectionType, double maxBandwidthMbps);
     void setMaxBandwidthImpl(double maxBandwidthMbps);
 
-    using ObserverListMap = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<ExecutionContext>, OwnPtr<ObserverList>>;
+    // The ObserverListMap is cross-thread accessed, adding/removing Observers running
+    // within an ExecutionContext. Kept off-heap to ease cross-thread allocation and use;
+    // the observers are (already) responsible for explicitly unregistering while finalizing.
+    using ObserverListMap = HashMap<RawPtrWillBeUntracedMember<ExecutionContext>, OwnPtr<ObserverList>>;
 
     void notifyObserversOfConnectionChangeOnContext(WebConnectionType, double maxBandwidthMbps, ExecutionContext*);
 
