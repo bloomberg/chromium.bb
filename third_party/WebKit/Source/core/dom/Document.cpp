@@ -5744,7 +5744,6 @@ DEFINE_TRACE(Document)
     visitor->trace(m_listsInvalidatedAtDocument);
     for (int i = 0; i < numNodeListInvalidationTypes; ++i)
         visitor->trace(m_nodeLists[i]);
-    visitor->trace(m_cssCanvasElements);
     visitor->trace(m_topLayerElements);
     visitor->trace(m_elemSheet);
     visitor->trace(m_nodeIterators);
