@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
-#include "chrome/browser/sync/glue/history_delete_directives_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
@@ -29,6 +28,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/history/core/browser/history_delete_directives_data_type_controller.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
@@ -227,7 +227,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       !history_disabled) {
     sync_service->RegisterDataTypeController(
-        new HistoryDeleteDirectivesDataTypeController(error_callback,
+        new HistoryDeleteDirectivesDataTypeController(ui_thread, error_callback,
                                                       sync_client));
   }
 

@@ -62,6 +62,8 @@
         'history/core/browser/history_database_params.cc',
         'history/core/browser/history_database_params.h',
         'history/core/browser/history_db_task.h',
+        'history/core/browser/history_delete_directives_data_type_controller.cc',
+        'history/core/browser/history_delete_directives_data_type_controller.h',
         'history/core/browser/history_match.cc',
         'history/core/browser/history_match.h',
         'history/core/browser/history_model_worker.cc',

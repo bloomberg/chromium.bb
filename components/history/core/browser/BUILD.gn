@@ -29,6 +29,8 @@ static_library("browser") {
     "history_database_params.cc",
     "history_database_params.h",
     "history_db_task.h",
+    "history_delete_directives_data_type_controller.cc",
+    "history_delete_directives_data_type_controller.h",
     "history_match.cc",
     "history_match.h",
     "history_model_worker.cc",

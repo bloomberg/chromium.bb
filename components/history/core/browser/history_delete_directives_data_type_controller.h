@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_GLUE_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "components/sync_driver/ui_data_type_controller.h"
@@ -18,6 +19,7 @@ class HistoryDeleteDirectivesDataTypeController
       public sync_driver::SyncServiceObserver {
  public:
   HistoryDeleteDirectivesDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
       sync_driver::SyncClient* sync_client);
 
@@ -44,4 +46,4 @@ class HistoryDeleteDirectivesDataTypeController
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
