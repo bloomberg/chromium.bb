@@ -21,6 +21,8 @@ class ChromeStartupTracingController(controllers.BaseController):
     self._url = url
     self._trace_file = None
     self._trace_finish_re = re.compile(r' Completed startup tracing to (.*)')
+    self._flag_changer = flag_changer.FlagChanger(
+      self._device, self._package_info.cmdline_file)
 
   def __repr__(self):
     return 'Browser Startup Trace'
@@ -28,9 +30,7 @@ class ChromeStartupTracingController(controllers.BaseController):
   def _SetupTracing(self):
     # TODO(lizeb): Figure out how to clean up the command-line file when
     # _TearDownTracing() is not executed in StopTracing().
-    changer = flag_changer.FlagChanger(
-        self._device, self._package_info.cmdline_file)
-    changer.AddFlags(['--trace-startup'])
+    self._flag_changer.AddFlags(['--trace-startup'])
     self._device.ForceStop(self._package_info.package)
     if self._cold:
       self._device.EnableRoot()
@@ -50,9 +50,7 @@ class ChromeStartupTracingController(controllers.BaseController):
     self._device.StartActivity(launch_intent, blocking=True)
 
   def _TearDownTracing(self):
-    changer = flag_changer.FlagChanger(
-        self._device, self._package_info.cmdline_file)
-    changer.RemoveFlags(['--trace-startup'])
+    self._flag_changer.Restore()
 
   def StartTracing(self, interval):
     self._SetupTracing()

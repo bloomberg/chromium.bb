@@ -110,11 +110,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.LaunchTestHttpServer(
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.flags:
-      self.flags.AddFlags(['--disable-fre', '--enable-test-intents'])
+      flags_to_add = ['--disable-fre', '--enable-test-intents']
       if self.options.device_flags:
         with open(self.options.device_flags) as device_flags_file:
           stripped_flags = (l.strip() for l in device_flags_file)
-          self.flags.AddFlags([flag for flag in stripped_flags if flag])
+          flags_to_add.extend([flag for flag in stripped_flags if flag])
+      self.flags.AddFlags(flags_to_add)
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
@@ -196,13 +197,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     self.tool.CleanUpEnvironment()
 
+    if self.flags and self._IsFreTest(test):
+      self.flags.Restore()
+
     if not result:
       return
     if result.DidRunPass():
       self.TearDownPerfMonitoring(test)
-
-      if self.flags and self._IsFreTest(test):
-        self.flags.AddFlags(['--disable-fre'])
 
       if self.coverage_dir:
         self.device.PullFile(

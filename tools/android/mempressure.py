@@ -102,8 +102,7 @@ def main(argv):
     #                 conversions are finished.
     logging.error(str(e))
   flags = flag_changer.FlagChanger(device, package_info.cmdline_file)
-  if ENABLE_TEST_INTENTS_FLAG not in flags.Get():
-    flags.AddFlags([ENABLE_TEST_INTENTS_FLAG])
+  flags.AddFlags([ENABLE_TEST_INTENTS_FLAG])
 
   device.StartActivity(intent.Intent(package=package, activity=activity,
                                      action=action))

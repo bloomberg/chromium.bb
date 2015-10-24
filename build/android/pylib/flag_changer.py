@@ -10,9 +10,7 @@ from devil.android import device_errors
 class FlagChanger(object):
   """Changes the flags Chrome runs with.
 
-  There are two different use cases for this file:
-  * Flags are permanently set by calling Set().
-  * Flags can be temporarily set for a particular set of unit tests.  These
+    Flags can be temporarily set for a particular set of unit tests.  These
     tests should call Restore() to revert the flags to their original state
     once the tests have completed.
   """
@@ -27,35 +25,19 @@ class FlagChanger(object):
     self._device = device
     self._cmdline_file = cmdline_file
 
-    # Save the original flags.
-    self._orig_line = ''
+    stored_flags = ''
     if self._device.PathExists(self._cmdline_file):
       try:
-        self._orig_line = self._device.ReadFile(self._cmdline_file).strip()
+        stored_flags = self._device.ReadFile(self._cmdline_file).strip()
       except device_errors.CommandFailedError:
         pass
-
-    # Parse out the flags into a list to facilitate adding and removing flags.
-    self._current_flags = self._TokenizeFlags(self._orig_line)
-
-  def Get(self):
-    """Returns list of current flags."""
-    return self._current_flags
-
-  def Set(self, flags):
-    """Replaces all flags on the current command line with the flags given.
-
-    Args:
-      flags: A list of flags to set, eg. ['--single-process'].
-    """
-    if flags:
-      assert flags[0] != 'chrome'
-
-    self._current_flags = flags
-    self._UpdateCommandLineFile()
+    # Store the flags as a set to facilitate adding and removing flags.
+    self._state_stack = [set(self._TokenizeFlags(stored_flags))]
 
   def AddFlags(self, flags):
     """Appends flags to the command line if they aren't already there.
+       Saves the current flags state on the stack, so a call to Restore will
+       change the state back to the one preceeding the call to AddFlags.
 
     Args:
       flags: A list of flags to add on, eg. ['--single-process'].
@@ -63,14 +45,19 @@ class FlagChanger(object):
     if flags:
       assert flags[0] != 'chrome'
 
-    # Avoid appending flags that are already present.
+    new_flags = self._state_stack[-1].copy()
     for flag in flags:
-      if flag not in self._current_flags:
-        self._current_flags.append(flag)
+      new_flags.add(flag)
+    self._state_stack.append(new_flags)
     self._UpdateCommandLineFile()
 
   def RemoveFlags(self, flags):
     """Removes flags from the command line, if they exist.
+       Saves the current flags state on the stack, so a call to Restore will
+       change the state back to the one preceeding the call to RemoveFlags.
+
+       Note that calling RemoveFlags after AddFlags will result in having
+       two nested states.
 
     Args:
       flags: A list of flags to remove, eg. ['--single-process'].  Note that we
@@ -81,25 +68,32 @@ class FlagChanger(object):
     if flags:
       assert flags[0] != 'chrome'
 
+    new_flags = self._state_stack[-1].copy()
     for flag in flags:
-      if flag in self._current_flags:
-        self._current_flags.remove(flag)
+      new_flags.discard(flag)
+    self._state_stack.append(new_flags)
     self._UpdateCommandLineFile()
 
   def Restore(self):
-    """Restores the flags to their original state."""
-    self._current_flags = self._TokenizeFlags(self._orig_line)
+    """Restores the flags to their state prior to the last AddFlags or
+       RemoveFlags call.
+    """
+    # The initial state must always remain on the stack.
+    assert len(self._state_stack) > 1, (
+      "Mismatch between calls to Add/RemoveFlags and Restore")
+    self._state_stack.pop()
     self._UpdateCommandLineFile()
 
   def _UpdateCommandLineFile(self):
     """Writes out the command line to the file, or removes it if empty."""
-    logging.info('Current flags: %s', self._current_flags)
+    current_flags = list(self._state_stack[-1])
+    logging.info('Current flags: %s', current_flags)
     # Root is not required to write to /data/local/tmp/.
     use_root = '/data/local/tmp/' not in self._cmdline_file
-    if self._current_flags:
+    if current_flags:
       # The first command line argument doesn't matter as we are not actually
       # launching the chrome executable using this command line.
-      cmd_line = ' '.join(['_'] + self._current_flags)
+      cmd_line = ' '.join(['_'] + current_flags)
       self._device.WriteFile(
           self._cmdline_file, cmd_line, as_root=use_root)
       file_contents = self._device.ReadFile(
