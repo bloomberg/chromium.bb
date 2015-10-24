@@ -3,17 +3,12 @@
 # found in the LICENSE file.
 
 from profile_creators import cookie_profile_extender
-from profile_creators import history_profile_extender
 from profile_creators import profile_extender
 
 class LargeProfileExtender(profile_extender.ProfileExtender):
   """This class creates a large profile by performing a large number of url
   navigations."""
   def Run(self):
-    extender = history_profile_extender.HistoryProfileExtender(
-        self.finder_options)
-    extender.Run()
-
     extender = cookie_profile_extender.CookieProfileExtender(
         self.finder_options)
     extender.Run()
