@@ -682,7 +682,7 @@ hooks = [
                 '--platform=darwin',
                 '--no_auth',
                 '--bucket', 'chromium-libcpp',
-                '-s', 'src/third_party/libc++-static/libc++-static.a.sha1',
+                '-s', 'src/third_party/libc++-static/libc++.a.sha1',
     ],
   },
   # Pull luci-go binaries (isolate, swarming) using checked-in hashes.
