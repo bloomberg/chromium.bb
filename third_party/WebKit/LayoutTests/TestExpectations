@@ -1,5 +1,6 @@
 # Run these tests with under virtual/spv2 only.
 crbug.com/524134 paint/invalidation/spv2 [ Skip ]
+crbug.com/524134 virtual/syncpaint/paint/invalidation/spv2 [ Skip ]
 
 # TODO(wangxianzhu): Triage the failures
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
@@ -33,12 +34,15 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
+crbug.com/546730 virtual/syncpaint/paint/invalidation/composited-table-cell-container-background.html [ Failure ]
+
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
 crbug.com/537172 [ SnowLeopard XP Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
+crbug.com/504613 crbug.com/524248 virtual/syncpaint/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
@@ -189,6 +193,7 @@ crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
+crbug.com/320139 virtual/syncpaint/fast/repaint/block-layout-inline-children-replaced.html [ Skip ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
 crbug.com/518929 [ Win10 ] http/tests/appcache/remove-cache.html [ Failure Pass ]
@@ -459,6 +464,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/u
 crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
 crbug.com/539623 [ SnowLeopard ] fast/repaint/selection-change-in-iframe-with-relative-parent.html [ Pass Failure ]
+crbug.com/539623 [ SnowLeopard ] virtual/syncpaint/fast/repaint/selection-change-in-iframe-with-relative-parent.html [ Skip ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
@@ -824,6 +830,7 @@ crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-tran
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ Failure ]
+crbug.com/506525 [ XP ] virtual/syncpaint/paint/masks/fieldset-mask.html [ Skip ]
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 media/video-object-fit.html [ Failure ]
@@ -917,6 +924,9 @@ crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-m
 crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Failure ]
 crbug.com/524596 virtual/spv2/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
 crbug.com/524596 virtual/spv2/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
+crbug.com/524596 virtual/syncpaint/paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Skip ]
+crbug.com/524596 virtual/syncpaint/paint/invalidation/composited-non-stacking-context-descendant-move.html [ Skip ]
+crbug.com/524596 virtual/syncpaint/paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Skip ]
 
 crbug.com/546538 svg/clip-path/clip-path-child-clipped.svg [ NeedsManualRebaseline ]
 crbug.com/546538 svg/clip-path/clip-path-nonzero.svg [ NeedsManualRebaseline ]
@@ -1007,8 +1017,10 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Timeout ]
 crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
-crbug.com/474798 virtual/spv2/paint/invalidation/spv2/align-self-change-keeping-geometry-grid-as-text.html [ Failure ]
-crbug.com/474798 virtual/spv2/paint/invalidation/spv2/justify-self-change-keeping-geometry-as-text.html [ Failure ]
+crbug.com/474798 virtual/spv2/paint/invalidation/spv2/align-self-change-keeping-geometry-grid-as-text.html [ Skip ]
+crbug.com/474798 virtual/spv2/paint/invalidation/spv2/justify-self-change-keeping-geometry-as-text.html [ Skip ]
+crbug.com/474798 virtual/syncpaint/fast/repaint/align-self-change-keeping-geometry-grid.html [ Skip ]
+crbug.com/474798 virtual/syncpaint/fast/repaint/justify-self-change-keeping-geometry.html [ Skip ]
 
 
 # Temporarily disabled after chromium change
@@ -1115,6 +1127,9 @@ crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-s
 crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
 
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
+
+crbug.com/536999 fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
+crbug.com/536999 virtual/syncpaint/fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
@@ -1281,6 +1296,7 @@ crbug.com/521730 [ Win10 ] fast/preloader/first-base-tag-wins.html [ Failure Pas
 crbug.com/521730 [ Win10 ] fast/preloader/noscript.html [ Failure Pass ]
 crbug.com/521730 [ Win10 ] fast/preloader/script.html [ Failure Pass ]
 crbug.com/521730 [ Win10 ] fast/repaint/stacking-context-lost.html [ Pass Timeout ]
+crbug.com/521730 [ Win10 ] virtual/syncpaint/fast/repaint/stacking-context-lost.html [ Skip ]
 crbug.com/521730 [ Win10 ] fast/scroll-behavior/overflow-scroll-animates.html [ Failure Pass ]
 crbug.com/521730 [ Win10 ] fast/table/cell-change-baseline-then-border.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] http/tests/history/back-to-post.html [ Failure Pass Timeout ]
@@ -1298,6 +1314,7 @@ crbug.com/521730 [ Win10 ] inspector/file-reader-with-network-panel.html [ Failu
 crbug.com/521730 [ Win10 ] inspector/sources/debugger-step/debugger-step-out-document-write.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] media/W3C/audio/error/error_onerror_called_on_bogus_source.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] paint/inline/outline-offset.html [ Failure Timeout ]
+crbug.com/521730 [ Win10 ] virtual/syncpaint/paint/inline/outline-offset.html [ Skip ]
 crbug.com/521730 [ Win10 ] svg/as-image/svg-object-intrinsic-size.html [ Missing Timeout ]
 #crbug.com/521730 [ Win10 ] svg/as-object/nested-embedded-svg-size-changes.html [ Pass Timeout ]
 crbug.com/521730 [ Win10 ] svg/custom/rounded-rect-update-to-empty.html [ Pass Timeout ]
@@ -1337,6 +1354,7 @@ crbug.com/521764 [ Win10 ] fast/preloader/link.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/preloader/scan-body-from-head-script.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/preloader/understands-base-tag.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Timeout ]
+crbug.com/521764 [ Win10 ] virtual/syncpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Skip ]
 crbug.com/521764 [ Win10 ] fast/ruby/nested-ruby.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/text-autosizing/cluster-inline-block-or-table.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] fast/text-autosizing/cluster-inline-grid-flex-box.html [ Pass Timeout ]
@@ -1497,6 +1515,8 @@ crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
+crbug.com/502927 [ XP ] virtual/syncpaint/paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Skip ]
+crbug.com/502927 [ XP ] virtual/syncpaint/paint/frames/frameset-with-stacking-contexts.html [ Skip ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
@@ -1583,6 +1603,7 @@ crbug.com/538525 [ Lion ] virtual/threaded/animations/multiple-same-animations-a
 crbug.com/538526 [ Win7 Win10 ] virtual/spv2/paint/invalidation/spv2/fixed-img-src-change-after-scroll.html [ Failure ]
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
+crbug.com/527743 [ Win10 ] virtual/syncpaint/paint/masks/table-cell-masks.html [ Skip ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 

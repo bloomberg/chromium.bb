@@ -384,7 +384,8 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
 
 void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
-    ASSERT(!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+    // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
@@ -402,18 +403,23 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     }
 }
 
-void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
+void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
 {
     if (layer()->groupedMapping()) {
-        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason, enclosingIntRect(previousPaintInvalidationRect), enclosingIntRect(newPaintInvalidationRect));
+        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
+            // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
+            IntRect paintInvalidationRectOnSquashingLayer;
+            if (paintInvalidationRect)
+                paintInvalidationRectOnSquashingLayer = enclosingIntRect(*paintInvalidationRect);
+            squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason, paintInvalidationRect ? &paintInvalidationRectOnSquashingLayer : nullptr);
+        }
     } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
         if (this->displayItemClient() != displayItemClient.displayItemClient() && isBox() && toLayoutBox(this)->usesCompositedScrolling()) {
             // This paint invalidation container is using composited scrolling, and we are invalidating a scrolling content,
             // so we should invalidate on the scrolling contents layer only.
-            compositedLayerMapping->invalidateDisplayItemClientOnScrollingContentsLayer(displayItemClient, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+            compositedLayerMapping->invalidateDisplayItemClientOnScrollingContentsLayer(displayItemClient, invalidationReason, paintInvalidationRect);
         } else {
-            compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+            compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason, paintInvalidationRect);
         }
     }
 }

@@ -112,23 +112,21 @@ void PaintController::endScope()
     endSkippingCache();
 }
 
-void PaintController::invalidate(const DisplayItemClientWrapper& client, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
+void PaintController::invalidate(const DisplayItemClientWrapper& client, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
 {
     invalidateClient(client);
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        Invalidation invalidation = { previousPaintInvalidationRect, paintInvalidationReason };
-        if (!previousPaintInvalidationRect.isEmpty())
-            m_invalidations.append(invalidation);
-        if (newPaintInvalidationRect != previousPaintInvalidationRect && !newPaintInvalidationRect.isEmpty()) {
-            invalidation.rect = newPaintInvalidationRect;
-            m_invalidations.append(invalidation);
-        }
+    if (visualRect) {
+        // TODO(wkorman): cache visualRect for the client.
     }
 }
 
 void PaintController::invalidateClient(const DisplayItemClientWrapper& client)
 {
+#if ENABLE(ASSERT)
+    m_invalidations.append(client.debugName());
+#endif
+
     invalidateUntracked(client.displayItemClient());
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
         m_trackedPaintInvalidationObjects->append(client.debugName());
@@ -269,28 +267,26 @@ void PaintController::copyCachedSubsequence(DisplayItemList::iterator& currentIt
 // Coefficients are related to the ratio of out-of-order CachedDisplayItems
 // and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
-void PaintController::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
+void PaintController::commitNewDisplayItems()
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
         "current_display_list_size", (int)m_currentPaintArtifact.displayItemList().size(),
         "num_non_cached_new_items", (int)m_newDisplayItemList.size() - m_numCachedItems);
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        if (!m_newDisplayItemList.isEmpty() && m_newDisplayItemList.last().type() == DisplayItem::CachedDisplayItemList) {
-            // The whole display item list is cached.
-            ASSERT(m_newDisplayItemList.size() == 1
-                || (m_newDisplayItemList.size() == 2 && m_newDisplayItemList[0].type() == DisplayItem::DebugRedFill));
-            ASSERT(m_invalidations.isEmpty());
-            ASSERT(m_clientsCheckedPaintInvalidation.isEmpty());
-            m_newDisplayItemList.clear();
-            m_newPaintChunks.clear();
-            return;
-        }
-        for (const auto& invalidation : m_invalidations)
-            graphicsLayer->setNeedsDisplayInRect(invalidation.rect, invalidation.invalidationReason);
-        m_invalidations.clear();
-        m_clientsCheckedPaintInvalidation.clear();
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()
+        && !m_newDisplayItemList.isEmpty()
+        && m_newDisplayItemList.last().type() == DisplayItem::CachedDisplayItemList) {
+        // The whole display item list is cached.
+        ASSERT(m_newDisplayItemList.size() == 1
+            || (m_newDisplayItemList.size() == 2 && m_newDisplayItemList[0].type() == DisplayItem::DebugRedFill));
+        ASSERT(m_invalidations.isEmpty());
+        ASSERT(m_clientsCheckedPaintInvalidation.isEmpty());
+        m_newDisplayItemList.clear();
+        m_newPaintChunks.clear();
+        return;
     }
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        m_clientsCheckedPaintInvalidation.clear();
 
     // These data structures are used during painting only.
     ASSERT(m_scopeStack.isEmpty());
@@ -300,6 +296,7 @@ void PaintController::commitNewDisplayItems(GraphicsLayer* graphicsLayer)
 #if ENABLE(ASSERT)
     m_newDisplayItemIndicesByClient.clear();
     m_clientsWithPaintOffsetInvalidations.clear();
+    m_invalidations.clear();
 #endif
 
     if (m_currentPaintArtifact.isEmpty()) {

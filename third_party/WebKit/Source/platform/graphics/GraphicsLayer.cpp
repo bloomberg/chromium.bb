@@ -1011,9 +1011,9 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
         m_linkHighlights[i]->invalidate();
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect)
+void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
 {
-    paintController()->invalidate(displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+    paintController()->invalidate(displayItemClient, paintInvalidationReason, visualRect);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
 }

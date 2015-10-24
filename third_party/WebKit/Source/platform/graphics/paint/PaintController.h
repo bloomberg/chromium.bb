@@ -25,7 +25,6 @@
 
 namespace blink {
 
-class GraphicsLayer;
 class GraphicsContext;
 
 static const size_t kInitialDisplayItemListCapacityBytes = 512;
@@ -42,8 +41,13 @@ public:
         return adoptPtr(new PaintController());
     }
 
-    // These methods are called during paint invalidation (or paint if SlimmingPaintSynchronizedPainting is on).
-    void invalidate(const DisplayItemClientWrapper&, PaintInvalidationReason, const IntRect& previousPaintInvalidationRect, const IntRect& newPaintInvalidationRect);
+    // These methods are called during paint invalidation (or paint if SlimmingPaintV2 is on).
+
+    // If |visualRect| is not nullptr, for slimming paint v1, it contains all pixels within the GraphicsLayer
+    // which might be painted into by the display item client, in coordinate space of the GraphicsLayer.
+    // TODO(pdr): define it for spv2.
+    // |visualRect| can be nullptr if we know it's unchanged and PaintController has cached the previous value.
+    void invalidate(const DisplayItemClientWrapper&, PaintInvalidationReason, const IntRect* visualRect);
     void invalidateUntracked(DisplayItemClient);
     void invalidateAll();
 
@@ -103,9 +107,8 @@ public:
     void endSkippingCache() { ASSERT(m_skippingCacheCount > 0); --m_skippingCacheCount; }
     bool skippingCache() const { return m_skippingCacheCount; }
 
-    // Must be called when a painting is finished. If passed, invalidations are recorded on the given
-    // GraphicsLayer.
-    void commitNewDisplayItems(GraphicsLayer* = nullptr);
+    // Must be called when a painting is finished.
+    void commitNewDisplayItems();
 
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebPaintController.
@@ -242,14 +245,10 @@ private:
     unsigned m_nextScope;
     Vector<unsigned> m_scopeStack;
 
-    struct Invalidation {
-        IntRect rect;
-        PaintInvalidationReason invalidationReason;
-    };
-
-    Vector<Invalidation> m_invalidations;
-
 #if ENABLE(ASSERT)
+    // Record the debug names of invalidated clients for assertion and debugging.
+    Vector<String> m_invalidations;
+
     // This is used to check duplicated ids during add(). We could also check
     // during commitNewDisplayItems(), but checking during add() helps developer
     // easily find where the duplicated ids are from.

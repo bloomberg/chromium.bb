@@ -2030,7 +2030,9 @@ struct SetContentsNeedsDisplayInRectFunctor {
 // r is in the coordinate space of the layer's layout object
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason)
 {
-    ASSERT(!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+    // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
     SetContentsNeedsDisplayInRectFunctor functor = {
         enclosingIntRect(LayoutRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())),
         invalidationReason
@@ -2038,18 +2040,33 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect)
+struct InvalidateDisplayItemClientFunctor {
+    void operator() (GraphicsLayer* layer) const
+    {
+        IntRect visualRectOnLayer;
+        if (visualRect) {
+            visualRectOnLayer = enclosingIntRect(LayoutRect(visualRect->location() + subpixelAccumulation, visualRect->size()));
+            visualRectOnLayer.move(-layer->offsetFromLayoutObject());
+        }
+        layer->invalidateDisplayItemClient(displayItemClient, invalidationReason, visualRect ? &visualRectOnLayer : nullptr);
+    }
+
+    const DisplayItemClientWrapper& displayItemClient;
+    PaintInvalidationReason invalidationReason;
+    const LayoutRect* visualRect;
+    LayoutSize subpixelAccumulation;
+};
+
+void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect* visualRect)
 {
-    ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect](GraphicsLayer* layer) {
-        layer->invalidateDisplayItemClient(displayItemClient, paintInvalidationReason, enclosingIntRect(previousPaintInvalidationRect), enclosingIntRect(newPaintInvalidationRect));
-    }, ApplyToContentLayers);
+    InvalidateDisplayItemClientFunctor functor = { displayItemClient, paintInvalidationReason, visualRect, m_owningLayer.subpixelAccumulation() };
+    ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-void CompositedLayerMapping::invalidateDisplayItemClientOnScrollingContentsLayer(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect)
+void CompositedLayerMapping::invalidateDisplayItemClientOnScrollingContentsLayer(const DisplayItemClientWrapper& displayItemClient, PaintInvalidationReason paintInvalidationReason, const LayoutRect* visualRect)
 {
-    ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect](GraphicsLayer* layer) {
-        layer->invalidateDisplayItemClient(displayItemClient, paintInvalidationReason, enclosingIntRect(previousPaintInvalidationRect), enclosingIntRect(newPaintInvalidationRect));
-    }, ApplyToScrollingContentsLayer);
+    InvalidateDisplayItemClientFunctor functor = { displayItemClient, paintInvalidationReason, visualRect, m_owningLayer.subpixelAccumulation() };
+    ApplyToGraphicsLayers(this, functor, ApplyToScrollingContentsLayer);
 }
 
 const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)

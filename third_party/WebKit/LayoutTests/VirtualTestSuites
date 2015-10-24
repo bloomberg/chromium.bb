@@ -189,5 +189,23 @@
     "prefix": "spv2",
     "base": "paint",
     "args": ["--enable-slimming-paint-v2"]
+  },
+  {
+    "prefix": "syncpaint",
+    "base": "compositing/repaint",
+    "args": ["--enable-blink-features=SlimmingPaintSynchronizedPainting"],
+    "references_use_default_args": true
+  },
+  {
+    "prefix": "syncpaint",
+    "base": "fast/repaint",
+    "args": ["--enable-blink-features=SlimmingPaintSynchronizedPainting"],
+    "references_use_default_args": true
+  },
+  {
+    "prefix": "syncpaint",
+    "base": "paint",
+    "args": ["--enable-blink-features=SlimmingPaintSynchronizedPainting"],
+    "references_use_default_args": true
   }
 ]

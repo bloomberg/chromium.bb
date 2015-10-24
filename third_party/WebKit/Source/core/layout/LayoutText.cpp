@@ -1873,16 +1873,16 @@ PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
     return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
 }
 
-void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
+void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
 {
-    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, paintInvalidationRect);
 
-    LayoutRect emptyInvalidationRect;
+    // TODO(wangxianzhu): Pass current bounds of text boxes to PaintController. crbug.com/547119.
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, emptyInvalidationRect, emptyInvalidationRect);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, nullptr);
         if (box->truncation() != cNoTruncation) {
             if (EllipsisBox* ellipsisBox = box->root().ellipsisBox())
-                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason, emptyInvalidationRect, emptyInvalidationRect);
+                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason, nullptr);
         }
     }
 }

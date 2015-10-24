@@ -1427,21 +1427,25 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
 
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
-    // If we are set to do a full paint invalidation that means the LayoutView will be
-    // issue paint invalidations. We can then skip issuing of paint invalidations for the child
-    // layoutObjects as they'll be covered by the LayoutView.
-    if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason)) {
+    bool willDoFullInvalidation = view()->doingFullPaintInvalidation() || isFullPaintInvalidationReason(reason);
+    if (!willDoFullInvalidation)
         invalidatePaintForOverflowIfNeeded();
 
-        // Issue paint invalidations for any scrollbars if there is a scrollable area for this layoutObject.
-        if (ScrollableArea* area = scrollableArea()) {
-            // In slimming paint mode, we already invalidated the display item clients of the scrollbars
-            // during PaintLayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
-            // invalidate the rectangles to trigger repaints.
-            if (area->hasVerticalBarDamage())
+    // Issue paint invalidations for any scrollbars if there is a scrollable area for this layoutObject.
+    if (ScrollableArea* area = scrollableArea()) {
+        if (area->hasVerticalBarDamage()) {
+            if (!willDoFullInvalidation)
                 invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->verticalBarDamage()));
-            if (area->hasHorizontalBarDamage())
+            // TODO(wangxianzhu): Pass current bounds of the scrollbar to PaintController. crbug.com/547119.
+            if (Scrollbar* verticalScrollbar = area->verticalScrollbar())
+                invalidateDisplayItemClient(*verticalScrollbar);
+        }
+        if (area->hasHorizontalBarDamage()) {
+            if (!willDoFullInvalidation)
                 invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->horizontalBarDamage()));
+            // TODO(wangxianzhu): Pass current bounds of the scrollbar to PaintController. crbug.com/547119.
+            if (Scrollbar* horizontalScrollbar = area->horizontalScrollbar())
+                invalidateDisplayItemClient(*horizontalScrollbar);
         }
     }
 

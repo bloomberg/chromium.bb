@@ -8,6 +8,10 @@
       "repaintRects": [
         [93, 8, 15, 85],
         [8, 93, 85, 15]
+      ],
+      "paintInvalidationClients": [
+        "VerticalScrollbar",
+        "HorizontalScrollbar"
       ]
     }
   ]

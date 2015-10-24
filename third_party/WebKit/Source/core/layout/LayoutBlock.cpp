@@ -363,9 +363,9 @@ inline static void invalidateDisplayItemClientForStartOfContinuationsIfNeeded(co
         startOfContinuations->invalidateDisplayItemClient(*startOfContinuations);
 }
 
-void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
+void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
 {
-    LayoutBox::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+    LayoutBox::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, paintInvalidationRect);
     invalidateDisplayItemClientForStartOfContinuationsIfNeeded(*this);
 }
 

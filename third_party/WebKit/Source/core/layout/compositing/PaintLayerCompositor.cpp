@@ -888,9 +888,10 @@ void PaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidat
     FrameView* view = m_layoutView.frameView();
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         ASSERT(lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean
-            // TODO(wangxianzhu): Remove this when we remove the old path for spv2.
-            || lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
             || view->shouldThrottleRendering());
+    } else if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        ASSERT(lifecycle().state() == DocumentLifecycle::PaintClean
+            || (view && view->shouldThrottleRendering()));
     } else {
         ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
             || (view && view->shouldThrottleRendering()));

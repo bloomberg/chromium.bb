@@ -9,8 +9,8 @@
         [185, 100, 15, 200]
       ],
       "paintInvalidationClients": [
-        "VerticalScrollbar",
-        "LayoutBlockFlow (positioned) DIV"
+        "LayoutBlockFlow (positioned) DIV",
+        "VerticalScrollbar"
       ]
     }
   ]

@@ -220,8 +220,6 @@ void PaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, con
     if (scrollRect.isEmpty())
         return;
 
-    box().invalidateDisplayItemClient(*scrollbar);
-
     LayoutRect paintInvalidationRect = LayoutRect(scrollRect);
     box().flipForWritingMode(paintInvalidationRect);
 
@@ -235,6 +233,7 @@ void PaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, con
         // We have invalidated the displayItemClient of the scrollbar, but for now we still need to
         // invalidate the rectangles to trigger repaints.
         box().invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(intRect));
+        box().invalidateDisplayItemClient(*scrollbar);
     }
 }
 
@@ -1567,8 +1566,10 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrien
     if (!scrollbar)
         return;
 
-    if (invalidate)
+    if (invalidate) {
+        m_scrollableArea->box().invalidateDisplayItemClient(*scrollbar);
         scrollbar->invalidate();
+    }
     if (!scrollbar->isCustomScrollbar())
         m_scrollableArea->willRemoveScrollbar(scrollbar.get(), orientation);
 

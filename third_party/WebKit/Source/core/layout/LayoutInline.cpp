@@ -1404,11 +1404,12 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const
+void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
 {
-    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, paintInvalidationRect);
+    // TODO(wangxianzhu): Pass current bounds of lineboxes to PaintController. crbug.com/547119.
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, previousPaintInvalidationRect, newPaintInvalidationRect);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, nullptr);
 }
 
 } // namespace blink

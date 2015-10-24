@@ -8,6 +8,10 @@
       "repaintRects": [
         [101, 51, 101, 201],
         [1, 236, 185, 15]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutBlockFlow DIV id='child'"
       ]
     }
   ]

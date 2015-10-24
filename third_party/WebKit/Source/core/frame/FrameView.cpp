@@ -2518,7 +2518,7 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const
         graphicsLayer->paintIfNeeded(context);
 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        graphicsLayer->paintController()->commitNewDisplayItems(graphicsLayer);
+        graphicsLayer->paintController()->commitNewDisplayItems();
 
     for (auto& child : graphicsLayer->children())
         synchronizedPaintRecursively(child, interestRect);
@@ -2533,7 +2533,7 @@ void FrameView::compositeForSlimmingPaintV2()
 
     // Detached frames can have no root graphics layer.
     if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking())
-        rootGraphicsLayer->paintController()->commitNewDisplayItems(rootGraphicsLayer);
+        rootGraphicsLayer->paintController()->commitNewDisplayItems();
 
     forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean); });
 }

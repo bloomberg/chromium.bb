@@ -1055,7 +1055,7 @@ public:
     // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
     void invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason) const;
 
-    // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
+    // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
     void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect&) const;
 
@@ -1309,7 +1309,6 @@ public:
     class MutableForPainting {
     public:
         void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
-        void invalidatePaintIfNeeded(const PaintInfo& paintInfo) { m_layoutObject.invalidatePaintIfNeededForSynchronizedPainting(paintInfo); }
 
     private:
         friend class LayoutObject;
@@ -1450,13 +1449,14 @@ protected:
 
     virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState);
     virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
-    void invalidatePaintIfNeededForSynchronizedPainting(const PaintInfo&);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
     // parts which are invalidated separately (e.g. scrollbars).
-    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& previousPaintInvalidationRect, const LayoutRect& newPaintInvalidationRect) const;
+    // |paintInvalidationRect| can be nullptr if we know it's unchanged and PaintController has cached the
+    // previous value; otherwise we must pass a correct value.
+    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const;
 
     void setIsBackgroundAttachmentFixedObject(bool);
 
@@ -1532,7 +1532,7 @@ private:
     static bool isAllowedToModifyLayoutTreeStructure(Document&);
 
     // The passed rect is mutated into the coordinate space of the paint invalidation container.
-    const LayoutBoxModelObject* invalidatePaintRectangleInternal(LayoutRect&) const;
+    const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
 
     static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
 

@@ -2692,11 +2692,15 @@ void PaintLayer::markAncestorChainForNeedsRepaint()
     // Need to access compositingState(). We've ensured correct flag setting when compositingState() changes.
     DisableCompositingQueryAsserts disabler;
 
-    if (compositingState() != NotComposited)
-        return;
-
     PaintLayer* layer = this;
     while (true) {
+        if (layer->compositingState() == PaintsIntoOwnBacking)
+            return;
+        if (CompositedLayerMapping* groupedMapping = layer->groupedMapping()) {
+            groupedMapping->owningLayer().setNeedsRepaint();
+            return;
+        }
+
         PaintLayer* container = layer->parent();
         if (!container) {
             LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
@@ -2709,8 +2713,6 @@ void PaintLayer::markAncestorChainForNeedsRepaint()
                 break;
             container->m_needsRepaint = true;
         }
-        if (container->compositingState() != NotComposited)
-            break;
         layer = container;
     }
 }

@@ -134,7 +134,7 @@ TEST_F(PaintControllerTest, UpdateBasic)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
     paintController().commitNewDisplayItems();
@@ -161,7 +161,7 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
 
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
@@ -222,7 +222,7 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
         TestDisplayItem(second, foregroundDrawingType),
         TestDisplayItem(third, foregroundDrawingType));
 
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, backgroundDrawingType, FloatRect(300, 100, 50, 50));
@@ -254,8 +254,8 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(first, PaintInvalidationFull, nullptr);
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -268,7 +268,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(first, PaintInvalidationFull, nullptr);
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
     paintController().commitNewDisplayItems();
@@ -292,8 +292,8 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(first, PaintInvalidationFull, nullptr);
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -306,8 +306,8 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(first, PaintInvalidationFull, nullptr);
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
@@ -336,7 +336,7 @@ TEST_F(PaintControllerTest, UpdateClip)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, DisplayItem::clipTypeToEndClipType(clipType)));
 
-    paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(first, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     paintController().commitNewDisplayItems();
@@ -345,7 +345,7 @@ TEST_F(PaintControllerTest, UpdateClip)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
@@ -378,7 +378,7 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
     const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture();
     const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture();
 
-    paintController().invalidate(first, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(first, PaintInvalidationFull, nullptr);
     EXPECT_FALSE(paintController().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(paintController().clientCacheIsValid(second.displayItemClient()));
 
@@ -430,7 +430,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container2, foregroundDrawingType));
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    paintController().invalidate(container1, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(container1, PaintInvalidationFull, nullptr);
     drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
     drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
@@ -592,13 +592,13 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         TestDisplayItem(container2, endSubsequenceType));
 
     // Invalidate container1 but not content1.
-    paintController().invalidate(container1, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(container1, PaintInvalidationFull, nullptr);
 
     // Container2 itself now becomes empty (but still has the 'content2' child),
     // and chooses not to output subsequence info.
 
-    paintController().invalidate(container2, PaintInvalidationFull, IntRect(), IntRect());
-    paintController().invalidate(content2, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(container2, PaintInvalidationFull, nullptr);
+    paintController().invalidate(content2, PaintInvalidationFull, nullptr);
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2, subsequenceType));
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content2, subsequenceType));
     // Content2 now outputs foreground only.
@@ -694,7 +694,7 @@ TEST_F(PaintControllerTest, Scope)
     EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[2]).picture());
 
     // Now the multicol becomes 3 columns and repaints.
-    paintController().invalidate(multicol, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(multicol, PaintInvalidationFull, nullptr);
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
 
     paintController().beginScope();
@@ -743,7 +743,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
         TestDisplayItem(second, DisplayItem::EndClipPath),
         TestDisplayItem(third, backgroundDrawingType));
 
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
@@ -757,7 +757,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
 
-    paintController().invalidate(second, PaintInvalidationFull, IntRect(), IntRect());
+    paintController().invalidate(second, PaintInvalidationFull, nullptr);
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
