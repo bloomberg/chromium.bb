@@ -114,7 +114,7 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertValue(con
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSValueList> tempList;
+    RefPtrWillBeRawPtr<CSSValueList> tempList = nullptr;
     if (!value.isBaseValueList()) {
         tempList = CSSValueList::createCommaSeparated();
         tempList->append(const_cast<CSSValue*>(&value)); // Take ref.
