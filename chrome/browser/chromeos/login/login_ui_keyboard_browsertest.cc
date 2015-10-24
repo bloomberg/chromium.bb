@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
   CheckGaiaKeyboard();
 
   // Switch back.
-  js_checker().Evaluate("$('cancel-add-user-button').click()");
+  js_checker().Evaluate("$('gaia-signin').cancel()");
   OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
 
   EXPECT_EQ(expected_input_methods,

@@ -100,7 +100,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @type {boolean}
      * @private
      */
-    cancelAllowed_: undefined,
+    cancelable_: false,
+    get cancelable() {
+      // TODO(dzhioev): add cancel and refresh buttons hiding logic here.
+      // http://crbug.com/484514
+      return this.cancelable_;
+    },
+    set cancelable(value) {
+      this.cancelable_ = value;
+    },
 
     /**
      * Whether we should show user pods on the login screen.
@@ -515,10 +523,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * user pods can be displayed.
      */
     updateCancelButtonState: function() {
-      this.cancelAllowed_ = this.isLocal ||
-                            (this.isShowUsers_ && $('pod-row').pods.length);
-      $('login-header-bar').allowCancel = this.cancelAllowed_;
-      $('close-button-item').hidden = !this.cancelAllowed_;
+      this.cancelable = this.isLocal ||
+                        (this.isShowUsers_ && $('pod-row').pods.length);
+      $('close-button-item').hidden = !this.cancelable;
     },
 
     /**
@@ -550,8 +557,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
-        $('login-header-bar').allowCancel = isSAML || this.cancelAllowed_;
-        $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
+        $('close-button-item').hidden = !(isSAML || this.cancelable);
       }
     },
 
@@ -828,7 +834,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     showErrorBubble: function(loginAttempts, error) {
       if (this.isLocal) {
         $('add-user-button').hidden = true;
-        $('cancel-add-user-button').hidden = false;
         // Reload offline version of the sign-in extension, which will show
         // error itself.
         chrome.send('offlineLogin', [this.email]);
@@ -847,7 +852,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Called when user canceled signin.
      */
     cancel: function() {
-      if (!this.cancelAllowed_) {
+      if (!this.cancelable) {
         // In OOBE signin screen, cancel is not allowed because there is
         // no other screen to show. If user is in middle of a saml flow,
         // reset signin screen to get out of the saml flow.

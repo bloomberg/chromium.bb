@@ -886,13 +886,16 @@ void SigninScreenHandler::OnPreferencesChanged() {
     return;
   }
 
+  // Send the updated user list to the UI.
+  if (delegate_)
+    delegate_->HandleGetUsers();
+
   if (delegate_ && !delegate_->IsShowUsers()) {
     HandleShowAddUser(nullptr);
   } else {
-    if (delegate_)
-      delegate_->HandleGetUsers();
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, nullptr);
   }
+
   preferences_changed_delayed_ = false;
 }
 

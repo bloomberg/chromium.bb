@@ -1100,8 +1100,8 @@ login.createScreen('SupervisedUserCreationScreen',
                        'manager',
                        'username',
                        'import',
-                       'error',
-                       'created'];
+                       'created',
+                       'error'];
       var pageButtons = {'intro' : 'start',
                          'error' : 'error',
                          'import' : 'import',
@@ -1125,12 +1125,6 @@ login.createScreen('SupervisedUserCreationScreen',
         button.hidden = button.pages.indexOf(visiblePage) < 0;
         button.disabled = false;
       }
-
-      var pagesWithCancel = ['intro', 'manager', 'username', 'import-password',
-          'error', 'import'];
-      $('login-header-bar').allowCancel =
-          pagesWithCancel.indexOf(visiblePage) > -1;
-      $('cancel-add-user-button').disabled = false;
 
       this.getScreenElement('import-link').hidden = true;
       this.getScreenElement('create-link').hidden = true;
@@ -1329,7 +1323,6 @@ login.createScreen('SupervisedUserCreationScreen',
         control.disabled = value;
       }
       $('login-header-bar').disabled = value;
-      $('cancel-add-user-button').disabled = false;
     },
 
     /**
