@@ -409,7 +409,7 @@ int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int 
     if (paddingType == barType && style.appearance() != NoControlPart)
         padding += menuListArrowPadding();
 
-    return padding;
+    return padding * style.effectiveZoom();
 }
 
 //

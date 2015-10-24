@@ -136,6 +136,10 @@ crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nest
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Failure Pass ]
+crbug.com/432795 fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
+crbug.com/432795 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/432795 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
+crbug.com/432795 transforms/2d/zoom-menulist.html [ NeedsRebaseline ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]

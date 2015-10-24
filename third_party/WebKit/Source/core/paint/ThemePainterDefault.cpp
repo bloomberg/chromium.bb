@@ -267,8 +267,10 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
         // TODO(tkent): arrowSize should be zoom-aware. crbug.com/432795.
         const int arrowSize = 6;
         const int arrowPadding = 7;
-        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + arrowPadding : right - arrowSize - arrowPadding;
-        extraParams.menuList.arrowSize = arrowSize;
+        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL)
+            ? rect.x() + arrowPadding * box.styleRef().effectiveZoom()
+            : right - (arrowSize + arrowPadding) * box.styleRef().effectiveZoom();
+        extraParams.menuList.arrowSize = arrowSize * box.styleRef().effectiveZoom();
     }
 }
 
