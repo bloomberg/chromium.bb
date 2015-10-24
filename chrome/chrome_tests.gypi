@@ -564,6 +564,7 @@
       'browser/ui/webui/uber/uber_ui_browsertest.cc',
       'browser/ui/webui/web_ui_test_handler.cc',
       'browser/ui/webui/web_ui_test_handler.h',
+      'browser/ui/webui/webui_browsertest.cc',
       'browser/ui/webui/webui_webview_browsertest.cc',
       'browser/ui/zoom/zoom_controller_browsertest.cc',
       'browser/unload_browsertest.cc',

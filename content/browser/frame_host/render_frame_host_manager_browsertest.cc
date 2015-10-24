@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/input_messages.h"
@@ -1642,9 +1643,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
 }
 
 // crbug.com/424526
-// The test loads a WebUI page in rocess-per-tab mode, then navigates to a blank
-// page and then to a regular page. The bug reproduces if blank page is visited
-// in between WebUI and regular page.
+// The test loads a WebUI page in process-per-tab mode, then navigates to a
+// blank page and then to a regular page. The bug reproduces if blank page is
+// visited in between WebUI and regular page.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ForceSwapAfterWebUIBindings) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1653,14 +1654,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   const GURL web_ui_url(std::string(kChromeUIScheme) + "://" +
                         std::string(kChromeUIGpuHost));
-  NavigateToURL(shell(), web_ui_url);
+  EXPECT_TRUE(NavigateToURL(shell(), web_ui_url));
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       shell()->web_contents()->GetRenderProcessHost()->GetID()));
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  // Capture the SiteInstance before navigating to about:blank to ensure
+  // it doesn't change.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  EXPECT_EQ(orig_site_instance, shell()->web_contents()->GetSiteInstance());
 
   GURL regular_page_url(embedded_test_server()->GetURL("/title2.html"));
-  NavigateToURL(shell(), regular_page_url);
+  EXPECT_TRUE(NavigateToURL(shell(), regular_page_url));
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       shell()->web_contents()->GetRenderProcessHost()->GetID()));
 }

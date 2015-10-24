@@ -1245,8 +1245,12 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (IsRendererDebugURL(new_effective_url))
     return false;
 
+  // about:blank should be safe to load in any BrowsingInstance.
+  if (new_effective_url == GURL(url::kAboutBlankURL))
+    return false;
+
   // For security, we should transition between processes when one is a Web UI
-  // page and one isn't.
+  // page and one isn't, or if the WebUI types differ.
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           render_frame_host_->GetProcess()->GetID()) ||
       WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
@@ -1254,6 +1258,15 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     // If so, force a swap if destination is not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
+            browser_context, new_effective_url)) {
+      return true;
+    }
+
+    // Force swap if the current WebUI type differs from the one for the
+    // destination.
+    if (WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+            browser_context, current_effective_url) !=
+        WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
             browser_context, new_effective_url)) {
       return true;
     }
