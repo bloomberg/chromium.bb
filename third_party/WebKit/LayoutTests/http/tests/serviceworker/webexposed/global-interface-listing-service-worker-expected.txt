@@ -603,7 +603,7 @@ interface SyncManager
     method permissionState
     method register
 interface SyncRegistration
-    getter done
+    getter finished
     getter tag
     method constructor
     method unregister

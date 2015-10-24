@@ -56,7 +56,7 @@ void SyncRegistrationCallbacks::onError(const WebSyncError& error)
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
 }
 
-SyncNotifyWhenDoneCallbacks::SyncNotifyWhenDoneCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
+SyncNotifyWhenFinishedCallbacks::SyncNotifyWhenFinishedCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
@@ -64,20 +64,20 @@ SyncNotifyWhenDoneCallbacks::SyncNotifyWhenDoneCallbacks(ScriptPromiseResolver* 
     ASSERT(m_serviceWorkerRegistration);
 }
 
-SyncNotifyWhenDoneCallbacks::~SyncNotifyWhenDoneCallbacks()
+SyncNotifyWhenFinishedCallbacks::~SyncNotifyWhenFinishedCallbacks()
 {
 }
 
-void SyncNotifyWhenDoneCallbacks::onSuccess(bool status)
+void SyncNotifyWhenFinishedCallbacks::onSuccess()
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
 
-    m_resolver->resolve(status);
+    m_resolver->resolve();
 }
 
-void SyncNotifyWhenDoneCallbacks::onError(const WebSyncError& error)
+void SyncNotifyWhenFinishedCallbacks::onError(const WebSyncError& error)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         return;

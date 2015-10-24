@@ -47,16 +47,17 @@ private:
 // depending on the result passed to the callback. It takes a
 // ServiceWorkerRegistration in its constructor and will pass it to the
 // SyncProvider.
-class SyncNotifyWhenDoneCallbacks final : public WebSyncNotifyWhenDoneCallbacks {
-    WTF_MAKE_NONCOPYABLE(SyncNotifyWhenDoneCallbacks);
+class SyncNotifyWhenFinishedCallbacks final : public WebSyncNotifyWhenFinishedCallbacks {
+    WTF_MAKE_NONCOPYABLE(SyncNotifyWhenFinishedCallbacks);
     // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
     // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
-    WTF_MAKE_FAST_ALLOCATED(SyncNotifyWhenDoneCallbacks);
-public:
-    SyncNotifyWhenDoneCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
-    ~SyncNotifyWhenDoneCallbacks() override;
+    WTF_MAKE_FAST_ALLOCATED(SyncNotifyWhenFinishedCallbacks);
 
-    void onSuccess(bool) override;
+public:
+    SyncNotifyWhenFinishedCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
+    ~SyncNotifyWhenFinishedCallbacks() override;
+
+    void onSuccess() override;
     void onError(const WebSyncError&) override;
 
 private:

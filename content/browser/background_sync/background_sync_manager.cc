@@ -834,7 +834,7 @@ void BackgroundSyncManager::UnregisterDidStore(int64 sw_registration_id,
       FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK));
 }
 
-void BackgroundSyncManager::NotifyWhenDone(
+void BackgroundSyncManager::NotifyWhenFinished(
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     const StatusAndStateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -850,12 +850,12 @@ void BackgroundSyncManager::NotifyWhenDone(
       DuplicateRegistrationHandle(handle_id);
 
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::NotifyWhenDoneImpl,
+      base::Bind(&BackgroundSyncManager::NotifyWhenFinishedImpl,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(registration_handle.Pass()), callback));
 }
 
-void BackgroundSyncManager::NotifyWhenDoneImpl(
+void BackgroundSyncManager::NotifyWhenFinishedImpl(
     scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle,
     const StatusAndStateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -869,8 +869,8 @@ void BackgroundSyncManager::NotifyWhenDoneImpl(
   }
 
   if (!registration_handle->registration()->HasCompleted()) {
-    registration_handle->registration()->AddDoneCallback(
-        base::Bind(&BackgroundSyncManager::NotifyWhenDoneDidFinish,
+    registration_handle->registration()->AddFinishedCallback(
+        base::Bind(&BackgroundSyncManager::NotifyWhenFinishedInvokeCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback));
     op_scheduler_.CompleteOperationAndRunNext();
     return;
@@ -882,7 +882,7 @@ void BackgroundSyncManager::NotifyWhenDoneImpl(
   op_scheduler_.CompleteOperationAndRunNext();
 }
 
-void BackgroundSyncManager::NotifyWhenDoneDidFinish(
+void BackgroundSyncManager::NotifyWhenFinishedInvokeCallback(
     const StatusAndStateCallback& callback,
     BackgroundSyncState sync_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1143,7 +1143,7 @@ void BackgroundSyncManager::EventComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Do not check for disabled as events that were firing when disabled should
-  // be allowed to complete (for NotifyWhenDone).
+  // be allowed to complete (for NotifyWhenFinished).
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::EventCompleteImpl, weak_ptr_factory_.GetWeakPtr(),
@@ -1180,12 +1180,12 @@ void BackgroundSyncManager::EventCompleteImpl(
       // TODO(jkarlin): Insert retry logic here. Be sure to check if the state
       // is UNREGISTERED_WHILE_FIRING first. If so then set the state to failed
       // if it was already out of retry attempts otherwise keep the state as
-      // unregistered. Then call RunDoneCallbacks(); (crbug.com/501838)
+      // unregistered. Then call RunFinishedCallbacks(); (crbug.com/501838)
       registration->set_sync_state(BACKGROUND_SYNC_STATE_FAILED);
-      registration->RunDoneCallbacks();
+      registration->RunFinishedCallbacks();
     } else {
       registration->set_sync_state(BACKGROUND_SYNC_STATE_SUCCESS);
-      registration->RunDoneCallbacks();
+      registration->RunFinishedCallbacks();
     }
 
     RegistrationKey key(*registration);

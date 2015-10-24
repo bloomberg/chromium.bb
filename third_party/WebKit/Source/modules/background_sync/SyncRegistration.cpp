@@ -50,7 +50,7 @@ SyncRegistration::~SyncRegistration()
     syncProvider->releaseRegistration(m_id);
 }
 
-ScriptPromise SyncRegistration::done(ScriptState* scriptState)
+ScriptPromise SyncRegistration::finished(ScriptState* scriptState)
 {
     if (m_id == WebSyncRegistration::UNREGISTERED_SYNC_ID)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - not a valid registration object"));
@@ -61,7 +61,7 @@ ScriptPromise SyncRegistration::done(ScriptState* scriptState)
     WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();
     ASSERT(webSyncProvider);
 
-    webSyncProvider->notifyWhenDone(m_id, new SyncNotifyWhenDoneCallbacks(resolver, m_serviceWorkerRegistration));
+    webSyncProvider->notifyWhenFinished(m_id, new SyncNotifyWhenFinishedCallbacks(resolver, m_serviceWorkerRegistration));
 
     return promise;
 }

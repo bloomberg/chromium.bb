@@ -184,18 +184,19 @@ void BackgroundSyncProvider::releaseRegistration(int64_t handle_id) {
   GetBackgroundSyncServicePtr()->ReleaseRegistration(handle_id);
 }
 
-void BackgroundSyncProvider::notifyWhenDone(
+void BackgroundSyncProvider::notifyWhenFinished(
     int64_t handle_id,
-    blink::WebSyncNotifyWhenDoneCallbacks* callbacks) {
+    blink::WebSyncNotifyWhenFinishedCallbacks* callbacks) {
   DCHECK(callbacks);
 
-  scoped_ptr<blink::WebSyncNotifyWhenDoneCallbacks> callbacks_ptr(callbacks);
+  scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks_ptr(
+      callbacks);
 
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
-  GetBackgroundSyncServicePtr()->NotifyWhenDone(
+  GetBackgroundSyncServicePtr()->NotifyWhenFinished(
       handle_id,
-      base::Bind(&BackgroundSyncProvider::NotifyWhenDoneCallback,
+      base::Bind(&BackgroundSyncProvider::NotifyWhenFinishedCallback,
                  base::Unretained(this), base::Passed(callbacks_ptr.Pass())));
 }
 
@@ -383,8 +384,8 @@ void BackgroundSyncProvider::GetPermissionStatusCallback(
   }
 }
 
-void BackgroundSyncProvider::NotifyWhenDoneCallback(
-    scoped_ptr<blink::WebSyncNotifyWhenDoneCallbacks> callbacks,
+void BackgroundSyncProvider::NotifyWhenFinishedCallback(
+    scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks,
     BackgroundSyncError error,
     BackgroundSyncState state) {
   switch (error) {
@@ -396,11 +397,13 @@ void BackgroundSyncProvider::NotifyWhenDoneCallback(
           NOTREACHED();
           break;
         case BACKGROUND_SYNC_STATE_SUCCESS:
-          callbacks->onSuccess(true);
+          callbacks->onSuccess();
           break;
         case BACKGROUND_SYNC_STATE_FAILED:
         case BACKGROUND_SYNC_STATE_UNREGISTERED:
-          callbacks->onSuccess(false);
+          callbacks->onError(blink::WebSyncError(
+              blink::WebSyncError::ErrorTypeAbort,
+              "Sync failed, unregistered, or overwritten."));
           break;
       }
       break;

@@ -66,9 +66,9 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       blink::WebSyncGetPermissionStatusCallbacks* callbacks) override;
   // TODO(jkarlin): Rename to releaseRegistrationHandle.
   void releaseRegistration(int64_t handle_id) override;
-  void notifyWhenDone(
+  void notifyWhenFinished(
       int64_t handle_id,
-      blink::WebSyncNotifyWhenDoneCallbacks* callbacks) override;
+      blink::WebSyncNotifyWhenFinishedCallbacks* callbacks) override;
 
   void DuplicateRegistrationHandle(
       int64_t handle_id,
@@ -99,8 +99,8 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       scoped_ptr<blink::WebSyncGetPermissionStatusCallbacks> callbacks,
       BackgroundSyncError error,
       PermissionStatus status);
-  void NotifyWhenDoneCallback(
-      scoped_ptr<blink::WebSyncNotifyWhenDoneCallbacks> callbacks,
+  void NotifyWhenFinishedCallback(
+      scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks,
       BackgroundSyncError error,
       BackgroundSyncState state);
 

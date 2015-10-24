@@ -18,7 +18,7 @@ namespace blink {
 
 class WebServiceWorkerRegistration;
 using WebSyncRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebSyncRegistration>, const WebSyncError&>;
-using WebSyncNotifyWhenDoneCallbacks = WebCallbacks<bool, const WebSyncError&>;
+using WebSyncNotifyWhenFinishedCallbacks = WebCallbacks<void, const WebSyncError&>;
 using WebSyncUnregistrationCallbacks = WebCallbacks<bool, const WebSyncError&>;
 using WebSyncGetRegistrationsCallbacks = WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
 using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus, const WebSyncError&>;
@@ -47,8 +47,8 @@ public:
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getPermissionStatus(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
 
-    // Takes ownership of the WebSyncNotifyWhenDoneCallbacks.
-    virtual void notifyWhenDone(int64_t handleId, WebSyncNotifyWhenDoneCallbacks*) = 0;
+    // Takes ownership of the WebSyncNotifyWhenFinishedCallbacks.
+    virtual void notifyWhenFinished(int64_t handleId, WebSyncNotifyWhenFinishedCallbacks*) = 0;
 
     virtual void releaseRegistration(int64_t handleId) = 0;
 };

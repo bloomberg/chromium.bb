@@ -44,7 +44,7 @@ interface BackgroundSyncService {
   DuplicateRegistrationHandle(int64 handle_id) 
       => (BackgroundSyncError err, SyncRegistration? registration);  
   ReleaseRegistration(int64 handle_id);
-  NotifyWhenDone(int64 handle_id) => (BackgroundSyncError err, BackgroundSyncState final_status);
+  NotifyWhenFinished(int64 handle_id) => (BackgroundSyncError err, BackgroundSyncState final_status);
 };
 
 interface BackgroundSyncServiceClient {

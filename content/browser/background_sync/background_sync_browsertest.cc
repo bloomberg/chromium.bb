@@ -178,8 +178,8 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
       const std::vector<std::string>& expected_tags);
   bool CompleteDelayedOneShot();
   bool RejectDelayedOneShot();
-  bool NotifyWhenDoneOneShot(const std::string& tag);
-  bool NotifyWhenDoneImmediateOneShot(const std::string& expected_msg);
+  bool NotifyWhenFinishedOneShot(const std::string& tag);
+  bool NotifyWhenFinishedImmediateOneShot(const std::string& expected_msg);
   bool StoreRegistrationOneShot(const std::string& tag);
 
  private:
@@ -350,16 +350,19 @@ bool BackgroundSyncBrowserTest::RejectDelayedOneShot() {
   return script_result == BuildExpectedResult("delay", "rejecting");
 }
 
-bool BackgroundSyncBrowserTest::NotifyWhenDoneOneShot(const std::string& tag) {
+bool BackgroundSyncBrowserTest::NotifyWhenFinishedOneShot(
+    const std::string& tag) {
   EXPECT_TRUE(content::ExecuteScript(
-      shell_->web_contents(), BuildScriptString("notifyWhenDoneOneShot", tag)));
-  return PopConsole(BuildExpectedResult(tag, "done"));
+      shell_->web_contents(),
+      BuildScriptString("notifyWhenFinishedOneShot", tag)));
+  return PopConsole(BuildExpectedResult(tag, "finished"));
 }
 
-bool BackgroundSyncBrowserTest::NotifyWhenDoneImmediateOneShot(
+bool BackgroundSyncBrowserTest::NotifyWhenFinishedImmediateOneShot(
     const std::string& expected_msg) {
   std::string script_result;
-  EXPECT_TRUE(RunScript("notifyWhenDoneImmediateOneShot()", &script_result));
+  EXPECT_TRUE(
+      RunScript("notifyWhenFinishedImmediateOneShot()", &script_result));
   return script_result == expected_msg;
 }
 
@@ -424,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, WaitUntil) {
   EXPECT_TRUE(PopConsole("ok - delay completed"));
 
   // Verify that it finished firing.
-  // TODO(jkarlin): Use registration.done to verify that the event actually
+  // TODO(jkarlin): Use registration.finished to verify that the event actually
   // completed successfully.
   EXPECT_FALSE(GetRegistrationOneShot("delay"));
 }
@@ -561,38 +564,40 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, UnregisterMidSync) {
   EXPECT_TRUE(PopConsole("ok - unregister completed"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneBeforeSyncSucceeds) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       CallFinishedBeforeSyncSucceeds) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
   SetOnline(false);
   EXPECT_TRUE(RegisterOneShot("foo"));
-  EXPECT_TRUE(NotifyWhenDoneOneShot("foo"));
+  EXPECT_TRUE(NotifyWhenFinishedOneShot("foo"));
 
   SetOnline(true);
   // The ordering of PopConsole messages tells us that the event fired
-  // before done resolved.
+  // before finished resolved.
   EXPECT_TRUE(PopConsole("foo fired"));
-  EXPECT_TRUE(PopConsole("foo done result: true"));
+  EXPECT_TRUE(PopConsole("foo finished result: true"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneBeforeSyncFails) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallFinishedBeforeSyncFails) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
   SetOnline(true);
   EXPECT_TRUE(RegisterOneShot("delay"));
   EXPECT_FALSE(OneShotPending("delay"));
-  EXPECT_TRUE(NotifyWhenDoneOneShot("delay"));
+  EXPECT_TRUE(NotifyWhenFinishedOneShot("delay"));
 
   EXPECT_TRUE(RejectDelayedOneShot());
   // The ordering of PopConsole messages tells us that the event fired
-  // before done resolved.
+  // before finished resolved.
   EXPECT_TRUE(PopConsole("ok - delay rejected"));
-  EXPECT_TRUE(PopConsole("delay done result: false"));
+  EXPECT_TRUE(PopConsole("delay finished result: false"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncSuceeds) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       CallFinishedAfterSyncSuceeds) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
@@ -603,11 +608,11 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncSuceeds) {
   SetOnline(true);
   EXPECT_TRUE(PopConsole("foo fired"));
   EXPECT_FALSE(GetRegistrationOneShot("foo"));
-  EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - foo result: true"));
+  EXPECT_TRUE(NotifyWhenFinishedImmediateOneShot("ok - foo result: true"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
-                       CallDoneAfterSyncUnregistered) {
+                       CallFinishedAfterSyncUnregistered) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
@@ -616,10 +621,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
   EXPECT_TRUE(StoreRegistrationOneShot("foo"));
   EXPECT_TRUE(UnregisterOneShot("foo"));
   EXPECT_FALSE(GetRegistrationOneShot("foo"));
-  EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - foo result: false"));
+  EXPECT_TRUE(NotifyWhenFinishedImmediateOneShot("ok - foo result: false"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncFails) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallFinishedAfterSyncFails) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
@@ -630,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallDoneAfterSyncFails) {
 
   EXPECT_TRUE(RejectDelayedOneShot());
   EXPECT_TRUE(PopConsole("ok - delay rejected"));
-  EXPECT_TRUE(NotifyWhenDoneImmediateOneShot("ok - delay result: false"));
+  EXPECT_TRUE(NotifyWhenFinishedImmediateOneShot("ok - delay result: false"));
 }
 
 }  // namespace content

@@ -30,13 +30,14 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsValid() const;
-  void AddDoneCallback(const StateCallback& callback);
-  void RunDoneCallbacks();
+  void AddFinishedCallback(const StateCallback& callback);
+  void RunFinishedCallbacks();
   bool HasCompleted() const;
 
   // If the registration is currently firing, sets its state to
   // BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING. If it is firing, it sets
-  // the state to BACKGROUND_SYNC_STATE_UNREGISTERED and calls RunDoneCallbacks.
+  // the state to BACKGROUND_SYNC_STATE_UNREGISTERED and calls
+  // RunFinishedCallbacks.
   void SetUnregisteredState();
 
   const BackgroundSyncRegistrationOptions* options() const { return &options_; }
@@ -55,7 +56,7 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   RegistrationId id_ = kInvalidRegistrationId;
   BackgroundSyncState sync_state_ = BACKGROUND_SYNC_STATE_PENDING;
 
-  std::list<StateCallback> notify_done_callbacks_;
+  std::list<StateCallback> notify_finished_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistration);
 };

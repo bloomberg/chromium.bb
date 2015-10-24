@@ -246,8 +246,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   void NotifyWhenDone(
       int32 handle_id,
-      const BackgroundSyncService::NotifyWhenDoneCallback& callback) {
-    service_impl_->NotifyWhenDone(handle_id, callback);
+      const BackgroundSyncService::NotifyWhenFinishedCallback& callback) {
+    service_impl_->NotifyWhenFinished(handle_id, callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -419,7 +419,7 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrationsWithRegisteredSync) {
   EXPECT_EQ(1UL, array_size);
 }
 
-TEST_F(BackgroundSyncServiceImplTest, NotifyWhenDone) {
+TEST_F(BackgroundSyncServiceImplTest, NotifyWhenFinished) {
   // Register a sync event.
   bool register_called = false;
   BackgroundSyncError register_error;

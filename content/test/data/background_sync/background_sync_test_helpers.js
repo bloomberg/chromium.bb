@@ -157,26 +157,28 @@ function rejectDelayedOneShot() {
     .catch(sendErrorToTest);
 }
 
-function notifyWhenDoneOneShot(tag) {
+function notifyWhenFinishedOneShot(tag) {
   navigator.serviceWorker.ready
     .then(function(swRegistration) {
-      swRegistration.active.postMessage({action: 'notifyWhenDone', tag: tag});
+      swRegistration.active.postMessage(
+          {action: 'notifyWhenFinished', tag: tag});
     })
     .catch(sendErrorToTest);
 }
 
-function notifyWhenDoneImmediateOneShot(tag) {
+function notifyWhenFinishedImmediateOneShot(tag) {
   if (registrationReference == null) {
     sendResultToTest('error - must call storeRegistration first');
     return;
   }
 
-  registrationReference.done
+  registrationReference.finished
     .then(function(success) {
       sendResultToTest('ok - ' + registrationReference.tag +
-                       ' result: ' + success)
+                       ' result: true')
     }, function(err) {
-      sendResultToTest('error - ' + registrationReference.tag + ' failed');
+      sendResultToTest('ok - ' + registrationReference.tag +
+                       ' result: false')
     })
     .catch(sendErrorToTest)
 }

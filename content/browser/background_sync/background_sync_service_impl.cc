@@ -226,9 +226,9 @@ void BackgroundSyncServiceImpl::ReleaseRegistration(
   active_handles_.Remove(handle_id);
 }
 
-void BackgroundSyncServiceImpl::NotifyWhenDone(
+void BackgroundSyncServiceImpl::NotifyWhenFinished(
     BackgroundSyncRegistrationHandle::HandleId handle_id,
-    const NotifyWhenDoneCallback& callback) {
+    const NotifyWhenFinishedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundSyncRegistrationHandle* registration =
       active_handles_.Lookup(handle_id);
@@ -238,8 +238,8 @@ void BackgroundSyncServiceImpl::NotifyWhenDone(
     return;
   }
 
-  registration->NotifyWhenDone(
-      base::Bind(&BackgroundSyncServiceImpl::OnNotifyWhenDoneResult,
+  registration->NotifyWhenFinished(
+      base::Bind(&BackgroundSyncServiceImpl::OnNotifyWhenFinishedResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
@@ -287,8 +287,8 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
                mojo_registrations.Pass());
 }
 
-void BackgroundSyncServiceImpl::OnNotifyWhenDoneResult(
-    const NotifyWhenDoneCallback& callback,
+void BackgroundSyncServiceImpl::OnNotifyWhenFinishedResult(
+    const NotifyWhenFinishedCallback& callback,
     BackgroundSyncStatus status,
     BackgroundSyncState sync_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

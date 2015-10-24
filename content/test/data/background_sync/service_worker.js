@@ -38,17 +38,17 @@ this.onmessage = function(event) {
     sendMessageToClients('sync', 'ok - delay rejected');
   }
 
-  if (event.data['action'] === 'notifyWhenDone') {
+  if (event.data['action'] === 'notifyWhenFinished') {
     var tag = event.data['tag'];
     registration.sync.getRegistration(tag)
       .then(function (syncRegistration) {
-        sendMessageToClients('sync', 'ok - ' + tag + ' done');
-        return syncRegistration.done;
+        sendMessageToClients('sync', 'ok - ' + tag + ' finished');
+        return syncRegistration.finished;
       })
-      .then(function(success) {
-        sendMessageToClients('sync', tag + " done result: " + success);
+      .then(function() {
+        sendMessageToClients('sync', tag + " finished result: true");
       }, function(error) {
-        sendMessageToClients('sync', tag + " done result: error");
+        sendMessageToClients('sync', tag + " finished result: false");
       })
       .catch(sendSyncErrorToClients);
   }

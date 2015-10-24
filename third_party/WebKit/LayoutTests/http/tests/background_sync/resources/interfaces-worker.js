@@ -28,7 +28,7 @@ test(function() {
 
     // FIXME: Assert existence of the attributes when they are properly
     // exposed in the prototype chain. https://crbug.com/43394
-    assert_own_property(SyncRegistration.prototype, 'done');
+    assert_own_property(SyncRegistration.prototype, 'finished');
     assert_own_property(SyncRegistration.prototype, 'unregister');
     assert_own_property(SyncRegistration.prototype, 'tag');
 

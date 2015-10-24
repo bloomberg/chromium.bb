@@ -244,16 +244,16 @@ class CONTENT_EXPORT BackgroundSyncManager
                           const StatusCallback& callback,
                           ServiceWorkerStatusCode status);
 
-  // NotifyWhenDone and its callbacks. See
-  // BackgroundSyncRegistrationHandle::NotifyWhenDone for detailed
+  // NotifyWhenFinished and its callbacks. See
+  // BackgroundSyncRegistrationHandle::NotifyWhenFinished for detailed
   // documentation.
-  void NotifyWhenDone(BackgroundSyncRegistrationHandle::HandleId handle_id,
-                      const StatusAndStateCallback& callback);
-  void NotifyWhenDoneImpl(
+  void NotifyWhenFinished(BackgroundSyncRegistrationHandle::HandleId handle_id,
+                          const StatusAndStateCallback& callback);
+  void NotifyWhenFinishedImpl(
       scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle,
       const StatusAndStateCallback& callback);
-  void NotifyWhenDoneDidFinish(const StatusAndStateCallback& callback,
-                               BackgroundSyncState status);
+  void NotifyWhenFinishedInvokeCallback(const StatusAndStateCallback& callback,
+                                        BackgroundSyncState status);
 
   // GetRegistration callbacks
   void GetRegistrationImpl(int64 sw_registration_id,

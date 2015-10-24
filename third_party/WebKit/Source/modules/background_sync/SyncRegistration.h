@@ -30,7 +30,7 @@ public:
     String tag() const { return m_tag; }
     void setTag(String value) { m_tag = value; }
 
-    ScriptPromise done(ScriptState*);
+    ScriptPromise finished(ScriptState*);
     ScriptPromise unregister(ScriptState*);
 
     DECLARE_TRACE();

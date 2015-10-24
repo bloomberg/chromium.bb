@@ -52,8 +52,8 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
       const DuplicateRegistrationHandleCallback& callback) override;
   void ReleaseRegistration(
       BackgroundSyncRegistrationHandle::HandleId handle_id) override;
-  void NotifyWhenDone(BackgroundSyncRegistrationHandle::HandleId handle_id,
-                      const NotifyWhenDoneCallback& callback) override;
+  void NotifyWhenFinished(BackgroundSyncRegistrationHandle::HandleId handle_id,
+                          const NotifyWhenFinishedCallback& callback) override;
 
   void OnRegisterResult(const RegisterCallback& callback,
                         BackgroundSyncStatus status,
@@ -64,9 +64,9 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
       const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,
       scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>> result);
-  void OnNotifyWhenDoneResult(const NotifyWhenDoneCallback& callback,
-                              BackgroundSyncStatus status,
-                              BackgroundSyncState sync_state);
+  void OnNotifyWhenFinishedResult(const NotifyWhenFinishedCallback& callback,
+                                  BackgroundSyncStatus status,
+                                  BackgroundSyncState sync_state);
 
   // Called when an error is detected on binding_.
   void OnConnectionError();

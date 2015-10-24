@@ -87,11 +87,11 @@ void OneShotDelayedCallback(
   *out_callback = callback;
 }
 
-void NotifyWhenDoneCallback(bool* was_called,
-                            BackgroundSyncStatus* out_status,
-                            BackgroundSyncState* out_state,
-                            BackgroundSyncStatus status,
-                            BackgroundSyncState state) {
+void NotifyWhenFinishedCallback(bool* was_called,
+                                BackgroundSyncStatus* out_status,
+                                BackgroundSyncState* out_state,
+                                BackgroundSyncStatus status,
+                                BackgroundSyncState state) {
   *was_called = true;
   *out_status = status;
   *out_state = state;
@@ -1068,60 +1068,63 @@ TEST_F(BackgroundSyncManagerTest, OneShotFiresOnRegistration) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneAfterEventSuccess) {
+TEST_F(BackgroundSyncManagerTest, NotifyWhenFinishedAfterEventSuccess) {
   InitSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, sync_events_called_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneBeforeEventSuccess) {
+TEST_F(BackgroundSyncManagerTest, NotifyWhenFinishedBeforeEventSuccess) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Finish firing the event.
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
 }
 
 TEST_F(BackgroundSyncManagerTest,
-       NotifyWhenDoneBeforeUnregisteredEventSuccess) {
+       NotifyWhenFinishedBeforeUnregisteredEventSuccess) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
-  // Unregistering should set the state to UNREGISTERED but done shouldn't
+  // Unregistering should set the state to UNREGISTERED but finished shouldn't
   // be called until the event finishes firing, at which point its state should
   // be SUCCESS.
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
@@ -1131,26 +1134,27 @@ TEST_F(BackgroundSyncManagerTest,
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
 }
 
 TEST_F(BackgroundSyncManagerTest,
-       NotifyWhenDoneBeforeUnregisteredEventFailure) {
+       NotifyWhenFinishedBeforeUnregisteredEventFailure) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
-  // Unregistering should set the state to UNREGISTERED but done shouldn't
+  // Unregistering should set the state to UNREGISTERED but finished shouldn't
   // be called until the event finishes firing, at which point its state should
   // be FAILED.
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
@@ -1160,122 +1164,129 @@ TEST_F(BackgroundSyncManagerTest,
   sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_FAILED, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneBeforeUnregisteredEventFires) {
+TEST_F(BackgroundSyncManagerTest,
+       NotifyWhenFinishedBeforeUnregisteredEventFires) {
   InitSyncEventTest();
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
 }
 
 TEST_F(BackgroundSyncManagerTest,
-       NotifyWhenDoneBeforeEventSuccessDroppedHandle) {
+       NotifyWhenFinishedBeforeEventSuccessDroppedHandle) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
 
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Drop the client's handle to the registration before the event fires, ensure
-  // that the done callback is still run.
+  // that the finished callback is still run.
   callback_registration_handle_ = nullptr;
 
   // Finish firing the event.
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneAfterEventFailure) {
+TEST_F(BackgroundSyncManagerTest, NotifyWhenFinishedAfterEventFailure) {
   InitFailedSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, sync_events_called_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_FAILED, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneBeforeEventFailure) {
+TEST_F(BackgroundSyncManagerTest, NotifyWhenFinishedBeforeEventFailure) {
   InitDelayedSyncEventTest();
 
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Finish firing the event.
   sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_FAILED, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneAfterUnregistered) {
+TEST_F(BackgroundSyncManagerTest, NotifyWhenFinishedAfterUnregistered) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneBeforeUnregistered) {
+TEST_F(BackgroundSyncManagerTest, NotifyWhenFinishedBeforeUnregistered) {
   Register(sync_options_1_);
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
 }
@@ -1298,13 +1309,14 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
   EXPECT_EQ(POWER_STATE_AUTO,
             callback_registration_handle_->options()->power_state);
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  original_handle->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  original_handle->NotifyWhenFinished(base::Bind(&NotifyWhenFinishedCallback,
+                                                 &notify_finished_called,
+                                                 &status, &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
   EXPECT_EQ(0, sync_events_called_);
@@ -1327,19 +1339,20 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichSucceeds) {
   sync_options_1_.power_state = POWER_STATE_AUTO;
   EXPECT_TRUE(Register(sync_options_1_));
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  original_handle->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  original_handle->NotifyWhenFinished(base::Bind(&NotifyWhenFinishedCallback,
+                                                 &notify_finished_called,
+                                                 &status, &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Successfully finish the first event.
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
 }
@@ -1361,24 +1374,25 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichFails) {
   sync_options_1_.power_state = POWER_STATE_AUTO;
   EXPECT_TRUE(Register(sync_options_1_));
 
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  original_handle->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  original_handle->NotifyWhenFinished(base::Bind(&NotifyWhenFinishedCallback,
+                                                 &notify_finished_called,
+                                                 &status, &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Fail the first event.
   sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_FAILED, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, DisableWhilePendingNotifiesDone) {
+TEST_F(BackgroundSyncManagerTest, DisableWhilePendingNotifiesFinished) {
   InitSyncEventTest();
 
   // Register a one-shot that must wait for network connectivity before it
@@ -1387,50 +1401,52 @@ TEST_F(BackgroundSyncManagerTest, DisableWhilePendingNotifiesDone) {
   EXPECT_TRUE(Register(sync_options_1_));
 
   // Listen for notification of completion.
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Corrupting the backend should result in the manager disabling itself on the
   // next operation. While disabling, it should finalize any pending
   // registrations.
   test_background_sync_manager_->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_options_2_));
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
 }
 
-TEST_F(BackgroundSyncManagerTest, DisableWhileFiringNotifiesDone) {
+TEST_F(BackgroundSyncManagerTest, DisableWhileFiringNotifiesFinished) {
   InitDelayedSyncEventTest();
 
   // Register a one-shot that pauses mid-fire.
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
   // Listen for notification of completion.
-  bool notify_done_called = false;
+  bool notify_finished_called = false;
   BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
   BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
-  callback_registration_handle_->NotifyWhenDone(base::Bind(
-      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  callback_registration_handle_->NotifyWhenFinished(
+      base::Bind(&NotifyWhenFinishedCallback, &notify_finished_called, &status,
+                 &sync_state));
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
 
   // Corrupting the backend should result in the manager disabling itself on the
   // next operation. Even though the manager is disabled, the firing sync event
   // should still be able to complete successfully and notify as much.
   test_background_sync_manager_->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_options_2_));
-  EXPECT_FALSE(notify_done_called);
+  EXPECT_FALSE(notify_finished_called);
   test_background_sync_manager_->set_corrupt_backend(false);
 
   // Successfully complete the firing event.
   sync_fired_callback_.Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(notify_done_called);
+  EXPECT_TRUE(notify_finished_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
 }
 

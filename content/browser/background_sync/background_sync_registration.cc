@@ -30,21 +30,21 @@ bool BackgroundSyncRegistration::IsValid() const {
   return id_ != kInvalidRegistrationId;
 }
 
-void BackgroundSyncRegistration::AddDoneCallback(
+void BackgroundSyncRegistration::AddFinishedCallback(
     const StateCallback& callback) {
   DCHECK(!HasCompleted());
-  notify_done_callbacks_.push_back(callback);
+  notify_finished_callbacks_.push_back(callback);
 }
 
-void BackgroundSyncRegistration::RunDoneCallbacks() {
+void BackgroundSyncRegistration::RunFinishedCallbacks() {
   DCHECK(HasCompleted());
 
-  for (auto& callback : notify_done_callbacks_) {
+  for (auto& callback : notify_finished_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, sync_state_));
   }
 
-  notify_done_callbacks_.clear();
+  notify_finished_callbacks_.clear();
 }
 
 bool BackgroundSyncRegistration::HasCompleted() const {
@@ -72,9 +72,9 @@ void BackgroundSyncRegistration::SetUnregisteredState() {
 
   if (!firing) {
     // If the registration is currently firing then wait to run
-    // RunDoneCallbacks until after it has finished as it might
+    // RunFinishedCallbacks until after it has finished as it might
     // change state to SUCCESS first.
-    RunDoneCallbacks();
+    RunFinishedCallbacks();
   }
 }
 
