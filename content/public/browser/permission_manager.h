@@ -40,6 +40,24 @@ class CONTENT_EXPORT PermissionManager {
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) = 0;
 
+  // Requests multiple permissions on behalf of a frame identified by
+  // render_frame_host.
+  // When the permission request is handled, whether it failed, timed out or
+  // succeeded, the |callback| will be run. The order of statuses in the
+  // returned vector will correspond to the order of requested permission
+  // types.
+  // Returns a request id which can be used to cancel the request (see
+  // CancelPermissionRequest). This can be kNoPendingOperation if
+  // there is no further need to cancel the permission in which case |callback|
+  // was invoked.
+  virtual int RequestPermissions(
+      const std::vector<PermissionType>& permission,
+      RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      bool user_gesture,
+      const base::Callback<void(
+          const std::vector<PermissionStatus>&)>& callback) = 0;
+
   // Cancels a previous permission request specified by |request_id|. Cancelling
   // an already cancelled request or providing the |request_id|
   // kNoPendingOperation is a no-op.

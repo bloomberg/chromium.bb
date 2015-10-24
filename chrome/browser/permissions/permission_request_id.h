@@ -9,6 +9,10 @@
 
 #include "url/gurl.h"
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 // Uniquely identifies a particular permission request.
 // None of the different attributes (render_process_id, render_frame_id or
 // request_id) is enough to compare two requests. In order to check if
@@ -16,6 +20,8 @@
 // the operator== or operator!=.
 class PermissionRequestID {
  public:
+  PermissionRequestID(content::RenderFrameHost* render_frame_host,
+                      int request_id);
   PermissionRequestID(int render_process_id,
                       int render_frame_id,
                       int request_id);

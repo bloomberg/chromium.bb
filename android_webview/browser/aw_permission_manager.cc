@@ -258,6 +258,29 @@ int AwPermissionManager::RequestPermission(
   return request_id;
 }
 
+int AwPermissionManager::RequestPermissions(
+    const std::vector<PermissionType>& permissions,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    const base::Callback<void(
+        const std::vector<PermissionStatus>&)>& callback) {
+  NOTIMPLEMENTED() << "RequestPermissions has not been implemented in WebView";
+
+  std::vector<PermissionStatus> result(permissions.size());
+  const GURL& embedding_origin =
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL().GetOrigin();
+
+  for (PermissionType type : permissions) {
+    result.push_back(GetPermissionStatus(
+        type, requesting_origin, embedding_origin));
+  }
+
+  callback.Run(result);
+  return kNoPendingOperation;
+}
+
 // static
 void AwPermissionManager::OnRequestResponse(
     const base::WeakPtr<AwPermissionManager>& manager,

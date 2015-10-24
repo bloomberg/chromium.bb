@@ -14,7 +14,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/permission_manager.h"
 
-
 class Profile;
 
 namespace content {
@@ -36,6 +35,13 @@ class PermissionManager : public KeyedService,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(content::PermissionStatus)>& callback) override;
+  int RequestPermissions(
+      const std::vector<content::PermissionType>& permissions,
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      bool user_gesture,
+      const base::Callback<void(
+          const std::vector<content::PermissionStatus>&)>& callback) override;
   void CancelPermissionRequest(int request_id) override;
   void ResetPermission(content::PermissionType permission,
                        const GURL& requesting_origin,
@@ -55,16 +61,22 @@ class PermissionManager : public KeyedService,
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:
-  struct PendingRequest;
+  class PendingRequest;
   using PendingRequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
 
   struct Subscription;
   using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
 
-  void OnPermissionRequestResponse(
+  // Called when a permission was decided for a given PendingRequest. The
+  // PendingRequest is identified by its |request_id| and the permission is
+  // identified by its |permission_id|. If the PendingRequest contains more than
+  // one permission, it will wait for the remaining permissions to be resolved.
+  // When all the permissions have been resolved, the PendingRequest's callback
+  // is run.
+  void OnPermissionsRequestResponseStatus(
       int request_id,
-      const base::Callback<void(content::PermissionStatus)>& callback,
-      ContentSetting content_setting);
+      int permission_id,
+      content::PermissionStatus status);
 
   // Not all WebContents are able to display permission requests. If the PBM
   // is required but missing for |web_contents|, don't pass along the request.

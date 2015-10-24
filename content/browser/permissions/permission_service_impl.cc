@@ -39,21 +39,33 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
   return PermissionType::NUM;
 }
 
+// This function allows the usage of the the multiple request map
+// with single requests.
+void PermissionRequestResponseCallbackWrapper(
+    const mojo::Callback<void(PermissionStatus)>& callback,
+    const mojo::Array<PermissionStatus>& vector) {
+  DCHECK_EQ(vector.size(), 1ul);
+  callback.Run(vector[0]);
+}
+
 } // anonymous namespace
 
 PermissionServiceImpl::PendingRequest::PendingRequest(
-    PermissionType permission,
-    const GURL& origin,
-    const PermissionStatusCallback& callback)
-    : id(PermissionManager::kNoPendingOperation),
-      permission(permission),
-      origin(origin),
-      callback(callback) {
+    const PermissionsStatusCallback& callback,
+    int request_count)
+    : callback(callback),
+      request_count(request_count) {
 }
 
 PermissionServiceImpl::PendingRequest::~PendingRequest() {
-  if (!callback.is_null())
-    callback.Run(PERMISSION_STATUS_ASK);
+  if (callback.is_null())
+    return;
+
+  mojo::Array<PermissionStatus> result =
+      mojo::Array<PermissionStatus>::New(request_count);
+  for (int i = 0; i < request_count; ++i)
+    result[i] = PERMISSION_STATUS_DENIED;
+  callback.Run(result.Pass());
 }
 
 PermissionServiceImpl::PendingSubscription::PendingSubscription(
@@ -103,26 +115,18 @@ void PermissionServiceImpl::RequestPermission(
   // can. Even if the call comes from a context where it is not possible to show
   // any UI, we want to still return something relevant so the current
   // permission status is returned.
-  if (!context_->render_frame_host()) {
-    // There is no way to show a UI so the call will simply return the current
-    // permission.
-    HasPermission(permission, origin, callback);
-    return;
-  }
-
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
-  if (!browser_context->GetPermissionManager()) {
-    callback.Run(content::PERMISSION_STATUS_DENIED);
+  if (!context_->render_frame_host() ||
+      !browser_context->GetPermissionManager()) {
+    callback.Run(GetPermissionStatusFromName(permission, GURL(origin)));
     return;
   }
 
-  PermissionType permission_type = PermissionNameToPermissionType(permission);
-  int pending_request_id = pending_requests_.Add(
-      new PendingRequest(permission_type, GURL(origin), callback));
-
+  int pending_request_id = pending_requests_.Add(new PendingRequest(
+      base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
   int id = browser_context->GetPermissionManager()->RequestPermission(
-      permission_type,
+      PermissionNameToPermissionType(permission),
       context_->render_frame_host(),
       GURL(origin),
       user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
@@ -139,28 +143,73 @@ void PermissionServiceImpl::RequestPermission(
   pending_request->id = id;
 }
 
+void PermissionServiceImpl::OnRequestPermissionResponse(
+    int pending_request_id,
+    PermissionStatus status) {
+  OnRequestPermissionsResponse(pending_request_id,
+      std::vector<PermissionStatus>(1, status));
+}
+
 void PermissionServiceImpl::RequestPermissions(
     mojo::Array<PermissionName> permissions,
     const mojo::String& origin,
     bool user_gesture,
     const PermissionsStatusCallback& callback) {
-  // TODO(lalitm,mlamouri): this is returning the current permission statuses
-  // in order for the call to successfully return. It will be changed later.
-  // See https://crbug.com/516626
-  mojo::Array<PermissionStatus> result(permissions.size());
-  for (size_t i = 0; i < permissions.size(); ++i)
-    result[i] = GetPermissionStatusFromName(permissions[i], GURL(origin));
-  callback.Run(result.Pass());
+  if (permissions.is_null()) {
+    callback.Run(mojo::Array<PermissionStatus>());
+    return;
+  }
+
+  // This condition is valid if the call is coming from a ChildThread instead of
+  // a RenderFrame. Some consumers of the service run in Workers and some in
+  // Frames. In the context of a Worker, it is not possible to show a
+  // permission prompt because there is no tab. In the context of a Frame, we
+  // can. Even if the call comes from a context where it is not possible to show
+  // any UI, we want to still return something relevant so the current
+  // permission status is returned for each permission.
+  BrowserContext* browser_context = context_->GetBrowserContext();
+  DCHECK(browser_context);
+  if (!context_->render_frame_host() ||
+      !browser_context->GetPermissionManager()) {
+    mojo::Array<PermissionStatus> result(permissions.size());
+    for (size_t i = 0; i < permissions.size(); ++i)
+      result[i] = GetPermissionStatusFromName(permissions[i], GURL(origin));
+    callback.Run(result.Pass());
+    return;
+  }
+
+  std::vector<PermissionType> types(permissions.size());
+  for (size_t i = 0; i < types.size(); ++i)
+    types[i] = PermissionNameToPermissionType(permissions[i]);
+
+  int pending_request_id = pending_requests_.Add(
+      new PendingRequest(callback, permissions.size()));
+  int id = browser_context->GetPermissionManager()->RequestPermissions(
+      types,
+      context_->render_frame_host(),
+      GURL(origin),
+      user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
+      base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
+                 weak_factory_.GetWeakPtr(),
+                 pending_request_id));
+
+  // Check if the request still exists. It may have been removed by the
+  // the response callback.
+  PendingRequest* pending_request = pending_requests_.Lookup(
+      pending_request_id);
+  if (!pending_request)
+      return;
+  pending_request->id = id;
 }
 
-void PermissionServiceImpl::OnRequestPermissionResponse(
-    int request_id,
-    PermissionStatus status) {
-  PendingRequest* request = pending_requests_.Lookup(request_id);
-  PermissionStatusCallback callback(request->callback);
+void PermissionServiceImpl::OnRequestPermissionsResponse(
+    int pending_request_id,
+    const std::vector<PermissionStatus>& result) {
+  PendingRequest* request = pending_requests_.Lookup(pending_request_id);
+  PermissionsStatusCallback callback(request->callback);
   request->callback.reset();
-  pending_requests_.Remove(request_id);
-  callback.Run(status);
+  pending_requests_.Remove(pending_request_id);
+  callback.Run(mojo::Array<PermissionStatus>::From(result));
 }
 
 void PermissionServiceImpl::CancelPendingOperations() {

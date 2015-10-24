@@ -30,6 +30,22 @@ int ShellPermissionManager::RequestPermission(
   return kNoPendingOperation;
 }
 
+int ShellPermissionManager::RequestPermissions(
+    const std::vector<PermissionType>& permissions,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    const base::Callback<void(
+        const std::vector<PermissionStatus>&)>& callback) {
+  std::vector<PermissionStatus> result(permissions.size());
+  for (const auto& permission : permissions) {
+    result.push_back(permission == PermissionType::GEOLOCATION
+        ? PERMISSION_STATUS_GRANTED : PERMISSION_STATUS_DENIED);
+  }
+  callback.Run(result);
+  return kNoPendingOperation;
+}
+
 void ShellPermissionManager::CancelPermissionRequest(int request_id) {
 }
 

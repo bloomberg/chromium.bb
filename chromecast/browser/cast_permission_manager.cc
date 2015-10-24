@@ -29,6 +29,18 @@ int CastPermissionManager::RequestPermission(
   return kNoPendingOperation;
 }
 
+int CastPermissionManager::RequestPermissions(
+    const std::vector<content::PermissionType>& permissions,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    const base::Callback<void(
+        const std::vector<content::PermissionStatus>&)>& callback) {
+  callback.Run(std::vector<content::PermissionStatus>(permissions.size(),
+      content::PermissionStatus::PERMISSION_STATUS_GRANTED));
+  return kNoPendingOperation;
+}
+
 void CastPermissionManager::CancelPermissionRequest(int request_id) {
 }
 

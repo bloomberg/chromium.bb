@@ -5,6 +5,16 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 
 #include "base/strings/stringprintf.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+
+PermissionRequestID::PermissionRequestID(
+    content::RenderFrameHost* render_frame_host,
+    int request_id)
+    : render_process_id_(render_frame_host->GetProcess()->GetID()),
+      render_frame_id_(render_frame_host->GetRoutingID()),
+      request_id_(request_id) {
+}
 
 PermissionRequestID::PermissionRequestID(int render_process_id,
                                          int render_frame_id,

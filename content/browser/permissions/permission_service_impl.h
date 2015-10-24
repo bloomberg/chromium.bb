@@ -44,15 +44,14 @@ class PermissionServiceImpl : public PermissionService {
       mojo::Callback<void(mojo::Array<PermissionStatus>)>;
 
   struct PendingRequest {
-    PendingRequest(PermissionType permission, const GURL& origin,
-                   const PermissionStatusCallback& callback);
+    PendingRequest(const PermissionsStatusCallback& callback,
+                   int request_count);
     ~PendingRequest();
 
     // Request ID received from the PermissionManager.
     int id;
-    PermissionType permission;
-    GURL origin;
-    PermissionStatusCallback callback;
+    PermissionsStatusCallback callback;
+    int request_count;
   };
   using RequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
 
@@ -92,7 +91,12 @@ class PermissionServiceImpl : public PermissionService {
 
   void OnConnectionError();
 
-  void OnRequestPermissionResponse(int request_id, PermissionStatus status);
+  void OnRequestPermissionResponse(
+      int pending_request_id,
+      PermissionStatus status);
+  void OnRequestPermissionsResponse(
+      int pending_request_id,
+      const std::vector<PermissionStatus>& result);
 
   PermissionStatus GetPermissionStatusFromName(PermissionName permission,
                                                const GURL& origin);
