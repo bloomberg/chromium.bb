@@ -792,7 +792,6 @@
    fun:_ZN7testing*PrintBytesInObjectTo*
    fun:_ZN7testing9internal220PrintBytesInObjectToEPKh*
    fun:_ZN7testing9internal220TypeWithoutFormatter*
-   fun:_ZN7testing9internal2lsIcSt11char_traitsIcE*
 }
 {
    bug_64887_b
