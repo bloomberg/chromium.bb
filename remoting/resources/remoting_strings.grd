@@ -562,7 +562,10 @@
 
       <if expr="is_android or is_ios">
         <message desc="Pressing this button switches the view of the remote desktop to a Virtual Reality representation which is compatible with Google Cardboard." name="IDS_SHOW_CARDBOARD" formatter_data="android_java">
-          Show Cardboard view.
+          Show Cardboard view
+        </message>
+        <message desc="This message is shown in a dialog to warn the user they are about to switch to a Virtual Reality view which will not function properly unless the user has a Google Cardboard compatible device." name="IDS_CARDBOARD_WARNING_MESSAGE" formatter_data="android_java">
+          You have enabled Google Cardboard integration mode. To use this mode, insert your device into a Google Cardboard-compatible viewer.
         </message>
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
           Show/hide keyboard.

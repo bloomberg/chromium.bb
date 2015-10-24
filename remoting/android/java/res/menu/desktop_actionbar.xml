@@ -12,10 +12,6 @@
             android:title="@string/cast_button_title"
             app:actionProviderClass="android.support.v7.app.MediaRouteActionProvider"
             app:showAsAction="always"/>
-    <item android:id="@+id/actionbar_cardboard"
-            android:title="@string/show_cardboard"
-            android:icon="@drawable/ic_cardboard"
-            app:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_keyboard"
             android:title="@string/show_hide_keyboard"
             android:icon="@drawable/ic_action_keyboard"
@@ -27,6 +23,10 @@
     <item android:id="@+id/actionbar_send_ctrl_alt_del"
             android:title="@string/send_ctrl_alt_del"
             app:showAsAction="withText"/>
+    <item android:id="@+id/actionbar_cardboard"
+            android:title="@string/show_cardboard"
+            android:icon="@drawable/ic_cardboard"
+            app:showAsAction="never"/>
     <item android:id="@+id/actionbar_disconnect"
             android:title="@string/disconnect_myself_button"
             app:showAsAction="withText"/>

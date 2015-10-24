@@ -5,6 +5,8 @@
 package org.chromium.chromoting;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -33,6 +35,13 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
             "https://support.google.com/chrome/?p=mobile_crd_connecthost";
+
+    /**
+     * Preference used for displaying an interestitial dialog only when the user first accesses the
+     * Cardboard function.
+     */
+    private static final String PREFERENCE_CARDBOARD_DIALOG_SEEN =
+            "cardboard_dialog_seen";
 
     /** The surface that displays the remote host's desktop feed. */
     private DesktopView mRemoteHostDesktop;
@@ -214,9 +223,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         mActivityLifecycleListener.onActivityOptionsItemSelected(this, item);
 
         if (id == R.id.actionbar_cardboard) {
-            mSwitchToCardboardDesktopActivity = true;
-            Intent intent = new Intent(this, DesktopActivity.class);
-            startActivityForResult(intent, Chromoting.CARDBOARD_DESKTOP_ACTIVITY);
+            onCardboardItemSelected();
             return true;
         }
         if (id == R.id.actionbar_keyboard) {
@@ -250,6 +257,41 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onCardboardItemSelected() {
+        if (getPreferences(MODE_PRIVATE).getBoolean(PREFERENCE_CARDBOARD_DIALOG_SEEN, false)) {
+            switchToCardboardMode();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(getTitle())
+                .setMessage(R.string.cardboard_warning_message)
+                .setIcon(R.drawable.ic_cardboard)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        getPreferences(MODE_PRIVATE)
+                                .edit()
+                                .putBoolean(PREFERENCE_CARDBOARD_DIALOG_SEEN, true)
+                                .apply();
+                        switchToCardboardMode();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                })
+                .create()
+                .show();
+    }
+
+    private void switchToCardboardMode() {
+        mSwitchToCardboardDesktopActivity = true;
+        Intent intent = new Intent(this, DesktopActivity.class);
+        startActivityForResult(intent, Chromoting.CARDBOARD_DESKTOP_ACTIVITY);
     }
 
     /**
