@@ -440,10 +440,10 @@ void MediaCodecPlayer::SetCdm(BrowserCdm* cdm) {
   MediaDrmBridge::MediaCryptoReadyCB cb = BindToCurrentLoop(
       base::Bind(&MediaCodecPlayer::OnMediaCryptoReady, media_weak_this_));
 
-  // Post back to UI thread.
+  // Post back to MediaDrmBridge's default thread.
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&MediaDrmBridge::SetMediaCryptoReadyCB,
-                                       drm_bridge_->WeakPtrForUIThread(), cb));
+                                       drm_bridge_->WeakPtr(), cb));
 }
 
 // Callbacks from Demuxer.

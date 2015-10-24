@@ -9,7 +9,6 @@ import android.media.MediaCrypto;
 import android.media.MediaDrm;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -76,7 +75,6 @@ public class MediaDrmBridge {
     private MediaDrm mMediaDrm;
     private long mNativeMediaDrmBridge;
     private UUID mSchemeUUID;
-    private Handler mHandler;
 
     // A session only for the purpose of creating a MediaCrypto object.
     // This session is opened when createSession() is called for the first
@@ -209,7 +207,6 @@ public class MediaDrmBridge {
         mNativeMediaDrmBridge = nativeMediaDrmBridge;
         assert isNativeMediaDrmBridgeValid();
 
-        mHandler = new Handler();
         mSessionIds = new HashMap<ByteBuffer, String>();
         mPendingCreateSessionDataQueue = new ArrayDeque<PendingCreateSessionData>();
         mResetDeviceCredentialsPending = false;
@@ -436,7 +433,6 @@ public class MediaDrmBridge {
      * Release all allocated resources and finish all pending operations.
      */
     private void release() {
-        // Do not reset mHandler so that we can still post tasks back to native code.
         // Note that mNativeMediaDrmBridge may have already been reset (see destroy()).
 
         for (PendingCreateSessionData data : mPendingCreateSessionDataQueue) {
@@ -547,18 +543,6 @@ public class MediaDrmBridge {
             long promiseId = pendingData.promiseId();
             createSession(initData, mime, optionalParameters, promiseId);
         }
-    }
-
-    /**
-     * Process pending operations asynchrnously.
-     */
-    private void resumePendingOperations() {
-        mHandler.post(new Runnable(){
-            @Override
-            public void run() {
-                processPendingCreateSessionData();
-            }
-        });
     }
 
     /**
@@ -788,7 +772,7 @@ public class MediaDrmBridge {
         }
 
         if (success) {
-            resumePendingOperations();
+            processPendingCreateSessionData();
         }
     }
 
@@ -814,136 +798,82 @@ public class MediaDrmBridge {
         return false;
     }
 
-    // Helper functions to post native calls to prevent reentrancy.
+    // Helper functions to make native calls.
 
     private void onMediaCryptoReady() {
-        mHandler.post(new Runnable(){
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnMediaCryptoReady(mNativeMediaDrmBridge);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnMediaCryptoReady(mNativeMediaDrmBridge);
+        }
     }
 
     private void onPromiseResolved(final long promiseId) {
-        mHandler.post(new Runnable(){
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnPromiseResolved(mNativeMediaDrmBridge, promiseId);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnPromiseResolved(mNativeMediaDrmBridge, promiseId);
+        }
     }
 
     private void onPromiseResolvedWithSession(final long promiseId, final byte[] sessionId) {
-        mHandler.post(new Runnable(){
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnPromiseResolvedWithSession(mNativeMediaDrmBridge, promiseId, sessionId);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnPromiseResolvedWithSession(mNativeMediaDrmBridge, promiseId, sessionId);
+        }
     }
 
     private void onPromiseRejected(final long promiseId, final String errorMessage) {
         Log.e(TAG, "onPromiseRejected: %s", errorMessage);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnPromiseRejected(mNativeMediaDrmBridge, promiseId, errorMessage);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnPromiseRejected(mNativeMediaDrmBridge, promiseId, errorMessage);
+        }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private void onSessionMessage(final byte[] sessionId, final MediaDrm.KeyRequest request) {
-        mHandler.post(new Runnable() {
-            @TargetApi(Build.VERSION_CODES.M)
-            @Override
-            public void run() {
-                if (!isNativeMediaDrmBridgeValid()) {
-                    return;
-                }
+        if (!isNativeMediaDrmBridgeValid()) return;
 
-                int requestType = MediaDrm.KeyRequest.REQUEST_TYPE_INITIAL;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestType = request.getRequestType();
-                } else {
-                    // Prior to M, getRequestType() is not supported. Do our best guess here: Assume
-                    // requests with a URL are renewals and all others are initial requests.
-                    requestType = request.getDefaultUrl().isEmpty()
-                            ? MediaDrm.KeyRequest.REQUEST_TYPE_INITIAL
-                            : MediaDrm.KeyRequest.REQUEST_TYPE_RENEWAL;
-                }
+        int requestType = MediaDrm.KeyRequest.REQUEST_TYPE_INITIAL;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestType = request.getRequestType();
+        } else {
+            // Prior to M, getRequestType() is not supported. Do our best guess here: Assume
+            // requests with a URL are renewals and all others are initial requests.
+            requestType = request.getDefaultUrl().isEmpty()
+                    ? MediaDrm.KeyRequest.REQUEST_TYPE_INITIAL
+                    : MediaDrm.KeyRequest.REQUEST_TYPE_RENEWAL;
+        }
 
-                nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, requestType,
-                        request.getData(), request.getDefaultUrl());
-            }
-        });
+        nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, requestType, request.getData(),
+                request.getDefaultUrl());
     }
 
     private void onSessionClosed(final byte[] sessionId) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnSessionClosed(mNativeMediaDrmBridge, sessionId);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnSessionClosed(mNativeMediaDrmBridge, sessionId);
+        }
     }
 
     private void onSessionKeysChange(
             final byte[] sessionId, final Object[] keysInfo, final boolean hasAdditionalUsableKey) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnSessionKeysChange(
-                            mNativeMediaDrmBridge, sessionId, keysInfo, hasAdditionalUsableKey);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnSessionKeysChange(
+                    mNativeMediaDrmBridge, sessionId, keysInfo, hasAdditionalUsableKey);
+        }
     }
 
     private void onSessionExpirationUpdate(final byte[] sessionId, final long expirationTime) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnSessionExpirationUpdate(
-                            mNativeMediaDrmBridge, sessionId, expirationTime);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnSessionExpirationUpdate(mNativeMediaDrmBridge, sessionId, expirationTime);
+        }
     }
 
     private void onLegacySessionError(final byte[] sessionId, final String errorMessage) {
-        Log.e(TAG, "onLegacySessionError: %s", errorMessage);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnLegacySessionError(mNativeMediaDrmBridge, sessionId, errorMessage);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnLegacySessionError(mNativeMediaDrmBridge, sessionId, errorMessage);
+        }
     }
 
     private void onResetDeviceCredentialsCompleted(final boolean success) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnResetDeviceCredentialsCompleted(mNativeMediaDrmBridge, success);
-                }
-            }
-        });
+        if (isNativeMediaDrmBridgeValid()) {
+            nativeOnResetDeviceCredentialsCompleted(mNativeMediaDrmBridge, success);
+        }
     }
 
     private class EventListener implements MediaDrm.OnEventListener {
@@ -1107,6 +1037,8 @@ public class MediaDrmBridge {
         }
     }
 
+    // Native functions. At the native side, must post the task immediately to
+    // avoid reentrancy issues.
     private native void nativeOnMediaCryptoReady(long nativeMediaDrmBridge);
 
     private native void nativeOnPromiseResolved(long nativeMediaDrmBridge, long promiseId);

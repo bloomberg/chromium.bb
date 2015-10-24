@@ -24,7 +24,6 @@ class GURL;
 namespace media {
 
 class MediaDrmBridge;
-class MediaPlayerManager;
 
 using ScopedMediaDrmBridgePtr = scoped_ptr<MediaDrmBridge, BrowserCdmDeleter>;
 
@@ -58,12 +57,10 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // to check IsAvailable() explicitly before calling them.
   static bool IsAvailable();
 
+  static bool RegisterMediaDrmBridge(JNIEnv* env);
+
   // Checks whether |key_system| is supported.
   static bool IsKeySystemSupported(const std::string& key_system);
-
-  // Returns the list of the platform-supported key system names that
-  // are not handled by Chrome explicitly.
-  static std::vector<std::string> GetPlatformKeySystemNames();
 
   // Checks whether |key_system| is supported with |container_mime_type|.
   // |container_mime_type| must not be empty.
@@ -71,7 +68,9 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
       const std::string& key_system,
       const std::string& container_mime_type);
 
-  static bool RegisterMediaDrmBridge(JNIEnv* env);
+  // Returns the list of the platform-supported key system names that
+  // are not handled by Chrome explicitly.
+  static std::vector<std::string> GetPlatformKeySystemNames();
 
   // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
   // pointer otherwise.
@@ -90,14 +89,8 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   static ScopedMediaDrmBridgePtr CreateWithoutSessionSupport(
       const std::string& key_system);
 
-  // Returns true if |security_level| is successfully set, or false otherwise.
-  // Call this function right after Create() and before any other calls.
-  // Note:
-  // - If this function is not called, the default security level of the device
-  //   will be used.
-  // - It's recommended to call this function only once on a MediaDrmBridge
-  //   object. Calling this function multiples times may cause errors.
-  bool SetSecurityLevel(SecurityLevel security_level);
+  // Returns a WeakPtr to be used on the |task_runner_|.
+  base::WeakPtr<MediaDrmBridge> WeakPtr();
 
   // MediaKeys (via BrowserCdm) implementation.
   void SetServerCertificate(
@@ -125,6 +118,28 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
                      const base::Closure& cdm_unset_cb) override;
   void UnregisterPlayer(int registration_id) override;
 
+  // Returns true if |security_level| is successfully set, or false otherwise.
+  // Call this function right after Create() and before any other calls.
+  // Note:
+  // - If this function is not called, the default security level of the device
+  //   will be used.
+  // - It's recommended to call this function only once on a MediaDrmBridge
+  //   object. Calling this function multiples times may cause errors.
+  bool SetSecurityLevel(SecurityLevel security_level);
+
+  // Helper function to determine whether a protected surface is needed for the
+  // video playback.
+  bool IsProtectedSurfaceRequired();
+
+  // Reset the device credentials.
+  void ResetDeviceCredentials(const ResetCredentialsCB& callback);
+
+  // Helper functions to resolve promises.
+  void ResolvePromise(uint32_t promise_id);
+  void ResolvePromiseWithSession(uint32_t promise_id,
+                                 const std::string& session_id);
+  void RejectPromise(uint32_t promise_id, const std::string& error_message);
+
   // Returns a MediaCrypto object if it's already created. Returns a null object
   // otherwise.
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
@@ -132,6 +147,9 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // Sets callback which will be called when MediaCrypto is ready. If
   // |media_crypto_ready_cb| is null, previously set callback will be cleared.
   void SetMediaCryptoReadyCB(const MediaCryptoReadyCB& media_crypto_ready_cb);
+
+  // All the OnXxx functions below are called from Java. The implementation must
+  // only do minimal work and then post tasks to avoid reentrancy issues.
 
   // Called by Java after a MediaCrypto object is created.
   void OnMediaCryptoReady(JNIEnv* env, jobject j_media_drm);
@@ -152,7 +170,6 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
                          jstring j_error_message);
 
   // Session event callbacks.
-  // Note: Session expiration update is not supported by MediaDrm.
 
   // TODO(xhwang): Remove |j_legacy_destination_url| when prefixed EME support
   // is removed.
@@ -191,18 +208,8 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
                             jbyteArray j_session_id,
                             jstring j_error_message);
 
-  // Reset the device credentials.
-  void ResetDeviceCredentials(const ResetCredentialsCB& callback);
-
   // Called by the java object when credential reset is completed.
   void OnResetDeviceCredentialsCompleted(JNIEnv* env, jobject, bool success);
-
-  // Helper function to determine whether a protected surface is needed for the
-  // video playback.
-  bool IsProtectedSurfaceRequired();
-
-  // We use this pointer when we post SetMediaCryptoReadyCB onto UI thread.
-  base::WeakPtr<MediaDrmBridge> WeakPtrForUIThread();
 
  private:
   MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
@@ -247,15 +254,19 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
 
   scoped_ptr<CdmPromiseAdapter> cdm_promise_adapter_;
 
-  // Object for posting tasks on UI thread.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  // Default task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // This flag is set when we use media thread for certain callbacks.
   const bool use_media_thread_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
+
+  // WeakPtrFactory to generate weak pointers to be used on the media thread.
   base::WeakPtrFactory<MediaDrmBridge> media_weak_factory_;
-  base::WeakPtrFactory<MediaDrmBridge> ui_weak_factory_;
+
+  // Default WeakPtrFactory.
+  base::WeakPtrFactory<MediaDrmBridge> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };
