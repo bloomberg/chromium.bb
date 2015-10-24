@@ -678,6 +678,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             self.no_optimize_option,
             # FIXME: Remove this option.
             self.results_directory_option,
+            optparse.make_option("--auth-refresh-token-json", help="Rietveld auth refresh JSON token."),
             ])
 
     def bot_revision_data(self):
@@ -795,6 +796,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         subprocess_command = ['git', 'cl'] + command
         if options.verbose:
             subprocess_command.append('--verbose')
+        if options.auth_refresh_token_json:
+            subprocess_command.append('--auth-refresh-token-json')
+            subprocess_command.append(options.auth_refresh_token_json)
 
         process = self._tool.executive.popen(subprocess_command, stdout=self._tool.executive.PIPE, stderr=self._tool.executive.STDOUT)
         last_output_time = time.time()

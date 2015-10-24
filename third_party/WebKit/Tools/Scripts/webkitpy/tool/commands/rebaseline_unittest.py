@@ -1073,12 +1073,12 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'closed'
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [])
 
             self.command.tree_status = lambda: 'open'
             self.tool.executive.calls = []
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=None), [], self.tool)
 
             self.assertEqual(self.tool.executive.calls, [
                 [
@@ -1162,7 +1162,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.command.tree_status = lambda: 'open'
             self.tool.executive = MockExecutive()
             self.tool.executive.calls = []
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=None), [], self.tool)
 
             self.assertEqual(self.tool.executive.calls, [
                 [
@@ -1222,7 +1222,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'open'
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
@@ -1283,7 +1283,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
             self.command.tree_status = lambda: 'open'
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-temporary-branch'
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
@@ -1343,7 +1343,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
             self.command.tree_status = lambda: 'open'
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-alt-temporary-branch'
-            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
@@ -1354,6 +1354,69 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
 Bug(foo) [ Linux Mac XP ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+        finally:
+            builders._exact_matches = old_exact_matches
+
+    def test_execute_with_rietveld_auth_refresh_token(self):
+        RIETVELD_REFRESH_TOKEN = '/creds/refresh_tokens/test_rietveld_token'
+
+        def blame(path):
+            return """
+6469e754a1 path/to/TestExpectations                   (<foobarbaz1@chromium.org> 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+"""
+        self.tool.scm().blame = blame
+
+        test_port = self._setup_test_port()
+
+        old_builder_data = self.command.builder_data
+
+        def builder_data():
+            self.command._builder_data['MOCK Leopard'] = self.command._builder_data['MOCK SnowLeopard'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-taco.html": {
+                    "expected": "FAIL",
+                    "actual": "PASS",
+                    "is_unexpected": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
+Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+
+        self.tool.executive = MockLineRemovingExecutive()
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
+                "MOCK SnowLeopard": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"])},
+            }
+
+            self.command.tree_status = lambda: 'open'
+            self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=RIETVELD_REFRESH_TOKEN), [], self.tool)
+            self.assertEqual(self.tool.executive.calls, [
+                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
+                ['git', 'cl', 'upload', '-f', '--auth-refresh-token-json', RIETVELD_REFRESH_TOKEN],
+                ['git', 'pull'],
+                ['git', 'cl', 'land', '-f', '-v', '--auth-refresh-token-json', RIETVELD_REFRESH_TOKEN],
+                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
+            ])
+
+            # The mac ports should both be removed since they're the only ones in builders._exact_matches.
+            self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
+Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
         finally:
             builders._exact_matches = old_exact_matches
