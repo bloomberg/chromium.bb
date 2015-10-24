@@ -180,8 +180,9 @@
   ],
 
   "entries": [
-    // Dummy entry to test certificate pinning.
+    // Dummy entries to test certificate pinning.
     { "name": "pinningtest.appspot.com", "include_subdomains": true, "pins": "test" },
+    { "name": "pinning-test.badssl.com", "include_subdomains": true, "pins": "test" },
 
     // (*.)google.com, iff using SSL, must use an acceptable certificate.
     { "name": "google.com", "include_subdomains": true, "pins": "google" },
@@ -4127,6 +4128,7 @@
     "DROPBOXUSERCONTENT_COM",
     "WITHYOUTUBE_COM",
     "WITHGOOGLE_COM",
-    "G4W_CO"
+    "G4W_CO",
+    "BADSSL_COM"
   ]
 }
