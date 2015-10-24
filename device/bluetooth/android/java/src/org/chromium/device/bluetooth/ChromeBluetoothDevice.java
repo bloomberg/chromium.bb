@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ final class ChromeBluetoothDevice {
 
     private long mNativeBluetoothDeviceAndroid;
     final Wrappers.BluetoothDeviceWrapper mDevice;
-    private List<ParcelUuid> mUuidsFromScan;
+    private HashSet<String> mUuidsFromScan;
     Wrappers.BluetoothGattWrapper mBluetoothGatt;
     private final BluetoothGattCallbackImpl mBluetoothGattCallbackImpl;
 
@@ -38,6 +39,7 @@ final class ChromeBluetoothDevice {
             long nativeBluetoothDeviceAndroid, Wrappers.BluetoothDeviceWrapper deviceWrapper) {
         mNativeBluetoothDeviceAndroid = nativeBluetoothDeviceAndroid;
         mDevice = deviceWrapper;
+        mUuidsFromScan = new HashSet<String>();
         mBluetoothGattCallbackImpl = new BluetoothGattCallbackImpl();
         Log.v(TAG, "ChromeBluetoothDevice created.");
     }
@@ -67,12 +69,14 @@ final class ChromeBluetoothDevice {
     // Implements BluetoothDeviceAndroid::UpdateAdvertisedUUIDs.
     @CalledByNative
     private boolean updateAdvertisedUUIDs(List<ParcelUuid> uuidsFromScan) {
-        if ((mUuidsFromScan == null && uuidsFromScan == null)
-                || (mUuidsFromScan != null && mUuidsFromScan.equals(uuidsFromScan))) {
+        if (uuidsFromScan == null) {
             return false;
         }
-        mUuidsFromScan = uuidsFromScan;
-        return true;
+        boolean uuidsUpdated = false;
+        for (ParcelUuid uuid : uuidsFromScan) {
+            uuidsUpdated |= mUuidsFromScan.add(uuid.toString());
+        }
+        return uuidsUpdated;
     }
 
     // Implements BluetoothDeviceAndroid::GetBluetoothClass.
@@ -96,16 +100,9 @@ final class ChromeBluetoothDevice {
     // Implements BluetoothDeviceAndroid::GetUUIDs.
     @CalledByNative
     private String[] getUuids() {
-        int uuidCount = (mUuidsFromScan != null) ? mUuidsFromScan.size() : 0;
-        String[] string_array = new String[uuidCount];
-        for (int i = 0; i < uuidCount; i++) {
-            string_array[i] = mUuidsFromScan.get(i).toString();
-        }
-
         // TODO(scheib): return merged list of UUIDs from scan results and,
         // after a device is connected, discoverServices. crbug.com/508648
-
-        return string_array;
+        return mUuidsFromScan.toArray(new String[mUuidsFromScan.size()]);
     }
 
     // Implements BluetoothDeviceAndroid::CreateGattConnectionImpl.

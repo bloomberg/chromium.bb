@@ -546,8 +546,8 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   EXPECT_EQ(1u, adapter_->GetDevices().size());
   EXPECT_EQ(device, observer.last_device());
 
-  // Expect new UUIDs:
-  EXPECT_FALSE(
+  // Expect new AND old UUIDs:
+  EXPECT_TRUE(
       ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
   EXPECT_TRUE(ContainsValue(device->GetUUIDs(),
                             BluetoothUUID(kTestUUIDImmediateAlert)));
@@ -556,12 +556,16 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   observer.Reset();
   DiscoverLowEnergyDevice(3);
   EXPECT_EQ(0, observer.device_added_count());
+#if defined(OS_MACOSX)
+  // TODO(scheib): Call DeviceChanged only if UUIDs change. crbug.com/547106
   EXPECT_EQ(1, observer.device_changed_count());
+#else
+  EXPECT_EQ(0, observer.device_changed_count());
+#endif
   EXPECT_EQ(1u, adapter_->GetDevices().size());
-  EXPECT_EQ(device, observer.last_device());
 
-  // Expect empty UUIDs:
-  EXPECT_EQ(0u, device->GetUUIDs().size());
+  // Expect all UUIDs:
+  EXPECT_EQ(4u, device->GetUUIDs().size());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 

@@ -493,6 +493,7 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   // A device has an update.
   VLOG(2) << "LowEnergyDeviceUpdated";
   device_mac->Update(peripheral, advertisement_data, rssi);
+  // TODO(scheib): Call DeviceChanged only if UUIDs change. crbug.com/547106
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     DeviceChanged(this, device_mac));
 }
