@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ipc/attachment_broker_privileged_mac.h"
@@ -111,7 +112,8 @@ bool GetSharedMemoryHandlesFromMsg2(const IPC::Message& message,
 
 // Returns |nullptr| on error.
 scoped_ptr<base::SharedMemory> MapSharedMemoryHandle(
-    const base::SharedMemoryHandle& shm) {
+    const base::SharedMemoryHandle& shm,
+    bool read_only) {
   if (!shm.IsValid()) {
     LOG(ERROR) << "Invalid SharedMemoryHandle";
     return nullptr;
@@ -124,7 +126,7 @@ scoped_ptr<base::SharedMemory> MapSharedMemoryHandle(
   }
 
   scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(shm, false));
+      new base::SharedMemory(shm, read_only));
   shared_memory->Map(size);
   return shared_memory;
 }
@@ -133,7 +135,8 @@ scoped_ptr<base::SharedMemory> MapSharedMemoryHandle(
 // consumes a reference to the underlying Mach port.
 bool CheckContentsOfSharedMemoryHandle(const base::SharedMemoryHandle& shm,
                                        const std::string& contents) {
-  scoped_ptr<base::SharedMemory> shared_memory(MapSharedMemoryHandle(shm));
+  scoped_ptr<base::SharedMemory> shared_memory(
+      MapSharedMemoryHandle(shm, false));
 
   if (memcmp(shared_memory->memory(), contents.c_str(), contents.size()) != 0) {
     LOG(ERROR) << "Shared Memory contents not equivalent";
@@ -188,8 +191,10 @@ bool CheckContentsOfTwoEquivalentSharedMemoryHandles(
     const base::SharedMemoryHandle& handle1,
     const base::SharedMemoryHandle& handle2,
     const std::string& contents) {
-  scoped_ptr<base::SharedMemory> shared_memory1(MapSharedMemoryHandle(handle1));
-  scoped_ptr<base::SharedMemory> shared_memory2(MapSharedMemoryHandle(handle2));
+  scoped_ptr<base::SharedMemory> shared_memory1(
+      MapSharedMemoryHandle(handle1, false));
+  scoped_ptr<base::SharedMemory> shared_memory2(
+      MapSharedMemoryHandle(handle2, false));
 
   if (memcmp(shared_memory1->memory(), contents.c_str(), contents.size()) !=
       0) {
@@ -538,6 +543,10 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 // it. The SharedMemoryHandle is sent to the privileged process using Chrome
 // IPC. The privileged process checks that it received the same memory region.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandle) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   CommonSetUp("SendSharedMemoryHandle");
 
   SendMessage1(kDataBuffer1);
@@ -559,6 +568,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandle) {
 // Similar to SendSharedMemoryHandle, but sends a very long shared memory
 // region.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleLong) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   CommonSetUp("SendSharedMemoryHandleLong");
 
   std::string buffer(1 << 23, 'a');
@@ -582,6 +595,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleLong) {
 // Similar to SendSharedMemoryHandle, but sends two different shared memory
 // regions in two messages.
 TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesDifferentSharedMemoryHandle) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   CommonSetUp("SendTwoMessagesDifferentSharedMemoryHandle");
 
   SendMessage1(kDataBuffer1);
@@ -613,6 +630,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendTwoMessagesDifferentSharedMemoryHandle) {
 // Similar to SendSharedMemoryHandle, but sends the same shared memory region in
 // two messages.
 TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesSameSharedMemoryHandle) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   CommonSetUp("SendTwoMessagesSameSharedMemoryHandle");
 
   {
@@ -658,6 +679,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendTwoMessagesSameSharedMemoryHandle) {
 // memory regions.
 TEST_F(IPCAttachmentBrokerMacTest,
        SendOneMessageWithTwoDifferentSharedMemoryHandles) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   CommonSetUp("SendOneMessageWithTwoDifferentSharedMemoryHandles");
 
   {
@@ -700,6 +725,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
 // same memory region twice.
 TEST_F(IPCAttachmentBrokerMacTest,
        SendOneMessageWithTwoSameSharedMemoryHandles) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   CommonSetUp("SendOneMessageWithTwoSameSharedMemoryHandles");
 
   {
@@ -738,6 +767,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
 
 // Sends one message with two Posix FDs and two Mach ports.
 TEST_F(IPCAttachmentBrokerMacTest, SendPosixFDAndMachPort) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath fp1, fp2;
@@ -801,6 +834,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendPosixFDAndMachPort) {
 // process. This is an unrealistic scenario, but simulates an unprivileged
 // process sending an attachment to another unprivileged process.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelf) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   SetBroker(new MockBroker);
   CommonSetUp("SendSharedMemoryHandleToSelf");
 
@@ -852,6 +889,10 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleToSelf) {
 // Similar to SendSharedMemoryHandle, but uses a ChannelProxy instead of a
 // Channel.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   Init("SendSharedMemoryHandleChannelProxy");
   MachPreForkSetUp();
 
@@ -898,6 +939,90 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleChannelProxy) {
   return CommonPrivilegedProcessMain(
       &SendSharedMemoryHandleChannelProxyCallback,
       "SendSharedMemoryHandleChannelProxy");
+}
+
+// Similar to SendSharedMemoryHandle, but first makes a copy of the handle using
+// ShareToProcess().
+TEST_F(IPCAttachmentBrokerMacTest, ShareToProcess) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  CommonSetUp("ShareToProcess");
+
+  {
+    scoped_ptr<base::SharedMemory> shared_memory(
+        MakeSharedMemory(kDataBuffer1));
+    base::SharedMemoryHandle new_handle;
+    ASSERT_TRUE(shared_memory->ShareToProcess(0, &new_handle));
+    IPC::Message* message =
+        new TestSharedMemoryHandleMsg1(100, new_handle, 200);
+    sender()->Send(message);
+  }
+
+  base::MessageLoop::current()->Run();
+  CommonTearDown();
+}
+
+void ShareToProcessCallback(IPC::Sender* sender, const IPC::Message& message) {
+  bool success = CheckContentsOfMessage1(message, kDataBuffer1);
+  SendControlMessage(sender, success);
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ShareToProcess) {
+  return CommonPrivilegedProcessMain(&ShareToProcessCallback, "ShareToProcess");
+}
+
+// Similar to ShareToProcess, but instead shares the memory object only with
+// read permissions.
+TEST_F(IPCAttachmentBrokerMacTest, ShareReadOnlyToProcess) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  CommonSetUp("ShareReadOnlyToProcess");
+
+  {
+    scoped_ptr<base::SharedMemory> shared_memory(
+        MakeSharedMemory(kDataBuffer1));
+    base::SharedMemoryHandle new_handle;
+    ASSERT_TRUE(shared_memory->ShareReadOnlyToProcess(0, &new_handle));
+    IPC::Message* message =
+        new TestSharedMemoryHandleMsg1(100, new_handle, 200);
+    sender()->Send(message);
+  }
+
+  base::MessageLoop::current()->Run();
+  CommonTearDown();
+}
+
+void ShareReadOnlyToProcessCallback(IPC::Sender* sender,
+                                    const IPC::Message& message) {
+  base::SharedMemoryHandle shm(GetSharedMemoryHandleFromMsg1(message));
+
+  // Try to map the memory as writable.
+  scoped_ptr<base::SharedMemory> shared_memory(
+      MapSharedMemoryHandle(shm, false));
+  ASSERT_EQ(nullptr, shared_memory->memory());
+
+  // Now try as read-only.
+  scoped_ptr<base::SharedMemory> shared_memory2(
+      MapSharedMemoryHandle(shm.Duplicate(), true));
+  int current_prot, max_prot;
+  ASSERT_TRUE(IPC::GetMachProtections(shared_memory2->memory(),
+                                      shared_memory2->mapped_size(),
+                                      &current_prot, &max_prot));
+  ASSERT_EQ(VM_PROT_READ, current_prot);
+  ASSERT_EQ(VM_PROT_READ, max_prot);
+
+  bool success =
+      memcmp(shared_memory2->memory(), kDataBuffer1, strlen(kDataBuffer1)) == 0;
+  SendControlMessage(sender, success);
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ShareReadOnlyToProcess) {
+  return CommonPrivilegedProcessMain(&ShareReadOnlyToProcessCallback,
+                                     "ShareReadOnlyToProcess");
 }
 
 }  // namespace

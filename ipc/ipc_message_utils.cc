@@ -563,6 +563,12 @@ void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
       bool result = p.GetSize(&size);
       DCHECK(result);
       ParamTraits<size_t>::Write(m, size);
+
+      // If the caller intended to pass ownership to the IPC stack, release a
+      // reference.
+      if (p.OwnershipPassesToIPC())
+        p.Close();
+
       break;
   }
 }

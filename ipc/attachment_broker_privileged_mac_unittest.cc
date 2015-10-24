@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/command_line.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/shared_memory.h"
@@ -165,6 +166,10 @@ class AttachmentBrokerPrivilegedMacMultiProcessTest
 // The attachment broker inserts a right for a memory object into the
 // destination task.
 TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertRight) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   SetUpChild("InsertRightClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
   IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
@@ -228,6 +233,10 @@ MULTIPROCESS_TEST_MAIN(InsertRightClient) {
 // The attachment broker inserts the right for a memory object into the
 // destination task twice.
 TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertSameRightTwice) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   SetUpChild("InsertSameRightTwiceClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
   IPC::AttachmentBrokerPrivilegedMac broker(nullptr);
@@ -320,6 +329,10 @@ MULTIPROCESS_TEST_MAIN(InsertSameRightTwiceClient) {
 // The attachment broker inserts the rights for two memory objects into the
 // destination task.
 TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertTwoRights) {
+  // Mach-based SharedMemory isn't support on OSX 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   SetUpChild("InsertTwoRightsClient");
   mach_msg_type_number_t original_name_count = GetActiveNameCount();
   IPC::AttachmentBrokerPrivilegedMac broker(nullptr);

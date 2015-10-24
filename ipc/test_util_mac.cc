@@ -4,6 +4,7 @@
 
 #include "ipc/test_util_mac.h"
 
+#include <mach/mach_vm.h>
 #include <servers/bootstrap.h>
 
 #include "base/mac/mach_logging.h"
@@ -112,6 +113,30 @@ mach_port_urefs_t GetMachRefCount(mach_port_name_t name,
 void IncrementMachRefCount(mach_port_name_t name, mach_port_right_t right) {
   kern_return_t kr = mach_port_mod_refs(mach_task_self(), name, right, 1);
   MACH_CHECK(kr == KERN_SUCCESS, kr) << "GetRefCount";
+}
+
+bool GetMachProtections(void* address, size_t size, int* current, int* max) {
+  vm_region_info_t region_info;
+  mach_vm_address_t mem_address = reinterpret_cast<mach_vm_address_t>(address);
+  mach_vm_size_t mem_size = size;
+  vm_region_basic_info_64 basic_info;
+
+  region_info = reinterpret_cast<vm_region_recurse_info_t>(&basic_info);
+  vm_region_flavor_t flavor = VM_REGION_BASIC_INFO_64;
+  memory_object_name_t memory_object;
+  mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT_64;
+
+  kern_return_t kr =
+      mach_vm_region(mach_task_self(), &mem_address, &mem_size, flavor,
+                     region_info, &count, &memory_object);
+  if (kr != KERN_SUCCESS) {
+    MACH_LOG(ERROR, kr) << "Failed to get region info.";
+    return false;
+  }
+
+  *current = basic_info.protection;
+  *max = basic_info.max_protection;
+  return true;
 }
 
 }  // namespace IPC
