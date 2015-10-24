@@ -549,9 +549,8 @@ Polymer({
     if (!route)
       return;
 
-    // Check if |route| already exists or if its associated sink
-    // does not exist.
-    if (this.routeMap_[route.id] || !this.sinkMap_[route.sinkId])
+    // Check that |sinkId| exists.
+    if (!this.sinkMap_[sinkId])
       return;
 
     // If there is an existing route associated with the same sink, its
