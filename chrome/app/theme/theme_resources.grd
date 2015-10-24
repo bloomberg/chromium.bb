@@ -510,12 +510,10 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP" file="common/omnibox_ev_bubble_top.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_LEFT" file="common/omnibox_ev_bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_RIGHT" file="common/omnibox_ev_bubble_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="common/omnibox_extension_app_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="common/omnibox_extension_app_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_INVALID" file="common/omnibox_https_invalid.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_POLICY_WARNING" file="common/controlled_setting_mandatory.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_VALID" file="common/omnibox_https_valid.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_DARK" file="common/omnibox_http_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="common/omnibox_http_selected.png" />
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="mac/omnibox_keyword_hint_tab.png" />
@@ -535,7 +533,6 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_LEFT" file="common/omnibox_popup_border_and_shadow_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_RIGHT" file="common/omnibox_popup_border_and_shadow_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_LOUPE" file="common/omnibox_search_button_loupe.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_DARK" file="common/omnibox_search_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SECURED" file="common/omnibox_search_secured.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="common/omnibox_search_selected.png" />
       <if expr="enable_topchrome_md">
@@ -552,10 +549,8 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP_LEFT" file="common/omnibox_selected_keyword_bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP_RIGHT" file="common/omnibox_selected_keyword_bubble_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR" file="common/omnibox_star.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR_DARK" file="common/omnibox_star_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR_SELECTED" file="common/omnibox_star_selected.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS" file="common/omnibox_tts.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_DARK" file="common/omnibox_tts_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_SELECTED" file="common/omnibox_tts_selected.png" />
       <if expr="toolkit_views and not is_macosx">
         <!-- In Material Design the Ash image is the same as the common one, so

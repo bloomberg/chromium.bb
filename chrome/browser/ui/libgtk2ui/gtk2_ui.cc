@@ -1205,17 +1205,6 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_TTS: {
       return GenerateTintedIcon(id, entry_tint_);
     }
-    // In GTK mode, the dark versions of the omnibox icons only ever appear in
-    // the autocomplete popup and only against the current theme's GtkEntry
-    // base[GTK_STATE_SELECTED] color, so tint the icons so they won't collide
-    // with the selected color.
-    case IDR_OMNIBOX_EXTENSION_APP_DARK:
-    case IDR_OMNIBOX_HTTP_DARK:
-    case IDR_OMNIBOX_SEARCH_DARK:
-    case IDR_OMNIBOX_STAR_DARK:
-    case IDR_OMNIBOX_TTS_DARK: {
-      return GenerateTintedIcon(id, selected_entry_tint_);
-    }
 
     // TODO(erg): The dropdown arrow should be tinted because we're injecting
     // various background GTK colors, but the code that accesses them needs to
