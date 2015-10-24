@@ -159,7 +159,7 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientAuraTest);
 };
 
-// Tests if long-pressing on a text brings up selection handles and the quick
+// Tests that long-pressing on a text brings up selection handles and the quick
 // menu properly.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
   // Set the test page up.
@@ -190,15 +190,17 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
 
   selection_controller_client->Wait();
 
-  // Check if selection is active and the quick menu is showing.
+  // Check that selection is active and the quick menu is showing.
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
             rwhva->selection_controller()->active_status());
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
-// Tests if tapping in a textfield brings up the insertion handle and the quick
-// menu properly.
-IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicInsertion) {
+// Tests that tapping in a textfield brings up the insertion handle, but not the
+// quick menu, initially. Then, successive taps on the insertion handle toggle
+// the quick menu visibility.
+IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
+                       BasicInsertionFollowedByTapsOnHandle) {
   // Set the test page up.
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
   WebContents* web_contents =
@@ -214,27 +216,43 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicInsertion) {
             rwhva->selection_controller()->active_status());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
+  ui::test::EventGeneratorDelegate* generator_delegate =
+      ui::test::EventGenerator::default_delegate;
+  ui::test::EventGenerator generator(
+      web_contents->GetContentNativeView()->GetRootWindow());
+
   // Tap inside the textfield and wait for the insertion handle to appear.
   selection_controller_client->InitWaitForSelectionEvent(
       ui::INSERTION_HANDLE_SHOWN);
 
-  gfx::PointF point;
-  ASSERT_TRUE(GetPointInsideTextfield(&point));
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
-  tap_details.set_tap_count(1);
-  ui::GestureEvent tap(point.x(), point.y(), 0, ui::EventTimeForNow(),
-                       tap_details);
-  rwhva->OnGestureEvent(&tap);
+  gfx::PointF point_f;
+  ASSERT_TRUE(GetPointInsideTextfield(&point_f));
+  gfx::Point point = gfx::ToRoundedPoint(point_f);
+  generator_delegate->ConvertPointFromTarget(
+      web_contents->GetContentNativeView(), &point);
+  generator.GestureTapAt(point);
 
   selection_controller_client->Wait();
 
-  // Check if insertion is active and the quick menu is showing.
+  // Check that insertion is active, but the quick menu is not showing.
   EXPECT_EQ(ui::TouchSelectionController::INSERTION_ACTIVE,
             rwhva->selection_controller()->active_status());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Tap on the insertion handle; the quick menu should appear.
+  gfx::Point handle_center = gfx::ToRoundedPoint(
+      rwhva->selection_controller()->GetStartHandleRect().CenterPoint());
+  generator_delegate->ConvertPointFromTarget(
+      web_contents->GetContentNativeView(), &handle_center);
+  generator.GestureTapAt(handle_center);
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Tap once more on the insertion handle; the quick menu should disappear.
+  generator.GestureTapAt(handle_center);
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
-// Tests if the quick menu is hidden whenever a touch point is active.
+// Tests that the quick menu is hidden whenever a touch point is active.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
                        QuickMenuHiddenOnTouch) {
   // Set the test page up.
@@ -298,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
-// Tests if the quick menu and touch handles are hidden during an scroll.
+// Tests that the quick menu and touch handles are hidden during an scroll.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
   // Set the test page up.
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
@@ -376,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
-// Tests if touch selection gets deactivated after an overscroll completes.
+// Tests that touch selection gets deactivated after an overscroll completes.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
                        HiddenAfterOverscroll) {
   // Set the page up.

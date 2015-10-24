@@ -65,6 +65,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   bool touch_down_;
   bool scroll_in_progress_;
   bool handle_drag_in_progress_;
+  bool insertion_quick_menu_allowed_;
 
   bool show_quick_menu_immediately_for_test_;
 

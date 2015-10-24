@@ -118,7 +118,8 @@ TouchSelectionControllerClientAura::TouchSelectionControllerClientAura(
           false),
       touch_down_(false),
       scroll_in_progress_(false),
-      handle_drag_in_progress_(false) {
+      handle_drag_in_progress_(false),
+      insertion_quick_menu_allowed_(true) {
   DCHECK(rwhva_);
 }
 
@@ -152,7 +153,20 @@ void TouchSelectionControllerClientAura::OnScrollCompleted() {
 }
 
 bool TouchSelectionControllerClientAura::IsQuickMenuAllowed() const {
-  return !touch_down_ && !scroll_in_progress_ && !handle_drag_in_progress_;
+  if (touch_down_ || scroll_in_progress_ || handle_drag_in_progress_)
+    return false;
+
+  switch (rwhva_->selection_controller()->active_status()) {
+    case ui::TouchSelectionController::INACTIVE:
+      return false;
+    case ui::TouchSelectionController::INSERTION_ACTIVE:
+      return insertion_quick_menu_allowed_;
+    case ui::TouchSelectionController::SELECTION_ACTIVE:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 void TouchSelectionControllerClientAura::ShowQuickMenu() {
@@ -191,9 +205,6 @@ void TouchSelectionControllerClientAura::UpdateQuickMenu() {
   bool menu_is_showing =
       ui::TouchSelectionMenuRunner::GetInstance() &&
       ui::TouchSelectionMenuRunner::GetInstance()->IsRunning();
-  bool menu_should_show = rwhva_->selection_controller()->active_status() !=
-                              ui::TouchSelectionController::INACTIVE &&
-                          IsQuickMenuAllowed();
 
   // Hide the quick menu if there is any. This should happen even if the menu
   // should be shown again, in order to update its location or content.
@@ -203,7 +214,7 @@ void TouchSelectionControllerClientAura::UpdateQuickMenu() {
     quick_menu_timer_.Stop();
 
   // Start timer to show quick menu if necessary.
-  if (menu_should_show) {
+  if (IsQuickMenuAllowed()) {
     if (show_quick_menu_immediately_for_test_)
       ShowQuickMenu();
     else
@@ -250,6 +261,7 @@ void TouchSelectionControllerClientAura::OnSelectionEvent(
   switch (event) {
     case ui::SELECTION_HANDLES_SHOWN:
     case ui::INSERTION_HANDLE_SHOWN:
+      insertion_quick_menu_allowed_ = false;
       UpdateQuickMenu();
       env_pre_target_handler_.reset(new EnvPreTargetHandler(
           rwhva_->selection_controller(), rwhva_->GetNativeView()));
@@ -271,9 +283,13 @@ void TouchSelectionControllerClientAura::OnSelectionEvent(
       break;
     case ui::SELECTION_HANDLES_MOVED:
     case ui::INSERTION_HANDLE_MOVED:
+      insertion_quick_menu_allowed_ = false;
       UpdateQuickMenu();
       break;
     case ui::INSERTION_HANDLE_TAPPED:
+      insertion_quick_menu_allowed_ = !insertion_quick_menu_allowed_;
+      UpdateQuickMenu();
+      break;
     case ui::SELECTION_ESTABLISHED:
     case ui::SELECTION_DISSOLVED:
       break;
