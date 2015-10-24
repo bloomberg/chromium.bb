@@ -140,7 +140,7 @@ def GetELFType(filename):
 #
 # Returns None on any parse error.
 def ParseLinkerScript(filename):
-  fp = driver_log.DriverOpen(filename, 'r')
+  fp = driver_log.DriverOpen(filename, 'rb')
 
   ret = []
   stack = []
@@ -216,7 +216,7 @@ def GetNextToken(fp):
 
     # Whitespace terminates a token
     # (but ignore whitespace before the token)
-    if ch in (' ', '\t', '\n'):
+    if ch in (' ', '\t', '\n', '\r'):
       if token:
         break
       else:
