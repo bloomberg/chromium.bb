@@ -102,6 +102,12 @@
     <term><xsl:value-of select="@name"/></term>
     <listitem>
         <simpara>
+          <xsl:if test="@enum">
+            <link linkend="protocol-spec-{../../@name}-enum-{@enum}">
+              <xsl:value-of select="@enum"/>
+            </link>
+	    <xsl:text> </xsl:text>
+          </xsl:if>
           <xsl:value-of select="@type"/>
           <xsl:if test="@summary" >
             - <xsl:value-of select="@summary"/>
@@ -171,6 +177,9 @@
   <section id="protocol-spec-{../@name}-{name()}-{@name}">
     <title>
       <xsl:value-of select="../@name"/>::<xsl:value-of select="@name" />
+      <xsl:if test="@bitfield">
+        - bitfield
+      </xsl:if>
       <xsl:if test="description/@summary">
         - <xsl:value-of select="description/@summary" />
       </xsl:if>
