@@ -1356,10 +1356,10 @@ Press any key to continue exploring.
     Asset ID: <ph name="ASSET_ID">$1<ex>None specified</ex></ph>
   </message>
   <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
-    Select a network
+    Select a network:
   </message>
   <message name="IDS_ANOTHER_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown on the network error screen.">
-    Or, select a new network
+    Or, select a new network:
   </message>
   <message name="IDS_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
     Select your language:
