@@ -13,6 +13,7 @@ This tool does a two things:
 
 # TODO(hinoka): Use cipd/glyco instead of git/gclient.
 
+import argparse
 import sys
 import os
 import subprocess
@@ -30,7 +31,7 @@ def get_git_rev(target, branch):
       ['git', 'log', '--format=%B', '-n1', branch], cwd=target)
 
 
-def need_to_update():
+def need_to_update(branch):
   """Checks to see if we need to update the ~/.chrome-infra/infra checkout."""
   try:
     cmd = [sys.executable, GCLIENT, 'revinfo']
@@ -46,13 +47,14 @@ def need_to_update():
   subprocess.check_call(
       ['git', 'fetch', 'origin'], cwd=INFRA_DIR,
       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  origin_rev = get_git_rev(INFRA_DIR, 'origin/deployed')
+  origin_rev = get_git_rev(INFRA_DIR, 'origin/%s' % (branch,))
   return origin_rev != local_rev
 
 
-def ensure_infra():
+def ensure_infra(branch):
   """Ensures that infra.git is present in ~/.chrome-infra."""
-  print 'Fetching infra into %s, may take a couple of minutes...' % TARGET_DIR
+  print 'Fetching infra@%s into %s, may take a couple of minutes...' % (
+      branch, TARGET_DIR)
   if not os.path.isdir(TARGET_DIR):
     os.mkdir(TARGET_DIR)
   if not os.path.exists(os.path.join(TARGET_DIR, '.gclient')):
@@ -61,7 +63,7 @@ def ensure_infra():
         cwd=TARGET_DIR,
         stdout=subprocess.PIPE)
   subprocess.check_call(
-      [sys.executable, GCLIENT, 'sync', '--revision', 'origin/deployed'],
+      [sys.executable, GCLIENT, 'sync', '--revision', 'origin/%s' % (branch,)],
       cwd=TARGET_DIR,
       stdout=subprocess.PIPE)
 
@@ -96,9 +98,20 @@ def run(args):
 
 
 def main():
-  if need_to_update():
-    ensure_infra()
-  return run(sys.argv[1:])
+  parser = argparse.ArgumentParser("Chrome Infrastructure CLI.")
+  parser.add_argument('-b', '--infra-branch', default='deployed',
+      help="The name of the 'infra' branch to use (default is %(default)s).")
+  parser.add_argument('args', nargs=argparse.REMAINDER)
+
+  args, extras = parser.parse_known_args()
+  if args.args and args.args[0] == '--':
+    args.args.pop(0)
+  if extras:
+    args.args = extras + args.args
+
+  if need_to_update(args.infra_branch):
+    ensure_infra(args.infra_branch)
+  return run(args.args)
 
 if __name__ == '__main__':
   sys.exit(main())
