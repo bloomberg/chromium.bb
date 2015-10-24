@@ -178,7 +178,9 @@ FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutB
 
             // Inspector creates layoutObjects with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
             // Taking FloatQuad bounds avoids spurious assertions because of that.
-            ASSERT(enclosingIntRect(layoutObjectMappedResult) == enclosingIntRect(result.boundingBox()));
+            ASSERT(enclosingIntRect(layoutObjectMappedResult) == enclosingIntRect(result.boundingBox())
+                || layoutObjectMappedResult.mayNotHaveExactIntRectRepresentation()
+                || result.boundingBox().mayNotHaveExactIntRectRepresentation());
         }
     }
 #endif

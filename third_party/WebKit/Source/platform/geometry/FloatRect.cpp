@@ -62,6 +62,16 @@ FloatRect FloatRect::narrowPrecision(double x, double y, double width, double he
     return FloatRect(narrowPrecisionToFloat(x), narrowPrecisionToFloat(y), narrowPrecisionToFloat(width), narrowPrecisionToFloat(height));
 }
 
+#if ENABLE(ASSERT)
+bool FloatRect::mayNotHaveExactIntRectRepresentation() const
+{
+    static const float maxExactlyExpressible = 1 << FLT_MANT_DIG;
+    return fabs(x()) > maxExactlyExpressible || fabs(y()) > maxExactlyExpressible
+        || fabs(width()) > maxExactlyExpressible || fabs(height()) > maxExactlyExpressible
+        || fabs(maxX()) > maxExactlyExpressible || fabs(maxY()) > maxExactlyExpressible;
+}
+#endif
+
 bool FloatRect::isExpressibleAsIntRect() const
 {
     return isWithinIntRange(x()) && isWithinIntRange(y())

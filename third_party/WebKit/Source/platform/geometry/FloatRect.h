@@ -178,9 +178,10 @@ public:
 
     operator SkRect() const { return SkRect::MakeXYWH(x(), y(), width(), height()); }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // Prints the rect to the screen.
     void show() const;
+    bool mayNotHaveExactIntRectRepresentation() const;
 #endif
 
 private:
