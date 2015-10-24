@@ -129,6 +129,24 @@ endef
 
 
 #
+# Macro to generate linker scripts
+#
+# $1 = Target Name
+# $2 = Linker Script
+#
+define LINKER_SCRIPT_RULE
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
+	@echo "  STAMP $$@"
+	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
+
+install: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a: $(2)
+	$(MKDIR) -p $$(dir $$@)
+	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
+endef
+
+
+#
 # Strip Macro
 #
 # NOTE: pnacl-strip does not really do much for finalized pexes (in a

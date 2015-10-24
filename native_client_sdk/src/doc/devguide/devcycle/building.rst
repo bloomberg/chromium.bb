@@ -621,10 +621,9 @@ libnacl_io.a
 
 libppapi_simple.a
   Provides a familiar C programming environment by letting a module have a
-  simple entry point that is registered by ``PPAPI_SIMPLE_REGISTER_MAIN``.
-  The entry point is similar to the standard C ``main()`` function, complete
-  with ``argc`` and ``argv[]`` parameters. For details see
-  ``include/ppapi_simple/ps.h``. For an example of
+  simple ``main()`` entry point.  The entry point is similar to the standard C
+  ``main()`` function, complete with ``argc`` and ``argv[]`` parameters. For
+  details see ``include/ppapi_simple/ps.h``. For an example of
   how to use ppapi_simple, ``see examples/tutorial/using_ppapi_simple``.
 
 

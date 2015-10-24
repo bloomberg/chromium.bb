@@ -24,7 +24,6 @@
 #include "ppapi_simple/ps_context_2d.h"
 #include "ppapi_simple/ps_event.h"
 #include "ppapi_simple/ps_interface.h"
-#include "ppapi_simple/ps_main.h"
 #include "sdk_util/thread_pool.h"
 
 using namespace sdk_util;  // For sdk_util::ThreadPool
@@ -520,9 +519,8 @@ void Voronoi::Update() {
   PSContext2DSwapBuffer(ps_context_);
 }
 
-// Starting point for the module.  We do not use main since it would
-// collide with main in libppapi_cpp.
-int example_main(int argc, char* argv[]) {
+// Starting point for the module.
+int main(int argc, char* argv[]) {
   Voronoi voronoi;
   while (true) {
     PSEvent* ps_event;
@@ -537,7 +535,3 @@ int example_main(int argc, char* argv[]) {
 
   return 0;
 }
-
-// Register the function to call once the Instance Object is initialized.
-// see: pappi_simple/ps_main.h
-PPAPI_SIMPLE_REGISTER_MAIN(example_main);

@@ -10,9 +10,7 @@
         'echo_server.cc',
         'echo_server.h',
       ],
-      'DEPS': ['ppapi_simple', 'nacl_io'],
-      # Order matters here: gtest has a "main" function that will be used if
-      # referenced before ppapi.
+      'DEPS': ['ppapi_simple_cpp', 'nacl_io'],
       'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'gmock', 'ppapi', 'gtest', 'nacl_io', 'pthread'],
       'CXXFLAGS': ['-Wno-sign-compare']
     }

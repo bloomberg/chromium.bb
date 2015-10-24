@@ -7,6 +7,14 @@
   'TARGETS': [
     {
       'NAME' : 'ppapi_simple_cpp',
+      'TYPE' : 'linker-script',
+      'SOURCES' : [
+        "ppapi_simple_cpp.a.linkerscript",
+        "ppapi_simple_cpp.so.linkerscript",
+      ],
+    },
+    {
+      'NAME' : 'ppapi_simple_cpp_real',
       'TYPE' : 'lib',
       'SOURCES' : [
         "ps.c",
@@ -15,6 +23,7 @@
         "ps_instance.c",
         "ps_interface.c",
         "ps_main.c",
+        "ps_main_default.c",
         "ps_entrypoints_cpp.cc"
       ],
     },

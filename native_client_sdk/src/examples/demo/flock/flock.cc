@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_size.h"
 
 #include "ppapi_simple/ps_context_2d.h"
-#include "ppapi_simple/ps_main.h"
 
 #include "goose.h"
 #include "sprite.h"
@@ -96,7 +95,7 @@ void Render(PSContext2D_t* ctx) {
  * Starting point for the module.  We do not use main since it would
  * collide with main in libppapi_cpp.
  */
-int example_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   ImageFormat fmt;
   uint32_t* buffer;
   size_t len;
@@ -141,9 +140,3 @@ int example_main(int argc, char *argv[]) {
 
   return 0;
 }
-
-/*
- * Register the function to call once the Instance Object is initialized.
- * see: pappi_simple/ps_main.h
- */
-PPAPI_SIMPLE_REGISTER_MAIN(example_main);

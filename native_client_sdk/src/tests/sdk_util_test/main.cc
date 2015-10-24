@@ -42,7 +42,7 @@ class GTestEventListener : public ::testing::EmptyTestEventListener {
   }
 };
 
-int example_main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   if (PSGetInstanceId() != 0) {
     ::testing::UnitTest::GetInstance()->listeners()
@@ -50,7 +50,3 @@ int example_main(int argc, char* argv[]) {
   }
   return RUN_ALL_TESTS();
 }
-
-// Register the function to call once the Instance Object is initialized.
-// see: pappi_simple/ps_main.h
-PPAPI_SIMPLE_REGISTER_MAIN(example_main);

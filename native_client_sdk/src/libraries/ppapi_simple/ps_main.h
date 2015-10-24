@@ -31,10 +31,6 @@ PSMainFunc_t PSUserMainGet();
  * so we force them to be linked here.
  */
 #define PPAPI_SIMPLE_REGISTER_MAIN(main_func) \
-  EXTERN_C_BEGIN                              \
-  FORCE_LINK_THAT(ps_entry)                   \
-  FORCE_LINK_THAT(ps_main)                    \
-  EXTERN_C_END                                \
   PSMainFunc_t PSUserMainGet() { return main_func; }
 
 EXTERN_C_END

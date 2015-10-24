@@ -39,22 +39,30 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 
 [[ExpandDict('DEPS', targets[0].get('DEPS', []))]]
 [[ExpandDict('LIBS', targets[0].get('LIBS', []), pre_list=['$(DEPS)'])]]
-[[flags = target.get('CFLAGS', [])]]
-[[flags.extend(target.get('CXXFLAGS', []))]]
-[[ExpandDict('CFLAGS', flags)]]
-[[if 'CFLAGS_GCC' in target:]]
+
+[[for target in targets:]]
+[[  if target['TYPE'] != 'linker-script':]]
+[[    source_list = (s for s in sorted(target['SOURCES']) if not s.endswith('.h'))]]
+[[    source_list = ' \\\n  '.join(source_list)]]
+[[    sources = target['NAME'] + '_SOURCES']]
+[[    cflags = target['NAME'] + '_CFLAGS']]
+[[    flags = target.get('CFLAGS', [])]]
+[[    flags.extend(target.get('CXXFLAGS', []))]]
+[[    if len(targets) == 1:]]
+[[	sources = 'SOURCES']]
+[[	cflags = 'CFLAGS']]
+[[    ]]
+[[    ExpandDict(cflags, flags)]]
+[[    for define in target.get('DEFINES', []):]]
+{{cflags}} += -D{{define}}
+[[    ]]
+[[    if 'CFLAGS_GCC' in target:]]
 ifneq ($(TOOLCHAIN),pnacl)
-CFLAGS += {{' '.join(target['CFLAGS_GCC'])}}
+{{cflags}} += {{' '.join(target['CFLAGS_GCC'])}}
 endif
-[[]]
+[[    ]]
+{{sources}} = {{source_list}}
 
-[[for define in target.get('DEFINES', []):]]
-CFLAGS += -D{{define}}
-[[]]
-
-SOURCES = \
-[[for source in sorted(target['SOURCES']):]]
-  {{source}} \
 [[]]
 
 all: install
@@ -63,13 +71,22 @@ all: install
 
 [[if targets[0].get('DEPS'):]]
 $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
-[[]]
-$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
-$(eval $(call LIB_RULE,$(TARGET),$(SOURCES)))
-
-[[if target['TYPE'] != 'static-lib':]]
+[[for target in targets:]]
+[[  name = target['NAME'] ]]
+[[  if len(targets) == 1:]]
+[[    sources = 'SOURCES']]
+[[    cflags = 'CFLAGS']]
+[[  else:]]
+[[    sources = name + '_SOURCES']]
+[[    cflags = name + '_CFLAGS']]
+[[  if target['TYPE'] == 'linker-script':]]
+$(eval $(call LINKER_SCRIPT_RULE,{{name}},{{target['SOURCES'][0]}},{{target['SOURCES'][1]}}))
+[[  else:]]
+$(foreach src,$({{sources}}),$(eval $(call COMPILE_RULE,$(src),$({{cflags}}))))
+$(eval $(call LIB_RULE,{{name}},$({{sources}})))
+[[    if target['TYPE'] != 'static-lib':]]
 ifneq (,$(findstring $(TOOLCHAIN),glibc bionic))
-$(eval $(call SO_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
+$(eval $(call SO_RULE,{{name}},$({{sources}}),$(LIBS),$(DEPS)))
 endif
-[[]]
+[[  ]]
 {{post}}

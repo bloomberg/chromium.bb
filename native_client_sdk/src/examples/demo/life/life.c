@@ -19,7 +19,7 @@
 #include "ppapi/c/ppb_view.h"
 
 #include "ppapi_simple/ps_event.h"
-#include "ppapi_simple/ps_main.h"
+#include "ppapi_simple/ps.h"
 
 PPB_Core* g_pCore;
 PPB_Fullscreen* g_pFullscreen;
@@ -284,7 +284,7 @@ void Render() {
  * Starting point for the module.  We do not use main since it would
  * collide with main in libppapi_cpp.
  */
-int example_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   fprintf(stdout,"Started main.\n");
   g_pCore = (PPB_Core*)PSGetInterface(PPB_CORE_INTERFACE);
   g_pFullscreen = (PPB_Fullscreen*)PSGetInterface(PPB_FULLSCREEN_INTERFACE);
@@ -318,9 +318,3 @@ int example_main(int argc, char *argv[]) {
   }
   return 0;
 }
-
-/*
- * Register the function to call once the Instance Object is initialized.
- * see: pappi_simple/ps_main.h
- */
-PPAPI_SIMPLE_REGISTER_MAIN(example_main);

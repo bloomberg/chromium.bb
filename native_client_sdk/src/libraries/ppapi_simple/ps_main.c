@@ -4,19 +4,15 @@
 
 #include "ppapi_simple/ps_main.h"
 
-#ifdef __native_client__
+#if defined(__native_client__)
+
 #include <irt.h>
 #include <irt_ppapi.h>
-#endif
 
 #include <stdio.h>
 
 #include "nacl_io/nacl_io.h"
 #include "ppapi_simple/ps_instance.h"
-
-FORCE_LINK_THIS(ps_main)
-
-int PpapiPluginMain();
 
 /**
  * main entry point for ppapi_simple applications.  This differs from the
@@ -25,17 +21,21 @@ int PpapiPluginMain();
  * This allows ppapi_simple binary to run within chrome (with PPAPI present)
  * and also under sel_ldr (no PPAPI).
  */
-#ifdef __native_client__
+int PpapiPluginMain();
+
 int __nacl_main(int argc, char* argv[]) {
   struct nacl_irt_ppapihook hooks;
   if (nacl_interface_query(NACL_IRT_PPAPIHOOK_v0_1, &hooks, sizeof(hooks)) ==
       sizeof(hooks)) {
     return PpapiPluginMain();
   }
-#else
-int main(int argc, char* argv[]) {
-#endif
   // By default, or if not running in the browser we simply run the main
   // entry point directly, on the main thread.
   return PSUserMainGet()(argc, argv);
 }
+
+#elif defined(__APPLE__)
+
+int __nacl_main(int argc, char* argv[]) { return 0; }
+
+#endif

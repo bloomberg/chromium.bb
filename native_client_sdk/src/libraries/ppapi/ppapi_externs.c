@@ -1,4 +1,8 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 #include "ppapi/c/ppp.h"
 
 /* Add a global symbol to force the linker to generate a LIB. */
-const char *g_BogusSymbol;
+void _lib_ppapi_dummy_symbol() {}

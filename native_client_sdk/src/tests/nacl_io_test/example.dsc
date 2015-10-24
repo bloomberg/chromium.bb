@@ -61,9 +61,7 @@
         'socket_test.cc',
         'tty_test.cc',
       ],
-      'DEPS': ['ppapi_simple', 'nacl_io'],
-      # Order matters here: gtest has a "main" function that will be used if
-      # referenced before ppapi.
+      'DEPS': ['ppapi_simple_cpp', 'nacl_io'],
       'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'gmock', 'nacl_io', 'ppapi', 'gtest', 'pthread'],
       'INCLUDES': ["."],
       'CXXFLAGS': ['-Wno-sign-compare'],

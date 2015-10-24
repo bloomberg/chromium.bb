@@ -32,7 +32,7 @@ Module* Module::Get() {
   return s_module;
 }
 
-// This shouldn't be called (it is only referenced by PPP_InitialzeModule in
+// This shouldn't be called (it is only referenced by PPP_InitializeModule in
 // ppapi_cpp, which we override), but is needed to successfully link.
 Module* CreateModule() {
   assert(0);
@@ -40,15 +40,6 @@ Module* CreateModule() {
 }
 
 }  // namespace pp
-
-extern "C" {
-
-// This is defined to allow an executable to force inclusion of this object
-// file. Otherwise PPP_* functions won't be linked in (because they are not
-// needed until -lppapi on the link-line, which is usually last.
-FORCE_LINK_THIS(ps_entry)
-
-}  // extern "C"
 
 int32_t PPP_InitializeModule(PP_Module module_id,
                              PPB_GetInterface get_interface) {

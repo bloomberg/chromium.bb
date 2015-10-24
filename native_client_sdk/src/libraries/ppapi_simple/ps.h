@@ -24,9 +24,9 @@ EXTERN_C_BEGIN
  * will automatically start a new thread on which can be used effectively
  * as a "main" entry point.
  *
- * For C style development, the PPAPI_SIMPLE_REGISTER_MAIN(XX) macros provide a
- * mechanism to register the entry an point for "main".  All events are pushed
- * onto an event queue which can then be pulled from this new thread.
+ * For C style development, ppapi_simple allows applications to be written using
+ * a traditaional "main".  All events are pushed onto an event queue which can
+ * then be pulled from this new thread.
  * NOTE: The link will still need libstdc++ and libppapi_cpp since the library
  * is still creating a C++ object which does the initialization work and
  * forwards the events.

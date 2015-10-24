@@ -107,7 +107,11 @@ include/win/sys/poll.h
 [linux,mac]lib/${PLATFORM}_host/Debug/libppapi_cpp_private.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libppapi_gles2.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libppapi_simple.a
+[linux,mac]lib/${PLATFORM}_host/Debug/libppapi_simple.so
 [linux,mac]lib/${PLATFORM}_host/Debug/libppapi_simple_cpp.a
+[linux,mac]lib/${PLATFORM}_host/Debug/libppapi_simple_cpp.so
+[linux,mac]lib/${PLATFORM}_host/Debug/libppapi_simple_cpp_real.a
+[linux,mac]lib/${PLATFORM}_host/Debug/libppapi_simple_real.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libsdk_util.a
 [linux,mac]lib/${PLATFORM}_host/Release/libgmock.a
 [linux,mac]lib/${PLATFORM}_host/Release/libgtest.a
@@ -118,7 +122,11 @@ include/win/sys/poll.h
 [linux,mac]lib/${PLATFORM}_host/Release/libppapi_cpp_private.a
 [linux,mac]lib/${PLATFORM}_host/Release/libppapi_gles2.a
 [linux,mac]lib/${PLATFORM}_host/Release/libppapi_simple.a
+[linux,mac]lib/${PLATFORM}_host/Release/libppapi_simple.so
 [linux,mac]lib/${PLATFORM}_host/Release/libppapi_simple_cpp.a
+[linux,mac]lib/${PLATFORM}_host/Release/libppapi_simple_cpp.so
+[linux,mac]lib/${PLATFORM}_host/Release/libppapi_simple_cpp_real.a
+[linux,mac]lib/${PLATFORM}_host/Release/libppapi_simple_real.a
 [linux,mac]lib/${PLATFORM}_host/Release/libsdk_util.a
 [win]lib/${PLATFORM}_x86_32_host/Debug/gmock.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/gtest.lib
@@ -148,6 +156,8 @@ lib/clang-newlib_arm/Debug/libppapi_cpp_private.a
 lib/clang-newlib_arm/Debug/libppapi_gles2.a
 lib/clang-newlib_arm/Debug/libppapi_simple.a
 lib/clang-newlib_arm/Debug/libppapi_simple_cpp.a
+lib/clang-newlib_arm/Debug/libppapi_simple_cpp_real.a
+lib/clang-newlib_arm/Debug/libppapi_simple_real.a
 lib/clang-newlib_arm/Debug/libsdk_util.a
 lib/clang-newlib_arm/Release/liberror_handling.a
 lib/clang-newlib_arm/Release/libgmock.a
@@ -159,6 +169,8 @@ lib/clang-newlib_arm/Release/libppapi_cpp_private.a
 lib/clang-newlib_arm/Release/libppapi_gles2.a
 lib/clang-newlib_arm/Release/libppapi_simple.a
 lib/clang-newlib_arm/Release/libppapi_simple_cpp.a
+lib/clang-newlib_arm/Release/libppapi_simple_cpp_real.a
+lib/clang-newlib_arm/Release/libppapi_simple_real.a
 lib/clang-newlib_arm/Release/libsdk_util.a
 lib/clang-newlib_x86_32/Debug/liberror_handling.a
 lib/clang-newlib_x86_32/Debug/libgmock.a
@@ -170,6 +182,8 @@ lib/clang-newlib_x86_32/Debug/libppapi_cpp_private.a
 lib/clang-newlib_x86_32/Debug/libppapi_gles2.a
 lib/clang-newlib_x86_32/Debug/libppapi_simple.a
 lib/clang-newlib_x86_32/Debug/libppapi_simple_cpp.a
+lib/clang-newlib_x86_32/Debug/libppapi_simple_cpp_real.a
+lib/clang-newlib_x86_32/Debug/libppapi_simple_real.a
 lib/clang-newlib_x86_32/Debug/libsdk_util.a
 lib/clang-newlib_x86_32/Release/liberror_handling.a
 lib/clang-newlib_x86_32/Release/libgmock.a
@@ -181,6 +195,8 @@ lib/clang-newlib_x86_32/Release/libppapi_cpp_private.a
 lib/clang-newlib_x86_32/Release/libppapi_gles2.a
 lib/clang-newlib_x86_32/Release/libppapi_simple.a
 lib/clang-newlib_x86_32/Release/libppapi_simple_cpp.a
+lib/clang-newlib_x86_32/Release/libppapi_simple_cpp_real.a
+lib/clang-newlib_x86_32/Release/libppapi_simple_real.a
 lib/clang-newlib_x86_32/Release/libsdk_util.a
 lib/clang-newlib_x86_64/Debug/liberror_handling.a
 lib/clang-newlib_x86_64/Debug/libgmock.a
@@ -192,6 +208,8 @@ lib/clang-newlib_x86_64/Debug/libppapi_cpp_private.a
 lib/clang-newlib_x86_64/Debug/libppapi_gles2.a
 lib/clang-newlib_x86_64/Debug/libppapi_simple.a
 lib/clang-newlib_x86_64/Debug/libppapi_simple_cpp.a
+lib/clang-newlib_x86_64/Debug/libppapi_simple_cpp_real.a
+lib/clang-newlib_x86_64/Debug/libppapi_simple_real.a
 lib/clang-newlib_x86_64/Debug/libsdk_util.a
 lib/clang-newlib_x86_64/Release/liberror_handling.a
 lib/clang-newlib_x86_64/Release/libgmock.a
@@ -203,6 +221,8 @@ lib/clang-newlib_x86_64/Release/libppapi_cpp_private.a
 lib/clang-newlib_x86_64/Release/libppapi_gles2.a
 lib/clang-newlib_x86_64/Release/libppapi_simple.a
 lib/clang-newlib_x86_64/Release/libppapi_simple_cpp.a
+lib/clang-newlib_x86_64/Release/libppapi_simple_cpp_real.a
+lib/clang-newlib_x86_64/Release/libppapi_simple_real.a
 lib/clang-newlib_x86_64/Release/libsdk_util.a
 lib/glibc_arm/Debug/libgmock.a
 lib/glibc_arm/Debug/libgmock.so
@@ -222,6 +242,10 @@ lib/glibc_arm/Debug/libppapi_simple.a
 lib/glibc_arm/Debug/libppapi_simple.so
 lib/glibc_arm/Debug/libppapi_simple_cpp.a
 lib/glibc_arm/Debug/libppapi_simple_cpp.so
+lib/glibc_arm/Debug/libppapi_simple_cpp_real.a
+lib/glibc_arm/Debug/libppapi_simple_cpp_real.so
+lib/glibc_arm/Debug/libppapi_simple_real.a
+lib/glibc_arm/Debug/libppapi_simple_real.so
 lib/glibc_arm/Debug/libsdk_util.a
 lib/glibc_arm/Debug/libsdk_util.so
 lib/glibc_arm/Release/libgmock.a
@@ -242,6 +266,10 @@ lib/glibc_arm/Release/libppapi_simple.a
 lib/glibc_arm/Release/libppapi_simple.so
 lib/glibc_arm/Release/libppapi_simple_cpp.a
 lib/glibc_arm/Release/libppapi_simple_cpp.so
+lib/glibc_arm/Release/libppapi_simple_cpp_real.a
+lib/glibc_arm/Release/libppapi_simple_cpp_real.so
+lib/glibc_arm/Release/libppapi_simple_real.a
+lib/glibc_arm/Release/libppapi_simple_real.so
 lib/glibc_arm/Release/libsdk_util.a
 lib/glibc_arm/Release/libsdk_util.so
 lib/glibc_x86_32/Debug/libgmock.a
@@ -262,6 +290,10 @@ lib/glibc_x86_32/Debug/libppapi_simple.a
 lib/glibc_x86_32/Debug/libppapi_simple.so
 lib/glibc_x86_32/Debug/libppapi_simple_cpp.a
 lib/glibc_x86_32/Debug/libppapi_simple_cpp.so
+lib/glibc_x86_32/Debug/libppapi_simple_cpp_real.a
+lib/glibc_x86_32/Debug/libppapi_simple_cpp_real.so
+lib/glibc_x86_32/Debug/libppapi_simple_real.a
+lib/glibc_x86_32/Debug/libppapi_simple_real.so
 lib/glibc_x86_32/Debug/libsdk_util.a
 lib/glibc_x86_32/Debug/libsdk_util.so
 lib/glibc_x86_32/Release/libgmock.a
@@ -282,6 +314,10 @@ lib/glibc_x86_32/Release/libppapi_simple.a
 lib/glibc_x86_32/Release/libppapi_simple.so
 lib/glibc_x86_32/Release/libppapi_simple_cpp.a
 lib/glibc_x86_32/Release/libppapi_simple_cpp.so
+lib/glibc_x86_32/Release/libppapi_simple_cpp_real.a
+lib/glibc_x86_32/Release/libppapi_simple_cpp_real.so
+lib/glibc_x86_32/Release/libppapi_simple_real.a
+lib/glibc_x86_32/Release/libppapi_simple_real.so
 lib/glibc_x86_32/Release/libsdk_util.a
 lib/glibc_x86_32/Release/libsdk_util.so
 lib/glibc_x86_64/Debug/libgmock.a
@@ -302,6 +338,10 @@ lib/glibc_x86_64/Debug/libppapi_simple.a
 lib/glibc_x86_64/Debug/libppapi_simple.so
 lib/glibc_x86_64/Debug/libppapi_simple_cpp.a
 lib/glibc_x86_64/Debug/libppapi_simple_cpp.so
+lib/glibc_x86_64/Debug/libppapi_simple_cpp_real.a
+lib/glibc_x86_64/Debug/libppapi_simple_cpp_real.so
+lib/glibc_x86_64/Debug/libppapi_simple_real.a
+lib/glibc_x86_64/Debug/libppapi_simple_real.so
 lib/glibc_x86_64/Debug/libsdk_util.a
 lib/glibc_x86_64/Debug/libsdk_util.so
 lib/glibc_x86_64/Release/libgmock.a
@@ -322,6 +362,10 @@ lib/glibc_x86_64/Release/libppapi_simple.a
 lib/glibc_x86_64/Release/libppapi_simple.so
 lib/glibc_x86_64/Release/libppapi_simple_cpp.a
 lib/glibc_x86_64/Release/libppapi_simple_cpp.so
+lib/glibc_x86_64/Release/libppapi_simple_cpp_real.a
+lib/glibc_x86_64/Release/libppapi_simple_cpp_real.so
+lib/glibc_x86_64/Release/libppapi_simple_real.a
+lib/glibc_x86_64/Release/libppapi_simple_real.so
 lib/glibc_x86_64/Release/libsdk_util.a
 lib/glibc_x86_64/Release/libsdk_util.so
 lib/pnacl/Debug/libgmock.a
@@ -333,6 +377,8 @@ lib/pnacl/Debug/libppapi_cpp_private.a
 lib/pnacl/Debug/libppapi_gles2.a
 lib/pnacl/Debug/libppapi_simple.a
 lib/pnacl/Debug/libppapi_simple_cpp.a
+lib/pnacl/Debug/libppapi_simple_cpp_real.a
+lib/pnacl/Debug/libppapi_simple_real.a
 lib/pnacl/Debug/libsdk_util.a
 lib/pnacl/Release/libgmock.a
 lib/pnacl/Release/libgtest.a
@@ -343,6 +389,8 @@ lib/pnacl/Release/libppapi_cpp_private.a
 lib/pnacl/Release/libppapi_gles2.a
 lib/pnacl/Release/libppapi_simple.a
 lib/pnacl/Release/libppapi_simple_cpp.a
+lib/pnacl/Release/libppapi_simple_cpp_real.a
+lib/pnacl/Release/libppapi_simple_real.a
 lib/pnacl/Release/libsdk_util.a
 LICENSE
 NOTICE
@@ -476,6 +524,7 @@ tools/irt_core_x86_64.nexe
 tools/lib/elf.py
 tools/lib/get_shared_deps.py
 tools/lib/quote.py
+tools/mac_ld_wrapper.py
 [win]tools/make.exe
 [linux,mac]tools/minidump_dump
 [linux,mac]tools/minidump_stackwalk
