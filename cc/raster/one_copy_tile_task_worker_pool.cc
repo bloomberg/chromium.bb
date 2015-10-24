@@ -90,6 +90,10 @@ void WaitForQueryResult(gpu::gles2::GLES2Interface* gl, unsigned query_id) {
     if (CheckForQueryResult(gl, query_id))
       break;
 
+    // We have to flush the context to be guaranteed that a query result will
+    // be available in a finite amount of time.
+    gl->ShallowFlushCHROMIUM();
+
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
         kCheckForQueryResultAvailableTickRateMs));
   }
