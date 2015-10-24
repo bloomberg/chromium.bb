@@ -32,10 +32,19 @@ bool UseMediaThreadForMediaPlayback() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("EnableMediaThreadForMediaPlayback");
 
-  if (base::CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableMediaThreadForMediaPlayback)) {
+  // Command line switches take precedence over filed trial groups.
+  // The disable switch takes precedence over enable switch.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMediaThreadForMediaPlayback)) {
+    return false;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMediaThreadForMediaPlayback)) {
     return true;
   }
+
+  DVLOG(1) << __FUNCTION__ << ": group_name:'" << group_name << "'";
 
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }

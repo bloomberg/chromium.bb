@@ -13,6 +13,10 @@ const char kAudioBufferSize[] = "audio-buffer-size";
 const char kVideoThreads[] = "video-threads";
 
 #if defined(OS_ANDROID)
+// Sets the MediaSource player that uses UI thread for frame processing.
+const char kDisableMediaThreadForMediaPlayback[] =
+    "disable-media-thread-for-media-playback";
+
 // Sets the MediaSource player that uses the separate media thread
 const char kEnableMediaThreadForMediaPlayback[] =
     "enable-media-thread-for-media-playback";
