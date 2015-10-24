@@ -149,9 +149,10 @@ source_set("test_support") {
   deps = [
     ":drive",
     ":proto",
-    "//base:base",
+    "//base",
+    "//base:prefs_test_support",
     "//content/test:test_support",
-    "//google_apis:google_apis",
+    "//google_apis:test_support",
     "//net:net",
   ]
 }

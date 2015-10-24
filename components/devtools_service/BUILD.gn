@@ -30,6 +30,8 @@ source_set("lib") {
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
+    "//third_party/mojo/src/mojo/public/cpp/system",
     "//url",
   ]
 }

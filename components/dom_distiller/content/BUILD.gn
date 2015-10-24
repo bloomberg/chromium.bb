@@ -42,12 +42,14 @@ static_library("content_browser") {
     "//components/resources",
     "//components/strings",
     "//content/public/browser",
+    "//content/public/common",
     "//mojo/environment:chromium",
     "//net",
     "//skia",
     "//sync",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/WebKit/public:blink_headers",
+    "//ui/base",
     "//ui/gfx",
     "//url",
   ]
@@ -75,6 +77,8 @@ static_library("content_renderer") {
   deps = [
     ":mojo_bindings",
     "//base",
+    "//content/public/common",
+    "//content/public/renderer",
     "//gin",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
@@ -102,6 +106,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":content_browser",
+    "//content/test:test_support",
     "//testing/gtest",
   ]
 }

@@ -51,3 +51,10 @@ java_cpp_template("dom_distiller_core_theme_javagen") {
     "../core/theme_list.h",
   ]
 }
+
+source_set("jni_registrar") {
+  sources = [
+    "component_jni_registrar.cc",
+    "component_jni_registrar.h",
+  ]
+}

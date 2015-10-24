@@ -145,6 +145,7 @@ source_set("unit_tests") {
     "//sync",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
     "//url",
   ]
 }

@@ -27,7 +27,9 @@ source_set("unit_tests") {
 
   deps = [
     ":devtools_http_handler",
+    "//base",
     "//content/test:test_support",
+    "//net",
     "//testing/gtest",
   ]
 }

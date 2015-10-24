@@ -83,8 +83,11 @@ source_set("test_support") {
     "lib/application_test_main.cc",
   ]
 
-  deps = [
+  public_deps = [
     ":cpp",
+  ]
+
+  deps = [
     "//base",
     "//base/test:test_support",
     "//mojo/application/public/interfaces:interfaces_cpp_sources",

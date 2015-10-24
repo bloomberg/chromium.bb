@@ -186,15 +186,13 @@ source_set("test_support") {
   ]
 
   public_deps = [
+    ":google_apis",
     "//base",
     "//base/test:test_support",
     "//net",
     "//net:test_support",
   ]
 
-  deps = [
-    ":google_apis",
-  ]
   if (enable_extensions) {
     sources += [
       "drive/dummy_auth_service.cc",

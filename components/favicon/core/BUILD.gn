@@ -50,6 +50,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":core",
     "//base",
     "//components/favicon_base",
     "//skia",

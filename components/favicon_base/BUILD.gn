@@ -49,5 +49,6 @@ source_set("unit_tests") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//url",
   ]
 }

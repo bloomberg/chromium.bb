@@ -23,7 +23,9 @@ source_set("lib") {
     "//components/filesystem/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common",
+    "//mojo/common:common_base",
     "//mojo/platform_handle",
+    "//url",
   ]
 }
 
@@ -34,6 +36,8 @@ mojo_native_application("filesystem") {
 
   deps = [
     ":lib",
+    "//base",
+    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle",
@@ -62,5 +66,7 @@ mojo_native_application("apptests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
-  data_deps = [ ":filesystem" ]
+  data_deps = [
+    ":filesystem",
+  ]
 }

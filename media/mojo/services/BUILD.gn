@@ -235,12 +235,12 @@ if (!is_component_build) {
 }
 
 group("services") {
-  deps = [
+  public_deps = [
     ":proxy",
   ]
 
   if (!is_component_build) {
-    deps += [ ":media" ]
+    public_deps += [ ":media" ]
   }
 }
 

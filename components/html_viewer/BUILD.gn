@@ -150,6 +150,7 @@ source_set("lib") {
     "//cc",
     "//cc/blink",
     "//cc/surfaces",
+    "//cc/surfaces:surface_id",
     "//components/clipboard/public/interfaces",
     "//components/devtools_service/public/interfaces",
     "//components/html_viewer/public/interfaces",

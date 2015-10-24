@@ -90,6 +90,8 @@ source_set("test_support") {
     ":enhanced_bookmarks",
     "//skia",
     "//testing/gtest",
+    "//ui/gfx/geometry",
+    "//url",
   ]
 }
 
@@ -103,6 +105,10 @@ source_set("unit_tests") {
   ]
   deps = [
     ":test_support",
+    "//base",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
     "//components/enhanced_bookmarks/proto",
+    "//sql",
   ]
 }

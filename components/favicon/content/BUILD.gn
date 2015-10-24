@@ -17,8 +17,10 @@ source_set("content") {
     "//base",
     "//components/favicon/core",
     "//components/favicon_base",
+    "//components/history/core/browser",
     "//content/public/browser",
     "//content/public/common",
+    "//url",
   ]
 }
 
@@ -29,7 +31,10 @@ source_set("unit_tests") {
   ]
   deps = [
     ":content",
+    "//components/favicon/core",
     "//content/public/browser",
+    "//content/public/common",
+    "//content/test:test_support",
     "//skia",
     "//testing/gtest",
   ]

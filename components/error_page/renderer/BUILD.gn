@@ -10,6 +10,7 @@ source_set("renderer") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//components/error_page/common",
     "//components/strings",
     "//components/url_formatter",
@@ -31,6 +32,12 @@ source_set("unit_tests") {
 
   deps = [
     ":renderer",
+    "//base",
+    "//base/test:test_support",
+    "//components/error_page/common",
+    "//components/test_runner",
+    "//content/public/common",
+    "//net",
     "//testing/gtest",
   ]
 }
