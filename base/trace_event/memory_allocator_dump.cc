@@ -35,10 +35,6 @@ MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
   // The |absolute_name| can contain slash separator, but not leading or
   // trailing ones.
   DCHECK(absolute_name[0] != '/' && *absolute_name.rbegin() != '/');
-
-  // Dots are not allowed anywhere as the underlying base::DictionaryValue
-  // would treat them magically and split in sub-nodes, which is not intended.
-  DCHECK_EQ(std::string::npos, absolute_name.find_first_of('.'));
 }
 
 // If the caller didn't provide a guid, make one up by hashing the
