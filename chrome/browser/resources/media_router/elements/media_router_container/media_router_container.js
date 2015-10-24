@@ -194,11 +194,24 @@ Polymer({
       type: Array,
       value: [],
     },
+
+    /**
+     * List of active timer IDs. Used to retrieve active timer IDs when
+     * clearing timers.
+     * @private {!Array<number>}
+     */
+    timerIdList_: {
+      type: Array,
+      value: [],
+    },
+  },
+
+  listeners: {
+    'tap': 'onTap_',
   },
 
   ready: function() {
     this.addEventListener('arrow-drop-click', this.toggleCastModeHidden_);
-    this.addEventListener('close-route-click', this.removeRoute);
     this.showSinkList_();
   },
 
@@ -536,6 +549,18 @@ Polymer({
   },
 
   /**
+   * Handles a close-route-click event. Shows the sink list and starts a timer
+   * to close the dialog if there is no click within three seconds.
+   *
+   * @param {!Event} event The event object.
+   * @private
+   */
+  onCloseRouteClick_: function(event) {
+    this.showSinkList_();
+    this.startTapTimer_();
+  },
+
+  /**
    * Handles response of previous create route attempt.
    *
    * @param {string} sinkId The ID of the sink to which the Media Route was
@@ -558,6 +583,8 @@ Polymer({
     // which results in the correct sink to route mapping.
     this.routeList.push(route);
     this.showRouteDetails_(route);
+
+    this.startTapTimer_();
   },
 
   onNotifyRouteCreationTimeout: function() {
@@ -572,6 +599,24 @@ Polymer({
    */
   onSinkClick_: function(event) {
     this.showOrCreateRoute_(this.$.sinkList.itemForElement(event.target));
+  },
+
+  /**
+   * Called when a tap event is triggered. Clears any active timers. onTap_
+   * is called before a new timer is started for taps that trigger a new active
+   * timer.
+   *
+   * @private
+   */
+  onTap_: function(e) {
+    if (this.timerIdList_.length == 0)
+      return;
+
+    this.timerIdList_.forEach(function(id) {
+      clearTimeout(id);
+    }, this);
+
+    this.timerIdList_ = [];
   },
 
   /**
@@ -716,6 +761,20 @@ Polymer({
    */
   showSinkList_: function() {
     this.currentView_ = media_router.MediaRouterView.SINK_LIST;
+  },
+
+  /**
+   * Starts a timer which fires a close-dialog event if the timer has not been
+   * cleared within three seconds.
+   *
+   * @private
+   */
+  startTapTimer_: function() {
+    var id = setTimeout(function() {
+      this.fire('close-dialog');
+    }.bind(this), 3000 /* 3 seconds */);
+
+    this.timerIdList_.push(id);
   },
 
   /**

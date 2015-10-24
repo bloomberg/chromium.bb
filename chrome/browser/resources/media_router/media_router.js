@@ -22,7 +22,8 @@ cr.define('media_router', function() {
     container = $('media-router-container');
     media_router.ui.setContainer(container);
 
-    container.addEventListener('close-button-click', onCloseDialogClick);
+    container.addEventListener('close-button-click', onCloseDialogEvent);
+    container.addEventListener('close-dialog', onCloseDialogEvent);
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
@@ -32,7 +33,7 @@ cr.define('media_router', function() {
    * Closes the dialog.
    * Called when the user clicks the close button on the dialog.
    */
-  function onCloseDialogClick() {
+  function onCloseDialogEvent() {
     media_router.browserApi.closeDialog();
   }
 

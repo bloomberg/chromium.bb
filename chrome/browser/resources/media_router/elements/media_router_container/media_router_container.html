@@ -52,7 +52,7 @@
     <route-details id="route-details" route="[[currentRoute_]]"
         sink="[[computeSinkForCurrentRoute_(currentRoute_)]]"
         on-back-click="showSinkList_"
-        on-close-route-click="showSinkList_"
+        on-close-route-click="onCloseRouteClick_"
         hidden$="[[computeRouteDetailsHidden_(currentView_, issue)]]">
     </route-details>
     <div id="sink-list-view"

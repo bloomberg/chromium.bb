@@ -46,10 +46,17 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   static std::string ExecuteScriptAndExtractString(
       const content::ToRenderFrameHost& adapter, const std::string& script);
 
+  void ClickDialog();
+
   // Get the chrome modal dialog.
   // |web_contents|: The web contents of the test page which invokes the popup
   //                 dialog.
   content::WebContents* GetMRDialog(content::WebContents* web_contents);
+
+  // Checks that the chrome modal dialog does not exist.
+  bool IsDialogClosed(content::WebContents* web_contents);
+  void WaitUntilDialogClosed(content::WebContents* web_contents);
+  void CheckDialogRemainsOpen(content::WebContents* web_contents);
 
   void OpenTestPage(base::FilePath::StringPieceType file);
   void OpenTestPageInNewTab(base::FilePath::StringPieceType file);

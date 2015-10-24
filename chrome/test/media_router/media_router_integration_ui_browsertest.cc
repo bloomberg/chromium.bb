@@ -34,6 +34,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   ChooseSink(web_contents, kTestSinkName);
   WaitUntilRouteCreated();
 
+  // Simulate a click on the dialog to prevent it from automatically closing
+  // after the route has been created. Then, check that the dialog remains
+  // open.
+  ClickDialog();
+  CheckDialogRemainsOpen(web_contents);
+
   // Verify the route details page.
   std::string route_info_script = base::StringPrintf(
       "domAutomationController.send("
@@ -56,6 +62,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
 
   // Close route.
   CloseRouteOnUI();
+
+  // Do not simulate a click on the dialog. Confirm that the dialog closes
+  // automatically after the route is closed.
+  WaitUntilDialogClosed(web_contents);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,

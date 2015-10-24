@@ -55,7 +55,8 @@ const char kCloseRouteScript[] =
 const char kGetRouteLengthScript[] =
     "domAutomationController.send(window.document.getElementById("
     "  'media-router-container').routeList.length)";
-
+const char kClickDialog[] =
+    "window.document.getElementById('media-router-container').click();";
 std::string GetStartedSessionId(content::WebContents* web_contents) {
   std::string session_id;
   CHECK(content::ExecuteScriptAndExtractString(
@@ -143,6 +144,12 @@ void MediaRouterIntegrationBrowserTest::ChooseSink(
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, script));
 }
 
+void MediaRouterIntegrationBrowserTest::ClickDialog() {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* dialog_contents = GetMRDialog(web_contents);
+  ASSERT_TRUE(content::ExecuteScript(dialog_contents, kClickDialog));
+}
 content::WebContents* MediaRouterIntegrationBrowserTest::GetMRDialog(
     content::WebContents* web_contents) {
   MediaRouterDialogControllerImpl* controller =
@@ -150,6 +157,29 @@ content::WebContents* MediaRouterIntegrationBrowserTest::GetMRDialog(
   content::WebContents* dialog_contents = controller->GetMediaRouterDialog();
   CHECK(dialog_contents);
   return dialog_contents;
+}
+
+bool MediaRouterIntegrationBrowserTest::IsDialogClosed(
+    content::WebContents* web_contents) {
+  MediaRouterDialogControllerImpl* controller =
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
+  return !controller->GetMediaRouterDialog();
+}
+
+void MediaRouterIntegrationBrowserTest::WaitUntilDialogClosed(
+    content::WebContents* web_contents) {
+  ASSERT_TRUE(ConditionalWait(
+      base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(1),
+      base::Bind(&MediaRouterIntegrationBrowserTest::IsDialogClosed,
+                 base::Unretained(this), web_contents)));
+}
+
+void MediaRouterIntegrationBrowserTest::CheckDialogRemainsOpen(
+    content::WebContents* web_contents) {
+  ASSERT_FALSE(ConditionalWait(
+      base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(1),
+      base::Bind(&MediaRouterIntegrationBrowserTest::IsDialogClosed,
+                 base::Unretained(this), web_contents)));
 }
 
 void MediaRouterIntegrationBrowserTest::SetTestData(
