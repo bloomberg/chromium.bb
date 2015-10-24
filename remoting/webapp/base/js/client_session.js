@@ -291,19 +291,20 @@ remoting.ClientSession.prototype.disconnect = function(error) {
     return;
   }
 
+  console.assert(this.host_ != null, 'disconnect() is called before connect()');
   this.sendIq_(
-      '<cli:iq ' +
-          'to="' + this.host_.jabberId + '" ' +
-          'type="set" ' +
-          'id="session-terminate" ' +
-          'xmlns:cli="jabber:client">' +
-        '<jingle ' +
-            'xmlns="urn:xmpp:jingle:1" ' +
-            'action="session-terminate" ' +
-            'sid="' + this.sessionId_ + '">' +
-          '<reason><success/></reason>' +
-        '</jingle>' +
-      '</cli:iq>');
+    '<cli:iq ' +
+        'to="' + this.host_.jabberId + '" ' +
+        'type="set" ' +
+        'id="session-terminate" ' +
+        'xmlns:cli="jabber:client">' +
+      '<jingle ' +
+          'xmlns="urn:xmpp:jingle:1" ' +
+          'action="session-terminate" ' +
+          'sid="' + this.sessionId_ + '">' +
+        '<reason><success/></reason>' +
+      '</jingle>' +
+    '</cli:iq>');
 
   var state = error.isNone() ?
                   remoting.ClientSession.State.CLOSED :

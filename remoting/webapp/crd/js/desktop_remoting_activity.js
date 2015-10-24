@@ -38,7 +38,7 @@ remoting.DesktopRemotingActivity = function(parentActivity, logger) {
       parentActivity.stop.bind(parentActivity));
 
   /** @private */
-  this.creatingSession_ = false;
+  this.isStopped_ = false;
 
   /** @private */
   this.logger_ = logger;
@@ -54,12 +54,15 @@ remoting.DesktopRemotingActivity = function(parentActivity, logger) {
 remoting.DesktopRemotingActivity.prototype.start =
     function(host, credentialsProvider) {
   var that = this;
-  this.creatingSession_ = true;
+  this.isStopped_ = false;
   this.sessionFactory_.createSession(this, this.logger_).then(
     function(/** remoting.ClientSession */ session) {
-      that.creatingSession_ = false;
-      that.session_ = session;
-      return session.connect(host, credentialsProvider);
+      if (that.isStopped_) {
+        base.dispose(session);
+      } else {
+        that.session_ = session;
+        session.connect(host, credentialsProvider);
+      }
   }).catch(remoting.Error.handler(
     function(/** !remoting.Error */ error) {
       that.parentActivity_.onConnectionFailed(error);
@@ -67,14 +70,16 @@ remoting.DesktopRemotingActivity.prototype.start =
 };
 
 remoting.DesktopRemotingActivity.prototype.stop = function() {
+  this.isStopped_ = true;
   if (this.session_) {
     this.session_.disconnect(remoting.Error.none());
     console.log('Disconnected.');
-  } else if (this.creatingSession_) {
-    this.creatingSession_ = false;
+  } else {
+    console.log('Canceled.');
+    // Session creation in process, just report it as canceled.
     this.logger_.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
-        remoting.ChromotingEvent.ConnectionError.NONE);
+      remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
+      remoting.ChromotingEvent.ConnectionError.NONE);
   }
 };
 
