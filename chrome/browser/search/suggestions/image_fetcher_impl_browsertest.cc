@@ -120,7 +120,13 @@ IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, NormalFetch) {
   EXPECT_EQ(0, delegate_.num_delegate_null_called());
 }
 
-IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, MultipleFetch) {
+#if defined(OS_MACOSX)
+// TODO(thakis): Investigate and turn this back on, http://crbug.com/547387
+#define MAYBE_MultipleFetch DISABLED_MultipleFetch
+#else
+#define MAYBE_MultipleFetch MultipleFetch
+#endif
+IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, MAYBE_MultipleFetch) {
   GURL image_url(test_server_.GetURL(kTestImagePath).spec());
 
   for (int i = 0; i < 5; i++) {
