@@ -56607,8 +56607,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="EnrollmentStatus" type="int">
   <int value="0" label="Non-managed"/>
-  <int value="1" label="Managed EDU"/>
-  <int value="2" label="Managed non-EDU"/>
+  <int value="1" label="Managed EDU (Deprecated)"/>
+  <int value="2" label="Managed"/>
   <int value="3" label="Error"/>
 </enum>
 

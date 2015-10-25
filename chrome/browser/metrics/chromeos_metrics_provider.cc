@@ -93,13 +93,11 @@ void IncrementPrefValue(const char* path) {
   pref->SetInteger(path, value + 1);
 }
 
-const char kEduDomain[] = ".edu";
-
 // Possible device enrollment status for a Chrome OS device.
 enum EnrollmentStatus {
   NON_MANAGED,
-  MANAGED_EDU,
-  MANAGED_NON_EDU,
+  UNUSED,  // Formerly MANAGED_EDU, see crbug.com/462770.
+  MANAGED,
   ERROR_GETTING_ENROLLMENT_STATUS,
   ENROLLMENT_STATUS_MAX,
 };
@@ -111,14 +109,7 @@ EnrollmentStatus GetEnrollmentStatus() {
   if (!connector)
     return ERROR_GETTING_ENROLLMENT_STATUS;
 
-  if (!connector->IsEnterpriseManaged())
-    return NON_MANAGED;
-
-  std::string domain = connector->GetEnterpriseDomain();
-  if (base::EndsWith(domain, kEduDomain, base::CompareCase::INSENSITIVE_ASCII))
-    return MANAGED_EDU;
-
-  return MANAGED_NON_EDU;
+  return connector->IsEnterpriseManaged() ? MANAGED : NON_MANAGED;
 }
 
 }  // namespace
