@@ -10,6 +10,16 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+config("base_flags") {
+  if (is_clang) {
+    cflags = [
+      # Don't die on dtoa code that uses a char as an array index.
+      # This is required solely for base/third_party/dmg_fp/dtoa_wrapper.cc.
+      "-Wno-char-subscripts",
+    ]
+  }
+}
+
 config("base_implementation") {
   defines = [ "BASE_IMPLEMENTATION" ]
 }
@@ -667,6 +677,7 @@ component("base") {
   data = []
 
   configs += [
+    ":base_flags",
     ":base_implementation",
     "//build/config:precompiled_headers",
   ]
