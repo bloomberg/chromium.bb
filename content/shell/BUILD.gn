@@ -484,8 +484,8 @@ if (is_mac) {
     output_name = "content_shell_framework"  # Temporary one with no spaces.
 
     sources = [
-      "shell_content_main.cc",
-      "shell_content_main.h",
+      "app/shell_content_main.cc",
+      "app/shell_content_main.h",
     ]
 
     deps = [
