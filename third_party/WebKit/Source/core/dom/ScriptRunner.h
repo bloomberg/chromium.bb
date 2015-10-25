@@ -83,6 +83,8 @@ private:
     WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteSoon;
     WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader>> m_pendingAsyncScripts;
     OwnPtr<CancellableTaskFactory> m_executeScriptsTaskFactory;
+
+    int m_numberOfInOrderScriptsWithPendingNotification;
 };
 
 } // namespace blink

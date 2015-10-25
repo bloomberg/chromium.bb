@@ -584,4 +584,32 @@ TEST_F(ScriptRunnerTest, ShouldYield_RunsAtLastOneTask_InOrderScripts)
     m_platform.runAllTasks();
 }
 
+TEST_F(ScriptRunnerTest, LateNotifications)
+{
+    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+
+    EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
+
+    m_scriptRunner->queueScriptForExecution(scriptLoader1.get(), ScriptRunner::IN_ORDER_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2.get(), ScriptRunner::IN_ORDER_EXECUTION);
+
+    EXPECT_CALL(*scriptLoader1, execute()).WillOnce(Invoke([this] {
+        m_order.append(1);
+    }));
+    EXPECT_CALL(*scriptLoader2, execute()).WillOnce(Invoke([this] {
+        m_order.append(2);
+    }));
+
+    m_scriptRunner->notifyScriptReady(scriptLoader1.get(), ScriptRunner::IN_ORDER_EXECUTION);
+    m_platform.runAllTasks();
+
+    // At this moment all tasks can be already executed. Make sure that we do not crash here.
+    m_scriptRunner->notifyScriptReady(scriptLoader2.get(), ScriptRunner::IN_ORDER_EXECUTION);
+    m_platform.runAllTasks();
+
+    EXPECT_THAT(m_order, ElementsAre(1, 2));
+}
+
 } // namespace blink

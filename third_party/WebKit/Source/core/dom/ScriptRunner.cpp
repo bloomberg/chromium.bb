@@ -41,6 +41,7 @@ namespace blink {
 ScriptRunner::ScriptRunner(Document* document)
     : m_document(document)
     , m_executeScriptsTaskFactory(CancellableTaskFactory::create(this, &ScriptRunner::executeScripts))
+    , m_numberOfInOrderScriptsWithPendingNotification(0)
 {
     ASSERT(document);
 }
@@ -87,6 +88,7 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, Execution
     case IN_ORDER_EXECUTION:
         m_document->incrementLoadEventDelayCount();
         m_scriptsToExecuteInOrder.append(scriptLoader);
+        m_numberOfInOrderScriptsWithPendingNotification++;
         break;
     }
 }
@@ -117,7 +119,8 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
         break;
 
     case IN_ORDER_EXECUTION:
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!m_scriptsToExecuteInOrder.isEmpty());
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
+        m_numberOfInOrderScriptsWithPendingNotification--;
         break;
     }
     postTaskIfOneIsNotAlreadyInFlight();
@@ -138,7 +141,8 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         break;
 
     case IN_ORDER_EXECUTION:
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!m_scriptsToExecuteInOrder.isEmpty());
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
+        m_numberOfInOrderScriptsWithPendingNotification--;
         break;
     }
 }
