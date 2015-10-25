@@ -269,8 +269,11 @@ class CLStatsEngine(object):
           build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
 
     unique_blames = set()
+    build_blame_counts = {}
     for blames in self.blames.itervalues():
       unique_blames.update(blames)
+      for blame in blames:
+        build_blame_counts[blame] = build_blame_counts.get(blame, 0) + 1
     unique_cl_blames = {blame for blame in unique_blames if
                         EXTERNAL_CL_BASE_URL in blame}
 
@@ -463,6 +466,9 @@ class CLStatsEngine(object):
 
     logging.info('Reasons why builds failed:')
     self._PrintCounts(build_reason_counts, fmt_fai)
+
+    logging.info('Bugs or CLs responsible for build failures:')
+    self._PrintCounts(build_blame_counts, fmt_fai)
 
     total_counts = sum(long_pole_slave_counts.values())
     logging.info('Slowest CQ slaves out of %s passing runs:', total_counts)
