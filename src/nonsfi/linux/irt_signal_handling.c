@@ -477,7 +477,7 @@ int nacl_exception_clear_flag(void) {
    */
   sigset_t *maskptr = (sigset_t *) &mask;
   sigemptyset(maskptr);
-  for (int a = 0; a < NACL_ARRAY_SIZE(kSignals); a++) {
+  for (size_t a = 0; a < NACL_ARRAY_SIZE(kSignals); a++) {
     if (sigaddset(maskptr, kSignals[a]) != 0)
       abort();
   }
