@@ -7,8 +7,7 @@ action("webkit_version") {
 
   lastchange_file = "LASTCHANGE.blink"
 
-  # TODO(brettw) move from content to this directory.
-  template_file = "//content/webkit_version.h.in"
+  template_file = "webkit_version.h.in"
   inputs = [
     lastchange_file,
     template_file,

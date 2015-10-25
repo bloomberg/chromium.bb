@@ -661,7 +661,7 @@
           'variables': {
             'script': '<(DEPTH)/build/util/version.py',
             'lastchange': '<(DEPTH)/build/util/LASTCHANGE.blink',
-            'template': 'webkit_version.h.in',
+            'template': '<(DEPTH)/build/util/webkit_version.h.in',
           },
         },
       ],
