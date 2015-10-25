@@ -241,6 +241,10 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       const std::string& name,
       const net::HostPortPair& host_port,
       net::URLRequestContextGetter* request_context);
+  PrivetHTTPClientImpl(
+      const std::string& name,
+      const net::HostPortPair& host_port,
+      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner);
   ~PrivetHTTPClientImpl() override;
 
   // PrivetHTTPClient implementation.
@@ -253,6 +257,10 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       PrivetURLFetcher::Delegate* delegate) override;
   void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback) override;
+  void SwitchToHttps(
+      uint16_t port,
+      const net::SHA256HashValue& certificate_fingerprint) override;
+  bool IsInHttpsMode() const override;
 
  private:
   typedef std::vector<PrivetURLFetcher::TokenCallback> TokenCallbackVector;
@@ -260,7 +268,8 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   void OnPrivetInfoDone(const base::DictionaryValue* value);
 
   std::string name_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  bool use_https_ = false;
   net::HostPortPair host_port_;
 
   scoped_ptr<PrivetJSONOperation> info_operation_;

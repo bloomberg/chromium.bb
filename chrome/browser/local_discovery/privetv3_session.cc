@@ -44,6 +44,8 @@ const char kPrivetV3KeyScope[] = "scope";
 const char kPrivetV3KeySessionId[] = "sessionId";
 const char kPrivetV3KeyTokenType[] = "tokenType";
 
+const char kPrivetV3InfoHttpsPort[] = "endpoints.httpsPort";
+
 const char kPrivetV3PairingStartPath[] = "/privet/v3/pairing/start";
 const char kPrivetV3PairingConfirmPath[] = "/privet/v3/pairing/confirm";
 const char kPrivetV3PairingCancelPath[] = "/privet/v3/pairing/cancel";
@@ -51,7 +53,7 @@ const char kPrivetV3AuthPath[] = "/privet/v3/auth";
 
 const char kUrlPlaceHolder[] = "http://host/";
 
-const int kUrlFetcherTimeoutSec = 30;
+const int kUrlFetcherTimeoutSec = 60;
 
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
@@ -142,7 +144,7 @@ void PrivetV3Session::FetcherDelegate::OnNeedPrivetToken(
     PrivetURLFetcher* fetcher,
     const PrivetURLFetcher::TokenCallback& callback) {
   NOTREACHED();
-  OnError(fetcher, PrivetURLFetcher::URL_FETCH_ERROR);
+  OnError(fetcher, PrivetURLFetcher::UNKNOWN_ERROR);
 }
 
 void PrivetV3Session::FetcherDelegate::OnError(
@@ -214,12 +216,11 @@ PrivetV3Session::~PrivetV3Session() {
 
 void PrivetV3Session::Init(const InitCallback& callback) {
   DCHECK(fetchers_.empty());
-  DCHECK(fingerprint_.empty());
+  DCHECK(!client_->IsInHttpsMode());
   DCHECK(session_id_.empty());
   DCHECK(privet_auth_token_.empty());
 
   privet_auth_token_ = kPrivetV3AuthAnonymous;
-
   StartGetRequest(kPrivetInfoPath,
                   base::Bind(&PrivetV3Session::OnInfoDone,
                              weak_ptr_factory_.GetWeakPtr(), callback));
@@ -253,6 +254,14 @@ void PrivetV3Session::OnInfoDone(const InitCallback& callback,
     LOG(ERROR) << "Response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR, response);
   }
+
+  int port = 0;
+  if (!response.GetInteger(kPrivetV3InfoHttpsPort, &port) || port <= 0 ||
+      port > std::numeric_limits<uint16_t>::max()) {
+    LOG(ERROR) << "Response: " << response;
+    return callback.Run(Result::STATUS_SESSIONERROR, response);
+  }
+  https_port_ = port;
 
   callback.Run(Result::STATUS_SUCCESS, response);
 }
@@ -323,9 +332,16 @@ void PrivetV3Session::OnPairingConfirmDone(
   std::string signature;
   if (!GetDecodedString(response, kPrivetV3KeyCertFingerprint, &fingerprint) ||
       !GetDecodedString(response, kPrivetV3KeyCertSignature, &signature)) {
-    LOG(ERROR) << "Response: " << response;
+    LOG(ERROR) << "Invalid response: " << response;
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
+
+  net::SHA256HashValue hash;
+  if (fingerprint.size() != sizeof(hash.data)) {
+    LOG(ERROR) << "Invalid fingerprint size: " << response;
+    return callback.Run(Result::STATUS_SESSIONERROR);
+  }
+  memcpy(hash.data, fingerprint.data(), sizeof(hash.data));
 
   crypto::HMAC hmac(crypto::HMAC::SHA256);
   // Key will be verified below, using HMAC.
@@ -333,8 +349,8 @@ void PrivetV3Session::OnPairingConfirmDone(
   if (!hmac.Init(reinterpret_cast<const unsigned char*>(key.c_str()),
                  key.size()) ||
       !hmac.Verify(fingerprint, signature)) {
-    LOG(ERROR) << "Response: " << response;
-    return callback.Run(Result::STATUS_SESSIONERROR);
+    LOG(ERROR) << "Verification failed: " << response;
+    return callback.Run(Result::STATUS_BADPAIRINGCODEERROR);
   }
 
   std::string auth_code(hmac.DigestLength(), ' ');
@@ -344,8 +360,10 @@ void PrivetV3Session::OnPairingConfirmDone(
     LOG(FATAL) << "Signing failed";
     return callback.Run(Result::STATUS_SESSIONERROR);
   }
-  // From now this is expected certificate.
-  fingerprint_ = fingerprint;
+
+  // From now use only https with fixed certificate.
+  VLOG(1) << "Expected certificate: " << fingerprint;
+  client_->SwitchToHttps(https_port_, hash);
 
   std::string auth_code_base64;
   base::Base64Encode(auth_code, &auth_code_base64);
@@ -386,9 +404,7 @@ void PrivetV3Session::OnAuthenticateDone(
 void PrivetV3Session::SendMessage(const std::string& api,
                                   const base::DictionaryValue& input,
                                   const MessageCallback& callback) {
-  // TODO(vitalybuka): Implement validating HTTPS certificate using
-  // fingerprint_.
-  if (fingerprint_.empty()) {
+  if (!client_->IsInHttpsMode()) {
     LOG(ERROR) << "Session is not paired";
     return callback.Run(Result::STATUS_SESSIONERROR, base::DictionaryValue());
   }
@@ -439,7 +455,7 @@ void PrivetV3Session::DeleteFetcher(const FetcherDelegate* fetcher) {
 
 void PrivetV3Session::Cancel() {
   // Cancel started unconfirmed sessions.
-  if (session_id_.empty() || !fingerprint_.empty())
+  if (session_id_.empty() || client_->IsInHttpsMode())
     return;
   base::DictionaryValue input;
   input.SetString(kPrivetV3KeySessionId, session_id_);

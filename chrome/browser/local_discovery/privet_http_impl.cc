@@ -15,8 +15,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/url_util.h"
+#include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -30,6 +35,7 @@
 namespace local_discovery {
 
 namespace {
+
 const char kUrlPlaceHolder[] = "http://host/";
 const char kPrivetRegisterActionArgName[] = "action";
 const char kPrivetRegisterUserArgName[] = "user";
@@ -80,6 +86,109 @@ GURL CreatePrivetParamURL(const std::string& path,
   }
   return url.ReplaceComponents(replacements);
 }
+
+// Used before we have any certificate fingerprint.
+class FailingCertVerifier : public net::CertVerifier {
+ public:
+  int Verify(net::X509Certificate* cert,
+             const std::string& hostname,
+             const std::string& ocsp_response,
+             int flags,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             scoped_ptr<Request>* out_req,
+             const net::BoundNetLog& net_log) override {
+    verify_result->verified_cert = cert;
+    verify_result->cert_status = net::CERT_STATUS_INVALID;
+    return net::ERR_CERT_INVALID;
+  }
+};
+
+// Used before when we have the certificate fingerprint.
+// Privet v3 devices should supports https but with self-signed sertificates.
+// So normal validation is not usefull.
+// Before using https Privet v3 pairing generates same secret on device and
+// client side Spake2 on insecure channel. Than device sends fingerprint
+// to client using same insecure channel. fingerprint is signed with the secret
+// generated before.
+// More info on pairing:
+// https://developers.google.com/cloud-devices/v1/reference/local-api/pairing_start
+class FingerprintVerifier : public net::CertVerifier {
+ public:
+  explicit FingerprintVerifier(
+      const net::SHA256HashValue& certificate_fingerprint)
+      : certificate_fingerprint_(certificate_fingerprint) {}
+
+  int Verify(net::X509Certificate* cert,
+             const std::string& hostname,
+             const std::string& ocsp_response,
+             int flags,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             scoped_ptr<Request>* out_req,
+             const net::BoundNetLog& net_log) override {
+    // Mark certificat as invalid as we didn't check that.
+    verify_result->verified_cert = cert;
+    verify_result->cert_status = net::CERT_STATUS_INVALID;
+
+    auto fingerprint =
+        net::X509Certificate::CalculateFingerprint256(cert->os_cert_handle());
+
+    return certificate_fingerprint_.Equals(fingerprint) ? net::OK
+                                                        : net::ERR_CERT_INVALID;
+  }
+
+ private:
+  net::SHA256HashValue certificate_fingerprint_;
+
+  DISALLOW_COPY_AND_ASSIGN(FingerprintVerifier);
+};
+
+class PrivetContextGetter : public net::URLRequestContextGetter {
+ public:
+  PrivetContextGetter(
+      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner,
+      const net::SHA256HashValue& certificate_fingerprint)
+      : verifier_(new FingerprintVerifier(certificate_fingerprint)),
+        net_task_runner_(net_task_runner) {}
+
+  // Don't allow any https without fingerprint. Device with valid certificate
+  // may be different from the one which user is trying to pair.
+  explicit PrivetContextGetter(
+      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner)
+      : verifier_(new FailingCertVerifier()),
+        net_task_runner_(net_task_runner) {}
+
+  net::URLRequestContext* GetURLRequestContext() override {
+    if (!context_) {
+      net::URLRequestContextBuilder builder;
+      builder.set_proxy_service(net::ProxyService::CreateDirect());
+      builder.SetSpdyAndQuicEnabled(false, false);
+      builder.DisableHttpCache();
+      builder.SetCertVerifier(verifier_.Pass());
+      builder.set_user_agent(::GetUserAgent());
+      context_ = builder.Build();
+    }
+    return context_.get();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
+    return net_task_runner_;
+  }
+
+ protected:
+  ~PrivetContextGetter() override = default;
+
+ private:
+  scoped_ptr<net::CertVerifier> verifier_;
+  scoped_ptr<net::URLRequestContext> context_;
+  scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrivetContextGetter);
+};
 
 }  // namespace
 
@@ -179,8 +288,8 @@ void PrivetRegisterOperationImpl::OnError(PrivetURLFetcher* fetcher,
     reason = FAILURE_MALFORMED_RESPONSE;
   } else if (error == PrivetURLFetcher::TOKEN_ERROR) {
     reason = FAILURE_TOKEN;
-  } else if (error == PrivetURLFetcher::RETRY_ERROR) {
-    reason = FAILURE_RETRY;
+  } else if (error == PrivetURLFetcher::UNKNOWN_ERROR) {
+    reason = FAILURE_UNKNOWN;
   }
 
   delegate_->OnPrivetRegisterError(this,
@@ -691,7 +800,17 @@ PrivetHTTPClientImpl::PrivetHTTPClientImpl(
     const std::string& name,
     const net::HostPortPair& host_port,
     net::URLRequestContextGetter* request_context)
-    : name_(name), request_context_(request_context), host_port_(host_port) {}
+    : PrivetHTTPClientImpl(name,
+                           host_port,
+                           request_context->GetNetworkTaskRunner()) {}
+
+PrivetHTTPClientImpl::PrivetHTTPClientImpl(
+    const std::string& name,
+    const net::HostPortPair& host_port,
+    const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner)
+    : name_(name),
+      context_getter_(new PrivetContextGetter(net_task_runner)),
+      host_port_(host_port) {}
 
 PrivetHTTPClientImpl::~PrivetHTTPClientImpl() {
 }
@@ -712,14 +831,13 @@ scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
     PrivetURLFetcher::Delegate* delegate) {
   GURL::Replacements replacements;
   replacements.SetHostStr(host_port_.host());
-  std::string port(
-      base::UintToString(host_port_.port()));  // Keep string alive.
+  std::string port = base::UintToString(host_port_.port());
   replacements.SetPortStr(port);
+  std::string scheme = IsInHttpsMode() ? "https" : "http";
+  replacements.SetSchemeStr(scheme);
   return scoped_ptr<PrivetURLFetcher>(
-      new PrivetURLFetcher(url.ReplaceComponents(replacements),
-                           request_type,
-                           request_context_.get(),
-                           delegate));
+      new PrivetURLFetcher(url.ReplaceComponents(replacements), request_type,
+                           context_getter_, delegate));
 }
 
 void PrivetHTTPClientImpl::RefreshPrivetToken(
@@ -732,6 +850,19 @@ void PrivetHTTPClientImpl::RefreshPrivetToken(
                    base::Unretained(this)));
     info_operation_->Start();
   }
+}
+
+void PrivetHTTPClientImpl::SwitchToHttps(
+    uint16_t port,
+    const net::SHA256HashValue& certificate_fingerprint) {
+  use_https_ = true;
+  host_port_.set_port(port);
+  context_getter_ = new PrivetContextGetter(
+      context_getter_->GetNetworkTaskRunner(), certificate_fingerprint);
+}
+
+bool PrivetHTTPClientImpl::IsInHttpsMode() const {
+  return use_https_;
 }
 
 void PrivetHTTPClientImpl::OnPrivetInfoDone(

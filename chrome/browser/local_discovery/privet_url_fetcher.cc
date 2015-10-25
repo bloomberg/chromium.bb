@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
 namespace local_discovery {
@@ -74,12 +75,13 @@ bool PrivetURLFetcher::Delegate::OnRawData(PrivetURLFetcher* fetcher,
 PrivetURLFetcher::PrivetURLFetcher(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
-    net::URLRequestContextGetter* request_context,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     PrivetURLFetcher::Delegate* delegate)
     : url_(url),
       request_type_(request_type),
-      request_context_(request_context),
+      context_getter_(context_getter),
       delegate_(delegate),
+      max_retries_(kPrivetMaxRetries),
       do_not_retry_on_transient_error_(false),
       send_empty_privet_token_(false),
       has_byte_range_(false),
@@ -88,8 +90,7 @@ PrivetURLFetcher::PrivetURLFetcher(
       byte_range_start_(0),
       byte_range_end_(0),
       tries_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PrivetURLFetcher::~PrivetURLFetcher() {
 }
@@ -103,6 +104,11 @@ void PrivetURLFetcher::SetTokenForHost(const std::string& host,
 // static
 void PrivetURLFetcher::ResetTokenMapForTests() {
   TokenMapHolder::GetInstance()->map.clear();
+}
+
+void PrivetURLFetcher::SetMaxRetries(int max_retries) {
+  DCHECK(tries_ == 0);
+  max_retries_ = max_retries;
 }
 
 void PrivetURLFetcher::DoNotRetryOnTransientError() {
@@ -147,13 +153,14 @@ void PrivetURLFetcher::SetByteRange(int start, int end) {
 
 void PrivetURLFetcher::Try() {
   tries_++;
-  if (tries_ < kPrivetMaxRetries) {
+  if (tries_ <= max_retries_) {
+    DVLOG(1) << "Try no. " << tries_;
     url_fetcher_ = net::URLFetcher::Create(url_, request_type_, this);
     // Privet requests are relevant to hosts on local network only.
-    url_fetcher_->SetLoadFlags(url_fetcher_->GetLoadFlags() |
-                               net::LOAD_BYPASS_PROXY |
-                               net::LOAD_DISABLE_CACHE);
-    url_fetcher_->SetRequestContext(request_context_.get());
+    url_fetcher_->SetLoadFlags(
+        url_fetcher_->GetLoadFlags() | net::LOAD_BYPASS_PROXY |
+        net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES);
+    url_fetcher_->SetRequestContext(context_getter_.get());
 
     if (v3_mode_) {
       url_fetcher_->AddExtraRequestHeader(
@@ -197,7 +204,7 @@ void PrivetURLFetcher::Try() {
 
     url_fetcher_->Start();
   } else {
-    delegate_->OnError(this, RETRY_ERROR);
+    delegate_->OnError(this, UNKNOWN_ERROR);
   }
 }
 
@@ -232,8 +239,11 @@ void PrivetURLFetcher::SetUploadFilePath(
 }
 
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE ||
-      source->GetResponseCode() == net::URLFetcher::RESPONSE_CODE_INVALID) {
+  DVLOG(1) << "Status: " << source->GetStatus().status()
+           << ", ResponseCode: " << source->GetResponseCode();
+  if (source->GetStatus().status() != net::URLRequestStatus::CANCELED &&
+      (source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE ||
+       source->GetResponseCode() == net::URLFetcher::RESPONSE_CODE_INVALID)) {
     ScheduleRetry(kPrivetTimeoutOnError);
     return;
   }
@@ -254,6 +264,11 @@ void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 // that it has fully handled the responses.
 bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
     const net::URLFetcher* source) {
+  if (source->GetStatus().status() == net::URLRequestStatus::CANCELED) {
+    delegate_->OnError(this, REQUEST_CANCELED);
+    return true;
+  }
+
   if (source->GetResponseCode() == kHTTPErrorCodeInvalidXPrivetToken) {
     RequestTokenRefresh();
     return true;
@@ -270,7 +285,7 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
     base::FilePath response_file_path;
 
     if (!source->GetResponseAsFilePath(true, &response_file_path)) {
-      delegate_->OnError(this, URL_FETCH_ERROR);
+      delegate_->OnError(this, UNKNOWN_ERROR);
       return true;
     }
 
@@ -279,7 +294,7 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
     std::string response_str;
 
     if (!source->GetResponseAsString(&response_str)) {
-      delegate_->OnError(this, URL_FETCH_ERROR);
+      delegate_->OnError(this, UNKNOWN_ERROR);
       return true;
     }
 
@@ -300,7 +315,7 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
 
   std::string response_str;
   if (!source->GetResponseAsString(&response_str)) {
-    delegate_->OnError(this, URL_FETCH_ERROR);
+    delegate_->OnError(this, UNKNOWN_ERROR);
     return;
   }
 
@@ -350,6 +365,10 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
 
   timeout_seconds_randomized =
       std::max(timeout_seconds_randomized, kPrivetMinimumTimeout);
+
+  // Don't wait because only error callback is going to be called.
+  if (tries_ >= max_retries_)
+    timeout_seconds_randomized = 0;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&PrivetURLFetcher::Try, weak_factory_.GetWeakPtr()),

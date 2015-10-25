@@ -7,12 +7,17 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "printing/pwg_raster_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,12 +27,15 @@
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #endif  // ENABLE_PRINT_PREVIEW
 
-using testing::StrictMock;
-using testing::NiceMock;
-
 namespace local_discovery {
 
 namespace {
+
+using testing::StrictMock;
+using testing::NiceMock;
+
+using content::BrowserThread;
+using net::SpawnedTestServer;
 
 const char kSampleInfoResponse[] = "{"
     "       \"version\": \"1.0\","
@@ -1076,6 +1084,134 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
       kSampleCreatejobResponse));
 }
 #endif  // ENABLE_PRINT_PREVIEW
+
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
+
+class PrivetHttpWithServerTest : public ::testing::Test,
+                                 public PrivetURLFetcher::Delegate {
+ protected:
+  PrivetHttpWithServerTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override {
+    done_ = true;
+    success_ = false;
+    error_ = error;
+
+    base::MessageLoop::current()->PostTask(FROM_HERE, quit_);
+  }
+
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override {
+    NOTREACHED();
+    base::MessageLoop::current()->PostTask(FROM_HERE, quit_);
+  }
+
+  bool OnRawData(PrivetURLFetcher* fetcher,
+                 bool response_is_file,
+                 const std::string& data_string,
+                 const base::FilePath& data_file) override {
+    done_ = true;
+    success_ = true;
+
+    base::MessageLoop::current()->PostTask(FROM_HERE, quit_);
+    return true;
+  }
+
+  void CreateClient() {
+    client_.reset(new PrivetHTTPClientImpl(
+        "test", https_server_->host_port_pair(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  }
+
+  void Run() {
+    success_ = false;
+    done_ = false;
+
+    base::RunLoop run_loop;
+    quit_ = run_loop.QuitClosure();
+
+    auto fetcher = client_->CreateURLFetcher(
+        https_server_->GetURL("files/simple.html"), net::URLFetcher::GET, this);
+
+    fetcher->SetMaxRetries(1);
+    fetcher->V3Mode();
+    fetcher->Start();
+
+    run_loop.Run();
+
+    EXPECT_TRUE(done_);
+  }
+
+  bool success_ = false;
+  bool done_ = false;
+  PrivetURLFetcher::ErrorType error_ = PrivetURLFetcher::ErrorType();
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  scoped_ptr<SpawnedTestServer> https_server_;
+  scoped_ptr<PrivetHTTPClientImpl> client_;
+
+  base::Closure quit_;
+};
+
+TEST_F(PrivetHttpWithServerTest, Http) {
+  https_server_.reset(new SpawnedTestServer(net::BaseTestServer::TYPE_HTTP,
+                                            SpawnedTestServer::kLocalhost,
+                                            base::FilePath(kDocRoot)));
+  ASSERT_TRUE(https_server_->Start());
+
+  CreateClient();
+  Run();
+  EXPECT_TRUE(success_);
+
+  CreateClient();
+  net::SHA256HashValue fingerprint = {};
+  client_->SwitchToHttps(https_server_->host_port_pair().port(), fingerprint);
+
+  Run();
+  EXPECT_FALSE(success_);
+  EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
+}
+
+TEST_F(PrivetHttpWithServerTest, Https) {
+  https_server_.reset(new SpawnedTestServer(
+      SpawnedTestServer::TYPE_HTTPS,
+      SpawnedTestServer::SSLOptions(SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot)));
+  ASSERT_TRUE(https_server_->Start());
+
+  CreateClient();
+  Run();
+#ifdef OS_MACOSX
+  // Seems like an issue of the test server, it's in HTTPS mode and still
+  // accepts
+  // HTTP requests.
+  // TODO(vitalybuka): Remove #ifdef when test server is fixed.
+  EXPECT_TRUE(success_);
+#else
+  EXPECT_FALSE(success_);
+  EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
+#endif  // OS_MACOSX
+
+  CreateClient();
+  net::SHA256HashValue fingerprint =
+      net::X509Certificate::CalculateFingerprint256(
+          https_server_->GetCertificate()->os_cert_handle());
+  client_->SwitchToHttps(https_server_->host_port_pair().port(), fingerprint);
+
+  Run();
+  EXPECT_TRUE(success_);
+
+  CreateClient();
+  fingerprint = {};
+  client_->SwitchToHttps(https_server_->host_port_pair().port(), fingerprint);
+
+  Run();
+  EXPECT_FALSE(success_);
+  EXPECT_EQ(PrivetURLFetcher::REQUEST_CANCELED, error_);
+}
 
 }  // namespace
 

@@ -20,11 +20,15 @@ namespace local_discovery {
 
 namespace {
 
+using testing::_;
+using testing::ElementsAreArray;
+using testing::Field;
 using testing::InSequence;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
+using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
-using testing::_;
 
 using PairingType = PrivetV3Session::PairingType;
 using Result = PrivetV3Session::Result;
@@ -49,6 +53,8 @@ class MockPrivetHTTPClient : public PrivetHTTPClient {
   MOCK_METHOD1(
       CreateInfoOperationPtr,
       PrivetJSONOperation*(const PrivetJSONOperation::ResultCallback&));
+  MOCK_METHOD2(SwitchToHttps, void(uint16_t, const net::SHA256HashValue&));
+  MOCK_CONST_METHOD0(IsInHttpsMode, bool());
 
   void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& callback) override {
@@ -77,9 +83,8 @@ class PrivetV3SessionTest : public testing::Test {
  public:
   PrivetV3SessionTest()
       : fetcher_factory_(nullptr),
-        session_(make_scoped_ptr(new MockPrivetHTTPClient())) {}
-
-  ~PrivetV3SessionTest() override {}
+        http_client_(new StrictMock<MockPrivetHTTPClient>()),
+        session_(make_scoped_ptr(http_client_)) {}
 
   void OnInitialized(Result result, const base::DictionaryValue& info) {
     info_.MergeDictionary(&info);
@@ -94,19 +99,17 @@ class PrivetV3SessionTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    EXPECT_CALL(*this, OnInitializedMock(_, _)).Times(0);
-    EXPECT_CALL(*this, OnPairingStarted(_)).Times(0);
-    EXPECT_CALL(*this, OnCodeConfirmed(_)).Times(0);
-    EXPECT_CALL(*this, OnMessageSend(_, _)).Times(0);
-    EXPECT_CALL(*this, OnPostData(_)).Times(0);
     session_.on_post_data_ =
         base::Bind(&PrivetV3SessionTest::OnPostData, base::Unretained(this));
+
+    EXPECT_CALL(*http_client_, IsInHttpsMode()).WillRepeatedly(Return(false));
   }
 
-  base::DictionaryValue info_;
   base::MessageLoop loop_;
-  base::Closure quit_closure_;
   net::FakeURLFetcherFactory fetcher_factory_;
+  StrictMock<MockPrivetHTTPClient>* http_client_;
+  base::DictionaryValue info_;
+  base::Closure quit_closure_;
   PrivetV3Session session_;
 };
 
@@ -148,6 +151,23 @@ TEST_F(PrivetV3SessionTest, ModeError) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(PrivetV3SessionTest, NoHttpsError) {
+  EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _)).Times(1);
+  fetcher_factory_.SetFakeResponse(GURL("http://host/privet/info"),
+                                   kInfoResponse, net::HTTP_OK,
+                                   net::URLRequestStatus::SUCCESS);
+
+  session_.Init(
+      base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*this, OnMessageSend(Result::STATUS_SESSIONERROR, _)).Times(1);
+  session_.SendMessage(
+      "/privet/v3/state", base::DictionaryValue(),
+      base::Bind(&PrivetV3SessionTest::OnMessageSend, base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(PrivetV3SessionTest, Pairing) {
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SUCCESS, _))
       .Times(1);
@@ -175,7 +195,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
   EXPECT_CALL(*this, OnPairingStarted(Result::STATUS_SUCCESS)).Times(1);
   EXPECT_CALL(*this, OnPostData(_))
       .WillOnce(
-          testing::Invoke([this, &spake](const base::DictionaryValue& data) {
+          Invoke([this, &spake](const base::DictionaryValue& data) {
             std::string pairing_type;
             EXPECT_TRUE(data.GetString("pairing", &pairing_type));
             EXPECT_EQ("embeddedCode", pairing_type);
@@ -198,14 +218,25 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                                    base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(session_.fingerprint_.empty());
   EXPECT_EQ("Privet anonymous", session_.privet_auth_token_);
 
+  std::string fingerprint("testFingerprint  testFingerprint");
+  net::SHA256HashValue sha_fingerprint;
+  ASSERT_EQ(sizeof(sha_fingerprint.data), fingerprint.size());
+  memcpy(sha_fingerprint.data, fingerprint.data(), fingerprint.size());
+
+  EXPECT_CALL(*http_client_,
+              SwitchToHttps(443, Field(&net::SHA256HashValue::data,
+                                       ElementsAreArray(sha_fingerprint.data))))
+      .WillOnce(InvokeWithoutArgs([this]() {
+        EXPECT_CALL(*http_client_, IsInHttpsMode())
+            .WillRepeatedly(Return(true));
+      }));
+
   EXPECT_CALL(*this, OnCodeConfirmed(Result::STATUS_SUCCESS)).Times(1);
-  InSequence in_sequence;
   EXPECT_CALL(*this, OnPostData(_))
-      .WillOnce(
-          testing::Invoke([this, &spake](const base::DictionaryValue& data) {
+      .WillOnce(Invoke(
+          [this, &spake, fingerprint](const base::DictionaryValue& data) {
             std::string commitment_base64;
             EXPECT_TRUE(data.GetString("clientCommitment", &commitment_base64));
             std::string commitment;
@@ -218,7 +249,6 @@ TEST_F(PrivetV3SessionTest, Pairing) {
             EXPECT_EQ(spake.ProcessMessage(commitment),
                       crypto::P224EncryptedKeyExchange::kResultPending);
 
-            std::string fingerprint("testFinterprint");
             std::string fingerprint_base64;
             base::Base64Encode(fingerprint, &fingerprint_base64);
 
@@ -239,10 +269,9 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                     "{\"certFingerprint\":\"%s\",\"certSignature\":\"%s\"}",
                     fingerprint_base64.c_str(), signature_base64.c_str()),
                 net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-          }));
-  EXPECT_CALL(*this, OnPostData(_))
+          }))
       .WillOnce(
-          testing::Invoke([this, &spake](const base::DictionaryValue& data) {
+          Invoke([this, &spake](const base::DictionaryValue& data) {
             std::string access_token_base64;
             EXPECT_TRUE(data.GetString("authCode", &access_token_base64));
             std::string access_token;
@@ -264,7 +293,7 @@ TEST_F(PrivetV3SessionTest, Pairing) {
                                   base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(session_.fingerprint_.empty());
+  EXPECT_TRUE(session_.client_->IsInHttpsMode());
   EXPECT_EQ("testType 567", session_.privet_auth_token_);
 }
 
@@ -278,9 +307,11 @@ TEST_F(PrivetV3SessionTest, Cancel) {
       base::Bind(&PrivetV3SessionTest::OnInitialized, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_CALL(*http_client_, IsInHttpsMode()).WillRepeatedly(Return(false));
+
   EXPECT_CALL(*this, OnPairingStarted(Result::STATUS_SUCCESS)).Times(1);
   EXPECT_CALL(*this, OnPostData(_))
-      .WillOnce(testing::Invoke([this](const base::DictionaryValue& data) {
+      .WillOnce(Invoke([this](const base::DictionaryValue& data) {
         std::string device_commitment;
         base::Base64Encode("1234", &device_commitment);
         fetcher_factory_.SetFakeResponse(
@@ -299,7 +330,7 @@ TEST_F(PrivetV3SessionTest, Cancel) {
                                    kInfoResponse, net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(*this, OnPostData(_))
-      .WillOnce(testing::Invoke([this](const base::DictionaryValue& data) {
+      .WillOnce(Invoke([this](const base::DictionaryValue& data) {
         std::string session_id;
         EXPECT_TRUE(data.GetString("sessionId", &session_id));
       }));

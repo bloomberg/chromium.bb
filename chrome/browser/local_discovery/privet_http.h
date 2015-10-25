@@ -62,6 +62,14 @@ class PrivetHTTPClient {
 
   virtual void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback) = 0;
+
+  // After this call HTTPS will be used. Only requests to the server with
+  // matching certificate will be allowed.
+  virtual void SwitchToHttps(
+      uint16_t port,
+      const net::SHA256HashValue& certificate_fingerprint) = 0;
+
+  virtual bool IsInHttpsMode() const = 0;
 };
 
 class PrivetDataReadOperation {
@@ -101,7 +109,7 @@ class PrivetRegisterOperation {
     FAILURE_JSON_ERROR,
     FAILURE_MALFORMED_RESPONSE,
     FAILURE_TOKEN,
-    FAILURE_RETRY
+    FAILURE_UNKNOWN,
   };
 
   class Delegate {

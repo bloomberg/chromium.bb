@@ -108,8 +108,8 @@ class PrivetV3Session {
   // Key exchange algorithm for pairing.
   scoped_ptr<crypto::P224EncryptedKeyExchange> spake_;
 
-  // HTTPS certificate fingerprint received during pairing.
-  std::string fingerprint_;
+  // HTTPS port of the device.
+  uint16_t https_port_ = 0;
 
   // List of fetches to cancel when session is destroyed.
   ScopedVector<FetcherDelegate> fetchers_;
