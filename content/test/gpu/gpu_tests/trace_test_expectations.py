@@ -11,12 +11,7 @@ class TraceTestExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('TraceTest.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
-    self.Flaky('trace_test.Canvas2DRedBox', bug=512622, max_num_retries=5)
-    self.Flaky('trace_test.CSS3DBlueBox', bug=512622, max_num_retries=5)
-
-    # Test has become increasingly flaky around 7/31/15: crbug.com/517232
-    self.Flaky('trace_test.WebGLGreenTriangle', bug=517232, max_num_retries=5)
+    self.Skip('*', bug=512622)
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
   def SetExpectations(self):
