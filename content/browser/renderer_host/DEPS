@@ -20,7 +20,7 @@ specific_include_rules = {
     "+content/browser/web_contents",
     "+content/public/browser/web_contents.h",
     "+content/public/browser/web_contents_view.h",
-    "+media/blink",
+    "+media/renderers",
   ],
   "sandbox_ipc_linux\.cc": [
     "+third_party/WebKit/public/platform/linux/WebFontInfo.h",

@@ -9,9 +9,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "media/blink/skcanvas_video_renderer.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/renderers/skcanvas_video_renderer.h"
 
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 

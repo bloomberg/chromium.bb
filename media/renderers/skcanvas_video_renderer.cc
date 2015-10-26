@@ -1,8 +1,8 @@
-  // Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/blink/skcanvas_video_renderer.h"
+#include "media/renderers/skcanvas_video_renderer.h"
 
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -53,8 +53,8 @@ const int kTemporaryResourceDeletionDelay = 3;  // Seconds;
 
 bool CheckColorSpace(const VideoFrame* video_frame, ColorSpace color_space) {
   int result;
-  return video_frame->metadata()->GetInteger(
-             VideoFrameMetadata::COLOR_SPACE, &result) &&
+  return video_frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE,
+                                             &result) &&
          result == color_space;
 }
 
@@ -114,8 +114,8 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
       source_textures[i] = texture_copy;
     }
   }
-  GrBackendObject handles[3] = {
-      source_textures[0], source_textures[1], source_textures[2]};
+  GrBackendObject handles[3] = {source_textures[0], source_textures[1],
+                                source_textures[2]};
 
   SkISize yuvSizes[] = {
       {ya_tex_size.width(), ya_tex_size.height()},
@@ -398,7 +398,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
       canvas->imageInfo().colorType() == kUnknown_SkColorType) {
     SkBitmap bmp;
     GrWrapTextureInBitmap(last_image_.get()->getTexture(),
-        last_image_.get()->width(), last_image_.get()->height(), true, &bmp);
+                          last_image_.get()->width(),
+                          last_image_.get()->height(), true, &bmp);
     // Even though the bitmap is logically immutable we do not mark it as such
     // because doing so would defer readback until rasterization, which will be
     // on another thread and is therefore unsafe.
@@ -446,55 +447,47 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
       if (CheckColorSpace(video_frame, COLOR_SPACE_JPEG)) {
-        LIBYUV_J420_TO_ARGB(
-            video_frame->visible_data(VideoFrame::kYPlane),
-            video_frame->stride(VideoFrame::kYPlane),
-            video_frame->visible_data(VideoFrame::kUPlane),
-            video_frame->stride(VideoFrame::kUPlane),
-            video_frame->visible_data(VideoFrame::kVPlane),
-            video_frame->stride(VideoFrame::kVPlane),
-            static_cast<uint8*>(rgb_pixels),
-            row_bytes,
-            video_frame->visible_rect().width(),
-            video_frame->visible_rect().height());
+        LIBYUV_J420_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                            video_frame->stride(VideoFrame::kYPlane),
+                            video_frame->visible_data(VideoFrame::kUPlane),
+                            video_frame->stride(VideoFrame::kUPlane),
+                            video_frame->visible_data(VideoFrame::kVPlane),
+                            video_frame->stride(VideoFrame::kVPlane),
+                            static_cast<uint8*>(rgb_pixels), row_bytes,
+                            video_frame->visible_rect().width(),
+                            video_frame->visible_rect().height());
       } else if (CheckColorSpace(video_frame, COLOR_SPACE_HD_REC709)) {
-        LIBYUV_H420_TO_ARGB(
-            video_frame->visible_data(VideoFrame::kYPlane),
-            video_frame->stride(VideoFrame::kYPlane),
-            video_frame->visible_data(VideoFrame::kUPlane),
-            video_frame->stride(VideoFrame::kUPlane),
-            video_frame->visible_data(VideoFrame::kVPlane),
-            video_frame->stride(VideoFrame::kVPlane),
-            static_cast<uint8*>(rgb_pixels),
-            row_bytes,
-            video_frame->visible_rect().width(),
-            video_frame->visible_rect().height());
+        LIBYUV_H420_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                            video_frame->stride(VideoFrame::kYPlane),
+                            video_frame->visible_data(VideoFrame::kUPlane),
+                            video_frame->stride(VideoFrame::kUPlane),
+                            video_frame->visible_data(VideoFrame::kVPlane),
+                            video_frame->stride(VideoFrame::kVPlane),
+                            static_cast<uint8*>(rgb_pixels), row_bytes,
+                            video_frame->visible_rect().width(),
+                            video_frame->visible_rect().height());
       } else {
-        LIBYUV_I420_TO_ARGB(
-            video_frame->visible_data(VideoFrame::kYPlane),
-            video_frame->stride(VideoFrame::kYPlane),
-            video_frame->visible_data(VideoFrame::kUPlane),
-            video_frame->stride(VideoFrame::kUPlane),
-            video_frame->visible_data(VideoFrame::kVPlane),
-            video_frame->stride(VideoFrame::kVPlane),
-            static_cast<uint8*>(rgb_pixels),
-            row_bytes,
-            video_frame->visible_rect().width(),
-            video_frame->visible_rect().height());
+        LIBYUV_I420_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                            video_frame->stride(VideoFrame::kYPlane),
+                            video_frame->visible_data(VideoFrame::kUPlane),
+                            video_frame->stride(VideoFrame::kUPlane),
+                            video_frame->visible_data(VideoFrame::kVPlane),
+                            video_frame->stride(VideoFrame::kVPlane),
+                            static_cast<uint8*>(rgb_pixels), row_bytes,
+                            video_frame->visible_rect().width(),
+                            video_frame->visible_rect().height());
       }
       break;
     case PIXEL_FORMAT_YV16:
-      LIBYUV_I422_TO_ARGB(
-          video_frame->visible_data(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->visible_data(VideoFrame::kUPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->visible_data(VideoFrame::kVPlane),
-          video_frame->stride(VideoFrame::kVPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
+      LIBYUV_I422_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                          video_frame->stride(VideoFrame::kYPlane),
+                          video_frame->visible_data(VideoFrame::kUPlane),
+                          video_frame->stride(VideoFrame::kUPlane),
+                          video_frame->visible_data(VideoFrame::kVPlane),
+                          video_frame->stride(VideoFrame::kVPlane),
+                          static_cast<uint8*>(rgb_pixels), row_bytes,
+                          video_frame->visible_rect().width(),
+                          video_frame->visible_rect().height());
       break;
 
     case PIXEL_FORMAT_YV12A:
@@ -507,25 +500,22 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           video_frame->stride(VideoFrame::kVPlane),
           video_frame->visible_data(VideoFrame::kAPlane),
           video_frame->stride(VideoFrame::kAPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
+          static_cast<uint8*>(rgb_pixels), row_bytes,
           video_frame->visible_rect().width(),
           video_frame->visible_rect().height(),
           1);  // 1 = enable RGB premultiplication by Alpha.
       break;
 
     case PIXEL_FORMAT_YV24:
-      LIBYUV_I444_TO_ARGB(
-          video_frame->visible_data(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->visible_data(VideoFrame::kUPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->visible_data(VideoFrame::kVPlane),
-          video_frame->stride(VideoFrame::kVPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
+      LIBYUV_I444_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                          video_frame->stride(VideoFrame::kYPlane),
+                          video_frame->visible_data(VideoFrame::kUPlane),
+                          video_frame->stride(VideoFrame::kUPlane),
+                          video_frame->visible_data(VideoFrame::kVPlane),
+                          video_frame->stride(VideoFrame::kVPlane),
+                          static_cast<uint8*>(rgb_pixels), row_bytes,
+                          video_frame->visible_rect().width(),
+                          video_frame->visible_rect().height());
       break;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -572,8 +562,8 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // "flip_y == true" means to reverse the video orientation while
   // "flip_y == false" means to keep the intrinsic orientation.
   gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture,
-                          internal_format, type,
-                          flip_y, premultiply_alpha, false);
+                          internal_format, type, flip_y, premultiply_alpha,
+                          false);
 
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();

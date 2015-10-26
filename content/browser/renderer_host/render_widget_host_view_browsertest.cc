@@ -26,7 +26,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/video_frame.h"
-#include "media/blink/skcanvas_video_renderer.h"
+#include "media/renderers/skcanvas_video_renderer.h"
 #include "net/base/filename_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"

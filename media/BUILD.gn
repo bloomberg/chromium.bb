@@ -95,8 +95,6 @@ if (use_ozone) {
 
 component("media") {
   sources = [
-    "blink/skcanvas_video_renderer.cc",
-    "blink/skcanvas_video_renderer.h",
     "capture/content/animated_content_sampler.cc",
     "capture/content/animated_content_sampler.h",
     "capture/content/capture_resolution_chooser.cc",
@@ -267,6 +265,8 @@ component("media") {
     "renderers/gpu_video_accelerator_factories.h",
     "renderers/renderer_impl.cc",
     "renderers/renderer_impl.h",
+    "renderers/skcanvas_video_renderer.cc",
+    "renderers/skcanvas_video_renderer.h",
     "renderers/video_renderer_impl.cc",
     "renderers/video_renderer_impl.h",
     "video/fake_video_encode_accelerator.cc",
@@ -596,7 +596,6 @@ group("media_unittests_run") {
 
 test("media_unittests") {
   sources = [
-    "blink/skcanvas_video_renderer_unittest.cc",
     "capture/content/animated_content_sampler_unittest.cc",
     "capture/content/capture_resolution_chooser_unittest.cc",
     "capture/content/feedback_signal_accumulator_unittest.cc",
@@ -645,6 +644,7 @@ test("media_unittests") {
     "formats/webm/webm_webvtt_parser_unittest.cc",
     "renderers/audio_renderer_impl_unittest.cc",
     "renderers/renderer_impl_unittest.cc",
+    "renderers/skcanvas_video_renderer_unittest.cc",
     "renderers/video_renderer_impl_unittest.cc",
     "video/gpu_memory_buffer_video_frame_pool_unittest.cc",
     "video/h264_poc_unittest.cc",

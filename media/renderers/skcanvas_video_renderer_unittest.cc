@@ -8,7 +8,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/blink/skcanvas_video_renderer.h"
+#include "media/renderers/skcanvas_video_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -156,43 +156,37 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
   // avoid sharing UV samples between regions.
 
   static const uint8 cropped_y_plane[] = {
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-      0,   0,   0,   0,   0,   0,   0,   0, 76, 76, 76, 76, 76, 76, 76, 76,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
-    149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      0,   0,   0,   0,   0,   0,   0,   0,   76, 76, 76, 76, 76, 76, 76, 76,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
+      149, 149, 149, 149, 149, 149, 149, 149, 29, 29, 29, 29, 29, 29, 29, 29,
   };
 
   static const uint8 cropped_u_plane[] = {
-    128, 128, 128, 128,  84,  84,  84,  84,
-    128, 128, 128, 128,  84,  84,  84,  84,
-    128, 128, 128, 128,  84,  84,  84,  84,
-    128, 128, 128, 128,  84,  84,  84,  84,
-     43,  43,  43,  43, 255, 255, 255, 255,
-     43,  43,  43,  43, 255, 255, 255, 255,
-     43,  43,  43,  43, 255, 255, 255, 255,
-     43,  43,  43,  43, 255, 255, 255, 255,
+      128, 128, 128, 128, 84,  84,  84,  84,  128, 128, 128, 128, 84,
+      84,  84,  84,  128, 128, 128, 128, 84,  84,  84,  84,  128, 128,
+      128, 128, 84,  84,  84,  84,  43,  43,  43,  43,  255, 255, 255,
+      255, 43,  43,  43,  43,  255, 255, 255, 255, 43,  43,  43,  43,
+      255, 255, 255, 255, 43,  43,  43,  43,  255, 255, 255, 255,
   };
   static const uint8 cropped_v_plane[] = {
-    128, 128, 128, 128, 255, 255, 255, 255,
-    128, 128, 128, 128, 255, 255, 255, 255,
-    128, 128, 128, 128, 255, 255, 255, 255,
-    128, 128, 128, 128, 255, 255, 255, 255,
-     21,  21,  21,  21, 107, 107, 107, 107,
-     21,  21,  21,  21, 107, 107, 107, 107,
-     21,  21,  21,  21, 107, 107, 107, 107,
-     21,  21,  21,  21, 107, 107, 107, 107,
+      128, 128, 128, 128, 255, 255, 255, 255, 128, 128, 128, 128, 255,
+      255, 255, 255, 128, 128, 128, 128, 255, 255, 255, 255, 128, 128,
+      128, 128, 255, 255, 255, 255, 21,  21,  21,  21,  107, 107, 107,
+      107, 21,  21,  21,  21,  107, 107, 107, 107, 21,  21,  21,  21,
+      107, 107, 107, 107, 21,  21,  21,  21,  107, 107, 107, 107,
   };
 
   media::CopyYPlane(cropped_y_plane, 16, 16, cropped_frame().get());
@@ -211,12 +205,8 @@ void SkCanvasVideoRendererTest::Paint(
     const scoped_refptr<VideoFrame>& video_frame,
     SkCanvas* canvas,
     Color color) {
-  PaintRotated(video_frame,
-               canvas,
-               kNaturalRect,
-               color,
-               SkXfermode::kSrcOver_Mode,
-               VIDEO_ROTATION_0);
+  PaintRotated(video_frame, canvas, kNaturalRect, color,
+               SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_0);
 }
 
 void SkCanvasVideoRendererTest::PaintRotated(
@@ -260,10 +250,7 @@ TEST_F(SkCanvasVideoRendererTest, TransparentFrame) {
   FillCanvas(target_canvas(), SK_ColorRED);
   PaintRotated(
       VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
-      target_canvas(),
-      kNaturalRect,
-      kNone,
-      SkXfermode::kSrcOver_Mode,
+      target_canvas(), kNaturalRect, kNone, SkXfermode::kSrcOver_Mode,
       VIDEO_ROTATION_0);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorRED), GetColor(target_canvas()));
 }
@@ -273,10 +260,7 @@ TEST_F(SkCanvasVideoRendererTest, TransparentFrameSrcMode) {
   // SRC mode completely overwrites the buffer.
   PaintRotated(
       VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
-      target_canvas(),
-      kNaturalRect,
-      kNone,
-      SkXfermode::kSrc_Mode,
+      target_canvas(), kNaturalRect, kNone, SkXfermode::kSrc_Mode,
       VIDEO_ROTATION_0);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
             GetColor(target_canvas()));
@@ -322,21 +306,20 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame) {
   Paint(cropped_frame(), target_canvas(), kNone);
   // Check the corners.
   EXPECT_EQ(SK_ColorBLACK, GetColorAt(target_canvas(), 0, 0));
-  EXPECT_EQ(SK_ColorRED,   GetColorAt(target_canvas(), kWidth - 1, 0));
+  EXPECT_EQ(SK_ColorRED, GetColorAt(target_canvas(), kWidth - 1, 0));
   EXPECT_EQ(SK_ColorGREEN, GetColorAt(target_canvas(), 0, kHeight - 1));
-  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(target_canvas(), kWidth - 1,
-                                                       kHeight - 1));
+  EXPECT_EQ(SK_ColorBLUE, GetColorAt(target_canvas(), kWidth - 1, kHeight - 1));
   // Check the interior along the border between color regions.  Note that we're
   // bilinearly upscaling, so we'll need to take care to pick sample points that
   // are just outside the "zone of resampling".
-  EXPECT_EQ(SK_ColorBLACK, GetColorAt(target_canvas(), kWidth  * 1 / 8 - 1,
-                                                       kHeight * 1 / 6 - 1));
-  EXPECT_EQ(SK_ColorRED,   GetColorAt(target_canvas(), kWidth  * 3 / 8,
-                                                       kHeight * 1 / 6 - 1));
-  EXPECT_EQ(SK_ColorGREEN, GetColorAt(target_canvas(), kWidth  * 1 / 8 - 1,
-                                                       kHeight * 3 / 6));
-  EXPECT_EQ(SK_ColorBLUE,  GetColorAt(target_canvas(), kWidth  * 3 / 8,
-                                                       kHeight * 3 / 6));
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(target_canvas(), kWidth * 1 / 8 - 1,
+                                      kHeight * 1 / 6 - 1));
+  EXPECT_EQ(SK_ColorRED,
+            GetColorAt(target_canvas(), kWidth * 3 / 8, kHeight * 1 / 6 - 1));
+  EXPECT_EQ(SK_ColorGREEN,
+            GetColorAt(target_canvas(), kWidth * 1 / 8 - 1, kHeight * 3 / 6));
+  EXPECT_EQ(SK_ColorBLUE,
+            GetColorAt(target_canvas(), kWidth * 3 / 8, kHeight * 3 / 6));
 }
 
 TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
@@ -362,20 +345,14 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
             GetColorAt(&canvas, offset_x + crop_rect.width() - 1, offset_y));
   EXPECT_EQ(SK_ColorGREEN,
             GetColorAt(&canvas, offset_x, offset_y + crop_rect.height() - 1));
-  EXPECT_EQ(SK_ColorBLUE,
-            GetColorAt(&canvas,
-                       offset_x + crop_rect.width() - 1,
-                       offset_y + crop_rect.height() - 1));
+  EXPECT_EQ(SK_ColorBLUE, GetColorAt(&canvas, offset_x + crop_rect.width() - 1,
+                                     offset_y + crop_rect.height() - 1));
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
   SkCanvas canvas(AllocBitmap(kWidth, kHeight));
-  PaintRotated(cropped_frame(),
-               &canvas,
-               kNaturalRect,
-               kNone,
-               SkXfermode::kSrcOver_Mode,
-               VIDEO_ROTATION_90);
+  PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
+               SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_90);
   // Check the corners.
   EXPECT_EQ(SK_ColorGREEN, GetColorAt(&canvas, 0, 0));
   EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, kWidth - 1, 0));
@@ -385,12 +362,8 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
 
 TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
   SkCanvas canvas(AllocBitmap(kWidth, kHeight));
-  PaintRotated(cropped_frame(),
-               &canvas,
-               kNaturalRect,
-               kNone,
-               SkXfermode::kSrcOver_Mode,
-               VIDEO_ROTATION_180);
+  PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
+               SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_180);
   // Check the corners.
   EXPECT_EQ(SK_ColorBLUE, GetColorAt(&canvas, 0, 0));
   EXPECT_EQ(SK_ColorGREEN, GetColorAt(&canvas, kWidth - 1, 0));
@@ -400,12 +373,8 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
 
 TEST_F(SkCanvasVideoRendererTest, Video_Rotation_270) {
   SkCanvas canvas(AllocBitmap(kWidth, kHeight));
-  PaintRotated(cropped_frame(),
-               &canvas,
-               kNaturalRect,
-               kNone,
-               SkXfermode::kSrcOver_Mode,
-               VIDEO_ROTATION_270);
+  PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
+               SkXfermode::kSrcOver_Mode, VIDEO_ROTATION_270);
   // Check the corners.
   EXPECT_EQ(SK_ColorRED, GetColorAt(&canvas, 0, 0));
   EXPECT_EQ(SK_ColorBLUE, GetColorAt(&canvas, kWidth - 1, 0));
