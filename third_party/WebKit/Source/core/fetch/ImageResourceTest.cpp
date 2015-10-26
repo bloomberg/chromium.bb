@@ -219,10 +219,7 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     ASSERT_FALSE(cachedImage->image()->isNull());
     ASSERT_EQ(client.imageChangedCount(), 2);
     ASSERT_TRUE(client.notifyFinishedCalled());
-
-    HashSet<ImageResource*> bitmapImages;
     ASSERT_TRUE(cachedImage->image()->isBitmapImage());
-    bitmapImages.add(cachedImage.get());
 }
 
 } // namespace blink
