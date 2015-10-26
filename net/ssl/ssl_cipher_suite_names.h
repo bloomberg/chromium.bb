@@ -49,16 +49,16 @@ NET_EXPORT bool ParseSSLCipherString(const std::string& cipher_string,
 // |cipher_suite| is the IANA id for the cipher suite. What a "secure"
 // cipher suite is arbitrarily determined here. The intent is to indicate what
 // cipher suites meet modern security standards when backwards compatibility can
-// be ignored. Notably, HTTP/2 requires/encourages this sort of validation of
-// cipher suites: https://http2.github.io/http2-spec/#TLSUsage.
+// be ignored.
 //
 // Currently, this function follows these criteria:
-// 1) Only uses forward secure key exchanges
+// 1) Only uses ECDHE-based key exchanges authenticated by a certificate
 // 2) Only uses AEADs
 NET_EXPORT bool IsSecureTLSCipherSuite(uint16 cipher_suite);
 
-// Returns true if |cipher_suite| is suitable for use with False Start.
-NET_EXPORT bool IsFalseStartableTLSCipherSuite(uint16 cipher_suite);
+// Returns true if |cipher_suite| is suitable for use with HTTP/2. See
+// https://http2.github.io/http2-spec/#rfc.section.9.2.2.
+NET_EXPORT bool IsTLSCipherSuiteAllowedByHTTP2(uint16 cipher_suite);
 
 // Returns the static curve name of |key_exchange_info| if the |cipher_suite|
 // is an elliptic curve, and a name is known. Returns nullptr otherwise.

@@ -1265,7 +1265,7 @@ SECStatus SSLClientSocketNSS::Core::CanFalseStartCallback(
       SSL_GetChannelInfo(socket, &channel_info, sizeof(channel_info));
   if (ok != SECSuccess || channel_info.length != sizeof(channel_info) ||
       channel_info.protocolVersion < SSL_LIBRARY_VERSION_TLS_1_2 ||
-      !IsFalseStartableTLSCipherSuite(channel_info.cipherSuite)) {
+      !IsSecureTLSCipherSuite(channel_info.cipherSuite)) {
     *can_false_start = PR_FALSE;
     return SECSuccess;
   }

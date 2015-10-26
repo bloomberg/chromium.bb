@@ -181,7 +181,7 @@ bool SSLClientSocket::IsChannelIDEnabled(
 bool SSLClientSocket::HasCipherAdequateForHTTP2(
     const std::vector<uint16>& cipher_suites) {
   for (uint16 cipher : cipher_suites) {
-    if (IsSecureTLSCipherSuite(cipher))
+    if (IsTLSCipherSuiteAllowedByHTTP2(cipher))
       return true;
   }
   return false;

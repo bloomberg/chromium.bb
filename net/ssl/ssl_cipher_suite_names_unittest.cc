@@ -64,19 +64,63 @@ TEST(CipherSuiteNamesTest, ParseSSLCipherStringFails) {
 
 TEST(CipherSuiteNamesTest, SecureCipherSuites) {
   // Picked some random cipher suites.
-  EXPECT_FALSE(IsSecureTLSCipherSuite(0x0));
-  EXPECT_FALSE(IsSecureTLSCipherSuite(0x39));
-  EXPECT_FALSE(IsSecureTLSCipherSuite(0xc5));
-  EXPECT_FALSE(IsSecureTLSCipherSuite(0xc00f));
-  EXPECT_FALSE(IsSecureTLSCipherSuite(0xc083));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0x0 /* TLS_NULL_WITH_NULL_NULL */));
+  EXPECT_FALSE(
+      IsSecureTLSCipherSuite(0x39 /* TLS_DHE_RSA_WITH_AES_256_CBC_SHA */));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(
+      0xc5 /* TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA256 */));
+  EXPECT_FALSE(
+      IsSecureTLSCipherSuite(0xc00f /* TLS_ECDH_RSA_WITH_AES_256_CBC_SHA */));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(
+      0xc083 /* TLS_DH_DSS_WITH_CAMELLIA_256_GCM_SHA384 */));
+  EXPECT_FALSE(
+      IsSecureTLSCipherSuite(0x9e /* TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 */));
+  EXPECT_FALSE(
+      IsSecureTLSCipherSuite(0xc014 /* TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA */));
+  EXPECT_FALSE(
+      IsSecureTLSCipherSuite(0x9c /* TLS_RSA_WITH_AES_128_GCM_SHA256 */));
 
   // Non-existent cipher suite.
   EXPECT_FALSE(IsSecureTLSCipherSuite(0xffff)) << "Doesn't exist!";
 
   // Secure ones.
-  EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc13));
-  EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc14));
-  EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc15));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(
+      0xc02f /* TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 */));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(
+      0xcc13 /* ECDHE_RSA_WITH_CHACHA20_POLY1305 (non-standard) */));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(
+      0xcc14 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305 (non-standard) */));
+}
+
+TEST(CipherSuiteNamesTest, HTTP2CipherSuites) {
+  // Picked some random cipher suites.
+  EXPECT_FALSE(
+      IsTLSCipherSuiteAllowedByHTTP2(0x0 /* TLS_NULL_WITH_NULL_NULL */));
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(
+      0x39 /* TLS_DHE_RSA_WITH_AES_256_CBC_SHA */));
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xc5 /* TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA256 */));
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xc00f /* TLS_ECDH_RSA_WITH_AES_256_CBC_SHA */));
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xc083 /* TLS_DH_DSS_WITH_CAMELLIA_256_GCM_SHA384 */));
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xc014 /* TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA */));
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(
+      0x9c /* TLS_RSA_WITH_AES_128_GCM_SHA256 */));
+
+  // Non-existent cipher suite.
+  EXPECT_FALSE(IsTLSCipherSuiteAllowedByHTTP2(0xffff)) << "Doesn't exist!";
+
+  // HTTP/2-compatible ones.
+  EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
+      0x9e /* TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 */));
+  EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xc02f /* TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 */));
+  EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xcc13 /* ECDHE_RSA_WITH_CHACHA20_POLY1305 (non-standard) */));
+  EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
+      0xcc14 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305 (non-standard) */));
 }
 
 }  // anonymous namespace

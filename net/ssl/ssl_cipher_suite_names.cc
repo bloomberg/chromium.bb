@@ -366,9 +366,8 @@ bool IsSecureTLSCipherSuite(uint16 cipher_suite) {
   if (!GetCipherProperties(cipher_suite, &key_exchange, &cipher, &mac))
     return false;
 
-  // Only allow forward secure key exchanges.
+  // Only allow ECDHE key exchanges.
   switch (key_exchange) {
-    case 10:  // DHE_RSA
     case 14:  // ECDHE_ECDSA
     case 16:  // ECDHE_RSA
       break;
@@ -392,13 +391,14 @@ bool IsSecureTLSCipherSuite(uint16 cipher_suite) {
   return true;
 }
 
-bool IsFalseStartableTLSCipherSuite(uint16 cipher_suite) {
+bool IsTLSCipherSuiteAllowedByHTTP2(uint16 cipher_suite) {
   int key_exchange, cipher, mac;
   if (!GetCipherProperties(cipher_suite, &key_exchange, &cipher, &mac))
     return false;
 
-  // Only allow ECDHE key exchanges.
+  // Only allow forward secure key exchanges.
   switch (key_exchange) {
+    case 10:  // DHE_RSA
     case 14:  // ECDHE_ECDSA
     case 16:  // ECDHE_RSA
       break;

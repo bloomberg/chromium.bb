@@ -1023,7 +1023,7 @@ bool SpdySession::HasAcceptableTransportSecurity() const {
     return false;
   }
 
-  if (!IsSecureTLSCipherSuite(
+  if (!IsTLSCipherSuiteAllowedByHTTP2(
           SSLConnectionStatusToCipherSuite(ssl_info.connection_status))) {
     return false;
   }
