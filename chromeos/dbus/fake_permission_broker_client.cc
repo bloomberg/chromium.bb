@@ -29,7 +29,7 @@ void OpenPathAndValidate(
     scoped_refptr<base::TaskRunner> task_runner) {
   int fd = HANDLE_EINTR(open(path.c_str(), O_RDWR));
   if (fd < 0) {
-    PLOG(ERROR) << "Failed to open '" << path << "'";
+    PLOG(WARNING) << "Failed to open '" << path << "'";
   } else {
     dbus::FileDescriptor dbus_fd;
     dbus_fd.PutValue(fd);
