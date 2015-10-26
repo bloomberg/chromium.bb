@@ -28,6 +28,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
@@ -260,4 +261,9 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 
 void ChromeExtensionsDispatcherDelegate::SetChannel(int channel) {
   extensions::SetCurrentChannel(static_cast<version_info::Channel>(channel));
+  if (extensions::GetCurrentChannel() == version_info::Channel::UNKNOWN) {
+    // chrome-extension: resources should be allowed to register ServiceWorkers.
+    blink::WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(
+        blink::WebString::fromUTF8(extensions::kExtensionScheme));
+  }
 }
