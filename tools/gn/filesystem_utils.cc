@@ -686,6 +686,32 @@ SourceDir GetOutputDirForSourceDir(const Settings* settings,
       settings->toolchain_label(), settings->is_default());
 }
 
+void AppendFixedAbsolutePathSuffix(const BuildSettings* build_settings,
+                                   const SourceDir& source_dir,
+                                   OutputFile* result) {
+  const std::string& build_dir = build_settings->build_dir().value();
+
+  if (base::StartsWith(source_dir.value(), build_dir,
+                       base::CompareCase::SENSITIVE)) {
+    size_t build_dir_size = build_dir.size();
+    result->value().append(&source_dir.value()[build_dir_size],
+                           source_dir.value().size() - build_dir_size);
+  } else {
+    result->value().append("ABS_PATH");
+#if defined(OS_WIN)
+    // Windows absolute path contains ':' after drive letter. Remove it to
+    // avoid inserting ':' in the middle of path (eg. "ABS_PATH/C:/").
+    std::string src_dir_value = source_dir.value();
+    const auto colon_pos = src_dir_value.find(':');
+    if (colon_pos != std::string::npos)
+      src_dir_value.erase(src_dir_value.begin() + colon_pos);
+#else
+    const std::string& src_dir_value = source_dir.value();
+#endif
+    result->value().append(src_dir_value);
+  }
+}
+
 SourceDir GetOutputDirForSourceDir(
     const BuildSettings* build_settings,
     const SourceDir& source_dir,
@@ -711,27 +737,7 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(
                           source_dir.value().size() - 2);
   } else {
     // System-absolute.
-    const std::string& build_dir = build_settings->build_dir().value();
-
-    if (base::StartsWith(source_dir.value(), build_dir,
-                         base::CompareCase::SENSITIVE)) {
-      size_t build_dir_size = build_dir.size();
-      result.value().append(&source_dir.value()[build_dir_size],
-                            source_dir.value().size() - build_dir_size);
-    } else {
-      result.value().append("ABS_PATH");
-#if defined(OS_WIN)
-      // Windows absolute path contains ':' after drive letter. Remove it to
-      // avoid inserting ':' in the middle of path (eg. "ABS_PATH/C:/").
-      std::string src_dir_value = source_dir.value();
-      const auto colon_pos = src_dir_value.find(':');
-      if (colon_pos != std::string::npos)
-        src_dir_value.erase(src_dir_value.begin() + colon_pos);
-#else
-      const std::string& src_dir_value = source_dir.value();
-#endif
-      result.value().append(src_dir_value);
-    }
+    AppendFixedAbsolutePathSuffix(build_settings, source_dir, &result);
   }
   return result;
 }
@@ -759,6 +765,10 @@ OutputFile GetGenDirForSourceDirAsOutputFile(const Settings* settings,
     DCHECK(source_dir.is_source_absolute());
     result.value().append(&source_dir.value()[2],
                           source_dir.value().size() - 2);
+  } else {
+    // System-absolute.
+    AppendFixedAbsolutePathSuffix(settings->build_settings(), source_dir,
+                                  &result);
   }
   return result;
 }

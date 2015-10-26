@@ -160,10 +160,13 @@ TEST(SubstitutionWriter, SourceSubstitutions) {
   // Operations on an absolute path.
   EXPECT_EQ("/baz.txt", GetRelSubst("/baz.txt", SUBSTITUTION_SOURCE));
   EXPECT_EQ("/.", GetRelSubst("/baz.txt", SUBSTITUTION_SOURCE_DIR));
-  EXPECT_EQ("gen", GetRelSubst("/baz.txt", SUBSTITUTION_SOURCE_GEN_DIR));
+  EXPECT_EQ("gen/ABS_PATH",
+            GetRelSubst("/baz.txt", SUBSTITUTION_SOURCE_GEN_DIR));
   EXPECT_EQ("obj/ABS_PATH",
             GetRelSubst("/baz.txt", SUBSTITUTION_SOURCE_OUT_DIR));
 #if defined(OS_WIN)
+  EXPECT_EQ("gen/ABS_PATH/C",
+            GetRelSubst("/C:/baz.txt", SUBSTITUTION_SOURCE_GEN_DIR));
   EXPECT_EQ("obj/ABS_PATH/C",
             GetRelSubst("/C:/baz.txt", SUBSTITUTION_SOURCE_OUT_DIR));
 #endif
