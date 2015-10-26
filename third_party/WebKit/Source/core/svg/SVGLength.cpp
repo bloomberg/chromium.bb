@@ -317,51 +317,6 @@ SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(const QualifiedNam
     return SVGLengthMode::Other;
 }
 
-PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLength> passFrom, float progress) const
-{
-    RefPtrWillBeRawPtr<SVGLength> from = passFrom;
-
-    SVGLengthType toType = unitType();
-    SVGLengthType fromType = from->unitType();
-    if ((from->isZero() && isZero())
-        || fromType == LengthTypeUnknown
-        || toType == LengthTypeUnknown
-        || (!from->isZero() && fromType != LengthTypePercentage && toType == LengthTypePercentage)
-        || (!isZero() && fromType == LengthTypePercentage && toType != LengthTypePercentage)
-        || (!from->isZero() && !isZero() && (fromType == LengthTypeEMS || fromType == LengthTypeEXS || fromType == LengthTypeREMS || fromType == LengthTypeCHS) && fromType != toType))
-        return clone();
-
-    RefPtrWillBeRawPtr<SVGLength> length = create();
-
-    if (fromType == LengthTypePercentage || toType == LengthTypePercentage) {
-        float fromPercent = from->valueAsPercentage100();
-        float toPercent = valueAsPercentage100();
-        length->newValueSpecifiedUnits(LengthTypePercentage, blink::blend(fromPercent, toPercent, progress));
-        return length;
-    }
-
-    if (fromType == toType || from->isZero() || isZero() || fromType == LengthTypeEMS || fromType == LengthTypeEXS || fromType == LengthTypeREMS || fromType == LengthTypeCHS) {
-        float fromValue = from->valueInSpecifiedUnits();
-        float toValue = valueInSpecifiedUnits();
-        if (isZero())
-            length->newValueSpecifiedUnits(fromType, blink::blend(fromValue, toValue, progress));
-        else
-            length->newValueSpecifiedUnits(toType, blink::blend(fromValue, toValue, progress));
-        return length;
-    }
-
-    ASSERT(!isRelative());
-    ASSERT(!from->isRelative());
-
-    SVGLengthContext nonRelativeLengthContext(0);
-    float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from->valueInSpecifiedUnits(), from->unitMode(), fromType);
-    float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType);
-
-    float toValue = valueInSpecifiedUnits();
-    length->newValueSpecifiedUnits(toType, blink::blend(fromValue, toValue, progress));
-    return length;
-}
-
 void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
