@@ -183,9 +183,9 @@ PathSegmentData pathSegArcFromInterpolableValue(const InterpolableValue& value, 
     segment.command = segType;
     segment.targetPoint.setX(specifiedFromInterpolableValue(list.get(0), isAbsolute, coordinates.currentX));
     segment.targetPoint.setY(specifiedFromInterpolableValue(list.get(1), isAbsolute, coordinates.currentY));
-    segment.point1.setX(toInterpolableNumber(list.get(2))->value());
-    segment.point1.setY(toInterpolableNumber(list.get(3))->value());
-    segment.point2.setX(toInterpolableNumber(list.get(4))->value());
+    segment.arcRadii().setX(toInterpolableNumber(list.get(2))->value());
+    segment.arcRadii().setY(toInterpolableNumber(list.get(3))->value());
+    segment.setArcAngle(toInterpolableNumber(list.get(4))->value());
     segment.arcLarge = toInterpolableBool(list.get(5))->value();
     segment.arcSweep = toInterpolableBool(list.get(6))->value();
     return segment;
@@ -392,11 +392,11 @@ size_t countPathCommands(const SVGPathByteStream& path)
 
 PassRefPtr<PathSVGInterpolation> PathSVGInterpolation::maybeCreate(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
 {
-    ASSERT(start->type() == SVGPathSegList::classType());
-    ASSERT(end->type() == SVGPathSegList::classType());
+    ASSERT(start->type() == SVGPath::classType());
+    ASSERT(end->type() == SVGPath::classType());
 
-    const SVGPathByteStream& startPath = static_cast<SVGPathSegList*>(start)->byteStream();
-    const SVGPathByteStream& endPath = static_cast<SVGPathSegList*>(end)->byteStream();
+    const SVGPathByteStream& startPath = static_cast<SVGPath*>(start)->byteStream();
+    const SVGPathByteStream& endPath = static_cast<SVGPath*>(end)->byteStream();
 
     if (startPath.size() != endPath.size())
         return nullptr;
@@ -431,10 +431,9 @@ PassRefPtr<PathSVGInterpolation> PathSVGInterpolation::maybeCreate(SVGPropertyBa
     return adoptRef(new PathSVGInterpolation(startValue.release(), endValue.release(), attribute, pathSegTypes));
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::fromInterpolableValue(const InterpolableValue& value, const Vector<SVGPathSegType>& pathSegTypes, SVGPathElement* element)
+PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::fromInterpolableValue(const InterpolableValue& value, const Vector<SVGPathSegType>& pathSegTypes)
 {
-    RefPtrWillBeRawPtr<SVGPathSegList> result = SVGPathSegList::create(element);
-    result->invalidateList();
+    RefPtrWillBeRawPtr<SVGPath> result = SVGPath::create();
     InterpolatedPathSource source(toInterpolableList(value), pathSegTypes);
     SVGPathByteStreamBuilder builder(result->mutableByteStream());
     SVGPathParser parser(&source, &builder);
@@ -442,9 +441,9 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::fromInterpolableVa
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::interpolatedValue(SVGElement& element) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> PathSVGInterpolation::interpolatedValue(SVGElement&) const
 {
-    return fromInterpolableValue(*m_cachedValue, m_pathSegTypes, toSVGPathElement(&element));
+    return fromInterpolableValue(*m_cachedValue, m_pathSegTypes);
 }
 
 }

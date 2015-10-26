@@ -6,7 +6,7 @@
 #define PathSVGInterpolation_h
 
 #include "core/animation/SVGInterpolation.h"
-#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathData.h"
 
 namespace blink {
 
@@ -24,7 +24,7 @@ private:
         m_pathSegTypes.swap(pathSegTypes);
     }
 
-    static PassRefPtrWillBeRawPtr<SVGPropertyBase> fromInterpolableValue(const InterpolableValue&, const Vector<SVGPathSegType>&, SVGPathElement*);
+    static PassRefPtrWillBeRawPtr<SVGPropertyBase> fromInterpolableValue(const InterpolableValue&, const Vector<SVGPathSegType>&);
 
     Vector<SVGPathSegType> m_pathSegTypes;
 };

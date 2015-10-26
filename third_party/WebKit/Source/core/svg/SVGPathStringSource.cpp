@@ -217,9 +217,9 @@ PathSegmentData SVGPathStringSource::parseSegment()
         break;
     case PathSegArcRel:
     case PathSegArcAbs:
-        segment.point1.setX(parseNumberWithError()); // rx
-        segment.point1.setY(parseNumberWithError()); // ry
-        segment.point2.setX(parseNumberWithError()); // angle
+        segment.arcRadii().setX(parseNumberWithError());
+        segment.arcRadii().setY(parseNumberWithError());
+        segment.setArcAngle(parseNumberWithError());
         segment.arcLarge = parseArcFlagWithError();
         segment.arcSweep = parseArcFlagWithError();
         segment.targetPoint.setX(parseNumberWithError());

@@ -6,10 +6,6 @@
 var root = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 [
     {
-        element: 'path', attr: 'd', value: 'M0,0l10,10', listName: 'SVGPathSegList',
-        accessor: function(elm) { return elm.animatedPathSegList; },
-        constructItem: function(elm) { return elm.createSVGPathSegLinetoAbs(20, 20); }
-    }, {
         element: 'polygon', attr: 'points', value: '0,0 10,10', listName: 'SVGPointList',
         accessor: function(elm) { return elm.animatedPoints; },
         constructItem: function(elm) { return root.createSVGPoint(); }

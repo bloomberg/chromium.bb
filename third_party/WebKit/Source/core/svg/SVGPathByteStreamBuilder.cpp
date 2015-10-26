@@ -21,7 +21,7 @@
 #include "core/svg/SVGPathByteStreamBuilder.h"
 
 #include "core/svg/SVGPathByteStream.h"
-#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathData.h"
 #include "platform/geometry/FloatPoint.h"
 
 namespace blink {

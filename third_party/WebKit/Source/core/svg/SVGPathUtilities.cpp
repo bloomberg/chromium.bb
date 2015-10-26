@@ -26,8 +26,6 @@
 #include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathParser.h"
-#include "core/svg/SVGPathSegListBuilder.h"
-#include "core/svg/SVGPathSegListSource.h"
 #include "core/svg/SVGPathStringBuilder.h"
 #include "core/svg/SVGPathStringSource.h"
 #include "core/svg/SVGPathTraversalStateBuilder.h"

@@ -28,29 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedPath_h
-#define SVGAnimatedPath_h
+#ifndef SVGPath_h
+#define SVGPath_h
 
-#include "core/svg/SVGPath.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
 
-class SVGPathElement;
+class ExceptionState;
+class SVGPathByteStream;
 
-class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
+class SVGPath : public SVGPropertyBase {
 public:
-    ~SVGAnimatedPath() override;
+    typedef void TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGAnimatedPath> create(SVGPathElement* contextElement, const QualifiedName& attributeName)
+    static PassRefPtrWillBeRawPtr<SVGPath> create()
     {
-        return adoptRefWillBeNoop(new SVGAnimatedPath(contextElement, attributeName));
+        return adoptRefWillBeNoop(new SVGPath());
     }
 
-protected:
-    SVGAnimatedPath(SVGPathElement*, const QualifiedName&);
+    ~SVGPath() override;
+
+    const SVGPathByteStream& byteStream() const;
+    SVGPathByteStream& mutableByteStream();
+
+    // SVGPropertyBase:
+    PassRefPtrWillBeRawPtr<SVGPath> clone() const;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    String valueAsString() const override;
+    void setValueAsString(const String&, ExceptionState&);
+
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+
+    static AnimatedPropertyType classType() { return AnimatedPath; }
+
+private:
+    SVGPath();
+    explicit SVGPath(PassOwnPtr<SVGPathByteStream>);
+
+    OwnPtr<SVGPathByteStream> m_byteStream;
 };
+
+inline PassRefPtrWillBeRawPtr<SVGPath> toSVGPath(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
+{
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGPath::classType());
+    return static_pointer_cast<SVGPath>(base.release());
+}
 
 } // namespace blink
 
-#endif // SVGAnimatedPath_h
+#endif

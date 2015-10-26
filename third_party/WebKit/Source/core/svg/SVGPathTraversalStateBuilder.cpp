@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 
-#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathData.h"
 #include "platform/graphics/PathTraversalState.h"
 
 namespace blink {

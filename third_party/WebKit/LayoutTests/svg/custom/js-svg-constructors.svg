@@ -13,16 +13,6 @@
       document.rootElement.appendChild(txt);
     }
 
-    function expect_failure(string, val) {
-      var b;
-      try { b = eval(string); } catch(e) { }
-      var message = (string + "") + " " +  "EXPECTED FAILURE (actual: '" + b + "' expected: '" + val + "')";
-      var txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      var textNode = document.createTextNode(message);
-      txt.appendChild(textNode);
-      document.rootElement.appendChild(txt);
-    }
-
     function runTest() {
       expect("SVGAngle.SVG_ANGLETYPE_UNKNOWN", 0);
       expect("SVGAngle.SVG_ANGLETYPE_UNSPECIFIED", 1);
@@ -38,8 +28,6 @@
           expect("SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR", 4);
           expect("SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_GAMMA", 5);
       }
-
-      expect_failure("SVGCSSRule.COLOR_PROFILE_RULE", 7);
 
       if (window.SVGComponentTransferFunctionElement) {
           expect("SVGFEBlendElement.SVG_FEBLEND_MODE_UNKNOWN", 0);
@@ -121,27 +109,6 @@
       expect("SVGMarkerElement.SVG_MARKER_ORIENT_UNKNOWN", 0);
       expect("SVGMarkerElement.SVG_MARKER_ORIENT_AUTO", 1);
       expect("SVGMarkerElement.SVG_MARKER_ORIENT_ANGLE", 2);
-
-      expect("SVGPathSeg.PATHSEG_UNKNOWN", 0);
-      expect("SVGPathSeg.PATHSEG_CLOSEPATH", 1);
-      expect("SVGPathSeg.PATHSEG_MOVETO_ABS", 2);
-      expect("SVGPathSeg.PATHSEG_MOVETO_REL", 3);
-      expect("SVGPathSeg.PATHSEG_LINETO_ABS", 4);
-      expect("SVGPathSeg.PATHSEG_LINETO_REL", 5);
-      expect("SVGPathSeg.PATHSEG_CURVETO_CUBIC_ABS", 6);
-      expect("SVGPathSeg.PATHSEG_CURVETO_CUBIC_REL", 7);
-      expect("SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_ABS", 8);
-      expect("SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_REL", 9);
-      expect("SVGPathSeg.PATHSEG_ARC_ABS", 10);
-      expect("SVGPathSeg.PATHSEG_ARC_REL", 11);
-      expect("SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_ABS", 12);
-      expect("SVGPathSeg.PATHSEG_LINETO_HORIZONTAL_REL", 13);
-      expect("SVGPathSeg.PATHSEG_LINETO_VERTICAL_ABS", 14);
-      expect("SVGPathSeg.PATHSEG_LINETO_VERTICAL_REL", 15);
-      expect("SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_ABS", 16);
-      expect("SVGPathSeg.PATHSEG_CURVETO_CUBIC_SMOOTH_REL", 17);
-      expect("SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_ABS", 18);
-      expect("SVGPathSeg.PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL", 19);
 
       expect("SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_UNKNOWN", 0);
       expect("SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_NONE", 1);

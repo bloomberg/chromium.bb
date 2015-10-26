@@ -448,10 +448,6 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/svg/SVGNumberList.idl:        SVGNumber replaceItem(in SVGNumber item, in unsigned long index)
 ../../../../WebCore/svg/SVGNumberList.idl:        SVGNumber removeItem(in unsigned long index)
 ../../../../WebCore/svg/SVGPathElement.idl:        unsigned long getPathSegAtLength(in float distance);
-../../../../WebCore/svg/SVGPathSegList.idl:        [Custom] SVGPathSeg getItem(in unsigned long index)
-../../../../WebCore/svg/SVGPathSegList.idl:        [Custom] SVGPathSeg insertItemBefore(in SVGPathSeg newItem, in unsigned long index)
-../../../../WebCore/svg/SVGPathSegList.idl:        [Custom] SVGPathSeg replaceItem(in SVGPathSeg newItem, in unsigned long index)
-../../../../WebCore/svg/SVGPathSegList.idl:        [Custom] SVGPathSeg removeItem(in unsigned long index)
 ../../../../WebCore/svg/SVGPointList.idl:        [Custom] SVGPoint getItem(in unsigned long index)
 ../../../../WebCore/svg/SVGPointList.idl:        [Custom] SVGPoint insertItemBefore(in SVGPoint item, in unsigned long index)
 ../../../../WebCore/svg/SVGPointList.idl:        [Custom] SVGPoint replaceItem(in SVGPoint item, in unsigned long index)
@@ -495,60 +491,6 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/svg/SVGPathElement.idl:        float getTotalLength();
 ../../../../WebCore/svg/SVGPathElement.idl:        SVGPoint getPointAtLength(in float distance);
 ../../../../WebCore/svg/SVGPathElement.idl:        unsigned long getPathSegAtLength(in float distance);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegMovetoAbs createSVGPathSegMovetoAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                      in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegMovetoRel createSVGPathSegMovetoRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                      in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegLinetoAbs createSVGPathSegLinetoAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                      in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegLinetoRel createSVGPathSegLinetoRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                      in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoCubicAbs createSVGPathSegCurvetoCubicAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float x1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float y1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float x2, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float y2);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoCubicRel createSVGPathSegCurvetoCubicRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float x1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float y1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float x2, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                  in float y2);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoQuadraticAbs createSVGPathSegCurvetoQuadraticAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                          in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                          in float x1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                          in float y1);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoQuadraticRel createSVGPathSegCurvetoQuadraticRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                          in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                          in float x1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                          in float y1);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegArcAbs createSVGPathSegArcAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float r1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float r2, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float angle, 
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegArcRel createSVGPathSegArcRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float r1, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float r2, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                in float angle, 
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegLinetoHorizontalAbs createSVGPathSegLinetoHorizontalAbs(in float x);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegLinetoHorizontalRel createSVGPathSegLinetoHorizontalRel(in float x);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegLinetoVerticalAbs createSVGPathSegLinetoVerticalAbs(in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegLinetoVerticalRel createSVGPathSegLinetoVerticalRel(in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoCubicSmoothAbs createSVGPathSegCurvetoCubicSmoothAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                              in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                              in float x2, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                              in float y2);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoCubicSmoothRel createSVGPathSegCurvetoCubicSmoothRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                              in float y, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                              in float x2, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                              in float y2);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoQuadraticSmoothAbs createSVGPathSegCurvetoQuadraticSmoothAbs(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                                      in float y);
-../../../../WebCore/svg/SVGPathElement.idl:        SVGPathSegCurvetoQuadraticSmoothRel createSVGPathSegCurvetoQuadraticSmoothRel(in float x, 
-../../../../WebCore/svg/SVGPathElement.idl:                                                                                      in float y);
 ../../../../WebCore/svg/SVGSVGElement.idl:        float getCurrentTime();
 ../../../../WebCore/svg/SVGSVGElement.idl:        void setCurrentTime(in float seconds);
 ../../../../WebCore/svg/SVGTextContentElement.idl:        float getComputedTextLength();
@@ -566,60 +508,6 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/svg/SVGLength.idl:                 attribute float          value;
 ../../../../WebCore/svg/SVGLength.idl:                 attribute float          valueInSpecifiedUnits;
 ../../../../WebCore/svg/SVGNumber.idl:                 attribute float value
-../../../../WebCore/svg/SVGPathSegArcAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegArcAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegArcAbs.idl:                 attribute float   r1
-../../../../WebCore/svg/SVGPathSegArcAbs.idl:                 attribute float   r2
-../../../../WebCore/svg/SVGPathSegArcAbs.idl:                 attribute float   angle
-../../../../WebCore/svg/SVGPathSegArcRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegArcRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegArcRel.idl:                 attribute float   r1
-../../../../WebCore/svg/SVGPathSegArcRel.idl:                 attribute float   r2
-../../../../WebCore/svg/SVGPathSegArcRel.idl:                 attribute float   angle
-../../../../WebCore/svg/SVGPathSegCurvetoCubicAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoCubicAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoCubicAbs.idl:                 attribute float   x1
-../../../../WebCore/svg/SVGPathSegCurvetoCubicAbs.idl:                 attribute float   y1
-../../../../WebCore/svg/SVGPathSegCurvetoCubicAbs.idl:                 attribute float   x2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicAbs.idl:                 attribute float   y2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoCubicRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoCubicRel.idl:                 attribute float   x1
-../../../../WebCore/svg/SVGPathSegCurvetoCubicRel.idl:                 attribute float   y1
-../../../../WebCore/svg/SVGPathSegCurvetoCubicRel.idl:                 attribute float   x2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicRel.idl:                 attribute float   y2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothAbs.idl:                 attribute float   x2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothAbs.idl:                 attribute float   y2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothRel.idl:                 attribute float   x2
-../../../../WebCore/svg/SVGPathSegCurvetoCubicSmoothRel.idl:                 attribute float   y2
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticAbs.idl:                 attribute float   x1
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticAbs.idl:                 attribute float   y1
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticRel.idl:                 attribute float   x1
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticRel.idl:                 attribute float   y1
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticSmoothAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticSmoothAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticSmoothRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegCurvetoQuadraticSmoothRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegLinetoAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegLinetoAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegLinetoHorizontalAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegLinetoHorizontalRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegLinetoRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegLinetoRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegLinetoVerticalAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegLinetoVerticalRel.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegMovetoAbs.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegMovetoAbs.idl:                 attribute float   y
-../../../../WebCore/svg/SVGPathSegMovetoRel.idl:                 attribute float   x
-../../../../WebCore/svg/SVGPathSegMovetoRel.idl:                 attribute float   y
 ../../../../WebCore/svg/SVGPoint.idl:                 attribute float x
 ../../../../WebCore/svg/SVGPoint.idl:                 attribute float y
 ../../../../WebCore/svg/SVGRect.idl:                 attribute float x

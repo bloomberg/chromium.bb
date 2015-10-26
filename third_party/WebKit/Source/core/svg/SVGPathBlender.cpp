@@ -21,7 +21,7 @@
 #include "core/svg/SVGPathBlender.h"
 
 #include "core/svg/SVGPathConsumer.h"
-#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathData.h"
 #include "core/svg/SVGPathSource.h"
 #include "platform/animation/AnimationUtilities.h"
 

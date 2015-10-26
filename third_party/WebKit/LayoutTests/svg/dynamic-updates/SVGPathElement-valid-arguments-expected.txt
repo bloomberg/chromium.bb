@@ -4,24 +4,6 @@ PASS pathElement.getPointAtLength(Infinity) threw exception TypeError: Failed to
 PASS pathElement.getPathSegAtLength() threw exception TypeError: Failed to execute 'getPathSegAtLength' on 'SVGPathElement': 1 argument required, but only 0 present..
 PASS pathElement.getPathSegAtLength(NaN) threw exception TypeError: Failed to execute 'getPathSegAtLength' on 'SVGPathElement': The provided float value is non-finite..
 PASS pathElement.getPathSegAtLength(Infinity) threw exception TypeError: Failed to execute 'getPathSegAtLength' on 'SVGPathElement': The provided float value is non-finite..
-PASS pathElement.createSVGPathSegMovetoAbs(0.0) threw exception TypeError: Failed to execute 'createSVGPathSegMovetoAbs' on 'SVGPathElement': 2 arguments required, but only 1 present..
-PASS pathElement.createSVGPathSegMovetoRel(0.0) threw exception TypeError: Failed to execute 'createSVGPathSegMovetoRel' on 'SVGPathElement': 2 arguments required, but only 1 present..
-PASS pathElement.createSVGPathSegLinetoAbs(0.0) threw exception TypeError: Failed to execute 'createSVGPathSegLinetoAbs' on 'SVGPathElement': 2 arguments required, but only 1 present..
-PASS pathElement.createSVGPathSegLinetoRel(0.0) threw exception TypeError: Failed to execute 'createSVGPathSegLinetoRel' on 'SVGPathElement': 2 arguments required, but only 1 present..
-PASS pathElement.createSVGPathSegCurvetoCubicAbs(0.0, 1.0, 2.0, 3.0, 4.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoCubicAbs' on 'SVGPathElement': 6 arguments required, but only 5 present..
-PASS pathElement.createSVGPathSegCurvetoCubicRel(0.0, 1.0, 2.0, 3.0, 4.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoCubicRel' on 'SVGPathElement': 6 arguments required, but only 5 present..
-PASS pathElement.createSVGPathSegCurvetoQuadraticAbs(0.0, 1.0, 2.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoQuadraticAbs' on 'SVGPathElement': 4 arguments required, but only 3 present..
-PASS pathElement.createSVGPathSegCurvetoQuadraticRel(0.0, 1.0, 2.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoQuadraticRel' on 'SVGPathElement': 4 arguments required, but only 3 present..
-PASS pathElement.createSVGPathSegArcAbs(0.0, 1.0, 2.0, 3.0, 4.0, true) threw exception TypeError: Failed to execute 'createSVGPathSegArcAbs' on 'SVGPathElement': 7 arguments required, but only 6 present..
-PASS pathElement.createSVGPathSegArcRel(0.0, 1.0, 2.0, 3.0, 4.0, true) threw exception TypeError: Failed to execute 'createSVGPathSegArcRel' on 'SVGPathElement': 7 arguments required, but only 6 present..
-PASS pathElement.createSVGPathSegLinetoHorizontalAbs() threw exception TypeError: Failed to execute 'createSVGPathSegLinetoHorizontalAbs' on 'SVGPathElement': 1 argument required, but only 0 present..
-PASS pathElement.createSVGPathSegLinetoHorizontalRel() threw exception TypeError: Failed to execute 'createSVGPathSegLinetoHorizontalRel' on 'SVGPathElement': 1 argument required, but only 0 present..
-PASS pathElement.createSVGPathSegLinetoVerticalAbs() threw exception TypeError: Failed to execute 'createSVGPathSegLinetoVerticalAbs' on 'SVGPathElement': 1 argument required, but only 0 present..
-PASS pathElement.createSVGPathSegLinetoVerticalRel() threw exception TypeError: Failed to execute 'createSVGPathSegLinetoVerticalRel' on 'SVGPathElement': 1 argument required, but only 0 present..
-PASS pathElement.createSVGPathSegCurvetoCubicSmoothAbs(0.0, 1.0, 2.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoCubicSmoothAbs' on 'SVGPathElement': 4 arguments required, but only 3 present..
-PASS pathElement.createSVGPathSegCurvetoCubicSmoothRel(0.0, 1.0, 2.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoCubicSmoothRel' on 'SVGPathElement': 4 arguments required, but only 3 present..
-PASS pathElement.createSVGPathSegCurvetoQuadraticSmoothAbs(0.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoQuadraticSmoothAbs' on 'SVGPathElement': 2 arguments required, but only 1 present..
-PASS pathElement.createSVGPathSegCurvetoQuadraticSmoothRel(0.0) threw exception TypeError: Failed to execute 'createSVGPathSegCurvetoQuadraticSmoothRel' on 'SVGPathElement': 2 arguments required, but only 1 present..
 PASS successfullyParsed is true
 
 TEST COMPLETE

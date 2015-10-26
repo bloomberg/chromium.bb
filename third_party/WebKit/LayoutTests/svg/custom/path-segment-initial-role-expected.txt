@@ -1,7 +1,0 @@
-PASS pathSegment.x1 is -1.0
-PASS successfullyParsed is true
-
-TEST COMPLETE
-Test that there is no assertion when setting values on a new path segment not in any segment list.
-
-

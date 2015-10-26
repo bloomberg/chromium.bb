@@ -25,7 +25,7 @@
 #define SVGPathParser_h
 
 #include "core/CoreExport.h"
-#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathData.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

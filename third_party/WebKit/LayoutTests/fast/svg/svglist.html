@@ -85,13 +85,6 @@ var lists = {
                                            a.matrix.e == b.matrix.e &&
                                            a.matrix.f == b.matrix.f; }
         },
-    "SVGPathSegList":
-        { "impl": path.pathSegList,
-          "type": "SVGPathSegMovetoAbs",
-          "length": 10,
-          "insert_value": path.createSVGPathSegMovetoAbs(5,5),
-          "equals": function(a,b) { return a.x == b.x && a.y == b.y; }
-        },
     "SVGLengthList":
         { "impl": text.dx.baseVal,
           "type": "SVGLength",

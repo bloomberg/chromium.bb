@@ -76,8 +76,8 @@ PathSegmentData SVGPathByteStreamSource::parseSegment()
         break;
     case PathSegArcRel:
     case PathSegArcAbs: {
-        segment.point1 = readFloatPoint(); // rx and ry
-        segment.point2.setX(readFloat()); // angle
+        segment.arcRadii() = readFloatPoint();
+        segment.setArcAngle(readFloat());
         segment.arcLarge = readFlag();
         segment.arcSweep = readFlag();
         segment.targetPoint = readFloatPoint();

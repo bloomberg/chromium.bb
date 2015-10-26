@@ -18,60 +18,6 @@
         '"TypeError: Failed to execute \'getPathSegAtLength\' on \'SVGPathElement\': The provided float value is non-finite."');
       shouldThrow('pathElement.getPathSegAtLength(Infinity)',
         '"TypeError: Failed to execute \'getPathSegAtLength\' on \'SVGPathElement\': The provided float value is non-finite."');
-
-      shouldThrow('pathElement.createSVGPathSegMovetoAbs(0.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegMovetoAbs\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
-
-      shouldThrow('pathElement.createSVGPathSegMovetoRel(0.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegMovetoRel\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
-
-      shouldThrow('pathElement.createSVGPathSegLinetoAbs(0.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegLinetoAbs\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
-
-      shouldThrow('pathElement.createSVGPathSegLinetoRel(0.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegLinetoRel\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoCubicAbs(0.0, 1.0, 2.0, 3.0, 4.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoCubicAbs\' on \'SVGPathElement\': 6 arguments required, but only 5 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoCubicRel(0.0, 1.0, 2.0, 3.0, 4.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoCubicRel\' on \'SVGPathElement\': 6 arguments required, but only 5 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoQuadraticAbs(0.0, 1.0, 2.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoQuadraticAbs\' on \'SVGPathElement\': 4 arguments required, but only 3 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoQuadraticRel(0.0, 1.0, 2.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoQuadraticRel\' on \'SVGPathElement\': 4 arguments required, but only 3 present."');
-
-      shouldThrow('pathElement.createSVGPathSegArcAbs(0.0, 1.0, 2.0, 3.0, 4.0, true)',
-      	'"TypeError: Failed to execute \'createSVGPathSegArcAbs\' on \'SVGPathElement\': 7 arguments required, but only 6 present."');
-
-      shouldThrow('pathElement.createSVGPathSegArcRel(0.0, 1.0, 2.0, 3.0, 4.0, true)',
-      	'"TypeError: Failed to execute \'createSVGPathSegArcRel\' on \'SVGPathElement\': 7 arguments required, but only 6 present."');
-
-      shouldThrow('pathElement.createSVGPathSegLinetoHorizontalAbs()',
-      	'"TypeError: Failed to execute \'createSVGPathSegLinetoHorizontalAbs\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
-
-      shouldThrow('pathElement.createSVGPathSegLinetoHorizontalRel()',
-      	'"TypeError: Failed to execute \'createSVGPathSegLinetoHorizontalRel\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
-
-      shouldThrow('pathElement.createSVGPathSegLinetoVerticalAbs()',
-      	'"TypeError: Failed to execute \'createSVGPathSegLinetoVerticalAbs\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
-
-      shouldThrow('pathElement.createSVGPathSegLinetoVerticalRel()',
-      	'"TypeError: Failed to execute \'createSVGPathSegLinetoVerticalRel\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoCubicSmoothAbs(0.0, 1.0, 2.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoCubicSmoothAbs\' on \'SVGPathElement\': 4 arguments required, but only 3 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoCubicSmoothRel(0.0, 1.0, 2.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoCubicSmoothRel\' on \'SVGPathElement\': 4 arguments required, but only 3 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoQuadraticSmoothAbs(0.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoQuadraticSmoothAbs\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
-
-      shouldThrow('pathElement.createSVGPathSegCurvetoQuadraticSmoothRel(0.0)',
-      	'"TypeError: Failed to execute \'createSVGPathSegCurvetoQuadraticSmoothRel\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
     </script>
 	<p id="description">Test that correct exceptions are thrown from SVGPathElement methods.</p>
 	<div id="console"></div>

@@ -21,7 +21,7 @@
 #define SVGPathSource_h
 
 #include "core/CoreExport.h"
-#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathData.h"
 
 namespace blink {
 
