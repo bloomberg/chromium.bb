@@ -26010,6 +26010,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The counts of the type of TCP socket returned.</summary>
 </histogram>
 
+<histogram name="Net.ThreadHopResourceThrottleTime" units="milliseconds">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The time it took to do an IO to UI round-trip in the
+    ThreadHopResourceThrottle. This is part of an experiment to determine the
+    feasibility to moving some high-level resource loading checks to the UI
+    thread.
+  </summary>
+</histogram>
+
 <histogram name="Net.Transaction_Bandwidth" units="KB/s">
   <obsolete>
     Discontinued as of 4/12/09

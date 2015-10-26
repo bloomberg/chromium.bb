@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
+#include "chrome/browser/renderer_host/thread_hop_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -539,6 +540,9 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
     throttles->push_back(new prerender::PrerenderResourceThrottle(request));
   }
+
+  if (ThreadHopResourceThrottle::IsEnabled())
+    throttles->push_back(new ThreadHopResourceThrottle);
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(

@@ -738,6 +738,8 @@
       'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.mm',
       'browser/renderer_host/chrome_resource_dispatcher_host_delegate.cc',
       'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
+      'browser/renderer_host/thread_hop_resource_throttle.cc',
+      'browser/renderer_host/thread_hop_resource_throttle.h',
       'browser/renderer_preferences_util.cc',
       'browser/renderer_preferences_util.h',
       'browser/resources_util.cc',
