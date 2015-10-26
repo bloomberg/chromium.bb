@@ -70,6 +70,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
     if (style()->svgStyle().hasClipper())
         return false;
 
+    unsigned opCount = 0;
     bool usingBuilder = false;
     SkOpBuilder clipPathBuilder;
 
@@ -105,8 +106,10 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
             continue;
         }
 
-        // Multiple shapes require PathOps.
-        if (!RuntimeEnabledFeatures::pathOpsSVGClippingEnabled()) {
+        // Multiple shapes require PathOps. In some degenerate cases PathOps can exhibit quadratic
+        // behavior, so we cap the number of ops to a reasonable count.
+        const unsigned kMaxOps = 42;
+        if (!RuntimeEnabledFeatures::pathOpsSVGClippingEnabled() || ++opCount > kMaxOps) {
             m_clipContentPath.clear();
             return false;
         }
