@@ -46,8 +46,6 @@ float floatValueForLength(const Length& length, float maximumValue)
         return static_cast<float>(maximumValue);
     case Calculated:
         return length.nonNanCalculatedValue(maximumValue);
-    case Intrinsic:
-    case MinIntrinsic:
     case MinContent:
     case MaxContent:
     case FitContent:
@@ -75,8 +73,6 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue)
     case FillAvailable:
     case Auto:
         return 0;
-    case Intrinsic:
-    case MinIntrinsic:
     case MinContent:
     case MaxContent:
     case FitContent:
@@ -108,8 +104,6 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue)
     case FillAvailable:
     case Auto:
         return maximumValue;
-    case Intrinsic:
-    case MinIntrinsic:
     case MinContent:
     case MaxContent:
     case FitContent:

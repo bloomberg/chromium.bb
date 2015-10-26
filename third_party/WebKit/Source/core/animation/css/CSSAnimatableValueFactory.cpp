@@ -71,8 +71,6 @@ static PassRefPtr<AnimatableValue> createFromLengthWithZoom(const Length& length
     case Calculated:
         return AnimatableLength::create(length, zoom);
     case Auto:
-    case Intrinsic:
-    case MinIntrinsic:
     case MinContent:
     case MaxContent:
     case FillAvailable:

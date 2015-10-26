@@ -178,7 +178,7 @@ float SVGLengthContext::valueForLength(const Length& length, float zoom, float d
     ASSERT(zoom != 0);
     // isIntrinsic can occur for 'width' and 'height', but has no
     // real meaning for svg.
-    if (length.isIntrinsic() || length.isLegacyIntrinsic())
+    if (length.isIntrinsic())
         return 0;
     return floatValueForLength(length, dimension * zoom) / zoom;
 }

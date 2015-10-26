@@ -28,9 +28,9 @@
     height: auto;
 }
 
-.legacyIntrinsicSize {
-    width: intrinsic;
-    height: intrinsic;
+.fitContentSize {
+    width: fit-content;
+    height: fit-content;
 }
 
 .firstRowFirstColumn {
@@ -135,7 +135,7 @@
     </div>
 
     <div class="indefiniteSize">
-        <div class="grid legacyIntrinsicSize">
+        <div class="grid fitContentSize">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
             <div class="firstRowThirdColumn sizedToGridArea" data-expected-width="30" data-expected-height="10">XXX</div>
@@ -143,7 +143,7 @@
     </div>
 
     <div class="unconstrainedContainer">
-        <div class="grid legacyIntrinsicSize">
+        <div class="grid fitContentSize">
             <div class="firstRowFirstColumn sizedToGridArea" data-expected-width="20" data-expected-height="10">XX</div>
             <div class="firstRowSecondColumn sizedToGridArea" data-expected-width="50" data-expected-height="10">XXXXX</div>
             <div class="firstRowThirdColumn sizedToGridArea" data-expected-width="30" data-expected-height="10">XXX</div>

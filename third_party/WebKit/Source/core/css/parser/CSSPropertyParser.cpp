@@ -802,16 +802,10 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTextIndent(CSSParserTokenRange& r
 
 static bool validWidthOrHeightKeyword(CSSValueID id, const CSSParserContext& context)
 {
-    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic
-        || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent
+    if (id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent
         || id == CSSValueMinContent || id == CSSValueMaxContent || id == CSSValueFitContent) {
         if (context.useCounter()) {
             switch (id) {
-            case CSSValueIntrinsic:
-            case CSSValueMinIntrinsic:
-                // These two will be counted in StyleAdjuster because they emit a deprecation
-                // message, and we don't have access to a Document/LocalFrame here.
-                break;
             case CSSValueWebkitMinContent:
                 context.useCounter()->count(UseCounter::CSSValuePrefixedMinContent);
                 break;

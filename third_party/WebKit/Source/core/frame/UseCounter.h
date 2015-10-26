@@ -630,8 +630,6 @@ public:
         V8Permissions_Query_Method = 750,
         // The above items are available in M43 branch.
 
-        LegacyCSSValueIntrinsic = 751,
-        LegacyCSSValueMinIntrinsic = 752,
         WebkitCanvas = 753,
         V8HTMLInputElement_Autocapitalize_AttributeGetter = 754,
         V8HTMLInputElement_Autocapitalize_AttributeSetter = 755,

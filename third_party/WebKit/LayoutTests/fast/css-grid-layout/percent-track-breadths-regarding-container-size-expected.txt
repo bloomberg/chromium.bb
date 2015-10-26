@@ -1,4 +1,3 @@
-CONSOLE WARNING: The 'intrinsic' CSS keyword is deprecated and will be removed in M48, around January 2015. Use the standard 'max-content' keyword instead.
 This test checks percentage track breadths are resolved properly regarding the container size.
 
 XX

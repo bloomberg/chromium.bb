@@ -935,12 +935,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case HeaderValueNotMatchingRFC7230:
         return "Header values not matching to RFC 7230, will be deprecated (see: https://www.chromestatus.com/feature/6457425448140800).";
 
-    case LegacyCSSValueIntrinsic:
-        return "The 'intrinsic' CSS keyword is deprecated and will be removed in M48, around January 2015. Use the standard 'max-content' keyword instead.";
-
-    case LegacyCSSValueMinIntrinsic:
-        return "The 'min-intrinsic' CSS keyword is deprecated and will be removed in M48, around January 2015. Use the standard 'min-content' keyword instead.";
-
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

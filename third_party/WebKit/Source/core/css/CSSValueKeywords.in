@@ -533,12 +533,6 @@ read-write-plaintext-only
 element
 
 //
-// width/min-width/max-width
-//
-intrinsic
-min-intrinsic
-
-//
 // CSS3 intrinsic dimension keywords
 //
 -webkit-min-content

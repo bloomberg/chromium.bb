@@ -2200,9 +2200,6 @@ bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
     if (isFloating() || isInlineBlockOrInlineTable())
         return true;
 
-    if (logicalWidth.type() == Intrinsic)
-        return true;
-
     // Flexible box items should shrink wrap, so we lay them out at their intrinsic widths.
     // In the case of columns that have a stretch alignment, we go ahead and layout at the
     // stretched size to avoid an extra layout when applying alignment.
@@ -2661,8 +2658,6 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(SizeType sizeType, const 
             return adjustContentBoxLogicalWidthForBoxSizing(minimumValueForLength(logicalWidth, cw));
         return LayoutUnit();
     }
-    case Intrinsic:
-    case MinIntrinsic:
     case Auto:
     case MaxSizeNone:
         return intrinsicLogicalWidth();

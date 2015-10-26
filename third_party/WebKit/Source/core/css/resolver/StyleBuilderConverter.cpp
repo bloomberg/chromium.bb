@@ -551,10 +551,6 @@ Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, con
     switch (primitiveValue.getValueID()) {
     case CSSValueInvalid:
         return convertLength(state, value);
-    case CSSValueIntrinsic:
-        return Length(Intrinsic);
-    case CSSValueMinIntrinsic:
-        return Length(MinIntrinsic);
     case CSSValueMinContent:
     case CSSValueWebkitMinContent:
         return Length(MinContent);

@@ -228,14 +228,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         init(UnitType::ValueID);
         m_value.valueID = CSSValueAuto;
         break;
-    case Intrinsic:
-        init(UnitType::ValueID);
-        m_value.valueID = CSSValueIntrinsic;
-        break;
-    case MinIntrinsic:
-        init(UnitType::ValueID);
-        m_value.valueID = CSSValueMinIntrinsic;
-        break;
     case MinContent:
         init(UnitType::ValueID);
         m_value.valueID = CSSValueMinContent;

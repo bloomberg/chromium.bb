@@ -39,7 +39,6 @@ namespace blink {
 // appropriate for any given Length.
 enum LengthType {
     Auto, Percent, Fixed,
-    Intrinsic, MinIntrinsic,
     MinContent, MaxContent, FillAvailable, FitContent,
     Calculated,
     ExtendToZoom, DeviceWidth, DeviceHeight,
@@ -244,8 +243,7 @@ public:
 
     bool isAuto() const { return type() == Auto; }
     bool isFixed() const { return type() == Fixed; }
-    bool isIntrinsicOrAuto() const { return type() == Auto || isLegacyIntrinsic() || isIntrinsic(); }
-    bool isLegacyIntrinsic() const { return type() == Intrinsic || type() == MinIntrinsic; }
+    bool isIntrinsicOrAuto() const { return type() == Auto || isIntrinsic(); }
     bool isIntrinsic() const { return type() == MinContent || type() == MaxContent || type() == FillAvailable || type() == FitContent; }
     bool isSpecified() const { return type() == Fixed || type() == Percent || type() == Calculated; }
     bool isSpecifiedOrIntrinsic() const { return isSpecified() || isIntrinsic(); }
