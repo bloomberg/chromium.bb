@@ -136,11 +136,6 @@
             "group_name": "Disabled"
         }
     ],
-    "PluginPowerSaver": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "QUIC": [
         {
             "group_name": "Enabled",

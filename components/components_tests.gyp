@@ -1430,7 +1430,6 @@
         ['enable_plugins == 1', {
           'sources': [
             'content_settings/core/browser/content_settings_provider_unittest.cc',
-            'content_settings/core/browser/plugins_field_trial_unittest.cc',
           ],
         }],
       ],

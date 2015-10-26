@@ -11,10 +11,6 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 
-#if defined(ENABLE_PLUGINS)
-#include "components/content_settings/core/browser/plugins_field_trial.h"
-#endif
-
 namespace content_settings {
 
 namespace {
@@ -65,14 +61,6 @@ std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting4) {
   ContentSetting settings[] = {setting1, setting2, setting3, setting4};
   return std::set<ContentSetting>(settings, settings + arraysize(settings));
-}
-
-ContentSetting GetDefaultPluginsContentSetting() {
-#if defined(ENABLE_PLUGINS)
-  return PluginsFieldTrial::GetDefaultPluginsContentSetting();
-#else
-  return CONTENT_SETTING_BLOCK;
-#endif
 }
 
 }  // namespace
@@ -144,7 +132,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK));
 
   Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
-           GetDefaultPluginsContentSetting(), WebsiteSettingsInfo::SYNCABLE,
+           CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+           WebsiteSettingsInfo::SYNCABLE,
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK,

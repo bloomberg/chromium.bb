@@ -396,6 +396,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"pluginsHeader", IDS_PLUGIN_HEADER},
     {"pluginsAllow", IDS_PLUGIN_ALLOW_RADIO},
     {"pluginsBlock", IDS_PLUGIN_BLOCK_RADIO},
+    {"pluginsDetectImportantContent", IDS_PLUGIN_DETECT_RECOMMENDED_RADIO},
     {"manageIndividualPlugins", IDS_PLUGIN_MANAGE_INDIVIDUAL},
     // Pop-ups filter.
     {"popupsTabLabel", IDS_POPUP_TAB_LABEL},
@@ -491,11 +492,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   bool success = default_pref->GetAsInteger(&default_value);
   DCHECK(success);
   DCHECK_NE(CONTENT_SETTING_DEFAULT, default_value);
-
-  int plugin_ids = default_value == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ?
-      IDS_PLUGIN_DETECT_RECOMMENDED_RADIO : IDS_PLUGIN_DETECT_RADIO;
-  localized_strings->SetString("pluginsDetectImportantContent",
-                               l10n_util::GetStringUTF16(plugin_ids));
 
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);

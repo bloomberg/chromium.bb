@@ -84,10 +84,7 @@ source_set("unit_tests") {
   ]
 
   if (enable_plugins) {
-    sources += [
-      "content_settings_provider_unittest.cc",
-      "plugins_field_trial_unittest.cc",
-    ]
+    sources += [ "content_settings_provider_unittest.cc" ]
   }
 
   deps = [

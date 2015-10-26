@@ -7857,9 +7857,6 @@ I don't think this site should be blocked!
       <message name="IDS_PLUGIN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plugins use on any site.">
         Run all plugin content
       </message>
-      <message name="IDS_PLUGIN_DETECT_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only.">
-        Detect and run important plugin content
-      </message>
       <message name="IDS_PLUGIN_DETECT_RECOMMENDED_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only. This is the behavior Chrome recommends.">
         Detect and run important plugin content (recommended)
       </message>

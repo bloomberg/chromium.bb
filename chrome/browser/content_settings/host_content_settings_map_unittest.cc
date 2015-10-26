@@ -123,7 +123,7 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 #if defined(ENABLE_PLUGINS)
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
 #endif
@@ -515,7 +515,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
                 std::string()));
 
 #if defined(ENABLE_PLUGINS)
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
@@ -527,7 +527,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
       CONTENT_SETTINGS_TYPE_PLUGINS,
       std::string(),
       CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
             host_content_settings_map->GetContentSetting(
                 host_ending_with_dot,
                 host_ending_with_dot,
@@ -789,7 +789,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 #if defined(ENABLE_PLUGINS)
   // Remove the preference to manage the default-content-setting for Plugins.
   prefs->RemoveManagedPref(prefs::kManagedDefaultPluginsSetting);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
 #endif
