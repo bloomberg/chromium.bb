@@ -541,6 +541,7 @@ test("content_unittests") {
     "//base/allocator",
     "//base/test:test_support",
     "//content/browser/background_sync:background_sync_proto",
+    "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",

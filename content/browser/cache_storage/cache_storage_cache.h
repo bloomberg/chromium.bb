@@ -107,6 +107,8 @@ class CONTENT_EXPORT CacheStorageCache
   // not a memory cache backend.
   int64 MemoryBackedSize() const;
 
+  base::FilePath path() const { return path_; }
+
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
 
  private:

@@ -88,6 +88,7 @@ class CONTENT_EXPORT CacheStorageManager {
   friend class CacheStorageManagerTest;
   friend class CacheStorageMigrationTest;
   friend class CacheStorageQuotaClient;
+  friend class MigratedLegacyCacheDirectoryNameTest;
 
   typedef std::map<GURL, CacheStorage*> CacheStorageMap;
 

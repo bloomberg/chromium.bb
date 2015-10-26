@@ -9,7 +9,10 @@ option optimize_for = LITE_RUNTIME;
 package content;
 
 message CacheStorageIndex {
-  message Cache { required string name = 1; }
+  message Cache {
+    required string name = 1;
+    optional string cache_dir = 2;
+  }
   repeated Cache cache = 1;
   optional string origin = 2;
 }

@@ -1031,6 +1031,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'browser/background_sync/background_sync_proto.gyp:background_sync_proto',
+        'browser/cache_storage/cache_storage_proto.gyp:cache_storage_proto',
         'browser/notifications/notification_proto.gyp:notification_proto',
         'browser/service_worker/service_worker_proto.gyp:service_worker_proto',
         'browser/speech/proto/speech_proto.gyp:speech_proto',

@@ -7,9 +7,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/run_loop.h"
+#include "base/sha1.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
@@ -17,17 +21,33 @@
 #include "content/public/browser/cache_storage_usage_info.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_job_factory_impl.h"
+#include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
+// Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
+// the memory.
+scoped_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
+    storage::BlobStorageContext* blob_storage_context) {
+  // The FileSystemContext and thread task runner are not actually used but a
+  // task runner is needed to avoid a DCHECK in BlobURLRequestJob ctor.
+  return make_scoped_ptr(new storage::BlobProtocolHandler(
+      blob_storage_context, NULL, base::ThreadTaskRunnerHandle::Get().get()));
+}
+
 class CacheStorageManagerTest : public testing::Test {
  public:
   CacheStorageManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        blob_storage_context_(nullptr),
         callback_bool_(false),
         callback_error_(CACHE_STORAGE_OK),
         origin1_("http://example1.com"),
@@ -38,6 +58,17 @@ class CacheStorageManagerTest : public testing::Test {
         ChromeBlobStorageContext::GetFor(&browser_context_));
     // Wait for ChromeBlobStorageContext to finish initializing.
     base::RunLoop().RunUntilIdle();
+
+    blob_storage_context_ = blob_storage_context->context();
+
+    url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
+    url_request_job_factory_->SetProtocolHandler(
+        "blob", CreateMockBlobProtocolHandler(blob_storage_context->context()));
+
+    net::URLRequestContext* url_request_context =
+        browser_context_.GetRequestContext()->GetURLRequestContext();
+
+    url_request_context->set_job_factory(url_request_job_factory_.get());
 
     quota_manager_proxy_ = new MockQuotaManagerProxy(
         nullptr, base::ThreadTaskRunnerHandle::Get().get());
@@ -101,7 +132,7 @@ class CacheStorageManagerTest : public testing::Test {
       scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
     callback_error_ = error;
     callback_cache_response_ = response.Pass();
-    // Deliberately drop the data handle as only the url is being tested.
+    callback_data_handle_ = blob_data_handle.Pass();
     run_loop->Quit();
   }
 
@@ -186,9 +217,18 @@ class CacheStorageManagerTest : public testing::Test {
   bool CachePut(const scoped_refptr<CacheStorageCache>& cache,
                 const GURL& url) {
     ServiceWorkerFetchRequest request;
-    ServiceWorkerResponse response;
     request.url = url;
-    response.url = url;
+
+    scoped_ptr<storage::BlobDataBuilder> blob_data(
+        new storage::BlobDataBuilder(base::GenerateGUID()));
+    blob_data->AppendData(url.spec());
+
+    scoped_ptr<storage::BlobDataHandle> blob_handle =
+        blob_storage_context_->AddFinishedBlob(blob_data.get());
+    ServiceWorkerResponse response(
+        url, 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
+        ServiceWorkerHeaderMap(), blob_handle->uuid(), url.spec().size(),
+        GURL(), blink::WebServiceWorkerResponseErrorUnknown);
 
     CacheStorageBatchOperation operation;
     operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
@@ -256,6 +296,8 @@ class CacheStorageManagerTest : public testing::Test {
  protected:
   TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
+  scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  storage::BlobStorageContext* blob_storage_context_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
@@ -265,6 +307,7 @@ class CacheStorageManagerTest : public testing::Test {
   int callback_bool_;
   CacheStorageError callback_error_;
   scoped_ptr<ServiceWorkerResponse> callback_cache_response_;
+  scoped_ptr<storage::BlobDataHandle> callback_data_handle_;
   std::vector<std::string> callback_strings_;
 
   const GURL origin1_;
@@ -411,6 +454,23 @@ TEST_P(CacheStorageManagerTestP, StorageMatchAllNoEntry) {
 TEST_P(CacheStorageManagerTestP, StorageMatchAllNoCaches) {
   EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
   EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
+}
+
+TEST_F(CacheStorageManagerTest, StorageReuseCacheName) {
+  // Deleting a cache and creating one with the same name and adding an entry
+  // with the same URL should work. (see crbug.com/542668)
+  const GURL kTestURL = GURL("http://example.com/foo");
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, kTestURL));
+  EXPECT_TRUE(CacheMatch(callback_cache_, kTestURL));
+  scoped_ptr<storage::BlobDataHandle> data_handle =
+      callback_data_handle_.Pass();
+
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  // The cache is deleted but the handle to one of its entries is still
+  // open. Creating a new cache in the same directory would fail on Windows.
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, kTestURL));
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
@@ -683,6 +743,100 @@ TEST_F(CacheStorageMigrationTest, MoveFailure) {
   expected_keys.push_back(cache1_);
   expected_keys.push_back(cache2_);
   EXPECT_EQ(expected_keys, callback_strings_);
+}
+
+// Tests that legacy caches created via a hash of the cache name instead of a
+// random name are migrated and continue to function in a new world of random
+// cache names.
+class MigratedLegacyCacheDirectoryNameTest : public CacheStorageManagerTest {
+ protected:
+  MigratedLegacyCacheDirectoryNameTest()
+      : legacy_cache_name_("foo"), stored_url_("http://example.com/foo") {}
+
+  void SetUp() override {
+    CacheStorageManagerTest::SetUp();
+
+    // Create a cache that is stored on disk with the legacy naming scheme (hash
+    // of the name) and without a directory name in the index.
+    base::FilePath origin_path = CacheStorageManager::ConstructOriginPath(
+        cache_manager_->root_path(), origin1_);
+
+    // Populate a legacy cache.
+    ASSERT_TRUE(Open(origin1_, legacy_cache_name_));
+    EXPECT_TRUE(CachePut(callback_cache_, stored_url_));
+    base::FilePath new_path = callback_cache_->path();
+
+    // Close the cache.
+    callback_cache_ = nullptr;
+    base::RunLoop().RunUntilIdle();
+
+    // Legacy index files didn't have the cache directory, so remove it from the
+    // index.
+    base::FilePath index_path = origin_path.AppendASCII("index.txt");
+    std::string index_contents;
+    base::ReadFileToString(index_path, &index_contents);
+    CacheStorageIndex index;
+    ASSERT_TRUE(index.ParseFromString(index_contents));
+    ASSERT_EQ(1, index.cache_size());
+    index.mutable_cache(0)->clear_cache_dir();
+    ASSERT_TRUE(index.SerializeToString(&index_contents));
+    index.ParseFromString(index_contents);
+    ASSERT_EQ(index_contents.size(),
+              (uint32_t)base::WriteFile(index_path, index_contents.c_str(),
+                                        index_contents.size()));
+
+    // Move the cache to the legacy location.
+    legacy_path_ = origin_path.AppendASCII(HexedHash(legacy_cache_name_));
+    ASSERT_FALSE(base::DirectoryExists(legacy_path_));
+    ASSERT_TRUE(base::Move(new_path, legacy_path_));
+
+    // Create a new manager to reread the index file and force migration.
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+    cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
+  }
+
+  static std::string HexedHash(const std::string& value) {
+    std::string value_hash = base::SHA1HashString(value);
+    std::string valued_hexed_hash = base::ToLowerASCII(
+        base::HexEncode(value_hash.c_str(), value_hash.length()));
+    return valued_hexed_hash;
+  }
+
+  base::FilePath legacy_path_;
+  const std::string legacy_cache_name_;
+  const GURL stored_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(MigratedLegacyCacheDirectoryNameTest);
+};
+
+TEST_F(MigratedLegacyCacheDirectoryNameTest, LegacyCacheMigrated) {
+  EXPECT_TRUE(Open(origin1_, legacy_cache_name_));
+
+  // Verify that the cache migrated away from the legacy_path_ directory.
+  ASSERT_FALSE(base::DirectoryExists(legacy_path_));
+
+  // Verify that the existing entry still works.
+  EXPECT_TRUE(CacheMatch(callback_cache_, stored_url_));
+
+  // Verify that adding new entries works.
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo2")));
+  EXPECT_TRUE(CacheMatch(callback_cache_, GURL("http://example.com/foo2")));
+}
+
+TEST_F(MigratedLegacyCacheDirectoryNameTest,
+       RandomDirectoryCacheSideBySideWithLegacy) {
+  EXPECT_TRUE(Open(origin1_, legacy_cache_name_));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(CachePut(callback_cache_, stored_url_));
+  EXPECT_TRUE(CacheMatch(callback_cache_, stored_url_));
+}
+
+TEST_F(MigratedLegacyCacheDirectoryNameTest, DeleteLegacyCacheAndRecreateNew) {
+  EXPECT_TRUE(Delete(origin1_, legacy_cache_name_));
+  EXPECT_TRUE(Open(origin1_, legacy_cache_name_));
+  EXPECT_FALSE(CacheMatch(callback_cache_, stored_url_));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo2")));
+  EXPECT_TRUE(CacheMatch(callback_cache_, GURL("http://example.com/foo2")));
 }
 
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
