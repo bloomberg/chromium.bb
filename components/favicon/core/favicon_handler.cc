@@ -215,6 +215,7 @@ FaviconHandler::FaviconHandler(FaviconService* service,
                                Type handler_type)
     : got_favicon_from_history_(false),
       initial_history_result_expired_or_incomplete_(false),
+      redownload_icons_(false),
       icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
       download_largest_icon_(handler_type == LARGEST_FAVICON ||
                              handler_type == LARGEST_TOUCH),
@@ -247,6 +248,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   url_ = url;
 
   initial_history_result_expired_or_incomplete_ = false;
+  redownload_icons_ = false;
   got_favicon_from_history_ = false;
   download_requests_.clear();
   image_urls_.clear();
@@ -572,30 +574,24 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
   got_favicon_from_history_ = true;
-  bool has_results = !favicon_bitmap_results.empty();
-  initial_history_result_expired_or_incomplete_ = HasExpiredOrIncompleteResult(
-      preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
+  initial_history_result_expired_or_incomplete_ =
+      !has_valid_result ||
+      HasExpiredOrIncompleteResult(preferred_icon_size(),
+                                   favicon_bitmap_results);
+  redownload_icons_ = initial_history_result_expired_or_incomplete_ &&
+                      !favicon_bitmap_results.empty();
 
-  if (has_results && !download_largest_icon_ &&
+  if (has_valid_result &&
       (!current_candidate() ||
        DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results))) {
-    if (has_valid_result) {
-      // The db knows the favicon (although it may be out of date) and the entry
-      // doesn't have an icon. Set the favicon now, and if the favicon turns out
-      // to be expired (or the wrong url) we'll fetch later on. This way the
-      // user doesn't see a flash of the default favicon.
-      NotifyFaviconAvailable(favicon_bitmap_results);
-    } else {
-      // If |favicon_bitmap_results| does not have any valid results, treat the
-      // favicon as if it's expired.
-      // TODO(pkotwicz): Do something better.
-      initial_history_result_expired_or_incomplete_ = true;
-    }
-  }
+    // The db knows the favicon (although it may be out of date) and the entry
+    // doesn't have an icon. Set the favicon now, and if the favicon turns out
+    // to be expired (or the wrong url) we'll fetch later on. This way the
+    // user doesn't see a flash of the default favicon.
 
-  if (has_valid_result && download_largest_icon_)
     NotifyFaviconAvailable(favicon_bitmap_results);
+  }
 
   if (current_candidate())
     OnGotInitialHistoryDataAndIconURLCandidates();
@@ -605,7 +601,7 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
   GURL icon_url = current_candidate()->icon_url;
   favicon_base::IconType icon_type = current_candidate()->icon_type;
 
-  if (initial_history_result_expired_or_incomplete_) {
+  if (redownload_icons_) {
     // We have the mapping, but the favicon is out of date. Download it now.
     ScheduleDownload(icon_url, icon_type);
   } else {
@@ -634,9 +630,10 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
 void FaviconHandler::OnFaviconData(const std::vector<
     favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results) {
   bool has_results = !favicon_bitmap_results.empty();
-  bool has_expired_or_incomplete_result = HasExpiredOrIncompleteResult(
-      preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
+  bool has_expired_or_incomplete_result =
+      !has_valid_result || HasExpiredOrIncompleteResult(preferred_icon_size(),
+                                                        favicon_bitmap_results);
 
   if (has_valid_result) {
     // There is a valid favicon. Notify any observers. It is useful to notify
@@ -653,7 +650,7 @@ void FaviconHandler::OnFaviconData(const std::vector<
     return;
   }
 
-  if (!has_results || has_expired_or_incomplete_result) {
+  if (has_expired_or_incomplete_result) {
     ScheduleDownload(current_candidate()->icon_url,
                      current_candidate()->icon_type);
   }

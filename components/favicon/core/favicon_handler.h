@@ -272,6 +272,11 @@ class FaviconHandler {
   // database has expired or the data in the database is incomplete.
   bool initial_history_result_expired_or_incomplete_;
 
+  // Whether FaviconHandler should ignore history state and determine the
+  // optimal icon URL out of |image_urls_| for |url_| by downloading
+  // |image_urls_| one by one.
+  bool redownload_icons_;
+
   // Requests to the renderer to download favicons.
   typedef std::map<int, DownloadRequest> DownloadRequests;
   DownloadRequests download_requests_;
