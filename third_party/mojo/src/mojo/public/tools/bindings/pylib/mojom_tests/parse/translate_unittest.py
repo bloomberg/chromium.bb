@@ -67,6 +67,14 @@ class TranslateTest(unittest.TestCase):
     self.assertRaises(Exception, translate._MapTreeForType,
                       (lambda x: x, methods, '', 'scope'))
 
+  def testAssociatedKinds(self):
+    """Tests type spec translation of associated interfaces and requests."""
+    # pylint: disable=W0212
+    self.assertEquals(translate._MapKind("asso<SomeInterface>?"),
+                      "?asso:x:SomeInterface")
+    self.assertEquals(translate._MapKind("asso<SomeInterface&>?"),
+                      "?asso:r:x:SomeInterface")
+
 
 if __name__ == "__main__":
   unittest.main()

@@ -81,6 +81,13 @@
   }
 {%- endmacro %}
 
+{#- Validates the specified struct field, which is supposed to be an associated
+    interface or an associated interface request.
+    This macro is expanded by the Validate() method. #}
+{%- macro _validate_associated(struct, packed_field) %}
+  // TODO(yzshen): add validation for associated kinds.
+{%- endmacro %}
+
 // static
 {{class_name}}* {{class_name}}::New(mojo::internal::Buffer* buf) {
   return new (buf->Allocate(sizeof({{class_name}}))) {{class_name}}();
@@ -135,7 +142,8 @@ bool {{class_name}}::Validate(const void* data,
 {%- set last_checked_version = 0 %}
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = packed_field.field.kind %}
-{%-   if kind|is_object_kind or kind|is_any_handle_kind or kind|is_interface_kind %}
+{%-   if kind|is_object_kind or kind|is_any_handle_kind or
+         kind|is_interface_kind or kind|is_associated_kind %}
 {%-     if packed_field.min_version > last_checked_version %}
 {%-       set last_checked_version = packed_field.min_version %}
   if (object->header_.version < {{packed_field.min_version}})
@@ -143,8 +151,10 @@ bool {{class_name}}::Validate(const void* data,
 {%-     endif %}
 {%-     if kind|is_object_kind %}
 {{_validate_object(struct, packed_field)}}
-{%-     else %}
+{%-     elif kind|is_any_handle_kind or kind|is_interface_kind %}
 {{_validate_handle(struct, packed_field)}}
+{%-     else %}
+{{_validate_associated(struct, packed_field)}}
 {%-     endif %}
 {%-   endif %}
 {%- endfor %}

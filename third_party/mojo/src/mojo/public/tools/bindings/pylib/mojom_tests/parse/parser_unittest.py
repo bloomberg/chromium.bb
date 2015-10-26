@@ -1411,6 +1411,87 @@ class ParserTest(unittest.TestCase):
         r" *enum MyEnum {$"):
       parser.Parse(source, "my_file.mojom")
 
+  def testValidAssociatedKinds(self):
+    """Tests parsing associated interfaces and requests."""
+    source1 = """\
+        struct MyStruct {
+          associated MyInterface a;
+          associated MyInterface& b;
+          associated MyInterface? c;
+          associated MyInterface&? d;
+        };
+        """
+    expected1 = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Struct(
+            'MyStruct',
+            None,
+            ast.StructBody(
+                [ast.StructField('a', None, None,'asso<MyInterface>', None),
+                 ast.StructField('b', None, None,'asso<MyInterface&>', None),
+                 ast.StructField('c', None, None,'asso<MyInterface>?', None),
+                 ast.StructField('d', None, None,'asso<MyInterface&>?',
+                                 None)]))])
+    self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
+
+    source2 = """\
+        interface MyInterface {
+          MyMethod(associated A a) =>(associated B& b);
+        };"""
+    expected2 = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Interface(
+            'MyInterface',
+            None,
+            ast.InterfaceBody(
+                ast.Method(
+                    'MyMethod',
+                    None,
+                    None,
+                    ast.ParameterList(
+                        ast.Parameter('a', None, None, 'asso<A>')),
+                    ast.ParameterList(
+                        ast.Parameter('b', None, None, 'asso<B&>')))))])
+    self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
+
+  def testInvalidAssociatedKinds(self):
+    """Tests that invalid associated interfaces and requests are correctly
+    detected."""
+    source1 = """\
+        struct MyStruct {
+          associated associated SomeInterface a;
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'associated':\n"
+            r" *associated associated SomeInterface a;$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    source2 = """\
+        struct MyStruct {
+          associated handle a;
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'handle':\n"
+            r" *associated handle a;$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+        struct MyStruct {
+          associated? MyInterface& a;
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '\?':\n"
+            r" *associated\? MyInterface& a;$"):
+      parser.Parse(source3, "my_file.mojom")
+
 
 if __name__ == "__main__":
   unittest.main()

@@ -125,6 +125,12 @@ def KindFromData(kinds, data, scope):
     kind = KindFromData(kinds, data[1:], scope).MakeNullableKind()
   elif data.startswith('a:'):
     kind = mojom.Array(KindFromData(kinds, data[2:], scope))
+  elif data.startswith('asso:'):
+    inner_kind = KindFromData(kinds, data[5:], scope)
+    if isinstance(inner_kind, mojom.InterfaceRequest):
+      kind = mojom.AssociatedInterfaceRequest(inner_kind)
+    else:
+      kind = mojom.AssociatedInterface(inner_kind)
   elif data.startswith('a'):
     colon = data.find(':')
     length = int(data[1:colon])

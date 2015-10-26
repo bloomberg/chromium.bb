@@ -118,7 +118,7 @@ def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
       mojom.IsStructKind(element) or mojom.IsUnionKind(element)):
     return UpperCamelCase(element.name)
-  if mojom.IsInterfaceRequestKind(element):
+  if mojom.IsInterfaceRequestKind(element) or mojom.IsAssociatedKind(element):
     return GetNameForElement(element.kind)
   if isinstance(element, (mojom.Method,
                           mojom.Parameter,
@@ -199,6 +199,10 @@ def DecodeMethod(context, kind, offset, bit):
       return 'readInterfaceRequest'
     if mojom.IsInterfaceKind(kind):
       return 'readServiceInterface'
+    if mojom.IsAssociatedInterfaceRequestKind(kind):
+      return 'readAssociatedInterfaceRequestNotSupported'
+    if mojom.IsAssociatedInterfaceKind(kind):
+      return 'readAssociatedServiceInterfaceNotSupported'
     return _spec_to_decode_method[kind.spec]
   methodName = _DecodeMethodName(kind)
   params = AppendEncodeDecodeParams([ str(offset) ], context, kind, bit)
@@ -250,6 +254,10 @@ def GetJavaType(context, kind, boxed=False, with_generics=True):
   if mojom.IsInterfaceRequestKind(kind):
     return ('org.chromium.mojo.bindings.InterfaceRequest<%s>' %
             GetNameForKind(context, kind.kind))
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return 'org.chromium.mojo.bindings.AssociatedInterfaceNotSupported'
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return 'org.chromium.mojo.bindings.AssociatedInterfaceRequestNotSupported'
   if mojom.IsMapKind(kind):
     if with_generics:
       return 'java.util.Map<%s, %s>' % (

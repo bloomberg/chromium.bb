@@ -49,11 +49,6 @@ union StringPointer {
 };
 static_assert(sizeof(StringPointer) == 8, "Bad_sizeof(StringPointer)");
 
-struct Interface_Data {
-  MessagePipeHandle handle;
-  uint32_t version;
-};
-static_assert(sizeof(Interface_Data) == 8, "Bad_sizeof(Interface_Data)");
 
 template <typename T>
 union UnionPointer {
@@ -61,6 +56,21 @@ union UnionPointer {
   T* ptr;
 };
 static_assert(sizeof(UnionPointer<char>) == 8, "Bad_sizeof(UnionPointer)");
+
+struct Interface_Data {
+  MessagePipeHandle handle;
+  uint32_t version;
+};
+static_assert(sizeof(Interface_Data) == 8, "Bad_sizeof(Interface_Data)");
+
+struct AssociatedInterface_Data {
+  uint32_t interface_id;
+  uint32_t version;
+};
+static_assert(sizeof(AssociatedInterface_Data) == 8,
+              "Bad_sizeof(AssociatedInterface_Data)");
+
+using AssociatedInterfaceRequest_Data = uint32_t;
 
 #pragma pack(pop)
 

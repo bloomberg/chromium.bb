@@ -81,6 +81,10 @@ def GetCppType(kind):
     return "mojo::internal::Interface_Data"
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "mojo::internal::AssociatedInterface_Data"
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "mojo::internal::AssociatedInterfaceRequest_Data"
   if mojom.IsEnumKind(kind):
     return "int32_t"
   if mojom.IsStringKind(kind):
@@ -106,6 +110,11 @@ def GetCppArrayArgWrapperType(kind):
     raise Exception("Arrays of interfaces not yet supported!")
   if mojom.IsInterfaceRequestKind(kind):
     raise Exception("Arrays of interface requests not yet supported!")
+  if mojom.IsAssociatedInterfaceKind(kind):
+    raise Exception("Arrays of associated interfaces not yet supported!")
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    raise Exception("Arrays of associated interface requests not yet "
+                    "supported!")
   if mojom.IsStringKind(kind):
     return "mojo::String"
   if mojom.IsGenericHandleKind(kind):
@@ -134,6 +143,10 @@ def GetCppResultWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "mojo::AssociatedInterfacePtrInfo<%s>" % GetNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
     return "mojo::String"
   if mojom.IsGenericHandleKind(kind):
@@ -168,6 +181,10 @@ def GetCppWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "mojo::AssociatedInterfacePtrInfo<%s>" % GetNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
     return "mojo::String"
   if mojom.IsGenericHandleKind(kind):
@@ -194,6 +211,10 @@ def GetCppConstWrapperType(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "mojo::AssociatedInterfacePtrInfo<%s>" % GetNameForKind(kind.kind)
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStringKind(kind):
@@ -227,6 +248,10 @@ def GetCppFieldType(kind):
     return "mojo::internal::Interface_Data"
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "mojo::internal::AssociatedInterface_Data"
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "mojo::internal::AssociatedInterfaceRequest_Data"
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStringKind(kind):
@@ -248,7 +273,8 @@ def GetCppUnionFieldType(kind):
 def GetUnionGetterReturnType(kind):
   if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
       mojom.IsArrayKind(kind) or mojom.IsMapKind(kind) or
-      mojom.IsAnyHandleKind(kind) or mojom.IsInterfaceKind(kind)):
+      mojom.IsAnyHandleKind(kind) or mojom.IsInterfaceKind(kind)
+      or mojom.IsAssociatedKind(kind)):
     return "%s&" % GetCppWrapperType(kind)
   return GetCppResultWrapperType(kind)
 
@@ -375,6 +401,10 @@ class Generator(generator.Generator):
     "is_any_handle_kind": mojom.IsAnyHandleKind,
     "is_interface_kind": mojom.IsInterfaceKind,
     "is_interface_request_kind": mojom.IsInterfaceRequestKind,
+    "is_associated_interface_kind": mojom.IsAssociatedInterfaceKind,
+    "is_associated_interface_request_kind":
+        mojom.IsAssociatedInterfaceRequestKind,
+    "is_associated_kind": mojom.IsAssociatedKind,
     "is_map_kind": mojom.IsMapKind,
     "is_nullable_kind": mojom.IsNullableKind,
     "is_object_kind": mojom.IsObjectKind,

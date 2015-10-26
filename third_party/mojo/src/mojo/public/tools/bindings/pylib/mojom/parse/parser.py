@@ -268,8 +268,12 @@ class Parser(object):
 
   def p_basictypename(self, p):
     """basictypename : identifier
+                     | ASSOCIATED identifier
                      | handletype"""
-    p[0] = p[1]
+    if len(p) == 2:
+      p[0] = p[1]
+    else:
+      p[0] = "asso<" + p[2] + ">"
 
   def p_handletype(self, p):
     """handletype : HANDLE
@@ -306,8 +310,12 @@ class Parser(object):
     p[0] = p[5] + "{" + p[3] + "}"
 
   def p_interfacerequest(self, p):
-    """interfacerequest : identifier AMP"""
-    p[0] = p[1] + "&"
+    """interfacerequest : identifier AMP
+                        | ASSOCIATED identifier AMP"""
+    if len(p) == 3:
+      p[0] = p[1] + "&"
+    else:
+      p[0] = "asso<" + p[2] + "&>"
 
   def p_ordinal_1(self, p):
     """ordinal : """

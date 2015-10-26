@@ -76,6 +76,8 @@ void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
                 &result->data.f_{{field.name}});
         mojo::internal::InterfacePointerToData(
             input_acc.data()->{{field.name}}->Pass(), {{field.name}});
+{%-   elif field.kind|is_associated_kind %}
+        // TODO(yzshen): add seralization logic for associated kinds.
 {%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
@@ -114,6 +116,8 @@ void Deserialize_(internal::{{union.name}}_Data* input,
         mojo::internal::InterfaceDataToPointer(
             {{field.name}}_in, &{{field.name}}_out);
         result->set_{{field.name}}({{field.name}}_out.Pass());
+{%-   elif field.kind|is_associated_kind %}
+        // TODO(yzshen): add deserialization logic for associated kinds.
 {%    elif field.kind|is_enum_kind %}
         result->set_{{field.name}}(static_cast<{{field.kind|cpp_wrapper_type}}>(input->data.f_{{field.name}}));
 {%    else %}

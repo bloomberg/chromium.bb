@@ -89,6 +89,8 @@
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
       "invalid {{name}} in {{struct_display_name}}");
 {%-     endif %}
+{%-   elif kind|is_associated_kind %}
+  // TODO(yzshen): add serialization logic for associated kinds. 
 {%-   else %}
   {{output}}->{{name}} = {{input_field}};
 {%-   endif %}
@@ -136,6 +138,8 @@
     {{output_field}}.Bind(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&{{input}}->{{name}})));
 {%-     elif kind|is_any_handle_kind %}
     {{output_field}}.reset(mojo::internal::FetchAndReset(&{{input}}->{{name}}));
+{%-   elif kind|is_associated_kind %}
+    // TODO(yzshen): add deserialization logic for associated kinds.
 {%-     elif kind|is_enum_kind %}
     {{output_field}} = static_cast<{{kind|cpp_wrapper_type}}>({{input}}->{{name}});
 {%-     else %}

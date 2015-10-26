@@ -6,18 +6,35 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_VALUE_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/struct_ptr.h"
-#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
 template <typename T>
 class Array;
 
+template <typename T>
+class AssociatedInterfacePtrInfo;
+
+template <typename T>
+class AssociatedInterfaceRequest;
+
+template <typename T>
+class InlinedStructPtr;
+
+template <typename T>
+class InterfacePtr;
+
+template <typename T>
+class InterfaceRequest;
+
 template <typename K, typename V>
 class Map;
+
+template <typename T>
+class ScopedHandleBase;
+
+template <typename T>
+class StructPtr;
 
 namespace internal {
 
@@ -45,14 +62,17 @@ struct ValueTraits<ScopedHandleBase<T>> {
 };
 
 template <typename T>
-struct ValueTraits<InterfaceRequest<T>> {
-  static bool Equals(const InterfaceRequest<T>& a,
-                     const InterfaceRequest<T>& b) {
+struct ValueTraits<
+    T,
+    typename EnableIf<
+        IsSpecializationOf<InterfaceRequest, T>::value ||
+        IsSpecializationOf<AssociatedInterfaceRequest, T>::value>::type> {
+  static bool Equals(const T& a, const T& b) {
     if (&a == &b)
       return true;
 
-    // If |a| and |b| refer to different objects, they are equivalent iff they
-    // are both invalid.
+    // Now that |a| and |b| refer to different objects, they are equivalent if
+    // and only if they are both invalid.
     return !a.is_pending() && !b.is_pending();
   }
 };
@@ -63,9 +83,22 @@ struct ValueTraits<InterfacePtr<T>> {
     if (&a == &b)
       return true;
 
-    // If |a| and |b| refer to different objects, they are equivalent iff they
-    // are both null.
+    // Now that |a| and |b| refer to different objects, they are equivalent if
+    // and only if they are both null.
     return !a && !b;
+  }
+};
+
+template <typename T>
+struct ValueTraits<AssociatedInterfacePtrInfo<T>> {
+  static bool Equals(const AssociatedInterfacePtrInfo<T>& a,
+                     const AssociatedInterfacePtrInfo<T>& b) {
+    if (&a == &b)
+      return true;
+
+    // Now that |a| and |b| refer to different objects, they are equivalent if
+    // and only if they are both invalid.
+    return !a.is_valid() && !b.is_valid();
   }
 };
 

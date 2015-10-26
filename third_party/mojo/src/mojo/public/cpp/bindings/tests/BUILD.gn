@@ -48,6 +48,7 @@ mojo_sdk_source_set("tests") {
     "mojo/public/cpp/system",
     "mojo/public/cpp/test_support:test_utils",
     "mojo/public/cpp/utility",
+    "mojo/public/interfaces/bindings/tests:test_associated_interfaces",
     "mojo/public/interfaces/bindings/tests:test_interfaces",
     "mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
   ]

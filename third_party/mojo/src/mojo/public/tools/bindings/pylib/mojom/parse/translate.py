@@ -4,6 +4,7 @@
 
 """Translates parse tree to Mojom IR."""
 
+import re
 
 from . import ast
 
@@ -53,8 +54,8 @@ def _MapKind(kind):
     base_kind = _MapKind(kind[0:-1])
     # NOTE: This doesn't rule out enum types. Those will be detected later, when
     # cross-reference is established.
-    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x')
-    if base_kind[0] not in reference_kinds:
+    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x', 'asso')
+    if re.split('[^a-z]', base_kind, 1)[0] not in reference_kinds:
       raise Exception(
           'A type (spec "%s") cannot be made nullable' % base_kind)
     return '?' + base_kind
@@ -68,6 +69,9 @@ def _MapKind(kind):
     return 'a' + kind[lbracket+1:-1] + ':' + _MapKind(typename)
   if kind.endswith('&'):
     return 'r:' + _MapKind(kind[0:-1])
+  if kind.startswith('asso<'):
+    assert kind.endswith('>')
+    return 'asso:' + _MapKind(kind[5:-1])
   if kind in map_to_kind:
     return map_to_kind[kind]
   return 'x:' + kind

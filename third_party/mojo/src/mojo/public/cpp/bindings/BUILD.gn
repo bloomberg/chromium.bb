@@ -7,6 +7,8 @@ import("../../mojo_sdk.gni")
 mojo_sdk_source_set("bindings") {
   sources = [
     "array.h",
+    "associated_interface_ptr_info.h",
+    "associated_interface_request.h",
     "binding.h",
     "interface_ptr.h",
     "interface_ptr_info.h",

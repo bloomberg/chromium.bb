@@ -36,6 +36,17 @@ mojom("test_interfaces_experimental") {
   with_environment = false
 }
 
+mojom("test_associated_interfaces") {
+  # These files are not included in the test_interfaces target because
+  # associated interfaces are not supported by all bindings languages yet.
+  testonly = true
+  sources = [
+    "test_associated_interfaces.mojom",
+  ]
+
+  with_environment = false
+}
+
 mojom("versioning_test_service_interfaces") {
   # FIXME: Dart packaged applications cannot depend on testonly mojoms.
   # testonly = true

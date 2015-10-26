@@ -311,6 +311,22 @@ class InterfaceRequest(ReferenceKind):
     self.kind = kind
 
 
+class AssociatedInterfaceRequest(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
+  def __init__(self, kind=None):
+    if kind is not None:
+      if not isinstance(kind, InterfaceRequest):
+        raise Exception(
+            "Associated interface request requires %r to be an interface "
+            "request." % kind.spec)
+      assert not kind.is_nullable
+      ReferenceKind.__init__(self, 'asso:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
+    self.kind = kind.kind if kind is not None else None
+
+
 class Parameter(object):
   def __init__(self, name=None, kind=None, ordinal=None, default=None,
                attributes=None):
@@ -383,6 +399,21 @@ class Interface(ReferenceKind):
   @property
   def client(self):
     return None
+
+
+class AssociatedInterface(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
+  def __init__(self, kind=None):
+    if kind is not None:
+      if not isinstance(kind, Interface):
+        raise Exception(
+            "Associated interface requires %r to be an interface." % kind.spec)
+      assert not kind.is_nullable
+      ReferenceKind.__init__(self, 'asso:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
+    self.kind = kind
 
 
 class EnumField(object):
@@ -501,8 +532,16 @@ def IsInterfaceKind(kind):
   return isinstance(kind, Interface)
 
 
+def IsAssociatedInterfaceKind(kind):
+  return isinstance(kind, AssociatedInterface)
+
+
 def IsInterfaceRequestKind(kind):
   return isinstance(kind, InterfaceRequest)
+
+
+def IsAssociatedInterfaceRequestKind(kind):
+  return isinstance(kind, AssociatedInterfaceRequest)
 
 
 def IsEnumKind(kind):
@@ -541,32 +580,37 @@ def IsAnyHandleKind(kind):
           IsInterfaceRequestKind(kind))
 
 
+def IsAssociatedKind(kind):
+  return (IsAssociatedInterfaceKind(kind) or
+          IsAssociatedInterfaceRequestKind(kind))
+
+
 def IsMoveOnlyKind(kind):
   return (not IsStringKind(kind) and IsObjectKind(kind)) or \
-      IsAnyHandleKind(kind) or IsInterfaceKind(kind)
+      IsAnyHandleKind(kind) or IsInterfaceKind(kind) or IsAssociatedKind(kind)
 
 
 def IsCloneableKind(kind):
-  def ContainsHandles(kind, visited_kinds):
+  def _IsCloneable(kind, visited_kinds):
     if kind in visited_kinds:
       # No need to examine the kind again.
-      return False
+      return True 
     visited_kinds.add(kind)
-    if IsAnyHandleKind(kind) or IsInterfaceKind(kind):
-      return True
+    if IsAnyHandleKind(kind) or IsInterfaceKind(kind) or IsAssociatedKind(kind):
+      return False
     if IsArrayKind(kind):
-      return ContainsHandles(kind.kind, visited_kinds)
+      return _IsCloneable(kind.kind, visited_kinds)
     if IsStructKind(kind) or IsUnionKind(kind):
       for field in kind.fields:
-        if ContainsHandles(field.kind, visited_kinds):
-          return True
+        if not _IsCloneable(field.kind, visited_kinds):
+          return False
     if IsMapKind(kind):
       # No need to examine the key kind, only primitive kinds and non-nullable
       # string are allowed to be key kinds.
-      return ContainsHandles(kind.value_kind, visited_kinds)
-    return False
+      return _IsCloneable(kind.value_kind, visited_kinds)
+    return True
 
-  return not ContainsHandles(kind, set())
+  return _IsCloneable(kind, set())
 
 
 def HasCallbacks(interface):

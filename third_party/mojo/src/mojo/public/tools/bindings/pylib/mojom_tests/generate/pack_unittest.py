@@ -124,3 +124,13 @@ class PackTest(unittest.TestCase):
     fields = (1, 2)
     offsets = (0, 4)
     self._CheckPackSequence(kinds, fields, offsets)
+
+  def testAssociatedInterfaceAlignment(self):
+    """Tests that associated interfaces are aligned on 4-byte boundaries,
+    although the size of an associated interface is 8 bytes.
+    """
+    kinds = (mojom.INT32,
+             mojom.AssociatedInterface(mojom.Interface('test_interface')))
+    fields = (1, 2)
+    offsets = (0, 4)
+    self._CheckPackSequence(kinds, fields, offsets)

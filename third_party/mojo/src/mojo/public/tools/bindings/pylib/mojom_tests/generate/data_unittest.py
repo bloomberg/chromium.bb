@@ -139,3 +139,18 @@ class DataTest(unittest.TestCase):
       data.MethodFromData(module, method_dict, interface)
     self.assertEquals(e.exception.__str__(),
                       'Interface request requires \'i32\' to be an interface.')
+
+  def testNonInterfaceAsAssociatedInterface(self):
+    """Tests that a non-interface type cannot be used for associated
+    interfaces."""
+    module = mojom.Module('test_module', 'test_namespace')
+    interface = mojom.Interface('TestInterface', module=module)
+    method_dict = {
+        'name': 'Foo',
+        'parameters': [{'name': 'foo', 'kind': 'asso:i32'}],
+    }
+    with self.assertRaises(Exception) as e:
+      data.MethodFromData(module, method_dict, interface)
+    self.assertEquals(
+        e.exception.__str__(),
+        'Associated interface requires \'i32\' to be an interface.')

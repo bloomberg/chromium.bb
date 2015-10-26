@@ -88,6 +88,8 @@ class LexerTest(unittest.TestCase):
                       _MakeLexTokenForKeyword("array"))
     self.assertEquals(self._SingleTokenForInput("map"),
                       _MakeLexTokenForKeyword("map"))
+    self.assertEquals(self._SingleTokenForInput("associated"),
+                      _MakeLexTokenForKeyword("associated"))
 
   def testValidIdentifiers(self):
     """Tests identifiers."""

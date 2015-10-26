@@ -61,6 +61,8 @@ def JavaScriptDefaultValue(field):
   if mojom.IsInterfaceKind(field.kind) or \
      mojom.IsInterfaceRequestKind(field.kind):
     return _kind_to_javascript_default_value[mojom.MSGPIPE]
+  if mojom.IsAssociatedKind(field.kind):
+    return "null"
   if mojom.IsEnumKind(field.kind):
     return "0"
   raise Exception("No valid default: %s" % field)
@@ -122,6 +124,10 @@ def CodecType(kind):
         else "Interface")
   if mojom.IsInterfaceRequestKind(kind):
     return CodecType(mojom.MSGPIPE)
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "codec.AssociatedInterfaceNotSupported"
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "codec.AssociatedInterfaceRequestNotSupported"
   if mojom.IsEnumKind(kind):
     return _kind_to_codec_type[mojom.INT32]
   if mojom.IsMapKind(kind):
@@ -136,7 +142,8 @@ def ElementCodecType(kind):
   return "codec.PackedBool" if mojom.IsBoolKind(kind) else CodecType(kind)
 
 def JavaScriptDecodeSnippet(kind):
-  if kind in mojom.PRIMITIVES or mojom.IsUnionKind(kind):
+  if (kind in mojom.PRIMITIVES or mojom.IsUnionKind(kind) or
+      mojom.IsInterfaceKind(kind) or mojom.IsAssociatedKind(kind)):
     return "decodeStruct(%s)" % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "decodeStructPointer(%s)" % JavaScriptType(kind)
@@ -147,8 +154,6 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeArrayPointer(codec.PackedBool)"
   if mojom.IsArrayKind(kind):
     return "decodeArrayPointer(%s)" % CodecType(kind.kind)
-  if mojom.IsInterfaceKind(kind):
-    return "decodeStruct(%s)" % CodecType(kind)
   if mojom.IsUnionKind(kind):
     return "decodeUnion(%s)" % CodecType(kind)
   if mojom.IsInterfaceRequestKind(kind):
@@ -159,7 +164,8 @@ def JavaScriptDecodeSnippet(kind):
 
 
 def JavaScriptEncodeSnippet(kind):
-  if kind in mojom.PRIMITIVES or mojom.IsUnionKind(kind):
+  if (kind in mojom.PRIMITIVES or mojom.IsUnionKind(kind) or
+      mojom.IsInterfaceKind(kind) or mojom.IsAssociatedKind(kind)):
     return "encodeStruct(%s, " % CodecType(kind)
   if mojom.IsUnionKind(kind):
     return "encodeStruct(%s, " % JavaScriptType(kind)
@@ -172,8 +178,6 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeArrayPointer(codec.PackedBool, ";
   if mojom.IsArrayKind(kind):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
-  if mojom.IsInterfaceKind(kind):
-    return "encodeStruct(%s, " % CodecType(kind)
   if mojom.IsInterfaceRequestKind(kind):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):

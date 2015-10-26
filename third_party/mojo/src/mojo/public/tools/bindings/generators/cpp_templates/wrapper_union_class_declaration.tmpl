@@ -39,8 +39,8 @@ class {{union.name}} {
     Union_() {}
     ~Union_() {}
 {%  for field in union.fields %}
-{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind
-          or field.kind|is_interface_kind -%}
+{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind or
+         field.kind|is_interface_kind or field.kind|is_associated_kind -%}
     {{field.kind|cpp_wrapper_type}}* {{field.name}};
 {%    else -%}
     {{field.kind|cpp_wrapper_type}} {{field.name}};
