@@ -128,6 +128,27 @@ void DeviceState::IPConfigPropertiesChanged(
   ip_config->MergeDictionary(&properties);
 }
 
+std::string DeviceState::GetIpAddressByType(const std::string& type) const {
+  for (base::DictionaryValue::Iterator iter(ip_configs_); !iter.IsAtEnd();
+       iter.Advance()) {
+    const base::DictionaryValue* ip_config;
+    if (!iter.value().GetAsDictionary(&ip_config))
+      continue;
+    std::string ip_config_method;
+    if (!ip_config->GetString(shill::kMethodProperty, &ip_config_method))
+      continue;
+    if (type == ip_config_method ||
+        (type == shill::kTypeIPv4 && ip_config_method == shill::kTypeDHCP) ||
+        (type == shill::kTypeIPv6 && ip_config_method == shill::kTypeDHCP6)) {
+      std::string address;
+      if (!ip_config->GetString(shill::kAddressProperty, &address))
+        continue;
+      return address;
+    }
+  }
+  return std::string();
+}
+
 bool DeviceState::IsSimAbsent() const {
   return technology_family_ == shill::kTechnologyFamilyGsm && !sim_present_;
 }

@@ -54,6 +54,9 @@
   <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
     IP Address
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_IPV6" desc="The label for the IP address of the network:">
+    IPv6 Address
+  </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
     Settings...
   </message>

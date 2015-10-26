@@ -60,6 +60,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
     return eap_authentication_completed_;
   }
 
+  // Returns the IP Address for |type| if it exists or an empty string.
+  std::string GetIpAddressByType(const std::string& type) const;
+
   // Returns true if the technology family is GSM and sim_present_ is false.
   bool IsSimAbsent() const;
 

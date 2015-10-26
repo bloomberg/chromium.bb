@@ -644,10 +644,15 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
-  std::string ip_address("0.0.0.0");
+  std::string ip_address, ipv6_address;
   const NetworkState* network = handler->DefaultNetwork();
-  if (network)
-    ip_address = network->ip_address();
+  if (network) {
+    const DeviceState* device = handler->GetDeviceState(network->device_path());
+    if (device) {
+      ip_address = device->GetIpAddressByType(shill::kTypeIPv4);
+      ipv6_address = device->GetIpAddressByType(shill::kTypeIPv6);
+    }
+  }
 
   views::View* container = new views::View;
   container->SetLayoutManager(
@@ -668,6 +673,10 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   if (!ip_address.empty()) {
     container->AddChildView(CreateInfoBubbleLine(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_IP), ip_address));
+  }
+  if (!ipv6_address.empty()) {
+    container->AddChildView(CreateInfoBubbleLine(
+        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_IPV6), ipv6_address));
   }
   if (!ethernet_address.empty()) {
     container->AddChildView(CreateInfoBubbleLine(
