@@ -8494,41 +8494,6 @@
             "-chrome_internal"
         ]
     },
-    "internal-toolchain-major": {
-        "active_waterfall": "chromeos",
-        "archive_build_debug": true,
-        "boards": [
-            "x86-alex",
-            "stumpy",
-            "daisy",
-            "lakitu"
-        ],
-        "build_type": "chroot",
-        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
-        "chrome_sdk": true,
-        "chromeos_official": true,
-        "description": "Test next major toolchain revision (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-        "gcc_githash": "svn-mirror/google/main",
-        "git_sync": true,
-        "hw_tests_override": [],
-        "image_test": true,
-        "images": [
-            "base",
-            "recovery",
-            "test",
-            "factory_install"
-        ],
-        "internal": true,
-        "latest_toolchain": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "use_sdk": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "usepkg_build_packages": false
-    },
     "internal-toolchain-minor": {
         "active_waterfall": "chromeos",
         "archive_build_debug": true,
@@ -19897,32 +19862,6 @@
         "useflags": [
             "-chrome_internal"
         ]
-    },
-    "toolchain-major": {
-        "archive_build_debug": true,
-        "boards": [
-            "x86-generic",
-            "arm-generic",
-            "amd64-generic"
-        ],
-        "build_type": "chroot",
-        "builder_class_name": "sdk_builders.ChrootSdkBuilder",
-        "chrome_sdk": true,
-        "description": "Test next major toolchain revision",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-        "gcc_githash": "svn-mirror/google/main",
-        "git_sync": true,
-        "hw_tests_override": [],
-        "image_test": true,
-        "images": [
-            "base",
-            "recovery",
-            "test",
-            "factory_install"
-        ],
-        "latest_toolchain": true,
-        "use_sdk": false,
-        "usepkg_build_packages": false
     },
     "toolchain-minor": {
         "archive_build_debug": true,

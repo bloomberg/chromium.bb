@@ -630,7 +630,6 @@ _waterfall_config_map = {
         'link-depthcharge-full-firmware',
 
         # Toolchain Builders.
-        'internal-toolchain-major',
         'internal-toolchain-minor',
     ]),
 
@@ -1250,16 +1249,6 @@ def GetConfig():
   ])
 
   _CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
-
-  _toolchain_major = site_config.AddConfigWithoutTemplate(
-      'toolchain-major',
-      _cros_sdk,
-      latest_toolchain=True,
-      prebuilts=False,
-      trybot_list=False,
-      gcc_githash='svn-mirror/google/main',
-      description='Test next major toolchain revision',
-  )
 
   _toolchain_minor = site_config.AddConfigWithoutTemplate(
       'toolchain-minor',
@@ -1939,14 +1928,6 @@ def GetConfig():
       internal_incremental, 'lakitu_next-incremental',
       _base_configs['lakitu_next'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.GCE_VM_TEST_TYPE],
-  )
-
-  site_config.AddConfigWithoutTemplate(
-      'internal-toolchain-major',
-      _toolchain_major, internal, official,
-      boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
-      build_tests=True,
-      description=_toolchain_major['description'] + ' (internal)',
   )
 
   site_config.AddConfigWithoutTemplate(
