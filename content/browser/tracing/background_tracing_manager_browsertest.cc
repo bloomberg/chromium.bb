@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -415,94 +413,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
   }
-}
-
-// This tests that toggling Blink scenarios in the config alters the
-// command-line.
-IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ToggleBlinkScenarios) {
-  {
-    SetupBackgroundTracingManager();
-
-    base::RunLoop run_loop;
-    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
-        run_loop.QuitClosure());
-
-    base::DictionaryValue dict;
-    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
-    dict.SetString("category", "BENCHMARK");
-
-    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
-    {
-      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
-      rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
-      rules_dict->SetString("trigger_name", "test2");
-      rules_list->Append(rules_dict.Pass());
-    }
-
-    dict.Set("configs", rules_list.Pass());
-    dict.SetString("enable_blink_features", "FasterWeb1,FasterWeb2");
-    dict.SetString("disable_blink_features", "SlowerWeb1,SlowerWeb2");
-    scoped_ptr<BackgroundTracingConfig> config(
-        BackgroundTracingConfigImpl::FromDict(&dict));
-    EXPECT_TRUE(config);
-
-    bool scenario_activated =
-        BackgroundTracingManager::GetInstance()->SetActiveScenario(
-            config.Pass(), upload_config_wrapper.get_receive_callback(),
-            BackgroundTracingManager::NO_DATA_FILTERING);
-
-    EXPECT_TRUE(scenario_activated);
-
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    EXPECT_TRUE(command_line);
-
-    EXPECT_EQ(command_line->GetSwitchValueASCII(switches::kEnableBlinkFeatures),
-              "FasterWeb1,FasterWeb2");
-    EXPECT_EQ(
-        command_line->GetSwitchValueASCII(switches::kDisableBlinkFeatures),
-        "SlowerWeb1,SlowerWeb2");
-  }
-}
-
-// This tests that toggling Blink scenarios in a scenario won't activate
-// if there's already Blink features toggled by something else (about://flags)
-IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       ToggleBlinkScenariosNotOverridingSwitches) {
-  SetupBackgroundTracingManager();
-
-  base::RunLoop run_loop;
-  BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
-      run_loop.QuitClosure());
-
-  base::DictionaryValue dict;
-  dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
-  dict.SetString("category", "BENCHMARK");
-
-  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
-  {
-    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
-    rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
-    rules_dict->SetString("trigger_name", "test2");
-    rules_list->Append(rules_dict.Pass());
-  }
-
-  dict.Set("configs", rules_list.Pass());
-  dict.SetString("enable_blink_features", "FasterWeb1,FasterWeb2");
-  dict.SetString("disable_blink_features", "SlowerWeb1,SlowerWeb2");
-  scoped_ptr<BackgroundTracingConfig> config(
-      BackgroundTracingConfigImpl::FromDict(&dict));
-  EXPECT_TRUE(config);
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "FooFeature");
-
-  bool scenario_activated =
-      BackgroundTracingManager::GetInstance()->SetActiveScenario(
-          config.Pass(), upload_config_wrapper.get_receive_callback(),
-          BackgroundTracingManager::NO_DATA_FILTERING);
-
-  EXPECT_FALSE(scenario_activated);
 }
 
 // This tests that delayed histogram triggers triggers work as expected
