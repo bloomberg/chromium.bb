@@ -121,17 +121,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, RemoveFocusedFrame) {
 
 // Test that a frame is visible/hidden depending on its WebContents visibility
 // state.
-// Flaky on Mac.  http://crbug.com/467670
-#if defined(OS_MACOSX)
-#define MAYBE_GetVisibilityState_Basic DISABLED_GetVisibilityState_Basic
-#else
-#define MAYBE_GetVisibilityState_Basic GetVisibilityState_Basic
-#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       MAYBE_GetVisibilityState_Basic) {
+                       GetVisibilityState_Basic) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,foo")));
   WebContents* web_contents = shell()->web_contents();
 
+  web_contents->WasShown();
   EXPECT_EQ(blink::WebPageVisibilityStateVisible,
             web_contents->GetMainFrame()->GetVisibilityState());
 
@@ -141,20 +136,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // Test that a frame visibility can be overridden by the ContentBrowserClient.
-// Flaky on Mac.  http://crbug.com/525592
-#if defined(OS_MACOSX)
-#define MAYBE_GetVisibilityState_Override DISABLED_GetVisibilityState_Override
-#else
-#define MAYBE_GetVisibilityState_Override GetVisibilityState_Override
-#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       MAYBE_GetVisibilityState_Override) {
+                       GetVisibilityState_Override) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,foo")));
   WebContents* web_contents = shell()->web_contents();
 
   PrerenderTestContentBrowserClient new_client;
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
+  web_contents->WasShown();
   EXPECT_EQ(blink::WebPageVisibilityStateVisible,
             web_contents->GetMainFrame()->GetVisibilityState());
 
