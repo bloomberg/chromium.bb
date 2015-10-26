@@ -18,7 +18,7 @@ class WebContents;
 
 namespace blimp {
 
-class BlimpClientSession;
+class BlimpConnection;
 class BlimpMessage;
 
 namespace engine {
@@ -36,7 +36,7 @@ class BlimpEngineSession : public BlimpMessageReceiver,
 
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
 
-  void AttachClientSession(scoped_ptr<BlimpClientSession> client_session);
+  void AttachClientConnection(scoped_ptr<BlimpConnection> client_connection);
 
  private:
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
@@ -73,8 +73,8 @@ class BlimpEngineSession : public BlimpMessageReceiver,
   // Only one web_contents is supported for blimp 0.5
   scoped_ptr<content::WebContents> web_contents_;
 
-  // Currently attached client session.
-  scoped_ptr<BlimpClientSession> client_session_;
+  // Currently attached client connection.
+  scoped_ptr<BlimpConnection> client_connection_;
   DISALLOW_COPY_AND_ASSIGN(BlimpEngineSession);
 };
 

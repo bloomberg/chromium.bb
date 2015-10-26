@@ -4,8 +4,8 @@
 
 component("blimp_net") {
   sources = [
-    "blimp_client_session.cc",
-    "blimp_client_session.h",
+    "blimp_connection.cc",
+    "blimp_connection.h",
     "blimp_message_dispatcher.cc",
     "blimp_message_dispatcher.h",
     "blimp_message_receiver.h",

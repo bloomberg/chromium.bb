@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/blimp_client_session.h"
+#include "blimp/net/blimp_connection.h"
 
 namespace blimp {
 
-BlimpClientSession::BlimpClientSession() {}
+BlimpConnection::BlimpConnection() {}
 
-BlimpClientSession::~BlimpClientSession() {}
+BlimpConnection::~BlimpConnection() {}
 
 }  // namespace blimp

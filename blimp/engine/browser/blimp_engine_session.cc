@@ -8,7 +8,7 @@
 #include "blimp/common/proto/control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
 #include "blimp/engine/ui/blimp_screen.h"
-#include "blimp/net/blimp_client_session.h"
+#include "blimp/net/blimp_connection.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,17 +30,12 @@ void BlimpEngineSession::Initialize() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 }
 
-void BlimpEngineSession::AttachClientSession(
-    scoped_ptr<BlimpClientSession> client_session) {
-  // TODO(haibinlu): auto detaches existing client session.
-  if (!client_session) {
-    NOTIMPLEMENTED();
-    return;
-  }
+void BlimpEngineSession::AttachClientConnection(
+    scoped_ptr<BlimpConnection> client_connection) {
+  DCHECK(client_connection);
+  client_connection_ = client_connection.Pass();
 
-  client_session_ = client_session.Pass();
-
-  // TODO(haibinlu): remove this once we can use client session to send in
+  // TODO(haibinlu): remove this once we can use client connection to send in
   // a navigation message.
   BlimpMessage message;
   message.set_type(BlimpMessage::CONTROL);

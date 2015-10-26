@@ -6,7 +6,7 @@
 
 #include "blimp/engine/browser/blimp_browser_context.h"
 #include "blimp/engine/browser/blimp_engine_session.h"
-#include "blimp/net/blimp_client_session.h"
+#include "blimp/net/blimp_connection.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
 #include "net/base/net_module.h"
@@ -26,9 +26,9 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
       new BlimpBrowserContext(false, net_log_.get()));
   engine_session_.reset(new BlimpEngineSession(browser_context.Pass()));
   engine_session_->Initialize();
-  // TODO(haibinlu): remove this after a real client session can be attached.
-  scoped_ptr<BlimpClientSession> startupSession(new BlimpClientSession);
-  engine_session_->AttachClientSession(startupSession.Pass());
+  // TODO(haibinlu): remove this after a real client connection can be attached.
+  scoped_ptr<BlimpConnection> clientConnection(new BlimpConnection);
+  engine_session_->AttachClientConnection(clientConnection.Pass());
 }
 
 void BlimpBrowserMainParts::PostMainMessageLoopRun() {
