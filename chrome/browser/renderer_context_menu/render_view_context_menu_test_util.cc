@@ -42,6 +42,17 @@ bool TestRenderViewContextMenu::IsItemPresent(int command_id) {
   return menu_model_.GetIndexOfCommandId(command_id) != -1;
 }
 
+bool TestRenderViewContextMenu::IsItemInRangePresent(int command_id_first,
+                                                     int command_id_last) {
+  DCHECK_LE(command_id_first, command_id_last);
+  for (int command_id = command_id_first; command_id <= command_id_last;
+       ++command_id) {
+    if (IsItemPresent(command_id))
+      return true;
+  }
+  return false;
+}
+
 bool TestRenderViewContextMenu::GetMenuModelAndItemIndex(
     int command_id,
     MenuModel** found_model,

@@ -69907,6 +69907,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Switch to profile via User Manager"/>
   <int value="7" label="Switch to locked profile via User Manager"/>
   <int value="8" label="Switch to Guest profile"/>
+  <int value="9" label="Switch to profile from context menu"/>
 </enum>
 
 <enum name="ProfileSigninStatus" type="int">
@@ -70747,7 +70748,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="65" label="IDC_WRITING_DIRECTION_RTL"/>
   <int value="66" label="IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE"/>
   <int value="67" label="IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD"/>
+  <int value="68" label="IDC_ROUTE_MEDIA"/>
   <int value="69" label="IDC_CONTENT_CONTEXT_COPYLINKTEXT"/>
+  <int value="70" label="IDC_CONTENT_CONTEXT_OPENLINKINPROFILE"/>
+  <int value="71" label="IDC_OPEN_LINK_IN_PROFILE_FIRST"/>
 </enum>
 
 <enum name="ReportProcessingResult" type="int">

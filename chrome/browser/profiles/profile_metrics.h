@@ -62,15 +62,16 @@ class ProfileMetrics {
 
   // Enum for counting the ways user profiles and menus were opened.
   enum ProfileOpen {
-    NTP_AVATAR_BUBBLE = 0,    // User opens avatar menu from NTP
-    ICON_AVATAR_BUBBLE,       // User opens the avatar menu from button
-    SWITCH_PROFILE_ICON,      // User switches profiles from icon menu
-    SWITCH_PROFILE_MENU,      // User switches profiles from menu bar
-    SWITCH_PROFILE_DOCK,      // User switches profiles from dock (Mac-only)
-    OPEN_USER_MANAGER,        // User opens the User Manager
-    SWITCH_PROFILE_MANAGER,   // User switches profiles from the User Manager
-    SWITCH_PROFILE_UNLOCK,    // User switches to lockd profile via User Manager
-    SWITCH_PROFILE_GUEST,     // User switches to guest profile
+    NTP_AVATAR_BUBBLE = 0,   // User opens avatar menu from NTP
+    ICON_AVATAR_BUBBLE,      // User opens the avatar menu from button
+    SWITCH_PROFILE_ICON,     // User switches profiles from icon menu
+    SWITCH_PROFILE_MENU,     // User switches profiles from menu bar
+    SWITCH_PROFILE_DOCK,     // User switches profiles from dock (Mac-only)
+    OPEN_USER_MANAGER,       // User opens the User Manager
+    SWITCH_PROFILE_MANAGER,  // User switches profiles from the User Manager
+    SWITCH_PROFILE_UNLOCK,   // User switches to locked profile via User Manager
+    SWITCH_PROFILE_GUEST,    // User switches to guest profile
+    SWITCH_PROFILE_CONTEXT_MENU,  // User switches profiles from context menu
     NUM_PROFILE_OPEN_METRICS
   };
 

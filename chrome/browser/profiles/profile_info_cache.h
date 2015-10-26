@@ -74,7 +74,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
   base::Time GetProfileActiveTimeAtIndex(size_t index) const override;
   base::string16 GetUserNameOfProfileAtIndex(size_t index) const override;
-  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) override;
+  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const override;
   std::string GetLocalAuthCredentialsOfProfileAtIndex(
       size_t index) const override;
   std::string GetPasswordChangeDetectionTokenAtIndex(

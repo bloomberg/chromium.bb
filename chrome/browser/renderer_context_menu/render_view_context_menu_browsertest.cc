@@ -10,9 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -43,6 +46,11 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user_manager.h"
+#endif
 
 using content::WebContents;
 
@@ -94,6 +102,23 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     menu->Init();
     return menu;
   }
+
+  Profile* CreateSecondaryProfile(int profile_num) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath profile_path = profile_manager->user_data_dir();
+#if defined(OS_CHROMEOS)
+    std::string profile_name = base::StringPrintf("NewProfile%d", profile_num);
+    user_manager::UserManager::Get()->UserLoggedIn(
+        base::StringPrintf("user%d@test.com", profile_num), profile_name,
+        false);
+    profile_path = profile_path.Append(
+        chromeos::ProfileHelper::GetUserProfileDir(profile_name).BaseName());
+#else
+    profile_path = profile_path.AppendASCII(
+        base::StringPrintf("New Profile %d", profile_num));
+#endif
+    return profile_manager->GetProfile(profile_path);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -104,6 +129,9 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+  ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                          IDC_OPEN_LINK_IN_PROFILE_LAST));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -114,6 +142,9 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+  ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                          IDC_OPEN_LINK_IN_PROFILE_LAST));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForCanvas) {
@@ -395,6 +426,87 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenImageInNewTab) {
   ASSERT_FALSE(
       menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfileEntryPresent) {
+  {
+    scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenuMediaTypeNone(
+        GURL("http://www.google.com/"), GURL("http://www.google.com/")));
+
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+    // With only one profile exists, we don't add any items to the context menu
+    // for opening links in other profiles.
+    ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+    ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                            IDC_OPEN_LINK_IN_PROFILE_LAST));
+  }
+
+  // Create one additional profile, but do not yet open windows in it.
+  CreateSecondaryProfile(1);
+
+  {
+    scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenuMediaTypeNone(
+        GURL("http://www.google.com/"), GURL("http://www.google.com/")));
+
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+    // With two profiles (the current and another profile), no submenu is
+    // created. Instead, a single item is added to the main context menu.
+    ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+    ASSERT_TRUE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                           IDC_OPEN_LINK_IN_PROFILE_LAST));
+  }
+
+  CreateSecondaryProfile(2);
+
+  {
+    scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenuMediaTypeNone(
+        GURL("http://www.google.com/"), GURL("http://www.google.com/")));
+
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+    // As soon as at least three profiles exist, we show all profiles in a
+    // submenu.
+    ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+    ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
+                                            IDC_OPEN_LINK_IN_PROFILE_LAST));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
+  Profile* other_profile = CreateSecondaryProfile(1);
+  profiles::FindOrCreateNewWindowForProfile(
+      other_profile, chrome::startup::IS_NOT_PROCESS_STARTUP,
+      chrome::startup::IS_NOT_FIRST_RUN, chrome::GetActiveDesktop(), false);
+
+  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
+      content::NotificationService::AllSources());
+
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL(std::string()));
+
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenuMediaTypeNone(url, url));
+
+  menu->ExecuteCommand(
+      IDC_OPEN_LINK_IN_PROFILE_FIRST +
+          g_browser_process->profile_manager()
+              ->GetProfileInfoCache()
+              .GetIndexOfProfileWithPath(other_profile->GetPath()),
+      0);
+
+  tab_observer.Wait();
+  content::WebContents* tab = tab_observer.GetTab();
+  content::WaitForLoadStop(tab);
+
+  // Verify that it's the correct tab and profile.
+  ASSERT_EQ(url, tab->GetURL());
+  ASSERT_EQ(other_profile,
+            Profile::FromBrowserContext(tab->GetBrowserContext()));
 }
 
 class ThumbnailResponseWatcher : public content::NotificationObserver {

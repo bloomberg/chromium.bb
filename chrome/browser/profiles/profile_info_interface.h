@@ -39,7 +39,8 @@ class ProfileInfoInterface {
 
   virtual base::string16 GetUserNameOfProfileAtIndex(size_t index) const = 0;
 
-  virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) = 0;
+  virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
+      size_t index) const = 0;
 
   virtual std::string GetLocalAuthCredentialsOfProfileAtIndex(
       size_t index) const = 0;

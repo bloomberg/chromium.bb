@@ -37,7 +37,11 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
@@ -51,6 +55,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -122,6 +127,10 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
 
 using base::UserMetricsAction;
 using blink::WebContextMenuData;
@@ -242,9 +251,11 @@ const struct UmaEnumCommandIdPair {
     {67, -1, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     {68, -1, IDC_ROUTE_MEDIA},
     {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
+    {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
+    {71, -1, IDC_OPEN_LINK_IN_PROFILE_FIRST},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {70, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {72, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -266,6 +277,11 @@ int CollapseCommandsForUMA(int id) {
   if (id >= IDC_SPELLCHECK_SUGGESTION_0 &&
       id <= IDC_SPELLCHECK_SUGGESTION_LAST) {
     return IDC_SPELLCHECK_SUGGESTION_0;
+  }
+
+  if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
+      id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
+    return IDC_OPEN_LINK_IN_PROFILE_FIRST;
   }
 
   return id;
@@ -323,9 +339,8 @@ const GURL& GetDocumentURL(const content::ContextMenuParams& params) {
   return params.frame_url.is_empty() ? params.page_url : params.frame_url;
 }
 
-content::Referrer CreateSaveAsReferrer(
-    const GURL& url,
-    const content::ContextMenuParams& params) {
+content::Referrer CreateReferrer(const GURL& url,
+                                 const content::ContextMenuParams& params) {
   const GURL& referring_url = GetDocumentURL(params);
   return content::Referrer::SanitizeForRequest(
       url,
@@ -369,6 +384,30 @@ void WriteTextToClipboard(const base::string16& text) {
 
 bool g_custom_id_ranges_initialized = false;
 
+void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
+  int width = icon.Width();
+  int height = icon.Height();
+  gfx::CalculateFaviconTargetSize(&width, &height);
+  menu->SetIcon(menu->GetItemCount() - 1,
+                profiles::GetSizedAvatarIcon(icon, true, width, height));
+}
+
+void OnProfileCreated(chrome::HostDesktopType desktop_type,
+                      const GURL& link_url,
+                      const content::Referrer& referrer,
+                      Profile* profile,
+                      Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    Browser* browser = chrome::FindLastActiveWithProfile(profile, desktop_type);
+    chrome::NavigateParams nav_params(browser, link_url,
+                                      ui::PAGE_TRANSITION_LINK);
+    nav_params.disposition = NEW_FOREGROUND_TAB;
+    nav_params.referrer = referrer;
+    nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    chrome::Navigate(&nav_params);
+  }
+}
+
 }  // namespace
 
 // static
@@ -410,6 +449,7 @@ RenderViewContextMenu::RenderViewContextMenu(
                        this,
                        &menu_model_,
                        base::Bind(MenuItemMatchesParams, params_)),
+      profile_link_submenu_model_(this),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
@@ -812,6 +852,65 @@ void RenderViewContextMenu::AppendLinkItems() {
 
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
                                     IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+
+    // g_browser_process->profile_manager() is null during unit tests.
+    if (g_browser_process->profile_manager() &&
+        GetProfile()->GetProfileType() == Profile::REGULAR_PROFILE) {
+      ProfileManager* profile_manager = g_browser_process->profile_manager();
+      const ProfileInfoCache& profile_info_cache =
+          profile_manager->GetProfileInfoCache();
+
+      // Find all regular profiles other than the current one which have at
+      // least one open window.
+      std::vector<size_t> target_profiles;
+      const size_t profile_count = profile_info_cache.GetNumberOfProfiles();
+      for (size_t profile_index = 0; profile_index < profile_count;
+           ++profile_index) {
+        base::FilePath profile_path =
+            profile_info_cache.GetPathOfProfileAtIndex(profile_index);
+#if defined(OS_CHROMEOS)
+        if (profile_path == chromeos::ProfileHelper::GetSigninProfileDir())
+          continue;
+#endif
+        Profile* profile = profile_manager->GetProfileByPath(profile_path);
+        if ((profile != GetProfile()) &&
+            !profile_info_cache.IsOmittedProfileAtIndex(profile_index)) {
+          target_profiles.push_back(profile_index);
+        }
+      }
+
+      if (target_profiles.size() == 1) {
+        size_t profile_index = target_profiles[0];
+        menu_model_.AddItem(
+            IDC_OPEN_LINK_IN_PROFILE_FIRST + profile_index,
+            l10n_util::GetStringFUTF16(
+                IDS_CONTENT_CONTEXT_OPENLINKINPROFILE,
+                profile_info_cache.GetNameOfProfileAtIndex(profile_index)));
+        AddIconToLastMenuItem(
+            profile_info_cache.GetAvatarIconOfProfileAtIndex(profile_index),
+            &menu_model_);
+      } else if (target_profiles.size() > 1) {
+        for (size_t profile_index : target_profiles) {
+          // In extreme cases, we might have more profiles than available
+          // command ids. In that case, just stop creating new entries - the
+          // menu is probably useless at this point already.
+          if (IDC_OPEN_LINK_IN_PROFILE_FIRST + profile_index >
+              IDC_OPEN_LINK_IN_PROFILE_LAST)
+            break;
+          profile_link_submenu_model_.AddItem(
+              IDC_OPEN_LINK_IN_PROFILE_FIRST + profile_index,
+              profile_info_cache.GetNameOfProfileAtIndex(profile_index));
+          AddIconToLastMenuItem(
+              profile_info_cache.GetAvatarIconOfProfileAtIndex(profile_index),
+              &profile_link_submenu_model_);
+        }
+        menu_model_.AddSubMenuWithStringId(
+            IDC_CONTENT_CONTEXT_OPENLINKINPROFILE,
+            IDS_CONTENT_CONTEXT_OPENLINKINPROFILES,
+            &profile_link_submenu_model_);
+      }
+    }
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
                                     IDS_CONTENT_CONTEXT_SAVELINKAS);
   }
@@ -1147,6 +1246,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return true;
   }
 
+  if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
+      id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
+    return params_.link_url.is_valid();
+  }
+
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(prefs);
   switch (id) {
@@ -1223,6 +1327,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
+    case IDC_CONTENT_CONTEXT_OPENLINKINPROFILE:
       return params_.link_url.is_valid();
 
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
@@ -1494,6 +1599,26 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     return;
   }
 
+  if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
+      id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    const ProfileInfoCache& profile_info_cache =
+        profile_manager->GetProfileInfoCache();
+
+    base::FilePath profile_path = profile_info_cache.GetPathOfProfileAtIndex(
+        id - IDC_OPEN_LINK_IN_PROFILE_FIRST);
+    chrome::HostDesktopType desktop_type =
+        chrome::GetHostDesktopTypeForNativeView(
+            source_web_contents_->GetNativeView());
+
+    profiles::SwitchToProfile(
+        profile_path, desktop_type, false,
+        base::Bind(OnProfileCreated, desktop_type, params_.link_url,
+                   CreateReferrer(params_.link_url, params_)),
+        ProfileMetrics::SWITCH_PROFILE_CONTEXT_MENU);
+    return;
+  }
+
   switch (id) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
       Browser* browser =
@@ -1520,7 +1645,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
       const GURL& url = params_.link_url;
-      content::Referrer referrer = CreateSaveAsReferrer(url, params_);
+      content::Referrer referrer = CreateReferrer(url, params_);
       DownloadManager* dlm =
           BrowserContext::GetDownloadManager(browser_context_);
       scoped_ptr<DownloadUrlParameters> dl_params(
@@ -1545,7 +1670,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       } else {
         RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
         const GURL& url = params_.src_url;
-        content::Referrer referrer = CreateSaveAsReferrer(url, params_);
+        content::Referrer referrer = CreateReferrer(url, params_);
 
         std::string headers;
         DataReductionProxyChromeSettings* settings =
