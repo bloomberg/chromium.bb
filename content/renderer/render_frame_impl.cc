@@ -3956,8 +3956,9 @@ void RenderFrameImpl::didSerializeDataForFrame(
     const WebURL& frame_url,
     const WebCString& data,
     WebPageSerializerClient::PageSerializationStatus status) {
+  bool end_of_data = status == WebPageSerializerClient::CurrentFrameIsFinished;
   Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
-      routing_id_, frame_url, data.data(), static_cast<int32>(status)));
+      routing_id_, frame_url, data.data(), end_of_data));
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {

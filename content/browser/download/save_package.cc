@@ -45,11 +45,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "url/url_constants.h"
 
 using base::Time;
-using blink::WebPageSerializerClient;
 
 namespace content {
 namespace {
@@ -1085,17 +1083,7 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
     RenderFrameHost* sender,
     const GURL& frame_url,
     const std::string& data,
-    int32 status) {
-  WebPageSerializerClient::PageSerializationStatus flag =
-      static_cast<WebPageSerializerClient::PageSerializationStatus>(status);
-
-  // When calling WebPageSerializer::serialize in non-recursive mode, the
-  // AllFramesAreFinished is redundant - it is sent by each frame right after
-  // CurrentFrameIsFinished.  Therefore we ignore AllFramesAreFinished and
-  // instead track pending frames in |number_of_frames_pending_response_|.
-  if (flag == WebPageSerializerClient::AllFramesAreFinished)
-    return;
-
+    bool end_of_data) {
   // Check current state.
   if (wait_state_ != HTML_DATA)
     return;
@@ -1138,7 +1126,7 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
   }
 
   // Current frame is completed saving, call finish in file thread.
-  if (flag == WebPageSerializerClient::CurrentFrameIsFinished) {
+  if (end_of_data) {
     DVLOG(20) << " " << __FUNCTION__ << "()"
               << " save_id = " << save_item->save_id()
               << " url = \"" << save_item->url().spec() << "\"";

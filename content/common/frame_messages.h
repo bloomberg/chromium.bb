@@ -1188,7 +1188,7 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 IPC_MESSAGE_ROUTED3(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     GURL /* frame URL */,
                     std::string /* data buffer */,
-                    int32 /* complete status */)
+                    bool /* end of data? */)
 
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,

@@ -159,8 +159,7 @@ class DomSerializerTests : public ContentBrowserTest,
                            public WebPageSerializerClient {
  public:
   DomSerializerTests()
-    : serialized_(false),
-      local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) {}
+      : local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
@@ -180,15 +179,6 @@ class DomSerializerTests : public ContentBrowserTest,
                                 const WebCString& data,
                                 PageSerializationStatus status) override {
     GURL frame_url(frame_web_url);
-    // If the all frames are finished saving, check all finish status
-    if (status == WebPageSerializerClient::AllFramesAreFinished) {
-      SerializationFinishStatusMap::iterator it =
-          serialization_finish_status_.begin();
-      for (; it != serialization_finish_status_.end(); ++it)
-        ASSERT_TRUE(it->second);
-      serialized_ = true;
-      return;
-    }
 
     // Check finish status of current frame.
     SerializationFinishStatusMap::iterator it =
@@ -277,7 +267,6 @@ class DomSerializerTests : public ContentBrowserTest,
        local_paths,
        local_directory_name_.AsUTF16Unsafe());
     ASSERT_TRUE(result);
-    ASSERT_TRUE(serialized_);
   }
 
   void SerializeHTMLDOMWithDocTypeOnRenderer(const GURL& file_url) {
@@ -755,8 +744,6 @@ class DomSerializerTests : public ContentBrowserTest,
   // Map frame_url to corresponding status of serialization finish.
   typedef base::hash_map<std::string, bool> SerializationFinishStatusMap;
   SerializationFinishStatusMap serialization_finish_status_;
-  // Flag indicates whether the process of serializing DOM is finished or not.
-  bool serialized_;
   // The local_directory_name_ is dummy relative path of directory which
   // contain all saved auxiliary files included all sub frames and resources.
   const base::FilePath local_directory_name_;

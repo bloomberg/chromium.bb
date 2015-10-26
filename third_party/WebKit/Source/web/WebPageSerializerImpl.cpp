@@ -475,10 +475,14 @@ bool WebPageSerializerImpl::serialize()
             buildContentForNode(documentElement, &param);
 
         encodeAndFlushBuffer(WebPageSerializerClient::CurrentFrameIsFinished, &param, ForceFlush);
+    } else {
+        // Report empty contents for invalid URLs.
+        m_client->didSerializeDataForFrame(
+            url, WebCString("", 0),
+            WebPageSerializerClient::CurrentFrameIsFinished);
     }
 
     ASSERT(m_dataBuffer.isEmpty());
-    m_client->didSerializeDataForFrame(KURL(), WebCString("", 0), WebPageSerializerClient::AllFramesAreFinished);
     return didSerialization;
 }
 

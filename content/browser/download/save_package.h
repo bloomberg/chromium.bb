@@ -214,7 +214,7 @@ class CONTENT_EXPORT SavePackage
   void OnSerializedHtmlWithLocalLinksResponse(RenderFrameHost* sender,
                                               const GURL& frame_url,
                                               const std::string& data,
-                                              int32 status);
+                                              bool end_of_data);
 
   // Look up SaveItem by save id from in progress map.
   SaveItem* LookupItemInProcessBySaveId(int32 save_id);
