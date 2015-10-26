@@ -1355,8 +1355,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BadMessageTerminate_RWH7">
-  <owner>jdduke@chromium.org</owner>
   <owner>dominikg@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
   <description>
     Emitted when a InputHostMsg_QueueSyntheticGesture message is received while
     the --enable-gpu-benchmarking flag is not present.
@@ -8176,7 +8176,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobilePullGestureReload">
-  <owner>jdduke@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
   <description>
     Emitted on Android when a pull-to-refresh touch gesture initiates a page
     reload. This fires only after the triggering touch is released while the

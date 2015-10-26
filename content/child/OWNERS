@@ -1,7 +1,5 @@
 per-file appcache*=michaeln@chromium.org
 
-per-file *curve*=jdduke@chromium.org
-
 # WebSocket
 per-file *websocket*=ricea@chromium.org
 per-file *websocket*=tyoshino@chromium.org

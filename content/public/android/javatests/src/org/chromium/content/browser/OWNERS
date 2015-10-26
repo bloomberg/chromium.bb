@@ -13,9 +13,6 @@ per-file ScreenOrientation*.java=mlamouri@chromium.org
 per-file MediaSession*.java=avayvod@chromium.org
 per-file MediaSession*.java=mlamouri@chromium.org
 
-# Input handling related
-jdduke@chromium.org
-
 # Process management related
 per-file BindingManagerImplTest.java=jaekyun@chromium.org
 per-file BindingManagerImplTest.java=mariakhomenko@chromium.org

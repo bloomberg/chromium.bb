@@ -18,7 +18,7 @@ aelias@chromium.org
 # For touch/gesture specific changes
 rjkroege@chromium.org
 sadrul@chromium.org
-jdduke@chromium.org
+tdresser@chromium.org
 
 # WebSocket
 per-file *websocket*=ricea@chromium.org

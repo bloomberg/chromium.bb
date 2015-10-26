@@ -10331,7 +10331,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Touch.TimedOutOnDesktopSite" units="BooleanTimedOut">
-  <owner>jdduke@chromium.org</owner>
+  <owner>rbyers@chromium.org</owner>
   <summary>
     On non-mobile-optimized (desktop) sites, whether the ack response from the
     renderer for any event in a contiguous touch sequence exceeds the
@@ -10340,7 +10340,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Touch.TimedOutOnMobileSite" units="BooleanTimedOut">
-  <owner>jdduke@chromium.org</owner>
+  <owner>rbyers@chromium.org</owner>
   <summary>
     On mobile-optimized sites, whether the ack response from the renderer for
     any event in a contiguous touch sequence exceeds the mobile-specific timeout
@@ -36908,7 +36908,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Renderer.Hung.MobileInfoBar.UserEvent"
     enum="MobileHungRendererInfoBarEvent">
-  <owner>jdduke@chromium.org</owner>
+  <owner>dfalcantara@chromium.org</owner>
   <summary>
     Android: Records the terminal event associated with a hung renderer infobar.
     This includes both the explicit user actions as well as implicit dismissals,
