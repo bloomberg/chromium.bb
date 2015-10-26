@@ -401,7 +401,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
           return kBadIndexState;
         }
 
-        index.mutable_cache(0)->set_cache_dir(cache_dir);
+        index.mutable_cache(i)->set_cache_dir(cache_dir);
         index_is_dirty = true;
       }
     }
