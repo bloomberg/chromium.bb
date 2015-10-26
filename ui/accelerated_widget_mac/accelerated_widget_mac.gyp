@@ -19,12 +19,6 @@
         'display_link_mac.h',
         'io_surface_context.h',
         'io_surface_context.mm',
-        'io_surface_layer.h',
-        'io_surface_layer.mm',
-        'io_surface_texture.h',
-        'io_surface_texture.mm',
-        'software_layer.h',
-        'software_layer.mm',
         'surface_handle_types.cc',
         'surface_handle_types.h',
         'window_resize_helper_mac.cc',
@@ -43,9 +37,6 @@
       ],
       'link_settings': {
         'libraries': [
-          # Required by io_surface_texture.mm.
-          '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
-          '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
         ],
       },

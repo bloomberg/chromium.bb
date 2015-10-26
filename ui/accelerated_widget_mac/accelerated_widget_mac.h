@@ -8,6 +8,7 @@
 #include <IOSurface/IOSurface.h>
 #include <vector>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect.h"
@@ -17,8 +18,6 @@
 #if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
 #import "base/mac/scoped_nsobject.h"
-#import "ui/accelerated_widget_mac/io_surface_layer.h"
-#import "ui/accelerated_widget_mac/software_layer.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif  // __OBJC__
 
@@ -52,8 +51,7 @@ class AcceleratedWidgetMacNSView {
 // to a ui::Compositor, which will cause, through its output surface, calls to
 // GotAcceleratedFrame and GotSoftwareFrame. The CALayers may be installed
 // in an NSView by setting the AcceleratedWidgetMacNSView for the helper.
-class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
-    : public IOSurfaceLayerClient {
+class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
  public:
   explicit AcceleratedWidgetMac(bool needs_gl_finish_workaround);
   virtual ~AcceleratedWidgetMac();
@@ -89,14 +87,12 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
       const gfx::Rect& pixel_damage_rect,
       const base::Closure& drawn_callback);
 
-  void GotSoftwareFrame(float scale_factor, SkCanvas* canvas);
+  void GotIOSurfaceFrame(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+                         const gfx::Size& pixel_size,
+                         float scale_factor,
+                         bool flip_y);
 
  private:
-  // IOSurfaceLayerClient implementation:
-  bool IOSurfaceLayerShouldAckImmediately() const override;
-  void IOSurfaceLayerDidDrawFrame() override;
-  void IOSurfaceLayerHitError() override;
-
   void GotAcceleratedCAContextFrame(CAContextID ca_context_id,
                                     const gfx::Size& pixel_size,
                                     float scale_factor);
@@ -113,9 +109,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   // layer is reset.
   void DestroyCAContextLayer(
       base::scoped_nsobject<CALayerHost> ca_context_layer);
-  void DestroyIOSurfaceLayer(
-      base::scoped_nsobject<IOSurfaceLayer> io_surface_layer);
-  void DestroySoftwareLayer();
+  void DestroyLocalLayer();
+  void EnsureLocalLayer();
 
   // The AcceleratedWidgetMacNSView that is using this as its internals.
   AcceleratedWidgetMacNSView* view_;
@@ -135,11 +130,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   // The accelerated CoreAnimation layer hosted by the GPU process.
   base::scoped_nsobject<CALayerHost> ca_context_layer_;
 
-  // The locally drawn accelerated CoreAnimation layer.
-  base::scoped_nsobject<IOSurfaceLayer> io_surface_layer_;
-
-  // The locally drawn software layer.
-  base::scoped_nsobject<SoftwareLayer> software_layer_;
+  // The locally drawn layer, which has its contents set to an IOSurface.
+  base::scoped_nsobject<CALayer> local_layer_;
 
   // If an accelerated frame has come in which has not yet been drawn and acked
   // then this is the latency info and the callback to make when the frame is
@@ -171,8 +163,12 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     base::TimeTicks* vsync_timebase, base::TimeDelta* vsync_interval);
 
 ACCELERATED_WIDGET_MAC_EXPORT
-void AcceleratedWidgetMacGotSoftwareFrame(
-    gfx::AcceleratedWidget widget, float scale_factor, SkCanvas* canvas);
+void AcceleratedWidgetMacGotIOSurfaceFrame(
+    gfx::AcceleratedWidget widget,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    const gfx::Size& pixel_size,
+    float scale_factor,
+    bool flip_y);
 
 }  // namespace ui
 

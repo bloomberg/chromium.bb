@@ -29,7 +29,6 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
-#include "ui/accelerated_widget_mac/io_surface_layer.h"
 #import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"

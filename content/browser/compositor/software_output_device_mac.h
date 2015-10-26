@@ -5,7 +5,11 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_MAC_H_
 #define CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_MAC_H_
 
+#include <IOSurface/IOSurface.h>
+
+#include "base/mac/scoped_cftyperef.h"
 #include "cc/output/software_output_device.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 namespace gfx {
 class Canvas;
@@ -22,10 +26,34 @@ class SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice {
   explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
   ~SoftwareOutputDeviceMac() override;
 
+  void Resize(const gfx::Size& pixel_size, float scale_factor) override;
+  SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
   void EndPaint() override;
+  void DiscardBackbuffer() override;
+  void EnsureBackbuffer() override;
 
  private:
+  bool EnsureBuffersExist();
+
+  // Copy the pixels from the previous buffer to the new buffer.
+  void CopyPreviousBufferDamage(const SkRegion& new_damage_rect);
+
   ui::Compositor* compositor_;
+  gfx::Size pixel_size_;
+  float scale_factor_;
+
+  // This surface is double-buffered. The two buffers are in |io_surfaces_|,
+  // and the index of the current buffer is |current_buffer_|.
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surfaces_[2];
+  int current_index_;
+
+  // The previous frame's damage rectangle. Used to copy unchanged content
+  // between buffers in CopyPreviousBufferDamage.
+  SkRegion previous_buffer_damage_region_;
+
+  // The SkCanvas wrapps the mapped current IOSurface. It is valid only between
+  // BeginPaint and EndPaint.
+  skia::RefPtr<SkCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceMac);
 };

@@ -7,14 +7,19 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/accelerated_widget_mac/io_surface_layer.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
+
+@interface CALayer (PrivateAPI)
+- (void)setContentsChanged;
+@end
 
 namespace ui {
 namespace {
@@ -91,9 +96,8 @@ void AcceleratedWidgetMac::ResetNSView() {
   ScopedCAActionDisabler disabler;
 
   [flipped_layer_ removeFromSuperlayer];
-  DestroyIOSurfaceLayer(io_surface_layer_);
   DestroyCAContextLayer(ca_context_layer_);
-  DestroySoftwareLayer();
+  DestroyLocalLayer();
 
   last_swap_size_dip_ = gfx::Size();
   view_ = NULL;
@@ -105,8 +109,6 @@ bool AcceleratedWidgetMac::HasFrameOfSize(
 }
 
 int AcceleratedWidgetMac::GetRendererID() const {
-  if (io_surface_layer_)
-    return [io_surface_layer_ rendererID];
   return 0;
 }
 
@@ -127,11 +129,9 @@ bool AcceleratedWidgetMac::IsRendererThrottlingDisabled() const {
 }
 
 void AcceleratedWidgetMac::BeginPumpingFrames() {
-  [io_surface_layer_ beginPumpingFrames];
 }
 
 void AcceleratedWidgetMac::EndPumpingFrames() {
-  [io_surface_layer_ endPumpingFrames];
 }
 
 void AcceleratedWidgetMac::GotAcceleratedFrame(
@@ -156,7 +156,6 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
   // Disable the fade-in or fade-out effect if we create or remove layers.
   ScopedCAActionDisabler disabler;
 
-  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
   switch (GetSurfaceHandleType(surface_handle)) {
     case kSurfaceHandleTypeIOSurface: {
       IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
@@ -169,15 +168,19 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
       break;
     }
     default:
-      LOG(ERROR) << "Unrecognized accelerated frame type.";
+      DLOG(ERROR) << "Unrecognized accelerated frame type.";
       return;
   }
+
+  AcknowledgeAcceleratedFrame();
 }
 
 void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
     CAContextID ca_context_id,
     const gfx::Size& pixel_size,
     float scale_factor) {
+  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
+
   // In the layer is replaced, keep the old one around until after the new one
   // is installed to avoid flashes.
   base::scoped_nsobject<CALayerHost> old_ca_context_layer =
@@ -193,119 +196,75 @@ void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
     [flipped_layer_ addSublayer:ca_context_layer_];
   }
 
-  // Acknowledge the frame to unblock the compositor immediately (the GPU
-  // process will do any required throttling).
-  AcknowledgeAcceleratedFrame();
-
   // If this replacing a same-type layer, remove it now that the new layer is
   // in the hierarchy.
   if (old_ca_context_layer != ca_context_layer_)
     DestroyCAContextLayer(old_ca_context_layer);
 
   // Remove any different-type layers that this is replacing.
-  DestroyIOSurfaceLayer(io_surface_layer_);
-  DestroySoftwareLayer();
+  DestroyLocalLayer();
 }
 
 void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
     IOSurfaceID io_surface_id,
     const gfx::Size& pixel_size,
     float scale_factor) {
-  // In the layer is replaced, keep the old one around until after the new one
-  // is installed to avoid flashes.
-  base::scoped_nsobject<IOSurfaceLayer> old_io_surface_layer =
-      io_surface_layer_;
-
-  // Create or re-create an IOSurface layer if needed. If there already exists
-  // a layer but it has the wrong scale factor or it was poisoned, re-create the
-  // layer.
-  bool needs_new_layer =
-      !io_surface_layer_ ||
-      [io_surface_layer_ hasBeenPoisoned] ||
-      [io_surface_layer_ scaleFactor] != scale_factor;
-  if (needs_new_layer) {
-    io_surface_layer_.reset(
-        [[IOSurfaceLayer alloc] initWithClient:this
-                               withScaleFactor:scale_factor
-                       needsGLFinishWorkaround:needs_gl_finish_workaround_]);
-    if (io_surface_layer_)
-      [flipped_layer_ addSublayer:io_surface_layer_];
-    else
-      LOG(ERROR) << "Failed to create IOSurfaceLayer";
-  }
-
-  // Open the provided IOSurface.
-  if (io_surface_layer_) {
-    bool result = [io_surface_layer_ gotFrameWithIOSurface:io_surface_id
-                                             withPixelSize:pixel_size
-                                           withScaleFactor:scale_factor];
-    if (!result) {
-      DestroyIOSurfaceLayer(io_surface_layer_);
-      LOG(ERROR) << "Failed open IOSurface in IOSurfaceLayer";
-    }
-  }
-
-  // Give a final complaint if anything with the layer's creation went wrong.
-  // This frame will appear blank, the compositor will try to create another,
-  // and maybe that will go better.
-  if (!io_surface_layer_) {
-    LOG(ERROR) << "IOSurfaceLayer is nil, tab will be blank";
-    IOSurfaceLayerHitError();
-  }
-
-  // Make the CALayer draw and set its size appropriately.
-  if (io_surface_layer_) {
-    [io_surface_layer_ gotNewFrame];
-
-    // Set the bounds of the accelerated layer to match the size of the frame.
-    // If the bounds changed, force the content to be displayed immediately.
-    CGRect new_layer_bounds = CGRectMake(
-        0, 0, last_swap_size_dip_.width(), last_swap_size_dip_.height());
-    bool bounds_changed = !CGRectEqualToRect(
-        new_layer_bounds, [io_surface_layer_ bounds]);
-    [io_surface_layer_ setBounds:new_layer_bounds];
-    if (bounds_changed)
-      [io_surface_layer_ setNeedsDisplayAndDisplayAndAck];
-  }
-
-  // If this replacing a same-type layer, remove it now that the new layer is
-  // in the hierarchy.
-  if (old_io_surface_layer != io_surface_layer_)
-    DestroyIOSurfaceLayer(old_io_surface_layer);
-
-  // Remove any different-type layers that this is replacing.
-  DestroyCAContextLayer(ca_context_layer_);
-  DestroySoftwareLayer();
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+      IOSurfaceLookup(io_surface_id));
+  GotIOSurfaceFrame(io_surface, pixel_size, scale_factor, true);
 }
 
-void AcceleratedWidgetMac::GotSoftwareFrame(float scale_factor,
-                                            SkCanvas* canvas) {
-  if (!canvas || !view_)
-    return;
+void AcceleratedWidgetMac::EnsureLocalLayer() {
+  if (!local_layer_) {
+    local_layer_.reset([[CALayer alloc] init]);
+    // Setting contents gravity is necessary to prevent the layer from being
+    // scaled during dyanmic resizes (especially with devtools open).
+    [local_layer_ setContentsGravity:kCAGravityTopLeft];
+    [flipped_layer_ addSublayer:local_layer_];
+  }
+}
+
+void AcceleratedWidgetMac::GotIOSurfaceFrame(
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    const gfx::Size& pixel_size,
+    float scale_factor,
+    bool flip_y) {
+  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
   // Disable the fade-in or fade-out effect if we create or remove layers.
   ScopedCAActionDisabler disabler;
 
-  // If there is not a layer for software frames, create one.
-  if (!software_layer_) {
-    software_layer_.reset([[SoftwareLayer alloc] init]);
-    [flipped_layer_ addSublayer:software_layer_];
+  // If there is not a layer for local frames, create one.
+  EnsureLocalLayer();
+
+  id new_contents = static_cast<id>(io_surface.get());
+
+  if (new_contents && new_contents == [local_layer_ contents]) {
+    [local_layer_ setContentsChanged];
+  } else {
+    [local_layer_ setContents:new_contents];
   }
 
-  // Set the software layer to draw the provided canvas.
-  SkImageInfo info;
-  size_t row_bytes;
-  const void* pixels = canvas->peekPixels(&info, &row_bytes);
-  gfx::Size pixel_size(info.width(), info.height());
-  [software_layer_ setContentsToData:pixels
-                        withRowBytes:row_bytes
-                       withPixelSize:pixel_size
-                     withScaleFactor:scale_factor];
-  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
+  [local_layer_ setBounds:CGRectMake(0, 0, pixel_size.width() / scale_factor,
+                                     pixel_size.height() / scale_factor)];
+
+  if ([local_layer_ respondsToSelector:(@selector(contentsScale))] &&
+      [local_layer_ respondsToSelector:(@selector(setContentsScale:))] &&
+      [local_layer_ contentsScale] != scale_factor) {
+    DCHECK(base::mac::IsOSLionOrLater());
+    [local_layer_ setContentsScale:scale_factor];
+  }
+
+  if (flip_y) {
+    [local_layer_ setAnchorPoint:CGPointMake(0, 1)];
+    [local_layer_ setAffineTransform:CGAffineTransformMakeScale(1.0, -1.0)];
+  } else {
+    [local_layer_ setAnchorPoint:CGPointMake(0, 0)];
+    [local_layer_ setAffineTransform:CGAffineTransformMakeScale(1.0, 1.0)];
+  }
 
   // Remove any different-type layers that this is replacing.
   DestroyCAContextLayer(ca_context_layer_);
-  DestroyIOSurfaceLayer(io_surface_layer_);
 }
 
 void AcceleratedWidgetMac::DestroyCAContextLayer(
@@ -317,33 +276,11 @@ void AcceleratedWidgetMac::DestroyCAContextLayer(
     ca_context_layer_.reset();
 }
 
-void AcceleratedWidgetMac::DestroyIOSurfaceLayer(
-    base::scoped_nsobject<IOSurfaceLayer> io_surface_layer) {
-  if (!io_surface_layer)
+void AcceleratedWidgetMac::DestroyLocalLayer() {
+  if (!local_layer_)
     return;
-  [io_surface_layer resetClient];
-  [io_surface_layer removeFromSuperlayer];
-  if (io_surface_layer == io_surface_layer_)
-    io_surface_layer_.reset();
-}
-
-void AcceleratedWidgetMac::DestroySoftwareLayer() {
-  if (!software_layer_)
-    return;
-  [software_layer_ removeFromSuperlayer];
-  software_layer_.reset();
-}
-
-bool AcceleratedWidgetMac::IOSurfaceLayerShouldAckImmediately() const {
-  // If there is no view then the accelerated layer is not in the view
-  // hierarchy and will never draw.
-  if (!view_)
-    return true;
-  return view_->AcceleratedWidgetShouldIgnoreBackpressure();
-}
-
-void AcceleratedWidgetMac::IOSurfaceLayerDidDrawFrame() {
-  AcknowledgeAcceleratedFrame();
+  [local_layer_ removeFromSuperlayer];
+  local_layer_.reset();
 }
 
 void AcceleratedWidgetMac::AcknowledgeAcceleratedFrame() {
@@ -354,18 +291,6 @@ void AcceleratedWidgetMac::AcknowledgeAcceleratedFrame() {
   if (view_)
     view_->AcceleratedWidgetSwapCompleted(accelerated_latency_info_);
   accelerated_latency_info_.clear();
-}
-
-void AcceleratedWidgetMac::IOSurfaceLayerHitError() {
-  // Perform all acks that would have been done if the frame had succeeded, to
-  // un-block the compositor and renderer.
-  AcknowledgeAcceleratedFrame();
-
-  // Poison the context being used and request a mulligan.
-  [io_surface_layer_ poisonContextAndSharegroup];
-
-  if (view_)
-    view_->AcceleratedWidgetHitError();
 }
 
 void AcceleratedWidgetMacGotAcceleratedFrame(
@@ -395,12 +320,18 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
   }
 }
 
-void AcceleratedWidgetMacGotSoftwareFrame(
-    gfx::AcceleratedWidget widget, float scale_factor, SkCanvas* canvas) {
+void AcceleratedWidgetMacGotIOSurfaceFrame(
+    gfx::AcceleratedWidget widget,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    const gfx::Size& pixel_size,
+    float scale_factor,
+    bool flip_y) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
-  if (accelerated_widget_mac)
-    accelerated_widget_mac->GotSoftwareFrame(scale_factor, canvas);
+  if (accelerated_widget_mac) {
+    accelerated_widget_mac->GotIOSurfaceFrame(io_surface, pixel_size,
+                                              scale_factor, flip_y);
+  }
 }
 
 }  // namespace ui

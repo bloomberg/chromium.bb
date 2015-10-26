@@ -12,7 +12,7 @@ namespace {
 
 // IOSurface dimensions will be rounded up to a multiple of this value in order
 // to reduce memory thrashing during resize. This must be a power of 2.
-const uint32 kIOSurfaceDimensionRoundup = 64;
+const uint32 kIOSurfaceDimensionRoundup = 1;
 
 int RoundUpSurfaceDimension(int number) {
   DCHECK(number >= 0);
@@ -59,11 +59,13 @@ bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
     GLuint texture, gfx::Size pixel_size, float scale_factor) {
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
+  unsigned pixel_format = 'BGRA';
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,
                                              &kCFTypeDictionaryKeyCallBacks,
                                              &kCFTypeDictionaryValueCallBacks));
+  AddIntegerValue(properties, kIOSurfacePixelFormat, pixel_format);
   AddIntegerValue(properties,
                   kIOSurfaceWidth,
                   pixel_size.width());
