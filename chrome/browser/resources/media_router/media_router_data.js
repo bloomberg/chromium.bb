@@ -38,8 +38,8 @@ cr.define('media_router', function() {
     CAST: 0,
     CAST_AUDIO: 1,
     CAST_AUDIO_GROUP: 2,
-    GENERIC: 2,
-    HANGOUT: 3,
+    GENERIC: 3,
+    HANGOUT: 4,
   };
 
   /**
