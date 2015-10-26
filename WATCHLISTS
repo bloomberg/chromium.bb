@@ -255,11 +255,6 @@
     'content_bluetooth': {
       'filepath': 'content/.*bluetooth'
     },
-    'content_input': {
-      'filepath': 'content/browser/renderer_host/input/|'\
-                  'content/common/input/|'\
-                  'content/renderer/input/',
-    },
     'content_loader': {
       'filepath': 'content/browser/loader|'\
                   'content/child/*loader',
@@ -1298,7 +1293,6 @@
     'content': ['jam@chromium.org',
                 'darin-cc@chromium.org' ],
     'content_bluetooth': ['scheib+watch@chromium.org'],
-    'content_input': ['jdduke+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org'],
     'content_renderer': [ 'mkwst+moarreviews-renderer@chromium.org',
                           'mlamouri+watch-content@chromium.org'],
@@ -1325,7 +1319,7 @@
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
     'enhanced_bookmarks': ['noyau+watch@chromium.org'],
-    'events': ['tdresser+watch@chromium.org', 'jdduke+watch@chromium.org'],
+    'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
