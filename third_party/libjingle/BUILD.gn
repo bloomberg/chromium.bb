@@ -256,7 +256,14 @@ static_library("libjingle") {
   }
 
   if (is_nacl) {
-    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
+    # For NACL, we have to add a default implementation for field_trail.
+    deps += [
+      "//native_client_sdk/src/libraries/nacl_io",
+      "//third_party/webrtc/system_wrappers:field_trial_default",
+    ]
+  } else {
+    # Otherwise, we just add the field_trial which redirects to base.
+    sources += [ "overrides/field_trial.cc" ]
   }
 
   configs += [ ":jingle_unexported_configs" ]

@@ -258,6 +258,9 @@
         # Compiled as part of libjingle_p2p_constants_nacl.
         '<(webrtc_p2p)/base/constants.cc',
         '<(webrtc_p2p)/base/constants.h',
+        # For NACL, we have the field_trial_default and don't need the
+        # field_trail.cc.
+        'overrides/field_trial.cc',
       ],
       'sources/': [
         ['exclude', '/mac[a-z]+\\.(h|cc)$'],

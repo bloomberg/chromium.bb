@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -36,13 +35,6 @@ void AddTraceEvent(char phase,
 }
 
 namespace webrtc {
-// Define webrtc::field_trial::FindFullName to provide webrtc with a field trial
-// implementation.
-namespace field_trial {
-std::string FindFullName(const std::string& trial_name) {
-  return base::FieldTrialList::FindFullName(trial_name);
-}
-}  // namespace field_trial
 
 // Define webrtc::metrics functions to provide webrtc with implementations.
 namespace metrics {
