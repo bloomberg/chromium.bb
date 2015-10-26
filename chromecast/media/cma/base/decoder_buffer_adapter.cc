@@ -29,8 +29,8 @@ StreamId DecoderBufferAdapter::stream_id() const {
   return stream_id_;
 }
 
-base::TimeDelta DecoderBufferAdapter::timestamp() const {
-  return buffer_->timestamp();
+int64_t DecoderBufferAdapter::timestamp() const {
+  return buffer_->timestamp().InMicroseconds();
 }
 
 void DecoderBufferAdapter::set_timestamp(base::TimeDelta timestamp) {

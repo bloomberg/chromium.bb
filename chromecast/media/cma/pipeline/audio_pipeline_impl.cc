@@ -73,6 +73,11 @@ void AudioPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
       base::Bind(&AudioPipelineImpl::OnFlushDone, weak_this_, status_cb));
 }
 
+void AudioPipelineImpl::BackendStopped() {
+  CMALOG(kLogControl) << __FUNCTION__;
+  av_pipeline_impl_->BackendStopped();
+}
+
 void AudioPipelineImpl::OnFlushDone(
     const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << __FUNCTION__;

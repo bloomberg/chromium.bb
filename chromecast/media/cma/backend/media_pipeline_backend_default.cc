@@ -20,8 +20,7 @@ class MediaPipelineBackendDefault::AudioDecoderDefault
   }
 
   // MediaPipelineBackend::AudioDecoder implementation:
-  BufferStatus PushBuffer(DecryptContext* decrypt_context,
-                          CastDecoderBuffer* buffer) override {
+  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
     if (buffer->end_of_stream())
       delegate_->OnEndOfStream(this);
     return MediaPipelineBackend::kBufferSuccess;
@@ -52,8 +51,7 @@ class MediaPipelineBackendDefault::VideoDecoderDefault
   }
 
   // MediaPipelineBackend::VideoDecoder implementation:
-  BufferStatus PushBuffer(DecryptContext* decrypt_context,
-                          CastDecoderBuffer* buffer) override {
+  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
     if (buffer->end_of_stream())
       delegate_->OnEndOfStream(this);
     return MediaPipelineBackend::kBufferSuccess;

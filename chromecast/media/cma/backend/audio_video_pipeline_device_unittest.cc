@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/test/frame_segmenter_for_test.h"
@@ -116,8 +115,8 @@ class AudioVideoPipelineDeviceTest : public testing::Test,
 
   scoped_ptr<TaskRunnerImpl> task_runner_;
   scoped_ptr<MediaPipelineBackend> backend_;
-  CastDecoderBufferImpl backend_audio_buffer_;
-  CastDecoderBufferImpl backend_video_buffer_;
+  scoped_refptr<DecoderBufferBase> backend_audio_buffer_;
+  scoped_refptr<DecoderBufferBase> backend_video_buffer_;
 
   // Current media time.
   base::TimeDelta pause_time_;
@@ -138,9 +137,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test,
 };
 
 AudioVideoPipelineDeviceTest::AudioVideoPipelineDeviceTest()
-    : backend_audio_buffer_(nullptr),
-      backend_video_buffer_(nullptr),
-      pause_pattern_(),
+    : pause_pattern_(),
       audio_decoder_(nullptr),
       video_decoder_(nullptr),
       audio_feeding_completed_(true),
@@ -249,18 +246,16 @@ void AudioVideoPipelineDeviceTest::FeedAudioBuffer() {
   if (audio_feeding_completed_)
     return;
 
-  scoped_refptr<DecoderBufferBase> buffer = audio_buffers_.front();
-  backend_audio_buffer_.set_buffer(buffer);
+  backend_audio_buffer_ = audio_buffers_.front();
 
   MediaPipelineBackend::BufferStatus status =
-      audio_decoder_->PushBuffer(nullptr,  // decrypt_context
-                                 &backend_audio_buffer_);
+      audio_decoder_->PushBuffer(backend_audio_buffer_.get());
   EXPECT_NE(status, MediaPipelineBackend::kBufferFailed);
   audio_buffers_.pop_front();
 
   // Feeding is done, just wait for the end of stream callback.
-  if (buffer->end_of_stream() || audio_buffers_.empty()) {
-    if (audio_buffers_.empty() && !buffer->end_of_stream()) {
+  if (backend_audio_buffer_->end_of_stream() || audio_buffers_.empty()) {
+    if (audio_buffers_.empty() && !backend_audio_buffer_->end_of_stream()) {
       LOG(WARNING) << "Stream emptied without feeding EOS frame";
     }
 
@@ -280,18 +275,16 @@ void AudioVideoPipelineDeviceTest::FeedVideoBuffer() {
   if (video_feeding_completed_)
     return;
 
-  scoped_refptr<DecoderBufferBase> buffer = video_buffers_.front();
-  backend_video_buffer_.set_buffer(buffer);
+  backend_video_buffer_ = video_buffers_.front();
 
   MediaPipelineBackend::BufferStatus status =
-      video_decoder_->PushBuffer(nullptr,  // decrypt_context
-                                 &backend_video_buffer_);
+      video_decoder_->PushBuffer(backend_video_buffer_.get());
   EXPECT_NE(status, MediaPipelineBackend::kBufferFailed);
   video_buffers_.pop_front();
 
   // Feeding is done, just wait for the end of stream callback.
-  if (buffer->end_of_stream() || video_buffers_.empty()) {
-    if (video_buffers_.empty() && !buffer->end_of_stream()) {
+  if (backend_video_buffer_->end_of_stream() || video_buffers_.empty()) {
+    if (video_buffers_.empty() && !backend_video_buffer_->end_of_stream()) {
       LOG(WARNING) << "Stream emptied without feeding EOS frame";
     }
 
@@ -431,6 +424,7 @@ void AudioVideoPipelineDeviceTest::Initialize() {
   task_runner_.reset(new TaskRunnerImpl());
   MediaPipelineDeviceParams params(task_runner_.get());
   backend_.reset(CastMediaShlib::CreateMediaPipelineBackend(params));
+  DCHECK(backend_);
 }
 
 TEST_F(AudioVideoPipelineDeviceTest, Mp3Playback) {

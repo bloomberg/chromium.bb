@@ -27,7 +27,7 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
 
   // DecoderBufferBase implementation.
   StreamId stream_id() const override;
-  base::TimeDelta timestamp() const override;
+  int64_t timestamp() const override;
   void set_timestamp(base::TimeDelta timestamp) override;
   const uint8* data() const override;
   uint8* writable_data() const override;
@@ -113,8 +113,8 @@ StreamId DecoderBufferFromMsg::stream_id() const {
   return stream_id_;
 }
 
-base::TimeDelta DecoderBufferFromMsg::timestamp() const {
-  return pts_;
+int64_t DecoderBufferFromMsg::timestamp() const {
+  return pts_.InMicroseconds();
 }
 
 void DecoderBufferFromMsg::set_timestamp(base::TimeDelta timestamp) {
@@ -154,7 +154,7 @@ void DecoderBufferBaseMarshaller::Write(
     return;
 
   CHECK(msg->WritePod(buffer->stream_id()));
-  CHECK(msg->WritePod(buffer->timestamp().InMicroseconds()));
+  CHECK(msg->WritePod(buffer->timestamp()));
 
   bool has_decrypt_config =
       (buffer->decrypt_config() != NULL &&

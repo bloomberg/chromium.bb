@@ -42,15 +42,12 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
         pipeline_status_(PIPELINE_STATUS_OK),
         pending_push_(false),
         pushed_buffer_count_(0),
-        last_decrypt_context_(nullptr),
         last_buffer_(nullptr),
         delegate_(nullptr) {}
   ~FakeAudioDecoder() override {}
 
   // MediaPipelineBackend::AudioDecoder overrides.
-  BufferStatus PushBuffer(DecryptContext* decrypt_context,
-                          CastDecoderBuffer* buffer) override {
-    last_decrypt_context_ = decrypt_context;
+  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
     last_buffer_ = buffer;
     ++pushed_buffer_count_;
 
@@ -93,7 +90,6 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
     pipeline_status_ = status;
   }
   unsigned pushed_buffer_count() const { return pushed_buffer_count_; }
-  DecryptContext* last_decrypt_context() { return last_decrypt_context_; }
   CastDecoderBuffer* last_buffer() { return last_buffer_; }
   void set_delegate(MediaPipelineBackend::Delegate* delegate) {
     delegate_ = delegate;
@@ -106,7 +102,6 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
   PipelineStatus pipeline_status_;
   bool pending_push_;
   int pushed_buffer_count_;
-  DecryptContext* last_decrypt_context_;
   CastDecoderBuffer* last_buffer_;
   MediaPipelineBackend::Delegate* delegate_;
 };
@@ -471,7 +466,6 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   ASSERT_TRUE(audio_decoder);
   // Verify initial state.
   EXPECT_EQ(0u, audio_decoder->pushed_buffer_count());
-  EXPECT_FALSE(audio_decoder->last_decrypt_context());
   EXPECT_FALSE(audio_decoder->last_buffer());
 
   scoped_ptr<FakeAudioSourceCallback> source_callback(
@@ -481,8 +475,6 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
 
   // Verify that the stream pushed frames to the backend.
   EXPECT_LT(0u, audio_decoder->pushed_buffer_count());
-  // DecryptContext is always NULL becuase of "raw" audio.
-  EXPECT_FALSE(audio_decoder->last_decrypt_context());
   EXPECT_TRUE(audio_decoder->last_buffer());
 
   // Verify decoder buffer.

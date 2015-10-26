@@ -76,6 +76,11 @@ void VideoPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
       base::Bind(&VideoPipelineImpl::OnFlushDone, weak_this_, status_cb));
 }
 
+void VideoPipelineImpl::BackendStopped() {
+  CMALOG(kLogControl) << __FUNCTION__;
+  av_pipeline_impl_->BackendStopped();
+}
+
 void VideoPipelineImpl::OnFlushDone(
     const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << __FUNCTION__;

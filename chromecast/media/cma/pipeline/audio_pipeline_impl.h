@@ -46,6 +46,7 @@ class AudioPipelineImpl {
   bool StartPlayingFrom(base::TimeDelta time,
                         const scoped_refptr<BufferingState>& buffering_state);
   void Flush(const ::media::PipelineStatusCB& status_cb);
+  void BackendStopped();
   void Stop();
 
   // Update the playback statistics for this audio stream.

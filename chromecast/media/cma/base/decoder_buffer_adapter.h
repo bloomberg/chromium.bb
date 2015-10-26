@@ -28,9 +28,9 @@ class DecoderBufferAdapter : public DecoderBufferBase {
   DecoderBufferAdapter(
       StreamId stream_id, const scoped_refptr<::media::DecoderBuffer>& buffer);
 
-  // DecoderBufferBase implementation.
+  // DecoderBufferBase implementation:
   StreamId stream_id() const override;
-  base::TimeDelta timestamp() const override;
+  int64_t timestamp() const override;
   void set_timestamp(base::TimeDelta timestamp) override;
   const uint8* data() const override;
   uint8* writable_data() const override;

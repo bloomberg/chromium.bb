@@ -58,13 +58,12 @@ class MediaPipelineBackend {
     // further buffers until OnPushComplete is invoked.
     // OnPushComplete should be only be invoked to indicate completion of a
     // pending buffer push - not for the immediate |kBufferSuccess| return case.
-    // The decrypt_context and buffer's lifetimes are managed by the caller code
-    // - they MUST NOT be deleted by the MediaPipelineBackend implementation,
-    // and MUST NOT be dereferenced after completion of buffer push (i.e.
+    // The buffer's lifetime is managed by the caller code - it MUST NOT be
+    // deleted by the MediaPipelineBackend implementation, and MUST NOT be
+    // dereferenced after completion of buffer push (i.e.
     // kBufferSuccess/kBufferFailure for synchronous completion, OnPushComplete
     // for kBufferPending case).
-    virtual BufferStatus PushBuffer(DecryptContext* decrypt_context,
-                                    CastDecoderBuffer* buffer) = 0;
+    virtual BufferStatus PushBuffer(CastDecoderBuffer* buffer) = 0;
 
     // Returns the playback statistics since this decoder's creation.  Only
     // called when playing or paused.

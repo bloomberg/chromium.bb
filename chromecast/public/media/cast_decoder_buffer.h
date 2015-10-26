@@ -15,12 +15,16 @@ namespace chromecast {
 namespace media {
 
 class CastDecryptConfig;
+class DecryptContext;
 
 // CastDecoderBuffer provides an interface for passing a single frame of audio
 // or video data to the pipeline backend.  End-of-stream is indicated by passing
 // a frame where end_of_stream() returns true.
-// Buffer ownership passes to backend when they are pushed (see
-// MediaComponentDevice::PushFrame).
+// The buffer's lifetime is managed by the caller code - it MUST NOT be
+// deleted by the MediaPipelineBackend implementation, and MUST NOT be
+// dereferenced after completion of buffer push (i.e.
+// kBufferSuccess/kBufferFailure for synchronous completion, OnPushComplete
+// for kBufferPending case).
 // TODO(halliwell): consider renaming functions here to camel case.
 class CastDecoderBuffer {
  public:
@@ -39,8 +43,12 @@ class CastDecoderBuffer {
   virtual size_t data_size() const = 0;
 
   // Returns the decrypt configuration.
-  // Returns NULL if and only if the buffer is unencrypted.
+  // Returns nullptr if and only if the buffer is unencrypted.
   virtual const CastDecryptConfig* decrypt_config() const = 0;
+
+  // Returns the decrypt context. Returns nullptr if and only if the buffer is
+  // unencrypted.
+  virtual DecryptContext* decrypt_context() const = 0;
 
   // Indicates if this is a special frame that indicates the end of the stream.
   // If true, functions to access the frame content cannot be called.

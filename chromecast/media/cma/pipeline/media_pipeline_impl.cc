@@ -345,6 +345,12 @@ void MediaPipelineImpl::OnFlushDone(
     return;
   }
 
+  // Clear pending buffers.
+  if (audio_pipeline_)
+    audio_pipeline_->BackendStopped();
+  if (video_pipeline_)
+    video_pipeline_->BackendStopped();
+
   pending_flush_callbacks_.reset();
   status_cb.Run(status);
 }

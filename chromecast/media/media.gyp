@@ -120,8 +120,6 @@
         'cma/base/buffering_frame_provider.h',
         'cma/base/buffering_state.cc',
         'cma/base/buffering_state.h',
-        'cma/base/cast_decoder_buffer_impl.cc',
-        'cma/base/cast_decoder_buffer_impl.h',
         'cma/base/cast_decrypt_config_impl.cc',
         'cma/base/cast_decrypt_config_impl.h',
         'cma/base/cma_logging.h',

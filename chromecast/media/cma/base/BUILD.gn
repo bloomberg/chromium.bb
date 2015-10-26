@@ -14,8 +14,6 @@ source_set("base") {
     "buffering_frame_provider.h",
     "buffering_state.cc",
     "buffering_state.h",
-    "cast_decoder_buffer_impl.cc",
-    "cast_decoder_buffer_impl.h",
     "cast_decrypt_config_impl.cc",
     "cast_decrypt_config_impl.h",
     "cma_logging.h",

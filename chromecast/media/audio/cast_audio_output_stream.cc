@@ -12,7 +12,6 @@
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/base/media_message_loop.h"
-#include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/decrypt_context.h"
@@ -67,8 +66,7 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
       : audio_params_(audio_params),
         decoder_(nullptr),
         first_start_(true),
-        error_(false),
-        backend_buffer_(nullptr) {
+        error_(false) {
     thread_checker_.DetachFromThread();
   }
   ~Backend() override {}
@@ -133,11 +131,11 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
       return;
     }
 
-    backend_buffer_.set_buffer(decoder_buffer);
+    backend_buffer_ = decoder_buffer;
 
     completion_cb_ = completion_cb;
     MediaPipelineBackend::BufferStatus status =
-        decoder_->PushBuffer(nullptr /* decrypt_context */, &backend_buffer_);
+        decoder_->PushBuffer(backend_buffer_.get());
     if (status != MediaPipelineBackend::kBufferPending)
       OnPushBufferComplete(decoder_, status);
   }
@@ -182,7 +180,7 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
   PushBufferCompletionCallback completion_cb_;
   bool first_start_;
   bool error_;
-  CastDecoderBufferImpl backend_buffer_;
+  scoped_refptr<DecoderBufferBase> backend_buffer_;
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };

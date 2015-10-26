@@ -23,7 +23,7 @@ class DecoderBufferClear : public DecoderBufferBase {
 
   // DecoderBufferBase implementation.
   StreamId stream_id() const override;
-  base::TimeDelta timestamp() const override;
+  int64_t timestamp() const override;
   void set_timestamp(base::TimeDelta timestamp) override;
   const uint8* data() const override;
   uint8* writable_data() const override;
@@ -51,7 +51,7 @@ StreamId DecoderBufferClear::stream_id() const {
   return buffer_->stream_id();
 }
 
-base::TimeDelta DecoderBufferClear::timestamp() const {
+int64_t DecoderBufferClear::timestamp() const {
   return buffer_->timestamp();
 }
 

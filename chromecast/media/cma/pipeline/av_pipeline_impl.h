@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/stream_id.h"
 
@@ -64,6 +63,8 @@ class AvPipelineImpl {
   // Flush any remaining samples in the pipeline.
   // Invoke |done_cb| when flush is completed.
   void Flush(const base::Closure& done_cb);
+  // Resets any pending buffers after the backend has been stopped.
+  void BackendStopped();
 
   // Tear down the pipeline and release the hardware resources.
   void Stop();
@@ -140,7 +141,7 @@ class AvPipelineImpl {
   scoped_refptr<DecoderBufferBase> pending_buffer_;
 
   // Buffer that has been pushed to the device but not processed yet.
-  CastDecoderBufferImpl pushed_buffer_;
+  scoped_refptr<DecoderBufferBase> pushed_buffer_;
 
   // The media time is retrieved at regular intervals.
   // Indicate whether time update is enabled.
