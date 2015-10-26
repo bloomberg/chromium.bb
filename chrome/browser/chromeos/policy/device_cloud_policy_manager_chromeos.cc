@@ -63,9 +63,6 @@ const char kSharkRequisition[] = "shark";
 // does though!). The former sticker is the source of the serial number used by
 // device management service, so we prefer Product_S/N over serial number to
 // match the server.
-//
-// TODO(mnissler): Move serial_number back to the top once the server side uses
-// the correct serial number.
 const char* const kMachineInfoSerialNumberKeys[] = {
   "Product_S/N",    // Lumpy/Alex devices
   "serial_number",  // VPD v2+ devices
