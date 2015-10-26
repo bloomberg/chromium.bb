@@ -11,6 +11,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/url_constants.h"
 
 namespace content {
 
@@ -44,6 +45,23 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+RenderFrameHost* WebRTCInternalsMessageHandler::GetWebRTCInternalsHost() const {
+  RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
+  if (host) {
+    // Make sure we only ever execute the script in the webrtc-internals page.
+    const GURL url(host->GetLastCommittedURL());
+    if (!url.SchemeIs(kChromeUIScheme) ||
+        url.host() != kChromeUIWebRTCInternalsHost) {
+      // Some other page is currently loaded even though we might be in the
+      // process of loading webrtc-internals.  So, the current RFH is not the
+      // one we're waiting for.
+      host = nullptr;
+    }
+  }
+
+  return host;
+}
+
 void WebRTCInternalsMessageHandler::OnGetAllStats(
     const base::ListValue* /* unused_list */) {
   for (RenderProcessHost::iterator i(
@@ -68,26 +86,31 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
   WebRTCInternals::GetInstance()->UpdateObserver(this);
 
   if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
+    RenderFrameHost* host = GetWebRTCInternalsHost();
+    if (!host)
+      return;
+
     std::vector<const base::Value*> args_vector;
     base::string16 script =
         WebUI::GetJavascriptCall("setAudioDebugRecordingsEnabled", args_vector);
-    RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
-    if (host)
-      host->ExecuteJavaScript(script);
+    host->ExecuteJavaScript(script);
   }
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
                                              const base::Value* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderFrameHost* host = GetWebRTCInternalsHost();
+  if (!host)
+    return;
+
   std::vector<const base::Value*> args_vector;
   if (args)
     args_vector.push_back(args);
-  base::string16 update = WebUI::GetJavascriptCall(command, args_vector);
 
-  RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
-  if (host)
-    host->ExecuteJavaScript(update);
+  base::string16 update = WebUI::GetJavascriptCall(command, args_vector);
+  host->ExecuteJavaScript(update);
 }
 
 }  // namespace content

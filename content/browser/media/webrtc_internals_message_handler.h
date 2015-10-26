@@ -15,6 +15,8 @@ class ListValue;
 
 namespace content {
 
+class RenderFrameHost;
+
 // This class handles messages to and from WebRTCInternalsUI.
 // It delegates all its work to WebRTCInternalsProxy on the IO thread.
 class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
@@ -30,6 +32,10 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
   void OnUpdate(const std::string& command, const base::Value* args) override;
 
  private:
+  // Returns a pointer to the RFH iff it is currently hosting the
+  // webrtc-internals page.
+  RenderFrameHost* GetWebRTCInternalsHost() const;
+
   // Javascript message handler.
   void OnGetAllStats(const base::ListValue* list);
   void OnSetAudioDebugRecordingsEnabled(bool enable,
