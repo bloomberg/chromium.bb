@@ -79,9 +79,6 @@ template <typename Strategy> class PositionWithAffinityTemplate;
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
-    // TODO(bokan): Temporary to debug crbug.com/519752.
-    static bool s_inDocumentLoaderDetach;
-
     static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
     void init();
