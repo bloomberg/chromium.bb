@@ -17,6 +17,10 @@ const char kConfigModeKey[] = "mode";
 const char kConfigModePreemptive[] = "PREEMPTIVE_TRACING_MODE";
 const char kConfigModeReactive[] = "REACTIVE_TRACING_MODE";
 
+const char kConfigScenarioName[] = "scenario_name";
+const char kConfigEnableBlinkFeatures[] = "enable_blink_features";
+const char kConfigDisableBlinkFeatures[] = "disable_blink_features";
+
 const char kConfigCategoryKey[] = "category";
 const char kConfigCategoryBenchmark[] = "BENCHMARK";
 const char kConfigCategoryBenchmarkDeep[] = "BENCHMARK_DEEP";
@@ -103,6 +107,13 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) const {
   }
 
   dict->Set(kConfigsKey, configs_list.Pass());
+
+  if (!scenario_name_.empty())
+    dict->SetString(kConfigScenarioName, scenario_name_);
+  if (!enable_blink_features_.empty())
+    dict->SetString(kConfigEnableBlinkFeatures, enable_blink_features_);
+  if (!disable_blink_features_.empty())
+    dict->SetString(kConfigDisableBlinkFeatures, disable_blink_features_);
 }
 
 void BackgroundTracingConfigImpl::AddPreemptiveRule(
@@ -139,6 +150,11 @@ scoped_ptr<BackgroundTracingConfigImpl> BackgroundTracingConfigImpl::FromDict(
   } else {
     return nullptr;
   }
+
+  dict->GetString(kConfigScenarioName, &config->scenario_name_);
+  dict->GetString(kConfigEnableBlinkFeatures, &config->enable_blink_features_);
+  dict->GetString(kConfigDisableBlinkFeatures,
+                  &config->disable_blink_features_);
 
   return config.Pass();
 }
