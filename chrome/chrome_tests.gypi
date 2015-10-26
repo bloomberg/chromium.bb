@@ -2416,7 +2416,7 @@
             'app/chrome_version.rc.version',
           ],
         }],
-        ['chromeos==0 and use_aura==1', {
+        ['chromeos==0 and use_ash==1', {
           'sources!': [
             # On Windows and Linux, we currently don't support enough of the
             # ash environment to run these unit tests.

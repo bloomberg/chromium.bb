@@ -1104,7 +1104,7 @@ if (!is_android) {
         "../browser/media_galleries/fileapi/iapps_finder_impl_win_browsertest.cc",
       ]
     }
-    if (!is_chromeos && use_aura) {
+    if (!is_chromeos && use_ash) {
       sources -= [
         # On Windows and Linux, we currently don't support enough of the
         # ash environment to run these unit tests.
