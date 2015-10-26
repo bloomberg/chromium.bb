@@ -32,6 +32,7 @@ nacl_toolchain("newlib_pnacl") {
       rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
                   root_build_dir)
 
+  is_clang = true
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
