@@ -59,6 +59,12 @@ class MemoryHealthPlan(_MemoryInfra):
     return (value.tir_label in ['foreground', 'background']
             and any(value.name.startswith(p) for p in cls._PREFIX_WHITELIST))
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # Benchmark requires DeskClock app only available on Nexus devices.
+    # See http://crbug.com/546842
+    return 'nexus' not in possible_browser.platform.GetDeviceTypeName().lower()
+
 
 # TODO(bashi): Workaround for http://crbug.com/532075
 # @benchmark.Enabled('android') shouldn't be needed.
