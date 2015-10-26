@@ -995,7 +995,6 @@ input[type="hidden" i]:focus,
 input[type="image" i]:focus,
 input[type="radio" i]:focus,
 input[type="reset" i]:focus,
-input[type="search" i]:focus,
 input[type="submit" i]:focus,
 input[type="file" i]:focus::-webkit-file-upload-button {
     outline-offset: 0

@@ -1168,7 +1168,7 @@ String LayoutThemeMac::extraDefaultStyleSheet()
 
 bool LayoutThemeMac::supportsFocusRing(const ComputedStyle& style) const
 {
-    return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart && !shouldUseFallbackTheme(style));
+    return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != SearchFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart && !shouldUseFallbackTheme(style));
 }
 
 bool LayoutThemeMac::shouldUseFallbackTheme(const ComputedStyle& style) const

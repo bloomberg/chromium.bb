@@ -1560,6 +1560,9 @@ crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [
 
 crbug.com/524646 [ Yosemite ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
+crbug.com/169726 [ Mac ] fast/forms/search-cancel-button-style-sharing.html [ NeedsRebaseline ]
+crbug.com/169726 [ Mac ] fast/forms/search-rtl.html [ NeedsRebaseline ]
+
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
