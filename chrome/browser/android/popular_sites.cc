@@ -34,7 +34,7 @@ namespace {
 const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
 const char kPopularSitesServerFilenameFormat[] = "suggested_sites_%s_%s.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
-const char kPopularSitesDefaultVersion[] = "2";
+const char kPopularSitesDefaultVersion[] = "3";
 const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 
 // Extract the country from the default search engine if the default search
