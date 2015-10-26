@@ -1687,6 +1687,11 @@ bool ProfileSyncService::IsSyncActive() const {
          data_type_manager_->state() != DataTypeManager::STOPPED;
 }
 
+void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
+  if (backend_initialized_)
+    backend_->TriggerRefresh(types);
+}
+
 bool ProfileSyncService::IsSignedIn() const {
   // Sync is logged in if there is a non-empty effective account id.
   return !signin_->GetAccountIdToUse().empty();

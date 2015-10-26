@@ -99,6 +99,7 @@ class SyncBackendHostImpl
       syncer::NetworkResources* network_resources,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
       override;
+  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void UpdateCredentials(const syncer::SyncCredentials& credentials) override;
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase,

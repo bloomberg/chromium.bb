@@ -103,6 +103,10 @@ class SyncService : public DataTypeEncryptionHandler {
   // false.
   virtual bool IsSyncActive() const = 0;
 
+  // Triggers a GetUpdates call for the specified |types|, pulling any new data
+  // from the sync server.
+  virtual void TriggerRefresh(const syncer::ModelTypeSet& types) = 0;
+
   // Get the set of current active data types (those chosen or configured by
   // the user which have not also encountered a runtime error).
   // Note that if the Sync engine is in the middle of a configuration, this

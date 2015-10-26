@@ -174,6 +174,13 @@ void SyncBackendHostImpl::Initialize(
   InitCore(init_opts.Pass());
 }
 
+void SyncBackendHostImpl::TriggerRefresh(const syncer::ModelTypeSet& types) {
+  DCHECK(ui_thread_->BelongsToCurrentThread());
+  registrar_->sync_thread()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_.get(), types));
+}
+
 void SyncBackendHostImpl::UpdateCredentials(
     const syncer::SyncCredentials& credentials) {
   DCHECK(registrar_->sync_thread()->IsRunning());
@@ -622,14 +629,11 @@ void SyncBackendHostImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL);
 
   content::Details<const syncer::ModelTypeSet> state_details(details);
   const syncer::ModelTypeSet& types = *(state_details.ptr());
-  registrar_->sync_thread()->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_.get(), types));
+  TriggerRefresh(types);
 }
 
 void SyncBackendHostImpl::AddExperimentalTypes() {

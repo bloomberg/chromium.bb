@@ -244,6 +244,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool HasSyncSetupCompleted() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
+  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
   bool CanSyncStart() const override;
   void RequestStop(SyncStopDataFate data_fate) override;

@@ -76,6 +76,9 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
           saved_nigori_state) = 0;
 
+  // Called on the frontend's thread to trigger a refresh.
+  virtual void TriggerRefresh(const syncer::ModelTypeSet& types) = 0;
+
   // Called on the frontend's thread to update SyncCredentials.
   virtual void UpdateCredentials(
       const syncer::SyncCredentials& credentials) = 0;

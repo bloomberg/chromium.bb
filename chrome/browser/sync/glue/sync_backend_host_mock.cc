@@ -37,6 +37,8 @@ void SyncBackendHostMock::Initialize(
       !fail_initial_download_);
 }
 
+void SyncBackendHostMock::TriggerRefresh(const syncer::ModelTypeSet& types) {}
+
 void SyncBackendHostMock::UpdateCredentials(
     const syncer::SyncCredentials& credentials) {}
 
