@@ -69,8 +69,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
-    public void onReloadIgnoringCache() {
-        mTab.reloadIgnoringCache();
+    public void onReloadDisableLoFi() {
+        mTab.reloadDisableLoFi();
     }
 
     @Override

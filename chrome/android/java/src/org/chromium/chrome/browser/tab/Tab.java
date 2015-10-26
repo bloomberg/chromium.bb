@@ -899,6 +899,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * Reloads the current page content with Lo-Fi off.
+     * This version ignores the cache and reloads from the network.
+     */
+    public void reloadDisableLoFi() {
+        if (getWebContents() != null) {
+            getWebContents().getNavigationController().reloadDisableLoFi(true);
+        }
+    }
+
+    /**
      * @return Whether or not the loading and rendering of the page is done.
      */
     @VisibleForTesting

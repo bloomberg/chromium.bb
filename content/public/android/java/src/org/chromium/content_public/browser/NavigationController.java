@@ -76,6 +76,11 @@ public interface NavigationController {
     public void reloadIgnoringCache(boolean checkForRepost);
 
     /**
+     * Reload the current page with Lo-Fi off, ignoring the contents of the cache.
+     */
+    public void reloadDisableLoFi(boolean checkForRepost);
+
+    /**
      * Cancel the pending reload.
      */
     public void cancelPendingReload();

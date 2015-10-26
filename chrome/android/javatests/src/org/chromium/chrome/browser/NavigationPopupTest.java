@@ -126,6 +126,10 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
+        public void reloadDisableLoFi(boolean checkForRepost) {
+        }
+
+        @Override
         public void cancelPendingReload() {
         }
 
