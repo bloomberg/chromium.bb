@@ -25,9 +25,9 @@ class WebMemoryAllocatorDumpImpl : public blink::WebMemoryAllocatorDump {
   ~WebMemoryAllocatorDumpImpl() override;
 
   // blink::WebMemoryAllocatorDump implementation.
-  void AddScalar(const char* name, const char* units, uint64 value) override;
-  void AddScalarF(const char* name, const char* units, double value) override;
-  void AddString(const char* name,
+  void addScalar(const char* name, const char* units, uint64 value) override;
+  void addScalarF(const char* name, const char* units, double value) override;
+  void addString(const char* name,
                  const char* units,
                  const blink::WebString& value) override;
 

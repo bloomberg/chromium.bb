@@ -19,14 +19,14 @@ void dumpMemoryTotals(blink::WebProcessMemoryDump* memoryDump)
 {
     String dumpName = String::format("blink_gc");
     WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump(dumpName);
-    allocatorDump->AddScalar("size", "bytes", Heap::allocatedSpace());
+    allocatorDump->addScalar("size", "bytes", Heap::allocatedSpace());
 
     dumpName.append("/allocated_objects");
     WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump(dumpName);
 
     // Heap::markedObjectSize() can be underestimated if we're still in the
     // process of lazy sweeping.
-    objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
+    objectsDump->addScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
 }
 
 } // namespace

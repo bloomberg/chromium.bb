@@ -424,8 +424,8 @@ void SharedBuffer::onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump* 
         // using fastMalloc.
         const String dataDumpName = dumpPrefix + "/segments";
         auto dump = memoryDump->createMemoryAllocatorDump(dataDumpName);
-        dump->AddScalar("size", "bytes", m_size);
-        memoryDump->AddSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+        dump->addScalar("size", "bytes", m_size);
+        memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
     }
 }
 

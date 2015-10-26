@@ -25,9 +25,9 @@ public:
     //       about the semantics of the attribute.
     //       Currently supported values are "bytes" and "objects".
     //   value: the value of the attribute.
-    virtual void AddScalar(const char* name, const char* units, uint64_t value) { }
-    virtual void AddScalarF(const char* name, const char* units, double value) { }
-    virtual void AddString(const char* name, const char* units, const WebString& value) { }
+    virtual void addScalar(const char* name, const char* units, uint64_t value) {}
+    virtual void addScalarF(const char* name, const char* units, double value) {}
+    virtual void addString(const char* name, const char* units, const WebString& value) {}
 
     // |guid| is an optional global dump identifier, unique across all processes
     // within the scope of a global dump. It is only required when using the

@@ -28,7 +28,7 @@ public:
     // "allocator_name/arena_1/subheap_X").
     // |guid| is  an optional identifier, unique among all processes within the
     // scope of a global dump. This is only relevant when using
-    // AddOwnershipEdge(). If omitted, it will be automatically generated.
+    // addOwnershipEdge(). If omitted, it will be automatically generated.
     virtual WebMemoryAllocatorDump* createMemoryAllocatorDump(const WebString& absoluteName, WebMemoryAllocatorDumpGuid guid)
     {
         BLINK_ASSERT_NOT_REACHED();
@@ -71,12 +71,12 @@ public:
     // relevant only for the cases of co-ownership, where it acts as a z-index:
     // the owner with the highest importance will be attributed |target|'s
     // memory.
-    virtual void AddOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target, int importance)
+    virtual void addOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target, int importance)
     {
         BLINK_ASSERT_NOT_REACHED();
     }
 
-    virtual void AddOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target)
+    virtual void addOwnershipEdge(WebMemoryAllocatorDumpGuid source, WebMemoryAllocatorDumpGuid target)
     {
         BLINK_ASSERT_NOT_REACHED();
     }
@@ -86,7 +86,7 @@ public:
     // This creates a child node of |target_node_name| and adds an ownership
     // edge between |source| and the new child node. As a result, the UI will
     // not account the memory of |source| in the target node.
-    virtual void AddSuballocation(WebMemoryAllocatorDumpGuid source, const WebString& targetNodeName)
+    virtual void addSuballocation(WebMemoryAllocatorDumpGuid source, const WebString& targetNodeName)
     {
         BLINK_ASSERT_NOT_REACHED();
     }
@@ -98,7 +98,7 @@ public:
     // object owning them. |dumpNamePrefix| is prefix appended to each dump
     // created by the SkTraceMemoryDump implementation, if the dump should be
     // placed under different namespace and not "skia".
-    virtual SkTraceMemoryDump* CreateDumpAdapterForSkia(const WebString& dumpNamePrefix)
+    virtual SkTraceMemoryDump* createDumpAdapterForSkia(const WebString& dumpNamePrefix)
     {
         BLINK_ASSERT_NOT_REACHED();
         return nullptr;

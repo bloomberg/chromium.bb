@@ -739,22 +739,22 @@ void Resource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
 {
     const String dumpName = getMemoryDumpName();
     WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
-    dump->AddScalar("encoded_size", "bytes", m_encodedSize);
+    dump->addScalar("encoded_size", "bytes", m_encodedSize);
     if (canDelete()) {
-        dump->AddScalar("dead_size", "bytes", m_encodedSize);
+        dump->addScalar("dead_size", "bytes", m_encodedSize);
     } else {
-        dump->AddScalar("live_size", "bytes", m_encodedSize);
+        dump->addScalar("live_size", "bytes", m_encodedSize);
     }
 
     if (m_data) {
-        dump->AddScalar("purgeable_size", "bytes", isPurgeable() && !wasPurged() ? encodedSize() + overheadSize() : 0);
+        dump->addScalar("purgeable_size", "bytes", isPurgeable() && !wasPurged() ? encodedSize() + overheadSize() : 0);
         m_data->onMemoryDump(dumpName, memoryDump);
     }
 
     const String overheadName = dumpName + "/metadata";
     WebMemoryAllocatorDump* overheadDump = memoryDump->createMemoryAllocatorDump(overheadName);
-    overheadDump->AddScalar("size", "bytes", overheadSize());
-    memoryDump->AddSuballocation(overheadDump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    overheadDump->addScalar("size", "bytes", overheadSize());
+    memoryDump->addSuballocation(overheadDump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
 String Resource::getMemoryDumpName() const

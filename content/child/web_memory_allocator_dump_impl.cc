@@ -17,19 +17,19 @@ WebMemoryAllocatorDumpImpl::WebMemoryAllocatorDumpImpl(
 WebMemoryAllocatorDumpImpl::~WebMemoryAllocatorDumpImpl() {
 }
 
-void WebMemoryAllocatorDumpImpl::AddScalar(const char* name,
+void WebMemoryAllocatorDumpImpl::addScalar(const char* name,
                                            const char* units,
                                            uint64 value) {
   memory_allocator_dump_->AddScalar(name, units, value);
 }
 
-void WebMemoryAllocatorDumpImpl::AddScalarF(const char* name,
+void WebMemoryAllocatorDumpImpl::addScalarF(const char* name,
                                             const char* units,
                                             double value) {
   memory_allocator_dump_->AddScalarF(name, units, value);
 }
 
-void WebMemoryAllocatorDumpImpl::AddString(const char* name,
+void WebMemoryAllocatorDumpImpl::addString(const char* name,
                                            const char* units,
                                            const blink::WebString& value) {
   memory_allocator_dump_->AddString(name, units, value.utf8());

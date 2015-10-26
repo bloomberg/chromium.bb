@@ -85,11 +85,11 @@ void PurgeableVector::onMemoryDump(const String& dumpName, WebProcessMemoryDump*
     ASSERT(!(m_discardable && m_vector.size()));
     if (m_discardable) {
         WebMemoryAllocatorDump* dump = m_discardable->createMemoryAllocatorDump(dumpName, memoryDump);
-        dump->AddScalar("discardable_size", "bytes", m_discardableSize);
+        dump->addScalar("discardable_size", "bytes", m_discardableSize);
     } else if (m_vector.size()) {
         WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
-        dump->AddScalar("size", "bytes", m_vector.size());
-        memoryDump->AddSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+        dump->addScalar("size", "bytes", m_vector.size());
+        memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
     }
 }
 

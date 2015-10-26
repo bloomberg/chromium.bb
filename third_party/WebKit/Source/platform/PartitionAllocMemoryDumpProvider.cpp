@@ -52,12 +52,12 @@ void PartitionStatsDumperImpl::partitionDumpTotals(const char* partitionName, co
     m_totalActiveBytes += memoryStats->totalActiveBytes;
     String dumpName = getPartitionDumpName(partitionName);
     WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
-    allocatorDump->AddScalar("size", "bytes", memoryStats->totalResidentBytes);
-    allocatorDump->AddScalar("allocated_objects_size", "bytes", memoryStats->totalActiveBytes);
-    allocatorDump->AddScalar("virtual_size", "bytes", memoryStats->totalMmappedBytes);
-    allocatorDump->AddScalar("virtual_committed_size", "bytes", memoryStats->totalCommittedBytes);
-    allocatorDump->AddScalar("decommittable_size", "bytes", memoryStats->totalDecommittableBytes);
-    allocatorDump->AddScalar("discardable_size", "bytes", memoryStats->totalDiscardableBytes);
+    allocatorDump->addScalar("size", "bytes", memoryStats->totalResidentBytes);
+    allocatorDump->addScalar("allocated_objects_size", "bytes", memoryStats->totalActiveBytes);
+    allocatorDump->addScalar("virtual_size", "bytes", memoryStats->totalMmappedBytes);
+    allocatorDump->addScalar("virtual_committed_size", "bytes", memoryStats->totalCommittedBytes);
+    allocatorDump->addScalar("decommittable_size", "bytes", memoryStats->totalDecommittableBytes);
+    allocatorDump->addScalar("discardable_size", "bytes", memoryStats->totalDiscardableBytes);
 }
 
 void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats* memoryStats)
@@ -70,16 +70,16 @@ void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionNa
         dumpName.append(String::format("/bucket_%u", static_cast<unsigned>(memoryStats->bucketSlotSize)));
 
     WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
-    allocatorDump->AddScalar("size", "bytes", memoryStats->residentBytes);
-    allocatorDump->AddScalar("allocated_objects_size", "bytes", memoryStats->activeBytes);
-    allocatorDump->AddScalar("slot_size", "bytes", memoryStats->bucketSlotSize);
-    allocatorDump->AddScalar("decommittable_size", "bytes", memoryStats->decommittableBytes);
-    allocatorDump->AddScalar("discardable_size", "bytes", memoryStats->discardableBytes);
-    allocatorDump->AddScalar("total_pages_size", "bytes", memoryStats->allocatedPageSize);
-    allocatorDump->AddScalar("active_pages", "objects", memoryStats->numActivePages);
-    allocatorDump->AddScalar("full_pages", "objects", memoryStats->numFullPages);
-    allocatorDump->AddScalar("empty_pages", "objects", memoryStats->numEmptyPages);
-    allocatorDump->AddScalar("decommitted_pages", "objects", memoryStats->numDecommittedPages);
+    allocatorDump->addScalar("size", "bytes", memoryStats->residentBytes);
+    allocatorDump->addScalar("allocated_objects_size", "bytes", memoryStats->activeBytes);
+    allocatorDump->addScalar("slot_size", "bytes", memoryStats->bucketSlotSize);
+    allocatorDump->addScalar("decommittable_size", "bytes", memoryStats->decommittableBytes);
+    allocatorDump->addScalar("discardable_size", "bytes", memoryStats->discardableBytes);
+    allocatorDump->addScalar("total_pages_size", "bytes", memoryStats->allocatedPageSize);
+    allocatorDump->addScalar("active_pages", "objects", memoryStats->numActivePages);
+    allocatorDump->addScalar("full_pages", "objects", memoryStats->numFullPages);
+    allocatorDump->addScalar("empty_pages", "objects", memoryStats->numEmptyPages);
+    allocatorDump->addScalar("decommitted_pages", "objects", memoryStats->numDecommittedPages);
 }
 
 } // namespace
@@ -101,8 +101,8 @@ bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail l
     WTF::Partitions::dumpMemoryStats(levelOfDetail == WebMemoryDumpLevelOfDetail::Light, &partitionStatsDumper);
 
     WebMemoryAllocatorDump* allocatedObjectsDump = memoryDump->createMemoryAllocatorDump(String(Partitions::kAllocatedObjectPoolName));
-    allocatedObjectsDump->AddScalar("size", "bytes", partitionStatsDumper.totalActiveBytes());
-    memoryDump->AddOwnershipEdge(allocatedObjectsDump->guid(), partitionsDump->guid());
+    allocatedObjectsDump->addScalar("size", "bytes", partitionStatsDumper.totalActiveBytes());
+    memoryDump->addOwnershipEdge(allocatedObjectsDump->guid(), partitionsDump->guid());
 
     return true;
 }

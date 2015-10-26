@@ -1544,10 +1544,10 @@ void ThreadState::takeSnapshot(SnapshotType type)
         dumpName.append(Heap::gcInfo(gcInfoIndex)->className());
 #endif
         WebMemoryAllocatorDump* classDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
-        classDump->AddScalar("live_count", "objects", info.liveCount[gcInfoIndex]);
-        classDump->AddScalar("dead_count", "objects", info.deadCount[gcInfoIndex]);
-        classDump->AddScalar("live_size", "bytes", info.liveSize[gcInfoIndex]);
-        classDump->AddScalar("dead_size", "bytes", info.deadSize[gcInfoIndex]);
+        classDump->addScalar("live_count", "objects", info.liveCount[gcInfoIndex]);
+        classDump->addScalar("dead_count", "objects", info.deadCount[gcInfoIndex]);
+        classDump->addScalar("live_size", "bytes", info.liveSize[gcInfoIndex]);
+        classDump->addScalar("dead_size", "bytes", info.deadSize[gcInfoIndex]);
 
         totalLiveCount += info.liveCount[gcInfoIndex];
         totalDeadCount += info.deadCount[gcInfoIndex];
@@ -1556,14 +1556,14 @@ void ThreadState::takeSnapshot(SnapshotType type)
     }
 
     WebMemoryAllocatorDump* threadDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(threadDumpName);
-    threadDump->AddScalar("live_count", "objects", totalLiveCount);
-    threadDump->AddScalar("dead_count", "objects", totalDeadCount);
-    threadDump->AddScalar("live_size", "bytes", totalLiveSize);
-    threadDump->AddScalar("dead_size", "bytes", totalDeadSize);
+    threadDump->addScalar("live_count", "objects", totalLiveCount);
+    threadDump->addScalar("dead_count", "objects", totalDeadCount);
+    threadDump->addScalar("live_size", "bytes", totalLiveSize);
+    threadDump->addScalar("dead_size", "bytes", totalDeadSize);
 
     WebMemoryAllocatorDump* heapsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(heapsDumpName);
     WebMemoryAllocatorDump* classesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(classesDumpName);
-    BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(classesDump->guid(), heapsDump->guid());
+    BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->addOwnershipEdge(classesDump->guid(), heapsDump->guid());
 }
 
 #if ENABLE(GC_PROFILING)

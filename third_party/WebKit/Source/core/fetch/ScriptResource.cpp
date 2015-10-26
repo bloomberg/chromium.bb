@@ -79,8 +79,8 @@ void ScriptResource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
     Resource::onMemoryDump(memoryDump);
     const String name = getMemoryDumpName() + "/decoded_script";
     auto dump = memoryDump->createMemoryAllocatorDump(name);
-    dump->AddScalar("size", "bytes", m_script.string().sizeInBytes());
-    memoryDump->AddSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    dump->addScalar("size", "bytes", m_script.string().sizeInBytes());
+    memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
 AtomicString ScriptResource::mimeType() const

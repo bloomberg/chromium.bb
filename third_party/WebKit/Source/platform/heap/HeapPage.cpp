@@ -166,14 +166,14 @@ void BaseHeap::takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotI
         heapTotalFreeCount += heapPageFreeCount;
         pageIndex++;
     }
-    allocatorDump->AddScalar("blink_page_count", "objects", pageIndex);
+    allocatorDump->addScalar("blink_page_count", "objects", pageIndex);
 
     // When taking a full dump (w/ freelist), both the /buckets and /pages
     // report their free size but they are not meant to be added together.
     // Therefore, here we override the free_size of the parent heap to be
     // equal to the free_size of the sum of its heap pages.
-    allocatorDump->AddScalar("free_size", "bytes", heapTotalFreeSize);
-    allocatorDump->AddScalar("free_count", "objects", heapTotalFreeCount);
+    allocatorDump->addScalar("free_size", "bytes", heapTotalFreeSize);
+    allocatorDump->addScalar("free_count", "objects", heapTotalFreeCount);
 }
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
@@ -480,7 +480,7 @@ void NormalPageHeap::takeFreelistSnapshot(const String& dumpName)
     if (m_freeList.takeSnapshot(dumpName)) {
         WebMemoryAllocatorDump* bucketsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/buckets");
         WebMemoryAllocatorDump* pagesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/pages");
-        BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(pagesDump->guid(), bucketsDump->guid());
+        BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->addOwnershipEdge(pagesDump->guid(), bucketsDump->guid());
     }
 }
 
@@ -1141,8 +1141,8 @@ bool FreeList::takeSnapshot(const String& dumpBaseName)
 
         String dumpName = dumpBaseName + String::format("/buckets/bucket_%lu", static_cast<unsigned long>(1 << i));
         WebMemoryAllocatorDump* bucketDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
-        bucketDump->AddScalar("free_count", "objects", entryCount);
-        bucketDump->AddScalar("free_size", "bytes", freeSize);
+        bucketDump->addScalar("free_count", "objects", entryCount);
+        bucketDump->addScalar("free_size", "bytes", freeSize);
         didDumpBucketStats = true;
     }
     return didDumpBucketStats;
@@ -1520,12 +1520,12 @@ void NormalPage::takeSnapshot(String dumpName, size_t pageIndex, ThreadState::GC
         }
     }
 
-    pageDump->AddScalar("live_count", "objects", liveCount);
-    pageDump->AddScalar("dead_count", "objects", deadCount);
-    pageDump->AddScalar("free_count", "objects", freeCount);
-    pageDump->AddScalar("live_size", "bytes", liveSize);
-    pageDump->AddScalar("dead_size", "bytes", deadSize);
-    pageDump->AddScalar("free_size", "bytes", freeSize);
+    pageDump->addScalar("live_count", "objects", liveCount);
+    pageDump->addScalar("dead_count", "objects", deadCount);
+    pageDump->addScalar("free_count", "objects", freeCount);
+    pageDump->addScalar("live_size", "bytes", liveSize);
+    pageDump->addScalar("dead_size", "bytes", deadSize);
+    pageDump->addScalar("free_size", "bytes", freeSize);
     *outFreeSize = freeSize;
     *outFreeCount = freeCount;
 }
@@ -1728,10 +1728,10 @@ void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex, ThreadStat
         info.deadSize[gcInfoIndex] += header->size();
     }
 
-    pageDump->AddScalar("live_count", "objects", liveCount);
-    pageDump->AddScalar("dead_count", "objects", deadCount);
-    pageDump->AddScalar("live_size", "bytes", liveSize);
-    pageDump->AddScalar("dead_size", "bytes", deadSize);
+    pageDump->addScalar("live_count", "objects", liveCount);
+    pageDump->addScalar("dead_count", "objects", deadCount);
+    pageDump->addScalar("live_size", "bytes", liveSize);
+    pageDump->addScalar("dead_size", "bytes", deadSize);
 }
 
 #if ENABLE(GC_PROFILING)

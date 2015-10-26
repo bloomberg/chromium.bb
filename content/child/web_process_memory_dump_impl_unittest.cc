@@ -41,8 +41,8 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
 
   // Make sure that wpmd2 is still usable after it has been emptied.
   auto wmad = wpmd2->createMemoryAllocatorDump("2/new");
-  wmad->AddScalar("attr_name", "bytes", 42);
-  wmad->AddScalarF("attr_name_2", "rate", 42.0f);
+  wmad->addScalar("attr_name", "bytes", 42);
+  wmad->addScalarF("attr_name_2", "rate", 42.0f);
   ASSERT_EQ(1u, wpmd2->process_memory_dump()->allocator_dumps().size());
   auto mad = wpmd2->process_memory_dump()->GetAllocatorDump("2/new");
   ASSERT_NE(static_cast<base::trace_event::MemoryAllocatorDump*>(nullptr), mad);
@@ -111,7 +111,7 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
 
   // Check that AddOwnershipEdge is propagated correctly.
   auto wmad4 = wpmd1->createMemoryAllocatorDump("1/4");
-  wpmd1->AddOwnershipEdge(wmad4->guid(), guid);
+  wpmd1->addOwnershipEdge(wmad4->guid(), guid);
   auto allocator_dumps_edges =
       wpmd1->process_memory_dump()->allocator_dumps_edges();
   ASSERT_EQ(1u, allocator_dumps_edges.size());
