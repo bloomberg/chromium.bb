@@ -32,6 +32,7 @@
 #define InvalidationSet_h
 
 #include "core/CoreExport.h"
+#include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefCounted.h"
@@ -41,24 +42,28 @@
 
 namespace blink {
 
+class DescendantInvalidationSet;
 class Element;
 class TracedValue;
 
-// Tracks data to determine which elements of a DOM subtree need to have style
-// recalculated.
-class CORE_EXPORT InvalidationSet final : public RefCounted<InvalidationSet> {
+enum InvalidationType {
+    InvalidateDescendants,
+    InvalidateSiblings
+};
+
+// Tracks data to determine which descendants in a DOM subtree, or
+// siblings and their descendants, need to have style recalculated.
+class CORE_EXPORT InvalidationSet : public RefCounted<InvalidationSet> {
     WTF_MAKE_NONCOPYABLE(InvalidationSet);
 public:
-    static PassRefPtr<InvalidationSet> create()
-    {
-        return adoptRef(new InvalidationSet);
-    }
+    virtual ~InvalidationSet() {}
+
+    virtual bool isDescendantInvalidationSet() const { return false; }
+    virtual bool isSiblingInvalidationSet() const { return false; }
 
     static void cacheTracingFlag();
 
     bool invalidatesElement(Element&) const;
-
-    void combine(const InvalidationSet& other);
 
     void addClass(const AtomicString& className);
     void addId(const AtomicString& id);
@@ -88,9 +93,17 @@ public:
     void show() const;
 #endif
 
-private:
+    const HashSet<AtomicString>& classSetForTesting() const { ASSERT(m_classes); return *m_classes; }
+    const HashSet<AtomicString>& idSetForTesting() const { ASSERT(m_ids); return *m_ids; }
+    const HashSet<AtomicString>& tagNameSetForTesting() const { ASSERT(m_tagNames); return *m_tagNames; }
+    const HashSet<AtomicString>& attributeSetForTesting() const { ASSERT(m_attributes); return *m_attributes; }
+
+protected:
     InvalidationSet();
 
+    void combine(const InvalidationSet& other);
+
+private:
     HashSet<AtomicString>& ensureClassSet();
     HashSet<AtomicString>& ensureIdSet();
     HashSet<AtomicString>& ensureTagNameSet();
@@ -117,6 +130,61 @@ private:
     // If true, insertion point descendants must be invalidated.
     unsigned m_insertionPointCrossing : 1;
 };
+
+class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
+public:
+    static PassRefPtr<DescendantInvalidationSet> create()
+    {
+        return adoptRef(new DescendantInvalidationSet);
+    }
+
+    bool isDescendantInvalidationSet() const final { return true; }
+
+    void combine(const DescendantInvalidationSet& other)
+    {
+        InvalidationSet::combine(other);
+    }
+
+private:
+    DescendantInvalidationSet() {}
+};
+
+class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
+public:
+    static PassRefPtr<SiblingInvalidationSet> create()
+    {
+        return adoptRef(new SiblingInvalidationSet);
+    }
+
+    bool isSiblingInvalidationSet() const final { return true; }
+
+    void combine(const SiblingInvalidationSet& other);
+
+    DescendantInvalidationSet& descendants() { return *m_descendantInvalidationSet; }
+    const DescendantInvalidationSet& descendants() const { return *m_descendantInvalidationSet; }
+
+    unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
+    void updateMaxDirectAdjacentSelectors(unsigned value) { m_maxDirectAdjacentSelectors = std::max(value, m_maxDirectAdjacentSelectors); }
+
+private:
+    SiblingInvalidationSet();
+
+    // Indicates the maximum possible number of siblings affected.
+    unsigned m_maxDirectAdjacentSelectors;
+
+    // Indicates the descendants of siblings.
+    RefPtr<DescendantInvalidationSet> m_descendantInvalidationSet;
+};
+
+using InvalidationSetVector = Vector<RefPtr<InvalidationSet>>;
+
+struct InvalidationLists {
+    InvalidationSetVector descendants;
+    InvalidationSetVector siblings;
+};
+
+DEFINE_TYPE_CASTS(DescendantInvalidationSet, InvalidationSet, value, value->isDescendantInvalidationSet(), value.isDescendantInvalidationSet());
+DEFINE_TYPE_CASTS(SiblingInvalidationSet, InvalidationSet, value, value->isSiblingInvalidationSet(), value.isSiblingInvalidationSet());
 
 } // namespace blink
 

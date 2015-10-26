@@ -269,4 +269,18 @@ void InvalidationSet::show() const
 }
 #endif // NDEBUG
 
+SiblingInvalidationSet::SiblingInvalidationSet()
+    : m_maxDirectAdjacentSelectors(1)
+    , m_descendantInvalidationSet(DescendantInvalidationSet::create())
+{
+}
+
+void SiblingInvalidationSet::combine(const SiblingInvalidationSet& other)
+{
+    m_maxDirectAdjacentSelectors = std::max(m_maxDirectAdjacentSelectors, other.m_maxDirectAdjacentSelectors);
+    m_descendantInvalidationSet->combine(other.descendants());
+
+    InvalidationSet::combine(other);
+}
+
 } // namespace blink

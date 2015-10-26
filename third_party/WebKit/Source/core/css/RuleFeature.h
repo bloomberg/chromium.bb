@@ -24,7 +24,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "core/css/invalidation/InvalidationSet.h"
+#include "core/css/invalidation/InvalidationData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -32,6 +32,7 @@
 
 namespace blink {
 
+struct InvalidationLists;
 class QualifiedName;
 class RuleData;
 class SpaceSplitString;
@@ -49,8 +50,6 @@ public:
     bool hasDocumentSecurityOrigin;
 };
 
-using InvalidationSetVector = Vector<RefPtr<InvalidationSet>, 8>;
-
 class CORE_EXPORT RuleFeatureSet {
     DISALLOW_ALLOCATION();
 public:
@@ -67,7 +66,6 @@ public:
     bool usesWindowInactiveSelector() const { return m_metadata.usesWindowInactiveSelector; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_metadata.maxDirectAdjacentSelectors; }
-    void setMaxDirectAdjacentSelectors(unsigned value)  { m_metadata.maxDirectAdjacentSelectors = std::max(value, m_metadata.maxDirectAdjacentSelectors); }
 
     bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
@@ -83,10 +81,11 @@ public:
 
     bool hasSelectorForId(const AtomicString& idValue) const { return m_idInvalidationSets.contains(idValue); }
 
-    void collectInvalidationSetsForClass(InvalidationSetVector&, Element&, const AtomicString& className) const;
-    void collectInvalidationSetsForId(InvalidationSetVector&, Element&, const AtomicString& id) const;
-    void collectInvalidationSetsForAttribute(InvalidationSetVector&, Element&, const QualifiedName& attributeName) const;
-    void collectInvalidationSetsForPseudoClass(InvalidationSetVector&, Element&, CSSSelector::PseudoType) const;
+    // Collect descendant and sibling invalidation sets.
+    void collectInvalidationSetsForClass(InvalidationLists&, Element&, const AtomicString& className) const;
+    void collectInvalidationSetsForId(InvalidationLists&, Element&, const AtomicString& id) const;
+    void collectInvalidationSetsForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName) const;
+    void collectInvalidationSetsForPseudoClass(InvalidationLists&, Element&, CSSSelector::PseudoType) const;
 
     bool hasIdsInSelectors() const
     {
@@ -99,11 +98,11 @@ public:
     WillBeHeapVector<RuleFeature> uncommonAttributeRules;
 
 protected:
-    InvalidationSet* invalidationSetForSelector(const CSSSelector&);
+    InvalidationSet* invalidationSetForSelector(const CSSSelector&, InvalidationType);
 
 private:
-    using InvalidationSetMap = HashMap<AtomicString, RefPtr<InvalidationSet>>;
-    using PseudoTypeInvalidationSetMap = HashMap<CSSSelector::PseudoType, RefPtr<InvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using InvalidationSetMap = HashMap<AtomicString, RefPtr<InvalidationData>>;
+    using PseudoTypeInvalidationSetMap = HashMap<CSSSelector::PseudoType, RefPtr<InvalidationData>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
 
     struct FeatureMetadata {
         DISALLOW_ALLOCATION();
@@ -124,10 +123,15 @@ private:
 
     void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
 
-    InvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
-    InvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
-    InvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
-    InvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType);
+    InvalidationData& ensureClassInvalidationData(const AtomicString& className);
+    InvalidationData& ensureAttributeInvalidationData(const AtomicString& attributeName);
+    InvalidationData& ensureIdInvalidationData(const AtomicString& id);
+    InvalidationData& ensurePseudoInvalidationData(CSSSelector::PseudoType);
+
+    InvalidationSet& ensureClassInvalidationSet(const AtomicString& className, InvalidationType type) { return ensureClassInvalidationData(className).ensureInvalidationSet(type); }
+    InvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName, InvalidationType type) { return ensureAttributeInvalidationData(attributeName).ensureInvalidationSet(type); }
+    InvalidationSet& ensureIdInvalidationSet(const AtomicString& id, InvalidationType type) { return ensureIdInvalidationData(id).ensureInvalidationSet(type); }
+    InvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType pseudoType, InvalidationType type) { return ensurePseudoInvalidationData(pseudoType).ensureInvalidationSet(type); }
 
     void updateInvalidationSets(const RuleData&);
     void updateInvalidationSetsForContentAttribute(const RuleData&);
@@ -135,7 +139,8 @@ private:
     struct InvalidationSetFeatures {
         DISALLOW_ALLOCATION();
         InvalidationSetFeatures()
-            : customPseudoElement(false)
+            : maxDirectAdjacentSelectors(std::numeric_limits<unsigned>::max())
+            , customPseudoElement(false)
             , hasBeforeOrAfter(false)
             , treeBoundaryCrossing(false)
             , adjacent(false)
@@ -143,12 +148,11 @@ private:
             , forceSubtree(false)
         { }
 
-        bool useSubtreeInvalidation() const { return forceSubtree || adjacent; }
-
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
         AtomicString id;
         AtomicString tagName;
+        unsigned maxDirectAdjacentSelectors;
         bool customPseudoElement;
         bool hasBeforeOrAfter;
         bool treeBoundaryCrossing;
@@ -164,7 +168,7 @@ private:
     std::pair<const CSSSelector*, UseFeaturesType> extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&, bool negated);
 
     void addFeaturesToInvalidationSet(InvalidationSet&, const InvalidationSetFeatures&);
-    void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures&);
+    void addFeaturesToInvalidationSets(const CSSSelector*, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);
 
     void addClassToInvalidationSet(const AtomicString& className, Element&);
 
@@ -173,6 +177,8 @@ private:
     InvalidationSetMap m_attributeInvalidationSets;
     InvalidationSetMap m_idInvalidationSets;
     PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
+
+    friend class RuleFeatureSetTest;
 };
 
 } // namespace blink

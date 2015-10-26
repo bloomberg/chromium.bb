@@ -49,7 +49,7 @@ document.body.offsetTop;
 document.body.querySelector("#t2 > div > div").className = "c";
 shouldBe("getComputedStyle(document.body.querySelector('#t2 .e')).color", "green", true);
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 // No style invalidation or recalc scheduled for an ascendant of .b, and even if affected-by-adjacent
 // bits are set on the ascendant (because of a+b), it doesn't matter since that ascendant does
@@ -59,6 +59,6 @@ document.body.offsetTop;
 document.body.querySelector("#t3 > div > div").className = "c";
 shouldBe("getComputedStyle(document.body.querySelector('#t3 .b')).color", "green", true);
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 </script>

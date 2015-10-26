@@ -33,6 +33,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceCache.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/invalidation/InvalidationSet.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
@@ -631,18 +632,17 @@ void StyleEngine::platformColorsChanged()
 void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses, Element& element)
 {
     ASSERT(isMaster());
-    InvalidationSetVector invalidationSets;
+    InvalidationLists invalidationLists;
     unsigned changedSize = changedClasses.size();
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
     for (unsigned i = 0; i < changedSize; ++i)
-        ruleFeatureSet.collectInvalidationSetsForClass(invalidationSets, element, changedClasses[i]);
-    scheduleInvalidationSetsForElement(invalidationSets, element);
+        ruleFeatureSet.collectInvalidationSetsForClass(invalidationLists, element, changedClasses[i]);
+    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
 }
 
 void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
 {
     ASSERT(isMaster());
-    InvalidationSetVector invalidationSets;
     if (!oldClasses.size()) {
         classChangedForElement(newClasses, element);
         return;
@@ -652,6 +652,7 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, con
     BitVector remainingClassBits;
     remainingClassBits.ensureSize(oldClasses.size());
 
+    InvalidationLists invalidationLists;
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
 
     for (unsigned i = 0; i < newClasses.size(); ++i) {
@@ -667,51 +668,45 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, con
         }
         // Class was added.
         if (!found)
-            ruleFeatureSet.collectInvalidationSetsForClass(invalidationSets, element, newClasses[i]);
+            ruleFeatureSet.collectInvalidationSetsForClass(invalidationLists, element, newClasses[i]);
     }
 
     for (unsigned i = 0; i < oldClasses.size(); ++i) {
         if (remainingClassBits.quickGet(i))
             continue;
         // Class was removed.
-        ruleFeatureSet.collectInvalidationSetsForClass(invalidationSets, element, oldClasses[i]);
+        ruleFeatureSet.collectInvalidationSetsForClass(invalidationLists, element, oldClasses[i]);
     }
 
-    scheduleInvalidationSetsForElement(invalidationSets, element);
+    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
 }
 
 void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName, Element& element)
 {
     ASSERT(isMaster());
-    InvalidationSetVector invalidationSets;
-    ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForAttribute(invalidationSets, element, attributeName);
-    scheduleInvalidationSetsForElement(invalidationSets, element);
+    InvalidationLists invalidationLists;
+    ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForAttribute(invalidationLists, element, attributeName);
+    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
 }
 
 void StyleEngine::idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element& element)
 {
     ASSERT(isMaster());
-    InvalidationSetVector invalidationSets;
+    InvalidationLists invalidationLists;
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
     if (!oldId.isEmpty())
-        ruleFeatureSet.collectInvalidationSetsForId(invalidationSets, element, oldId);
+        ruleFeatureSet.collectInvalidationSetsForId(invalidationLists, element, oldId);
     if (!newId.isEmpty())
-        ruleFeatureSet.collectInvalidationSetsForId(invalidationSets, element, newId);
-    scheduleInvalidationSetsForElement(invalidationSets, element);
+        ruleFeatureSet.collectInvalidationSetsForId(invalidationLists, element, newId);
+    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
 }
 
 void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoType, Element& element)
 {
     ASSERT(isMaster());
-    InvalidationSetVector invalidationSets;
-    ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationSets, element, pseudoType);
-    scheduleInvalidationSetsForElement(invalidationSets, element);
-}
-
-void StyleEngine::scheduleInvalidationSetsForElement(const InvalidationSetVector& invalidationSets, Element& element)
-{
-    for (auto invalidationSet : invalidationSets)
-        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+    InvalidationLists invalidationLists;
+    ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationLists, element, pseudoType);
+    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
 }
 
 DEFINE_TRACE(StyleEngine)

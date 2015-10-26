@@ -97,6 +97,6 @@ document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t5").className = "a5";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(d5, null).backgroundColor", "green");
 </script>

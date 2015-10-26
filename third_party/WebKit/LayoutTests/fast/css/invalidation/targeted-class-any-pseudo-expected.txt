@@ -24,7 +24,7 @@ PASS getComputedStyle(spans4[0], null).backgroundColor is green
 PASS getComputedStyle(spans4[1], null).backgroundColor is transparent
 PASS getComputedStyle(spans4[2], null).backgroundColor is transparent
 PASS getComputedStyle(spans4[3], null).backgroundColor is green
-PASS internals.updateStyleAndReturnAffectedElementCount() is 3
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(d5, null).backgroundColor is green
 PASS successfullyParsed is true
 

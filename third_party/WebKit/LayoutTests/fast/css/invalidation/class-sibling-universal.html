@@ -117,7 +117,7 @@ test(function() {
     assert_equals(getComputedStyle(r4).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t4.className = "t4";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
     assert_equals(getComputedStyle(r4).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Class change affecting selector for sibling class");
 
@@ -125,7 +125,7 @@ test(function() {
     assert_equals(getComputedStyle(r5).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t5.className = "t5";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
     assert_equals(getComputedStyle(r5).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Class change affecting all sibling subtrees through a universal selector");
 
@@ -133,7 +133,7 @@ test(function() {
     assert_equals(getComputedStyle(r6).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t6.className = "t6";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 6, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Subtree style recalc");
     assert_equals(getComputedStyle(r6).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Class change affecting all sibling subtrees through an indirect adjacent combinator");
 
@@ -141,7 +141,7 @@ test(function() {
     assert_equals(getComputedStyle(r7).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t7.className = "t7";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 8, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
     assert_equals(getComputedStyle(r7).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Class change affecting sibling descendants through a universal selector");
 
@@ -149,7 +149,7 @@ test(function() {
     assert_equals(getComputedStyle(r8).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t8.className = "t8";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Subtree style recalc");
     assert_equals(getComputedStyle(r8).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Class change affecting universal descendants of webkit-any sibling");
 

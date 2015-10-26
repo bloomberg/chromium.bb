@@ -69,7 +69,7 @@ public:
     AddRuleFlags m_flags;
 };
 
-class RuleData {
+class CORE_EXPORT RuleData {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     RuleData(StyleRule*, unsigned selectorIndex, unsigned position, AddRuleFlags);

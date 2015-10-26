@@ -126,7 +126,7 @@ test(function() {
     assert_equals(getComputedStyle(r7).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t7.className = "";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Recalc changed element and #r7");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Recalc changed element and #r7");
     assert_equals(getComputedStyle(r7).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Id descendant of negated sibling class");
 
@@ -134,7 +134,7 @@ test(function() {
     assert_equals(getComputedStyle(r8).backgroundColor, "rgba(0, 0, 0, 0)", "Background color should initially be transparent");
 
     t8.className = "t8";
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 6, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");
     assert_equals(getComputedStyle(r8).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Negated class descendant of sibling class");
 

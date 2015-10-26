@@ -199,8 +199,6 @@ private:
     Document* master();
     Document& document() const { return *m_document; }
 
-    void scheduleInvalidationSetsForElement(const InvalidationSetVector&, Element&);
-
     typedef WillBeHeapHashSet<RawPtrWillBeMember<TreeScope>> UnorderedTreeScopeSet;
 
     void clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet&);

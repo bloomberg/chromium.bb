@@ -29,7 +29,7 @@ empty.offsetTop; // force recalc
 empty.appendChild(document.createElement("div"));
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "7");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 
 shouldBe("getComputedStyle(emptySibling, '').backgroundColor", "transparent");
 
@@ -39,7 +39,7 @@ notEmpty.offsetTop; // force recalc
 notEmpty.removeChild(child);
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 shouldBe("getComputedStyle(notEmptySibling, '').backgroundColor", "green");
 </script>

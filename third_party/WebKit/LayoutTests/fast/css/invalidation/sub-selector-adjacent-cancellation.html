@@ -17,7 +17,7 @@ a.offsetTop; // Force recalc.
 a.className = "a";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 else
     a.offsetTop; // Force recalc (crbug.com/436064)
 

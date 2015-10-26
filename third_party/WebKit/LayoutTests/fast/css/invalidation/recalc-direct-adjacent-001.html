@@ -29,7 +29,7 @@ if (window.internals)
 document.getElementById("top").className = "match";
 
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "4");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 
 shouldBe("getComputedStyle(document.getElementById('green'), null).color", "'rgb(0, 128, 0)'");
 

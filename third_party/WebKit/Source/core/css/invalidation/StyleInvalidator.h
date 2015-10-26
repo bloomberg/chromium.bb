@@ -5,14 +5,16 @@
 #ifndef StyleInvalidator_h
 #define StyleInvalidator_h
 
+#include "core/css/invalidation/PendingInvalidations.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class InvalidationSet;
 class Document;
 class Element;
+class InvalidationSet;
+
 
 class StyleInvalidator {
     DISALLOW_ALLOCATION();
@@ -21,10 +23,8 @@ public:
     StyleInvalidator();
     ~StyleInvalidator();
     void invalidate(Document&);
-    void scheduleInvalidation(PassRefPtr<InvalidationSet>, Element&);
+    void scheduleInvalidationSetsForElement(const InvalidationLists&, Element&);
     void clearInvalidation(Element&);
-
-    void clearPendingInvalidations();
 
     DECLARE_TRACE();
 
@@ -37,8 +37,8 @@ private:
             , m_insertionPointCrossing(false)
         { }
 
-        void pushInvalidationSet(const InvalidationSet&);
-        bool matchesCurrentInvalidationSets(Element&);
+        void pushInvalidationSet(const DescendantInvalidationSet&);
+        bool matchesCurrentInvalidationSets(Element&) const;
         bool hasInvalidationSets() const { return !wholeSubtreeInvalid() && m_invalidationSets.size(); }
 
         bool wholeSubtreeInvalid() const { return m_wholeSubtreeInvalid; }
@@ -47,17 +47,45 @@ private:
         bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
         bool insertionPointCrossing() const { return m_insertionPointCrossing; }
 
-        using InvalidationSets = Vector<const InvalidationSet*, 16>;
-        InvalidationSets m_invalidationSets;
+        using DescendantInvalidationSets = Vector<const DescendantInvalidationSet*, 16>;
+        DescendantInvalidationSets m_invalidationSets;
         bool m_invalidateCustomPseudo;
         bool m_wholeSubtreeInvalid;
         bool m_treeBoundaryCrossing;
         bool m_insertionPointCrossing;
     };
 
-    bool invalidate(Element&, RecursionData&);
+    class SiblingData {
+        STACK_ALLOCATED();
+    public:
+        SiblingData()
+            : m_elementIndex(0)
+        { }
+
+        void pushInvalidationSet(const SiblingInvalidationSet&);
+        bool matchCurrentInvalidationSets(Element&, RecursionData&);
+
+        void advance() { m_elementIndex++; }
+
+    private:
+        struct Entry {
+            ALLOW_ONLY_INLINE_ALLOCATION();
+            Entry(const SiblingInvalidationSet* invalidationSet, unsigned invalidationLimit)
+                : m_invalidationSet(invalidationSet)
+                , m_invalidationLimit(invalidationLimit)
+            {}
+
+            const SiblingInvalidationSet* m_invalidationSet;
+            unsigned m_invalidationLimit;
+        };
+
+        Vector<Entry, 16> m_invalidationEntries;
+        unsigned m_elementIndex;
+    };
+
+    bool invalidate(Element&, RecursionData&, SiblingData&);
     bool invalidateChildren(Element&, RecursionData&);
-    bool checkInvalidationSetsAgainstElement(Element&, RecursionData&);
+    bool checkInvalidationSetsAgainstElement(Element&, RecursionData&, SiblingData&);
 
     class RecursionCheckpoint {
     public:
@@ -87,10 +115,9 @@ private:
         RecursionData* m_data;
     };
 
-    using InvalidationList = Vector<RefPtr<InvalidationSet>>;
-    using PendingInvalidationMap = WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtr<InvalidationList>>;
+    using PendingInvalidationMap = WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtr<PendingInvalidations>>;
 
-    InvalidationList& ensurePendingInvalidationList(Element&);
+    PendingInvalidations& ensurePendingInvalidations(Element&);
 
     PendingInvalidationMap m_pendingInvalidationMap;
 };

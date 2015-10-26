@@ -101,7 +101,7 @@ private:
     unsigned m_type : 5;
 };
 
-class StyleRule : public StyleRuleBase {
+class CORE_EXPORT StyleRule : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRule);
 public:
     // Adopts the selector list
