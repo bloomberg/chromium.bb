@@ -25,8 +25,6 @@ static_assert(kMaxSizePerPlatformHandle % MessageInTransit::kMessageAlignment ==
 
 MOJO_STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherSize;
-MOJO_STATIC_CONST_MEMBER_DEFINITION const size_t
-    TransportData::kMaxSerializedDispatcherPlatformHandles;
 
 // static
 size_t TransportData::GetMaxBufferSize() {
@@ -40,8 +38,7 @@ size_t TransportData::GetMaxBufferSize() {
 
 // static
 size_t TransportData::GetMaxPlatformHandles() {
-  return GetConfiguration().max_message_num_handles *
-         kMaxSerializedDispatcherPlatformHandles;
+  return GetConfiguration().max_message_num_handles;
 }
 
 struct TransportData::PrivateStructForCompileAsserts {
@@ -89,9 +86,11 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers)
       estimated_size += MessageInTransit::RoundUpMessageAlignment(max_size);
       DCHECK_LE(estimated_size, GetMaxBufferSize());
 
-      DCHECK_LE(max_platform_handles, kMaxSerializedDispatcherPlatformHandles);
       estimated_num_platform_handles += max_platform_handles;
-      DCHECK_LE(estimated_num_platform_handles, GetMaxPlatformHandles());
+      // We don't expect more than 10K Mojo handles in one process at a time,
+      // since each is backed by a FD. If we're hitting the check below, we have
+      // bigger problems of reducing the number of FDs or possibly multiplexing.
+      CHECK_LE(estimated_num_platform_handles, GetMaxPlatformHandles());
 
 #if DCHECK_IS_ON()
       all_max_sizes[i] = max_size;
@@ -238,9 +237,7 @@ const char* TransportData::ValidateBuffer(
              "present";
     }
   } else {
-    if (header->num_platform_handles >
-        GetConfiguration().max_message_num_handles *
-            kMaxSerializedDispatcherPlatformHandles)
+    if (header->num_platform_handles > GetMaxPlatformHandles())
       return "Message has too many platform handles attached";
 
     static const char kInvalidPlatformHandleTableOffset[] =

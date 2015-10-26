@@ -1616,7 +1616,7 @@ TEST_F(DataPipeTest, ConsumerWithClosedProducerSent) {
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             state.satisfiable_signals);
 
-  int32 read_data;
+  int32_t read_data;
   ASSERT_EQ(MOJO_RESULT_OK, ReadData(&read_data, &num_bytes));
   ASSERT_EQ(sizeof(read_data), num_bytes);
   ASSERT_EQ(data, read_data);

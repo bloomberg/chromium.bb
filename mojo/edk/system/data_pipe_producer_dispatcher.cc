@@ -22,7 +22,8 @@ void DataPipeProducerDispatcher::Init(
   if (message_pipe.is_valid()) {
     channel_ = RawChannel::Create(message_pipe.Pass());
     channel_->SetSerializedData(
-        nullptr, 0u, serialized_write_buffer, serialized_write_buffer_size);
+        nullptr, 0u, serialized_write_buffer, serialized_write_buffer_size,
+        nullptr, nullptr);
     internal::g_io_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(&DataPipeProducerDispatcher::InitOnIO, this));
   } else {
@@ -385,10 +386,13 @@ void DataPipeProducerDispatcher::SerializeInternal() {
   // so that other messages aren't read after this.
   if (channel_) {
     std::vector<char> serialized_read_buffer;
+    std::vector<int> fds;
     bool write_error = false;
     serialized_platform_handle_ = channel_->ReleaseHandle(
-        &serialized_read_buffer, &serialized_write_buffer_, &write_error);
+        &serialized_read_buffer, &serialized_write_buffer_, &fds, &fds,
+        &write_error);
     CHECK(serialized_read_buffer.empty());
+    CHECK(fds.empty());
     if (write_error)
       serialized_platform_handle_.reset();
     channel_ = nullptr;

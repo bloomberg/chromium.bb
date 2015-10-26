@@ -12,6 +12,10 @@
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 
+#if !defined(SO_PEEK_OFF)
+#define SO_PEEK_OFF 42
+#endif
+
 namespace mojo {
 namespace edk {
 
@@ -155,9 +159,17 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
   msg.msg_control = cmsg_buf;
   msg.msg_controllen = sizeof(cmsg_buf);
 
+  // We use SO_PEEK_OFF to hold a common identifier between sockets to detect if
+  // they're connected. recvmsg modifies it, so we cache it and set it again
+  // after the call.
+  int id = 0;
+  socklen_t peek_off_size = sizeof(id);
+  getsockopt(h.fd, SOL_SOCKET, SO_PEEK_OFF, &id, &peek_off_size);
   ssize_t result = HANDLE_EINTR(recvmsg(h.fd, &msg, MSG_DONTWAIT));
   if (result < 0)
     return result;
+
+  setsockopt(h.fd, SOL_SOCKET, SO_PEEK_OFF, &id, sizeof(id));
 
   // Success; no control messages.
   if (msg.msg_controllen == 0)

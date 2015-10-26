@@ -205,8 +205,10 @@ MojoResult Core::CreateMessagePipe(
   }
 
   PlatformChannelPair channel_pair;
-  dispatcher0->Init(channel_pair.PassServerHandle(), nullptr, 0u, nullptr, 0u);
-  dispatcher1->Init(channel_pair.PassClientHandle(), nullptr, 0u, nullptr, 0u);
+  dispatcher0->Init(channel_pair.PassServerHandle(), nullptr, 0u, nullptr, 0u,
+                    nullptr, nullptr);
+  dispatcher1->Init(channel_pair.PassClientHandle(), nullptr, 0u, nullptr, 0u,
+                    nullptr, nullptr);
 
   *message_pipe_handle0 = handle_pair.first;
   *message_pipe_handle1 = handle_pair.second;

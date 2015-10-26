@@ -5,7 +5,9 @@
 #include "mojo/edk/system/raw_channel.h"
 
 #include <errno.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
@@ -25,6 +27,10 @@
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/transport_data.h"
 #include "mojo/public/cpp/system/macros.h"
+
+#if !defined(SO_PEEK_OFF)
+#define SO_PEEK_OFF 42
+#endif
 
 namespace mojo {
 namespace edk {
@@ -51,14 +57,18 @@ class RawChannelPosix final : public RawChannel,
   ScopedPlatformHandle ReleaseHandleNoLock(
       std::vector<char>* serialized_read_buffer,
       std::vector<char>* serialized_write_buffer,
+      std::vector<int>* serialized_read_fds,
+      std::vector<int>* serialized_write_fds,
       bool* write_error) override;
+  void SetSerializedFDs(std::vector<int>* serialized_read_fds,
+                        std::vector<int>* serialized_write_fds) override;
   bool IsHandleValid() override;
   IOResult Read(size_t* bytes_read) override;
   IOResult ScheduleRead() override;
   ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) override;
-  size_t SerializePlatformHandles() override;
+  size_t SerializePlatformHandles(std::vector<int>* fds) override;
   IOResult WriteNoLock(size_t* platform_handles_written,
                        size_t* bytes_written) override;
   IOResult ScheduleWriteNoLock() override;
@@ -172,9 +182,48 @@ bool RawChannelPosix::OnReadMessageForRawChannel(
 ScopedPlatformHandle RawChannelPosix::ReleaseHandleNoLock(
     std::vector<char>* serialized_read_buffer,
     std::vector<char>* serialized_write_buffer,
+    std::vector<int>* serialized_read_fds,
+    std::vector<int>* serialized_write_fds,
     bool* write_error) {
-  NOTREACHED() << "TODO(jam) IMPLEMENT";
+  read_watcher_.reset();
+  write_watcher_.reset();
+
+  SerializeReadBuffer(0u, serialized_read_buffer);
+  SerializeWriteBuffer(0u, 0u, serialized_write_buffer, serialized_write_fds);
+
+  while (!read_platform_handles_.empty()) {
+    serialized_read_fds->push_back(read_platform_handles_.front().fd);
+    read_platform_handles_.pop_front();
+  }
+
   return fd_.Pass();
+}
+
+void RawChannelPosix::SetSerializedFDs(
+    std::vector<int>* serialized_read_fds,
+    std::vector<int>* serialized_write_fds) {
+  if (serialized_read_fds) {
+    for(auto i: *serialized_read_fds)
+      read_platform_handles_.push_back(PlatformHandle(i));
+  }
+
+  if (serialized_write_fds) {
+    size_t i = 0;
+    while (i < serialized_write_fds->size()) {
+      size_t batch = std::min(kPlatformChannelMaxNumHandles,
+                              serialized_write_fds->size() - i);
+      scoped_ptr<MessageInTransit> fd_message(new MessageInTransit(
+          MessageInTransit::Type::RAW_CHANNEL_POSIX_EXTRA_PLATFORM_HANDLES, 0,
+          nullptr));
+      ScopedPlatformHandleVectorPtr fds(
+          new PlatformHandleVector(serialized_write_fds->begin() + i,
+                                   serialized_write_fds->begin() + i + batch));
+      fd_message->SetTransportData(make_scoped_ptr(
+          new TransportData(fds.Pass(), GetSerializedPlatformHandleSize())));
+      RawChannel::EnqueueMessageNoLock(fd_message.Pass());
+      i += batch;
+    }
+  }
 }
 
 bool RawChannelPosix::IsHandleValid() {
@@ -223,9 +272,20 @@ ScopedPlatformHandleVectorPtr RawChannelPosix::GetReadPlatformHandles(
   return rv.Pass();
 }
 
-size_t RawChannelPosix::SerializePlatformHandles() {
-  NOTREACHED() << "TODO(jam): implement";
-  return 0u;
+size_t RawChannelPosix::SerializePlatformHandles(std::vector<int>* fds) {
+  if (!write_buffer_no_lock()->HavePlatformHandlesToSend())
+    return 0u;
+
+  size_t num_platform_handles;
+  PlatformHandle* platform_handles;
+  void* serialization_data;  // Actually unused.
+  write_buffer_no_lock()->GetPlatformHandlesToSend(
+      &num_platform_handles, &platform_handles, &serialization_data);
+  DCHECK_GT(num_platform_handles, 0u);
+  DCHECK_LE(num_platform_handles, kPlatformChannelMaxNumHandles);
+  for (size_t i = 0; i < num_platform_handles; ++i)
+    fds->push_back(platform_handles[i].fd);
+  return num_platform_handles;
 }
 
 RawChannel::IOResult RawChannelPosix::WriteNoLock(
@@ -330,6 +390,11 @@ RawChannel::IOResult RawChannelPosix::ScheduleWriteNoLock() {
 
 void RawChannelPosix::OnInit() {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  if (!fd_.is_valid()) {
+    DVLOG(1) << "Note: RawChannelPOSIX " << this << " early exiting in OnInit "
+             << "because there's no fd. This is valid if it's been sent.";
+    return;
+  }
 
   DCHECK(!read_watcher_);
   read_watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher());
@@ -356,15 +421,18 @@ void RawChannelPosix::OnShutdownNoLock(
   pending_read_ = false;
   pending_write_ = false;
 
-  DCHECK(fd_.is_valid());
   fd_.reset();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(fd, fd_.get().fd);
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  base::AutoLock locker(read_lock());
+  if (!fd_.is_valid()) {
+    pending_read_ = false;
+    return;  // ReleaseHandle has been called.
+  }
 
   if (!pending_read_) {
     NOTREACHED();
@@ -375,7 +443,6 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   size_t bytes_read = 0;
   IOResult io_result = Read(&bytes_read);
   if (io_result != IO_PENDING) {
-    base::AutoLock locker(read_lock());
     OnReadCompletedNoLock(io_result, bytes_read);
     // TODO(vtl): If we weren't destroyed, we'd like to do
     //
@@ -395,8 +462,12 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
-  DCHECK_EQ(fd, fd_.get().fd);
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
+  base::AutoLock locker(read_lock());
+  if (!fd_.is_valid()) {
+    pending_write_ = false;
+    return;  // ReleaseHandle has been called.
+  }
 
   IOResult io_result;
   size_t platform_handles_written = 0;
@@ -499,12 +570,15 @@ bool RawChannel::IsOtherEndOf(RawChannel* other) {
   PlatformHandle this_handle = static_cast<RawChannelPosix*>(this)->GetFD();
   PlatformHandle other_handle = static_cast<RawChannelPosix*>(other)->GetFD();
 
-  struct stat stat1, stat2;
-  if (fstat(this_handle.fd, &stat1) < 0)
-    return false;
-  if (fstat(other_handle.fd, &stat2) < 0)
-    return false;
-  return (stat1.st_dev == stat2.st_dev) && (stat1.st_ino == stat2.st_ino);
+  // We don't check the return code of getsockopt because this is only available
+  // on Linux after 3.4. This is a developer error, so we just have to catch it
+  // on platforms that developers use.
+  int id1 = 0;
+  int id2 = 1;
+  socklen_t peek_off_size = sizeof(id1);
+  getsockopt(this_handle.fd, SOL_SOCKET, SO_PEEK_OFF, &id1, &peek_off_size);
+  getsockopt(other_handle.fd, SOL_SOCKET, SO_PEEK_OFF, &id2, &peek_off_size);
+  return id1 == id2;
 }
 
 }  // namespace edk

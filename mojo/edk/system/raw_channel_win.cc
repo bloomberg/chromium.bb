@@ -305,7 +305,7 @@ class RawChannelWin final : public RawChannel {
       if (!*write_error) {
         owner_->SerializeWriteBuffer(
             additional_bytes_written, additional_platform_handles_written,
-            serialized_write_buffer);
+            serialized_write_buffer, nullptr);
       }
 
       return ScopedPlatformHandle(handle_.release());
@@ -508,6 +508,8 @@ class RawChannelWin final : public RawChannel {
   ScopedPlatformHandle ReleaseHandleNoLock(
       std::vector<char>* serialized_read_buffer,
       std::vector<char>* serialized_write_buffer,
+      std::vector<int>* serialized_read_fds,
+      std::vector<int>* serialized_write_fds,
       bool* write_error) override {
     if (handle_.is_valid()) {
       // SetInitialBuffer could have been called on main thread before OnInit
@@ -515,7 +517,7 @@ class RawChannelWin final : public RawChannel {
       SerializeReadBuffer(0u, serialized_read_buffer);
 
       // We could have been given messages to write before OnInit.
-      SerializeWriteBuffer(0u, 0u, serialized_write_buffer);
+      SerializeWriteBuffer(0u, 0u, serialized_write_buffer, nullptr);
 
       return handle_.Pass();
     }
@@ -610,7 +612,7 @@ class RawChannelWin final : public RawChannel {
     return rv.Pass();
   }
 
-  size_t SerializePlatformHandles() override {
+  size_t SerializePlatformHandles(std::vector<int>* fds) override {
     if (!write_buffer_no_lock()->HavePlatformHandlesToSend())
       return 0u;
 
@@ -644,7 +646,7 @@ class RawChannelWin final : public RawChannel {
     DCHECK(io_handler_);
     DCHECK(!io_handler_->pending_write_no_lock());
 
-    size_t num_platform_handles = SerializePlatformHandles();
+    size_t num_platform_handles = SerializePlatformHandles(nullptr);
 
     std::vector<WriteBuffer::Buffer> buffers;
     write_buffer_no_lock()->GetBuffers(&buffers);

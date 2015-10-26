@@ -20,9 +20,8 @@ namespace mojo {
 namespace edk {
 
 // The maximum number of handles that can be sent "at once" using
-// |PlatformChannelSendmsgWithHandles()|.
-// TODO(vtl): This number is taken from ipc/ipc_message_attachment_set.h:
-// |IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage|.
+// |PlatformChannelSendmsgWithHandles()|. This must be less than the Linux
+// kernel's SCM_MAX_FD which is 253.
 const size_t kPlatformChannelMaxNumHandles = 128;
 
 // Use these to write to a socket created using |PlatformChannelPair| (or

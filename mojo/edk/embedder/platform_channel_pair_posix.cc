@@ -12,9 +12,14 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/platform_handle.h"
+
+#if !defined(SO_PEEK_OFF)
+#define SO_PEEK_OFF 42
+#endif
 
 namespace mojo {
 namespace edk {
@@ -37,7 +42,16 @@ PlatformChannelPair::PlatformChannelPair() {
   // Create the Unix domain socket and set the ends to nonblocking.
   int fds[2];
   // TODO(vtl): Maybe fail gracefully if |socketpair()| fails.
+
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
+
+  // Store a common id in the SO_PEEK_OFF option (which we don't use since we
+  // don't peak) as a way of determining later if two sockets are connected to
+  // each other.
+  int identifier = base::RandInt(kint32min, kint32max);
+  setsockopt(fds[0], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
+  setsockopt(fds[1], SOL_SOCKET, SO_PEEK_OFF, &identifier, sizeof(identifier));
+
   PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
   PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
 

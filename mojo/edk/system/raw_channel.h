@@ -108,7 +108,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // |serialized_read_buffer| contains partially read data, if any.
   // |serialized_write_buffer| contains a serialized representation of messages
   // that haven't been written yet.
-  // Both these arrays need to be passed to SetSerializedData below when
+  // |serialized_read_fds| is only used on POSIX, and it returns FDs associated
+  // with partially read data.
+  // |serialized_write_fds| is only used on POSIX, and it returns FDs associated
+  // with messages that haven't been written yet.
+  // All these arrays need to be passed to SetSerializedData below when
   // recreating the channel.
   // If there was a read or write in progress, they will be completed. If the
   // in-progress read results in an error, an invalid handle is returned. If the
@@ -118,6 +122,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   ScopedPlatformHandle ReleaseHandle(
       std::vector<char>* serialized_read_buffer,
       std::vector<char>* serialized_write_buffer,
+      std::vector<int>* serialized_read_fds,
+      std::vector<int>* serialized_write_fds,
       bool* write_error);
 
   // Writes the given message (or schedules it to be written). |message| must
@@ -132,7 +138,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // ReleaseHandle returns another handle that is shared memory?
   void SetSerializedData(
       char* serialized_read_buffer, size_t serialized_read_buffer_size,
-      char* serialized_write_buffer, size_t serialized_write_buffer_size);
+      char* serialized_write_buffer, size_t serialized_write_buffer_size,
+      std::vector<int>* serialized_read_fds,
+      std::vector<int>* serialized_write_fds);
 
   // Checks if this RawChannel is the other endpoint to |other|.
   bool IsOtherEndOf(RawChannel* other);
@@ -255,7 +263,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // buffer so that it can be sent to another process.
   void SerializeWriteBuffer(size_t additional_bytes_written,
                             size_t additional_platform_handles_written,
-                            std::vector<char>* buffer);
+                            std::vector<char>* buffer,
+                            std::vector<int>* fds);
 
   base::Lock& write_lock() { return write_lock_; }
   base::Lock& read_lock() { return read_lock_; }
@@ -285,6 +294,13 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual bool OnReadMessageForRawChannel(
       const MessageInTransit::View& message_view);
 
+#if defined(OS_POSIX)
+  // This is used to give the POSIX implementation FDs that belong to ReadBuffer
+  // and WriteBuffer after the channel is deserialized.
+  virtual void SetSerializedFDs(std::vector<int>* serialized_read_fds,
+                                std::vector<int>* serialized_write_fds) = 0;
+#endif
+
   // Returns true iff the pipe handle is valid.
   virtual bool IsHandleValid() = 0;
 
@@ -292,6 +308,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual ScopedPlatformHandle ReleaseHandleNoLock(
       std::vector<char>* serialized_read_buffer,
       std::vector<char>* serialized_write_buffer,
+      std::vector<int>* serialized_read_fds,
+      std::vector<int>* serialized_write_fds,
       bool* write_error) = 0;
 
   // Reads into |read_buffer()|.
@@ -320,14 +338,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
       size_t num_platform_handles,
       const void* platform_handle_table) = 0;
 
-  // Serialize all platform handles for the front mesasge in the queue from the
-  // transport data to the transport buffer.
-  // TODO(jam): once this uses the Master interface to exchange platform handles
-  // with tokens, it needs to be used when serializing a RawChannel even on
-  // POSIX. That is because there's no guarantee that we can write pending fds
-  // when calling ReleaseHandle (because the other side might not be writable
-  // indefinitely).
-  virtual size_t SerializePlatformHandles() = 0;
+  // Serialize all platform handles for the front message in the queue from the
+  // transport data to the transport buffer. Returns how many handles were
+  // serialized.
+  // On POSIX, |fds| contains FDs from the front messages, if any.
+  virtual size_t SerializePlatformHandles(std::vector<int>* fds) = 0;
 
   // Writes contents in |write_buffer_no_lock()|.
   // This class guarantees that:

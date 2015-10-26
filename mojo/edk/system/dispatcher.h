@@ -324,8 +324,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // Starts the serialization. Returns (via the two "out" parameters) the
   // maximum amount of space that may be needed to serialize this dispatcher (no
   // more than |TransportData::kMaxSerializedDispatcherSize|) and the maximum
-  // number of |PlatformHandle|s that may need to be attached (no more than
-  // |TransportData::kMaxSerializedDispatcherPlatformHandles|). If this
+  // number of |PlatformHandle|s that may need to be attached. If this
   // dispatcher cannot be serialized, |*max_size| and |*max_platform_handles|
   // should be set to zero. A call to this method will ALWAYS be followed by a
   // call to |EndSerializeAndClose()| (even if this dispatcher cannot be

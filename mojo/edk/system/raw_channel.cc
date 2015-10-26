@@ -303,6 +303,8 @@ void RawChannel::Shutdown() {
 ScopedPlatformHandle RawChannel::ReleaseHandle(
     std::vector<char>* serialized_read_buffer,
     std::vector<char>* serialized_write_buffer,
+    std::vector<int>* serialized_read_fds,
+    std::vector<int>* serialized_write_fds,
     bool* write_error) {
   ScopedPlatformHandle rv;
   *write_error = false;
@@ -311,6 +313,8 @@ ScopedPlatformHandle RawChannel::ReleaseHandle(
     base::AutoLock locker(write_lock_);
     rv = ReleaseHandleNoLock(serialized_read_buffer,
                              serialized_write_buffer,
+                             serialized_read_fds,
+                             serialized_write_fds,
                              write_error);
     delegate_ = nullptr;
     internal::g_io_thread_task_runner->PostTask(
@@ -364,8 +368,14 @@ bool RawChannel::SendQueuedMessagesNoLock() {
 
 void RawChannel::SetSerializedData(
     char* serialized_read_buffer, size_t serialized_read_buffer_size,
-    char* serialized_write_buffer, size_t serialized_write_buffer_size) {
+    char* serialized_write_buffer, size_t serialized_write_buffer_size,
+    std::vector<int>* serialized_read_fds,
+    std::vector<int>* serialized_write_fds) {
   base::AutoLock locker(read_lock_);
+
+#if defined(OS_POSIX)
+  SetSerializedFDs(serialized_read_fds, serialized_write_fds);
+#endif
 
   if (serialized_read_buffer_size) {
     // TODO(jam): copy power of 2 algorithm below? or share.
@@ -490,7 +500,8 @@ void RawChannel::SerializeReadBuffer(size_t additional_bytes_read,
 void RawChannel::SerializeWriteBuffer(
     size_t additional_bytes_written,
     size_t additional_platform_handles_written,
-    std::vector<char>* buffer) {
+    std::vector<char>* buffer,
+    std::vector<int>* fds) {
   write_lock_.AssertAcquired();
   if (write_buffer_->IsEmpty()) {
     DCHECK_EQ(0u, additional_bytes_written);
@@ -501,7 +512,7 @@ void RawChannel::SerializeWriteBuffer(
   UpdateWriteBuffer(
       additional_platform_handles_written, additional_bytes_written);
   while (!write_buffer_->message_queue_.IsEmpty()) {
-    SerializePlatformHandles();
+    SerializePlatformHandles(fds);
     std::vector<WriteBuffer::Buffer> buffers;
     write_buffer_no_lock()->GetBuffers(&buffers);
     for (size_t i = 0; i < buffers.size(); ++i) {

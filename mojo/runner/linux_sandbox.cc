@@ -84,6 +84,8 @@ class SandboxPolicy : public sandbox::BaselinePolicy {
       case __NR_ftruncate:
       case __NR_getrlimit:
       case __NR_uname:
+      case __NR_getsockopt:
+      case __NR_setsockopt:
         return sandbox::bpf_dsl::Allow();
     }
 

@@ -126,7 +126,7 @@ TEST_F(EmbedderTest, SendReadableMessagePipe) {
   char read_buffer[20000] = {};
   uint32_t num_bytes = static_cast<uint32_t>(sizeof(read_buffer));
   MojoHandle ports[10];
-  uint32_t num_ports;
+  uint32_t num_ports = arraysize(ports);
   ASSERT_EQ(MOJO_RESULT_OK,
             MojoReadMessage(client_mp, read_buffer, &num_bytes, &ports[0],
                             &num_ports, MOJO_READ_MESSAGE_FLAG_NONE));

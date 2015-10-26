@@ -28,7 +28,8 @@ void DataPipeConsumerDispatcher::Init(
   if (message_pipe.is_valid()) {
     channel_ = RawChannel::Create(message_pipe.Pass());
     channel_->SetSerializedData(
-        serialized_read_buffer, serialized_read_buffer_size, nullptr, 0u);
+        serialized_read_buffer, serialized_read_buffer_size, nullptr, 0u,
+        nullptr, nullptr);
     internal::g_io_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(&DataPipeConsumerDispatcher::InitOnIO, this));
   } else {
@@ -478,12 +479,13 @@ void DataPipeConsumerDispatcher::SerializeInternal() {
   // so that other messages aren't read after this.
   if (channel_) {
     std::vector<char> serialized_write_buffer;
+    std::vector<int> fds;
     bool write_error = false;
-    serialized_platform_handle_ =
-        channel_->ReleaseHandle(&serialized_read_buffer_,
-                                &serialized_write_buffer,
-                                &write_error);
+    serialized_platform_handle_ = channel_->ReleaseHandle(
+        &serialized_read_buffer_, &serialized_write_buffer, &fds, &fds,
+        &write_error);
     CHECK(serialized_write_buffer.empty());
+    CHECK(fds.empty());
     CHECK(!write_error) << "DataPipeConsumerDispatcher doesn't write.";
 
     channel_ = nullptr;

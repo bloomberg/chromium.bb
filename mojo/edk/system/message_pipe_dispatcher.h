@@ -44,7 +44,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   void Init(
       ScopedPlatformHandle message_pipe,
       char* serialized_read_buffer, size_t serialized_read_buffer_size,
-      char* serialized_write_buffer, size_t serialized_write_buffer_size);
+      char* serialized_write_buffer, size_t serialized_write_buffer_size,
+      std::vector<int>* serialized_read_fds,
+      std::vector<int>* serialized_write_fds);
 
   // |Dispatcher| public methods:
   Type GetType() const override;
@@ -121,11 +123,15 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   MessageInTransitQueue message_queue_;
   // When sending MP, contains serialized message_queue_.
   bool serialized_;
-  // TODO(jam): stop using this and use shared memory instead since we are
-  // limited to 10K.
   std::vector<char> serialized_message_queue_;
   std::vector<char> serialized_read_buffer_;
   std::vector<char> serialized_write_buffer_;
+  // Contains FDs from (in this order): the read buffer, the write buffer, and
+  // message queue.
+  std::vector<int> serialized_fds_;
+  size_t serialized_read_fds_length_;
+  size_t serialized_write_fds_length_;
+  size_t serialized_message_fds_length_;
   ScopedPlatformHandle serialized_platform_handle_;
   AwakableList awakable_list_;
 
