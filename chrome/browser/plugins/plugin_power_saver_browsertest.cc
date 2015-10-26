@@ -200,8 +200,9 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOrigin) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "medium_16_9");
 }
 
+// Test extremely flaky, see https://crbug.com/547224
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
-                       LargePluginsPeripheralWhenPosterSpecified) {
+                       DISABLED_LargePluginsPeripheralWhenPosterSpecified) {
   LoadHTML(
       "<object id='plugin_src' type='application/x-ppapi-tests' "
       "    width='400' height='500' poster='snapshot1x.png'></object>"
