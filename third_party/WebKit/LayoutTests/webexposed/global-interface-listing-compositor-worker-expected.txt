@@ -28,7 +28,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter scrollLeft
 [Worker]     setter scrollTop
 [Worker]     setter transform
-[Worker] interface CompositorWorkerGlobalScope
+[Worker] interface CompositorWorkerGlobalScope : WorkerGlobalScope
 [Worker]     method constructor
 [Worker] interface DataView
 [Worker]     getter buffer
@@ -51,7 +51,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint16
 [Worker]     method setUint32
 [Worker]     method setUint8
-[Worker] interface FileError
+[Worker] interface FileError : DOMError
 [Worker]     attribute ABORT_ERR
 [Worker]     attribute ENCODING_ERR
 [Worker]     attribute INVALID_MODIFICATION_ERR
@@ -77,7 +77,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method continuePrimaryKey
 [Worker]     method delete
 [Worker]     method update
-[Worker] interface webkitIDBDatabase
+[Worker] interface webkitIDBDatabase : EventTarget
 [Worker]     getter name
 [Worker]     getter objectStoreNames
 [Worker]     getter onabort
@@ -140,7 +140,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
-[Worker] interface webkitIDBRequest
+[Worker] interface webkitIDBRequest : EventTarget
 [Worker]     getter error
 [Worker]     getter onerror
 [Worker]     getter onsuccess
@@ -151,7 +151,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     setter onerror
 [Worker]     setter onsuccess
-[Worker] interface webkitIDBTransaction
+[Worker] interface webkitIDBTransaction : EventTarget
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode

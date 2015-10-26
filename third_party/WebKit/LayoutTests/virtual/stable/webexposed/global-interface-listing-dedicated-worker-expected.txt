@@ -34,7 +34,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method keys
 [Worker]     method match
 [Worker]     method open
-[Worker] interface CloseEvent
+[Worker] interface CloseEvent : Event
 [Worker]     getter code
 [Worker]     getter reason
 [Worker]     getter wasClean
@@ -49,7 +49,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter type
 [Worker]     getter usages
 [Worker]     method constructor
-[Worker] interface CustomEvent
+[Worker] interface CustomEvent : Event
 [Worker]     getter detail
 [Worker]     method constructor
 [Worker]     method initCustomEvent
@@ -105,7 +105,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint16
 [Worker]     method setUint32
 [Worker]     method setUint8
-[Worker] interface DedicatedWorkerGlobalScope
+[Worker] interface DedicatedWorkerGlobalScope : WorkerGlobalScope
 [Worker]     method constructor
 [Worker] interface Event
 [Worker]     attribute AT_TARGET
@@ -147,7 +147,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method stopPropagation
 [Worker]     setter cancelBubble
 [Worker]     setter returnValue
-[Worker] interface EventSource
+[Worker] interface EventSource : EventTarget
 [Worker]     attribute CLOSED
 [Worker]     attribute CONNECTING
 [Worker]     attribute OPEN
@@ -167,13 +167,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method dispatchEvent
 [Worker]     method removeEventListener
-[Worker] interface File
+[Worker] interface File : Blob
 [Worker]     getter lastModified
 [Worker]     getter lastModifiedDate
 [Worker]     getter name
 [Worker]     getter webkitRelativePath
 [Worker]     method constructor
-[Worker] interface FileError
+[Worker] interface FileError : DOMError
 [Worker]     attribute ABORT_ERR
 [Worker]     attribute ENCODING_ERR
 [Worker]     attribute INVALID_MODIFICATION_ERR
@@ -192,7 +192,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter length
 [Worker]     method constructor
 [Worker]     method item
-[Worker] interface FileReader
+[Worker] interface FileReader : EventTarget
 [Worker]     attribute DONE
 [Worker]     attribute EMPTY
 [Worker]     attribute LOADING
@@ -248,10 +248,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method continue
 [Worker]     method delete
 [Worker]     method update
-[Worker] interface IDBCursorWithValue
+[Worker] interface IDBCursorWithValue : IDBCursor
 [Worker]     getter value
 [Worker]     method constructor
-[Worker] interface IDBDatabase
+[Worker] interface IDBDatabase : EventTarget
 [Worker]     getter name
 [Worker]     getter objectStoreNames
 [Worker]     getter onabort
@@ -314,13 +314,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
-[Worker] interface IDBOpenDBRequest
+[Worker] interface IDBOpenDBRequest : IDBRequest
 [Worker]     getter onblocked
 [Worker]     getter onupgradeneeded
 [Worker]     method constructor
 [Worker]     setter onblocked
 [Worker]     setter onupgradeneeded
-[Worker] interface IDBRequest
+[Worker] interface IDBRequest : EventTarget
 [Worker]     getter error
 [Worker]     getter onerror
 [Worker]     getter onsuccess
@@ -331,7 +331,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     setter onerror
 [Worker]     setter onsuccess
-[Worker] interface IDBTransaction
+[Worker] interface IDBTransaction : EventTarget
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
@@ -345,7 +345,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onabort
 [Worker]     setter oncomplete
 [Worker]     setter onerror
-[Worker] interface IDBVersionChangeEvent
+[Worker] interface IDBVersionChangeEvent : Event
 [Worker]     getter dataLoss
 [Worker]     getter dataLossMessage
 [Worker]     getter newVersion
@@ -359,7 +359,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter port1
 [Worker]     getter port2
 [Worker]     method constructor
-[Worker] interface MessageEvent
+[Worker] interface MessageEvent : Event
 [Worker]     getter data
 [Worker]     getter lastEventId
 [Worker]     getter origin
@@ -367,14 +367,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter source
 [Worker]     method constructor
 [Worker]     method initMessageEvent
-[Worker] interface MessagePort
+[Worker] interface MessagePort : EventTarget
 [Worker]     getter onmessage
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method postMessage
 [Worker]     method start
 [Worker]     setter onmessage
-[Worker] interface Notification
+[Worker] interface Notification : EventTarget
 [Worker]     getter body
 [Worker]     getter data
 [Worker]     getter dir
@@ -394,7 +394,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onclose
 [Worker]     setter onerror
 [Worker]     setter onshow
-[Worker] interface PermissionStatus
+[Worker] interface PermissionStatus : EventTarget
 [Worker]     getter onchange
 [Worker]     getter state
 [Worker]     method constructor
@@ -402,7 +402,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface Permissions
 [Worker]     method constructor
 [Worker]     method query
-[Worker] interface ProgressEvent
+[Worker] interface ProgressEvent : Event
 [Worker]     getter lengthComputable
 [Worker]     getter loaded
 [Worker]     getter total
@@ -446,7 +446,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method json
 [Worker]     method text
-[Worker] interface ServiceWorkerRegistration
+[Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     getter onupdatefound
 [Worker]     getter pushManager
 [Worker]     getter scope
@@ -504,7 +504,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter protocol
 [Worker]     setter search
 [Worker]     setter username
-[Worker] interface WebSocket
+[Worker] interface WebSocket : EventTarget
 [Worker]     attribute CLOSED
 [Worker]     attribute CLOSING
 [Worker]     attribute CONNECTING
@@ -527,7 +527,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onmessage
 [Worker]     setter onopen
-[Worker] interface WorkerGlobalScope
+[Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute PERSISTENT
 [Worker]     attribute TEMPORARY
 [Worker]     getter console
@@ -578,7 +578,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter product
 [Worker]     getter userAgent
 [Worker]     method constructor
-[Worker] interface XMLHttpRequest
+[Worker] interface XMLHttpRequest : XMLHttpRequestEventTarget
 [Worker]     attribute DONE
 [Worker]     attribute HEADERS_RECEIVED
 [Worker]     attribute LOADING
@@ -608,7 +608,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter responseType
 [Worker]     setter timeout
 [Worker]     setter withCredentials
-[Worker] interface XMLHttpRequestEventTarget
+[Worker] interface XMLHttpRequestEventTarget : EventTarget
 [Worker]     getter onabort
 [Worker]     getter onerror
 [Worker]     getter onload
@@ -624,7 +624,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onloadstart
 [Worker]     setter onprogress
 [Worker]     setter ontimeout
-[Worker] interface XMLHttpRequestUpload
+[Worker] interface XMLHttpRequestUpload : XMLHttpRequestEventTarget
 [Worker]     method constructor
 [Worker] interface webkitIDBCursor
 [Worker]     getter direction
@@ -636,7 +636,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method continue
 [Worker]     method delete
 [Worker]     method update
-[Worker] interface webkitIDBDatabase
+[Worker] interface webkitIDBDatabase : EventTarget
 [Worker]     getter name
 [Worker]     getter objectStoreNames
 [Worker]     getter onabort
@@ -699,7 +699,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
-[Worker] interface webkitIDBRequest
+[Worker] interface webkitIDBRequest : EventTarget
 [Worker]     getter error
 [Worker]     getter onerror
 [Worker]     getter onsuccess
@@ -710,7 +710,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     setter onerror
 [Worker]     setter onsuccess
-[Worker] interface webkitIDBTransaction
+[Worker] interface webkitIDBTransaction : EventTarget
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode

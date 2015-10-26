@@ -113,7 +113,11 @@ debug('[INTERFACES]');
 var interfaceNames = Object.getOwnPropertyNames(this).filter(isWebIDLConstructor);
 interfaceNames.sort();
 interfaceNames.forEach(function(interfaceName) {
-    debug('interface ' + interfaceName);
+    var inheritsFrom = this[interfaceName].__proto__.name;
+    if (inheritsFrom)
+        debug('interface ' + interfaceName + ' : ' + inheritsFrom);
+    else
+        debug('interface ' + interfaceName);
     var propertyStrings = [];
     var prototype = this[interfaceName].prototype;
     Object.getOwnPropertyNames(prototype).forEach(function(propertyName) {
