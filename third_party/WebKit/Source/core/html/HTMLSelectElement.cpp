@@ -84,7 +84,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_lastOnChangeOption(nullptr)
     , m_activeSelectionAnchorIndex(-1)
     , m_activeSelectionEndIndex(-1)
-    , m_isProcessingUserDrivenChange(false)
     , m_multiple(false)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
@@ -140,7 +139,7 @@ void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeN
     if (optionIndex == selectedIndex())
         return;
 
-    selectOption(optionIndex, DeselectOtherOptions | (fireOnChangeNow ? DispatchInputAndChangeEvent : 0) | UserDriven);
+    selectOption(optionIndex, DeselectOtherOptions | (fireOnChangeNow ? DispatchInputAndChangeEvent : 0));
 }
 
 bool HTMLSelectElement::hasPlaceholderLabelOption() const
@@ -281,7 +280,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
         setAutofilled(false);
     SelectOptionFlags flags = DeselectOtherOptions;
     if (sendEvents)
-        flags |= DispatchInputAndChangeEvent | UserDriven;
+        flags |= DispatchInputAndChangeEvent;
     selectOption(optionIndex, flags);
 
     if (sendEvents && previousSelectedIndex != selectedIndex() && !usesMenuList())
@@ -721,9 +720,8 @@ void HTMLSelectElement::dispatchInputAndChangeEventForMenuList()
     ASSERT(usesMenuList());
 
     HTMLOptionElement* selectedOption = this->selectedOption();
-    if (m_lastOnChangeOption.get() != selectedOption && m_isProcessingUserDrivenChange) {
+    if (m_lastOnChangeOption.get() != selectedOption) {
         m_lastOnChangeOption = selectedOption;
-        m_isProcessingUserDrivenChange = false;
         RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
         dispatchInputEvent();
         dispatchFormControlChangeEvent();
@@ -998,7 +996,6 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
     setNeedsValidityCheck();
 
     if (usesMenuList()) {
-        m_isProcessingUserDrivenChange = flags & UserDriven;
         if (flags & DispatchInputAndChangeEvent)
             dispatchInputAndChangeEventForMenuList();
         else
@@ -1300,7 +1297,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             handled = false;
 
         if (handled && static_cast<size_t>(listIndex) < listItems.size())
-            selectOption(listToOptionIndex(listIndex), DeselectOtherOptions | DispatchInputAndChangeEvent | UserDriven);
+            selectOption(listToOptionIndex(listIndex), DeselectOtherOptions | DispatchInputAndChangeEvent);
 
         if (handled)
             event->setDefaultHandled();
@@ -1684,7 +1681,7 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
     int index = m_typeAhead.handleEvent(event, TypeAhead::MatchPrefix | TypeAhead::CycleFirstChar);
     if (index < 0)
         return;
-    selectOption(listToOptionIndex(index), DeselectOtherOptions | DispatchInputAndChangeEvent | UserDriven);
+    selectOption(listToOptionIndex(index), DeselectOtherOptions | DispatchInputAndChangeEvent);
     if (!usesMenuList())
         listBoxOnChange();
 }
@@ -1717,11 +1714,11 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
     // selected index.
     if (toHTMLOptionElement(element).selected()) {
         if (usesMenuList())
-            selectOption(-1, DispatchInputAndChangeEvent | UserDriven);
+            selectOption(-1, DispatchInputAndChangeEvent);
         else
             toHTMLOptionElement(element).setSelectedState(false);
     } else {
-        selectOption(index, DispatchInputAndChangeEvent | UserDriven);
+        selectOption(index, DispatchInputAndChangeEvent);
     }
     if (usesMenuList())
         return;
