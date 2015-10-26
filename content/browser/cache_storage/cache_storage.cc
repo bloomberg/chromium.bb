@@ -4,6 +4,7 @@
 
 #include "content/browser/cache_storage/cache_storage.h"
 
+#include <set>
 #include <string>
 
 #include "base/barrier_closure.h"
@@ -325,6 +326,8 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
                             const std::string& serialized) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+    scoped_ptr<std::set<std::string>> cache_dirs(new std::set<std::string>);
+
     CacheStorageIndex index;
     if (index.ParseFromString(serialized)) {
       for (int i = 0, max = index.cache_size(); i < max; ++i) {
@@ -332,17 +335,37 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
         DCHECK(cache.has_cache_dir());
         names->push_back(cache.name());
         cache_name_to_cache_dir_[cache.name()] = cache.cache_dir();
+        cache_dirs->insert(cache.cache_dir());
       }
     }
 
-    // TODO(jkarlin): Delete caches that are in the directory and not returned
-    // in LoadIndex.
+    cache_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DeleteUnreferencedCachesInPool, origin_path_,
+                              base::Passed(&cache_dirs)));
     callback.Run(names.Pass());
   }
 
  private:
   friend class MigratedLegacyCacheDirectoryNameTest;
   ~SimpleCacheLoader() override {}
+
+  // Iterates over the caches and deletes any directory not found in
+  // |cache_dirs|. Runs on cache_task_runner_
+  static void DeleteUnreferencedCachesInPool(
+      const base::FilePath& cache_base_dir,
+      scoped_ptr<std::set<std::string>> cache_dirs) {
+    base::FileEnumerator file_enum(cache_base_dir, false /* recursive */,
+                                   base::FileEnumerator::DIRECTORIES);
+    std::vector<base::FilePath> dirs_to_delete;
+    base::FilePath cache_path;
+    while (!(cache_path = file_enum.Next()).empty()) {
+      if (!ContainsKey(*cache_dirs, cache_path.BaseName().AsUTF8Unsafe()))
+        dirs_to_delete.push_back(cache_path);
+    }
+
+    for (const base::FilePath& cache_path : dirs_to_delete)
+      base::DeleteFile(cache_path, true /* recursive */);
+  }
 
   // Runs on cache_task_runner_
   static std::string MigrateCachesIfNecessaryInPool(

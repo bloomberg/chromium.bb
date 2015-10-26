@@ -83,12 +83,13 @@ class CONTENT_EXPORT CacheStorageManager {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  base::FilePath root_path() const { return root_path_; }
+
  private:
   friend class CacheStorageContextImpl;
   friend class CacheStorageManagerTest;
   friend class CacheStorageMigrationTest;
   friend class CacheStorageQuotaClient;
-  friend class MigratedLegacyCacheDirectoryNameTest;
 
   typedef std::map<GURL, CacheStorage*> CacheStorageMap;
 
@@ -122,10 +123,11 @@ class CONTENT_EXPORT CacheStorageManager {
       const {
     return request_context_getter_;
   }
+
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
     return blob_context_;
   }
-  base::FilePath root_path() const { return root_path_; }
+
   const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner() const {
     return cache_task_runner_;
   }
