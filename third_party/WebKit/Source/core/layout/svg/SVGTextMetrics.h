@@ -26,7 +26,7 @@
 namespace blink {
 
 enum class FontOrientation;
-class LayoutSVGInlineText;
+class LineLayoutSVGInlineText;
 class TextRun;
 
 class SVGTextMetrics {
@@ -38,10 +38,10 @@ public:
 
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
-    SVGTextMetrics(LayoutSVGInlineText*, unsigned length, float width);
+    SVGTextMetrics(LineLayoutSVGInlineText, unsigned length, float width);
 
-    static SVGTextMetrics measureCharacterRange(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
-    static TextRun constructTextRun(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
+    static SVGTextMetrics measureCharacterRange(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
+    static TextRun constructTextRun(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
 
     bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 
@@ -55,7 +55,7 @@ public:
     unsigned length() const { return m_length; }
 
 private:
-    SVGTextMetrics(LayoutSVGInlineText*, const TextRun&);
+    SVGTextMetrics(LineLayoutSVGInlineText, const TextRun&);
 
     float m_width;
     float m_height;

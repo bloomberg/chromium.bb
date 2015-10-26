@@ -21,6 +21,7 @@
 
 #include "core/layout/svg/SVGTextMetrics.h"
 
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "platform/fonts/FontOrientation.h"
 
@@ -40,14 +41,14 @@ SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
 {
 }
 
-SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textLayoutObject, const TextRun& run)
+SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, const TextRun& run)
 {
-    ASSERT(textLayoutObject);
+    ASSERT(textLayoutItem);
 
-    float scalingFactor = textLayoutObject->scalingFactor();
+    float scalingFactor = textLayoutItem.scalingFactor();
     ASSERT(scalingFactor);
 
-    const Font& scaledFont = textLayoutObject->scaledFont();
+    const Font& scaledFont = textLayoutItem.scaledFont();
 
     // Calculate width/height using the scaled font, divide this result by the scalingFactor afterwards.
     m_width = scaledFont.width(run) / scalingFactor;
@@ -57,9 +58,9 @@ SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textLayoutObject, const Text
     m_length = static_cast<unsigned>(run.length());
 }
 
-TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
+TextRun SVGTextMetrics::constructTextRun(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
 {
-    const ComputedStyle& style = text->styleRef();
+    const ComputedStyle& style = textLayoutItem.styleRef();
 
     TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.
@@ -70,36 +71,36 @@ TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned pos
         , isOverride(style.unicodeBidi()) /* directionalOverride */);
 
     if (length) {
-        if (text->is8Bit())
-            run.setText(text->characters8() + position, length);
+        if (textLayoutItem.is8Bit())
+            run.setText(textLayoutItem.characters8() + position, length);
         else
-            run.setText(text->characters16() + position, length);
+            run.setText(textLayoutItem.characters16() + position, length);
     }
 
     // We handle letter & word spacing ourselves.
     run.disableSpacing();
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
-    run.setCharactersLength(text->textLength() - position);
+    run.setCharactersLength(textLayoutItem.textLength() - position);
     ASSERT(run.charactersLength() >= run.length());
     return run;
 }
 
-SVGTextMetrics SVGTextMetrics::measureCharacterRange(LayoutSVGInlineText* text, unsigned position, unsigned length, TextDirection textDirection)
+SVGTextMetrics SVGTextMetrics::measureCharacterRange(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
 {
-    ASSERT(text);
-    return SVGTextMetrics(text, constructTextRun(text, position, length, textDirection));
+    ASSERT(textLayoutItem);
+    return SVGTextMetrics(textLayoutItem, constructTextRun(textLayoutItem, position, length, textDirection));
 }
 
-SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* text, unsigned length, float width)
+SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, unsigned length, float width)
 {
-    ASSERT(text);
+    ASSERT(textLayoutItem);
 
-    float scalingFactor = text->scalingFactor();
+    float scalingFactor = textLayoutItem.scalingFactor();
     ASSERT(scalingFactor);
 
     m_width = width / scalingFactor;
-    m_height = text->scaledFont().fontMetrics().floatHeight() / scalingFactor;
+    m_height = textLayoutItem.scaledFont().fontMetrics().floatHeight() / scalingFactor;
 
     m_length = length;
 }

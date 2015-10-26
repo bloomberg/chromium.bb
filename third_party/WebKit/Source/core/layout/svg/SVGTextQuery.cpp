@@ -22,6 +22,7 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextFragment.h"
@@ -279,7 +280,7 @@ static bool subStringLengthCallback(QueryData* queryData, const SVGTextFragment&
     if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
         return false;
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset + startPosition, endPosition - startPosition, queryData->textBox->direction());
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(LineLayoutSVGInlineText(queryData->textLayoutObject), fragment.characterOffset + startPosition, endPosition - startPosition, queryData->textBox->direction());
     data->subStringLength += queryData->isVerticalText ? metrics.height() : metrics.width();
     return false;
 }
@@ -306,7 +307,7 @@ static FloatPoint calculateGlyphPositionWithoutTransform(const QueryData* queryD
 {
     float glyphOffsetInDirection = 0;
     if (offsetInFragment) {
-        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset, offsetInFragment, queryData->textBox->direction());
+        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(LineLayoutSVGInlineText(queryData->textLayoutObject), fragment.characterOffset, offsetInFragment, queryData->textBox->direction());
         if (queryData->isVerticalText)
             glyphOffsetInDirection = metrics.height();
         else

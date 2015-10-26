@@ -21,6 +21,7 @@
 
 #include "core/layout/svg/SVGTextMetricsBuilder.h"
 
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"
@@ -59,7 +60,7 @@ private:
     SVGTextMetrics computeMetricsForCharacterSimple(unsigned textPosition);
     SVGTextMetrics computeMetricsForCharacterComplex(unsigned textPosition);
 
-    LayoutSVGInlineText* m_text;
+    LineLayoutSVGInlineText m_text;
     BidiCharacterRun* m_bidiRun;
     TextRun m_run;
     BidiResolver<TextRunIterator, BidiCharacterRun> m_bidiResolver;
@@ -72,9 +73,9 @@ private:
 };
 
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
-    : m_text(text)
+    : m_text(LineLayoutSVGInlineText(text))
     , m_bidiRun(nullptr)
-    , m_run(SVGTextMetrics::constructTextRun(text, 0, text->textLength(), text->styleRef().direction()))
+    , m_run(SVGTextMetrics::constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
     , m_isComplexText(false)
     , m_totalWidth(0)
 {
@@ -97,7 +98,7 @@ SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
 
 void SVGTextMetricsCalculator::setupBidiRuns()
 {
-    const ComputedStyle& style = m_text->styleRef();
+    const ComputedStyle& style = m_text.styleRef();
     m_textDirection = style.direction();
     if (isOverride(style.unicodeBidi()))
         return;
