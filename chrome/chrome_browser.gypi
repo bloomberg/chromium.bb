@@ -2100,6 +2100,8 @@
       'browser/permissions/permission_request_id.h',
       'browser/permissions/permission_update_infobar_delegate_android.cc',
       'browser/permissions/permission_update_infobar_delegate_android.h',
+      'browser/permissions/permission_util.cc',
+      'browser/permissions/permission_util.h',
     ],
     # See also the plugin_installation_sources list below.
     'chrome_browser_plugins_sources': [

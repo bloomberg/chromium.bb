@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
@@ -48,30 +49,6 @@ enum PermissionAction {
   PERMISSION_ACTION_NUM,
 };
 
-// The returned strings must match the RAPPOR metrics in rappor.xml,
-// e.g. Permissions.Action.Geolocation etc..
-const std::string GetPermissionString(ContentSettingsType permission) {
-  switch (permission) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return "Geolocation";
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return "Notifications";
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      return "MidiSysEx";
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return "PushMessaging";
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      return "DurableStorage";
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      return "ProtectedMediaIdentifier";
-#endif
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
 // Deprecated. This method is used for the single-dimensional RAPPOR metrics
 // that are being replaced by the multi-dimensional ones.
 const std::string GetRapporMetric(ContentSettingsType permission,
@@ -95,7 +72,8 @@ const std::string GetRapporMetric(ContentSettingsType permission,
       break;
   }
 
-  std::string permission_str = GetPermissionString(permission);
+  std::string permission_str =
+      PermissionUtil::GetPermissionString(permission);
   if (permission_str.empty())
     return "";
   return base::StringPrintf("ContentSettings.PermissionActions_%s.%s.Url",
@@ -171,7 +149,8 @@ void RecordPermissionAction(ContentSettingsType permission,
         rappor_service, rappor_metric, requesting_origin);
 
   // Add multi-dimensional RAPPOR reporting for safe-browsing users.
-  std::string permission_str = GetPermissionString(permission);
+  std::string permission_str =
+      PermissionUtil::GetPermissionString(permission);
   if (!rappor_service || permission_str.empty())
     return;
 

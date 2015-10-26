@@ -6,15 +6,22 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
+#include "base/test/mock_entropy_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -27,6 +34,12 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #endif
 
+const char* kPermissionsKillSwitchFieldStudy =
+    PermissionContextBase::kPermissionsKillSwitchFieldStudy;
+const char* kPermissionsKillSwitchBlockedValue =
+    PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
+
 class TestPermissionContext : public PermissionContextBase {
  public:
   TestPermissionContext(Profile* profile,
@@ -34,7 +47,9 @@ class TestPermissionContext : public PermissionContextBase {
    : PermissionContextBase(profile, permission_type),
      permission_set_(false),
      permission_granted_(false),
-     tab_context_updated_(false) {}
+     tab_context_updated_(false),
+     field_trial_list_(new base::FieldTrialList(new base::MockEntropyProvider))
+     {}
 
   ~TestPermissionContext() override {}
 
@@ -61,6 +76,15 @@ class TestPermissionContext : public PermissionContextBase {
     permission_granted_ = content_setting == CONTENT_SETTING_ALLOW;
   }
 
+  void ResetFieldTrialList() {
+    // Destroy the existing FieldTrialList before creating a new one to avoid
+    // a DCHECK.
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(
+        new base::MockEntropyProvider));
+    variations::testing::ClearAllVariationParams();
+  }
+
  protected:
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_origin,
@@ -76,6 +100,7 @@ class TestPermissionContext : public PermissionContextBase {
    bool permission_set_;
    bool permission_granted_;
    bool tab_context_updated_;
+   scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
@@ -232,6 +257,22 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(default_setting, setting_after_reset);
   }
 
+  void TestGlobalPermissionsKillSwitch(ContentSettingsType type) {
+    TestPermissionContext permission_context(profile(), type);
+    permission_context.ResetFieldTrialList();
+
+    EXPECT_FALSE(permission_context.IsPermissionKillSwitchOn());
+    std::map<std::string, std::string> params;
+    params[PermissionUtil::GetPermissionString(type)] =
+        kPermissionsKillSwitchBlockedValue;
+    variations::AssociateVariationParams(
+        kPermissionsKillSwitchFieldStudy, kPermissionsKillSwitchTestGroup,
+        params);
+    base::FieldTrialList::CreateFieldTrial(kPermissionsKillSwitchFieldStudy,
+                                           kPermissionsKillSwitchTestGroup);
+    EXPECT_TRUE(permission_context.IsPermissionKillSwitchOn());
+  }
+
  private:
   // ChromeRenderViewHostTestHarness:
   void SetUp() override {
@@ -305,3 +346,18 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
                                  CONTENT_SETTING_ASK);
 }
 #endif
+
+// Tests the global kill switch by enabling/disabling the Field Trials.
+TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  TestGlobalPermissionsKillSwitch(
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
+#endif
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+}
