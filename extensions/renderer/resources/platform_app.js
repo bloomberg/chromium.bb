@@ -152,7 +152,7 @@ disableMethods(HTMLDocument.prototype, 'document', ['write', 'writeln'], true);
 // Disable history.
 Object.defineProperty(window, "history", { value: {} });
 disableGetters(window.history, 'history',
-    ['back', 'forward', 'go', 'length', 'pushState', 'replaceState']);
+    ['back', 'forward', 'go', 'length', 'pushState', 'replaceState', 'state']);
 
 // Disable find.
 disableMethods(window, 'window', ['find']);
