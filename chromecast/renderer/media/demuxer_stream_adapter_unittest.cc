@@ -111,7 +111,7 @@ void DemuxerStreamAdapterTest::OnNewFrame(
   }
 
   ASSERT_TRUE(buffer.get() != NULL);
-  ASSERT_EQ(buffer->timestamp(),
+  ASSERT_EQ(base::TimeDelta::FromMicroseconds(buffer->timestamp()),
             base::TimeDelta::FromMilliseconds(40 * frame_received_count_));
   frame_received_count_++;
 
