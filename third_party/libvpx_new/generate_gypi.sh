@@ -590,7 +590,7 @@ gn format --in-place $BASE_DIR/libvpx_srcs.gni
 cd $BASE_DIR/$LIBVPX_SRC_DIR
 echo
 echo "Update README.chromium:"
-git log -1 --format="%cd%nCommit: %H" --date=format:"%A %B %d %Y"
+git log -1 --format="%cd%nCommit: %H" --date=format:"Date: %A %B %d %Y"
 
 cd $BASE_DIR
 
