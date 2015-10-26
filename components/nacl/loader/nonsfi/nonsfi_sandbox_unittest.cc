@@ -560,14 +560,6 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   mprotect(ptr, getpagesize(), PROT_READ | PROT_GROWSDOWN);
 }
 
-BPF_TEST_C(NaClNonSfiSandboxTest,
-           brk,
-           nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  char* next_brk = static_cast<char*>(sbrk(0)) + getpagesize();
-  // The kernel interface must return zero for brk.
-  BPF_ASSERT_EQ(0, syscall(__NR_brk, next_brk));
-}
-
 // clockid restrictions are mostly tested in sandbox/ with the
 // RestrictClockID() unittests. Some basic tests are duplicated here as
 // a precaution.
@@ -695,13 +687,7 @@ RESTRICT_SYSCALL_EPERM_TEST(geteuid);
 RESTRICT_SYSCALL_EPERM_TEST(getgid);
 RESTRICT_SYSCALL_EPERM_TEST(getuid);
 RESTRICT_SYSCALL_EPERM_TEST(madvise);
-RESTRICT_SYSCALL_EPERM_TEST(open);
-RESTRICT_SYSCALL_EPERM_TEST(openat);
 RESTRICT_SYSCALL_EPERM_TEST(ptrace);
-RESTRICT_SYSCALL_EPERM_TEST(set_robust_list);
-#if defined(__i386__) || defined(__x86_64__)
-RESTRICT_SYSCALL_EPERM_TEST(time);
-#endif
 
 }  // namespace
 
