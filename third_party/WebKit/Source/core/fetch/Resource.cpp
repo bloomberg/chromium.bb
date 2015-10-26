@@ -329,7 +329,7 @@ bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const
 
 bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin, String& errorDescription) const
 {
-    return blink::passesAccessControlCheck(m_response, resourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials, securityOrigin, errorDescription, resourceRequest().requestContext());
+    return blink::passesAccessControlCheck(m_response, lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials, securityOrigin, errorDescription, lastResourceRequest().requestContext());
 }
 
 bool Resource::isEligibleForIntegrityCheck(SecurityOrigin* securityOrigin) const
