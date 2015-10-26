@@ -628,13 +628,13 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
       url(../images/200/edit.png) 2x);
 }
 
-.gallery > .toolbar paper-button.print {
+.gallery > .toolbar button.print > .icon {
   background-image: -webkit-image-set(
       url(../images/100/print.png) 1x,
       url(../images/200/print.png) 2x);
 }
 
-.gallery > .toolbar paper-button.delete {
+.gallery > .toolbar button.delete > .icon {
   background-image: -webkit-image-set(
       url(../images/100/delete.png) 1x,
       url(../images/200/delete.png) 2x);
@@ -652,21 +652,16 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
       url(../images/200/mosaic_view.png) 2x);
 }
 
-.gallery > .toolbar paper-button.slideshow {
+.gallery > .toolbar button.slideshow > .icon {
   background-image: -webkit-image-set(
       url(../images/100/slideshow.png) 1x,
       url(../images/200/slideshow.png) 2x);
 }
 
-.gallery > .toolbar paper-button.share {
+.gallery > .toolbar button.share > .icon {
   background-image: -webkit-image-set(
       url(../images/100/share.png) 1x,
       url(../images/200/share.png) 2x);
-}
-
-.gallery[editing] > .toolbar paper-button.edit {
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .gallery[mode='slide'] .icon.slide-mode,

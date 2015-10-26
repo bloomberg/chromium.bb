@@ -71,17 +71,22 @@ function deleteAllImagesInThumbnailMode(testVolumeName, volumeType, operation) {
     switch (operation) {
       case 'mouse':
         // Click delete button.
-        return gallery.waitAndClickElement(appId, 'paper-button.delete');
+        return gallery.waitAndClickElement(appId, 'button.delete');
         break;
       case 'enter-key':
         // Press enter key on delete button.
         return gallery.waitForElement(
-            appId, 'paper-button.delete').then(function() {
+            appId, 'button.delete').then(function() {
           return gallery.callRemoteTestUtil(
-              'focus', appId, ['paper-button.delete']);
+              'focus', appId, ['button.delete']);
         }).then(function() {
           return gallery.callRemoteTestUtil(
-              'fakeKeyDown', appId, ['paper-button.delete', 'Enter', false]);
+              'fakeKeyDown', appId, ['button.delete', 'Enter', false]);
+        }).then(function() {
+          // When user has pressed enter key on button, click event is
+          // dispatched after keydown event.
+          return gallery.callRemoteTestUtil(
+              'fakeEvent', appId, ['button.delete', 'click']);
         });
         break;
       case 'delete-key':
@@ -136,10 +141,10 @@ function emptySpaceClickUnselectsInThumbnailMode(testVolumeName, volumeType) {
   }).then(function(results) {
     chrome.test.assertEq(0, results.length);
     // Confirm delete button is disabled.
-    return gallery.waitForElement(appId, 'paper-button.delete[disabled]');
+    return gallery.waitForElement(appId, 'button.delete[disabled]');
   }).then(function(result) {
     // Confirm slideshow button is disabled.
-    return gallery.waitForElement(appId, 'paper-button.slideshow[disabled]');
+    return gallery.waitForElement(appId, 'button.slideshow[disabled]');
   }).then(function() {
     // Switch back to slide mode by clicking mode button.
     return gallery.waitAndClickElement(appId, 'button.mode:not([disabled])');

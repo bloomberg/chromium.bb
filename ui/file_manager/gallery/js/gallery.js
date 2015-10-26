@@ -123,12 +123,6 @@ function Gallery(volumeManager) {
       this.onModeSwitchButtonClicked_.bind(this));
 
   /**
-   * @private {!PaperRipple}
-   */
-  this.modeSwitchButtonRipple_ = /** @type {!PaperRipple} */
-      (queryRequiredElement('paper-ripple', this.modeSwitchButton_));
-
-  /**
    * @private {!DimmableUIController}
    * @const
    */
@@ -162,23 +156,24 @@ function Gallery(volumeManager) {
    * @private {!HTMLElement}
    * @const
    */
-  this.deleteButton_ = queryRequiredElement(
-      'paper-button.delete', this.topToolbar_);
+  this.deleteButton_ = queryRequiredElement('button.delete', this.topToolbar_);
+  GalleryUtil.decorateMouseFocusHandling(this.deleteButton_);
   this.deleteButton_.addEventListener('click', this.delete_.bind(this));
 
   /**
    * @private {!HTMLElement}
    * @const
    */
-  this.slideshowButton_ = queryRequiredElement('paper-button.slideshow',
-      this.topToolbar_);
+  this.slideshowButton_ = queryRequiredElement(
+      'button.slideshow', this.topToolbar_);
+  GalleryUtil.decorateMouseFocusHandling(this.slideshowButton_);
 
   /**
    * @private {!HTMLElement}
    * @const
    */
-  this.shareButton_ = queryRequiredElement(
-      'paper-button.share', this.topToolbar_);
+  this.shareButton_ = queryRequiredElement('button.share', this.topToolbar_);
+  GalleryUtil.decorateMouseFocusHandling(this.shareButton_);
   this.shareButton_.addEventListener(
       'click', this.onShareButtonClick_.bind(this));
 
@@ -505,7 +500,6 @@ Gallery.prototype.onSubModeChanged_ = function() {
  * @private
  */
 Gallery.prototype.onModeSwitchButtonClicked_ = function(event) {
-  this.modeSwitchButtonRipple_.simulatedRipple();
   this.toggleMode_(undefined /* callback */, event);
 };
 

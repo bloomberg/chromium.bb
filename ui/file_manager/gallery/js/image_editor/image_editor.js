@@ -88,7 +88,8 @@ function ImageEditor(
   for (var i = 0; i != this.modes_.length; i++) {
     var mode = this.modes_[i];
     mode.bind(this, this.createToolButton_(mode.name, mode.title,
-          this.enterMode.bind(this, mode)));
+          this.enterMode.bind(this, mode),
+          mode.instant));
   }
 
   /**
@@ -96,7 +97,8 @@ function ImageEditor(
    * @private
    */
   this.undoButton_ = this.createToolButton_('undo', 'GALLERY_UNDO',
-      this.undo.bind(this));
+      this.undo.bind(this),
+      true /* instant */);
   this.registerAction_('undo');
 
   /**
@@ -104,7 +106,8 @@ function ImageEditor(
    * @private
    */
   this.redoButton_ = this.createToolButton_('redo', 'GALLERY_REDO',
-      this.redo.bind(this));
+      this.redo.bind(this),
+      true /* instant */);
   this.registerAction_('redo');
 
   /**
@@ -138,12 +141,17 @@ ImageEditor.prototype.onExitClicked_ = function() {
  * @param {string} name Button name.
  * @param {string} title Button title.
  * @param {function(Event)} handler onClick handler.
+ * @param {boolean} isInstant True if this tool (mode) is instant.
  * @return {!HTMLElement} A created button.
  * @private
  */
-ImageEditor.prototype.createToolButton_ = function(name, title, handler) {
+ImageEditor.prototype.createToolButton_ = function(
+    name, title, handler, isInstant) {
   var button = this.mainToolbar_.addButton(
-      title, ImageEditor.Toolbar.ButtonType.ICON, handler,
+      title,
+      isInstant ? ImageEditor.Toolbar.ButtonType.ICON :
+                  ImageEditor.Toolbar.ButtonType.ICON_TOGGLEABLE,
+      handler,
       name /* opt_className */);
   return button;
 };
@@ -604,14 +612,16 @@ ImageEditor.prototype.enterMode = function(mode) {
  */
 ImageEditor.prototype.setUpMode_ = function(mode) {
   this.currentTool_ = mode.button_;
-
-  var paperRipple = this.currentTool_.querySelector('paper-ripple');
-  if (mode.instant)
-    paperRipple.simulatedRipple();
-  else
-    paperRipple.downAction();
-
   this.currentMode_ = mode;
+
+  // Activate toggle ripple if button is toggleable.
+  var filesToggleRipple =
+      this.currentTool_.querySelector('files-toggle-ripple');
+  if (filesToggleRipple) {
+    // Current mode must NOT be instant for toggleable button.
+    assert(!this.currentMode_.instant);
+    filesToggleRipple.activated = true;
+  }
 
   // Scale the screen so that it doesn't overlap the toolbars. We should scale
   // the screen before setup of current mode is called to make the current mode
@@ -689,10 +699,10 @@ ImageEditor.prototype.leaveModeInternal_ = function(commit, leaveToSwitchMode) {
     }
   }
 
-  if (!this.currentMode_.instant) {
-    var paperRipple = this.currentTool_.querySelector('paper-ripple');
-    paperRipple.upAction();
-  }
+  var filesToggleRipple =
+      this.currentTool_.querySelector('files-toggle-ripple');
+  if (filesToggleRipple)
+    filesToggleRipple.activated = false;
 
   this.exitButton_.hidden = false;
 
@@ -1189,6 +1199,7 @@ ImageEditor.Toolbar.prototype.add = function(element) {
  */
 ImageEditor.Toolbar.ButtonType = {
   ICON: 'icon',
+  ICON_TOGGLEABLE: 'icon_toggleable',
   LABEL: 'label',
   LABEL_UPPER_CASE: 'label_upper_case'
 };
@@ -1210,7 +1221,8 @@ ImageEditor.Toolbar.createButton_ = function(
     button.classList.add(opt_class);
   button.classList.add('edit-toolbar');
 
-  if (type === ImageEditor.Toolbar.ButtonType.ICON) {
+  if (type === ImageEditor.Toolbar.ButtonType.ICON ||
+      type === ImageEditor.Toolbar.ButtonType.ICON_TOGGLEABLE) {
     var icon = document.createElement('div');
     icon.classList.add('icon');
 
@@ -1219,6 +1231,14 @@ ImageEditor.Toolbar.createButton_ = function(
         .addTarget(button);
 
     button.appendChild(icon);
+
+    if (type === ImageEditor.Toolbar.ButtonType.ICON) {
+      var filesRipple = document.createElement('files-ripple');
+      button.appendChild(filesRipple);
+    } else {
+      var filesToggleRipple = document.createElement('files-toggle-ripple');
+      button.appendChild(filesToggleRipple);
+    }
   } else if (type === ImageEditor.Toolbar.ButtonType.LABEL ||
       type === ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE) {
     var label = document.createElement('span');
@@ -1228,12 +1248,12 @@ ImageEditor.Toolbar.createButton_ = function(
         strf(title).toLocaleUpperCase() : strf(title);
 
     button.appendChild(label);
+
+    var paperRipple = document.createElement('paper-ripple');
+    button.appendChild(paperRipple);
   } else {
     assertNotReached();
   }
-
-  var paperRipple = document.createElement('paper-ripple');
-  button.appendChild(paperRipple);
 
   button.label = strf(title);
   button.setAttribute('aria-label', strf(title));

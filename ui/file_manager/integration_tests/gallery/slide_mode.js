@@ -100,7 +100,7 @@ function deleteImage(testVolumeName, volumeType) {
     appId = args.appId;
     return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
-    return gallery.waitAndClickElement(appId, 'paper-button.delete');
+    return gallery.waitAndClickElement(appId, 'button.delete');
   }).then(function() {
     return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
   }).then(function() {
@@ -133,7 +133,7 @@ function checkAvailabilityOfShareButton(testVolumeName, volumeType, available) {
     return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
     return gallery.waitForElement(appId,
-        'paper-button.share' + (available ? ':not([disabled])' : '[disabled]'));
+        'button.share' + (available ? ':not([disabled])' : '[disabled]'));
   });
 }
 
@@ -159,7 +159,7 @@ testcase.traverseSlideImagesOnDrive = function() {
  */
 testcase.traverseSlideThumbnailsOnDownloads = function() {
   return traverseSlideThumbnails('local', 'downloads');
-}
+};
 
 /**
 * The traverseSlideThumbnails test for Drive.
@@ -167,7 +167,7 @@ testcase.traverseSlideThumbnailsOnDownloads = function() {
  */
 testcase.traverseSlideThumbnailsOnDrive = function() {
   return traverseSlideThumbnails('drive', 'drive');
-}
+};
 
 /**
  * The renameImage test for Downloads.

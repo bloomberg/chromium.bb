@@ -21,6 +21,7 @@
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+  <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_ripple.html">
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toast.html">
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toggle_ripple.html">
   <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_tooltip.html">
@@ -74,14 +75,20 @@
           <div class="icon"></div>
           <files-toggle-ripple></files-toggle-ripple>
         </button>
-        <paper-button class="print icon-button"
-                      i18n-values="aria-label:GALLERY_PRINT"
-                      has-tooltip
-                      disabled></paper-button>
-        <paper-button class="delete icon-button"
-                      i18n-values="aria-label:GALLERY_DELETE"
-                      has-tooltip
-                      disabled></paper-button>
+        <button class="print icon-button"
+                i18n-values="aria-label:GALLERY_PRINT"
+                has-tooltip
+                disabled>
+          <div class="icon"></div>
+          <files-ripple></files-ripple>
+        </button>
+        <button class="delete icon-button"
+                i18n-values="aria-label:GALLERY_DELETE"
+                has-tooltip
+                disabled>
+          <div class="icon"></div>
+          <files-ripple></files-ripple>
+        </button>
         <!-- Use button element for mode button to implement toggle switch
           -- button. -->
         <button class="mode icon-button" disabled>
@@ -90,16 +97,22 @@
           <div class="icon thumbnail-mode"
                i18n-values="aria-label:GALLERY_THUMBNAIL"
                has-tooltip></div>
-          <paper-ripple></paper-ripple>
+          <files-ripple></files-ripple>
         </button>
-        <paper-button class="slideshow icon-button"
-                      i18n-values="aria-label:GALLERY_SLIDESHOW"
-                      has-tooltip
-                      disabled></paper-button>
-        <paper-button class="share icon-button"
-                      i18n-values="aria-label:GALLERY_SHARE"
-                      has-tooltip
-                      disabled></paper-button>
+        <button class="slideshow icon-button"
+                i18n-values="aria-label:GALLERY_SLIDESHOW"
+                has-tooltip
+                disabled>
+          <div class="icon"></div>
+          <files-ripple></files-ripple>
+        </button>
+        <button class="share icon-button"
+                i18n-values="aria-label:GALLERY_SHARE"
+                has-tooltip
+                disabled>
+          <div class="icon"></div>
+          <files-ripple></files-ripple>
+        </button>
       </div>
     </div>
     <paper-progress id="progress-bar" min="0" max="100" hidden></paper-progress>

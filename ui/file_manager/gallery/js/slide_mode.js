@@ -338,8 +338,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @type {!HTMLElement}
    * @const
    */
-  var slideShowButton = queryRequiredElement('paper-button.slideshow',
-      this.topToolbar_);
+  var slideShowButton = queryRequiredElement(
+      'button.slideshow', this.topToolbar_);
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
 
@@ -385,8 +385,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.printButton_ = queryRequiredElement('paper-button.print',
-      this.topToolbar_);
+  this.printButton_ = queryRequiredElement('button.print', this.topToolbar_);
+  GalleryUtil.decorateMouseFocusHandling(this.printButton_);
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
   /**
