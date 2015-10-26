@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
@@ -352,8 +351,6 @@ class SyncBackendHostImpl
   bool initialized_;
 
   const base::WeakPtr<sync_driver::SyncPrefs> sync_prefs_;
-
-  ExtensionsActivityMonitor extensions_activity_monitor_;
 
   scoped_ptr<SyncBackendRegistrar> registrar_;
 

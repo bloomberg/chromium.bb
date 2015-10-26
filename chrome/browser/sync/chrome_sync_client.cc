@@ -151,6 +151,11 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
   return BookmarkUndoServiceFactory::GetForProfileIfExists(profile_);
 }
 
+scoped_refptr<syncer::ExtensionsActivity>
+ChromeSyncClient::GetExtensionsActivity() {
+  return extensions_activity_monitor_.GetExtensionsActivity();
+}
+
 base::WeakPtr<syncer::SyncableService>
 ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   if (!profile_) {  // For tests.

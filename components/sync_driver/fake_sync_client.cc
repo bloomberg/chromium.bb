@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/sync_driver/fake_sync_service.h"
+#include "sync/util/extensions_activity.h"
 
 namespace sync_driver {
 
@@ -63,6 +64,11 @@ FakeSyncClient::GetWebDataService() {
 
 BookmarkUndoService* FakeSyncClient::GetBookmarkUndoServiceIfExists() {
   return nullptr;
+}
+
+scoped_refptr<syncer::ExtensionsActivity>
+FakeSyncClient::GetExtensionsActivity() {
+  return scoped_refptr<syncer::ExtensionsActivity>();
 }
 
 base::WeakPtr<syncer::SyncableService>

@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/util/extensions_activity.h"
 
 class BookmarkUndoService;
 class PrefService;
@@ -82,6 +83,7 @@ class SyncClient {
   virtual scoped_refptr<autofill::AutofillWebDataService>
   GetWebDataService() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoServiceIfExists() = 0;
+  virtual scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() = 0;
 
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.

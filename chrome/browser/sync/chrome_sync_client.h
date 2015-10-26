@@ -7,6 +7,8 @@
 
 #include "components/sync_driver/sync_client.h"
 
+#include "chrome/browser/sync/glue/extensions_activity_monitor.h"
+
 class Profile;
 
 namespace sync_driver {
@@ -37,6 +39,7 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
+  scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
@@ -60,6 +63,9 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   // once that's no longer the case.
   // Note: not owned.
   sync_driver::SyncService* sync_service_;
+
+  // Generates and monitors the ExtensionsActivity object used by sync.
+  ExtensionsActivityMonitor extensions_activity_monitor_;
 };
 
 }  // namespace browser_sync

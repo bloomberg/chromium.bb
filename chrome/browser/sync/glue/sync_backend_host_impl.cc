@@ -156,8 +156,8 @@ void SyncBackendHostImpl::Initialize(
 
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
       registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
-      workers, extensions_activity_monitor_.GetExtensionsActivity(),
-      event_handler, sync_service_url, sync_user_agent,
+      workers, sync_client_->GetExtensionsActivity(), event_handler,
+      sync_service_url, sync_user_agent,
       network_resources->GetHttpPostProviderFactory(
           make_scoped_refptr(profile_->GetRequestContext()),
           base::Bind(&UpdateNetworkTime, ui_thread_),
