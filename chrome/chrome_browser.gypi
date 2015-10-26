@@ -3133,7 +3133,6 @@
         '../components/components.gyp:update_client',
         '../components/components.gyp:undo_component',
         '../components/components.gyp:user_prefs',
-        '../components/components.gyp:wallpaper',
         '../components/components_strings.gyp:components_strings',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
@@ -3243,6 +3242,7 @@
             '../components/components.gyp:user_prefs_tracked',
             '../components/components.gyp:visitedlink_browser',
             '../components/components.gyp:visitedlink_common',
+            '../components/components.gyp:wallpaper',
             '../components/components.gyp:web_cache_browser',
             '../components/components.gyp:web_modal',
             '../components/components.gyp:web_resource',
