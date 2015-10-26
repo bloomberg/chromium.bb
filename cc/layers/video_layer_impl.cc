@@ -233,18 +233,13 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       }
 
       const gfx::Size ya_tex_size = coded_size;
-      gfx::Size uv_tex_size;
+      gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
+          frame_->format(), media::VideoFrame::kUPlane, coded_size);
 
       if (frame_->HasTextures()) {
         DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_->format());
         DCHECK_EQ(3u, frame_resources_.size());  // Alpha is not supported yet.
-        DCHECK(visible_rect.origin().IsOrigin());
-        DCHECK(visible_rect.size() == coded_size);
-        uv_tex_size.SetSize((ya_tex_size.width() + 1) / 2,
-                            (ya_tex_size.height() + 1) / 2);
       } else {
-        uv_tex_size = media::VideoFrame::PlaneSize(
-            frame_->format(), media::VideoFrame::kUPlane, coded_size);
         DCHECK(uv_tex_size ==
                media::VideoFrame::PlaneSize(
                    frame_->format(), media::VideoFrame::kVPlane, coded_size));

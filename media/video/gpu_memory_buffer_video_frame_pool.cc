@@ -307,6 +307,29 @@ void CopyRowsToUYVYBuffer(int first_row,
   done.Run();
 }
 
+gfx::Size CodedSize(const scoped_refptr<VideoFrame>& video_frame,
+                    VideoPixelFormat output_format) {
+  DCHECK(gfx::Rect(video_frame->coded_size())
+             .Contains(video_frame->visible_rect()));
+  DCHECK((video_frame->visible_rect().x() & 1) == 0);
+  gfx::Size output;
+  switch (output_format) {
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_NV12:
+      DCHECK((video_frame->visible_rect().y() & 1) == 0);
+      output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
+                         (video_frame->visible_rect().height() + 1) & ~1);
+      break;
+    case PIXEL_FORMAT_UYVY:
+      output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
+                         video_frame->visible_rect().height());
+      break;
+    default:
+      NOTREACHED();
+  }
+  DCHECK(gfx::Rect(video_frame->coded_size()).Contains(gfx::Rect(output)));
+  return output;
+}
 }  // unnamed namespace
 
 // Creates a VideoFrame backed by native textures starting from a software
@@ -351,11 +374,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       return;
   }
 
-  const gfx::Size size = video_frame->visible_rect().size();
-
+  const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   // Acquire resources. Incompatible ones will be dropped from the pool.
   FrameResources* frame_resources =
-      GetOrCreateFrameResources(size, output_format_);
+      GetOrCreateFrameResources(coded_size, output_format_);
   if (!frame_resources) {
     frame_ready_cb.Run(video_frame);
     return;
@@ -427,11 +449,12 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
   // Compute the number of tasks to post and create the barrier.
   const size_t num_planes = VideoFrame::NumPlanes(output_format_);
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
-  const gfx::Size size = video_frame->visible_rect().size();
+  const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   size_t copies = 0;
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
-    const int rows = VideoFrame::Rows(i, output_format_, size.height());
-    const int rows_per_copy = RowsPerCopy(i, output_format_, size.width());
+    const int rows = VideoFrame::Rows(i, output_format_, coded_size.height());
+    const int rows_per_copy =
+        RowsPerCopy(i, output_format_, coded_size.width());
     copies += rows / rows_per_copy;
     if (rows % rows_per_copy)
       ++copies;
@@ -453,15 +476,16 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
     DCHECK_EQ(planes_per_copy,
               gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
 
-    const int rows = VideoFrame::Rows(i, output_format_, size.height());
-    const int rows_per_copy = RowsPerCopy(i, output_format_, size.width());
+    const int rows = VideoFrame::Rows(i, output_format_, coded_size.height());
+    const int rows_per_copy =
+        RowsPerCopy(i, output_format_, coded_size.width());
 
     for (int row = 0; row < rows; row += rows_per_copy) {
       const int rows_to_copy = std::min(rows_per_copy, rows - row);
       switch (output_format_) {
         case PIXEL_FORMAT_I420: {
           const int bytes_per_row =
-              VideoFrame::RowBytes(i, output_format_, size.width());
+              VideoFrame::RowBytes(i, output_format_, coded_size.width());
           worker_task_runner_->PostTask(
               FROM_HERE, base::Bind(&CopyRowsToI420Buffer, row, rows_to_copy,
                                     bytes_per_row, video_frame->visible_data(i),
@@ -472,19 +496,19 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
         }
         case PIXEL_FORMAT_NV12:
           worker_task_runner_->PostTask(
-              FROM_HERE,
-              base::Bind(&CopyRowsToNV12Buffer, row, rows_to_copy, size.width(),
-                         video_frame, static_cast<uint8_t*>(buffer->memory(0)),
-                         buffer->stride(0),
-                         static_cast<uint8_t*>(buffer->memory(1)),
-                         buffer->stride(1), barrier));
+              FROM_HERE, base::Bind(&CopyRowsToNV12Buffer, row, rows_to_copy,
+                                    coded_size.width(), video_frame,
+                                    static_cast<uint8_t*>(buffer->memory(0)),
+                                    buffer->stride(0),
+                                    static_cast<uint8_t*>(buffer->memory(1)),
+                                    buffer->stride(1), barrier));
           break;
         case PIXEL_FORMAT_UYVY:
           worker_task_runner_->PostTask(
-              FROM_HERE,
-              base::Bind(&CopyRowsToUYVYBuffer, row, rows_to_copy, size.width(),
-                         video_frame, static_cast<uint8_t*>(buffer->memory(0)),
-                         buffer->stride(0), barrier));
+              FROM_HERE, base::Bind(&CopyRowsToUYVYBuffer, row, rows_to_copy,
+                                    coded_size.width(), video_frame,
+                                    static_cast<uint8_t*>(buffer->memory(0)),
+                                    buffer->stride(0), barrier));
           break;
         default:
           NOTREACHED();
@@ -508,7 +532,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 
   const size_t num_planes = VideoFrame::NumPlanes(output_format_);
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
-  const gfx::Size size = video_frame->visible_rect().size();
+  const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   // Set up the planes creating the mailboxes needed to refer to the textures.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
@@ -517,8 +541,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     gles2->BindTexture(texture_target_, plane_resource.texture_id);
 
     if (plane_resource.gpu_memory_buffer && !plane_resource.image_id) {
-      const size_t width = VideoFrame::Columns(i, output_format_, size.width());
-      const size_t height = VideoFrame::Rows(i, output_format_, size.height());
+      const size_t width =
+          VideoFrame::Columns(i, output_format_, coded_size.width());
+      const size_t height =
+          VideoFrame::Rows(i, output_format_, coded_size.height());
       plane_resource.image_id = gles2->CreateImageCHROMIUM(
           plane_resource.gpu_memory_buffer->AsClientBuffer(), width, height,
           ImageInternalFormat(output_format_, i));
@@ -545,13 +571,14 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources);
 
   // Create the VideoFrame backed by native textures.
+  gfx::Size visible_size = video_frame->visible_rect().size();
   switch (output_format_) {
     case PIXEL_FORMAT_I420:
       frame = VideoFrame::WrapYUV420NativeTextures(
           mailbox_holders[VideoFrame::kYPlane],
           mailbox_holders[VideoFrame::kUPlane],
-          mailbox_holders[VideoFrame::kVPlane], release_mailbox_callback, size,
-          gfx::Rect(size), video_frame->natural_size(),
+          mailbox_holders[VideoFrame::kVPlane], release_mailbox_callback,
+          coded_size, gfx::Rect(visible_size), video_frame->natural_size(),
           video_frame->timestamp());
       if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
         frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
@@ -560,7 +587,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     case PIXEL_FORMAT_UYVY:
       frame = VideoFrame::WrapNativeTexture(
           output_format_, mailbox_holders[VideoFrame::kYPlane],
-          release_mailbox_callback, size, gfx::Rect(size),
+          release_mailbox_callback, coded_size, gfx::Rect(visible_size),
           video_frame->natural_size(), video_frame->timestamp());
       frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
