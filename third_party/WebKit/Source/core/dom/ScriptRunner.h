@@ -39,6 +39,7 @@ namespace blink {
 class CancellableTaskFactory;
 class Document;
 class ScriptLoader;
+class WebTaskRunner;
 
 class CORE_EXPORT ScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
     WTF_MAKE_NONCOPYABLE(ScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScriptRunner);
@@ -54,7 +55,7 @@ public:
 
     enum ExecutionType { ASYNC_EXECUTION, IN_ORDER_EXECUTION };
     void queueScriptForExecution(ScriptLoader*, ExecutionType);
-    bool hasPendingScripts() const { return !m_scriptsToExecuteSoon.isEmpty() || !m_scriptsToExecuteInOrder.isEmpty() || !m_pendingAsyncScripts.isEmpty(); }
+    bool hasPendingScripts() const { return !m_pendingInOrderScripts.isEmpty() || !m_pendingAsyncScripts.isEmpty(); }
     void suspend();
     void resume();
     void notifyScriptReady(ScriptLoader*, ExecutionType);
@@ -65,26 +66,37 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit ScriptRunner(Document*);
+    class Task;
 
-    void executeScripts();
+    explicit ScriptRunner(Document*);
 
     void addPendingAsyncScript(ScriptLoader*);
 
     void movePendingAsyncScript(ScriptRunner*, ScriptLoader*);
 
-    bool yieldForHighPriorityWork();
+    void postTask(const WebTraceLocation&);
 
-    void postTaskIfOneIsNotAlreadyInFlight();
+    bool executeTaskFromQueue(WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>>*);
+
+    void executeTask();
 
     RawPtrWillBeMember<Document> m_document;
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteInOrder;
-    // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteSoon;
+
+    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_pendingInOrderScripts;
     WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader>> m_pendingAsyncScripts;
-    OwnPtr<CancellableTaskFactory> m_executeScriptsTaskFactory;
+
+    // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
+    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_asyncScriptsToExecuteSoon;
+    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_inOrderScriptsToExecuteSoon;
+
+    WebTaskRunner* m_taskRunner;
 
     int m_numberOfInOrderScriptsWithPendingNotification;
+
+    bool m_isSuspended;
+#ifndef NDEBUG
+    bool m_hasEverBeenSuspended;
+#endif
 };
 
 } // namespace blink
