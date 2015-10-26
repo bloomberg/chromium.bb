@@ -358,7 +358,7 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
 
 
 def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
-  """Checks to make sure no source files use UNIT_TEST"""
+  """Checks to make sure no source files use UNIT_TEST."""
   problems = []
   for f in input_api.AffectedFiles():
     if (not f.LocalPath().endswith(('.cc', '.mm'))):
@@ -372,6 +372,23 @@ def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
     return []
   return [output_api.PresubmitPromptWarning('UNIT_TEST is only for headers.\n' +
       '\n'.join(problems))]
+
+
+def _CheckDCHECK_IS_ONHasBraces(input_api, output_api):
+  """Checks to make sure DCHECK_IS_ON() does not skip the braces."""
+  errors = []
+  pattern = input_api.re.compile(r'DCHECK_IS_ON(?!\(\))',
+                                 input_api.re.MULTILINE)
+  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
+    if (not f.LocalPath().endswith(('.cc', '.mm', '.h'))):
+      continue
+    for lnum, line in f.ChangedContents():
+      if input_api.re.search(pattern, line):
+          errors.append(output_api.PresubmitError(
+            ('%s:%d: Use of DCHECK_IS_ON() must be written as "#if ' +
+             'DCHECK_IS_ON()", not forgetting the braces.')
+            % (f.LocalPath(), lnum)))
+  return errors
 
 
 def _FindHistogramNameInLine(histogram_name, line):
@@ -1640,6 +1657,7 @@ def _CommonChecks(input_api, output_api):
       _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoUNIT_TESTInSourceFiles(input_api, output_api))
+  results.extend(_CheckDCHECK_IS_ONHasBraces(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
