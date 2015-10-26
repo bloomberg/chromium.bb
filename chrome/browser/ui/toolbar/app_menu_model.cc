@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 
 #include <algorithm>
 #include <cmath>
@@ -233,7 +233,7 @@ void ZoomMenuModel::Build() {
 
 #if defined(GOOGLE_CHROME_BUILD)
 
-class WrenchMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
+class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
  public:
   HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                 Browser* browser)
@@ -335,10 +335,9 @@ void ToolsMenuModel::Build(Browser* browser) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WrenchMenuModel
+// AppMenuModel
 
-WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
-                                 Browser* browser)
+AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
       provider_(provider),
@@ -349,7 +348,7 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
   browser_zoom_subscription_ =
       ui_zoom::ZoomEventManager::GetForBrowserContext(browser->profile())
           ->AddZoomLevelChangedCallback(base::Bind(
-              &WrenchMenuModel::OnZoomLevelChanged, base::Unretained(this)));
+              &AppMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
   browser_->tab_strip_model()->AddObserver(this);
 
@@ -357,16 +356,16 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
                  content::NotificationService::AllSources());
 }
 
-WrenchMenuModel::~WrenchMenuModel() {
+AppMenuModel::~AppMenuModel() {
   if (browser_)  // Null in tests.
     browser_->tab_strip_model()->RemoveObserver(this);
 }
 
-bool WrenchMenuModel::DoesCommandIdDismissMenu(int command_id) const {
+bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
   return command_id != IDC_ZOOM_MINUS && command_id != IDC_ZOOM_PLUS;
 }
 
-bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
+bool AppMenuModel::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
 #if defined(OS_MACOSX)
          command_id == IDC_FULLSCREEN ||
@@ -376,7 +375,7 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_UPGRADE_DIALOG;
 }
 
-base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
+base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;
@@ -409,8 +408,7 @@ base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
   }
 }
 
-bool WrenchMenuModel::GetIconForCommandId(int command_id,
-                                          gfx::Image* icon) const {
+bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (command_id) {
     case IDC_UPGRADE_DIALOG: {
@@ -427,7 +425,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
   return false;
 }
 
-void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
+void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
       browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error) {
@@ -439,7 +437,7 @@ void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
   chrome::ExecuteCommand(browser_, command_id);
 }
 
-void WrenchMenuModel::LogMenuMetrics(int command_id) {
+void AppMenuModel::LogMenuMetrics(int command_id) {
   base::TimeDelta delta = timer_.Elapsed();
 
   switch (command_id) {
@@ -733,12 +731,12 @@ void WrenchMenuModel::LogMenuMetrics(int command_id) {
   }
 }
 
-void WrenchMenuModel::LogMenuAction(int action_id) {
+void AppMenuModel::LogMenuAction(int action_id) {
   UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
                             LIMIT_MENU_ACTION);
 }
 
-bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
+bool AppMenuModel::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
     return browser_->profile()->GetPrefs()->GetBoolean(
         bookmarks::prefs::kShowBookmarkBar);
@@ -751,7 +749,7 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
   return false;
 }
 
-bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
+bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
   GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
       browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error)
@@ -760,7 +758,7 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
   return chrome::IsCommandEnabled(browser_, command_id);
 }
 
-bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
+bool AppMenuModel::IsCommandIdVisible(int command_id) const {
   switch (command_id) {
 #if defined(OS_MACOSX)
     case kEmptyMenuItemCommand:
@@ -772,7 +770,7 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
           EnumerateModulesModel::GetInstance();
       if (loaded_modules->confirmed_bad_modules_detected() <= 0)
         return false;
-      // We'll leave the wrench adornment on until the user clicks the link.
+      // We'll leave the app menu adornment on until the user clicks the link.
       if (loaded_modules->modules_to_notify_about() <= 0)
         loaded_modules->AcknowledgeConflictNotification();
       return true;
@@ -798,43 +796,42 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
   }
 }
 
-bool WrenchMenuModel::GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) {
+bool AppMenuModel::GetAcceleratorForCommandId(int command_id,
+                                              ui::Accelerator* accelerator) {
   return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 
-void WrenchMenuModel::ActiveTabChanged(WebContents* old_contents,
-                                       WebContents* new_contents,
-                                       int index,
-                                       int reason) {
+void AppMenuModel::ActiveTabChanged(WebContents* old_contents,
+                                    WebContents* new_contents,
+                                    int index,
+                                    int reason) {
   // The user has switched between tabs and the new tab may have a different
   // zoom setting.
   UpdateZoomControls();
 }
 
-void WrenchMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
-                                    WebContents* old_contents,
-                                    WebContents* new_contents,
-                                    int index) {
+void AppMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
+                                 WebContents* old_contents,
+                                 WebContents* new_contents,
+                                 int index) {
   UpdateZoomControls();
 }
 
-void WrenchMenuModel::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
+void AppMenuModel::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
   UpdateZoomControls();
 }
 
 // For testing.
-WrenchMenuModel::WrenchMenuModel()
+AppMenuModel::AppMenuModel()
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
       provider_(nullptr),
       browser_(nullptr) {}
 
-bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
+bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
   if (browser_->profile()->IsGuestSession())
     return false;
 
@@ -851,7 +848,7 @@ bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
 // - Page actions e.g. zoom, edit, find, print.
 // - Learn about the browser and global customisation e.g. settings, help.
 // - Browser relaunch, quit.
-void WrenchMenuModel::Build() {
+void AppMenuModel::Build() {
   if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
     CreateActionToolbarOverflowMenu();
 
@@ -942,10 +939,10 @@ void WrenchMenuModel::Build() {
   uma_action_recorded_ = false;
 }
 
-bool WrenchMenuModel::AddGlobalErrorMenuItems() {
-  // TODO(sail): Currently we only build the wrench menu once per browser
+bool AppMenuModel::AddGlobalErrorMenuItems() {
+  // TODO(sail): Currently we only build the app menu once per browser
   // window. This means that if a new error is added after the menu is built
-  // it won't show in the existing wrench menu. To fix this we need to some
+  // it won't show in the existing app menu. To fix this we need to some
   // how update the menu if new errors are added.
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
@@ -964,7 +961,7 @@ bool WrenchMenuModel::AddGlobalErrorMenuItems() {
   return menu_items_added;
 }
 
-void WrenchMenuModel::CreateActionToolbarOverflowMenu() {
+void AppMenuModel::CreateActionToolbarOverflowMenu() {
   // We only add the extensions overflow container if there are any icons that
   // aren't shown in the main container.
   // browser_->window() can return null during startup.
@@ -983,7 +980,7 @@ void WrenchMenuModel::CreateActionToolbarOverflowMenu() {
   }
 }
 
-void WrenchMenuModel::CreateCutCopyPasteMenu() {
+void AppMenuModel::CreateCutCopyPasteMenu() {
   AddSeparator(ui::LOWER_SEPARATOR);
 
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
@@ -998,7 +995,7 @@ void WrenchMenuModel::CreateCutCopyPasteMenu() {
   AddSeparator(ui::UPPER_SEPARATOR);
 }
 
-void WrenchMenuModel::CreateZoomMenu() {
+void AppMenuModel::CreateZoomMenu() {
   // This menu needs to be enclosed by separators.
   AddSeparator(ui::LOWER_SEPARATOR);
 
@@ -1018,7 +1015,7 @@ void WrenchMenuModel::CreateZoomMenu() {
   AddSeparator(ui::UPPER_SEPARATOR);
 }
 
-void WrenchMenuModel::UpdateZoomControls() {
+void AppMenuModel::UpdateZoomControls() {
   int zoom_percent = 100;
   if (browser_->tab_strip_model() &&
       browser_->tab_strip_model()->GetActiveWebContents()) {
@@ -1030,7 +1027,7 @@ void WrenchMenuModel::UpdateZoomControls() {
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
 }
 
-void WrenchMenuModel::OnZoomLevelChanged(
+void AppMenuModel::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
   UpdateZoomControls();
 }

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
-#define CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_MODEL_H_
+#define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_MODEL_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -22,10 +23,10 @@ class Browser;
 class RecentTabsSubMenuModel;
 
 namespace {
-class MockWrenchMenuModel;
+class MockAppMenuModel;
 }  // namespace
 
-enum WrenchMenuAction {
+enum AppMenuAction {
   MENU_ACTION_NEW_TAB = 0,
   MENU_ACTION_NEW_WINDOW,
   MENU_ACTION_NEW_INCOGNITO_WINDOW,
@@ -120,19 +121,19 @@ class ToolsMenuModel : public ui::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(ToolsMenuModel);
 };
 
-// A menu model that builds the contents of the wrench menu.
-class WrenchMenuModel : public ui::SimpleMenuModel,
-                        public ui::SimpleMenuModel::Delegate,
-                        public ui::ButtonMenuItemModel::Delegate,
-                        public TabStripModelObserver,
-                        public content::NotificationObserver {
+// A menu model that builds the contents of the app menu.
+class AppMenuModel : public ui::SimpleMenuModel,
+                     public ui::SimpleMenuModel::Delegate,
+                     public ui::ButtonMenuItemModel::Delegate,
+                     public TabStripModelObserver,
+                     public content::NotificationObserver {
  public:
   // Range of command IDs to use for the items in the recent tabs submenu.
   static const int kMinRecentTabsCommandId = 1001;
   static const int kMaxRecentTabsCommandId = 1200;
 
-  WrenchMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
-  ~WrenchMenuModel() override;
+  AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
+  ~AppMenuModel() override;
 
   // Overridden for ButtonMenuItemModel::Delegate:
   bool DoesCommandIdDismissMenu(int command_id) const override;
@@ -176,9 +177,9 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
  private:
   class HelpMenuModel;
   // Testing constructor used for mocking.
-  friend class ::MockWrenchMenuModel;
+  friend class ::MockAppMenuModel;
 
-  WrenchMenuModel();
+  AppMenuModel();
 
   void Build();
 
@@ -247,7 +248,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchMenuModel);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuModel);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_APP_MENU_MODEL_H_

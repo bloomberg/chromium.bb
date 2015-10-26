@@ -36,7 +36,7 @@ class MenuRunner;
 class View;
 }
 
-// AppMenu adapts the WrenchMenuModel to view's menu related classes.
+// AppMenu adapts the AppMenuModel to view's menu related classes.
 class AppMenu : public views::MenuDelegate,
                 public bookmarks::BaseBookmarkModelObserver,
                 public content::NotificationObserver {

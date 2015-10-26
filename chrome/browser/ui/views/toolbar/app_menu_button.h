@@ -15,7 +15,7 @@
 #include "ui/views/view.h"
 
 class AppMenu;
-class WrenchMenuModel;
+class AppMenuModel;
 
 namespace views {
 class InkDropAnimationController;
@@ -107,7 +107,7 @@ class AppMenuButton : public views::InkDropHost,
   // App model and menu.
   // Note that the menu should be destroyed before the model it uses, so the
   // menu should be listed later.
-  scoped_ptr<WrenchMenuModel> menu_model_;
+  scoped_ptr<AppMenuModel> menu_model_;
   scoped_ptr<AppMenu> menu_;
 
   // Used by ShowMenu() to detect when |this| has been deleted; see comments

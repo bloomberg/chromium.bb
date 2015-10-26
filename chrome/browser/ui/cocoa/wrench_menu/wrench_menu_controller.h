@@ -20,7 +20,7 @@ class Browser;
 class RecentTabsMenuModelDelegate;
 @class ToolbarController;
 @class WrenchMenuButtonViewController;
-class WrenchMenuModel;
+class AppMenuModel;
 
 namespace wrench_menu_controller {
 // The vertical offset of the wrench bubbles from the wrench menu button.
@@ -49,10 +49,10 @@ class ZoomLevelObserver;
       acceleratorDelegate_;
 
   // The model, rebuilt each time the |-menuNeedsUpdate:|.
-  scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
+  scoped_ptr<AppMenuModel> appMenuModel_;
 
   // Used to update icons in the recent tabs menu. This must be declared after
-  // |wrenchMenuModel_| so that it gets deleted first.
+  // |appMenuModel_| so that it gets deleted first.
   scoped_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
 
   // A shim NSViewController that loads the buttons from the NIB because ObjC
@@ -91,8 +91,8 @@ class ZoomLevelObserver;
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
 - (IBAction)dispatchWrenchMenuCommand:(id)sender;
 
-// Returns the weak reference to the WrenchMenuModel.
-- (WrenchMenuModel*)wrenchMenuModel;
+// Returns the weak reference to the AppMenuModel.
+- (AppMenuModel*)appMenuModel;
 
 // Creates a RecentTabsMenuModelDelegate instance which will take care of
 // updating the recent tabs submenu.

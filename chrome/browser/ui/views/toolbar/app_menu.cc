@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_observer.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
@@ -97,8 +97,8 @@ bool IsBookmarkCommand(int command_id) {
 
 // Returns true if |command_id| identifies a recent tabs menu item.
 bool IsRecentTabsCommand(int command_id) {
-  return command_id >= WrenchMenuModel::kMinRecentTabsCommandId &&
-      command_id <= WrenchMenuModel::kMaxRecentTabsCommandId;
+  return command_id >= AppMenuModel::kMinRecentTabsCommandId &&
+         command_id <= AppMenuModel::kMaxRecentTabsCommandId;
 }
 
 // Subclass of ImageButton whose preferred size includes the size of the border.

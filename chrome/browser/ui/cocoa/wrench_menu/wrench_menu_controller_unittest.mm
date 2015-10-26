@@ -18,9 +18,9 @@
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,10 +37,10 @@
 
 namespace {
 
-class MockWrenchMenuModel : public WrenchMenuModel {
+class MockAppMenuModel : public AppMenuModel {
  public:
-  MockWrenchMenuModel() : WrenchMenuModel() {}
-  ~MockWrenchMenuModel() {}
+  MockAppMenuModel() : AppMenuModel() {}
+  ~MockAppMenuModel() {}
   MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };
 
@@ -70,7 +70,7 @@ class WrenchMenuControllerTest
     ASSERT_TRUE(browser());
 
     controller_.reset([[WrenchMenuController alloc] initWithBrowser:browser()]);
-    fake_model_.reset(new MockWrenchMenuModel);
+    fake_model_.reset(new MockAppMenuModel);
 
     manager_.reset(new browser_sync::SessionsSyncManager(
         profile(),
@@ -109,7 +109,7 @@ class WrenchMenuControllerTest
 
   base::scoped_nsobject<WrenchMenuController> controller_;
 
-  scoped_ptr<MockWrenchMenuModel> fake_model_;
+  scoped_ptr<MockAppMenuModel> fake_model_;
 
  private:
   scoped_ptr<browser_sync::SessionsSyncManager> manager_;

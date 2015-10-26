@@ -25,10 +25,10 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/browser/user_metrics.h"
@@ -100,10 +100,10 @@ class ZoomLevelObserver {
 
  private:
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change) {
-    WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
-    wrenchMenuModel->UpdateZoomControls();
+    AppMenuModel* appMenuModel = [controller_ appMenuModel];
+    appMenuModel->UpdateZoomControls();
     const base::string16 level =
-        wrenchMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
+        appMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
     [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
   }
 
@@ -163,7 +163,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   // a weak Browser*, or pass this call onto reference counted objects.
   recentTabsMenuModelDelegate_.reset();
   [self setModel:nullptr];
-  wrenchMenuModel_.reset();
+  appMenuModel_.reset();
   buttonViewController_.reset();
 
   // The observers should most likely already be destroyed (since they're reset
@@ -287,9 +287,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   NSMenu* bookmarkMenu = [self bookmarkSubMenu];
   DCHECK(bookmarkMenu);
 
-  bookmarkMenuBridge_.reset(
-      new BookmarkMenuBridge([self wrenchMenuModel]->browser()->profile(),
-                             bookmarkMenu));
+  bookmarkMenuBridge_.reset(new BookmarkMenuBridge(
+      [self appMenuModel]->browser()->profile(), bookmarkMenu));
 }
 
 - (void)updateBrowserActionsSubmenu {
@@ -339,14 +338,14 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
           ui_zoom::ZoomEventManager::GetForBrowserContext(
               browser_->profile())));
   NSString* title = base::SysUTF16ToNSString(
-      [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
+      [self appMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[[buttonViewController_ zoomItem] viewWithTag:IDC_ZOOM_PERCENT_DISPLAY]
       setTitle:title];
   content::RecordAction(UserMetricsAction("ShowAppMenu"));
 
-  NSImage* icon = [self wrenchMenuModel]->browser()->window()->IsFullscreen() ?
-      [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
-          [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
+  NSImage* icon = [self appMenuModel]->browser()->window()->IsFullscreen()
+                      ? [NSImage imageNamed:NSImageNameExitFullScreenTemplate]
+                      : [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
   [[buttonViewController_ zoomFullScreen] setImage:icon];
 }
 
@@ -413,12 +412,12 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 
 // Used to perform the actual dispatch on the outermost runloop.
 - (void)performCommandDispatch:(NSNumber*)tag {
-  [self wrenchMenuModel]->ExecuteCommand([tag intValue], 0);
+  [self appMenuModel]->ExecuteCommand([tag intValue], 0);
 }
 
-- (WrenchMenuModel*)wrenchMenuModel {
-  // Don't use |wrenchMenuModel_| so that a test can override the generic one.
-  return static_cast<WrenchMenuModel*>(model_);
+- (AppMenuModel*)appMenuModel {
+  // Don't use |appMenuModel_| so that a test can override the generic one.
+  return static_cast<AppMenuModel*>(model_);
 }
 
 - (void)updateRecentTabsSubmenu {
@@ -436,9 +435,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 - (void)createModel {
   DCHECK(browser_);
   recentTabsMenuModelDelegate_.reset();
-  wrenchMenuModel_.reset(
-      new WrenchMenuModel(acceleratorDelegate_.get(), browser_));
-  [self setModel:wrenchMenuModel_.get()];
+  appMenuModel_.reset(new AppMenuModel(acceleratorDelegate_.get(), browser_));
+  [self setModel:appMenuModel_.get()];
 
   buttonViewController_.reset(
       [[WrenchMenuButtonViewController alloc] initWithController:self]);
@@ -525,7 +523,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   int index = 0;
   // Start searching at the wrench menu model level, |model| will be updated
   // only if the command we're looking for is found in one of the [sub]menus.
-  ui::MenuModel* model = [self wrenchMenuModel];
+  ui::MenuModel* model = [self appMenuModel];
   if (ui::MenuModel::GetModelAndIndexForCommandId(
           RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId, &model,
           &index)) {

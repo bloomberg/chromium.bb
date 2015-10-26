@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -63,9 +63,9 @@ namespace {
 // GetIndexOfCommandId().
 // The range of all command ID's used in RecentTabsSubMenuModel, including the
 // "Recently closed" headers, must be between
-// |WrenchMenuModel::kMinRecentTabsCommandId| i.e. 1001 and 1200
-// (|WrenchMenuModel::kMaxRecentTabsCommandId|) inclusively.
-const int kFirstLocalTabCommandId = WrenchMenuModel::kMinRecentTabsCommandId;
+// |AppMenuModel::kMinRecentTabsCommandId| i.e. 1001 and 1200
+// (|AppMenuModel::kMaxRecentTabsCommandId|) inclusively.
+const int kFirstLocalTabCommandId = AppMenuModel::kMinRecentTabsCommandId;
 const int kFirstLocalWindowCommandId = 1031;
 const int kFirstOtherDevicesTabCommandId = 1051;
 const int kMinDeviceNameCommandId = 1100;

@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -94,7 +94,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
   Browser* browser = toolbar_view_->browser();
 
   menu_.reset(new AppMenu(browser, for_drop ? AppMenu::FOR_DROP : 0));
-  menu_model_.reset(new WrenchMenuModel(toolbar_view_, browser));
+  menu_model_.reset(new AppMenuModel(toolbar_view_, browser));
   menu_->Init(menu_model_.get());
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());

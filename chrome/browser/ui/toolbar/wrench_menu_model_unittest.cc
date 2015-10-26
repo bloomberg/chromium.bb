@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
@@ -53,8 +53,8 @@ class MenuError : public GlobalError {
 
 } // namespace
 
-class WrenchMenuModelTest : public BrowserWithTestWindowTest,
-                            public ui::AcceleratorProvider {
+class AppMenuModelTest : public BrowserWithTestWindowTest,
+                         public ui::AcceleratorProvider {
  public:
   // Don't handle accelerators.
   bool GetAcceleratorForCommandId(int command_id,
@@ -85,21 +85,19 @@ class WrenchMenuModelTest : public BrowserWithTestWindowTest,
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the
-// WrenchMenuModel since WrenchMenuModel is now a SimpleMenuModel::Delegate and
+// AppMenuModel since AppMenuModel is now a SimpleMenuModel::Delegate and
 // not derived from SimpleMenuModel.
-class TestWrenchMenuModel : public WrenchMenuModel {
+class TestAppMenuModel : public AppMenuModel {
  public:
-  TestWrenchMenuModel(ui::AcceleratorProvider* provider,
-                      Browser* browser)
-      : WrenchMenuModel(provider, browser),
+  TestAppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
+      : AppMenuModel(provider, browser),
         execute_count_(0),
         checked_count_(0),
-        enable_count_(0) {
-  }
+        enable_count_(0) {}
 
   // Testing overrides to ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override {
-    bool val = WrenchMenuModel::IsCommandIdChecked(command_id);
+    bool val = AppMenuModel::IsCommandIdChecked(command_id);
     if (val)
       checked_count_++;
     return val;
@@ -119,8 +117,8 @@ class TestWrenchMenuModel : public WrenchMenuModel {
   mutable int enable_count_;
 };
 
-TEST_F(WrenchMenuModelTest, Basics) {
-  TestWrenchMenuModel model(this, browser());
+TEST_F(AppMenuModelTest, Basics) {
+  TestAppMenuModel model(this, browser());
   int itemCount = model.GetItemCount();
 
   // Verify it has items. The number varies by platform, so we don't check
@@ -174,7 +172,7 @@ TEST_F(WrenchMenuModelTest, Basics) {
 }
 
 // Tests global error menu items in the wrench menu.
-TEST_F(WrenchMenuModelTest, GlobalError) {
+TEST_F(AppMenuModelTest, GlobalError) {
   // Make sure services required for tests are initialized.
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
@@ -188,7 +186,7 @@ TEST_F(WrenchMenuModelTest, GlobalError) {
   MenuError* error2 = new MenuError(command2);
   service->AddGlobalError(error2);
 
-  WrenchMenuModel model(this, browser());
+  AppMenuModel model(this, browser());
   int index1 = model.GetIndexOfCommandId(command1);
   EXPECT_GT(index1, -1);
   int index2 = model.GetIndexOfCommandId(command2);
