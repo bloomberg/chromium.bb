@@ -55,9 +55,9 @@ function observeTest() {
   chrome.test.assertTrue(!!testParams.initialInputMethod);
   console.log('observeTest: Adding input method event listener.');
 
-  var listener = function(subfix) {
+  var listener = function(inputMethod) {
     chrome.inputMethodPrivate.onChanged.removeListener(listener);
-    chrome.test.assertEq('us::eng', subfix);
+    chrome.test.assertEq(testParams.initialInputMethod, inputMethod);
     chrome.test.succeed();
   };
   chrome.inputMethodPrivate.onChanged.addListener(listener);

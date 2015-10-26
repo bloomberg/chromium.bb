@@ -41,10 +41,8 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  base::StringValue* input_method_name =
-      new base::StringValue(extensions::InputMethodAPI::GetInputMethodForXkb(
-          manager->GetActiveIMEState()->GetCurrentInputMethod().id()));
-  args->Append(input_method_name);
+  args->Append(new base::StringValue(
+      manager->GetActiveIMEState()->GetCurrentInputMethod().id()));
 
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
