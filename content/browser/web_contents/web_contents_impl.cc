@@ -1343,14 +1343,33 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // it should be hidden.
   should_normally_be_visible_ = !params.initially_hidden;
 
-  // Either both routing ids can be given, or neither can be.
+  // The routing ids must either all be set or all be unset.
   DCHECK((params.routing_id == MSG_ROUTING_NONE &&
-              params.main_frame_routing_id == MSG_ROUTING_NONE) ||
+          params.main_frame_routing_id == MSG_ROUTING_NONE &&
+          params.main_frame_widget_routing_id == MSG_ROUTING_NONE) ||
          (params.routing_id != MSG_ROUTING_NONE &&
-              params.main_frame_routing_id != MSG_ROUTING_NONE));
-  GetRenderManager()->Init(params.browser_context, params.site_instance,
-                           params.routing_id, params.main_frame_routing_id,
-                           MSG_ROUTING_NONE);
+          params.main_frame_routing_id != MSG_ROUTING_NONE &&
+          params.main_frame_widget_routing_id != MSG_ROUTING_NONE));
+
+  scoped_refptr<SiteInstance> site_instance = params.site_instance;
+  if (!site_instance)
+    site_instance = SiteInstance::Create(params.browser_context);
+
+  // A main RenderFrameHost always has a RenderWidgetHost, since it is always a
+  // local root by definition.
+  // TODO(avi): Once RenderViewHostImpl has-a RenderWidgetHostImpl, it will no
+  // longer be necessary to eagerly grab a routing ID for the view.
+  // https://crbug.com/545684
+  int32_t view_routing_id = params.routing_id;
+  int32_t main_frame_widget_routing_id = params.main_frame_widget_routing_id;
+  if (main_frame_widget_routing_id == MSG_ROUTING_NONE) {
+    view_routing_id = main_frame_widget_routing_id =
+        site_instance->GetProcess()->GetNextRoutingID();
+  }
+
+  GetRenderManager()->Init(site_instance.get(), view_routing_id,
+                           params.main_frame_routing_id,
+                           main_frame_widget_routing_id);
   frame_tree_.root()->SetFrameName(params.main_frame_name);
 
   WebContentsViewDelegate* delegate =
@@ -1661,8 +1680,9 @@ void WebContentsImpl::LostMouseLock() {
 
 void WebContentsImpl::CreateNewWindow(
     SiteInstance* source_site_instance,
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   // We usually create the new window in the same BrowsingInstance (group of
@@ -1721,14 +1741,10 @@ void WebContentsImpl::CreateNewWindow(
   CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));
 
   if (delegate_ &&
-      !delegate_->ShouldCreateWebContents(this,
-                                          route_id,
-                                          main_frame_route_id,
-                                          params.window_container_type,
-                                          params.frame_name,
-                                          params.target_url,
-                                          partition_id,
-                                          session_storage_namespace)) {
+      !delegate_->ShouldCreateWebContents(
+          this, route_id, main_frame_route_id, main_frame_widget_route_id,
+          params.window_container_type, params.frame_name, params.target_url,
+          partition_id, session_storage_namespace)) {
     if (route_id != MSG_ROUTING_NONE &&
         !RenderViewHost::FromID(render_process_id, route_id)) {
       // If the embedder didn't create a WebContents for this route, we need to
@@ -1738,6 +1754,8 @@ void WebContentsImpl::CreateNewWindow(
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
         main_frame_route_id);
+    GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
+        main_frame_widget_route_id);
     return;
   }
 
@@ -1746,6 +1764,7 @@ void WebContentsImpl::CreateNewWindow(
   CreateParams create_params(GetBrowserContext(), site_instance.get());
   create_params.routing_id = route_id;
   create_params.main_frame_routing_id = main_frame_route_id;
+  create_params.main_frame_widget_routing_id = main_frame_widget_route_id;
   create_params.main_frame_name = params.frame_name;
   create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = params.opener_render_frame_id;

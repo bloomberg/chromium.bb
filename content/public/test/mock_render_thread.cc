@@ -23,8 +23,8 @@ MockRenderThread::MockRenderThread()
       opener_id_(0),
       new_window_routing_id_(0),
       new_window_main_frame_routing_id_(0),
-      new_frame_routing_id_(0) {
-}
+      new_window_main_frame_widget_routing_id_(0),
+      new_frame_routing_id_(0) {}
 
 MockRenderThread::~MockRenderThread() {
   while (!filters_.empty()) {
@@ -208,12 +208,11 @@ void MockRenderThread::OnCreateWidget(int opener_id,
 // The View expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
-    int* route_id,
-    int* main_frame_route_id,
-    int64* cloned_session_storage_namespace_id) {
-  *route_id = new_window_routing_id_;
-  *main_frame_route_id = new_window_main_frame_routing_id_;
-  *cloned_session_storage_namespace_id = 0;
+    ViewHostMsg_CreateWindow_Reply* reply) {
+  reply->route_id = new_window_routing_id_;
+  reply->main_frame_route_id = new_window_main_frame_routing_id_;
+  reply->main_frame_widget_route_id = new_window_main_frame_widget_routing_id_;
+  reply->cloned_session_storage_namespace_id = 0;
 }
 
 // The Frame expects to be returned a valid route_id different from its own.

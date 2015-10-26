@@ -162,8 +162,9 @@ class DriveWebContentsManager : public content::WebContentsObserver,
   // content::WebContentsDelegate overrides:
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
-      int route_id,
-      int main_frame_route_id,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
       WindowContainerType window_container_type,
       const std::string& frame_name,
       const GURL& target_url,
@@ -278,8 +279,9 @@ void DriveWebContentsManager::DidFailLoad(
 
 bool DriveWebContentsManager::ShouldCreateWebContents(
     content::WebContents* web_contents,
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     WindowContainerType window_container_type,
     const std::string& frame_name,
     const GURL& target_url,
@@ -305,15 +307,11 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
       base::UTF8ToUTF16(app_id_))) {
     return false;
   }
-  BackgroundContents* contents = background_contents_service
-      ->CreateBackgroundContents(content::SiteInstance::Create(profile_),
-                                 route_id,
-                                 main_frame_route_id,
-                                 profile_,
-                                 frame_name,
-                                 base::ASCIIToUTF16(app_id_),
-                                 partition_id,
-                                 session_storage_namespace);
+  BackgroundContents* contents =
+      background_contents_service->CreateBackgroundContents(
+          content::SiteInstance::Create(profile_), route_id,
+          main_frame_route_id, main_frame_widget_route_id, profile_, frame_name,
+          base::ASCIIToUTF16(app_id_), partition_id, session_storage_namespace);
 
   contents->web_contents()->GetController().LoadURL(
       target_url,

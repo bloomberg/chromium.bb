@@ -491,8 +491,9 @@ class CONTENT_EXPORT WebContentsImpl
   void LostMouseLock() override;
   void CreateNewWindow(
       SiteInstance* source_site_instance,
-      int route_id,
-      int main_frame_route_id,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) override;
   void CreateNewWidget(int32 render_process_id,

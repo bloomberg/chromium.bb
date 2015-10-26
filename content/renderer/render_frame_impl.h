@@ -68,6 +68,7 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
+struct WebScreenInfo;
 }
 
 namespace gfx {
@@ -137,8 +138,13 @@ class CONTENT_EXPORT RenderFrameImpl
       NON_EXPORTED_BASE(public blink::WebPageSerializerClient) {
  public:
   // Creates a new RenderFrame as the main frame of |render_view|.
-  static RenderFrameImpl* CreateMainFrame(RenderViewImpl* render_view,
-                                          int32 routing_id);
+  static RenderFrameImpl* CreateMainFrame(
+      RenderViewImpl* render_view,
+      int32_t routing_id,
+      int32_t widget_routing_id,
+      bool hidden,
+      const blink::WebScreenInfo& screen_info,
+      CompositorDependencies* compositor_deps);
 
   // Creates a new RenderFrame with |routing_id|.  If |proxy_routing_id| is
   // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into

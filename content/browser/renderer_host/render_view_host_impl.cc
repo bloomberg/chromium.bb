@@ -315,6 +315,13 @@ bool RenderViewHostImpl::CreateRenderView(
   params.web_preferences = GetWebkitPreferences();
   params.view_id = GetRoutingID();
   params.main_frame_routing_id = main_frame_routing_id_;
+  if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl* main_rfh = RenderFrameHostImpl::FromID(
+        GetProcess()->GetID(), main_frame_routing_id_);
+    DCHECK(main_rfh);
+    RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
+    params.main_frame_widget_routing_id = main_rwh->GetRoutingID();
+  }
   params.session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
@@ -1009,8 +1016,9 @@ bool RenderViewHostImpl::IsRenderView() const {
 }
 
 void RenderViewHostImpl::CreateNewWindow(
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   ViewHostMsg_CreateWindow_Params validated_params(params);
@@ -1019,7 +1027,8 @@ void RenderViewHostImpl::CreateNewWindow(
   GetProcess()->FilterURL(true, &validated_params.opener_security_origin);
 
   delegate_->CreateNewWindow(GetSiteInstance(), route_id, main_frame_route_id,
-                             validated_params, session_storage_namespace);
+                             main_frame_widget_route_id, validated_params,
+                             session_storage_namespace);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int32 route_id,

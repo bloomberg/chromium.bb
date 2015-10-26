@@ -61,8 +61,13 @@ namespace {
 
 const int32 kRouteId = 5;
 const int32 kMainFrameRouteId = 6;
+// TODO(avi): Widget routing IDs should be distinct from the view routing IDs,
+// once RenderWidgetHost is distilled from RenderViewHostImpl.
+// https://crbug.com/545684
+const int32_t kMainFrameWidgetRouteId = 5;
 const int32 kNewWindowRouteId = 7;
 const int32 kNewFrameRouteId = 10;
+const int32_t kNewFrameWidgetRouteId = 7;
 
 // Converts |ascii_character| into |key_code| and returns true on success.
 // Handles only the characters needed by tests.
@@ -205,6 +210,8 @@ void RenderViewTest::SetUp() {
     render_thread_.reset(new MockRenderThread());
   render_thread_->set_routing_id(kRouteId);
   render_thread_->set_new_window_routing_id(kNewWindowRouteId);
+  render_thread_->set_new_window_main_frame_widget_routing_id(
+      kNewFrameWidgetRouteId);
   render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
 
 #if defined(OS_MACOSX)
@@ -242,6 +249,7 @@ void RenderViewTest::SetUp() {
   view_params.web_preferences = WebPreferences();
   view_params.view_id = kRouteId;
   view_params.main_frame_routing_id = kMainFrameRouteId;
+  view_params.main_frame_widget_routing_id = kMainFrameWidgetRouteId;
   view_params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   view_params.swapped_out = false;
   view_params.replicated_frame_state = FrameReplicationState();

@@ -10,21 +10,10 @@
 namespace content {
 
 WebContents::CreateParams::CreateParams(BrowserContext* context)
-    : browser_context(context),
-      site_instance(nullptr),
-      opener_render_process_id(content::ChildProcessHost::kInvalidUniqueID),
-      opener_render_frame_id(MSG_ROUTING_NONE),
-      opener_suppressed(false),
-      created_with_opener(false),
-      routing_id(MSG_ROUTING_NONE),
-      main_frame_routing_id(MSG_ROUTING_NONE),
-      initially_hidden(false),
-      guest_delegate(nullptr),
-      context(nullptr),
-      renderer_initiated_creation(false) {}
+    : CreateParams(context, nullptr) {}
 
-WebContents::CreateParams::CreateParams(
-    BrowserContext* context, SiteInstance* site)
+WebContents::CreateParams::CreateParams(BrowserContext* context,
+                                        SiteInstance* site)
     : browser_context(context),
       site_instance(site),
       opener_render_process_id(content::ChildProcessHost::kInvalidUniqueID),
@@ -33,6 +22,7 @@ WebContents::CreateParams::CreateParams(
       created_with_opener(false),
       routing_id(MSG_ROUTING_NONE),
       main_frame_routing_id(MSG_ROUTING_NONE),
+      main_frame_widget_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
       guest_delegate(nullptr),
       context(nullptr),

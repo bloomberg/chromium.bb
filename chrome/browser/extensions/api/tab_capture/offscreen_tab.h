@@ -139,8 +139,9 @@ class OffscreenTab : protected content::WebContentsDelegate,
                     blink::WebDragOperationsMask operations_allowed) final;
   bool ShouldCreateWebContents(
       content::WebContents* contents,
-      int route_id,
-      int main_frame_route_id,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
       WindowContainerType window_container_type,
       const std::string& frame_name,
       const GURL& target_url,

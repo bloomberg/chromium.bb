@@ -595,9 +595,12 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
       new SessionStorageNamespaceImpl(dom_storage_context);
 
   // Use the RenderViewHost from our FrameTree.
+  // TODO(avi): The view routing ID can be restored to MSG_ROUTING_NONE once
+  // RenderViewHostImpl has-a RenderWidgetHostImpl. https://crbug.com/545684
+  int32_t widget_routing_id = site_instance->GetProcess()->GetNextRoutingID();
   frame_tree_.root()->render_manager()->Init(
-      browser_context, site_instance.get(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      MSG_ROUTING_NONE);
+      site_instance.get(), widget_routing_id, MSG_ROUTING_NONE,
+      widget_routing_id);
   return frame_tree_.root()->current_frame_host()->render_view_host();
 }
 
@@ -761,8 +764,9 @@ gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
 
 void InterstitialPageImpl::CreateNewWindow(
     SiteInstance* source_site_instance,
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";

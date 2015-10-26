@@ -30,8 +30,9 @@ using content::WebContents;
 
 BackgroundContents::BackgroundContents(
     SiteInstance* site_instance,
-    int routing_id,
-    int main_frame_routing_id,
+    int32_t routing_id,
+    int32_t main_frame_routing_id,
+    int32_t main_frame_widget_routing_id,
     Delegate* delegate,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace)
@@ -44,6 +45,7 @@ BackgroundContents::BackgroundContents(
   WebContents::CreateParams create_params(profile_, site_instance);
   create_params.routing_id = routing_id;
   create_params.main_frame_routing_id = main_frame_routing_id;
+  create_params.main_frame_widget_routing_id = main_frame_widget_routing_id;
   create_params.renderer_initiated_creation = routing_id != MSG_ROUTING_NONE;
   if (session_storage_namespace) {
     content::SessionStorageNamespaceMap session_storage_namespace_map;

@@ -136,7 +136,7 @@ TEST_F(FrameTreeTest, Shape) {
   // itself. Instead, leave them in "not live" state, which is indicated by the
   // * after the frame id, since this test cares about the shape, not the
   // frame liveliness.
-  EXPECT_EQ("1*: []", GetTreeState(frame_tree));
+  EXPECT_EQ("2*: []", GetTreeState(frame_tree));
 
   // Simulate attaching a series of frames to build the frame tree.
   frame_tree->AddFrame(root, process_id, 14, blink::WebTreeScopeType::Document,
@@ -156,10 +156,11 @@ TEST_F(FrameTreeTest, Shape) {
                        blink::WebTreeScopeType::Document, std::string(),
                        blink::WebSandboxFlags::None);
 
-  EXPECT_EQ("1*: [14*: [244*: [], 245*: []], "
-                "15*: [255* 'no children node': []], "
-                "16*: []]",
-            GetTreeState(frame_tree));
+  EXPECT_EQ(
+      "2*: [14*: [244*: [], 245*: []], "
+      "15*: [255* 'no children node': []], "
+      "16*: []]",
+      GetTreeState(frame_tree));
 
   FrameTreeNode* child_16 = root->child_at(2);
   frame_tree->AddFrame(child_16, process_id, 264,
@@ -193,36 +194,40 @@ TEST_F(FrameTreeTest, Shape) {
                        std::string(), blink::WebSandboxFlags::None);
 
   // Now that's it's fully built, verify the tree structure is as expected.
-  EXPECT_EQ("1*: [14*: [244*: [], 245*: []], "
-                "15*: [255* 'no children node': []], "
-                "16*: [264*: [], 265*: [], 266*: [], "
-                     "267* 'node with deep subtree': "
-                         "[365*: [455*: [555*: [655*: []]]]], 268*: []]]",
-            GetTreeState(frame_tree));
+  EXPECT_EQ(
+      "2*: [14*: [244*: [], 245*: []], "
+      "15*: [255* 'no children node': []], "
+      "16*: [264*: [], 265*: [], 266*: [], "
+      "267* 'node with deep subtree': "
+      "[365*: [455*: [555*: [655*: []]]]], 268*: []]]",
+      GetTreeState(frame_tree));
 
   FrameTreeNode* child_555 = child_267->child_at(0)->child_at(0)->child_at(0);
   frame_tree->RemoveFrame(child_555);
-  EXPECT_EQ("1*: [14*: [244*: [], 245*: []], "
-                "15*: [255* 'no children node': []], "
-                "16*: [264*: [], 265*: [], 266*: [], "
-                     "267* 'node with deep subtree': "
-                         "[365*: [455*: []]], 268*: []]]",
-            GetTreeState(frame_tree));
+  EXPECT_EQ(
+      "2*: [14*: [244*: [], 245*: []], "
+      "15*: [255* 'no children node': []], "
+      "16*: [264*: [], 265*: [], 266*: [], "
+      "267* 'node with deep subtree': "
+      "[365*: [455*: []]], 268*: []]]",
+      GetTreeState(frame_tree));
 
   frame_tree->RemoveFrame(child_16->child_at(1));
-  EXPECT_EQ("1*: [14*: [244*: [], 245*: []], "
-                "15*: [255* 'no children node': []], "
-                "16*: [264*: [], 266*: [], "
-                     "267* 'node with deep subtree': "
-                         "[365*: [455*: []]], 268*: []]]",
-            GetTreeState(frame_tree));
+  EXPECT_EQ(
+      "2*: [14*: [244*: [], 245*: []], "
+      "15*: [255* 'no children node': []], "
+      "16*: [264*: [], 266*: [], "
+      "267* 'node with deep subtree': "
+      "[365*: [455*: []]], 268*: []]]",
+      GetTreeState(frame_tree));
 
   frame_tree->RemoveFrame(root->child_at(1));
-  EXPECT_EQ("1*: [14*: [244*: [], 245*: []], "
-                "16*: [264*: [], 266*: [], "
-                     "267* 'node with deep subtree': "
-                         "[365*: [455*: []]], 268*: []]]",
-            GetTreeState(frame_tree));
+  EXPECT_EQ(
+      "2*: [14*: [244*: [], 245*: []], "
+      "16*: [264*: [], 266*: [], "
+      "267* 'node with deep subtree': "
+      "[365*: [455*: []]], 268*: []]]",
+      GetTreeState(frame_tree));
 }
 
 // Ensure frames can be found by frame_tree_node_id, routing ID, or name.
@@ -312,7 +317,7 @@ TEST_F(FrameTreeTest, PreviousSibling) {
 TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   TreeWalkingWebContentsLogger activity(contents());
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_EQ("RenderFrameCreated(1) -> 1: []", activity.GetLog());
+  EXPECT_EQ("RenderFrameCreated(2) -> 2: []", activity.GetLog());
 
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
@@ -322,20 +327,20 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
                                       std::string(),
                                       blink::WebSandboxFlags::None);
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(14) -> 1: []\n"
-      "RenderFrameCreated(14) -> 1: [14: []]",
+      "RenderFrameHostChanged(new)(14) -> 2: []\n"
+      "RenderFrameCreated(14) -> 2: [14: []]",
       activity.GetLog());
   main_test_rfh()->OnCreateChildFrame(18, blink::WebTreeScopeType::Document,
                                       std::string(),
                                       blink::WebSandboxFlags::None);
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(18) -> 1: [14: []]\n"
-      "RenderFrameCreated(18) -> 1: [14: [], 18: []]",
+      "RenderFrameHostChanged(new)(18) -> 2: [14: []]\n"
+      "RenderFrameCreated(18) -> 2: [14: [], 18: []]",
       activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
-  EXPECT_EQ("RenderFrameDeleted(14) -> 1: [18: []]", activity.GetLog());
+  EXPECT_EQ("RenderFrameDeleted(14) -> 2: [18: []]", activity.GetLog());
   frame_tree->RemoveFrame(root->child_at(0));
-  EXPECT_EQ("RenderFrameDeleted(18) -> 1: []", activity.GetLog());
+  EXPECT_EQ("RenderFrameDeleted(18) -> 2: []", activity.GetLog());
 }
 
 // Make sure that WebContentsObservers see a consistent view of the tree after
@@ -343,30 +348,30 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
 TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   TreeWalkingWebContentsLogger activity(contents());
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_EQ("RenderFrameCreated(1) -> 1: []", activity.GetLog());
+  EXPECT_EQ("RenderFrameCreated(2) -> 2: []", activity.GetLog());
 
   main_test_rfh()->OnCreateChildFrame(22, blink::WebTreeScopeType::Document,
                                       std::string(),
                                       blink::WebSandboxFlags::None);
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(22) -> 1: []\n"
-      "RenderFrameCreated(22) -> 1: [22: []]",
+      "RenderFrameHostChanged(new)(22) -> 2: []\n"
+      "RenderFrameCreated(22) -> 2: [22: []]",
       activity.GetLog());
   main_test_rfh()->OnCreateChildFrame(23, blink::WebTreeScopeType::Document,
                                       std::string(),
                                       blink::WebSandboxFlags::None);
   EXPECT_EQ(
-      "RenderFrameHostChanged(new)(23) -> 1: [22: []]\n"
-      "RenderFrameCreated(23) -> 1: [22: [], 23: []]",
+      "RenderFrameHostChanged(new)(23) -> 2: [22: []]\n"
+      "RenderFrameCreated(23) -> 2: [22: [], 23: []]",
       activity.GetLog());
 
   // Crash the renderer
   main_test_rfh()->GetProcess()->SimulateCrash();
   EXPECT_EQ(
-      "RenderProcessGone -> 1*: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(23) -> 1*: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(22) -> 1*: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(1) -> 1*: []",
+      "RenderProcessGone -> 2*: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(23) -> 2*: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(22) -> 2*: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(2) -> 2*: []",
       activity.GetLog());
 }
 
@@ -378,13 +383,13 @@ TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
   FrameTreeNode* root = frame_tree->root();
   int process_id = root->current_frame_host()->GetProcess()->GetID();
 
-  ASSERT_EQ("1: []", GetTreeState(frame_tree));
+  ASSERT_EQ("2: []", GetTreeState(frame_tree));
 
   // Simulate attaching a frame from mismatched process id.
   ASSERT_FALSE(frame_tree->AddFrame(
       root, process_id + 1, 1, blink::WebTreeScopeType::Document, std::string(),
       blink::WebSandboxFlags::None));
-  ASSERT_EQ("1: []", GetTreeState(frame_tree));
+  ASSERT_EQ("2: []", GetTreeState(frame_tree));
 }
 
 // Ensure that frames removed while a process has crashed are not preserved in

@@ -1658,8 +1658,9 @@ void Browser::ShowRepostFormWarningDialog(WebContents* source) {
 
 bool Browser::ShouldCreateWebContents(
     WebContents* web_contents,
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     WindowContainerType window_container_type,
     const std::string& frame_name,
     const GURL& target_url,
@@ -1667,13 +1668,9 @@ bool Browser::ShouldCreateWebContents(
     content::SessionStorageNamespace* session_storage_namespace) {
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
-    return !MaybeCreateBackgroundContents(route_id,
-                                          main_frame_route_id,
-                                          web_contents,
-                                          frame_name,
-                                          target_url,
-                                          partition_id,
-                                          session_storage_namespace);
+    return !MaybeCreateBackgroundContents(
+        route_id, main_frame_route_id, main_frame_widget_route_id, web_contents,
+        frame_name, target_url, partition_id, session_storage_namespace);
   }
 
   return true;
@@ -2622,8 +2619,9 @@ bool Browser::ShouldStartShutdown() const {
 }
 
 bool Browser::MaybeCreateBackgroundContents(
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     WebContents* opener_web_contents,
     const std::string& frame_name,
     const GURL& target_url,
@@ -2686,15 +2684,11 @@ bool Browser::MaybeCreateBackgroundContents(
       content::SiteInstance::Create(opener_web_contents->GetBrowserContext());
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents =
-      service->CreateBackgroundContents(site_instance.get(),
-                                        route_id,
-                                        main_frame_route_id,
-                                        profile_,
-                                        frame_name,
-                                        base::ASCIIToUTF16(extension->id()),
-                                        partition_id,
-                                        session_storage_namespace);
+  BackgroundContents* contents = service->CreateBackgroundContents(
+      site_instance.get(), route_id, main_frame_route_id,
+      main_frame_widget_route_id, profile_, frame_name,
+      base::ASCIIToUTF16(extension->id()), partition_id,
+      session_storage_namespace);
 
   // When a separate process is used, the original renderer cannot access the
   // new window later, thus we need to navigate the window now.

@@ -201,8 +201,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
   ~RenderFrameHostManager();
 
   // For arguments, see WebContentsImpl constructor.
-  void Init(BrowserContext* browser_context,
-            SiteInstance* site_instance,
+  void Init(SiteInstance* site_instance,
             int32 view_routing_id,
             int32 frame_routing_id,
             int32 widget_routing_id);

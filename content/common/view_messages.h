@@ -341,6 +341,21 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   IPC_STRUCT_MEMBER(std::vector<base::string16>, additional_features)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Reply)
+  // The ID of the view to be created. If the ID is MSG_ROUTING_NONE, then the
+  // view couldn't be created.
+  IPC_STRUCT_MEMBER(int32_t, route_id, MSG_ROUTING_NONE)
+
+  // The ID of the main frame hosted in the view.
+  IPC_STRUCT_MEMBER(int32_t, main_frame_route_id, MSG_ROUTING_NONE)
+
+  // The ID of the widget for the main frame.
+  IPC_STRUCT_MEMBER(int32_t, main_frame_widget_route_id, MSG_ROUTING_NONE)
+
+  // TODO(dcheng): No clue. This is kind of duplicated from ViewMsg_New_Params.
+  IPC_STRUCT_MEMBER(int64, cloned_session_storage_namespace_id)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // URL for the worker script.
   IPC_STRUCT_MEMBER(GURL, url)
@@ -480,17 +495,20 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(content::WebPreferences, web_preferences)
 
   // The ID of the view to be created.
-  IPC_STRUCT_MEMBER(int32, view_id)
+  IPC_STRUCT_MEMBER(int32_t, view_id, MSG_ROUTING_NONE)
 
   // The ID of the main frame hosted in the view.
-  IPC_STRUCT_MEMBER(int32, main_frame_routing_id)
+  IPC_STRUCT_MEMBER(int32_t, main_frame_routing_id, MSG_ROUTING_NONE)
+
+  // The ID of the widget for the main frame.
+  IPC_STRUCT_MEMBER(int32_t, main_frame_widget_routing_id, MSG_ROUTING_NONE)
 
   // The session storage namespace ID this view should use.
   IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
 
   // The route ID of the opener RenderFrame or RenderFrameProxy, if we need to
   // set one (MSG_ROUTING_NONE otherwise).
-  IPC_STRUCT_MEMBER(int, opener_frame_route_id)
+  IPC_STRUCT_MEMBER(int, opener_frame_route_id, MSG_ROUTING_NONE)
 
   // Whether the RenderView should initially be swapped out.
   IPC_STRUCT_MEMBER(bool, swapped_out)
@@ -503,7 +521,7 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The ID of the proxy object for the main frame in this view. It is only
   // used if |swapped_out| is true.
-  IPC_STRUCT_MEMBER(int32, proxy_routing_id)
+  IPC_STRUCT_MEMBER(int32_t, proxy_routing_id, MSG_ROUTING_NONE)
 
   // Whether the RenderView should initially be hidden.
   IPC_STRUCT_MEMBER(bool, hidden)
@@ -967,12 +985,11 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
                     bool /* enabled */)
 
 // Sent by the renderer when it is creating a new window.  The browser creates a
-// tab for it.  If route_id is MSG_ROUTING_NONE, the view couldn't be created.
-IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_CreateWindow,
+// tab for it.  If |reply.route_id| is MSG_ROUTING_NONE, the view couldn't be
+// created.
+IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWindow,
                             ViewHostMsg_CreateWindow_Params,
-                            int /* route_id */,
-                            int /* main_frame_route_id */,
-                            int64 /* cloned_session_storage_namespace_id */)
+                            ViewHostMsg_CreateWindow_Reply)
 
 // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
 // <select> dropdowns.  This message is sent to the WebContentsImpl that

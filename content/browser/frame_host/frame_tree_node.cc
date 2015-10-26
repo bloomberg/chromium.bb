@@ -131,7 +131,6 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
   // frames in the same SiteInstance as the current frame, and they can swap to
   // a different one if they navigate away.
   child->render_manager()->Init(
-      render_manager_.current_host()->GetSiteInstance()->GetBrowserContext(),
       render_manager_.current_host()->GetSiteInstance(),
       render_manager_.current_host()->GetRoutingID(), frame_routing_id,
       MSG_ROUTING_NONE);

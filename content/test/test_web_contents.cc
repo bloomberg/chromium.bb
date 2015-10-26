@@ -301,11 +301,11 @@ void TestWebContents::TestDidFailLoadWithError(
 
 void TestWebContents::CreateNewWindow(
     SiteInstance* source_site_instance,
-    int route_id,
-    int main_frame_route_id,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
-    SessionStorageNamespace* session_storage_namespace) {
-}
+    SessionStorageNamespace* session_storage_namespace) {}
 
 void TestWebContents::CreateNewWidget(int32 render_process_id,
                                       int32 route_id,

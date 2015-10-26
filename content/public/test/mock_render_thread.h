@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
 struct ViewHostMsg_CreateWindow_Params;
+struct ViewHostMsg_CreateWindow_Reply;
 
 namespace IPC {
 class MessageFilter;
@@ -93,6 +94,10 @@ class MockRenderThread : public RenderThread {
     new_window_routing_id_ = id;
   }
 
+  void set_new_window_main_frame_widget_routing_id(int32_t id) {
+    new_window_main_frame_widget_routing_id_ = id;
+  }
+
   void set_new_frame_routing_id(int32 id) {
     new_frame_routing_id_ = id;
   }
@@ -117,14 +122,11 @@ class MockRenderThread : public RenderThread {
                       blink::WebPopupType popup_type,
                       int* route_id);
 
-  // The View expects to be returned a valid route_id different from its own.
-  // We do not keep track of the newly created widget in MockRenderThread,
+  // The View expects to be returned a valid |reply.route_id| different from its
+  // own. We do not keep track of the newly created widget in MockRenderThread,
   // so it must be cleaned up on its own.
-  void OnCreateWindow(
-    const ViewHostMsg_CreateWindow_Params& params,
-    int* route_id,
-    int* main_frame_route_id,
-    int64* cloned_session_storage_namespace_id);
+  void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
+                      ViewHostMsg_CreateWindow_Reply* reply);
 
   // The Frame expects to be returned a valid route_id different from its own.
   void OnCreateChildFrame(int new_frame_routing_id,
@@ -149,6 +151,7 @@ class MockRenderThread : public RenderThread {
   // Routing id that will be assigned to a CreateWindow Widget.
   int32 new_window_routing_id_;
   int32 new_window_main_frame_routing_id_;
+  int32_t new_window_main_frame_widget_routing_id_;
   int32 new_frame_routing_id_;
 
   // The last known good deserializer for sync messages.

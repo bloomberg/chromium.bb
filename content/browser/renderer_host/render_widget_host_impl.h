@@ -187,6 +187,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void set_owned_by_render_frame_host(bool owned_by_rfh) {
     owned_by_render_frame_host_ = owned_by_rfh;
   }
+  bool owned_by_render_frame_host() const {
+    return owned_by_render_frame_host_;
+  }
 
   // Tells the renderer to die and then calls Destroy().
   virtual void Shutdown();

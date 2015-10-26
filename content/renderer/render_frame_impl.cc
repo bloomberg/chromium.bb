@@ -570,14 +570,31 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int routing_id) {
 }
 
 // static
-RenderFrameImpl* RenderFrameImpl::CreateMainFrame(RenderViewImpl* render_view,
-                                                  int32 routing_id) {
+RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
+    RenderViewImpl* render_view,
+    int32_t routing_id,
+    int32_t widget_routing_id,
+    bool hidden,
+    const blink::WebScreenInfo& screen_info,
+    CompositorDependencies* compositor_deps) {
+  // A main frame RenderFrame must have a RenderWidget.
+  DCHECK_NE(MSG_ROUTING_NONE, widget_routing_id);
+
   RenderFrameImpl* render_frame =
       RenderFrameImpl::Create(render_view, routing_id);
   WebLocalFrame* web_frame =
       WebLocalFrame::create(blink::WebTreeScopeType::Document, render_frame);
   render_frame->SetWebFrame(web_frame);
   render_view->webview()->setMainFrame(web_frame);
+  render_frame->render_widget_ = RenderWidget::CreateForFrame(
+      widget_routing_id, hidden, screen_info, compositor_deps, web_frame);
+  // TODO(kenrb): Observing shouldn't be necessary when we sort out
+  // WasShown and WasHidden, separating page-level visibility from
+  // frame-level visibility.
+  // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
+  DCHECK_EQ(render_view, render_frame->render_widget_)
+      << "Main frame is no longer reusing the RenderView as its widget! "
+      << "Does the RenderFrame need to register itself with the RenderWidget?";
   return render_frame;
 }
 
@@ -633,14 +650,20 @@ void RenderFrameImpl::CreateFrame(
   web_frame->setOpener(opener);
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
-    CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
+    CHECK_IMPLIES(web_frame->parent(),
+                  SiteIsolationPolicy::AreCrossProcessFramesPossible());
     render_frame->render_widget_ = RenderWidget::CreateForFrame(
         widget_params.routing_id, widget_params.hidden,
         render_frame->render_view_->screen_info(), compositor_deps, web_frame);
-    // TODO(kenrb): Observing shouldn't be necessary when we sort out
-    // WasShown and WasHidden, separating page-level visibility from
-    // frame-level visibility.
-    render_frame->render_widget_->RegisterRenderFrame(render_frame);
+    // TODO(avi): The main frame re-uses the RenderViewImpl as its widget, so
+    // avoid double-registering the frame as an observer.
+    // https://crbug.com/545684
+    if (web_frame->parent()) {
+      // TODO(kenrb): Observing shouldn't be necessary when we sort out
+      // WasShown and WasHidden, separating page-level visibility from
+      // frame-level visibility.
+      render_frame->render_widget_->RegisterRenderFrame(render_frame);
+    }
   }
 
   render_frame->Initialize();
@@ -3987,7 +4010,11 @@ void RenderFrameImpl::WasShown() {
   // TODO(kenrb): Need to figure out how to do this better. Should
   // VisibilityState remain a page-level concept or move to frames?
   // The semantics of 'Show' might have to change here.
-  if (render_widget_) {
+  // TODO(avi): This DCHECK is to track cleanup for https://crbug.com/545684
+  DCHECK_IMPLIES(IsMainFrame(), render_widget_.get() == render_view_.get())
+      << "The main render frame is no longer reusing the RenderView as its "
+      << "RenderWidget!";
+  if (render_widget_ && render_view_.get() != render_widget_.get()) {
     static_cast<blink::WebFrameWidget*>(render_widget_->webwidget())->
         setVisibilityState(blink::WebPageVisibilityStateVisible, false);
   }

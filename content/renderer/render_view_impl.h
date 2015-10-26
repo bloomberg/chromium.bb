@@ -48,6 +48,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -238,6 +239,8 @@ class CONTENT_EXPORT RenderViewImpl
   // Sets page-level focus in this view and notifies plugins and Blink's
   // FocusController.
   void SetFocus(bool enable);
+
+  void AttachWebFrameWidget(blink::WebWidget* frame_widget);
 
   // Plugin-related functions --------------------------------------------------
 
@@ -449,6 +452,7 @@ class CONTENT_EXPORT RenderViewImpl
 
  protected:
   // RenderWidget overrides:
+  void CloseForFrame() override;
   void Close() override;
   void OnResize(const ViewMsg_Resize_Params& params) override;
   void DidInitiatePaint() override;
@@ -900,6 +904,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Helper objects ------------------------------------------------------------
 
   RenderFrameImpl* main_render_frame_;
+
+  // Note: RenderViewImpl is pulling double duty: it's the RenderWidget for the
+  // "view", but it's also the RenderWidget for the main frame.
+  blink::WebWidget* frame_widget_;
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.  This is why we just store

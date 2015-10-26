@@ -43,6 +43,7 @@
 class GURL;
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
+struct ViewHostMsg_CreateWindow_Reply;
 
 namespace blink {
 struct WebScreenInfo;
@@ -118,9 +119,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
   void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
-                      int* route_id,
-                      int* main_frame_route_id,
-                      int64* cloned_session_storage_namespace_id);
+                      ViewHostMsg_CreateWindow_Reply* reply);
   void OnCreateWidget(int opener_id,
                       blink::WebPopupType popup_type,
                       int* route_id);

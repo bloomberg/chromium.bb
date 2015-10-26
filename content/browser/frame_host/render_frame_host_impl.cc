@@ -214,9 +214,20 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
 
   if (widget_routing_id != MSG_ROUTING_NONE) {
-    render_widget_host_ = new RenderWidgetHostImpl(rwh_delegate, GetProcess(),
-                                                   widget_routing_id, hidden);
-    render_widget_host_->set_owned_by_render_frame_host(true);
+    // TODO(avi): Once RenderViewHostImpl has-a RenderWidgetHostImpl, the main
+    // render frame should probably start owning the RenderWidgetHostImpl,
+    // so this logic checking for an already existing RWHI should be removed.
+    // https://crbug.com/545684
+    render_widget_host_ =
+        RenderWidgetHostImpl::FromID(GetProcess()->GetID(), widget_routing_id);
+    if (!render_widget_host_) {
+      DCHECK(frame_tree_node->parent());
+      render_widget_host_ = new RenderWidgetHostImpl(rwh_delegate, GetProcess(),
+                                                     widget_routing_id, hidden);
+      render_widget_host_->set_owned_by_render_frame_host(true);
+    } else {
+      DCHECK(!render_widget_host_->owned_by_render_frame_host());
+    }
   }
 }
 
@@ -233,10 +244,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (IsRFHStateActive(rfh_state_))
     GetSiteInstance()->decrement_active_frame_count();
 
-  // Notify the FrameTree that this RFH is going away, allowing it to shut down
-  // the corresponding RenderViewHost if it is no longer needed.
-  frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
-
   // NULL out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.
   swapout_event_monitor_timeout_.reset();
@@ -245,10 +252,15 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
     iter.second.Run(false);
   }
 
-  if (render_widget_host_) {
+  if (render_widget_host_ &&
+      render_widget_host_->owned_by_render_frame_host()) {
     // Shutdown causes the RenderWidgetHost to delete itself.
     render_widget_host_->Shutdown();
   }
+
+  // Notify the FrameTree that this RFH is going away, allowing it to shut down
+  // the corresponding RenderViewHost if it is no longer needed.
+  frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -652,7 +664,10 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
 
   // The RenderWidgetHost takes ownership of its view. It is tied to the
   // lifetime of the current RenderProcessHost for this RenderFrameHost.
-  if (render_widget_host_) {
+  // TODO(avi): This will need to change to initialize a
+  // RenderWidgetHostViewAura for the main frame once RenderViewHostImpl has-a
+  // RenderWidgetHostImpl. https://crbug.com/545684
+  if (parent_routing_id != MSG_ROUTING_NONE && render_widget_host_) {
     RenderWidgetHostView* rwhv =
         new RenderWidgetHostViewChildFrame(render_widget_host_);
     rwhv->Hide();
@@ -954,15 +969,7 @@ void RenderFrameHostImpl::OnDidDropNavigation() {
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
-  if (render_widget_host_)
-    return render_widget_host_;
-
-  // TODO(kenrb): Remove this fallback and have the top-level frame have a
-  // widget host just like all the other frames.
-  if (!GetParent())
-    return render_view_host_->GetWidget();
-
-  return nullptr;
+  return render_widget_host_;
 }
 
 RenderWidgetHostView* RenderFrameHostImpl::GetView() {
@@ -973,7 +980,8 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
     frame = static_cast<RenderFrameHostImpl*>(frame->GetParent());
   }
 
-  return render_view_host_->GetWidget()->GetView();
+  NOTREACHED();
+  return nullptr;
 }
 
 int RenderFrameHostImpl::GetEnabledBindings() {

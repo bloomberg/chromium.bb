@@ -54,8 +54,9 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
 
   BackgroundContents(
       content::SiteInstance* site_instance,
-      int routing_id,
-      int main_frame_routing_id,
+      int32_t routing_id,
+      int32_t main_frame_routing_id,
+      int32_t main_frame_widget_routing_id,
       Delegate* delegate,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);

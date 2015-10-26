@@ -644,6 +644,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       has_focus_(false),
       has_scrolled_focused_editable_node_into_rect_(false),
       main_render_frame_(nullptr),
+      frame_widget_(nullptr),
       speech_recognition_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
@@ -690,8 +691,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
 
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
-    main_render_frame_ =
-        RenderFrameImpl::CreateMainFrame(this, params.main_frame_routing_id);
+    main_render_frame_ = RenderFrameImpl::CreateMainFrame(
+        this, params.main_frame_routing_id, params.main_frame_widget_routing_id,
+        params.hidden, screen_info(), compositor_deps_);
   }
 
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
@@ -822,6 +824,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 }
 
 RenderViewImpl::~RenderViewImpl() {
+  DCHECK(!frame_widget_);
+
   for (BitmapMap::iterator it = disambiguation_bitmaps_.begin();
        it != disambiguation_bitmaps_.end();
        ++it)
@@ -1575,14 +1579,9 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   for (size_t i = 0; i < features.additionalFeatures.size(); ++i)
     params.additional_features.push_back(features.additionalFeatures[i]);
 
-  int32 routing_id = MSG_ROUTING_NONE;
-  int32 main_frame_routing_id = MSG_ROUTING_NONE;
-  int64 cloned_session_storage_namespace_id = 0;
-
-  RenderThread::Get()->Send(
-      new ViewHostMsg_CreateWindow(params, &routing_id, &main_frame_routing_id,
-                                   &cloned_session_storage_namespace_id));
-  if (routing_id == MSG_ROUTING_NONE)
+  ViewHostMsg_CreateWindow_Reply reply;
+  RenderThread::Get()->Send(new ViewHostMsg_CreateWindow(params, &reply));
+  if (reply.route_id == MSG_ROUTING_NONE)
     return NULL;
 
   WebUserGestureIndicator::consumeUserGesture();
@@ -1610,14 +1609,14 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.window_was_created_with_opener = true;
   view_params.renderer_preferences = renderer_preferences_;
   view_params.web_preferences = webkit_preferences_;
-  view_params.view_id = routing_id;
-  view_params.main_frame_routing_id = main_frame_routing_id;
+  view_params.view_id = reply.route_id;
+  view_params.main_frame_routing_id = reply.main_frame_route_id;
+  view_params.main_frame_widget_routing_id = reply.main_frame_widget_route_id;
   view_params.session_storage_namespace_id =
-      cloned_session_storage_namespace_id;
+      reply.cloned_session_storage_namespace_id;
   view_params.swapped_out = false;
   // WebCore will take care of setting the correct name.
   view_params.replicated_frame_state = FrameReplicationState();
-  view_params.proxy_routing_id = MSG_ROUTING_NONE;
   view_params.hidden = (params.disposition == NEW_BACKGROUND_TAB);
   view_params.never_visible = never_visible;
   view_params.next_page_id = 1;
@@ -1694,6 +1693,12 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
     DidStopLoadingIcons();
     FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
   }
+}
+
+void RenderViewImpl::AttachWebFrameWidget(blink::WebWidget* frame_widget) {
+  // The previous WebFrameWidget must already be detached by CloseForFrame().
+  DCHECK(!frame_widget_);
+  frame_widget_ = frame_widget;
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {
@@ -2945,6 +2950,12 @@ void RenderViewImpl::OnPluginImeCompositionCompleted(const base::string16& text,
   }
 }
 #endif  // OS_MACOSX
+
+void RenderViewImpl::CloseForFrame() {
+  DCHECK(frame_widget_);
+  frame_widget_->close();
+  frame_widget_ = nullptr;
+}
 
 void RenderViewImpl::Close() {
   // We need to grab a pointer to the doomed WebView before we destroy it.

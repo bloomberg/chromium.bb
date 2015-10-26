@@ -253,17 +253,16 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
 }
 
-void RenderFrameHostManager::Init(BrowserContext* browser_context,
-                                  SiteInstance* site_instance,
+void RenderFrameHostManager::Init(SiteInstance* site_instance,
                                   int32 view_routing_id,
                                   int32 frame_routing_id,
                                   int32 widget_routing_id) {
-  // Create a RenderViewHost and RenderFrameHost, once we have an instance.  It
-  // is important to immediately give this SiteInstance to a RenderViewHost so
-  // that the SiteInstance is ref counted.
-  if (!site_instance)
-    site_instance = SiteInstance::Create(browser_context);
-
+  DCHECK(site_instance);
+  // TODO(avi): While RenderViewHostImpl is-a RenderWidgetHostImpl, this must
+  // hold true to avoid having two RenderWidgetHosts for the top-level frame.
+  // https://crbug.com/545684
+  DCHECK_IMPLIES(frame_tree_node_->IsMainFrame(),
+                 view_routing_id == widget_routing_id);
   int flags = delegate_->IsHidden() ? CREATE_RF_HIDDEN : 0;
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, widget_routing_id,
@@ -1711,6 +1710,20 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host = frame_tree->CreateRenderViewHost(
         site_instance, view_routing_id, frame_routing_id, swapped_out, hidden);
+    // TODO(avi): It's a bit bizarre that this logic lives here instead of in
+    // CreateRenderFrame(). It turns out that FrameTree::CreateRenderViewHost
+    // doesn't /always/ create a new RenderViewHost. It first tries to find an
+    // already existing one to reuse by a SiteInstance lookup. If it finds one,
+    // then the supplied routing IDs are completely ignored.
+    // CreateRenderFrame() could do this lookup too, but it seems redundant to
+    // do this lookup in two places. This is a good yak shave to clean up, or,
+    // if just ignored, should be an easy cleanup once RenderViewHostImpl has-a
+    // RenderWidgetHostImpl. https://crbug.com/545684
+    if (view_routing_id == MSG_ROUTING_NONE) {
+      widget_routing_id = render_view_host->GetRoutingID();
+    } else {
+      DCHECK_EQ(view_routing_id, render_view_host->GetRoutingID());
+    }
   } else {
     render_view_host = frame_tree->GetRenderViewHost(site_instance);
     CHECK(render_view_host);

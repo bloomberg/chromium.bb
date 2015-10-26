@@ -235,9 +235,7 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
 
 void RenderMessageFilter::OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
-    int* route_id,
-    int* main_frame_route_id,
-    int64* cloned_session_storage_namespace_id) {
+    ViewHostMsg_CreateWindow_Reply* reply) {
   bool no_javascript_access;
 
   bool can_create_window =
@@ -259,9 +257,10 @@ void RenderMessageFilter::OnCreateWindow(
           &no_javascript_access);
 
   if (!can_create_window) {
-    *route_id = MSG_ROUTING_NONE;
-    *main_frame_route_id = MSG_ROUTING_NONE;
-    *cloned_session_storage_namespace_id = 0;
+    reply->route_id = MSG_ROUTING_NONE;
+    reply->main_frame_route_id = MSG_ROUTING_NONE;
+    reply->main_frame_widget_route_id = MSG_ROUTING_NONE;
+    reply->cloned_session_storage_namespace_id = 0;
     return;
   }
 
@@ -269,14 +268,12 @@ void RenderMessageFilter::OnCreateWindow(
   scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace =
       new SessionStorageNamespaceImpl(dom_storage_context_.get(),
                                       params.session_storage_namespace_id);
-  *cloned_session_storage_namespace_id = cloned_namespace->id();
+  reply->cloned_session_storage_namespace_id = cloned_namespace->id();
 
-  render_widget_helper_->CreateNewWindow(params,
-                                         no_javascript_access,
-                                         PeerHandle(),
-                                         route_id,
-                                         main_frame_route_id,
-                                         cloned_namespace.get());
+  render_widget_helper_->CreateNewWindow(
+      params, no_javascript_access, PeerHandle(), &reply->route_id,
+      &reply->main_frame_route_id, &reply->main_frame_widget_route_id,
+      cloned_namespace.get());
 }
 
 void RenderMessageFilter::OnCreateWidget(int opener_id,

@@ -122,7 +122,9 @@ class CONTENT_EXPORT RenderWidget
                                       blink::WebLocalFrame* frame);
 
   // Closes a RenderWidget that was created by |CreateForFrame|.
-  void CloseForFrame();
+  // TODO(avi): De-virtualize this once RenderViewImpl has-a RenderWidget.
+  // https://crbug.com/545684
+  virtual void CloseForFrame();
 
   int32 routing_id() const { return routing_id_; }
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }

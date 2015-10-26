@@ -50,6 +50,7 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "ipc/ipc_sync_message.h"
@@ -571,6 +572,14 @@ RenderWidget* RenderWidget::CreateForFrame(
     CompositorDependencies* compositor_deps,
     blink::WebLocalFrame* frame) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
+  // TODO(avi): Before RenderViewImpl has-a RenderWidget, the browser passes the
+  // same routing ID for both the view routing ID and the main frame widget
+  // routing ID. https://crbug.com/545684
+  RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
+  if (view) {
+    view->AttachWebFrameWidget(RenderWidget::CreateWebFrameWidget(view, frame));
+    return view;
+  }
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(compositor_deps, blink::WebPopupTypeNone, screen_info,
                        false, hidden, false));
@@ -590,6 +599,11 @@ RenderWidget* RenderWidget::CreateForFrame(
 blink::WebWidget* RenderWidget::CreateWebFrameWidget(
     RenderWidget* render_widget,
     blink::WebLocalFrame* frame) {
+  if (!frame->parent()) {
+    // TODO(dcheng): The main frame widget currently has a special case.
+    // Eliminate this once WebView is no longer a WebWidget.
+    return blink::WebFrameWidget::create(render_widget, frame->view(), frame);
+  }
   return blink::WebFrameWidget::create(render_widget, frame);
 }
 

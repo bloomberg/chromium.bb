@@ -99,13 +99,13 @@ class RenderWidgetHelper
 
   // IO THREAD ONLY -----------------------------------------------------------
 
-  void CreateNewWindow(
-      const ViewHostMsg_CreateWindow_Params& params,
-      bool no_javascript_access,
-      base::ProcessHandle render_process,
-      int* route_id,
-      int* main_frame_route_id,
-      SessionStorageNamespace* session_storage_namespace);
+  void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
+                       bool no_javascript_access,
+                       base::ProcessHandle render_process,
+                       int32_t* route_id,
+                       int32_t* main_frame_route_id,
+                       int32_t* main_frame_widget_route_id,
+                       SessionStorageNamespace* session_storage_namespace);
   void CreateNewWidget(int opener_id,
                        blink::WebPopupType popup_type,
                        int* route_id);
@@ -119,11 +119,11 @@ class RenderWidgetHelper
   ~RenderWidgetHelper();
 
   // Called on the UI thread to finish creating a window.
-  void OnCreateWindowOnUI(
-      const ViewHostMsg_CreateWindow_Params& params,
-      int route_id,
-      int main_frame_route_id,
-      SessionStorageNamespace* session_storage_namespace);
+  void OnCreateWindowOnUI(const ViewHostMsg_CreateWindow_Params& params,
+                          int32_t route_id,
+                          int32_t main_frame_route_id,
+                          int32_t main_frame_widget_route_id,
+                          SessionStorageNamespace* session_storage_namespace);
 
   // Called on the IO thread after a window was created on the UI thread.
   void OnResumeRequestsForView(int route_id);

@@ -291,11 +291,11 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   gfx::Rect GetRootWindowResizerRect() const override;
 
   // Creates a new RenderView with the given route id.
-  void CreateNewWindow(
-      int route_id,
-      int main_frame_route_id,
-      const ViewHostMsg_CreateWindow_Params& params,
-      SessionStorageNamespace* session_storage_namespace);
+  void CreateNewWindow(int32_t route_id,
+                       int32_t main_frame_route_id,
+                       int32_t main_frame_widget_route_id,
+                       const ViewHostMsg_CreateWindow_Params& params,
+                       SessionStorageNamespace* session_storage_namespace);
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).
