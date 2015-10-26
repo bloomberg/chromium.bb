@@ -2216,6 +2216,11 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   UpdateProcessPriority();
   DCHECK(!is_process_backgrounded_);
 
+  // RenderProcessExited observers and RenderProcessGone handlers might
+  // navigate or perform other actions that require a connection. Ensure that
+  // there is one before calling them.
+  mojo_application_host_.reset(new MojoApplicationHost);
+
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
@@ -2227,10 +2232,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
   RemoveUserData(kSessionStorageHolderKey);
-
-  // RenderProcessGone handlers might navigate or perform other actions that
-  // require a connection. Ensure that there is one before calling them.
-  mojo_application_host_.reset(new MojoApplicationHost);
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
