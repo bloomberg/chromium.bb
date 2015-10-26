@@ -332,7 +332,7 @@ TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
 }
 
 // The first heartbeat should include host OS information.
-TEST_F(HeartbeatSenderTest, HostOSInfo) {
+TEST_F(HeartbeatSenderTest, HostOsInfo) {
   XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));

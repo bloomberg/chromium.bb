@@ -165,9 +165,9 @@ function deviceToHost(device) {
   host.publicKey = base.getStringAttr(baseState, '_publicKey');
   host.jabberId = base.getStringAttr(baseState, '_jabberId', '');
   host.hostVersion = base.getStringAttr(baseState, '_hostVersion', '');
-  host.hostOS = remoting.ChromotingEvent.toOs(
-      base.getStringAttr(baseState, '_hostOS', ''));
-  host.hostOSVersion = base.getStringAttr(baseState, '_hostOSVersion', '');
+  host.hostOs = remoting.ChromotingEvent.toOs(
+      base.getStringAttr(baseState, '_hostOs', ''));
+  host.hostOsVersion = base.getStringAttr(baseState, '_hostOsVersion', '');
   var creationTimeMs = base.getNumberAttr(device, 'creationTimeMs', 0);
   if (creationTimeMs) {
     host.createdTime = new Date(creationTimeMs).toISOString();

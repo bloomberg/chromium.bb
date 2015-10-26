@@ -429,18 +429,18 @@ remoting.ServerLogEntry.prototype.addHostVersion = function(hostVersion) {
 
 /**
  * Stub.
- * @param {remoting.ChromotingEvent.Os} hostOS type of the host OS for current
+ * @param {remoting.ChromotingEvent.Os} hostOs type of the host OS for current
  *        session.
  * @return {void} Nothing.
  */
-remoting.ServerLogEntry.prototype.addHostOS = function(hostOS) {};
+remoting.ServerLogEntry.prototype.addHostOs = function(hostOs) {};
 
 /**
  * Stub.
- * @param {string} hostOSVersion Version of the host OS for current session.
+ * @param {string} hostOsVersion Version of the host OS for current session.
  * @return {void} Nothing.
  */
-remoting.ServerLogEntry.prototype.addHostOSVersion = function(hostOSVersion) {};
+remoting.ServerLogEntry.prototype.addHostOsVersion = function(hostOsVersion) {};
 
 /**
  * Adds a field specifying the mode to this log entry.

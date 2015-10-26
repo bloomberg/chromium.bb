@@ -39,9 +39,9 @@ remoting.Host = function(hostId) {
   /** @type {string} */
   this.hostVersion = '';
   /** @type {remoting.ChromotingEvent.Os} */
-  this.hostOS = remoting.ChromotingEvent.Os.OTHER;
+  this.hostOs = remoting.ChromotingEvent.Os.OTHER;
   /** @type {string} */
-  this.hostOSVersion = '';
+  this.hostOsVersion = '';
   /** @type {Array<string>} */
   this.tokenUrlPatterns = [];
   /** @type {string} */

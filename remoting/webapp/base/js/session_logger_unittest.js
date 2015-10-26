@@ -81,8 +81,8 @@ QUnit.test('logClientSessionStateChange()', function(assert){
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('stun');
   logger.setHostVersion('host_version');
-  logger.setHostOS(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOSVersion('host_os_version');
+  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
+  logger.setHostOsVersion('host_os_version');
 
   logger.logClientSessionStateChange(
       remoting.ClientSession.State.FAILED,
@@ -118,8 +118,8 @@ QUnit.test('logClientSessionStateChange() should handle XMPP error',
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('stun');
   logger.setHostVersion('host_version');
-  logger.setHostOS(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOSVersion('host_os_version');
+  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
+  logger.setHostOsVersion('host_os_version');
 
   var xmppError = new remoting.ChromotingEvent.XmppError('<fake-stanza/>');
 
@@ -162,8 +162,8 @@ QUnit.test('logClientSessionStateChange() should handle sessionId change.',
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('relay');
   logger.setHostVersion('host_version');
-  logger.setHostOS(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOSVersion('host_os_version');
+  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
+  logger.setHostOsVersion('host_os_version');
   var oldSessionId = logger.getSessionId();
 
   // Expires the session id.
@@ -235,8 +235,8 @@ QUnit.test('logClientSessionStateChange() should log session_duration.',
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('direct');
   logger.setHostVersion('host_version');
-  logger.setHostOS(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOSVersion('host_os_version');
+  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
+  logger.setHostOsVersion('host_os_version');
   logger.setAuthTotalTime(1000);
   clock.tick(2500);
 
@@ -273,8 +273,8 @@ QUnit.test('logStatistics()', function(assert) {
   logger.setLogEntryMode(Event.Mode.LGAPP);
   logger.setConnectionType('direct');
   logger.setHostVersion('host_version');
-  logger.setHostOS(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOSVersion('host_os_version');
+  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
+  logger.setHostOsVersion('host_os_version');
 
   // Log the statistics.
   logger.logStatistics({

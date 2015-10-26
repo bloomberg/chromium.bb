@@ -43,9 +43,9 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   /** @private */
   this.hostVersion_ = '';
   /** @private {remoting.ChromotingEvent.Os}*/
-  this.hostOS_ = remoting.ChromotingEvent.Os.OTHER;
+  this.hostOs_ = remoting.ChromotingEvent.Os.OTHER;
   /** @private */
-  this.hostOSVersion_ = '';
+  this.hostOsVersion_ = '';
   /** @private {number} */
   this.hostStatusUpdateElapsedTime_;
   /** @private */
@@ -80,20 +80,20 @@ remoting.SessionLogger.prototype.setHostVersion = function(hostVersion) {
 };
 
 /**
- * @param {remoting.ChromotingEvent.Os} hostOS Type of the OS the host
+ * @param {remoting.ChromotingEvent.Os} hostOs Type of the OS the host
  *        for the current session.
  * @return {void} Nothing.
  */
-remoting.SessionLogger.prototype.setHostOS = function(hostOS) {
-  this.hostOS_ = hostOS;
+remoting.SessionLogger.prototype.setHostOs = function(hostOs) {
+  this.hostOs_ = hostOs;
 };
 
 /**
- * @param {string} hostOSVersion Version of the host Os for current session.
+ * @param {string} hostOsVersion Version of the host Os for current session.
  * @return {void} Nothing.
  */
-remoting.SessionLogger.prototype.setHostOSVersion = function(hostOSVersion) {
-  this.hostOSVersion_ = hostOSVersion;
+remoting.SessionLogger.prototype.setHostOsVersion = function(hostOsVersion) {
+  this.hostOsVersion_ = hostOsVersion;
 };
 
 /**
@@ -312,8 +312,8 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
     entry.auth_method = this.authMethod_;
   }
   entry.host_version = this.hostVersion_;
-  entry.host_os = this.hostOS_;
-  entry.host_os_version = this.hostOSVersion_;
+  entry.host_os = this.hostOs_;
+  entry.host_os_version = this.hostOsVersion_;
 };
 
 /**

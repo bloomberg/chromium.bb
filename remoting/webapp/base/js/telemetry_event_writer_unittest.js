@@ -40,8 +40,8 @@ QUnit.module('TelemetryEventWriter', {
     logger.setLogEntryMode(remoting.ChromotingEvent.Mode.ME2ME);
     logger.setConnectionType('stun');
     logger.setHostVersion('host_version');
-    logger.setHostOS(remoting.ChromotingEvent.Os.OTHER);
-    logger.setHostOSVersion('host_os_version');
+    logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
+    logger.setHostOsVersion('host_os_version');
   },
   afterEach: function() {
     base.dispose(service);

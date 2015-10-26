@@ -143,9 +143,9 @@ remoting.LegacyHostListApi.prototype.parseHostListResponse_ =
           host.jabberId = base.getStringAttr(item, 'jabberId', '');
           host.publicKey = base.getStringAttr(item, 'publicKey', '');
           host.hostVersion = base.getStringAttr(item, 'hostVersion', '');
-          host.hostOS = remoting.ChromotingEvent.toOs(
-              base.getStringAttr(item, 'hostOS', ''));
-          host.hostOSVersion = base.getStringAttr(item, 'hostOSVersion', '');
+          host.hostOs = remoting.ChromotingEvent.toOs(
+              base.getStringAttr(item, 'hostOs', ''));
+          host.hostOsVersion = base.getStringAttr(item, 'hostOsVersion', '');
           host.tokenUrlPatterns =
               base.getArrayAttr(item, 'tokenUrlPatterns', []);
           host.updatedTime = base.getStringAttr(item, 'updatedTime', '');
