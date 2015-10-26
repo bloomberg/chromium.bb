@@ -20,6 +20,7 @@ namespace thunks {
 static GetAllocatorWasteSizeFunction g_get_allocator_waste_size_function = NULL;
 static GetStatsFunction g_get_stats_function = NULL;
 static ReleaseFreeMemoryFunction g_release_free_memory_function = NULL;
+static GetNumericPropertyFunction g_get_numeric_property_function = NULL;
 
 void SetGetAllocatorWasteSizeFunction(
     GetAllocatorWasteSizeFunction get_allocator_waste_size_function) {
@@ -45,6 +46,15 @@ void SetReleaseFreeMemoryFunction(
 
 ReleaseFreeMemoryFunction GetReleaseFreeMemoryFunction() {
   return g_release_free_memory_function;
+}
+
+void SetGetNumericPropertyFunction(
+    GetNumericPropertyFunction get_numeric_property_function) {
+  g_get_numeric_property_function = get_numeric_property_function;
+}
+
+GetNumericPropertyFunction GetGetNumericPropertyFunction() {
+  return g_get_numeric_property_function;
 }
 
 }  // namespace thunks

@@ -52,5 +52,12 @@ void SetReleaseFreeMemoryFunction(
   thunks::SetReleaseFreeMemoryFunction(release_free_memory_function);
 }
 
+void SetGetNumericPropertyFunction(
+    thunks::GetNumericPropertyFunction get_numeric_property_function) {
+  DCHECK_EQ(thunks::GetGetNumericPropertyFunction(),
+            reinterpret_cast<thunks::GetNumericPropertyFunction>(NULL));
+  thunks::SetGetNumericPropertyFunction(get_numeric_property_function);
+}
+
 }  // namespace allocator
 }  // namespace base

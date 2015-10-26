@@ -29,6 +29,11 @@ void SetReleaseFreeMemoryFunction(
     ReleaseFreeMemoryFunction release_free_memory_function);
 ReleaseFreeMemoryFunction GetReleaseFreeMemoryFunction();
 
+typedef bool (*GetNumericPropertyFunction)(const char* name, size_t* value);
+void SetGetNumericPropertyFunction(
+    GetNumericPropertyFunction get_numeric_property_function);
+GetNumericPropertyFunction GetGetNumericPropertyFunction();
+
 }  // namespace thunks
 }  // namespace allocator
 }  // namespace base

@@ -433,6 +433,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     MallocExtension::instance()->GetStats(buffer, buffer_length);
   }
 
+  static bool GetNumericPropertyThunk(const char* name, size_t* value) {
+    return MallocExtension::instance()->GetNumericProperty(name, value);
+  }
+
   static void ReleaseFreeMemoryThunk() {
     MallocExtension::instance()->ReleaseFreeMemory();
   }
@@ -470,6 +474,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     base::allocator::SetGetAllocatorWasteSizeFunction(
         GetAllocatorWasteSizeThunk);
     base::allocator::SetGetStatsFunction(GetStatsThunk);
+    base::allocator::SetGetNumericPropertyFunction(GetNumericPropertyThunk);
     base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
 
     // Provide optional hook for monitoring allocation quantities on a

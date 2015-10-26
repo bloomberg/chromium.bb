@@ -53,6 +53,9 @@ BASE_EXPORT void SetGetStatsFunction(
 BASE_EXPORT void SetReleaseFreeMemoryFunction(
     thunks::ReleaseFreeMemoryFunction release_free_memory_function);
 
+BASE_EXPORT void SetGetNumericPropertyFunction(
+    thunks::GetNumericPropertyFunction get_numeric_property_function);
+
 }  // namespace allocator
 }  // namespace base
 
