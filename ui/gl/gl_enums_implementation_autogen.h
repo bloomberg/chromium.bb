@@ -46,9 +46,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x0BC2, "GL_ALPHA_TEST_REF_QCOM",
     },
     {
-        0x78EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
-    },
-    {
         0x884D, "GL_TEXTURE_COMPARE_FUNC_EXT",
     },
     {
@@ -97,7 +94,7 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x9500, "GL_PERFQUERY_GPA_EXTENDED_COUNTERS_INTEL",
     },
     {
-        0x78F2, "GL_SCANOUT_CHROMIUM",
+        0x78F2, "GL_READ_WRITE_CHROMIUM",
     },
     {
         0x9138, "GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG",
@@ -1165,9 +1162,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8A44, "GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER",
     },
     {
-        0x6000, "GL_TEXTURE_POOL_CHROMIUM",
-    },
-    {
         0x0B74, "GL_DEPTH_FUNC",
     },
     {
@@ -1495,7 +1489,7 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x04, "GL_LINE_TO_CHROMIUM",
     },
     {
-        0x0BA7, "GL_PATH_PROJECTION_MATRIX_CHROMIUM",
+        0x8905, "GL_MAX_PROGRAM_TEXEL_OFFSET",
     },
     {
         0x00080000, "GL_STENCIL_BUFFER_BIT3_QCOM",
@@ -1906,6 +1900,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8CD9, "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS",
     },
     {
+        24, "GL_SYNC_TOKEN_SIZE_CHROMIUM",
+    },
+    {
         0x84CC, "GL_TEXTURE12",
     },
     {
@@ -1915,7 +1912,7 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x84CA, "GL_TEXTURE10",
     },
     {
-        0x78F1, "GL_MAP_CHROMIUM",
+        0x0BA7, "GL_PATH_PROJECTION_MATRIX_CHROMIUM",
     },
     {
         0x84CF, "GL_TEXTURE15",
@@ -2267,9 +2264,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x84DC, "GL_TEXTURE28",
-    },
-    {
-        0x6002, "GL_TEXTURE_POOL_UNMANAGED_CHROMIUM",
     },
     {
         0x84DA, "GL_TEXTURE26",
@@ -2845,7 +2839,7 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x78EE, "GL_PIXEL_PACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
     },
     {
-        0x6001, "GL_TEXTURE_POOL_MANAGED_CHROMIUM",
+        0x78EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
     },
     {
         0x0B45, "GL_CULL_FACE_MODE",
@@ -2855,9 +2849,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x00100000, "GL_STENCIL_BUFFER_BIT4_QCOM",
-    },
-    {
-        24, "GL_SYNC_TOKEN_SIZE_CHROMIUM",
     },
     {
         0x8E4E, "GL_LAST_VERTEX_CONVENTION_EXT",
@@ -2999,9 +2990,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x0A, "GL_QUADRATIC_CURVE_TO_CHROMIUM",
-    },
-    {
-        0x8905, "GL_MAX_PROGRAM_TEXEL_OFFSET",
     },
     {
         0x8508, "GL_DECR_WRAP",

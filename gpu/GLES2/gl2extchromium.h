@@ -111,12 +111,8 @@ typedef void (
 #ifndef GL_CHROMIUM_gpu_memory_buffer_image
 #define GL_CHROMIUM_gpu_memory_buffer_image 1
 
-#ifndef GL_MAP_CHROMIUM
-#define GL_MAP_CHROMIUM 0x78F1
-#endif
-
-#ifndef GL_SCANOUT_CHROMIUM
-#define GL_SCANOUT_CHROMIUM 0x78F2
+#ifndef GL_READ_WRITE_CHROMIUM
+#define GL_READ_WRITE_CHROMIUM 0x78F2
 #endif
 
 #ifndef GL_RGB_YUV_420_CHROMIUM

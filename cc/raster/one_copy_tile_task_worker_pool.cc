@@ -388,14 +388,15 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     base::AutoUnlock unlock(lock_);
 
     // Allocate GpuMemoryBuffer if necessary. If using partial raster, we
-    // must allocate a buffer with BufferUsage PERSISTENT_MAP.
+    // must allocate a buffer with BufferUsage CPU_READ_WRITE_PERSISTENT.
     if (!staging_buffer->gpu_memory_buffer) {
       staging_buffer->gpu_memory_buffer =
           resource_provider_->gpu_memory_buffer_manager()
               ->AllocateGpuMemoryBuffer(
                   staging_buffer->size, BufferFormat(resource->format()),
-                  use_partial_raster_ ? gfx::BufferUsage::PERSISTENT_MAP
-                                      : gfx::BufferUsage::MAP);
+                  use_partial_raster_
+                      ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
+                      : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
       DCHECK_EQ(gfx::NumberOfPlanesForBufferFormat(
                     staging_buffer->gpu_memory_buffer->GetFormat()),
                 1u);

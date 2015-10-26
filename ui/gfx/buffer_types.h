@@ -29,11 +29,20 @@ enum class BufferFormat {
 };
 
 // The usage mode affects how a buffer can be used. Only buffers created with
-// MAP can be mapped into the client's address space and accessed by the CPU.
-// PERSISTENT_MAP adds the additional condition that successive Map() calls
-// (with Unmap() calls between) will return a pointer to the same memory
-// contents.
-enum class BufferUsage { MAP, PERSISTENT_MAP, SCANOUT, LAST = SCANOUT };
+// *_CPU_READ_WRITE_* can be mapped into the client's address space and accessed
+// by the CPU. *_CPU_READ_WRITE_PERSISTENT adds the additional condition that
+// successive Map() calls (with Unmap() calls between) will return a pointer to
+// the same memory contents.
+enum class BufferUsage {
+  GPU_READ,
+  GPU_READ_WRITE,
+  GPU_READ_CPU_READ_WRITE,
+  // TODO(reveman): Merge this with GPU_READ_CPU_READ_WRITE when SurfaceTexture
+  // backed buffers are single buffered and support it.
+  GPU_READ_CPU_READ_WRITE_PERSISTENT,
+
+  LAST = GPU_READ_CPU_READ_WRITE_PERSISTENT
+};
 
 }  // namespace gfx
 

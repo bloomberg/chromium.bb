@@ -45,9 +45,10 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
   const gfx::Size kBufferSize(8, 8);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::MAP,
-                                 gfx::BufferUsage::PERSISTENT_MAP,
-                                 gfx::BufferUsage::SCANOUT};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::GPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto usage : usages) {
       if (!TypeParam::IsConfigurationSupported(format, usage))
         continue;
@@ -55,8 +56,8 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
       bool destroyed = false;
       gfx::GpuMemoryBufferHandle handle;
       GpuMemoryBufferImpl::DestructionCallback destroy_callback =
-          TestFixture::AllocateGpuMemoryBuffer(
-              kBufferSize, format, gfx::BufferUsage::MAP, &handle, &destroyed);
+          TestFixture::AllocateGpuMemoryBuffer(kBufferSize, format, usage,
+                                               &handle, &destroyed);
       scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
           handle, kBufferSize, format, usage, destroy_callback));
       ASSERT_TRUE(buffer);
@@ -74,15 +75,19 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
   const gfx::Size kBufferSize(4, 4);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    if (!TypeParam::IsConfigurationSupported(format, gfx::BufferUsage::MAP))
+    if (!TypeParam::IsConfigurationSupported(
+            format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE)) {
       continue;
+    }
 
     gfx::GpuMemoryBufferHandle handle;
     GpuMemoryBufferImpl::DestructionCallback destroy_callback =
         TestFixture::AllocateGpuMemoryBuffer(
-            kBufferSize, format, gfx::BufferUsage::MAP, &handle, nullptr);
+            kBufferSize, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+            &handle, nullptr);
     scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
-        handle, kBufferSize, format, gfx::BufferUsage::MAP, destroy_callback));
+        handle, kBufferSize, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        destroy_callback));
     ASSERT_TRUE(buffer);
 
     const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
@@ -121,17 +126,19 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     if (!TypeParam::IsConfigurationSupported(
-            format, gfx::BufferUsage::PERSISTENT_MAP)) {
+            format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT)) {
       continue;
     }
 
     gfx::GpuMemoryBufferHandle handle;
     GpuMemoryBufferImpl::DestructionCallback destroy_callback =
-        TestFixture::AllocateGpuMemoryBuffer(kBufferSize, format,
-                                             gfx::BufferUsage::PERSISTENT_MAP,
-                                             &handle, nullptr);
+        TestFixture::AllocateGpuMemoryBuffer(
+            kBufferSize, format,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT, &handle,
+            nullptr);
     scoped_ptr<TypeParam> buffer(TypeParam::CreateFromHandle(
-        handle, kBufferSize, format, gfx::BufferUsage::PERSISTENT_MAP,
+        handle, kBufferSize, format,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT,
         destroy_callback));
     ASSERT_TRUE(buffer);
 

@@ -5484,13 +5484,7 @@ bool ValidImageFormat(GLenum internalformat,
 }
 
 bool ValidImageUsage(GLenum usage) {
-  switch (usage) {
-    case GL_MAP_CHROMIUM:
-    case GL_SCANOUT_CHROMIUM:
-      return true;
-    default:
-      return false;
-  }
+  return usage == GL_READ_WRITE_CHROMIUM;
 }
 
 }  // namespace

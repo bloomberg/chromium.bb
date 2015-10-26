@@ -25,8 +25,8 @@ HoleFrameFactory::HoleFrameFactory(
 
     gl->GenTextures(1, &texture_);
     gl->BindTexture(GL_TEXTURE_2D, texture_);
-    image_id_ = gl->CreateGpuMemoryBufferImageCHROMIUM(
-        1, 1, GL_RGBA, GL_SCANOUT_CHROMIUM);
+    image_id_ = gl->CreateGpuMemoryBufferImageCHROMIUM(1, 1, GL_RGBA,
+                                                       GL_READ_WRITE_CHROMIUM);
     gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
 
     gl->GenMailboxCHROMIUM(mailbox_.name);

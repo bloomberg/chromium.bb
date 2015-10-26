@@ -29,8 +29,7 @@ New Tokens
 
     Accepted by the <usage> parameter of CreateGpuMemoryBufferImageCHROMIUM:
 
-        MAP_CHROMIUM 0x78F1
-        SCANOUT_CHROMIUM 0x78F2
+        READ_WRITE_CHROMIUM 0x78F2
 
 New Procedures and Functions
 
@@ -50,8 +49,7 @@ New Procedures and Functions
     INVALID_ENUM is generated if <internalformat> is not one of
     RGB or RGBA.
 
-    INVALID_ENUM is generated if <usage> is not one of
-    MAP_CHROMIUM or SCANOUT_CHROMIUM.
+    INVALID_ENUM is generated if <usage> is not READ_WRTIE_CHROMIUM.
 
 Errors
 

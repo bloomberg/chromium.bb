@@ -219,9 +219,8 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
         media::VideoFrame::PlaneSize(pixel_format(), i, dimensions);
     gpu_memory_buffers_.push_back(
         BrowserGpuMemoryBufferManager::current()->AllocateGpuMemoryBuffer(
-            size,
-            gfx::BufferFormat::R_8,
-            gfx::BufferUsage::MAP));
+            size, gfx::BufferFormat::R_8,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE));
 
     DLOG_IF(ERROR, !gpu_memory_buffers_[i]) << "Allocating GpuMemoryBuffer";
     if (!gpu_memory_buffers_[i] || !gpu_memory_buffers_[i]->Map())

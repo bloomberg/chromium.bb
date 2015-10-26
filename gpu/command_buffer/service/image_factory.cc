@@ -48,20 +48,6 @@ gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
 }
 
 // static
-gfx::BufferUsage ImageFactory::ImageUsageToGpuMemoryBufferUsage(
-    unsigned usage) {
-  switch (usage) {
-    case GL_MAP_CHROMIUM:
-      return gfx::BufferUsage::MAP;
-    case GL_SCANOUT_CHROMIUM:
-      return gfx::BufferUsage::SCANOUT;
-    default:
-      NOTREACHED();
-      return gfx::BufferUsage::MAP;
-  }
-}
-
-// static
 bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     unsigned internalformat,
     gfx::BufferFormat format) {

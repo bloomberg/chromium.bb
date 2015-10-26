@@ -4111,7 +4111,8 @@ TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {
   GLsizei max = std::numeric_limits<GLsizei>::max();
   EXPECT_CALL(*gpu_control_, CreateGpuMemoryBufferImage(max, max, _, _))
       .WillOnce(Return(-1));
-  gl_->CreateGpuMemoryBufferImageCHROMIUM(max, max, GL_RGBA, GL_MAP_CHROMIUM);
+  gl_->CreateGpuMemoryBufferImageCHROMIUM(max, max, GL_RGBA,
+                                          GL_READ_WRITE_CHROMIUM);
   // The context should be lost.
   Cmds expected;
   expected.cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB, GL_UNKNOWN_CONTEXT_RESET_ARB);
@@ -4129,7 +4130,8 @@ TEST_F(GLES2ImplementationManualInitTest, NoLoseContextOnOOM) {
   GLsizei max = std::numeric_limits<GLsizei>::max();
   EXPECT_CALL(*gpu_control_, CreateGpuMemoryBufferImage(max, max, _, _))
       .WillOnce(Return(-1));
-  gl_->CreateGpuMemoryBufferImageCHROMIUM(max, max, GL_RGBA, GL_MAP_CHROMIUM);
+  gl_->CreateGpuMemoryBufferImageCHROMIUM(max, max, GL_RGBA,
+                                          GL_READ_WRITE_CHROMIUM);
   // The context should not be lost.
   EXPECT_TRUE(NoCommandsWritten());
 }

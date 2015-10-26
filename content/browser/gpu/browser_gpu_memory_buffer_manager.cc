@@ -112,16 +112,16 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
 #endif
 
 #if defined(USE_OZONE) || defined(OS_MACOSX)
-  bool force_native_scanout_formats = true;
+  bool force_native_gpu_read_write_formats = true;
 #else
-  bool force_native_scanout_formats = false;
+  bool force_native_gpu_read_write_formats = false;
 #endif
 
   // Disable native buffers when using Mesa.
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
     enable_native_gpu_memory_buffers = false;
-    force_native_scanout_formats = false;
+    force_native_gpu_read_write_formats = false;
   }
 
   if (enable_native_gpu_memory_buffers) {
@@ -129,8 +129,10 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::R_8,       gfx::BufferFormat::RGBA_4444,
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
         gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
-    const gfx::BufferUsage kNativeUsages[] = {gfx::BufferUsage::MAP,
-                                              gfx::BufferUsage::PERSISTENT_MAP};
+    const gfx::BufferUsage kNativeUsages[] = {
+        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::GPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto& format : kNativeFormats) {
       for (auto& usage : kNativeUsages) {
         if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage))
@@ -139,16 +141,16 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
     }
   }
 
-  if (force_native_scanout_formats) {
-    const gfx::BufferFormat kScanoutFormats[] = {
+  if (force_native_gpu_read_write_formats) {
+    const gfx::BufferFormat kGPUReadWriteFormats[] = {
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
         gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_8888,
         gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
-    for (auto& format : kScanoutFormats) {
+    for (auto& format : kGPUReadWriteFormats) {
       if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(
-              format, gfx::BufferUsage::SCANOUT)) {
+              format, gfx::BufferUsage::GPU_READ_WRITE)) {
         configurations.insert(
-            std::make_pair(format, gfx::BufferUsage::SCANOUT));
+            std::make_pair(format, gfx::BufferUsage::GPU_READ_WRITE));
       }
     }
   }
@@ -191,7 +193,7 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandleRequest
       int client_id)
       : CreateGpuMemoryBufferRequest(size,
                                      format,
-                                     gfx::BufferUsage::SCANOUT,
+                                     gfx::BufferUsage::GPU_READ,
                                      client_id,
                                      0),
         handle(handle) {}
@@ -289,7 +291,7 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForScanout(
     int32 surface_id) {
   DCHECK_GT(surface_id, 0);
   return AllocateGpuMemoryBufferForSurface(
-      size, format, gfx::BufferUsage::SCANOUT, surface_id);
+      size, format, gfx::BufferUsage::GPU_READ_WRITE, surface_id);
 }
 
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(

@@ -913,7 +913,8 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
     return gpu_memory_buffer_;
   scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-          size_, BufferFormat(format_), gfx::BufferUsage::MAP);
+          size_, BufferFormat(format_),
+          gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
   gpu_memory_buffer_ = gpu_memory_buffer.release();
   return gpu_memory_buffer_;
 }

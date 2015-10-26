@@ -1169,9 +1169,10 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   // Persistent buffers may come at a performance hit (not all platform specific
   // buffers support it), so only enable them if partial raster is enabled and
   // we are actually going to use them.
-  gfx::BufferUsage buffer_usage = IsPartialRasterEnabled()
-                                      ? gfx::BufferUsage::PERSISTENT_MAP
-                                      : gfx::BufferUsage::MAP;
+  gfx::BufferUsage buffer_usage =
+      IsPartialRasterEnabled()
+          ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
+          : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
   std::vector<unsigned> image_targets(
       static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
   for (size_t format = 0;
@@ -1186,7 +1187,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       switches::kVideoImageTextureTarget,
       base::UintToString(BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-          gfx::BufferFormat::R_8, gfx::BufferUsage::MAP)));
+          gfx::BufferFormat::R_8, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE)));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

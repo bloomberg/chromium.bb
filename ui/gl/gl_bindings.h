@@ -127,8 +127,7 @@
 #define GL_COMMANDS_COMPLETED_CHROMIUM                   0x84F7
 
 // GL_CHROMIUM_gpu_memory_buffer_image
-#define GL_MAP_CHROMIUM                                  0x78F1
-#define GL_SCANOUT_CHROMIUM                              0x78F2
+#define GL_READ_WRITE_CHROMIUM                           0x78F2
 
 // GL_CHROMIUM_yuv_420_image
 #define GL_RGB_YUV_420_CHROMIUM                          0x78FA

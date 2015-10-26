@@ -97,7 +97,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9500, "GL_PERFQUERY_GPA_EXTENDED_COUNTERS_INTEL",
     },
     {
-        0x78F2, "GL_SCANOUT_CHROMIUM",
+        0x78F2, "GL_READ_WRITE_CHROMIUM",
     },
     {
         0x9138, "GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG",
@@ -1906,7 +1906,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x84CA, "GL_TEXTURE10",
     },
     {
-        0x78F1, "GL_MAP_CHROMIUM",
+        0x0BA7, "GL_PATH_PROJECTION_MATRIX_CHROMIUM",
     },
     {
         0x84CF, "GL_TEXTURE15",
@@ -2750,9 +2750,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x8A2A, "GL_UNIFORM_BUFFER_SIZE",
-    },
-    {
-        0x0BA7, "GL_PATH_PROJECTION_MATRIX_CHROMIUM",
     },
     {
         0x0DE1, "GL_TEXTURE_2D",
@@ -3925,8 +3922,7 @@ std::string GLES2Util::GetStringImageInternalFormat(uint32_t value) {
 
 std::string GLES2Util::GetStringImageUsage(uint32_t value) {
   static const EnumToString string_table[] = {
-      {GL_MAP_CHROMIUM, "GL_MAP_CHROMIUM"},
-      {GL_SCANOUT_CHROMIUM, "GL_SCANOUT_CHROMIUM"},
+      {GL_READ_WRITE_CHROMIUM, "GL_READ_WRITE_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

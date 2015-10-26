@@ -144,10 +144,12 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
-  // Use PERSISTENT_MAP memory buffers to support partial tile raster if needed.
-  gfx::BufferUsage usage = settings.use_partial_raster
-                               ? gfx::BufferUsage::PERSISTENT_MAP
-                               : gfx::BufferUsage::MAP;
+  // Use CPU_READ_WRITE_PERSISTENT memory buffers to support partial tile
+  // raster if needed.
+  gfx::BufferUsage usage =
+      settings.use_partial_raster
+          ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
+          : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 
   for (size_t format = 0;
       format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {

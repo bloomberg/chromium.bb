@@ -97,7 +97,7 @@ scoped_refptr<ui::NativePixmap> VaapiDrmPicture::CreateNativePixmap(
   // Create a buffer from Ozone.
   return factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
                                      gfx::BufferFormat::BGRX_8888,
-                                     gfx::BufferUsage::SCANOUT);
+                                     gfx::BufferUsage::GPU_READ_WRITE);
 }
 
 bool VaapiDrmPicture::Initialize() {

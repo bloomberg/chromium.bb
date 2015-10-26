@@ -26,10 +26,6 @@ class GPU_EXPORT ImageFactory {
   static gfx::BufferFormat DefaultBufferFormatForImageFormat(
       unsigned internalformat);
 
-  // Returns a valid GpuMemoryBuffer usage given a valid usage as defined by
-  // CHROMIUM_gpu_memory_buffer_image.
-  static gfx::BufferUsage ImageUsageToGpuMemoryBufferUsage(unsigned usage);
-
   // Returns true if |internalformat| is compatible with |format|.
   static bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       unsigned internalformat,

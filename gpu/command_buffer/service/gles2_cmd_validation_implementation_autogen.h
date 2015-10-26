@@ -367,7 +367,7 @@ static const GLenum valid_image_internal_format_table[] = {
 };
 
 static const GLenum valid_image_usage_table[] = {
-    GL_MAP_CHROMIUM, GL_SCANOUT_CHROMIUM,
+    GL_READ_WRITE_CHROMIUM,
 };
 
 static const GLenum valid_index_type_table[] = {

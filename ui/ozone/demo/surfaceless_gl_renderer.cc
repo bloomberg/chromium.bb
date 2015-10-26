@@ -40,7 +40,7 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
       OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, size, gfx::BufferFormat::BGRX_8888,
-                               gfx::BufferUsage::SCANOUT);
+                               gfx::BufferUsage::GPU_READ_WRITE);
   scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
       new gfx::GLImageOzoneNativePixmap(size, GL_RGB));
   if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRX_8888)) {

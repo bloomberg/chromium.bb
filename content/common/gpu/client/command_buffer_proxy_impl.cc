@@ -462,7 +462,7 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
       channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
           gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
-          gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
+          gfx::BufferUsage::GPU_READ_WRITE));
   if (!buffer)
     return -1;
 

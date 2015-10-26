@@ -1861,8 +1861,7 @@ _NAMED_TYPE_INFO = {
   'ImageUsage': {
     'type': 'GLenum',
     'valid': [
-      'GL_MAP_CHROMIUM',
-      'GL_SCANOUT_CHROMIUM'
+      'GL_READ_WRITE_CHROMIUM',
     ],
   },
   'ValueBufferTarget': {

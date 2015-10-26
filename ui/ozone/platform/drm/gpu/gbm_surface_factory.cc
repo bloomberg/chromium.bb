@@ -110,7 +110,8 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
 #if !defined(OS_CHROMEOS)
   // Support for memory mapping accelerated buffers requires some
   // CrOS-specific patches (using vgem).
-  DCHECK(gfx::BufferUsage::SCANOUT == usage);
+  DCHECK(gfx::BufferUsage::GPU_READ == usage ||
+         gfx::BufferUsage::GPU_READ_WRITE == usage);
 #endif
 
   scoped_refptr<GbmBuffer> buffer =

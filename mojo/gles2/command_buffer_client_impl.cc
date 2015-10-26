@@ -321,7 +321,7 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(mus::MojoGpuMemoryBufferImpl::Create(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
-      gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
+      gfx::BufferUsage::GPU_READ_WRITE));
   if (!buffer)
     return -1;
 

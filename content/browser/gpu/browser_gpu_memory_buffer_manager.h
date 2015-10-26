@@ -98,7 +98,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
     BufferInfo()
         : type(gfx::EMPTY_BUFFER),
           format(gfx::BufferFormat::RGBA_8888),
-          usage(gfx::BufferUsage::MAP),
+          usage(gfx::BufferUsage::GPU_READ),
           gpu_host_id(0) {}
     BufferInfo(const gfx::Size& size,
                gfx::GpuMemoryBufferType type,

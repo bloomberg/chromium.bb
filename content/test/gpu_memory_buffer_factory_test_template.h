@@ -29,9 +29,10 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
   gfx::Size buffer_size(2, 2);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::MAP,
-                                 gfx::BufferUsage::PERSISTENT_MAP,
-                                 gfx::BufferUsage::SCANOUT};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::GPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto usage : usages) {
       if (!TypeParam::IsGpuMemoryBufferConfigurationSupported(format, usage))
         continue;
@@ -64,14 +65,14 @@ TYPED_TEST_P(GpuMemoryBufferFactoryImportTest,
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     if (!TypeParam::IsGpuMemoryBufferConfigurationSupported(
-            format, gfx::BufferUsage::SCANOUT)) {
+            format, gfx::BufferUsage::GPU_READ)) {
       continue;
     }
 
     const gfx::GpuMemoryBufferId kBufferId1(1);
     gfx::GpuMemoryBufferHandle handle1 =
         TestFixture::factory_.CreateGpuMemoryBuffer(
-            kBufferId1, buffer_size, format, gfx::BufferUsage::SCANOUT,
+            kBufferId1, buffer_size, format, gfx::BufferUsage::GPU_READ,
             kClientId, gfx::kNullPluginWindow);
     EXPECT_NE(handle1.type, gfx::EMPTY_BUFFER);
 

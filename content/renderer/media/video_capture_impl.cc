@@ -73,10 +73,8 @@ class VideoCaptureImpl::ClientBuffer2
       const size_t width = media::VideoFrame::Columns(i, format, size_.width());
       const size_t height = media::VideoFrame::Rows(i, format, size_.height());
       buffers_.push_back(GpuMemoryBufferImpl::CreateFromHandle(
-          handles_[i],
-          gfx::Size(width, height),
-          gfx::BufferFormat::R_8,
-          gfx::BufferUsage::MAP,
+          handles_[i], gfx::Size(width, height), gfx::BufferFormat::R_8,
+          gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
           base::Bind(&ClientBuffer2::DestroyGpuMemoryBuffer,
                      base::Unretained(this))));
       bool rv = buffers_[i]->Map();

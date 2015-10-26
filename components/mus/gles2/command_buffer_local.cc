@@ -25,7 +25,7 @@
 
 namespace mus {
 
-const unsigned int GL_MAP_CHROMIUM = 0x78F1;
+const unsigned int GL_READ_WRITE_CHROMIUM = 0x78F2;
 
 CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
                                        gfx::AcceleratedWidget widget,
@@ -164,11 +164,11 @@ int32_t CommandBufferLocal::CreateGpuMemoryBufferImage(size_t width,
                                                        size_t height,
                                                        unsigned internalformat,
                                                        unsigned usage) {
-  DCHECK_EQ(usage, static_cast<unsigned>(GL_MAP_CHROMIUM));
+  DCHECK_EQ(usage, static_cast<unsigned>(GL_READ_WRITE_CHROMIUM));
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
-      gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
+      gfx::BufferUsage::GPU_READ_WRITE));
   if (!buffer)
     return -1;
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);

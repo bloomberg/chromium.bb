@@ -34,7 +34,7 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     return GbmBuffer::CreateBuffer(gbm, format, size,
-                                   gfx::BufferUsage::SCANOUT);
+                                   gfx::BufferUsage::GPU_READ_WRITE);
   }
 
  protected:

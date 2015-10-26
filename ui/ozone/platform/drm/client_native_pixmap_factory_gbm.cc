@@ -47,12 +47,13 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
   bool IsConfigurationSupported(gfx::BufferFormat format,
                                 gfx::BufferUsage usage) const override {
     switch (usage) {
-      case gfx::BufferUsage::SCANOUT:
+      case gfx::BufferUsage::GPU_READ:
+      case gfx::BufferUsage::GPU_READ_WRITE:
         return format == gfx::BufferFormat::RGBA_8888 ||
                format == gfx::BufferFormat::BGRA_8888 ||
                format == gfx::BufferFormat::BGRX_8888;
-      case gfx::BufferUsage::MAP:
-      case gfx::BufferUsage::PERSISTENT_MAP: {
+      case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+      case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT: {
 #if defined(USE_VGEM_MAP)
         return vgem_fd_.is_valid() && format == gfx::BufferFormat::BGRA_8888;
 #else
@@ -70,8 +71,8 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     base::ScopedFD scoped_fd(handle.fd.fd);
 
     switch (usage) {
-      case gfx::BufferUsage::MAP:
-      case gfx::BufferUsage::PERSISTENT_MAP:
+      case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+      case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
 #if defined(USE_VGEM_MAP)
         // A valid |vgem_fd_| is required to acquire a VGEM bo. |vgem_fd_| is
         // set before a widget is created.
@@ -81,7 +82,8 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
 #endif
         NOTREACHED();
         return nullptr;
-      case gfx::BufferUsage::SCANOUT:
+      case gfx::BufferUsage::GPU_READ:
+      case gfx::BufferUsage::GPU_READ_WRITE:
         return make_scoped_ptr<ClientNativePixmapGbm>(
             new ClientNativePixmapGbm);
     }
