@@ -35,7 +35,7 @@ namespace blink {
 LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str, int startOffset, int length)
     : LayoutText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
     , m_start(startOffset)
-    , m_end(length)
+    , m_fragmentLength(length)
     , m_isRemainingTextLayoutObject(false)
     , m_contentString(str)
     , m_firstLetterPseudoElement(nullptr)
@@ -45,7 +45,7 @@ LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str, int startOff
 LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
     : LayoutText(node, str)
     , m_start(0)
-    , m_end(str ? str->length() : 0)
+    , m_fragmentLength(str ? str->length() : 0)
     , m_isRemainingTextLayoutObject(false)
     , m_contentString(str)
     , m_firstLetterPseudoElement(nullptr)
@@ -82,7 +82,7 @@ PassRefPtr<StringImpl> LayoutTextFragment::originalText() const
     RefPtr<StringImpl> result = completeText();
     if (!result)
         return nullptr;
-    return result->substring(start(), end());
+    return result->substring(start(), fragmentLength());
 }
 
 void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
@@ -90,7 +90,7 @@ void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
     LayoutText::setText(text, force);
 
     m_start = 0;
-    m_end = textLength();
+    m_fragmentLength = textLength();
 
     // If we're the remaining text from a first letter then we have to tell the
     // first letter pseudo element to reattach itself so it can re-calculate the
@@ -106,7 +106,7 @@ void LayoutTextFragment::setTextFragment(PassRefPtr<StringImpl> text, unsigned s
     LayoutText::setText(text, false);
 
     m_start = start;
-    m_end = length;
+    m_fragmentLength = length;
 }
 
 void LayoutTextFragment::transformText()
