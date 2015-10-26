@@ -34,9 +34,6 @@ class GlobalNetworkClientFactories {
   // Adds a factory.
   void AddFactory(CRNForwardingNetworkClientFactory* factory) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    // TODO(justincohen): Cast indexOfObject to work around Xcode beta bugs.
-    // Revisit in future betas where hopefully these types match again.
-    // crbug.com/498825
     DCHECK_EQ(NSNotFound,
               static_cast<NSInteger>([factories_ indexOfObject:factory]));
     DCHECK(!IsSelectorOverriden(factory, @selector(clientHandlingRequest:)));
