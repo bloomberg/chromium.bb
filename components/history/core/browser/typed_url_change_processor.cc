@@ -2,26 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/typed_url_change_processor.h"
+#include "components/history/core/browser/typed_url_change_processor.h"
 
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -34,25 +30,24 @@ static const int kTypedUrlVisitThrottleThreshold = 10;
 static const int kTypedUrlVisitThrottleMultiple = 10;
 
 TypedUrlChangeProcessor::TypedUrlChangeProcessor(
-    Profile* profile,
     TypedUrlModelAssociator* model_associator,
     history::HistoryBackend* history_backend,
-    sync_driver::DataTypeErrorHandler* error_handler)
+    sync_driver::DataTypeErrorHandler* error_handler,
+    const scoped_refptr<base::SingleThreadTaskRunner> ui_thread)
     : sync_driver::ChangeProcessor(error_handler),
-      profile_(profile),
       model_associator_(model_associator),
       history_backend_(history_backend),
-      backend_loop_(base::MessageLoop::current()),
+      ui_thread_(ui_thread),
+      backend_thread_(base::ThreadTaskRunnerHandle::Get()),
       disconnected_(false),
       history_backend_observer_(this) {
   DCHECK(model_associator);
   DCHECK(history_backend);
   DCHECK(error_handler);
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 TypedUrlChangeProcessor::~TypedUrlChangeProcessor() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
   DCHECK(history_backend_);
   history_backend_->RemoveObserver(this);
 }
@@ -63,7 +58,7 @@ void TypedUrlChangeProcessor::OnURLVisited(
     const history::URLRow& row,
     const history::RedirectList& redirects,
     base::Time visit_time) {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
 
   base::AutoLock al(disconnect_lock_);
   if (disconnected_)
@@ -84,7 +79,7 @@ void TypedUrlChangeProcessor::OnURLVisited(
 void TypedUrlChangeProcessor::OnURLsModified(
     history::HistoryBackend* history_backend,
     const history::URLRows& changed_urls) {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
 
   base::AutoLock al(disconnect_lock_);
   if (disconnected_)
@@ -121,7 +116,7 @@ void TypedUrlChangeProcessor::OnURLsDeleted(
     bool expired,
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
 
   base::AutoLock al(disconnect_lock_);
   if (disconnected_)
@@ -209,10 +204,8 @@ void TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   if (result == syncer::BaseNode::INIT_OK) {
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
   } else if (result == syncer::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Failed to decrypt.",
-                            syncer::TYPED_URLS);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Failed to decrypt.", syncer::TYPED_URLS);
     error_handler()->OnSingleDataTypeUnrecoverableError(error);
     return;
   } else {
@@ -220,11 +213,8 @@ void TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     syncer::WriteNode::InitUniqueByCreationResult result =
         create_node.InitUniqueByCreation(syncer::TYPED_URLS, tag);
     if (result != syncer::WriteNode::INIT_SUCCESS) {
-
-      syncer::SyncError error(FROM_HERE,
-                              syncer::SyncError::DATATYPE_ERROR,
-                              "Failed to create sync node",
-                              syncer::TYPED_URLS);
+      syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                              "Failed to create sync node", syncer::TYPED_URLS);
       error_handler()->OnSingleDataTypeUnrecoverableError(error);
       return;
     }
@@ -253,7 +243,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
 
   base::AutoLock al(disconnect_lock_);
   if (disconnected_)
@@ -261,11 +251,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
   syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
-          syncer::BaseNode::INIT_OK) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Failed to init type root.",
-                            syncer::TYPED_URLS);
+      syncer::BaseNode::INIT_OK) {
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Failed to init type root.", syncer::TYPED_URLS);
     error_handler()->OnSingleDataTypeUnrecoverableError(error);
     return;
   }
@@ -274,12 +262,11 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
          pending_deleted_visits_.empty() && pending_updated_urls_.empty() &&
          pending_deleted_urls_.empty());
 
-  for (syncer::ChangeRecordList::const_iterator it =
-           changes.Get().begin(); it != changes.Get().end(); ++it) {
-    if (syncer::ChangeRecord::ACTION_DELETE ==
-        it->action) {
-      DCHECK(it->specifics.has_typed_url()) <<
-          "Typed URL delete change does not have necessary specifics.";
+  for (syncer::ChangeRecordList::const_iterator it = changes.Get().begin();
+       it != changes.Get().end(); ++it) {
+    if (syncer::ChangeRecord::ACTION_DELETE == it->action) {
+      DCHECK(it->specifics.has_typed_url())
+          << "Typed URL delete change does not have necessary specifics.";
       GURL url(it->specifics.typed_url().url());
       pending_deleted_urls_.push_back(url);
       continue;
@@ -287,10 +274,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
     syncer::ReadNode sync_node(trans);
     if (sync_node.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
-      syncer::SyncError error(FROM_HERE,
-                              syncer::SyncError::DATATYPE_ERROR,
-                              "Failed to init sync node.",
-                              syncer::TYPED_URLS);
+      syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                              "Failed to init sync node.", syncer::TYPED_URLS);
       error_handler()->OnSingleDataTypeUnrecoverableError(error);
       return;
     }
@@ -317,7 +302,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 }
 
 void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
 
   base::AutoLock al(disconnect_lock_);
   if (disconnected_)
@@ -329,10 +314,9 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   if (!pending_deleted_urls_.empty())
     history_backend_->DeleteURLs(pending_deleted_urls_);
 
-  model_associator_->WriteToHistoryBackend(&pending_new_urls_,
-                                           &pending_updated_urls_,
-                                           &pending_new_visits_,
-                                           &pending_deleted_visits_);
+  model_associator_->WriteToHistoryBackend(
+      &pending_new_urls_, &pending_updated_urls_, &pending_new_visits_,
+      &pending_deleted_visits_);
 
   pending_new_urls_.clear();
   pending_updated_urls_.clear();
@@ -349,25 +333,23 @@ void TypedUrlChangeProcessor::Disconnect() {
 }
 
 void TypedUrlChangeProcessor::StartImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(history_backend_);
-  DCHECK(backend_loop_);
-  backend_loop_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&TypedUrlChangeProcessor::StartObserving,
-                            base::Unretained(this)));
+  DCHECK(backend_thread_);
+  DCHECK(ui_thread_->BelongsToCurrentThread());
+  backend_thread_->PostTask(FROM_HERE,
+                            base::Bind(&TypedUrlChangeProcessor::StartObserving,
+                                       base::Unretained(this)));
 }
 
 void TypedUrlChangeProcessor::StartObserving() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
   DCHECK(history_backend_);
-  DCHECK(profile_);
   history_backend_observer_.Add(history_backend_);
 }
 
 void TypedUrlChangeProcessor::StopObserving() {
-  DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(backend_thread_->BelongsToCurrentThread());
   DCHECK(history_backend_);
-  DCHECK(profile_);
   history_backend_observer_.RemoveAll();
 }
 

@@ -16,8 +16,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
-#include "chrome/browser/sync/glue/typed_url_change_processor.h"
-#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sessions/session_data_type_controller.h"
 #include "chrome/common/channel_info.h"
@@ -29,6 +27,8 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
+#include "components/history/core/browser/typed_url_change_processor.h"
+#include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
@@ -219,7 +219,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // or if saving history is disabled.
   if (!disabled_types.Has(syncer::TYPED_URLS) && !history_disabled) {
     sync_service->RegisterDataTypeController(
-        new TypedUrlDataTypeController(error_callback, sync_client));
+        new TypedUrlDataTypeController(ui_thread, error_callback, sync_client,
+                                       prefs::kSavingBrowserHistoryDisabled));
   }
 
   // Delete directive sync is enabled by default.  Register unless full history
@@ -536,6 +537,11 @@ sync_driver::SyncApiComponentFactory::SyncComponents
         sync_driver::SyncService* sync_service,
         history::HistoryBackend* history_backend,
         sync_driver::DataTypeErrorHandler* error_handler) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+
   // TODO(zea): Once TypedURLs are converted to SyncableService, remove
   // |sync_service_| member, and make GetSyncService require it be called on
   // the UI thread.
@@ -543,10 +549,7 @@ sync_driver::SyncApiComponentFactory::SyncComponents
       new TypedUrlModelAssociator(sync_service,
                                   history_backend,
                                   error_handler);
-  TypedUrlChangeProcessor* change_processor =
-      new TypedUrlChangeProcessor(profile_,
-                                  model_associator,
-                                  history_backend,
-                                  error_handler);
+  TypedUrlChangeProcessor* change_processor = new TypedUrlChangeProcessor(
+      model_associator, history_backend, error_handler, ui_thread);
   return SyncComponents(model_associator, change_processor);
 }

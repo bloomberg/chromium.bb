@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_TYPED_URL_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_TYPED_URL_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_DATA_TYPE_CONTROLLER_H__
 
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -25,8 +26,11 @@ class ControlTask;
 // A class that manages the startup and shutdown of typed_url sync.
 class TypedUrlDataTypeController : public NonFrontendDataTypeController {
  public:
-  explicit TypedUrlDataTypeController(const base::Closure& error_callback,
-                                      sync_driver::SyncClient* sync_client);
+  explicit TypedUrlDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const base::Closure& error_callback,
+      sync_driver::SyncClient* sync_client,
+      const char* history_disabled_pref_name);
 
   // NonFrontendDataTypeController implementation
   syncer::ModelType type() const override;
@@ -50,6 +54,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
 
   void OnSavingBrowserHistoryDisabledChanged();
 
+  // Name of the pref that indicates whether saving history is disabled.
+  const char* history_disabled_pref_name_;
+
   history::HistoryBackend* backend_;
   PrefChangeRegistrar pref_registrar_;
 
@@ -62,4 +69,4 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_TYPED_URL_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_DATA_TYPE_CONTROLLER_H__

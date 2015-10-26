@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_TYPED_URL_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_TYPED_URL_CHANGE_PROCESSOR_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_CHANGE_PROCESSOR_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_CHANGE_PROCESSOR_H_
 
 #include "components/sync_driver/change_processor.h"
 
@@ -11,12 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/sync_driver/data_type_error_handler.h"
-
-class Profile;
 
 namespace base {
 class MessageLoop;
@@ -37,10 +34,11 @@ class DataTypeErrorHandler;
 class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
                                 public history::HistoryBackendObserver {
  public:
-  TypedUrlChangeProcessor(Profile* profile,
-                          TypedUrlModelAssociator* model_associator,
-                          history::HistoryBackend* history_backend,
-                          sync_driver::DataTypeErrorHandler* error_handler);
+  TypedUrlChangeProcessor(
+      TypedUrlModelAssociator* model_associator,
+      history::HistoryBackend* history_backend,
+      sync_driver::DataTypeErrorHandler* error_handler,
+      const scoped_refptr<base::SingleThreadTaskRunner> ui_thread);
   ~TypedUrlChangeProcessor() override;
 
   // sync API model -> WebDataService change application.
@@ -107,9 +105,6 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
                               const history::URLRow& typed_url,
                               const history::VisitVector& visit_vector);
 
-  // The profile with which we are associated.
-  Profile* profile_;
-
   // The two models should be associated according to this ModelAssociator.
   TypedUrlModelAssociator* model_associator_;
 
@@ -117,7 +112,8 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   // WebDataService which is kept alive by our data type controller
   // holding a reference.
   history::HistoryBackend* history_backend_;
-  base::MessageLoop* backend_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> backend_thread_;
 
   // The set of pending changes that will be written out on the next
   // CommitChangesFromSyncModel() call.
@@ -138,4 +134,4 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_TYPED_URL_CHANGE_PROCESSOR_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_CHANGE_PROCESSOR_H_

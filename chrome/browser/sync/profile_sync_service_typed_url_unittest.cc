@@ -29,12 +29,11 @@
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/glue/typed_url_change_processor.h"
-#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -44,6 +43,8 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/typed_url_change_processor.h"
+#include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -198,8 +199,13 @@ ACTION_P6(MakeTypedUrlSyncComponents,
               model_associator) {
   *model_associator =
       new TestTypedUrlModelAssociator(service, hb, error_handler);
+
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI);
   TypedUrlChangeProcessor* change_processor =
-      new TypedUrlChangeProcessor(profile, *model_associator, hb, dtc);
+      new TypedUrlChangeProcessor(*model_associator, hb, dtc, ui_thread);
+
   return sync_driver::SyncApiComponentFactory::SyncComponents(*model_associator,
                                                               change_processor);
 }
@@ -269,8 +275,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
                                                                       callback);
       TypedUrlDataTypeController* data_type_controller =
-          new TypedUrlDataTypeController(base::Bind(&base::DoNothing),
-                                         sync_service_->GetSyncClient());
+          new TypedUrlDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                         base::Bind(&base::DoNothing),
+                                         sync_service_->GetSyncClient(),
+                                         prefs::kSavingBrowserHistoryDisabled);
       SyncApiComponentFactoryMock* components =
           sync_service_->GetSyncApiComponentFactoryMock();
       EXPECT_CALL(*components, CreateTypedUrlSyncComponents(_, _, _)).
