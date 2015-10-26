@@ -834,7 +834,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /** Returns an object representing the state of the Tab's WebContents. */
-    protected TabState.WebContentsState getWebContentsState() {
+    private TabState.WebContentsState getWebContentsState() {
         if (mFrozenContentsState != null) return mFrozenContentsState;
 
         // Native call returns null when buffer allocation needed to serialize the state failed.

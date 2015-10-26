@@ -46,6 +46,15 @@ public class MockTabModel extends EmptyTabModel {
     }
 
     @Override
+    public void addTab(Tab tab, int index, TabLaunchType type) {
+        if (index == -1) {
+            mTabs.add(tab);
+        } else {
+            mTabs.add(index, tab);
+        }
+    }
+
+    @Override
     public boolean isIncognito() {
         return mIncognito;
     }

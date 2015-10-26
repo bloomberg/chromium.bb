@@ -55,12 +55,14 @@ public class TestTabModelDirectory {
         public final int version;
         public final int selectedTabId;
         public final TabStateInfo[] contents;
+        public final int numRegularTabs;
         public final int numIncognitoTabs;
         public final String encodedFile;
 
         TabModelMetaDataInfo(int version, int numIncognitoTabs, int selectedTabId,
                 TabStateInfo[] contents, String encodedFile) {
             this.version = version;
+            this.numRegularTabs = contents.length - numIncognitoTabs;
             this.numIncognitoTabs = numIncognitoTabs;
             this.selectedTabId = selectedTabId;
             this.contents = contents;
@@ -73,6 +75,10 @@ public class TestTabModelDirectory {
         }
     }
 
+    /**
+     * Contains information about an M18 NTP.
+     * When used for testing, the TabState class has to be told that Chrome Stable is being used.
+     */
     public static final TabStateInfo M18_NTP = new TabStateInfo(
             0,
             0,
@@ -96,6 +102,10 @@ public class TestTabModelDirectory {
             + "cAbwBvAGcAbABlAC4AYwBhAC8AAAAIAAAAAAAAAAAA8D8BAAAAAAAAAAEAAAAdAAAAY2hyb21lOi8vbmV3dG"
             + "FiLyNtb3N0X3Zpc2l0ZWQAAAAAAAAAEQAAAGh0dHA6Ly9nb29nbGUuY2EvAAAAAAAAAP////8AAA==");
 
+    /**
+     * Contains information about an M18 tab for http://google.com.
+     * When used for testing, the TabState class has to be told that Chrome Stable is being used.
+     */
     public static final TabStateInfo M18_GOOGLE_COM = new TabStateInfo(
             0,
             1,
@@ -257,6 +267,21 @@ public class TestTabModelDirectory {
                     + "dWNrZHVja2dvLmNvbS8AAAAGABlodHRwOi8vd3d3LmhhYXJldHouY28uaWwvAAAABwAUaHR0cDov"
                     + "L3RleHRhcmVhLm9yZy8=");
 
+    /**
+     * Same as TAB_MODEL_METADATA_V4, but using the version 5 file format.
+     */
+    public static final TabModelMetaDataInfo TAB_MODEL_METADATA_V5_NO_M18 =
+            new TabModelMetaDataInfo(
+                    5,
+                    0,
+                    M26_GOOGLE_CA.tabId,
+                    new TabStateInfo[] {V2_TEXTAREA, V2_BAIDU, V2_DUCK_DUCK_GO, V2_HAARETZ,
+                            M26_GOOGLE_CA, M26_GOOGLE_COM},
+                    "AAAABQAAAAYAAAAA/////wAAAAQAAAAHABRodHRwOi8vdGV4dGFyZWEub3JnLwAAAAQAFWh0dHA6"
+                    + "Ly93d3cuYmFpZHUuY29tLwAAAAUAF2h0dHBzOi8vZHVja2R1Y2tnby5jb20vAAAABgAZaHR0cDov"
+                    + "L3d3dy5oYWFyZXR6LmNvLmlsLwAAAAMAFWh0dHA6Ly93d3cuZ29vZ2xlLmNhLwAAAAIAFmh0dHA6"
+                    + "Ly93d3cuZ29vZ2xlLmNvbS8=");
+
     private File mTestingDirectory;
     private File mDataDirectory;
 
@@ -297,6 +322,11 @@ public class TestTabModelDirectory {
     /** Returns the base data directory. */
     public File getBaseDirectory() {
         return mTestingDirectory;
+    }
+
+    /** Returns the directory containing all the TabStates. */
+    public File getDataDirectory() {
+        return mDataDirectory;
     }
 
     /**

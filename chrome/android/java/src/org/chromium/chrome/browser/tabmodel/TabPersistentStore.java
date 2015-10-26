@@ -80,7 +80,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     /**
-     * Alerted at various stages of initialization.
+     * Alerted at various stages of operation.
      */
     public static interface TabPersistentStoreObserver {
         /**
@@ -101,6 +101,12 @@ public class TabPersistentStore extends TabPersister {
          * @param context Context used by the TabPersistentStore.
          */
         void onStateLoaded(Context context);
+
+        /**
+         * Called when the metadata file has been saved out asynchronously.
+         * This currently does not get called when the metadata file is saved out on the UI thread.
+         */
+        void onMetadataSavedAsynchronously();
     }
 
     private static FileMigrationTask sMigrationTask = null;
@@ -278,8 +284,11 @@ public class TabPersistentStore extends TabPersister {
                 int id = tab.getId();
                 boolean incognito = tab.isIncognito();
                 try {
-                    TabState.saveState(openTabStateOutputStream(id, incognito), tab.getState(),
-                            incognito);
+                    TabState state = tab.getState();
+                    if (state != null) {
+                        TabState.saveState(
+                                openTabStateOutputStream(id, incognito), state, incognito);
+                    }
                 } catch (IOException e) {
                     logSaveException(e);
                 } catch (OutOfMemoryError e) {
@@ -830,7 +839,11 @@ public class TabPersistentStore extends TabPersister {
         @Override
         protected void onPostExecute(Void v) {
             if (mDestroyed || isCancelled()) return;
-            if (mSaveListTask == this) mSaveListTask = null;
+
+            if (mSaveListTask == this) {
+                mSaveListTask = null;
+                if (mObserver != null) mObserver.onMetadataSavedAsynchronously();
+            }
         }
     }
 

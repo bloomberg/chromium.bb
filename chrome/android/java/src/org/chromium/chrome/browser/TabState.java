@@ -59,11 +59,11 @@ public class TabState {
 
     /** Contains the state for a WebContents. */
     public static class WebContentsState {
-        public final ByteBuffer mBuffer;
+        private final ByteBuffer mBuffer;
         private int mVersion;
 
         public WebContentsState(ByteBuffer buffer) {
-            this.mBuffer = buffer;
+            mBuffer = buffer;
         }
 
         public ByteBuffer buffer() {
@@ -111,7 +111,7 @@ public class TabState {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    nativeFreeWebContentsStateBuffer(mBuffer);
+                    nativeFreeWebContentsStateBuffer(buffer());
                 }
             });
         }

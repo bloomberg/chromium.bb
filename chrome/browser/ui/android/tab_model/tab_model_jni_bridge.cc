@@ -62,13 +62,10 @@ ScopedJavaLocalRef<jobject> TabModelJniBridge::GetProfileAndroid(JNIEnv* env,
 void TabModelJniBridge::TabAddedToModel(JNIEnv* env,
                                         jobject obj,
                                         jobject jtab) {
-  TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
-
   // Tab#initialize() should have been called by now otherwise we can't push
   // the window id.
-  DCHECK(tab);
-
-  tab->SetWindowSessionID(GetSessionId());
+  TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
+  if (tab) tab->SetWindowSessionID(GetSessionId());
 }
 
 int TabModelJniBridge::GetTabCount() const {

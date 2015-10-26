@@ -475,7 +475,7 @@ public class TabModelImpl extends TabModelJniBridge {
                 for (TabModelObserver obs : mObservers) obs.didSelectTab(tab, type, lastId);
 
                 boolean wasAlreadySelected = tab.getId() == lastId;
-                if (!wasAlreadySelected && type == TabSelectionType.FROM_USER) {
+                if (!wasAlreadySelected && type == TabSelectionType.FROM_USER && mUma != null) {
                     // We only want to record when the user actively switches to a different tab.
                     mUma.userSwitchedToTab();
                 }
@@ -547,7 +547,7 @@ public class TabModelImpl extends TabModelJniBridge {
     private void finalizeTabClosure(Tab tab) {
         for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
 
-        mTabContentManager.removeTabThumbnail(tab.getId());
+        if (mTabContentManager != null) mTabContentManager.removeTabThumbnail(tab.getId());
         mTabSaver.removeTabFromQueues(tab);
 
         if (!isIncognito()) tab.createHistoricalTab();

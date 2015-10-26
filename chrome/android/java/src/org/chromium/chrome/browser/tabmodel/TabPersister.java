@@ -45,7 +45,7 @@ public abstract class TabPersister {
 
         FileOutputStream stream = null;
         try {
-            stream = new FileOutputStream(getTabStateFile(tabId, encrypted));
+            stream = openTabStateOutputStream(tabId, encrypted);
             TabState.saveState(stream, state, encrypted);
             return true;
         } catch (FileNotFoundException exception) {

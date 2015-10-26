@@ -82,6 +82,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             public void onInitialized(int tabCountAtStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.CountAtStartup", tabCountAtStartup);
             }
+
+            @Override
+            public void onMetadataSavedAsynchronously() {
+            }
         };
         mTabSaver = new TabPersistentStore(this, selectorIndex, mActivity, mActivity,
                 persistentStoreObserver);
