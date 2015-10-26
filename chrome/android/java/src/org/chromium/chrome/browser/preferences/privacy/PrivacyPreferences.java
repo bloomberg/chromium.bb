@@ -128,7 +128,7 @@ public class PrivacyPreferences extends PreferenceFragment
         searchSuggestionsPref.setOnPreferenceChangeListener(this);
         searchSuggestionsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        if (!ContextualSearchFieldTrial.isEnabled(getContext())) {
+        if (!ContextualSearchFieldTrial.isEnabled(getActivity())) {
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
         }
 
