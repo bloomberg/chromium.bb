@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
+#include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
@@ -36,6 +37,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
   AddSettingsPageUIHandler(new DefaultBrowserHandler(web_ui));
   AddSettingsPageUIHandler(new DownloadsHandler());
+  AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
   AddSettingsPageUIHandler(new SyncSetupHandler());

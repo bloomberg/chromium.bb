@@ -1934,6 +1934,8 @@
       'browser/ui/webui/settings/appearance_handler.h',
       'browser/ui/webui/settings/downloads_handler.cc',
       'browser/ui/webui/settings/downloads_handler.h',
+      'browser/ui/webui/settings/font_handler.cc',
+      'browser/ui/webui/settings/font_handler.h',
       'browser/ui/webui/settings/languages_handler.cc',
       'browser/ui/webui/settings/languages_handler.h',
       'browser/ui/webui/settings/md_settings_localized_strings_provider.cc',
