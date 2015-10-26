@@ -178,4 +178,17 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithInvalidOffse
     EXPECT_FALSE(controller().compositionRange());
 }
 
+TEST_F(InputMethodControllerTest, ConfirmPasswordComposition)
+{
+    HTMLInputElement* input = toHTMLInputElement(
+        insertHTMLElement("<input id='sample' type='password' size='24'>", "sample"));
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    controller().setComposition("foo", underlines, 0, 3);
+    controller().confirmComposition();
+
+    EXPECT_STREQ("foo", input->value().utf8().data());
+}
+
 } // namespace blink

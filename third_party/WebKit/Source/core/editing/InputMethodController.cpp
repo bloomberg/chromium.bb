@@ -120,7 +120,7 @@ void InputMethodController::selectComposition() const
 
 bool InputMethodController::confirmComposition()
 {
-    return confirmComposition(plainText(compositionEphemeralRange()));
+    return confirmComposition(composingText());
 }
 
 static void dispatchCompositionEndEvent(LocalFrame& frame, const String& text)
@@ -146,7 +146,7 @@ bool InputMethodController::confirmComposition(const String& text)
     // If the composition was set from existing text and didn't change, then
     // there's nothing to do here (and we should avoid doing anything as that
     // may clobber multi-node styled text).
-    if (!m_isDirty && plainText(compositionEphemeralRange()) == text) {
+    if (!m_isDirty && composingText() == text) {
         clear();
         return true;
     }
@@ -385,6 +385,11 @@ EphemeralRange InputMethodController::compositionEphemeralRange() const
 PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
 {
     return hasComposition() ? m_compositionRange : nullptr;
+}
+
+String InputMethodController::composingText() const
+{
+    return plainText(compositionEphemeralRange(), TextIteratorEmitsOriginalText);
 }
 
 PlainTextRange InputMethodController::getSelectionOffsets() const
