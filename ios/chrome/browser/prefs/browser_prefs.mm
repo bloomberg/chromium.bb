@@ -41,9 +41,9 @@
 
 namespace {
 
-// TODO(sdefresne): those preferences are not used on iOS but are required to
-// be able to run unit_tests until componentization of chrome/browser/prefs is
-// complete. Remove once http://crbug.com/525079 is fixed.
+// TODO(crbug.com/525079): those preferences are not used on iOS but are
+// required to be able to run unit_tests until componentization of
+// chrome/browser/prefs is complete.
 const char kURLsToRestoreOnStartup[] = "session.startup_urls";
 const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
 
@@ -127,9 +127,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kNetworkPredictionWifiOnly, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-  // TODO(sdefresne): those preferences are not used on iOS but are required to
-  // be able to run unit_tests until componentization of chrome/browser/prefs
-  // is complete. Remove once http://crbug.com/525079 is fixed.
+  // TODO(crbug.com/525079): those preferences are not used on iOS but are
+  // required to be able to run unit_tests until componentization of
+  // chrome/browser/prefs is complete.
   registry->RegisterListPref(kURLsToRestoreOnStartup,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(kURLsToRestoreOnStartupOld);

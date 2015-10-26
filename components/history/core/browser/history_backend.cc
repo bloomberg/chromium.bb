@@ -2536,9 +2536,6 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
       HistoryBackendObserver, observers_,
       OnURLVisited(this, transition, url_info, redirects, visit_time));
 
-  // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
-  // an HistoryBackendObserver and register it so that we can remove this
-  // method.
   if (delegate_)
     delegate_->NotifyURLVisited(transition, url_info, redirects, visit_time);
 }
@@ -2551,9 +2548,6 @@ void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
   FOR_EACH_OBSERVER(HistoryBackendObserver, observers_,
                     OnURLsModified(this, changed_urls));
 
-  // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
-  // an HistoryBackendObserver and register it so that we can remove this
-  // method.
   if (delegate_)
     delegate_->NotifyURLsModified(changed_urls);
 }
@@ -2572,9 +2566,6 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
       HistoryBackendObserver, observers_,
       OnURLsDeleted(this, all_history, expired, copied_rows, favicon_urls));
 
-  // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
-  // an HistoryBackendObserver and register it so that we can remove this
-  // method.
   if (delegate_)
     delegate_->NotifyURLsDeleted(all_history, expired, copied_rows,
                                  favicon_urls);

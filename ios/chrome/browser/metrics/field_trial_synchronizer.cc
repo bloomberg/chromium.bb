@@ -7,8 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/crash/core/common/crash_keys.h"
-#include "components/variations/active_field_trials.h"
+#include "components/variations/variations_util.h"
 
 namespace ios {
 
@@ -29,12 +28,7 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
 }
 
 void FieldTrialSynchronizer::SynchronizeCrashKeyExperimentList() {
-  // TODO(sdefresne): uses variations::SetVariationsListCrashKeys once it is
-  // componentized and remove this code duplication. http://crbug.com/520070
-  // tracks the componentization effort.
-  std::vector<std::string> experiment_strings;
-  variations::GetFieldTrialActiveGroupIdsAsStrings(&experiment_strings);
-  crash_keys::SetVariationsList(experiment_strings);
+  variations::SetVariationListCrashKeys();
 }
 
 }  // namespace ios

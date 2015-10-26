@@ -31,7 +31,7 @@ class RemoveAutofillTester;
 class SigninManagerBase;
 
 #if defined(OS_IOS)
-// TODO(sdefresne): Remove this. See http://crbug.com/513344.
+// TODO(crbug.com/513344): Remove this once Chrome on iOS is unforked.
 class PersonalDataManagerFactory;
 #endif
 
@@ -239,7 +239,7 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
 #if defined(OS_IOS)
-  // TODO(sdefresne): Remove this. See http://crbug.com/513344.
+  // TODO(crbug.com/513344): Remove this once Chrome on iOS is unforked.
   friend class ::PersonalDataManagerFactory;
 #endif
   friend class ProfileSyncServiceAutofillTest;
