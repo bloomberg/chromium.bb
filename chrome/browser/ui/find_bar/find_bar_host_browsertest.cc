@@ -344,16 +344,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
                                kFwd, kIgnoreCase, NULL));
 }
 
-#if defined(OS_MACOSX)
-// Disabled due to http://crbug.com/419769.
-#define MAYBE_FindInPageSpecialURLs DISABLED_FindInPageSpecialURLs
-#else
-#define MAYBE_FindInPageSpecialURLs FindInPageSpecialURLs
-#endif
 // Verify search selection coordinates. The data file used is set-up such that
 // the text occurs on the same line, and we verify their positions by verifying
 // their relative positions.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindInPageSpecialURLs) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageSpecialURLs) {
   const std::wstring search_string(L"\u5728\u897f\u660c\u536b\u661f\u53d1");
   gfx::Rect first, second, first_reverse;
   WebContents* web_contents =
@@ -379,16 +373,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindInPageSpecialURLs) {
   ASSERT_EQ(first, first_reverse);
 }
 
-#if defined(OS_MACOSX)
-// Disabled due to http://crbug.com/419769.
-#define MAYBE_CommentsAndMetaDataNotSearchable \
-  DISABLED_CommentsAndMetaDataNotSearchable
-#else
-#define MAYBE_CommentsAndMetaDataNotSearchable CommentsAndMetaDataNotSearchable
-#endif
 // Verifies that comments and meta data are not searchable.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       MAYBE_CommentsAndMetaDataNotSearchable) {
+                       CommentsAndMetaDataNotSearchable) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
