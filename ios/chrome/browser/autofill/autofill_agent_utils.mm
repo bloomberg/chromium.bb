@@ -91,8 +91,8 @@ bool RequestShippingAddress(autofill::FormStructure* structure) {
   // doesn't matter what's passed.
   std::string country_code;
   autofill::DetailInputs inputs;
-  // TODO(eugenebut): Clean up kShippingInputs definition, unify with
-  // android codebase. crbug.com/371074
+  // TODO(crbug.com/371074): Clean up kShippingInputs definition, unify with
+  // android codebase.
   const autofill::DetailInput kShippingInputs[] = {
       {autofill::DetailInput::LONG, autofill::NAME_FULL},
       {autofill::DetailInput::LONG, autofill::ADDRESS_HOME_LINE1},
