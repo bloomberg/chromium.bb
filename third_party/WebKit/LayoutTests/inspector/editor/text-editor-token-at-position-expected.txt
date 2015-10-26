@@ -4,7 +4,7 @@ Test editor tokenAtTextPosition method.
 Running: testHighlightedText
 Line: function foo(a, b) {
 Column #0 (char 'f') - token: {"startColumn":0,"endColumn":8,"type":"js-keyword"}
-Column #10 (char 'o') - token: {"startColumn":9,"endColumn":12,"type":"js-variable"}
+Column #10 (char 'o') - token: {"startColumn":9,"endColumn":12,"type":"js-def"}
 Column #13 (char 'a') - token: {"startColumn":13,"endColumn":14,"type":"js-def"}
 Line:     var f = /.a/.test(a); /*
 Column #8 (char 'f') - token: {"startColumn":8,"endColumn":9,"type":"js-def"}
