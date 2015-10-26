@@ -155,6 +155,7 @@ void SpeechRecognizer::EventListener::StopOnIOThread() {
   StopSpeechTimeout();
   content::SpeechRecognitionManager::GetInstance()->StopAudioCaptureForSession(
       session);
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void SpeechRecognizer::EventListener::NotifyRecognitionStateChanged(
