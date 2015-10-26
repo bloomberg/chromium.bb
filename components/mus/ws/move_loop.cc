@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "components/mus/ws/server_window.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
 
 namespace mus {
@@ -24,6 +25,13 @@ gfx::Point EventScreenLocationToPoint(const mojo::Event& event) {
                   event.pointer_data->location->screen_y));
 }
 
+mojo::EventFlags MouseOnlyEventFlags(mojo::EventFlags flags) {
+  return static_cast<mojo::EventFlags>(flags &
+                                       (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
+                                        mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
+                                        mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
+}
+
 }  // namespace
 
 MoveLoop::~MoveLoop() {
@@ -37,13 +45,14 @@ scoped_ptr<MoveLoop> MoveLoop::Create(ServerWindow* target,
   DCHECK(event.action == mojo::EVENT_TYPE_POINTER_DOWN);
   const gfx::Point location(EventLocationToPoint(event));
   if (!target->parent() || !target->parent()->is_draggable_window_container() ||
+      !gfx::Rect(target->bounds().size()).Contains(location) ||
       target->client_area().Contains(location)) {
     return nullptr;
   }
 
   // Start a move on left mouse, or any other type of pointer.
   if (event.pointer_data->kind == mojo::POINTER_KIND_MOUSE &&
-      event.flags != mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
+      MouseOnlyEventFlags(event.flags) != mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
     return nullptr;
   }
 

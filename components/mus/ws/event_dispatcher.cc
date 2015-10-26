@@ -38,9 +38,13 @@ bool IsMouseEventFlag(int32_t event_flags) {
 }
 
 bool IsOnlyOneMouseButtonDown(mojo::EventFlags flags) {
-  return flags == mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
-         flags == mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
-         flags == mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON;
+  const uint32_t mouse_only_flags =
+      flags & (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
+               mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
+               mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON);
+  return mouse_only_flags == mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
+         mouse_only_flags == mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
+         mouse_only_flags == mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON;
 }
 
 }  // namespace
