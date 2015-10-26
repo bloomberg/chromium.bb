@@ -618,6 +618,10 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     gpu_observer_registered_ = false;
   }
 
+#if USE_ATTACHMENT_BROKER
+  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+      channel_.get());
+#endif
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
   while (!queued_messages_.empty()) {
@@ -2237,6 +2241,10 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   mojo_application_host_->WillDestroySoon();
 
   child_process_launcher_.reset();
+#if USE_ATTACHMENT_BROKER
+  IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+      channel_.get());
+#endif
   channel_.reset();
   while (!queued_messages_.empty()) {
     delete queued_messages_.front();
