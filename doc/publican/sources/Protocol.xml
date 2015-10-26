@@ -15,6 +15,38 @@
       identifies which method in the interface to invoke.
     </para>
     <para>
+      The protocol is message-based.  A message sent by a client to the server
+      is called request.  A message from the server to a client is called event.
+      A message has a number of arguments, each of which has a certain type (see
+      <xref linkend="sect-Protocol-Wire-Format"/> for a list of argument types).
+    </para>
+    <para>
+      Additionally, the protocol can specify <type>enum</type>s which associate
+      names to specific numeric enumeration values.  These are primarily just
+      descriptive in nature: at the wire format level enums are just integers.
+      But they also serve a secondary purpose to enhance type safety or
+      otherwise add context for use in language bindings or other such code.
+      This latter usage is only supported so long as code written before these
+      attributes were introduced still works after; in other words, adding an
+      enum should not break API, otherwise it puts backwards compatibility at
+      risk.
+    </para>
+    <para>
+      <type>enum</type>s can be defined as just a set of integers, or as
+      bitfields.  This is specified via the <type>bitfield</type> boolean
+      attribute in the <type>enum</type> definition.  If this attribute is true,
+      the enum is intended to be accessed primarily using bitwise operations,
+      for example when arbitrarily many choices of the enum can be ORed
+      together; if it is false, or the attribute is omitted, then the enum
+      arguments are a just a sequence of numerical values.
+    </para>
+    <para>
+      The <type>enum</type> attribute can be used on either <type>uint</type>
+      or <type>int</type> arguments, however if the <type>enum</type> is
+      defined as a <type>bitfield</type>, it can only be used on
+      <type>uint</type> args.
+    </para>
+    <para>
       The server sends back events to the client, each event is emitted from
       an object.  Events can be error conditions.  The event includes the
       object ID and the event opcode, from which the client can determine
@@ -62,14 +94,11 @@
       The protocol is sent over a UNIX domain stream socket, where the endpoint
       usually is named <systemitem class="service">wayland-0</systemitem>
       (although it can be changed via <emphasis>WAYLAND_DISPLAY</emphasis>
-      in the environment).  The protocol is message-based.  A
-      message sent by a client to the server is called request.  A message
-      from the server to a client is called event.  Every message is
-      structured as 32-bit words, values are represented in the host's
-      byte-order.
+      in the environment).
     </para>
     <para>
-      The message header has 2 words in it:
+      Every message is structured as 32-bit words; values are represented in the
+      host's byte-order.  The message header has 2 words in it:
       <itemizedlist>
 	<listitem>
 	  <para>
