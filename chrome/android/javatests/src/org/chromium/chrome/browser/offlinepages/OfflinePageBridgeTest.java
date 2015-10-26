@@ -80,16 +80,19 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
         List<OfflinePageItem> allPages = getAllPages();
+        OfflinePageItem offlinePage = allPages.get(0);
         assertEquals("Offline pages count incorrect.", 1, allPages.size());
-        assertEquals("Offline page item url incorrect.", TEST_PAGE, allPages.get(0).getUrl());
+        assertEquals("Offline page item url incorrect.", TEST_PAGE, offlinePage.getUrl());
         assertEquals("Offline page item bookmark ID incorrect.", BOOKMARK_ID,
-                allPages.get(0).getBookmarkId());
+                offlinePage.getBookmarkId());
         assertTrue("Offline page item offline file url doesn't start properly.",
-                allPages.get(0).getOfflineUrl().startsWith("file:///"));
+                offlinePage.getOfflineUrl().startsWith("file:///"));
         assertTrue("Offline page item offline file doesn't have the right name.",
-                allPages.get(0).getOfflineUrl().endsWith("About.mhtml"));
+                offlinePage.getOfflineUrl().endsWith(".mhtml"));
+        assertTrue("Offline page item offline file doesn't have the right name.",
+                offlinePage.getOfflineUrl().contains("About"));
         // BUG(518758): Depending on the bot the result will be either 626 or 627.
-        long size = allPages.get(0).getFileSize();
+        long size = offlinePage.getFileSize();
         assertTrue("Offline page item size is incorrect: " + size, size == 626 || size == 627);
     }
 
@@ -115,7 +118,9 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         assertTrue("Offline page item offline file url doesn't start properly.",
                 offlinePage.getOfflineUrl().startsWith("file:///"));
         assertTrue("Offline page item offline file doesn't have the right name.",
-                offlinePage.getOfflineUrl().endsWith("About.mhtml"));
+                offlinePage.getOfflineUrl().endsWith(".mhtml"));
+        assertTrue("Offline page item offline file doesn't have the right name.",
+                offlinePage.getOfflineUrl().contains("About"));
 
         assertNull("Offline page is not supposed to exist",
                 mOfflinePageBridge.getPageByBookmarkId(new BookmarkId(-42, BookmarkType.NORMAL)));

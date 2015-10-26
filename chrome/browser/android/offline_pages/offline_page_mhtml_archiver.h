@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_MHTML_ARCHIVER_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -41,6 +42,10 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
  public:
   // Returns the extension name of the offline page file.
   static std::string GetFileNameExtension();
+  // Creates a file name for the archive file based on url and title. Public for
+  // testing.
+  static base::FilePath GenerateFileName(const GURL& url,
+                                         const std::string& title);
 
   OfflinePageMHTMLArchiver(content::WebContents* web_contents,
                            const base::FilePath& archive_dir);

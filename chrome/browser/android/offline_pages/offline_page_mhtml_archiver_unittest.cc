@@ -42,7 +42,6 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   void GenerateMHTML() override;
 
   const GURL url_;
-  const base::FilePath file_path_;
   const TestScenario test_scenario_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMHTMLArchiver);
@@ -54,7 +53,6 @@ TestMHTMLArchiver::TestMHTMLArchiver(
     const base::FilePath& archive_dir)
     : OfflinePageMHTMLArchiver(archive_dir),
       url_(url),
-      file_path_(archive_dir),
       test_scenario_(test_scenario) {
 }
 
@@ -211,6 +209,24 @@ TEST_F(OfflinePageMHTMLArchiverTest, SuccessfullyCreateOfflineArchive) {
             last_result());
   EXPECT_EQ(GetTestFilePath(), last_file_path());
   EXPECT_EQ(kTestFileSize, last_file_size());
+}
+
+TEST_F(OfflinePageMHTMLArchiverTest, GenerateFileName) {
+  GURL url_1("http://news.google.com/page1");
+  std::string title_1("Google News Page");
+  base::FilePath expected_1(FILE_PATH_LITERAL(
+      "news.google.com-Google_News_Page-mD2VzX6-h86e+Wl20CXh6VEkPXU=.mhtml"));
+  base::FilePath actual_1(
+      OfflinePageMHTMLArchiver::GenerateFileName(url_1, title_1));
+  EXPECT_EQ(expected_1, actual_1);
+
+  GURL url_2("https://en.m.wikipedia.org/Sample_page_about_stuff");
+  std::string title_2("Some Wiki Page");
+  base::FilePath expected_2(FILE_PATH_LITERAL(
+      "en.m.wikipedia.org-Some_Wiki_Page-rEdSruS+14jgpnwJN9PGRUDpx9c=.mhtml"));
+  base::FilePath actual_2(
+      OfflinePageMHTMLArchiver::GenerateFileName(url_2, title_2));
+  EXPECT_EQ(expected_2, actual_2);
 }
 
 }  // namespace offline_pages
