@@ -10,11 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-// GeolocationInfoBarDelegateAndroidAndroids are created by the
+// GeolocationInfoBarDelegateAndroids are created by the
 // PermissionQueueController to control the display
 // and handling of geolocation permission infobars to the user.
-class GeolocationInfoBarDelegateAndroidAndroid
-    : public PermissionInfobarDelegate {
+class GeolocationInfoBarDelegateAndroid : public PermissionInfobarDelegate {
  public:
   // Creates a geolocation infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
@@ -24,11 +23,10 @@ class GeolocationInfoBarDelegateAndroidAndroid
                                    const PermissionSetCallback& callback);
 
  private:
-  GeolocationInfoBarDelegateAndroidAndroid(
-      const GURL& requesting_frame,
-      const std::string& display_languages,
-      const PermissionSetCallback& callback);
-  ~GeolocationInfoBarDelegateAndroidAndroid() override;
+  GeolocationInfoBarDelegateAndroid(const GURL& requesting_frame,
+                                    const std::string& display_languages,
+                                    const PermissionSetCallback& callback);
+  ~GeolocationInfoBarDelegateAndroid() override;
 
   // PermissionInfoBarDelegate:
   int GetIconId() const override;
@@ -37,7 +35,7 @@ class GeolocationInfoBarDelegateAndroidAndroid
   GURL requesting_frame_;
   std::string display_languages_;
 
-  DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarDelegateAndroidAndroid);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarDelegateAndroid);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_ANDROID_H_

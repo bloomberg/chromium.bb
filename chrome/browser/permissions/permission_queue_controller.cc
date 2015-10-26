@@ -124,7 +124,7 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
                  embedder_);
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      infobar_ = GeolocationInfoBarDelegateAndroidAndroid::Create(
+      infobar_ = GeolocationInfoBarDelegateAndroid::Create(
           GetInfoBarService(id_), requesting_frame_, display_languages,
           callback);
       break;

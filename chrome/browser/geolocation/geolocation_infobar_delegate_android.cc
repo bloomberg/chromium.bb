@@ -13,37 +13,33 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-infobars::InfoBar* GeolocationInfoBarDelegateAndroidAndroid::Create(
+infobars::InfoBar* GeolocationInfoBarDelegateAndroid::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_frame,
     const std::string& display_languages,
     const PermissionSetCallback& callback) {
-  return infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new GeolocationInfoBarDelegateAndroidAndroid(
-              requesting_frame, display_languages, callback))));
+  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new GeolocationInfoBarDelegateAndroid(
+          requesting_frame, display_languages, callback))));
 }
 
-GeolocationInfoBarDelegateAndroidAndroid::
-    GeolocationInfoBarDelegateAndroidAndroid(
-        const GURL& requesting_frame,
-        const std::string& display_languages,
-        const PermissionSetCallback& callback)
+GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
+    const GURL& requesting_frame,
+    const std::string& display_languages,
+    const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 callback),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {}
 
-GeolocationInfoBarDelegateAndroidAndroid::
-    ~GeolocationInfoBarDelegateAndroidAndroid() {}
+GeolocationInfoBarDelegateAndroid::~GeolocationInfoBarDelegateAndroid() {}
 
-int GeolocationInfoBarDelegateAndroidAndroid::GetIconId() const {
+int GeolocationInfoBarDelegateAndroid::GetIconId() const {
   return IDR_ANDROID_INFOBAR_GEOLOCATION;
 }
 
-base::string16 GeolocationInfoBarDelegateAndroidAndroid::GetMessageText()
-    const {
+base::string16 GeolocationInfoBarDelegateAndroid::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
                                     url_formatter::FormatUrlForSecurityDisplay(
                                         requesting_frame_, display_languages_));
