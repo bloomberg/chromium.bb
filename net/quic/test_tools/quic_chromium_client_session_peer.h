@@ -22,6 +22,9 @@ class QuicChromiumClientSessionPeer {
   static void SetChannelIDSent(QuicChromiumClientSession* session,
                                bool channel_id_sent);
 
+  static void SetHostname(QuicChromiumClientSession* session,
+                          const std::string& hostname);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSessionPeer);
 };

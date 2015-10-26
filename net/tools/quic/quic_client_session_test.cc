@@ -37,20 +37,22 @@ namespace tools {
 namespace test {
 namespace {
 
-const char kServerHostname[] = "www.example.org";
+const char kServerHostname[] = "test.example.com";
 const uint16 kPort = 80;
 
 class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
   ToolsQuicClientSessionTest()
-      : connection_(new PacketSavingConnection(&helper_,
+      : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
+        connection_(new PacketSavingConnection(&helper_,
                                                Perspective::IS_CLIENT,
-                                               SupportedVersions(GetParam()))) {
-    session_.reset(new QuicClientSession(
-        DefaultQuicConfig(), connection_,
-        QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
-        &crypto_config_));
+                                               SupportedVersions(GetParam()))),
+        session_(new QuicClientSession(
+            DefaultQuicConfig(),
+            connection_,
+            QuicServerId(kServerHostname, kPort, PRIVACY_MODE_DISABLED),
+            &crypto_config_)) {
     session_->Initialize();
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));

@@ -12,9 +12,11 @@ namespace tools {
 
 QuicClientBase::QuicClientBase(const QuicServerId& server_id,
                                const QuicVersionVector& supported_versions,
-                               const QuicConfig& config)
+                               const QuicConfig& config,
+                               ProofVerifier* proof_verifier)
     : server_id_(server_id),
       config_(config),
+      crypto_config_(proof_verifier),
       supported_versions_(supported_versions),
       initial_max_packet_length_(0),
       num_stateless_rejects_received_(0),
@@ -41,6 +43,10 @@ QuicClientBase::DummyPacketWriterFactory::~DummyPacketWriterFactory() {}
 QuicPacketWriter* QuicClientBase::DummyPacketWriterFactory::Create(
     QuicConnection* /*connection*/) const {
   return writer_;
+}
+
+ProofVerifier* QuicClientBase::proof_verifier() const {
+  return crypto_config_.proof_verifier();
 }
 
 QuicClientSession* QuicClientBase::CreateQuicClientSession(

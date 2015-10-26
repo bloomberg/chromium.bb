@@ -167,10 +167,7 @@ class AsyncTestChannelIDSource : public ChannelIDSource,
 }  // anonymous namespace
 
 CryptoTestUtils::FakeClientOptions::FakeClientOptions()
-    : dont_verify_certs(false),
-      channel_id_enabled(false),
-      channel_id_source_async(false) {
-}
+    : channel_id_enabled(false), channel_id_source_async(false) {}
 
 // static
 int CryptoTestUtils::HandshakeWithFakeServer(
@@ -182,7 +179,8 @@ int CryptoTestUtils::HandshakeWithFakeServer(
 
   QuicConfig config = DefaultQuicConfig();
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
-                                       QuicRandom::GetInstance());
+                                       QuicRandom::GetInstance(),
+                                       ProofSourceForTesting());
   SetupCryptoServerConfigForTest(server_conn->clock(),
                                  server_conn->random_generator(), &config,
                                  &crypto_config);
@@ -194,7 +192,6 @@ int CryptoTestUtils::HandshakeWithFakeServer(
 
   CommunicateHandshakeMessages(client_conn, client, server_conn,
                                server_session.GetCryptoStream());
-
   CompareClientAndServerKeys(client, server_session.GetCryptoStream());
 
   return client->num_sent_client_hellos();
@@ -212,7 +209,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   // Advance the time, because timers do not like uninitialized times.
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
-  QuicCryptoClientConfig crypto_config;
+  QuicCryptoClientConfig crypto_config(ProofVerifierForTesting());
   AsyncTestChannelIDSource* async_channel_id_source = nullptr;
   if (options.channel_id_enabled) {
 
@@ -222,14 +219,6 @@ int CryptoTestUtils::HandshakeWithFakeClient(
       source = async_channel_id_source;
     }
     crypto_config.SetChannelIDSource(source);
-  }
-  if (!options.dont_verify_certs && server_id.is_https()) {
-#if defined(USE_OPENSSL)
-    crypto_config.SetProofVerifier(ProofVerifierForTesting());
-#else
-    // TODO(rch): Implement a NSS proof source.
-    crypto_config.SetProofVerifier(FakeProofVerifierForTesting());
-#endif
   }
   TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
                                            server_id, &crypto_config);

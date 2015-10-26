@@ -294,7 +294,6 @@ class NET_EXPORT_PRIVATE QuicConnection
                  const PacketWriterFactory& writer_factory,
                  bool owns_writer,
                  Perspective perspective,
-                 bool is_secure,
                  const QuicVersionVector& supported_versions);
   ~QuicConnection() override;
 
@@ -610,8 +609,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicPacketWriter* writer() { return writer_; }
   const QuicPacketWriter* writer() const { return writer_; }
-
-  bool is_secure() const { return is_secure_; }
 
   // Sends an MTU discovery packet of size |target_mtu|.  If the packet is
   // acknowledged by the peer, the maximum packet size will be increased to
@@ -947,9 +944,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // If non-empty this contains the set of versions received in a
   // version negotiation packet.
   QuicVersionVector server_supported_versions_;
-
-  // True if this is a secure QUIC connection.
-  bool is_secure_;
 
   // The size of the packet we are targeting while doing path MTU discovery.
   QuicByteCount mtu_discovery_target_;

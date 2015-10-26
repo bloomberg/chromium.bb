@@ -106,11 +106,12 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   CryptoServerTest()
       : rand_(QuicRandom::GetInstance()),
         client_address_(Loopback4(), 1234),
-        config_(QuicCryptoServerConfig::TESTING, rand_) {
+        config_(QuicCryptoServerConfig::TESTING,
+                rand_,
 #if defined(USE_OPENSSL)
-    config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
+                CryptoTestUtils::ProofSourceForTesting()) {
 #else
-    config_.SetProofSource(CryptoTestUtils::FakeProofSourceForTesting());
+                CryptoTestUtils::FakeProofSourceForTesting()) {
 #endif
     supported_versions_ = GetParam().supported_versions;
     client_version_ = supported_versions_.front();
@@ -773,8 +774,18 @@ TEST(CryptoServerConfigGenerationTest, Determinism) {
   const QuicCryptoServerConfig::ConfigOptions options;
   MockClock clock;
 
-  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a);
-  QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b);
+  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
+#if defined(USE_OPENSSL)
+                           CryptoTestUtils::ProofSourceForTesting());
+#else
+                           CryptoTestUtils::FakeProofSourceForTesting());
+#endif
+  QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
+#if defined(USE_OPENSSL)
+                           CryptoTestUtils::ProofSourceForTesting());
+#else
+                           CryptoTestUtils::FakeProofSourceForTesting());
+#endif
   scoped_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
   scoped_ptr<CryptoHandshakeMessage> scfg_b(
@@ -791,9 +802,19 @@ TEST(CryptoServerConfigGenerationTest, SCIDVaries) {
   const QuicCryptoServerConfig::ConfigOptions options;
   MockClock clock;
 
-  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a);
+  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
+#if defined(USE_OPENSSL)
+                           CryptoTestUtils::ProofSourceForTesting());
+#else
+                           CryptoTestUtils::FakeProofSourceForTesting());
+#endif
   rand_b.ChangeValue();
-  QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b);
+  QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
+#if defined(USE_OPENSSL)
+                           CryptoTestUtils::ProofSourceForTesting());
+#else
+                           CryptoTestUtils::FakeProofSourceForTesting());
+#endif
   scoped_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
   scoped_ptr<CryptoHandshakeMessage> scfg_b(
@@ -811,7 +832,12 @@ TEST(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
   const QuicCryptoServerConfig::ConfigOptions options;
   MockClock clock;
 
-  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a);
+  QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
+#if defined(USE_OPENSSL)
+                           CryptoTestUtils::ProofSourceForTesting());
+#else
+                           CryptoTestUtils::FakeProofSourceForTesting());
+#endif
   scoped_ptr<CryptoHandshakeMessage> scfg(
       a.AddDefaultConfig(&rand_a, &clock, options));
 

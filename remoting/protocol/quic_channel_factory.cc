@@ -408,7 +408,7 @@ void QuicChannelFactory::Core::OnBaseChannelReady(
       0, net::IPEndPoint(ip, 0), &quic_helper_, writer_factory,
       true /* owns_writer */,
       is_server_ ? net::Perspective::IS_SERVER : net::Perspective::IS_CLIENT,
-      true /* is_secure */, net::QuicSupportedVersions()));
+      net::QuicSupportedVersions()));
 
   net::QuicP2PCryptoConfig quic_crypto_config(shared_secret_);
   quic_crypto_config.set_hkdf_input_suffix(

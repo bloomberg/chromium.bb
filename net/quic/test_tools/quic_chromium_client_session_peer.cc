@@ -24,5 +24,14 @@ void QuicChromiumClientSessionPeer::SetChannelIDSent(
   session->crypto_stream_->channel_id_sent_ = channel_id_sent;
 }
 
+// static
+void QuicChromiumClientSessionPeer::SetHostname(
+    QuicChromiumClientSession* session,
+    const std::string& hostname) {
+  QuicServerId server_id(hostname, session->server_id_.port(),
+                         session->server_id_.privacy_mode());
+  session->server_id_ = server_id;
+}
+
 }  // namespace test
 }  // namespace net

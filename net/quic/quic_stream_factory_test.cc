@@ -87,16 +87,14 @@ class QuicStreamFactoryPeer {
 
   static bool HasActiveSession(QuicStreamFactory* factory,
                                const HostPortPair& host_port_pair) {
-    QuicServerId server_id(host_port_pair, /*is_https=*/true,
-                           PRIVACY_MODE_DISABLED);
+    QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
     return factory->HasActiveSession(server_id);
   }
 
   static QuicChromiumClientSession* GetActiveSession(
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair) {
-    QuicServerId server_id(host_port_pair, /*is_https=*/true,
-                           PRIVACY_MODE_DISABLED);
+    QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
     DCHECK(factory->HasActiveSession(server_id));
     return factory->active_sessions_[server_id];
   }
@@ -1567,7 +1565,7 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     HostPortPair host_port_pair1(r1_host_name, 80);
     QuicCryptoClientConfig* crypto_config =
         QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
-    QuicServerId server_id1(host_port_pair1, /*is_https=*/true, privacy_mode_);
+    QuicServerId server_id1(host_port_pair1, privacy_mode_);
     QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config->LookupOrCreate(server_id1);
     EXPECT_FALSE(cached1->proof_valid());
@@ -1579,7 +1577,7 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     cached1->SetProofValid();
 
     HostPortPair host_port_pair2(r2_host_name, 80);
-    QuicServerId server_id2(host_port_pair2, /*is_https=*/true, privacy_mode_);
+    QuicServerId server_id2(host_port_pair2, privacy_mode_);
     QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config->LookupOrCreate(server_id2);
     EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
@@ -1602,7 +1600,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     HostPortPair host_port_pair1(r3_host_name, 80);
     QuicCryptoClientConfig* crypto_config =
         QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
-    QuicServerId server_id1(host_port_pair1, /*is_https=*/true, privacy_mode_);
+    QuicServerId server_id1(host_port_pair1, privacy_mode_);
     QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config->LookupOrCreate(server_id1);
     EXPECT_FALSE(cached1->proof_valid());
@@ -1614,7 +1612,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     cached1->SetProofInvalid();
 
     HostPortPair host_port_pair2(r4_host_name, 80);
-    QuicServerId server_id2(host_port_pair2, /*is_https=*/true, privacy_mode_);
+    QuicServerId server_id2(host_port_pair2, privacy_mode_);
     QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config->LookupOrCreate(server_id2);
     EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
@@ -1663,7 +1661,7 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
                                            "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  QuicServerId server_id(host_port_pair_, /*is_https=*/true, privacy_mode_);
+  QuicServerId server_id(host_port_pair_, privacy_mode_);
   EXPECT_EQ(ERR_IO_PENDING,
             request.Request(host_port_pair_, privacy_mode_,
                             /*cert_verify_flags=*/0, host_port_pair_.host(),
@@ -2653,8 +2651,7 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);
 
-  QuicServerId quic_server_id("www.google.com", 80, false,
-                              PRIVACY_MODE_DISABLED);
+  QuicServerId quic_server_id("www.google.com", 80, PRIVACY_MODE_DISABLED);
   QuicServerInfoFactory* quic_server_info_factory =
       new PropertiesBasedQuicServerInfoFactory(
           http_server_properties_.GetWeakPtr());

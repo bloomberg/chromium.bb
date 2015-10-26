@@ -24,13 +24,16 @@ namespace net {
 namespace test {
 namespace {
 
-const char kServerHostname[] = "example.com";
-const uint16 kServerPort = 80;
+#if defined(USE_OPENSSL)
+
+const char kServerHostname[] = "test.example.com";
+const uint16 kServerPort = 443;
 
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
-      : server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED) {
+      : server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
+        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {
     CreateConnection();
   }
 
@@ -115,17 +118,6 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
   EXPECT_EQ(crypto_config_.kexs[0], crypto_params.key_exchange);
 }
 
-TEST_F(QuicCryptoClientStreamTest, InvalidHostname) {
-  server_id_ =
-      QuicServerId("invalid", kServerPort, false, PRIVACY_MODE_DISABLED);
-
-  CreateConnection();
-
-  CompleteCryptoHandshake();
-  EXPECT_TRUE(stream()->encryption_established());
-  EXPECT_TRUE(stream()->handshake_confirmed());
-}
-
 TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   // Seed the config with a cached server config.
   CompleteCryptoHandshake();
@@ -208,9 +200,11 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
 class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamStatelessTest()
-      : server_crypto_config_(QuicCryptoServerConfig::TESTING,
-                              QuicRandom::GetInstance()),
-        server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED) {
+      : client_crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
+        server_crypto_config_(QuicCryptoServerConfig::TESTING,
+                              QuicRandom::GetInstance(),
+                              CryptoTestUtils::ProofSourceForTesting()),
+        server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED) {
     TestQuicSpdyClientSession* client_session = nullptr;
     CreateClientSessionForTest(server_id_,
                                /* supports_stateless_rejects= */ true,
@@ -292,6 +286,8 @@ TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
   EXPECT_EQ(expected_id, server_designated_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
 }
+
+#endif
 
 }  // namespace
 }  // namespace test

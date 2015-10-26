@@ -133,13 +133,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // sent with unique packet numbers.)
   static const QuicPacketNumber kMaxReasonableInitialPacketNumber = 100;
   static_assert(kMaxReasonableInitialPacketNumber >=
-                    kInitialCongestionWindowSecure + 10,
+                    kInitialCongestionWindow + 10,
                 "kMaxReasonableInitialPacketNumber is unreasonably small "
-                "relative to kInitialCongestionWindowSecure.");
-  static_assert(kMaxReasonableInitialPacketNumber >=
-                    kInitialCongestionWindowInsecure + 10,
-                "kMaxReasonableInitialPacketNumber is unreasonably small "
-                "relative to kInitialCongestionWindowInsecure.");
+                "relative to kInitialCongestionWindow.");
 
  protected:
   virtual QuicServerSession* CreateQuicSession(

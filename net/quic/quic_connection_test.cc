@@ -424,7 +424,6 @@ class TestConnection : public QuicConnection {
                        factory,
                        /* owns_writer= */ false,
                        perspective,
-                       /* is_secure= */ false,
                        SupportedVersions(version)) {
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(

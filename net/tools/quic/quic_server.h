@@ -34,8 +34,9 @@ class QuicPacketReader;
 
 class QuicServer : public EpollCallbackInterface {
  public:
-  QuicServer();
-  QuicServer(const QuicConfig& config,
+  explicit QuicServer(ProofSource* proof_source);
+  QuicServer(ProofSource* proof_source,
+             const QuicConfig& config,
              const QuicVersionVector& supported_versions);
 
   ~QuicServer() override;
@@ -59,12 +60,6 @@ class QuicServer : public EpollCallbackInterface {
 
   void SetStrikeRegisterNoStartupPeriod() {
     crypto_config_.set_strike_register_no_startup_period();
-  }
-
-  // SetProofSource sets the ProofSource that will be used to verify the
-  // server's certificate, and takes ownership of |source|.
-  void SetProofSource(ProofSource* source) {
-    crypto_config_.SetProofSource(source);
   }
 
   bool overflow_supported() { return overflow_supported_; }

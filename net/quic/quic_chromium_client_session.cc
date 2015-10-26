@@ -106,7 +106,6 @@ scoped_ptr<base::Value> NetLogQuicClientSessionCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host", server_id->host());
   dict->SetInteger("port", server_id->port());
-  dict->SetBoolean("is_https", server_id->is_https());
   dict->SetBoolean("privacy_mode",
                    server_id->privacy_mode() == PRIVACY_MODE_ENABLED);
   dict->SetBoolean("require_confirmation", require_confirmation);

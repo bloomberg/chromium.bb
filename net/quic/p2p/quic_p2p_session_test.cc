@@ -240,10 +240,9 @@ class QuicP2PSessionTest : public ::testing::Test {
                                               Perspective perspective) {
     DefaultPacketWriterFactory writer_factory(socket.get());
     net::IPAddressNumber ip(net::kIPv4AddressSize, 0);
-    scoped_ptr<QuicConnection> quic_connection1(
-        new QuicConnection(0, net::IPEndPoint(ip, 0), &quic_helper_,
-                           writer_factory, true /* owns_writer */, perspective,
-                           true /* is_secuire */, QuicSupportedVersions()));
+    scoped_ptr<QuicConnection> quic_connection1(new QuicConnection(
+        0, net::IPEndPoint(ip, 0), &quic_helper_, writer_factory,
+        true /* owns_writer */, perspective, QuicSupportedVersions()));
 
     scoped_ptr<QuicP2PSession> result(new QuicP2PSession(
         config_, crypto_config, quic_connection1.Pass(), socket.Pass()));

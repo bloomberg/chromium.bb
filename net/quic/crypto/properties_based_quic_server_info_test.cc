@@ -26,7 +26,7 @@ const std::string kCertB("cert_b");
 class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
  protected:
   PropertiesBasedQuicServerInfoTest()
-      : server_id_("www.google.com", 443, true, PRIVACY_MODE_DISABLED),
+      : server_id_("www.google.com", 443, PRIVACY_MODE_DISABLED),
         server_info_(server_id_, http_server_properties_.GetWeakPtr()) {}
 
   // Initialize |server_info_| object and persist it.

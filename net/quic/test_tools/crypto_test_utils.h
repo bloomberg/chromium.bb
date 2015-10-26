@@ -59,10 +59,6 @@ class CryptoTestUtils {
   struct FakeClientOptions {
     FakeClientOptions();
 
-    // If dont_verify_certs is true then no ProofVerifier is set on the client.
-    // Thus no certificates will be requested or checked.
-    bool dont_verify_certs;
-
     // If channel_id_enabled is true then the client will attempt to send a
     // ChannelID.
     bool channel_id_enabled;

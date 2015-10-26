@@ -152,11 +152,10 @@ class QuicEndToEndTest : public PlatformTest {
     server_config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     QuicServer* server =
-        new QuicServer(server_config_, QuicSupportedVersions());
-    server_thread_.reset(new ServerThread(server, /*is_secure=*/true,
-                                          server_address_,
+        new QuicServer(CryptoTestUtils::ProofSourceForTesting(), server_config_,
+                       QuicSupportedVersions());
+    server_thread_.reset(new ServerThread(server, server_address_,
                                           strike_register_no_startup_period_));
-    server->SetProofSource(CryptoTestUtils::ProofSourceForTesting());
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());

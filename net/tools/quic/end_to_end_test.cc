@@ -24,6 +24,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
@@ -56,6 +57,7 @@ using base::WaitableEvent;
 using net::EpollServer;
 using net::IPAddressNumber;
 using net::test::ConstructEncryptedPacket;
+using net::test::CryptoTestUtils;
 using net::test::GenerateBody;
 using net::test::Loopback4;
 using net::test::MockQuicConnectionDebugVisitor;
@@ -275,9 +277,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   QuicTestClient* CreateQuicClient(QuicPacketWriterWrapper* writer) {
-    QuicTestClient* client = new QuicTestClient(
-        server_address_, server_hostname_,
-        /*secure=*/true, client_config_, client_supported_versions_);
+    QuicTestClient* client =
+        new QuicTestClient(server_address_, server_hostname_, client_config_,
+                           client_supported_versions_);
     client->UseWriter(writer);
     client->Connect();
     return client;
@@ -373,9 +375,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void StartServer() {
     server_thread_.reset(new ServerThread(
-        new QuicTestServer(server_config_, server_supported_versions_),
-        /*is_secure=*/true, server_address_,
-        strike_register_no_startup_period_));
+        new QuicTestServer(CryptoTestUtils::ProofSourceForTesting(),
+                           server_config_, server_supported_versions_),
+        server_address_, strike_register_no_startup_period_));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());

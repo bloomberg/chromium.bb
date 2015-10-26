@@ -71,7 +71,10 @@ int main(int argc, char *argv[]) {
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
   net::QuicConfig config;
-  net::tools::QuicServer server(config, net::QuicSupportedVersions());
+  net::tools::QuicServer server(
+      CreateProofSource(line->GetSwitchValuePath("certificate_file"),
+                        line->GetSwitchValuePath("key_file")),
+      config, net::QuicSupportedVersions());
   server.SetStrikeRegisterNoStartupPeriod();
   if (!line->HasSwitch("certificate_file")) {
     LOG(ERROR) << "missing --certificate_file";
@@ -81,9 +84,6 @@ int main(int argc, char *argv[]) {
     LOG(ERROR) << "missing --key_file";
     return 1;
   }
-  server.SetProofSource(
-      CreateProofSource(line->GetSwitchValuePath("certificate_file"),
-                        line->GetSwitchValuePath("key_file")));
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {

@@ -82,8 +82,7 @@ class RecordingProofVerifier : public ProofVerifier {
 
 }  // anonymous namespace
 
-BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
-                           bool secure) {
+BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers) {
   StringPiece uri = const_headers->request_uri();
   if (uri.empty()) {
     return nullptr;
@@ -96,8 +95,7 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
   if (!uri.starts_with("https://") &&
       !uri.starts_with("http://")) {
     // If we have a relative URL, set some defaults.
-    string full_uri = secure ? "https://www.google.com" :
-                               "http://www.google.com";
+    string full_uri = "https://www.google.com";
     full_uri.append(uri.as_string());
     headers->SetRequestUri(full_uri);
   }
@@ -125,7 +123,8 @@ MockableQuicClient::MockableQuicClient(
                  server_id,
                  supported_versions,
                  config,
-                 epoll_server),
+                 epoll_server,
+                 new RecordingProofVerifier()),
       override_connection_id_(0),
       test_writer_(nullptr) {}
 
@@ -161,29 +160,25 @@ void MockableQuicClient::UseConnectionId(QuicConnectionId connection_id) {
 
 QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                const string& server_hostname,
-                               bool secure,
                                const QuicVersionVector& supported_versions)
     : QuicTestClient(server_address,
                      server_hostname,
-                     secure,
                      QuicConfig(),
                      supported_versions) {}
 
 QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                const string& server_hostname,
-                               bool secure,
                                const QuicConfig& config,
                                const QuicVersionVector& supported_versions)
     : client_(new MockableQuicClient(server_address,
                                      QuicServerId(server_hostname,
                                                   server_address.port(),
-                                                  secure,
                                                   PRIVACY_MODE_DISABLED),
                                      config,
                                      supported_versions,
                                      &epoll_server_)),
       allow_bidirectional_data_(false) {
-  Initialize(secure);
+  Initialize();
 }
 
 QuicTestClient::QuicTestClient() : allow_bidirectional_data_(false) {}
@@ -195,30 +190,17 @@ QuicTestClient::~QuicTestClient() {
   client_->Disconnect();
 }
 
-void QuicTestClient::Initialize(bool secure) {
+void QuicTestClient::Initialize() {
   priority_ = 3;
   connect_attempted_ = false;
-  secure_ = secure;
   auto_reconnect_ = false;
   buffer_body_ = true;
   fec_policy_ = FEC_PROTECT_OPTIONAL;
-  proof_verifier_ = nullptr;
   ClearPerRequestState();
-  ExpectCertificates(secure_);
   // As chrome will generally do this, we want it to be the default when it's
   // not overridden.
   if (!client_->config()->HasSetBytesForConnectionIdToSend()) {
     client_->config()->SetBytesForConnectionIdToSend(0);
-  }
-}
-
-void QuicTestClient::ExpectCertificates(bool on) {
-  if (on) {
-    proof_verifier_ = new RecordingProofVerifier;
-    client_->SetProofVerifier(proof_verifier_);
-  } else {
-    proof_verifier_ = nullptr;
-    client_->SetProofVerifier(nullptr);
   }
 }
 
@@ -294,7 +276,6 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
       client_->set_server_id(
           QuicServerId(url.host(),
                        url.EffectiveIntPort(),
-                       url.SchemeIs("https"),
                        PRIVACY_MODE_DISABLED));
     }
   }
@@ -303,8 +284,7 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   // CHECK(message.body_chunks().empty())
   //      << "HTTPMessage::body_chunks not supported";
 
-  scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
-                                          secure_));
+  scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers()));
   ssize_t ret = GetOrCreateStreamAndSendRequest(
       (munged_headers.get() ? munged_headers.get() : message.headers()),
       message.body(), message.has_complete_message(), nullptr);
@@ -403,7 +383,7 @@ QuicErrorCode QuicTestClient::connection_error() {
 MockableQuicClient* QuicTestClient::client() { return client_.get(); }
 
 const string& QuicTestClient::cert_common_name() const {
-  return reinterpret_cast<RecordingProofVerifier*>(proof_verifier_)
+  return reinterpret_cast<RecordingProofVerifier*>(client_->proof_verifier())
       ->common_name();
 }
 

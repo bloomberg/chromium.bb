@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_client_session.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -13,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
 using net::test::MockHelper;
@@ -35,9 +37,10 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
   QuicSpdyClientStreamTest()
       : connection_(
             new StrictMock<MockConnection>(&helper_, Perspective::IS_CLIENT)),
+        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         session_(DefaultQuicConfig(),
                  connection_,
-                 QuicServerId("example.com", 80, false, PRIVACY_MODE_DISABLED),
+                 QuicServerId("example.com", 80, PRIVACY_MODE_DISABLED),
                  &crypto_config_),
         body_("hello world") {
     session_.Initialize();

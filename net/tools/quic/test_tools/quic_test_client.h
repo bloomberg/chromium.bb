@@ -69,20 +69,13 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
  public:
   QuicTestClient(IPEndPoint server_address,
                  const std::string& server_hostname,
-                 bool secure,
                  const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,
                  const std::string& server_hostname,
-                 bool secure,
                  const QuicConfig& config,
                  const QuicVersionVector& supported_versions);
 
   ~QuicTestClient() override;
-
-  // ExpectCertificates controls whether the server is expected to provide
-  // certificates. The certificates, if any, are not verified, but the common
-  // name is recorded and available with |cert_common_name()|.
-  void ExpectCertificates(bool on);
 
   // Sets the |user_agent_id| of the |client_|.
   void SetUserAgentID(const std::string& user_agent_id);
@@ -192,7 +185,7 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
  protected:
   QuicTestClient();
 
-  void Initialize(bool secure);
+  void Initialize();
 
   void set_client(MockableQuicClient* client) { client_.reset(client); }
 
@@ -239,7 +232,6 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   int64 response_body_size_;
   // True if we tried to connect already since the last call to Disconnect().
   bool connect_attempted_;
-  bool secure_;
   // The client will auto-connect exactly once before sending data.  If
   // something causes a connection reset, it will not automatically reconnect
   // unless auto_reconnect_ is true.
@@ -251,9 +243,6 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   // When true allows the sending of a request to continue while the response is
   // arriving.
   bool allow_bidirectional_data_;
-  // proof_verifier_ points to a RecordingProofVerifier that is owned by
-  // client_.
-  ProofVerifier* proof_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestClient);
 };

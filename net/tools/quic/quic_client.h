@@ -79,12 +79,14 @@ class QuicClient : public QuicClientBase,
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
-             EpollServer* epoll_server);
+             EpollServer* epoll_server,
+             ProofVerifier* proof_verifier);
   QuicClient(IPEndPoint server_address,
              const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
              const QuicConfig& config,
-             EpollServer* epoll_server);
+             EpollServer* epoll_server,
+             ProofVerifier* proof_verifier);
 
   ~QuicClient() override;
 

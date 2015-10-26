@@ -63,13 +63,16 @@ class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
 
 } // namespace
 
-QuicSimpleServer::QuicSimpleServer(const QuicConfig& config,
+QuicSimpleServer::QuicSimpleServer(ProofSource* proof_source,
+                                   const QuicConfig& config,
                                    const QuicVersionVector& supported_versions)
     : helper_(base::ThreadTaskRunnerHandle::Get().get(),
               &clock_,
               QuicRandom::GetInstance()),
       config_(config),
-      crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
+      crypto_config_(kSourceAddressTokenSecret,
+                     QuicRandom::GetInstance(),
+                     proof_source),
       supported_versions_(supported_versions),
       read_pending_(false),
       synchronous_read_count_(0),

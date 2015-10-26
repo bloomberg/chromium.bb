@@ -147,7 +147,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // |proof_source|: provides certificate chains and signatures. This class
   //     takes ownership of |proof_source|.
   QuicCryptoServerConfig(base::StringPiece source_address_token_secret,
-                         QuicRandom* server_nonce_entropy);
+                         QuicRandom* server_nonce_entropy,
+                         ProofSource* proof_source);
   ~QuicCryptoServerConfig();
 
   // TESTING is a magic parameter for passing to the constructor in tests.
@@ -279,10 +280,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const CachedNetworkParameters* cached_network_params,
       CryptoHandshakeMessage* out) const;
 
-  // SetProofSource installs |proof_source| as the ProofSource for handshakes.
-  // This object takes ownership of |proof_source|.
-  void SetProofSource(ProofSource* proof_source);
-
   // SetEphemeralKeySource installs an object that can cache ephemeral keys for
   // a short period of time. This object takes ownership of
   // |ephemeral_key_source|. If not set then ephemeral keys will be generated
@@ -343,9 +340,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Set and take ownership of the callback to invoke on primary config changes.
   void AcquirePrimaryConfigChangedCb(PrimaryConfigChangedCallback* cb);
-
-  // Returns true if this config has a |proof_source_|.
-  bool HasProofSource() const;
 
   // Returns the number of configs this object owns.
   int NumberOfConfigs() const;

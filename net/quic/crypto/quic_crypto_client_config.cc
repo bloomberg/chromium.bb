@@ -50,8 +50,9 @@ void RecordDiskCacheServerConfigState(
 
 }  // namespace
 
-QuicCryptoClientConfig::QuicCryptoClientConfig()
-    : disable_ecdsa_(false) {
+QuicCryptoClientConfig::QuicCryptoClientConfig(ProofVerifier* proof_verifier)
+    : proof_verifier_(proof_verifier), disable_ecdsa_(false) {
+  DCHECK(proof_verifier_.get());
   SetDefaults();
 }
 
@@ -408,12 +409,10 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
   }
 
-  if (server_id.is_https()) {
-    if (disable_ecdsa_) {
-      out->SetTaglist(kPDMD, kX59R, 0);
-    } else {
-      out->SetTaglist(kPDMD, kX509, 0);
-    }
+  if (disable_ecdsa_) {
+    out->SetTaglist(kPDMD, kX59R, 0);
+  } else {
+    out->SetTaglist(kPDMD, kX509, 0);
   }
 
   if (common_cert_sets) {
@@ -540,7 +539,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetStringPiece(kPUBS, out_params->client_key_exchange->public_value());
 
   const vector<string>& certs = cached->certs();
-  if (preferred_version > QUIC_VERSION_25 && proof_verifier()) {
+  if (preferred_version > QUIC_VERSION_25) {
     if (certs.empty()) {
       *error_details = "No certs to calculate XLCT";
       return QUIC_CRYPTO_INTERNAL_ERROR;
@@ -617,7 +616,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());
   out_params->hkdf_input_suffix.append(cached->server_config());
-  if (preferred_version > QUIC_VERSION_25 && proof_verifier()) {
+  if (preferred_version > QUIC_VERSION_25) {
     if (certs.empty()) {
       *error_details = "No certs found to include in KDF";
       return QUIC_CRYPTO_INTERNAL_ERROR;
@@ -686,11 +685,9 @@ QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
 
     cached->SetProof(certs, proof);
   } else {
-    if (proof_verifier() != nullptr) {
-      // Secure QUIC: clear existing proof as we have been sent a new SCFG
-      // without matching proof/certs.
-      cached->ClearProof();
-    }
+    // Secure QUIC: clear existing proof as we have been sent a new SCFG
+    // without matching proof/certs.
+    cached->ClearProof();
 
     if (has_proof && !has_cert) {
       *error_details = "Certificate missing";
@@ -710,7 +707,6 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     const CryptoHandshakeMessage& rej,
     QuicWallTime now,
     CachedState* cached,
-    bool is_https,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != nullptr);
@@ -747,13 +743,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       packed_error |= 1 << (reason - 1);
     }
     DVLOG(1) << "Reasons for rejection: " << packed_error;
-    if (is_https) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Secure",
-                                  packed_error);
-    } else {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Insecure",
-                                  packed_error);
-    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons.Secure",
+                                packed_error);
   }
 
   if (rej.tag() == kSREJ) {
@@ -878,10 +869,6 @@ ProofVerifier* QuicCryptoClientConfig::proof_verifier() const {
   return proof_verifier_.get();
 }
 
-void QuicCryptoClientConfig::SetProofVerifier(ProofVerifier* verifier) {
-  proof_verifier_.reset(verifier);
-}
-
 ChannelIDSource* QuicCryptoClientConfig::channel_id_source() const {
   return channel_id_source_.get();
 }
@@ -939,7 +926,6 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
   }
 
   QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
-                                server_id.is_https(),
                                 server_id.privacy_mode());
   if (!ContainsKey(canonical_server_map_, suffix_server_id)) {
     // This is the first host we've seen which matches the suffix, so make it

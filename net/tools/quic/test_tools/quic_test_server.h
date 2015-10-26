@@ -36,8 +36,9 @@ class QuicTestServer : public QuicServer {
                                               QuicSpdySession* session)>
       StreamCreationFunction;
 
-  explicit QuicTestServer();
-  QuicTestServer(const QuicConfig& config,
+  explicit QuicTestServer(ProofSource* proof_source);
+  QuicTestServer(ProofSource* proof_source,
+                 const QuicConfig& config,
                  const QuicVersionVector& supported_versions);
 
   // Create a custom dispatcher which creates custom sessions.

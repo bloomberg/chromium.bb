@@ -209,12 +209,14 @@ QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret,
-    QuicRandom* rand)
+    QuicRandom* server_nonce_entropy,
+    ProofSource* proof_source)
     : replay_protection_(true),
       configs_lock_(),
       primary_config_(nullptr),
       next_config_promotion_time_(QuicWallTime::Zero()),
       server_nonce_strike_register_lock_(),
+      proof_source_(proof_source),
       strike_register_no_startup_period_(false),
       strike_register_max_entries_(1 << 10),
       strike_register_window_secs_(600),
@@ -222,14 +224,16 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       source_address_token_lifetime_secs_(86400),
       server_nonce_strike_register_max_entries_(1 << 10),
       server_nonce_strike_register_window_secs_(120) {
+  DCHECK(proof_source_.get());
   default_source_address_token_boxer_.SetKey(
       DeriveSourceAddressTokenKey(source_address_token_secret));
 
   // Generate a random key and orbit for server nonces.
-  rand->RandBytes(server_nonce_orbit_, sizeof(server_nonce_orbit_));
+  server_nonce_entropy->RandBytes(server_nonce_orbit_,
+                                  sizeof(server_nonce_orbit_));
   const size_t key_size = server_nonce_boxer_.GetKeySize();
   scoped_ptr<uint8[]> key_bytes(new uint8[key_size]);
-  rand->RandBytes(key_bytes.get(), key_size);
+  server_nonce_entropy->RandBytes(key_bytes.get(), key_size);
 
   server_nonce_boxer_.SetKey(
       StringPiece(reinterpret_cast<char*>(key_bytes.get()), key_size));
@@ -603,7 +607,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   bool x509_supported = false;
   bool x509_ecdsa_supported = false;
   ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
-  if (proof_source_.get() && !crypto_proof->certs &&
+  DCHECK(proof_source_.get());
+  if (!crypto_proof->certs &&
       !proof_source_->GetProof(server_ip, info.sni.as_string(),
                                primary_config->serialized, x509_ecdsa_supported,
                                &crypto_proof->certs,
@@ -679,7 +684,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   // quic server adding the cert to the kdf.
   // TODO(nharper): Should a server that is configured to be secure (i.e. one
   // that has a proof_source_) be accepting responses from an insecure client?
-  if (version > QUIC_VERSION_25 && proof_source_.get() && x509_supported) {
+  DCHECK(proof_source_.get());
+  if (version > QUIC_VERSION_25 && x509_supported) {
     if (crypto_proof->certs->empty()) {
       *error_details = "Failed to get certs";
       return QUIC_CRYPTO_INTERNAL_ERROR;
@@ -1008,8 +1014,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     bool x509_supported = false;
     bool x509_ecdsa_supported = false;
     ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
-    if (proof_source_.get() &&
-        !proof_source_->GetProof(server_ip, info->sni.as_string(),
+    if (!proof_source_->GetProof(server_ip, info->sni.as_string(),
                                  requested_config->serialized,
                                  x509_ecdsa_supported, &crypto_proof->certs,
                                  &crypto_proof->signature)) {
@@ -1127,11 +1132,6 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
                             previous_source_address_tokens, client_ip, rand,
                             clock->WallNow(), cached_network_params));
 
-  if (proof_source_ == nullptr) {
-    // Insecure QUIC, can send SCFG without proof.
-    return true;
-  }
-
   const vector<string>* certs;
   string signature;
   if (!proof_source_->GetProof(
@@ -1188,10 +1188,6 @@ void QuicCryptoServerConfig::BuildRejection(
   ParseProofDemand(client_hello, &x509_supported,
                    &params->x509_ecdsa_supported);
   if (!x509_supported) {
-    return;
-  }
-
-  if (!proof_source_.get()) {
     return;
   }
 
@@ -1398,10 +1394,6 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   return config;
 }
 
-void QuicCryptoServerConfig::SetProofSource(ProofSource* proof_source) {
-  proof_source_.reset(proof_source);
-}
-
 void QuicCryptoServerConfig::SetEphemeralKeySource(
     EphemeralKeySource* ephemeral_key_source) {
   ephemeral_key_source_.reset(ephemeral_key_source);
@@ -1502,10 +1494,6 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
 
   return config.source_address_token_boxer->Box(
       rand, source_address_tokens.SerializeAsString());
-}
-
-bool QuicCryptoServerConfig::HasProofSource() const {
-  return proof_source_ != nullptr;
 }
 
 int QuicCryptoServerConfig::NumberOfConfigs() const {
@@ -1677,11 +1665,6 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
 bool QuicCryptoServerConfig::ValidateExpectedLeafCertificate(
     const CryptoHandshakeMessage& client_hello,
     const QuicCryptoProof& crypto_proof) const {
-  // If the server doesn't use https, then the client won't send XLCT and
-  // proof_source_ will be null, so in this case return true.
-  if (!proof_source_.get()) {
-    return true;
-  }
   if (crypto_proof.certs->empty()) {
     return false;
   }
@@ -1701,8 +1684,7 @@ void QuicCryptoServerConfig::ParseProofDemand(
   const QuicTag* their_proof_demands;
   size_t num_their_proof_demands;
 
-  if (proof_source_.get() == nullptr ||
-      client_hello.GetTaglist(kPDMD, &their_proof_demands,
+  if (client_hello.GetTaglist(kPDMD, &their_proof_demands,
                               &num_their_proof_demands) != QUIC_NO_ERROR) {
     return;
   }

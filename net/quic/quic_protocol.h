@@ -68,10 +68,8 @@ const QuicByteCount kMaxPacketSize = 1452;
 // Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;
 
-// We match SPDY's use of 32 when secure (since we'd compete with SPDY).
-const QuicPacketCount kInitialCongestionWindowSecure = 32;
-// Be conservative, and just use double a typical TCP ICWND for HTTP.
-const QuicPacketCount kInitialCongestionWindowInsecure = 20;
+// We match SPDY's use of 32 (since we'd compete with SPDY).
+const QuicPacketCount kInitialCongestionWindow = 32;
 
 // Minimum size of initial flow control window, for both stream and session.
 const uint32 kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB

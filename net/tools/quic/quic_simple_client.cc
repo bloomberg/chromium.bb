@@ -37,8 +37,12 @@ void QuicSimpleClient::ClientQuicDataToResend::Resend() {
 
 QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
                                    const QuicServerId& server_id,
-                                   const QuicVersionVector& supported_versions)
-    : QuicClientBase(server_id, supported_versions, QuicConfig()),
+                                   const QuicVersionVector& supported_versions,
+                                   ProofVerifier* proof_verifier)
+    : QuicClientBase(server_id,
+                     supported_versions,
+                     QuicConfig(),
+                     proof_verifier),
       server_address_(server_address),
       local_port_(0),
       helper_(CreateQuicConnectionHelper()),
@@ -49,8 +53,9 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
 QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
                                    const QuicServerId& server_id,
                                    const QuicVersionVector& supported_versions,
-                                   const QuicConfig& config)
-    : QuicClientBase(server_id, supported_versions, config),
+                                   const QuicConfig& config,
+                                   ProofVerifier* proof_verifier)
+    : QuicClientBase(server_id, supported_versions, config, proof_verifier),
       server_address_(server_address),
       local_port_(0),
       helper_(CreateQuicConnectionHelper()),
@@ -215,8 +220,7 @@ void QuicSimpleClient::StartConnect() {
 
   CreateQuicClientSession(new QuicConnection(
       GetNextConnectionId(), server_address_, helper_.get(), factory,
-      /* owns_writer= */ false, Perspective::IS_CLIENT, server_id().is_https(),
-      supported_versions()));
+      /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
 
   session()->Initialize();
   session()->CryptoConnect();

@@ -324,29 +324,20 @@ class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
 
 class MockConnection : public QuicConnection {
  public:
-  // Uses a ConnectionId of 42, 127.0.0.1:123 and is_secure equals false.
+  // Uses a ConnectionId of 42 and 127.0.0.1:123.
   MockConnection(MockHelper* helper, Perspective perspective);
 
-  // Uses a ConnectionId of 42, and 127.0.0.1:123.
-  MockConnection(MockHelper* helper, Perspective perspective, bool is_secure);
-
-  // Uses ConnectionId of 42 and is_secure equals false.
+  // Uses a ConnectionId of 42.
   MockConnection(IPEndPoint address,
-                 MockHelper* helper,
-                 Perspective perspective);
-
-  // Uses a ConnectionId of 42, 127.0.0.1:123 and is_secure equals false.
-  MockConnection(QuicConnectionId connection_id,
                  MockHelper* helper,
                  Perspective perspective);
 
   // Uses 127.0.0.1:123.
   MockConnection(QuicConnectionId connection_id,
                  MockHelper* helper,
-                 Perspective perspective,
-                 bool is_secure);
+                 Perspective perspective);
 
-  // Uses a ConnectionId of 42, 127.0.0.1:123 and is_secure equals false.
+  // Uses a ConnectionId of 42, and 127.0.0.1:123.
   MockConnection(MockHelper* helper,
                  Perspective perspective,
                  const QuicVersionVector& supported_versions);
@@ -355,7 +346,6 @@ class MockConnection : public QuicConnection {
                  IPEndPoint address,
                  MockHelper* helper,
                  Perspective perspective,
-                 bool is_secure,
                  const QuicVersionVector& supported_versions);
 
   ~MockConnection() override;

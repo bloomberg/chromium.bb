@@ -224,8 +224,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
 void QuicCryptoClientStream::DoInitialize(
     QuicCryptoClientConfig::CachedState* cached) {
-  if (!cached->IsEmpty() && !cached->signature().empty() &&
-      server_id_.is_https()) {
+  if (!cached->IsEmpty() && !cached->signature().empty()) {
     // Note that we verify the proof even if the cached proof is valid.
     // This allows us to respond to CA trust changes or certificate
     // expiration because it may have been a while since we last verified
@@ -375,7 +374,7 @@ void QuicCryptoClientStream::DoReceiveREJ(
   string error_details;
   QuicErrorCode error = crypto_config_->ProcessRejection(
       *in, session()->connection()->clock()->WallNow(), cached,
-      server_id_.is_https(), &crypto_negotiated_params_, &error_details);
+      &crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     next_state_ = STATE_NONE;
@@ -383,10 +382,7 @@ void QuicCryptoClientStream::DoReceiveREJ(
     return;
   }
   if (!cached->proof_valid()) {
-    if (!server_id_.is_https()) {
-      // We don't check the certificates for insecure QUIC connections.
-      SetCachedProofValid(cached);
-    } else if (!cached->signature().empty()) {
+    if (!cached->signature().empty()) {
       // Note that we only verify the proof if the cached proof is not
       // valid. If the cached proof is valid here, someone else must have
       // just added the server config to the cache and verified the proof,
@@ -582,11 +578,7 @@ void QuicCryptoClientStream::DoReceiveSHLO(
 void QuicCryptoClientStream::DoInitializeServerConfigUpdate(
     QuicCryptoClientConfig::CachedState* cached) {
   bool update_ignored = false;
-  if (!server_id_.is_https()) {
-    // We don't check the certificates for insecure QUIC connections.
-    SetCachedProofValid(cached);
-    next_state_ = STATE_NONE;
-  } else if (!cached->IsEmpty() && !cached->signature().empty()) {
+  if (!cached->IsEmpty() && !cached->signature().empty()) {
     // Note that we verify the proof even if the cached proof is valid.
     DCHECK(crypto_config_->proof_verifier());
     next_state_ = STATE_VERIFY_PROOF;
@@ -606,8 +598,7 @@ void QuicCryptoClientStream::SetCachedProofValid(
 
 bool QuicCryptoClientStream::RequiresChannelID(
     QuicCryptoClientConfig::CachedState* cached) {
-  if (!server_id_.is_https() ||
-      server_id_.privacy_mode() == PRIVACY_MODE_ENABLED ||
+  if (server_id_.privacy_mode() == PRIVACY_MODE_ENABLED ||
       !crypto_config_->channel_id_source()) {
     return false;
   }

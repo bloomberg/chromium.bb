@@ -1196,7 +1196,7 @@ typedef HttpServerPropertiesImplTest QuicServerInfoServerPropertiesTest;
 
 TEST_F(QuicServerInfoServerPropertiesTest, Initialize) {
   HostPortPair google_server("www.google.com", 443);
-  QuicServerId quic_server_id(google_server, true, PRIVACY_MODE_ENABLED);
+  QuicServerId quic_server_id(google_server, PRIVACY_MODE_ENABLED);
 
   // Check empty map.
   QuicServerInfoMap quic_server_info_map(QuicServerInfoMap::NO_AUTO_EVICT);
@@ -1214,7 +1214,7 @@ TEST_F(QuicServerInfoServerPropertiesTest, Initialize) {
 
 TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
   HostPortPair foo_server("foo", 80);
-  QuicServerId quic_server_id(foo_server, true, PRIVACY_MODE_ENABLED);
+  QuicServerId quic_server_id(foo_server, PRIVACY_MODE_ENABLED);
   EXPECT_EQ(0u, impl_.quic_server_info_map().size());
 
   std::string quic_server_info1("quic_server_info1");

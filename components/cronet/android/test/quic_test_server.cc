@@ -41,19 +41,18 @@ void StartOnServerThread(const base::FilePath& test_files_root) {
   net::IPAddressNumber ip;
   net::ParseIPLiteralToNumber(kServerHost, &ip);
   net::QuicConfig config;
-  g_quic_server =
-      new net::tools::QuicSimpleServer(config, net::QuicSupportedVersions());
 
   // Set up server certs.
   base::FilePath directory;
   CHECK(base::android::GetExternalStorageDirectory(&directory));
   directory = directory.Append("net/data/ssl/certificates");
+  // TODO(xunjieli): Use scoped_ptr when crbug.com/545474 is fixed.
   net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
   CHECK(proof_source->Initialize(
       directory.Append("quic_test.example.com.crt"),
       directory.Append("quic_test.example.com.key.pkcs8")));
-  // TODO(xunjieli): Use scoped_ptr when crbug.com/545474 is fixed.
-  g_quic_server->SetProofSource(proof_source);
+  g_quic_server = new net::tools::QuicSimpleServer(
+      proof_source, config, net::QuicSupportedVersions());
 
   // Start listening.
   int rv = g_quic_server->Listen(net::IPEndPoint(ip, kServerPort));

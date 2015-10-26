@@ -61,10 +61,9 @@ class QuicTestDispatcher : public QuicDispatcher {
     if (session_creator_ == nullptr && stream_creator_ == nullptr) {
       return QuicDispatcher::CreateQuicSession(id, client);
     }
-    QuicConnection* connection =
-        new QuicConnection(id, client, helper(), connection_writer_factory(),
-                           /* owns_writer= */ true, Perspective::IS_SERVER,
-                           /* is_secure */ true, supported_versions());
+    QuicConnection* connection = new QuicConnection(
+        id, client, helper(), connection_writer_factory(),
+        /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions());
 
     QuicServerSession* session = nullptr;
     if (stream_creator_ != nullptr) {
@@ -106,11 +105,13 @@ class QuicTestDispatcher : public QuicDispatcher {
   QuicTestServer::StreamCreationFunction stream_creator_;
 };
 
-QuicTestServer::QuicTestServer() : QuicServer() {}
+QuicTestServer::QuicTestServer(ProofSource* proof_source)
+    : QuicServer(proof_source) {}
 
-QuicTestServer::QuicTestServer(const QuicConfig& config,
+QuicTestServer::QuicTestServer(ProofSource* proof_source,
+                               const QuicConfig& config,
                                const QuicVersionVector& supported_versions)
-    : QuicServer(config, supported_versions) {}
+    : QuicServer(proof_source, config, supported_versions) {}
 
 QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
   return new QuicTestDispatcher(

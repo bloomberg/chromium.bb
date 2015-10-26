@@ -208,23 +208,23 @@ int main(int argc, char *argv[]) {
   // Build the client, and try to connect.
   net::EpollServer epoll_server;
   net::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
-                              /*is_https=*/true, net::PRIVACY_MODE_DISABLED);
+                              net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::QuicSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
     versions.push_back(static_cast<net::QuicVersion>(FLAGS_quic_version));
   }
-  net::tools::QuicClient client(net::IPEndPoint(ip_addr, port), server_id,
-                                versions, &epoll_server);
   scoped_ptr<CertVerifier> cert_verifier;
   scoped_ptr<TransportSecurityState> transport_security_state;
-  client.set_initial_max_packet_length(
-      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   // For secure QUIC we need to verify the cert chain.
   cert_verifier = CertVerifier::CreateDefault();
   transport_security_state.reset(new TransportSecurityState);
-  client.SetProofVerifier(new ProofVerifierChromium(
-      cert_verifier.get(), nullptr, transport_security_state.get()));
+  ProofVerifierChromium* proof_verifier = new ProofVerifierChromium(
+      cert_verifier.get(), nullptr, transport_security_state.get());
+  net::tools::QuicClient client(net::IPEndPoint(ip_addr, FLAGS_port), server_id,
+                                versions, &epoll_server, proof_verifier);
+  client.set_initial_max_packet_length(
+      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
     return 1;

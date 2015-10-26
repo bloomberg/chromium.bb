@@ -15,6 +15,7 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
@@ -28,6 +29,7 @@
 using base::StringPiece;
 using net::EpollServer;
 using net::test::ConstructEncryptedPacket;
+using net::test::CryptoTestUtils;
 using net::test::MockConnection;
 using net::test::MockHelper;
 using net::test::ValueRestore;
@@ -135,7 +137,8 @@ class QuicDispatcherTest : public ::testing::Test {
   QuicDispatcherTest()
       : helper_(&eps_),
         crypto_config_(QuicCryptoServerConfig::TESTING,
-                       QuicRandom::GetInstance()),
+                       QuicRandom::GetInstance(),
+                       CryptoTestUtils::ProofSourceForTesting()),
         dispatcher_(config_, &crypto_config_, &eps_),
         time_wait_list_manager_(nullptr),
         session1_(nullptr),

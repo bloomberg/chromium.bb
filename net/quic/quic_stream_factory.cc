@@ -217,7 +217,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
     : io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
       host_resolver_(host_resolver),
-      server_id_(host_port_pair, /*is_https=*/true, privacy_mode),
+      server_id_(host_port_pair, privacy_mode),
       cert_verify_flags_(cert_verify_flags),
       server_and_origin_have_same_host_(server_and_origin_have_same_host),
       is_post_(is_post),
@@ -529,7 +529,7 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   if (!factory_)
     return base::TimeDelta();
   return factory_->GetTimeDelayForWaitingJob(
-      QuicServerId(host_port_pair_, /*is_https=*/true, privacy_mode_));
+      QuicServerId(host_port_pair_, privacy_mode_));
 }
 
 scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
@@ -581,6 +581,9 @@ QuicStreamFactory::QuicStreamFactory(
       max_packet_length_(max_packet_length),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       config_(InitializeQuicConfig(connection_options)),
+      crypto_config_(new ProofVerifierChromium(cert_verifier,
+                                               cert_policy_enforcer,
+                                               transport_security_state)),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
       always_require_handshake_confirmation_(
@@ -621,8 +624,6 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
-  crypto_config_.SetProofVerifier(new ProofVerifierChromium(
-      cert_verifier, cert_policy_enforcer, transport_security_state));
   // TODO(rtenneti): http://crbug.com/487355. Temporary fix for b/20760730 until
   // channel_id_service is supported in cronet.
   if (channel_id_service) {
@@ -704,7 +705,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
                               base::StringPiece method,
                               const BoundNetLog& net_log,
                               QuicStreamRequest* request) {
-  QuicServerId server_id(host_port_pair, /*is_https=*/true, privacy_mode);
+  QuicServerId server_id(host_port_pair, privacy_mode);
   SessionMap::iterator it = active_sessions_.find(server_id);
   if (it != active_sessions_.end()) {
     QuicChromiumClientSession* session = it->second;
@@ -1241,8 +1242,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
 
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), packet_writer_factory,
-      true /* owns_writer */, Perspective::IS_CLIENT, /*is_https=*/true,
-      supported_versions_);
+      true /* owns_writer */, Perspective::IS_CLIENT, supported_versions_);
   connection->SetMaxPacketLength(max_packet_length_);
 
   InitializeCachedStateInCryptoConfig(server_id, server_info);

@@ -31,6 +31,7 @@
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -71,7 +72,6 @@ class TestQuicConnection : public QuicConnection {
                        writer_factory,
                        true /* owns_writer */,
                        Perspective::IS_CLIENT,
-                       false /* is_secure */,
                        versions) {}
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -139,6 +139,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   QuicHttpStreamTest()
       : net_log_(BoundNetLog()),
         use_closing_stream_(false),
+        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         read_buffer_(new IOBufferWithSize(4096)),
         connection_id_(2),
         stream_id_(kClientDataStreamId1),
@@ -222,7 +223,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
-                     /*is_secure=*/false, PRIVACY_MODE_DISABLED),
+                     PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,

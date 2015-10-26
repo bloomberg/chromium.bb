@@ -6,11 +6,13 @@
 
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using net::test::CryptoTestUtils;
 using net::test::MockQuicDispatcher;
 
 namespace net {
@@ -22,7 +24,9 @@ namespace {
 class QuicServerDispatchPacketTest : public ::testing::Test {
  public:
   QuicServerDispatchPacketTest()
-      : crypto_config_("blah", QuicRandom::GetInstance()),
+      : crypto_config_("blah",
+                       QuicRandom::GetInstance(),
+                       CryptoTestUtils::ProofSourceForTesting()),
         dispatcher_(config_,
                     &crypto_config_,
                     new QuicDispatcher::DefaultPacketWriterFactory(),

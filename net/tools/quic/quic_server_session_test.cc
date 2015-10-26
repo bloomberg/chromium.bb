@@ -11,6 +11,7 @@
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
@@ -26,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using __gnu_cxx::vector;
+using net::test::CryptoTestUtils;
 using net::test::MockConnection;
 using net::test::MockHelper;
 using net::test::QuicConfigPeer;
@@ -74,7 +76,8 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicServerSessionTest()
       : crypto_config_(QuicCryptoServerConfig::TESTING,
-                       QuicRandom::GetInstance()) {
+                       QuicRandom::GetInstance(),
+                       CryptoTestUtils::ProofSourceForTesting()) {
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest,
                                        kMaxStreamsForTest);
     config_.SetInitialStreamFlowControlWindowToSend(

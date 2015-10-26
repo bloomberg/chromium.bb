@@ -49,7 +49,7 @@ class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
-      : manager_(Perspective::IS_SERVER, &clock_, &stats_, kCubic, kNack, true),
+      : manager_(Perspective::IS_SERVER, &clock_, &stats_, kCubic, kNack),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
     // These tests only work with pacing enabled.

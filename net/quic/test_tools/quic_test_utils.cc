@@ -230,16 +230,10 @@ QuicPacketWriter* NiceMockPacketWriterFactory::Create(
 }
 
 MockConnection::MockConnection(MockHelper* helper, Perspective perspective)
-    : MockConnection(helper, perspective, /* is_secure= */ false) {}
-
-MockConnection::MockConnection(MockHelper* helper,
-                               Perspective perspective,
-                               bool is_secure)
     : MockConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      helper,
                      perspective,
-                     is_secure,
                      QuicSupportedVersions()) {}
 
 MockConnection::MockConnection(IPEndPoint address,
@@ -249,26 +243,15 @@ MockConnection::MockConnection(IPEndPoint address,
                      address,
                      helper,
                      perspective,
-                     /* is_secure= */ false,
                      QuicSupportedVersions()) {}
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
                                MockHelper* helper,
                                Perspective perspective)
     : MockConnection(connection_id,
-                     helper,
-                     perspective,
-                     /* is_secure= */ false) {}
-
-MockConnection::MockConnection(QuicConnectionId connection_id,
-                               MockHelper* helper,
-                               Perspective perspective,
-                               bool is_secure)
-    : MockConnection(connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      helper,
                      perspective,
-                     is_secure,
                      QuicSupportedVersions()) {}
 
 MockConnection::MockConnection(MockHelper* helper,
@@ -278,14 +261,12 @@ MockConnection::MockConnection(MockHelper* helper,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      helper,
                      perspective,
-                     /* is_secure= */ false,
                      supported_versions) {}
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
                                IPEndPoint address,
                                MockHelper* helper,
                                Perspective perspective,
-                               bool is_secure,
                                const QuicVersionVector& supported_versions)
     : QuicConnection(connection_id,
                      address,
@@ -293,7 +274,6 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      perspective,
-                     is_secure,
                      supported_versions) {
   ON_CALL(*this, OnError(_))
       .WillByDefault(

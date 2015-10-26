@@ -67,16 +67,14 @@ QuicSentPacketManager::QuicSentPacketManager(
     const QuicClock* clock,
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
-    LossDetectionType loss_type,
-    bool is_secure)
+    LossDetectionType loss_type)
     : unacked_packets_(&ack_notifier_manager_),
       perspective_(perspective),
       clock_(clock),
       stats_(stats),
       debug_delegate_(nullptr),
       network_change_visitor_(nullptr),
-      initial_congestion_window_(is_secure ? kInitialCongestionWindowSecure
-                                           : kInitialCongestionWindowInsecure),
+      initial_congestion_window_(kInitialCongestionWindow),
       send_algorithm_(
           SendAlgorithmInterface::Create(clock,
                                          &rtt_stats_,

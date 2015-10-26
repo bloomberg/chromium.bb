@@ -94,8 +94,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                         const QuicClock* clock,
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
-                        LossDetectionType loss_type,
-                        bool is_secure);
+                        LossDetectionType loss_type);
   virtual ~QuicSentPacketManager();
 
   virtual void SetFromConfig(const QuicConfig& config);

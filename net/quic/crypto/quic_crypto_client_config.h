@@ -181,7 +181,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     DISALLOW_COPY_AND_ASSIGN(CachedState);
   };
 
-  QuicCryptoClientConfig();
+  explicit QuicCryptoClientConfig(ProofVerifier* proof_verifier);
   ~QuicCryptoClientConfig();
 
   // LookupOrCreate returns a CachedState for the given |server_id|. If no such
@@ -239,7 +239,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode ProcessRejection(const CryptoHandshakeMessage& rej,
                                  QuicWallTime now,
                                  CachedState* cached,
-                                 bool is_https,
                                  QuicCryptoNegotiatedParameters* out_params,
                                  std::string* error_details);
 
@@ -273,12 +272,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       std::string* error_details);
 
   ProofVerifier* proof_verifier() const;
-
-  // SetProofVerifier takes ownership of a |ProofVerifier| that clients are
-  // free to use in order to verify certificate chains from servers. If a
-  // ProofVerifier is set then the client will request a certificate chain from
-  // the server.
-  void SetProofVerifier(ProofVerifier* verifier);
 
   ChannelIDSource* channel_id_source() const;
 

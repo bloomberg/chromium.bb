@@ -40,6 +40,8 @@ using testing::_;
 namespace net {
 namespace test {
 
+#if defined(USE_OPENSSL)
+
 class QuicCryptoServerConfigPeer {
  public:
   static string GetPrimaryOrbit(const QuicCryptoServerConfig& config) {
@@ -68,16 +70,10 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
  public:
   QuicCryptoServerStreamTest()
       : server_crypto_config_(QuicCryptoServerConfig::TESTING,
-                              QuicRandom::GetInstance()),
-        server_id_(kServerHostname, kServerPort, true, PRIVACY_MODE_DISABLED) {
-#if defined(USE_OPENSSL)
-    server_crypto_config_.SetProofSource(
-        CryptoTestUtils::ProofSourceForTesting());
-#else
-    // TODO(rch): Implement a NSS proof source.
-    server_crypto_config_.SetProofSource(
-        CryptoTestUtils::FakeProofSourceForTesting());
-#endif
+                              QuicRandom::GetInstance(),
+                              CryptoTestUtils::ProofSourceForTesting()),
+        server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
+        client_crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {
     server_crypto_config_.set_strike_register_no_startup_period();
 
     InitializeServer();
@@ -133,16 +129,6 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
                                &client_connection_, &client_session);
     CHECK(client_session);
     client_session_.reset(client_session);
-    if (!client_options_.dont_verify_certs) {
-#if defined(USE_OPENSSL)
-      client_crypto_config_.SetProofVerifier(
-          CryptoTestUtils::ProofVerifierForTesting());
-#else
-      // TODO(rch): Implement a NSS proof source.
-      client_crypto_config_.SetProofVerifier(
-          CryptoTestUtils::FakeProofVerifierForTesting());
-#endif
-    }
   }
 
   bool AsyncStrikeRegisterVerification() {
@@ -395,19 +381,6 @@ TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
                       message_data_->AsStringPiece()));
 }
 
-TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {
-  server_crypto_config_.SetProofSource(nullptr);
-  server_id_ =
-      QuicServerId(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED);
-  client_options_.dont_verify_certs = true;
-
-  // Only 2 client hellos need to be sent in the no-certs case: one to get the
-  // source-address token and the second to finish.
-  EXPECT_EQ(2, CompleteCryptoHandshake());
-  EXPECT_TRUE(server_stream()->encryption_established());
-  EXPECT_TRUE(server_stream()->handshake_confirmed());
-}
-
 TEST_P(QuicCryptoServerStreamTest, ChannelID) {
   client_options_.channel_id_enabled = true;
   client_options_.channel_id_source_async = false;
@@ -449,5 +422,8 @@ TEST_P(QuicCryptoServerStreamTest, DoesPeerSupportStatelessRejects) {
 }
 
 }  // namespace
+
+#endif
+
 }  // namespace test
 }  // namespace net

@@ -47,7 +47,8 @@ class QuicClientBase {
 
   QuicClientBase(const QuicServerId& server_id,
                  const QuicVersionVector& supported_versions,
-                 const QuicConfig& config);
+                 const QuicConfig& config,
+                 ProofVerifier* proof_verifier);
 
   ~QuicClientBase();
 
@@ -87,13 +88,6 @@ class QuicClientBase {
 
   void SetUserAgentID(const std::string& user_agent_id) {
     crypto_config_.set_user_agent_id(user_agent_id);
-  }
-
-  // SetProofVerifier sets the ProofVerifier that will be used to verify the
-  // server's certificate and takes ownership of |verifier|.
-  void SetProofVerifier(ProofVerifier* verifier) {
-    // TODO(rtenneti): We should set ProofVerifier in QuicClientSession.
-    crypto_config_.SetProofVerifier(verifier);
   }
 
   // SetChannelIDSource sets a ChannelIDSource that will be called, when the
@@ -166,6 +160,8 @@ class QuicClientBase {
   QuicByteCount initial_max_packet_length() {
     return initial_max_packet_length_;
   }
+
+  ProofVerifier* proof_verifier() const;
 
  protected:
   virtual QuicClientSession* CreateQuicClientSession(

@@ -9,6 +9,7 @@
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -47,7 +48,8 @@ class QuicReliableClientStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicReliableClientStreamTest()
-      : session_(new MockConnection(&helper_,
+      : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
+        session_(new MockConnection(&helper_,
                                     Perspective::IS_CLIENT,
                                     SupportedVersions(GetParam()))) {
     stream_ =
@@ -94,11 +96,11 @@ class QuicReliableClientStreamTest
               StringPiece(buffer->data(), expected_data.length()));
   }
 
+  QuicCryptoClientConfig crypto_config_;
   testing::StrictMock<MockDelegate> delegate_;
   MockHelper helper_;
   MockQuicSpdySession session_;
   QuicReliableClientStream* stream_;
-  QuicCryptoClientConfig crypto_config_;
   SpdyHeaderBlock headers_;
 };
 

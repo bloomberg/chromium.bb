@@ -13,7 +13,6 @@ namespace tools {
 namespace test {
 
 ServerThread::ServerThread(QuicServer* server,
-                           bool is_secure,
                            const IPEndPoint& address,
                            bool strike_register_no_startup_period)
     : SimpleThread("server_thread"),
@@ -28,12 +27,6 @@ ServerThread::ServerThread(QuicServer* server,
       initialized_(false) {
   if (strike_register_no_startup_period) {
     server_->SetStrikeRegisterNoStartupPeriod();
-  }
-  if (is_secure) {
-    // TODO(rtenneti): replace this with ProofSourceForTesting() when Chromium
-    // has a working ProofSourceForTesting().
-    server_->SetProofSource(
-        net::test::CryptoTestUtils::FakeProofSourceForTesting());
   }
 }
 
