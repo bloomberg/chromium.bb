@@ -20,6 +20,7 @@
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "third_party/skia/include/gpu/SkGr.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/skia_util.h"
 
 // Skia internal format depends on a platform. On Android it is ABGR, on others
 // it is ARGB.
@@ -350,10 +351,12 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   paint.setXfermodeMode(mode);
   paint.setFilterQuality(kLow_SkFilterQuality);
 
-  const bool need_transform =
-      video_rotation != VIDEO_ROTATION_0 ||
-      dest_rect.size() != gfx::SizeF(video_frame->visible_rect().size()) ||
-      !dest_rect.origin().IsOrigin();
+  const bool need_rotation = video_rotation != VIDEO_ROTATION_0;
+  const bool need_scaling =
+      dest_rect.size() !=
+      gfx::SizeF(gfx::SkISizeToSize(last_image_->dimensions()));
+  const bool need_translation = !dest_rect.origin().IsOrigin();
+  bool need_transform = need_rotation || need_scaling || need_translation;
   if (need_transform) {
     canvas->save();
     canvas->translate(
