@@ -246,6 +246,9 @@ class Dispatcher : public content::RenderProcessObserver,
   // |context|.
   void RequireGuestViewModules(ScriptContext* context);
 
+  // Adds features that are specific to the current channel.
+  void AddChannelSpecificFeatures();
+
   // The delegate for this dispatcher. Not owned, but must extend beyond the
   // Dispatcher's own lifetime.
   DispatcherDelegate* delegate_;
