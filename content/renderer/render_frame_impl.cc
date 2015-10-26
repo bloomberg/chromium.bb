@@ -2863,7 +2863,14 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       render_thread_impl->histogram_customizer()->
           RenderViewNavigatedToHost(GURL(GetLoadingUrl()).host(),
                                     RenderView::GetRenderViewCount());
-      render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
+      // The scheduler isn't interested in history inert commits unless they
+      // are reloads.
+      if (commit_type != blink::WebHistoryInertCommit ||
+          PageTransitionCoreTypeIs(
+              navigation_state->GetTransitionType(),
+              ui::PAGE_TRANSITION_RELOAD)) {
+        render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
+      }
     }
   }
 
