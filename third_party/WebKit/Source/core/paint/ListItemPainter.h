@@ -10,7 +10,6 @@
 namespace blink {
 
 struct PaintInfo;
-class Path;
 class LayoutListItem;
 class LayoutPoint;
 
@@ -22,9 +21,6 @@ public:
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
-    Path getCanonicalPath() const;
-    Path getPath(const LayoutPoint& origin) const;
-
     const LayoutListItem& m_layoutListItem;
 };
 

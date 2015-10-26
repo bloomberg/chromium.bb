@@ -118,10 +118,6 @@ public:
     GraphicsLayer* scrollLayer() const;
     GraphicsLayer* containerLayer() const;
 
-    // We don't always have a root transform layer. This function lazily allocates one
-    // and returns it as required.
-    GraphicsLayer* ensureRootTransformLayer();
-
     enum RootLayerAttachment {
         RootLayerUnattached,
         RootLayerAttachedViaChromeClient,

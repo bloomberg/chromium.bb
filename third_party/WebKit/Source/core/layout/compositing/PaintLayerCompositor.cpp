@@ -713,20 +713,6 @@ GraphicsLayer* PaintLayerCompositor::containerLayer() const
     return m_containerLayer.get();
 }
 
-GraphicsLayer* PaintLayerCompositor::ensureRootTransformLayer()
-{
-    ASSERT(rootGraphicsLayer());
-
-    if (!m_rootTransformLayer.get()) {
-        m_rootTransformLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-        m_overflowControlsHostLayer->addChild(m_rootTransformLayer.get());
-        m_rootTransformLayer->addChild(m_containerLayer.get());
-        updateOverflowControlsLayers();
-    }
-
-    return m_rootTransformLayer.get();
-}
-
 void PaintLayerCompositor::setIsInWindow(bool isInWindow)
 {
     if (!staleInCompositingMode())
