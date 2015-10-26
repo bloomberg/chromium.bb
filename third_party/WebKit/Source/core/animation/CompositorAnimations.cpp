@@ -253,8 +253,12 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         if (!property.isCSSProperty())
             return false;
 
-        if (isTransformRelatedCSSProperty(property))
+        if (isTransformRelatedCSSProperty(property)) {
+            if (targetElement.layoutObject() && targetElement.layoutObject()->isInline()) {
+                return false;
+            }
             transformPropertyCount++;
+        }
 
         const PropertySpecificKeyframeVector& keyframes = keyframeEffect.getPropertySpecificKeyframes(property);
         ASSERT(keyframes.size() >= 2);
