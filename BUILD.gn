@@ -194,8 +194,7 @@ group("both_gn_and_gyp") {
 
   deps += root_extra_deps
 
-  if (enable_extensions && !is_mac) {
-    # TODO(GYP): Get this working on the mac?
+  if (enable_extensions) {
     deps += [ "//extensions/shell:app_shell_unittests" ]
   }
 

@@ -109,7 +109,7 @@
             '../components/nacl.gyp:nacl_loader_unittests',
           ]
         }],
-        ['enable_extensions==1 and OS!="mac"', {
+        ['enable_extensions==1', {
           'dependencies': [
             '../extensions/shell/app_shell.gyp:app_shell',
             '../extensions/shell/app_shell.gyp:app_shell_unittests',
