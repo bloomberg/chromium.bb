@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/memory/tab_discard_state.h"
+#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -238,8 +238,10 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   // Discard one of the tabs.
   WebContents* null_contents1 = tab_manager.DiscardWebContentsAt(0, &tabstrip);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
   ASSERT_EQ(null_contents1, tabstrip.GetWebContentsAt(0));
   ASSERT_EQ(contents2, tabstrip.GetWebContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.NbEvents());
@@ -248,11 +250,14 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   tabstrip_observer.Reset();
 
   // Discard the same tab again, after resetting its discard state.
-  TabDiscardState::SetDiscardState(tabstrip.GetWebContentsAt(0), false);
+  TabManager::WebContentsData::SetDiscardState(tabstrip.GetWebContentsAt(0),
+                                               false);
   WebContents* null_contents2 = tab_manager.DiscardWebContentsAt(0, &tabstrip);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
   ASSERT_EQ(null_contents2, tabstrip.GetWebContentsAt(0));
   ASSERT_EQ(contents2, tabstrip.GetWebContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.NbEvents());
@@ -262,14 +267,18 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   // Activating the tab should clear its discard state.
   tabstrip.ActivateTabAt(0, true /* user_gesture */);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   // Don't discard active tab.
   tab_manager.DiscardWebContentsAt(0, &tabstrip);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -292,13 +301,16 @@ TEST_F(TabManagerTest, ReloadDiscardedTabContextMenu) {
   // so the reload can happen.
   WebContentsTester::For(test_contents)
       ->NavigateAndCommit(GURL("chrome://newtab"));
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tab_manager.DiscardWebContentsAt(1, &tabstrip);
-  EXPECT_TRUE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.GetWebContentsAt(1)->GetController().Reload(false);
-  EXPECT_FALSE(TabDiscardState::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());

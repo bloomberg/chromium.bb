@@ -61,7 +61,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/memory/tab_discard_state.h"
+#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -1051,7 +1051,9 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   exclusive_access_manager_->OnTabDetachedFromView(old_contents);
 
   // Discarded tabs always get reloaded.
-  if (memory::TabDiscardState::IsDiscarded(new_contents))
+  // TODO(georgesak): Validate the usefulness of this. And if needed then move
+  // to TabManager.
+  if (memory::TabManager::WebContentsData::IsDiscarded(new_contents))
     chrome::Reload(this, CURRENT_TAB);
 
   // If we have any update pending, do it now.

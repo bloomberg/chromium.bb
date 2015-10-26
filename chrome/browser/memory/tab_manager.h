@@ -50,6 +50,10 @@ class TabManagerDelegate;
 // support for new platforms is added.
 class TabManager : public TabStripModelObserver {
  public:
+  // TODO(georgesak): Make this private once all external dependencies are
+  // removed.
+  class WebContentsData;
+
   TabManager();
   ~TabManager() override;
 

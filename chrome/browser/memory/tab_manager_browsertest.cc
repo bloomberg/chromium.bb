@@ -5,8 +5,8 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/memory/tab_discard_state.h"
 #include "chrome/browser/memory/tab_manager.h"
+#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -95,31 +95,42 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   // and was not selected.
   EXPECT_TRUE(tab_manager->DiscardTab());
   EXPECT_EQ(3, tsm->count());
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(2)));
   EXPECT_TRUE(tab_manager->recent_tab_discard());
 
   // Run discard again, make sure it kills the second tab.
   EXPECT_TRUE(tab_manager->DiscardTab());
   EXPECT_EQ(3, tsm->count());
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(2)));
 
   // Kill the third tab. It should not kill the last tab, since it is active
   // tab.
   EXPECT_FALSE(tab_manager->DiscardTab());
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(2)));
 
   // Kill the third tab after making second tab active.
   tsm->ActivateTabAt(1, true);
   EXPECT_EQ(1, tsm->active_index());
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(1)));
   tab_manager->DiscardWebContentsAt(2, tsm);
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(2)));
 
   // Force creation of the FindBarController.
   browser()->GetFindBarController();
@@ -134,9 +145,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_EQ(browser()->GetFindBarController()->web_contents(),
             tsm->GetActiveWebContents());
   EXPECT_EQ(0, tsm->active_index());
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_TRUE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(2)));
 
   // Select the third tab. It should reload.
   WindowedNotificationObserver reload2(
@@ -145,9 +159,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   chrome::SelectNumberedTab(browser(), 2);
   reload2.Wait();
   EXPECT_EQ(2, tsm->active_index());
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
-  EXPECT_FALSE(memory::TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(1)));
+  EXPECT_FALSE(
+      TabManager::WebContentsData::IsDiscarded(tsm->GetWebContentsAt(2)));
 
   // Navigate the third tab back twice.  We used to crash here due to
   // crbug.com/121373.

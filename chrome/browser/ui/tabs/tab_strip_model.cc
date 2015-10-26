@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/memory/tab_discard_state.h"
+#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
@@ -233,7 +233,7 @@ void TabStripModel::WebContentsData::WebContentsDestroyed() {
 
 void TabStripModel::WebContentsData::DidStartLoading() {
   // TODO(georgesak): move this into tab_manager.cc.
-  memory::TabDiscardState::SetDiscardState(contents_, false);
+  memory::TabManager::WebContentsData::SetDiscardState(contents_, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1268,7 +1268,7 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                          reason));
     in_notify_ = false;
     // TODO(georgesak): move this into tab_manager.cc.
-    memory::TabDiscardState::SetDiscardState(new_contents, false);
+    memory::TabManager::WebContentsData::SetDiscardState(new_contents, false);
   }
 }
 

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_TAB_DISCARD_STATE_H_
-#define CHROME_BROWSER_MEMORY_TAB_DISCARD_STATE_H_
+#ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_WEB_CONTENTS_DATA_H_
+#define CHROME_BROWSER_MEMORY_TAB_MANAGER_WEB_CONTENTS_DATA_H_
 
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "chrome/browser/memory/tab_manager.h"
 
 namespace content {
 class WebContents;
@@ -16,15 +17,15 @@ namespace memory {
 
 // Manages the information about the discarding state of a tab. This data is
 // stored in WebContents.
-class TabDiscardState : public base::SupportsUserData::Data {
+class TabManager::WebContentsData : public base::SupportsUserData::Data {
  public:
-  // Returns the TabDiscardState associated with |web_contents|. It will create
+  // Returns the WebContentsData associated with |web_contents|. It will create
   // one if none exists.
-  static TabDiscardState* Get(content::WebContents* web_contents);
+  static WebContentsData* Get(content::WebContents* web_contents);
 
-  // Sets the TabDiscardState of a |web_contents|. The object referenced by
+  // Sets the WebContentsData of a |web_contents|. The object referenced by
   // |state| is now owned by |web_contents|
-  static void Set(content::WebContents* web_contents, TabDiscardState* state);
+  static void Set(content::WebContents* web_contents, WebContentsData* state);
 
   // Copies the discard state from |old_contents| to |new_contents|.
   static void CopyState(content::WebContents* old_contents,
@@ -60,7 +61,7 @@ class TabDiscardState : public base::SupportsUserData::Data {
                                      base::TimeTicks timestamp);
 
  private:
-  TabDiscardState();
+  WebContentsData();
 
   // Is the tab currently discarded?
   bool is_discarded_;
@@ -81,4 +82,4 @@ class TabDiscardState : public base::SupportsUserData::Data {
 
 }  // namespace memory
 
-#endif  // CHROME_BROWSER_MEMORY_TAB_DISCARD_STATE_H_
+#endif  // CHROME_BROWSER_MEMORY_TAB_MANAGER_WEB_CONTENTS_DATA_H_
