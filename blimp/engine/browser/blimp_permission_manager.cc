@@ -25,6 +25,16 @@ int BlimpPermissionManager::RequestPermission(
   return kNoPendingOperation;
 }
 
+int BlimpPermissionManager::RequestPermissions(
+    const std::vector<content::PermissionType>& permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool user_gesture,
+    const base::Callback<void(const std::vector<content::PermissionStatus>&)>&
+        callback) {
+  return kNoPendingOperation;
+}
+
 void BlimpPermissionManager::CancelPermissionRequest(int request_id) {}
 
 void BlimpPermissionManager::ResetPermission(content::PermissionType permission,
