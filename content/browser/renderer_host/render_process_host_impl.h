@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
@@ -499,6 +500,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   bool channel_connected_;
   bool sent_render_process_ready_;
+
+#if defined(OS_ANDROID)
+  // UI thread is the source of sync IPCs and all shutdown signals.
+  // Therefore a proper shutdown event to unblock the UI thread is not
+  // possible without massive refactoring shutdown code.
+  // Luckily Android never performs a clean shutdown. So explicitly
+  // ignore this problem.
+  base::WaitableEvent never_signaled_;
+#endif
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

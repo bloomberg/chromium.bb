@@ -179,6 +179,7 @@
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/mojo/service_registrar_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
+#include "ipc/ipc_sync_channel.h"
 #endif
 
 #if defined(OS_WIN)
@@ -527,6 +528,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       subscribe_uniform_enabled_(false),
       channel_connected_(false),
       sent_render_process_ready_(false),
+#if defined(OS_ANDROID)
+      never_signaled_(true, false),
+#endif
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -757,10 +761,32 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
 
+    // Do NOT expand ifdef or run time condition checks here! Synchronous
+    // IPCs from browser process are banned. It is only narrowly allowed
+    // for Android WebView to maintain backward compatibility.
+    // See crbug.com/526842 for details.
+#if defined(OS_ANDROID)
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIPCSyncCompositing)) {
+      return IPC::SyncChannel::Create(
+          IPC::ChannelMojo::CreateServerFactory(mojo_task_runner, channel_id),
+          this, runner.get(), true, &never_signaled_);
+    }
+#endif  // OS_ANDROID
+
     return IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateServerFactory(mojo_task_runner, channel_id),
         this, runner.get());
   }
+
+    // Do NOT expand ifdef or run time condition checks here! See comment above.
+#if defined(OS_ANDROID)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIPCSyncCompositing)) {
+    return IPC::SyncChannel::Create(channel_id, IPC::Channel::MODE_SERVER, this,
+                                    runner.get(), true, &never_signaled_);
+  }
+#endif  // OS_ANDROID
 
   return IPC::ChannelProxy::Create(channel_id, IPC::Channel::MODE_SERVER, this,
                                    runner.get());
@@ -1413,6 +1439,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_ANDROID)
     switches::kDisableGestureRequirementForMediaPlayback,
     switches::kDisableWebAudio,
+    switches::kIPCSyncCompositing,
     switches::kRendererWaitForJavaDebugger,
 #endif
 #if defined(OS_MACOSX)
@@ -1542,6 +1569,7 @@ bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
   if (!channel_) {
     if (!is_initialized_) {
+      DCHECK(!msg->is_sync());
       queued_messages_.push(msg);
       return true;
     } else {

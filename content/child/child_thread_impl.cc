@@ -330,6 +330,19 @@ bool ChildThreadImpl::ChildThreadMessageRouter::Send(IPC::Message* msg) {
   return sender_->Send(msg);
 }
 
+bool ChildThreadImpl::ChildThreadMessageRouter::RouteMessage(
+    const IPC::Message& msg) {
+  bool handled = MessageRouter::RouteMessage(msg);
+#if defined(OS_ANDROID)
+  if (!handled && msg.is_sync()) {
+    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
+    reply->set_reply_error();
+    Send(reply);
+  }
+#endif
+  return handled;
+}
+
 ChildThreadImpl::ChildThreadImpl()
     : router_(this),
       channel_connected_factory_(this) {

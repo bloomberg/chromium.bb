@@ -51,8 +51,7 @@ bool MessageRouter::RouteMessage(const IPC::Message& msg) {
   if (!listener)
     return false;
 
-  listener->OnMessageReceived(msg);
-  return true;
+  return listener->OnMessageReceived(msg);
 }
 
 }  // namespace content

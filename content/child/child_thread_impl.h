@@ -211,6 +211,9 @@ class CONTENT_EXPORT ChildThreadImpl
     explicit ChildThreadMessageRouter(IPC::Sender* sender);
     bool Send(IPC::Message* msg) override;
 
+    // MessageRouter overrides.
+    bool RouteMessage(const IPC::Message& msg) override;
+
    private:
     IPC::Sender* const sender_;
   };
