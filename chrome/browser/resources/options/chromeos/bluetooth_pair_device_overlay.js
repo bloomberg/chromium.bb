@@ -17,7 +17,7 @@ var BluetoothPairingEventType = {
   CONFIRM_PASSKEY: 'bluetoothConfirmPasskey',
   CONNECT_FAILED: 'bluetoothConnectFailed',
   CANCELED: 'bluetoothPairingCanceled',
-  DISMISSED: 'bluetoothPairingDismissed', // pairing dismissed(succeeded or
+  DISMISSED: 'bluetoothPairingDismissed', // pairing dismissed (succeeded or
                                           // canceled).
 };
 

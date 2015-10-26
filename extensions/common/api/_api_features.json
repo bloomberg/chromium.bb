@@ -86,18 +86,34 @@
     "dependencies": ["permission:audio"],
     "contexts": ["blessed_extension"]
   },
-  "bluetooth": {
+  "bluetooth": [{
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "bluetoothLowEnergy": {
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
   },
-  "bluetoothPrivate": {
+  "bluetoothPrivate": [{
     "dependencies": ["permission:bluetoothPrivate"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "bluetoothSocket": {
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]

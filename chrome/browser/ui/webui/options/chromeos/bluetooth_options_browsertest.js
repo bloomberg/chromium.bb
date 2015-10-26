@@ -19,10 +19,7 @@ BluetoothWebUITest.prototype = {
    */
   preLoad: function() {
     this.makeAndRegisterMockHandler([
-      'bluetoothEnableChange',
       'updateBluetoothDevice',
-      'findBluetoothDevices',
-      'stopBluetoothDeviceDiscovery',
     ]);
   },
 
@@ -64,18 +61,26 @@ BluetoothWebUITest.prototype = {
 
 };
 
-TEST_F('BluetoothWebUITest', 'testEnableBluetooth', function() {
+function BluetoothWebUITestAsync() {}
+
+BluetoothWebUITestAsync.prototype = {
+  __proto__: BluetoothWebUITest.prototype,
+
+  /** @override */
+  isAsync: true
+};
+
+TEST_F('BluetoothWebUITestAsync', 'testEnableBluetooth', function() {
   assertEquals(this.browsePreload, document.location.href);
   expectFalse($('enable-bluetooth').checked);
   expectTrue($('bluetooth-paired-devices-list').parentNode.hidden);
 
-  this.mockHandler.expects(once()).bluetoothEnableChange([true]).will(
-      callFunction(function() {
-        options.BrowserOptions.setBluetoothState(true);
-      }));
+  chrome.bluetooth.onAdapterStateChanged.addListener(function(state) {
+    expectTrue(state.powered);
+    expectFalse($('bluetooth-paired-devices-list').parentNode.hidden);
+    this.testDone();
+  });
   $('enable-bluetooth').click();
-
-  expectFalse($('bluetooth-paired-devices-list').parentNode.hidden);
 });
 
 TEST_F('BluetoothWebUITest', 'testAddDevices', function() {
@@ -143,7 +148,6 @@ TEST_F('BluetoothWebUITest', 'testAddDevices', function() {
                                         fakeUnpairedDevice2.name));
 
   // Test clicking on the 'Add a device' button.
-  this.mockHandler.expects(once()).findBluetoothDevices();
   $('bluetooth-add-device').click();
   expectFalse($('bluetooth-options').hidden);
   expectTrue($('bluetooth-add-device-apply-button').disabled);
@@ -153,7 +157,6 @@ TEST_F('BluetoothWebUITest', 'testAddDevices', function() {
   Mock4JS.clearMocksToVerify();
 
   // Test selecting an element and clicking on the connect button.
-  this.mockHandler.expects(once()).stopBluetoothDeviceDiscovery();
   this.mockHandler.expects(once()).updateBluetoothDevice(
       [fakeUnpairedDevice2.address, 'connect']);
   this.selectDevice(unpairedDeviceList, fakeUnpairedDevice2);

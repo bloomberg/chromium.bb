@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_discovery_session.h"
 
 namespace base {
 class DictionaryValue;
@@ -155,19 +154,6 @@ class BluetoothOptionsHandler
   // change the power status of the adapter.
   void EnableChangeError();
 
-  // Called by device::BluetoothAdapter in response to a successful request
-  // to initiate a discovery session.
-  void OnStartDiscoverySession(
-      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
-
-  // Called by device::BluetoothAdapter in response to a failure to
-  // initiate a discovery session.
-  void FindDevicesError();
-
-  // Called by device::BluetoothAdapter in response to a failure to
-  // terminate a discovery session.
-  void StopDiscoveryError();
-
   // Called by device::BluetoothDevice on a successful pairing and connection
   // to a device.
   void Connected();
@@ -186,27 +172,12 @@ class BluetoothOptionsHandler
   // disconnect and unpair the device with bluetooth address |address|.
   void ForgetError(const std::string& address);
 
-  // Called when the 'Enable bluetooth' checkbox value is changed.
-  // |args| will contain the checkbox checked state as a string
-  // ("true" or "false").
-  void EnableChangeCallback(const base::ListValue* args);
-
-  // Called when the 'Find Devices' button is pressed from the Bluetooth
-  // ssettings.
-  // |args| will be an empty list.
-  void FindDevicesCallback(const base::ListValue* args);
-
   // Called when the user requests to connect to or disconnect from a Bluetooth
   // device.
   // |args| will be a list containing two or three arguments, the first argument
   // is the device ID and the second is the requested action.  If a third
   // argument is present, it is the passkey for pairing confirmation.
   void UpdateDeviceCallback(const base::ListValue* args);
-
-  // Called when the "Add a device" dialog closes to stop the discovery
-  // process.
-  // |args| will be an empty list.
-  void StopDiscoveryCallback(const base::ListValue* args);
 
   // Called when the list of paired devices is initialized in order to
   // populate the list.
@@ -215,16 +186,6 @@ class BluetoothOptionsHandler
 
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;
-
-  // True, if the UI has requested device discovery. False, if either no device
-  // discovery was requested or the dialog responsible for device discovery was
-  // dismissed.
-  bool should_run_device_discovery_;
-
-  // The current device discovery session. Only one active discovery session is
-  // kept at a time and the instance that |discovery_session_| points to gets
-  // replaced by a new one when a new discovery session is initiated.
-  scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
   // Cached information about the current pairing device, if any.
   std::string pairing_device_address_;

@@ -2085,9 +2085,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE">
     Add a device
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES">
-    Search
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
     Searching for devices...
   </message>

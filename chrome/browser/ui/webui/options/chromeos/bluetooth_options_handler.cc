@@ -59,8 +59,7 @@ namespace chromeos {
 namespace options {
 
 BluetoothOptionsHandler::BluetoothOptionsHandler()
-    : should_run_device_discovery_(false),
-      pairing_device_passkey_(1000000),
+    : pairing_device_passkey_(1000000),
       pairing_device_entered_(kInvalidEntered),
       weak_ptr_factory_(this) {
 }
@@ -83,7 +82,6 @@ void BluetoothOptionsHandler::GetLocalizedValues(
         IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE },
     { "bluetoothOptionsPageTabTitle",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE },
-    { "findBluetoothDevices", IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES },
     { "bluetoothNoDevices", IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES },
     { "bluetoothNoDevicesFound",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND },
@@ -190,17 +188,8 @@ void BluetoothOptionsHandler::AdapterDiscoveringChanged(
 }
 
 void BluetoothOptionsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("bluetoothEnableChange",
-      base::Bind(&BluetoothOptionsHandler::EnableChangeCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("findBluetoothDevices",
-      base::Bind(&BluetoothOptionsHandler::FindDevicesCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("updateBluetoothDevice",
       base::Bind(&BluetoothOptionsHandler::UpdateDeviceCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("stopBluetoothDeviceDiscovery",
-      base::Bind(&BluetoothOptionsHandler::StopDiscoveryCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getPairedBluetoothDevices",
       base::Bind(&BluetoothOptionsHandler::GetPairedDevicesCallback,
@@ -217,11 +206,6 @@ void BluetoothOptionsHandler::InitializePage() {
   // Show or hide the bluetooth settings and update the checkbox based
   // on the current present/powered state.
   AdapterPresentChanged(adapter_.get(), adapter_->IsPresent());
-
-  // Automatically start device discovery if the "Add Bluetooth Device"
-  // overlay is visible.
-  web_ui()->CallJavascriptFunction(
-      "options.BluetoothOptions.startDeviceDiscovery");
 }
 
 void BluetoothOptionsHandler::InitializeAdapter(
@@ -229,56 +213,6 @@ void BluetoothOptionsHandler::InitializeAdapter(
   adapter_ = adapter;
   CHECK(adapter_.get());
   adapter_->AddObserver(this);
-}
-
-void BluetoothOptionsHandler::EnableChangeCallback(
-    const base::ListValue* args) {
-  bool bluetooth_enabled;
-  args->GetBoolean(0, &bluetooth_enabled);
-
-  adapter_->SetPowered(bluetooth_enabled,
-                       base::Bind(&base::DoNothing),
-                       base::Bind(&BluetoothOptionsHandler::EnableChangeError,
-                                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BluetoothOptionsHandler::EnableChangeError() {
-  VLOG(1) << "Failed to change power state.";
-  ReportError("bluetoothChangePowerFailed", std::string());
-}
-
-void BluetoothOptionsHandler::FindDevicesCallback(
-    const base::ListValue* args) {
-  if (discovery_session_.get() && discovery_session_->IsActive()) {
-    VLOG(1) << "Already have an active discovery session.";
-    return;
-  }
-  should_run_device_discovery_ = true;
-  adapter_->StartDiscoverySession(
-      base::Bind(&BluetoothOptionsHandler::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothOptionsHandler::FindDevicesError,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BluetoothOptionsHandler::OnStartDiscoverySession(
-    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
-  // If the discovery session was returned after a request to stop discovery
-  // (e.g. the "Add Device" dialog was dismissed), don't claim the discovery
-  // session and let it clean up.
-  if (!should_run_device_discovery_)
-    return;
-  discovery_session_ = discovery_session.Pass();
-}
-
-void BluetoothOptionsHandler::FindDevicesError() {
-  VLOG(1) << "Failed to start discovery.";
-  ReportError("bluetoothStartDiscoveryFailed", std::string());
-  if (!adapter_.get())
-    return;
-  base::FundamentalValue discovering(adapter_->IsDiscovering());
-  web_ui()->CallJavascriptFunction(
-      "options.BluetoothOptions.updateDiscoveryState", discovering);
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(
@@ -425,24 +359,6 @@ void BluetoothOptionsHandler::DisconnectError(const std::string& address) {
 void BluetoothOptionsHandler::ForgetError(const std::string& address) {
   VLOG(1) << "Failed to disconnect and unpair device: " << address;
   ReportError("bluetoothForgetFailed", address);
-}
-
-void BluetoothOptionsHandler::StopDiscoveryCallback(
-    const base::ListValue* args) {
-  should_run_device_discovery_ = false;
-  if (!discovery_session_.get() || !discovery_session_->IsActive()) {
-    VLOG(1) << "No active discovery session.";
-    return;
-  }
-  discovery_session_->Stop(
-      base::Bind(&base::DoNothing),
-      base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void BluetoothOptionsHandler::StopDiscoveryError() {
-  VLOG(1) << "Failed to stop discovery.";
-  ReportError("bluetoothStopDiscoveryFailed", std::string());
 }
 
 void BluetoothOptionsHandler::GetPairedDevicesCallback(

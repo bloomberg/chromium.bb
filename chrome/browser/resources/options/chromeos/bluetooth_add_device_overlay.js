@@ -34,8 +34,6 @@ cr.define('options', function() {
       Page.prototype.initializePage.call(this);
       this.createDeviceList_();
 
-      BluetoothOptions.updateDiscoveryState(true);
-
       $('bluetooth-add-device-cancel-button').onclick = function(event) {
         PageManager.closeOverlay();
       };
@@ -75,8 +73,14 @@ cr.define('options', function() {
     },
 
     /** @override */
+    didShowPage: function() {
+      chrome.bluetooth.startDiscovery();
+      BluetoothOptions.updateDiscoveryState(true);
+    },
+
+    /** @override */
     didClosePage: function() {
-      chrome.send('stopBluetoothDeviceDiscovery');
+      chrome.bluetooth.stopDiscovery();
     },
 
     /**
@@ -89,16 +93,6 @@ cr.define('options', function() {
       this.deviceList_ = assertInstanceof(deviceList,
                                           options.DeletableItemList);
     }
-  };
-
-  /**
-   * Automatically start the device discovery process if the
-   * "Add device" dialog is visible.
-   */
-  BluetoothOptions.startDeviceDiscovery = function() {
-    var page = BluetoothOptions.getInstance();
-    if (page && page.visible)
-      chrome.send('findBluetoothDevices');
   };
 
   /**

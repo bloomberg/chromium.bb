@@ -520,7 +520,12 @@ cr.define('options', function() {
 
         $('enable-bluetooth').onchange = function(event) {
           var state = $('enable-bluetooth').checked;
-          chrome.send('bluetoothEnableChange', [Boolean(state)]);
+          chrome.bluetoothPrivate.setAdapterState({powered: state}, function() {
+            if (chrome.runtime.lastError) {
+              console.error('Error enabling bluetooth:',
+                            chrome.runtime.lastError.message);
+            }
+          });
         };
 
         $('bluetooth-reconnect-device').onclick = function(event) {
@@ -1711,7 +1716,6 @@ cr.define('options', function() {
     handleAddBluetoothDevice_: function() {
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_BluetoothShowAddDevice']);
-      chrome.send('findBluetoothDevices');
       PageManager.showPageByName('bluetooth', false);
     },
 
