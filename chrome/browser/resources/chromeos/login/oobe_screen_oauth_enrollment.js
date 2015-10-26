@@ -54,10 +54,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
     /** @override */
     decorate: function() {
-      var webview = document.createElement('webview');
-      webview.id = webview.name = 'oauth-enroll-auth-view';
-      $('oauth-enroll-auth-view-container').appendChild(webview);
-      this.authenticator_ = new cr.login.Authenticator(webview);
+      this.authenticator_ =
+          new cr.login.Authenticator($('oauth-enroll-auth-view'));
 
       this.authenticator_.addEventListener('ready',
           (function() {

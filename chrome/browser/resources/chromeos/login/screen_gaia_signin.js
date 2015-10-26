@@ -138,18 +138,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
     /** @override */
     decorate: function() {
-      // Create webview.
-      // TODO(dzhioev): check if we can get rid of dynamic creation.
-      var webview = this.ownerDocument.createElement('webview');
-      webview.id = 'signin-frame';
-      webview.name = 'signin-frame';
-      webview.hidden = true;
-      $('gaia-signin-form-container').insertBefore(webview, $('offline-gaia'));
-
       $('offline-gaia').addEventListener('authCompleted',
           this.onAuthCompletedMessage_.bind(this));
 
-      this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
+      this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
       this.gaiaAuthHost_.addEventListener(
