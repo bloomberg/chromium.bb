@@ -595,7 +595,6 @@ void FontFace::initCSSFontFace(const unsigned char* data, unsigned size)
 
 DEFINE_TRACE(FontFace)
 {
-    visitor->trace(m_src);
     visitor->trace(m_style);
     visitor->trace(m_weight);
     visitor->trace(m_stretch);
