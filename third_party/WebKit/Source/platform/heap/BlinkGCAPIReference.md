@@ -1,6 +1,6 @@
 # Blink GC API reference
 
-Work in progress.
+This document is work in progress.
 
 [TOC]
 
@@ -196,5 +196,84 @@ The need of cross-thread persistents may indicate a poor design in multi-thread 
 are really necessary.
 
 ## Tracing
+
+A garbage-collected class may need to have *a tracing method*, which lists up all the on-heap objects it has. The
+tracing method is called when the garbage collector needs to determine (1) all the on-heap objects referred from a
+live object, and (2) all the weak handles that may be filled with `nullptr` later. These are done in the "marking"
+phase of the mark-and-sweep GC.
+
+The basic form of tracing is illustrated below:
+
+```c++
+// In a header file:
+class SomeGarbageCollectedClass : public GarbageCollected<SomeGarbageCollectedClass> {
+public:
+    DECLARE_TRACE();
+
+private:
+    Member<AnotherGarbageCollectedClass> m_another;
+};
+
+// In an implementation file:
+DEFINE_TRACE(SomeGarbageCollectedClass)
+{
+    visitor->trace(m_another);
+}
+```
+
+Specifically, if your class needs a tracing method, you need to:
+
+*   Declare a tracing method in your class declaration, using the `DECLARE_TRACE()` macro; and
+*   Define a tracing method in your implementation file, using the `DEFINE_TRACE(ClassName)` macro.
+
+The function implementation must contain:
+
+*   For each on-heap object `m_object` in your class, a tracing call: "```visitor->trace(m_object);```".
+*   For each base class of your class `BaseClass` that is a descendant of `GarbageCollected<T>` or
+    `GarbageCollectedMixin`, delegation call to base class: "```BaseClass::trace(visitor);```"
+
+It is recommended that the delegation call, if any, is put at the end of a tracing method.
+
+If the class does not contain any on-heap object, the tracing method is not needed.
+
+If you want to define your tracing method inline or need to have your tracing method polymorphic, you can use the
+following variants of the tracing macros:
+
+*   "```DECLARE_VIRTUAL_TRACE();```" in a class declaration makes the method ```virtual```. Use
+    "```DEFINE_TRACE(ClassName) { ... }```" in the implementation file to define.
+*   "```DEFINE_INLINE_TRACE() { ... }```" in a class declaration lets you define the method inline. If you use this,
+    you may not write "```DEFINE_TRACE(ClassName) { ... }```" in your implementation file.
+*   "```DEFINE_INLINE_VIRTUAL_TRACE() { ... }```" in a class declaration does both of the above.
+
+The following example shows more involved usage:
+
+```c++
+class A : public GarbageCollected<A> {
+public:
+    DEFINE_INLINE_VIRTUAL_TRACE() { } // Nothing to trace here. Just to declare a virtual method.
+};
+
+class B : public A {
+    // Nothing to trace here; exempted from having a tracing method.
+};
+
+class C : public B {
+public:
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    Member<X> m_x;
+    WeakMember<Y> m_y;
+    HeapVector<Member<Z>> m_z;
+};
+
+DEFINE_TRACE(C)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y); // Weak member needs to be traced.
+    visitor->trace(m_z); // Heap collection does, too.
+    B::trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
+}
+```
 
 ## Heap collections
