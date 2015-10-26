@@ -18,6 +18,10 @@ class _StartWithExt(perf_benchmark.PerfBenchmark):
     return 'start_with_ext.blank_page'
 
   @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+  @classmethod
   def ValueCanBeAddedPredicate(cls, _, is_first_result):
     return not is_first_result
 

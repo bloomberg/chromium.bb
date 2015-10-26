@@ -27,6 +27,10 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
     return 'session_restore'
 
   @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+  @classmethod
   def ValueCanBeAddedPredicate(cls, _, is_first_result):
     return cls.tag == 'cold' or not is_first_result
 

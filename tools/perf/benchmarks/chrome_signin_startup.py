@@ -16,6 +16,10 @@ class _StartupWarm(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'chrome_signin_starup'
 
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
   def CreatePageTest(self, options):
     return startup.Startup(cold=False)
 

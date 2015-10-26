@@ -16,6 +16,10 @@ class _StartupCold(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'startup'
 
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
   def CreatePageTest(self, options):
     return startup.Startup(cold=True)
 
@@ -27,6 +31,10 @@ class _StartupWarm(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'startup'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, _, is_first_result):
