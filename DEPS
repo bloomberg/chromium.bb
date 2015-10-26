@@ -8,9 +8,9 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 355398
-  "build_rev": "688c5744d1aacd6ab8002bd96f86df0cc0c81c53", # from cr commit position 355398
-  "build_overrides_rev": "4a42782ca738cbd7989f5354aae438d971cacd37", # from cr commit position 355291
+  # chrome_rev: 356161
+  "build_rev": "aafb4eeb026dc365e841ec97dbc036ea4edc9668", # from cr commit position 356146
+  "build_overrides_rev": "a623ab9abd74a70d93ddb8b015fc6656f9e7d0f2", # from cr commit position 355877
   "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
   "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
   "tools_valgrind_rev": "18e0ed94552aa5605fbadf66f3a5404217d2efd0", # from cr commit position 354950
