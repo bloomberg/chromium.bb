@@ -71,34 +71,66 @@ struct wl_map {
 
 typedef void (*wl_iterator_func_t)(void *element, void *data);
 
-void wl_map_init(struct wl_map *map, uint32_t side);
-void wl_map_release(struct wl_map *map);
-uint32_t wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data);
-int wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data);
-int wl_map_reserve_new(struct wl_map *map, uint32_t i);
-void wl_map_remove(struct wl_map *map, uint32_t i);
-void *wl_map_lookup(struct wl_map *map, uint32_t i);
-uint32_t wl_map_lookup_flags(struct wl_map *map, uint32_t i);
-void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
+void
+wl_map_init(struct wl_map *map, uint32_t side);
+
+void
+wl_map_release(struct wl_map *map);
+
+uint32_t
+wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data);
+
+int
+wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data);
+
+int
+wl_map_reserve_new(struct wl_map *map, uint32_t i);
+
+void
+wl_map_remove(struct wl_map *map, uint32_t i);
+
+void *
+wl_map_lookup(struct wl_map *map, uint32_t i);
+
+uint32_t
+wl_map_lookup_flags(struct wl_map *map, uint32_t i);
+
+void
+wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 
 struct wl_connection;
 struct wl_closure;
 struct wl_proxy;
 
-int wl_interface_equal(const struct wl_interface *iface1,
-		       const struct wl_interface *iface2);
+int
+wl_interface_equal(const struct wl_interface *iface1,
+		   const struct wl_interface *iface2);
 
-struct wl_connection *wl_connection_create(int fd);
-int wl_connection_destroy(struct wl_connection *connection);
-void wl_connection_copy(struct wl_connection *connection, void *data, size_t size);
-void wl_connection_consume(struct wl_connection *connection, size_t size);
+struct wl_connection *
+wl_connection_create(int fd);
 
-int wl_connection_flush(struct wl_connection *connection);
-int wl_connection_read(struct wl_connection *connection);
+int
+wl_connection_destroy(struct wl_connection *connection);
 
-int wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
-int wl_connection_queue(struct wl_connection *connection,
-			const void *data, size_t count);
+void
+wl_connection_copy(struct wl_connection *connection, void *data, size_t size);
+
+void
+wl_connection_consume(struct wl_connection *connection, size_t size);
+
+int
+wl_connection_flush(struct wl_connection *connection);
+
+int
+wl_connection_read(struct wl_connection *connection);
+
+int
+wl_connection_write(struct wl_connection *connection,
+		    const void *data, size_t count);
+
+int
+wl_connection_queue(struct wl_connection *connection,
+		    const void *data, size_t count);
 
 struct wl_closure {
 	int count;
@@ -133,6 +165,7 @@ struct wl_closure *
 wl_closure_marshal(struct wl_object *sender,
 		    uint32_t opcode, union wl_argument *args,
 		    const struct wl_message *message);
+
 struct wl_closure *
 wl_closure_vmarshal(struct wl_object *sender,
 		    uint32_t opcode, va_list ap,
@@ -155,15 +188,21 @@ enum wl_closure_invoke_flag {
 void
 wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 		  struct wl_object *target, uint32_t opcode, void *data);
+
 void
 wl_closure_dispatch(struct wl_closure *closure, wl_dispatcher_func_t dispatcher,
 		    struct wl_object *target, uint32_t opcode);
+
 int
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection);
+
 int
 wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection);
+
 void
-wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send);
+wl_closure_print(struct wl_closure *closure,
+		 struct wl_object *target, int send);
+
 void
 wl_closure_destroy(struct wl_closure *closure);
 
