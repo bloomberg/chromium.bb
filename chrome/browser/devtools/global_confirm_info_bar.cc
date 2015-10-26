@@ -182,7 +182,13 @@ void GlobalConfirmInfoBar::TabChangedAt(content::WebContents* web_contents,
 
 void GlobalConfirmInfoBar::OnInfoBarRemoved(infobars::InfoBar* info_bar,
                                             bool animate) {
-  OnManagerShuttingDown(info_bar->owner());
+  // Do not process alien infobars.
+  for (auto it : proxies_) {
+    if (it.second->info_bar_ == info_bar) {
+      OnManagerShuttingDown(info_bar->owner());
+      break;
+    }
+  }
 }
 
 void GlobalConfirmInfoBar::OnManagerShuttingDown(
