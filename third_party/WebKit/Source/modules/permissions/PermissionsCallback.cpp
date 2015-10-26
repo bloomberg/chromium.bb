@@ -24,7 +24,7 @@ void PermissionsCallback::onSuccess(WebPassOwnPtr<WebVector<WebPermissionStatus>
         return;
 
     OwnPtr<WebVector<WebPermissionStatus>> statusPtr = permissionStatus.release();
-    Vector<PermissionStatus*> result(m_callerIndexToInternalIndex->size());
+    HeapVector<Member<PermissionStatus>> result(m_callerIndexToInternalIndex->size());
 
     // Create the response vector by finding the status for each index by
     // using the caller to internal index mapping and looking up the status
