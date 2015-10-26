@@ -1141,8 +1141,9 @@ format_copyright(const char *copyright)
 		}
 
 		if (copyright[i] == '\n' || copyright[i] == '\0') {
-			printf("%s %.*s\n",
+			printf("%s%s%.*s\n",
 			       i == 0 ? "/*" : " *",
+			       i > start ? " " : "",
 			       i - start, copyright + start);
 			bol = 1;
 		}
