@@ -44,9 +44,6 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   // Put the controller, icon, and bubble into a pending-password state.
   void SetupPendingPassword();
 
-  // Put the controller, icon, and bubble into a blacklisted state.
-  void SetupBlackistedPassword();
-
   // Put the controller, icon, and bubble into a choosing credential state.
   void SetupChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_credentials,

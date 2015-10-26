@@ -75,10 +75,6 @@ class ManagePasswordsUIController
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map,
                             const GURL& origin);
 
-  // TODO(vasilii): remove this method. It's obsolete.
-  void OnBlacklistBlockedAutofill(
-      const autofill::PasswordFormMap& password_form_map);
-
   // PasswordStore::Observer implementation.
   void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;

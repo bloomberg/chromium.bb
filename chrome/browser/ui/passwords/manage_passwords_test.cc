@@ -72,15 +72,6 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
   GetController()->OnAutomaticPasswordSave(test_form_manager.Pass());
 }
 
-void ManagePasswordsTest::SetupBlackistedPassword() {
-  test_form()->blacklisted_by_user = true;
-  test_form()->username_value.clear();
-  autofill::PasswordFormMap map;
-  map.insert(test_form()->username_value,
-             make_scoped_ptr(new autofill::PasswordForm(*test_form())));
-  GetController()->OnBlacklistBlockedAutofill(map);
-}
-
 void ManagePasswordsTest::SetupChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,

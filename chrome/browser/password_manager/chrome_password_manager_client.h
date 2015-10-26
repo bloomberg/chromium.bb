@@ -65,8 +65,6 @@ class ChromePasswordManagerClient
                                  saved_form_manager) override;
   void PasswordWasAutofilled(const autofill::PasswordFormMap& best_matches,
                              const GURL& origin) const override;
-  void PasswordAutofillWasBlocked(
-      const autofill::PasswordFormMap& best_matches) const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   password_manager::PasswordSyncState GetPasswordSyncState() const override;

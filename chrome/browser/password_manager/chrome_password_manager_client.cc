@@ -294,14 +294,6 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
     manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin);
 }
 
-void ChromePasswordManagerClient::PasswordAutofillWasBlocked(
-    const autofill::PasswordFormMap& best_matches) const {
-  ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  if (controller && IsTheHotNewBubbleUIEnabled())
-    controller->OnBlacklistBlockedAutofill(best_matches);
-}
-
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
   if (popup_controller_)
     popup_controller_->HideAndDestroy();

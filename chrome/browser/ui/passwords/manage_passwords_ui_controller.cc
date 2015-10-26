@@ -172,12 +172,6 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
   }
 }
 
-void ManagePasswordsUIController::OnBlacklistBlockedAutofill(
-    const PasswordFormMap& password_form_map) {
-  passwords_data_.OnInactive();
-  UpdateBubbleAndIconVisibility();
-}
-
 void ManagePasswordsUIController::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
   password_manager::ui::State current_state = state();

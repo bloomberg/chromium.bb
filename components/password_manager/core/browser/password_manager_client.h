@@ -115,13 +115,6 @@ class PasswordManagerClient {
       const autofill::PasswordFormMap& best_matches,
       const GURL& origin) const;
 
-  // Called when password autofill is blocked by the blacklist. |best_matches|
-  // contains the PasswordForm that flags the current site as being on the
-  // blacklist. The client may choose to remove this from the PasswordStore in
-  // order to unblacklist a site, for example. Default implementation is a noop.
-  virtual void PasswordAutofillWasBlocked(
-      const autofill::PasswordFormMap& best_matches) const;
-
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() = 0;
 

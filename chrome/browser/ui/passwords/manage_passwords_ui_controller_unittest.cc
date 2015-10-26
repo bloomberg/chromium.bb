@@ -361,21 +361,6 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
   ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, BlacklistBlockedAutofill) {
-  scoped_ptr<autofill::PasswordForm> test_form(
-      new autofill::PasswordForm(test_local_form()));
-  test_form->blacklisted_by_user = true;
-  base::string16 kTestUsername = test_form->username_value;
-  autofill::PasswordFormMap map;
-  map.insert(kTestUsername, test_form.Pass());
-  controller()->OnBlacklistBlockedAutofill(map);
-
-  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
-  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
-
-  ExpectIconStateIs(password_manager::ui::INACTIVE_STATE);
-}
-
 TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
