@@ -200,32 +200,6 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOrigin) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "medium_16_9");
 }
 
-// Test extremely flaky, see https://crbug.com/547224
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
-                       DISABLED_LargePluginsPeripheralWhenPosterSpecified) {
-  LoadHTML(
-      "<object id='plugin_src' type='application/x-ppapi-tests' "
-      "    width='400' height='500' poster='snapshot1x.png'></object>"
-      "<object id='plugin_srcset' type='application/x-ppapi-tests' "
-      "    width='400' height='500' "
-      "    poster='snapshot1x.png 1x, snapshot2x.png 2x'></object>"
-      "<object id='plugin_legacy_syntax' type='application/x-ppapi-tests' "
-      "    width='400' height='500'>"
-      "  <param name='poster' value='snapshot1x.png 1x, snapshot2x.png 2x'>"
-      "</object>"
-      "<embed id='plugin_embed_src' type='application/x-ppapi-tests' "
-      "    width='400' height='500' poster='snapshot1x.png'></embed>"
-      "<embed id='plugin_embed_srcset' type='application/x-ppapi-tests' "
-      "    width='400' height='500'"
-      "    poster='snapshot1x.png 1x, snapshot2x.png 2x'></embed>");
-
-  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_src"));
-  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_srcset"));
-  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_legacy_syntax"));
-  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_embed_src"));
-  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_embed_srcset"));
-}
-
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
   // This test verifies that small posters are throttled, large posters are not,
   // and that large posters can whitelist origins for other plugins.
@@ -244,6 +218,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
       "    poster='click_me.png'></object>");
 
   EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "poster_small"));
+  VerifyPluginMarkedEssential(GetActiveWebContents(),
+                              "poster_whitelisted_origin");
   VerifyPluginMarkedEssential(GetActiveWebContents(),
                               "plugin_whitelisted_origin");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "poster_large");
