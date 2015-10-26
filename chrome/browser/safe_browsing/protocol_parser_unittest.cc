@@ -12,13 +12,8 @@
 
 namespace {
 
-#if defined(OS_ANDROID)
-const char kDefaultPhishList[] = "goog-mobilephish-shavar";
-const char kDefaultMalwareList[] = "goog-mobilemalware-shavar";
-#else
 const char kDefaultPhishList[] = "goog-phish-shavar";
 const char kDefaultMalwareList[] = "goog-malware-shavar";
-#endif
 
 // Test parsing one add chunk.
 TEST(SafeBrowsingProtocolParsingTest, TestAddChunk) {
