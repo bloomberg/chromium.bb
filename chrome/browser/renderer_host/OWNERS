@@ -1,8 +1,6 @@
 # Extension system files
 # If editing, see chrome/browser/extensions/OWNERS
-per-file chrome_extension_message_filter.*=kalman@chromium.org
 per-file chrome_extension_message_filter.*=finnur@chromium.org
-per-file chrome_extension_message_filter.*=miket@chromium.org
 per-file chrome_extension_message_filter.*=rockot@chromium.org
 per-file chrome_extension_message_filter.*=benwells@chromium.org
 per-file chrome_extension_message_filter.*=rdevlin.cronin@chromium.org
