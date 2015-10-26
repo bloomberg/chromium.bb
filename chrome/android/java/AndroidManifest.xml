@@ -483,7 +483,6 @@ by a child template that "extends" this file.
         </activity>
 
         <receiver android:name="com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider"
-            android:enabled="{{ 'true' if channel in ['stable', 'default'] else 'false' }}"
             android:label="@string/bookmarks">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
