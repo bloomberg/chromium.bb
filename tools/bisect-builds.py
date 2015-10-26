@@ -192,7 +192,8 @@ class PathContext(object):
           self._listing_platform_dir = 'Linux_ARM_Cross-Compile/'
         elif self.platform == 'chromeos':
           self._listing_platform_dir = 'Linux_ChromiumOS_Full/'
-      elif self.platform == 'mac':
+      # There is no 64-bit distinction for non-official mac builds.
+      elif self.platform in ('mac', 'mac64'):
         self._listing_platform_dir = 'Mac/'
         self._binary_name = 'Chromium.app/Contents/MacOS/Chromium'
       elif self.platform == 'win':
