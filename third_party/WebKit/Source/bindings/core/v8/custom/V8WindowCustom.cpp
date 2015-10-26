@@ -385,14 +385,10 @@ static bool securityCheck(v8::Local<v8::Object> host)
     return BindingSecurity::shouldAllowAccessToFrame(isolate, target, DoNotReportSecurityError);
 }
 
-bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
+bool V8Window::securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject)
 {
-    return securityCheck(host);
-}
-
-bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
-{
-    return securityCheck(host);
+    // TODO(jochen): Take accessingContext into account.
+    return securityCheck(accessedObject);
 }
 
 } // namespace blink

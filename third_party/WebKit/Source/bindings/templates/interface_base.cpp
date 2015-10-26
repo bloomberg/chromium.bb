@@ -128,15 +128,10 @@ static void {{cpp_class}}ConstructorAttributeSetterCallback(v8::Local<v8::Name>,
 {##############################################################################}
 {% block security_check_functions %}
 {% if has_access_check_callbacks %}
-bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
+bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(host);
-    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
-}
-
-bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
-{
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(host);
+    // TODO(jochen): Take accessingContext into account.
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
     return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
 }
 
@@ -346,7 +341,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     ALLOW_UNUSED_LOCAL(context);
     {% endif %}
     {% if has_access_check_callbacks %}
-    instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
+    instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
     {% if has_array_iterator %}
     {% filter runtime_enabled('RuntimeEnabledFeatures::iterableCollectionsEnabled') %}

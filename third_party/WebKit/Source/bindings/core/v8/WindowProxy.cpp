@@ -273,7 +273,7 @@ namespace {
 void configureInnerGlobalObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v8::Isolate* isolate)
 {
     // Install a security handler with V8.
-    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
+    templ->SetAccessCheckCallback(V8Window::securityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
     templ->SetInternalFieldCount(V8Window::internalFieldCount);
 }
 
