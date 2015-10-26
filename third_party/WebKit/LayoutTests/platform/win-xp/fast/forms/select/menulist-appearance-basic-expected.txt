@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x455
-  LayoutBlockFlow {HTML} at (0,0) size 800x455
-    LayoutBlockFlow {BODY} at (8,8) size 784x439
+layer at (0,0) size 800x457
+  LayoutBlockFlow {HTML} at (0,0) size 800x457
+    LayoutBlockFlow {BODY} at (8,8) size 784x441
       LayoutMenuList {SELECT} at (4,4) size 42x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 40x18
           LayoutText (anonymous) at (4,1) size 17x16
@@ -48,7 +48,7 @@ layer at (0,0) size 800x455
       LayoutText {#text} at (108,78) size 4x19
         text run at (108,78) width 4: " "
       LayoutBR {BR} at (112,78) size 0x19
-      LayoutMenuList {SELECT} at (4,115) size 42x20 [border: (1px solid #A9A9A9)]
+      LayoutMenuList {SELECT} at (4,115) size 42x20 [color=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 40x18
           LayoutText (anonymous) at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
@@ -88,34 +88,34 @@ layer at (0,0) size 800x455
       LayoutText {#text} at (190,186) size 4x19
         text run at (190,186) width 4: " "
       LayoutBR {BR} at (194,186) size 0x19
-      LayoutMenuList {SELECT} at (6,230) size 53x28 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 51x26
-          LayoutText (anonymous) at (4,1) size 28x23
-            text run at (4,1) width 28: "foo"
-      LayoutText {#text} at (65,236) size 4x19
-        text run at (65,236) width 4: " "
-      LayoutMenuList {SELECT} at (77,222) size 64x39 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (2,2) size 60x35
-          LayoutText (anonymous) at (4,1) size 37x32
-            text run at (4,1) width 37: "foo"
-      LayoutText {#text} at (149,236) size 4x19
-        text run at (149,236) width 4: " "
-      LayoutBR {BR} at (153,236) size 0x19
-      LayoutText {#text} at (208,283) size 4x19
-        text run at (208,283) width 4: " "
-      LayoutBR {BR} at (212,283) size 0x19
-      LayoutText {#text} at (208,317) size 4x19
-        text run at (208,317) width 4: " "
-      LayoutBR {BR} at (212,317) size 0x19
-      LayoutText {#text} at (208,351) size 4x19
-        text run at (208,351) width 4: " "
-      LayoutBR {BR} at (212,351) size 0x19
-      LayoutText {#text} at (208,385) size 4x19
-        text run at (208,385) width 4: " "
-      LayoutBR {BR} at (212,385) size 0x19
+      LayoutMenuList {SELECT} at (6,231) size 64x28 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 62x26
+          LayoutText (anonymous) at (6,1) size 28x23
+            text run at (6,1) width 28: "foo"
+      LayoutText {#text} at (76,237) size 4x19
+        text run at (76,237) width 4: " "
+      LayoutMenuList {SELECT} at (88,222) size 87x41 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (2,2) size 83x37
+          LayoutText (anonymous) at (8,2) size 37x32
+            text run at (8,2) width 37: "foo"
+      LayoutText {#text} at (183,237) size 4x19
+        text run at (183,237) width 4: " "
+      LayoutBR {BR} at (187,237) size 0x19
+      LayoutText {#text} at (208,285) size 4x19
+        text run at (208,285) width 4: " "
+      LayoutBR {BR} at (212,285) size 0x19
+      LayoutText {#text} at (208,319) size 4x19
+        text run at (208,319) width 4: " "
+      LayoutBR {BR} at (212,319) size 0x19
+      LayoutText {#text} at (208,353) size 4x19
+        text run at (208,353) width 4: " "
+      LayoutBR {BR} at (212,353) size 0x19
+      LayoutText {#text} at (208,387) size 4x19
+        text run at (208,387) width 4: " "
+      LayoutBR {BR} at (212,387) size 0x19
       LayoutText {#text} at (0,0) size 0x0
-layer at (12,281) size 200x25 clip at (13,282) size 183x23 scrollHeight 51
-  LayoutListBox {SELECT} at (4,273) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (12,283) size 200x25 clip at (13,284) size 183x23 scrollHeight 51
+  LayoutListBox {SELECT} at (4,275) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 183x17
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 1"
@@ -125,8 +125,8 @@ layer at (12,281) size 200x25 clip at (13,282) size 183x23 scrollHeight 51
     LayoutBlockFlow {OPTION} at (1,35) size 183x17
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 3"
-layer at (12,315) size 200x25 clip at (13,316) size 183x23 scrollY 11.00 scrollHeight 51
-  LayoutListBox {SELECT} at (4,307) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (12,317) size 200x25 clip at (13,318) size 183x23 scrollY 11.00 scrollHeight 51
+  LayoutListBox {SELECT} at (4,309) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 183x17
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 1"
@@ -136,8 +136,8 @@ layer at (12,315) size 200x25 clip at (13,316) size 183x23 scrollY 11.00 scrollH
     LayoutBlockFlow {OPTION} at (1,35) size 183x17
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 3"
-layer at (12,349) size 200x25 clip at (13,350) size 183x23 scrollY 11.00 scrollHeight 51
-  LayoutListBox {SELECT} at (4,341) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (12,351) size 200x25 clip at (13,352) size 183x23 scrollY 11.00 scrollHeight 51
+  LayoutListBox {SELECT} at (4,343) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 183x17
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 1"
@@ -147,8 +147,8 @@ layer at (12,349) size 200x25 clip at (13,350) size 183x23 scrollY 11.00 scrollH
     LayoutBlockFlow {OPTION} at (1,35) size 183x17 [color=#323232] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 3"
-layer at (12,383) size 200x25 clip at (13,384) size 183x23 scrollHeight 374
-  LayoutListBox {SELECT} at (4,375) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (12,385) size 200x25 clip at (13,386) size 183x23 scrollHeight 374
+  LayoutListBox {SELECT} at (4,377) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 183x17 [color=#323232] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 47x16
         text run at (2,0) width 47: "Item 0.1"
@@ -265,8 +265,8 @@ layer at (12,383) size 200x25 clip at (13,384) size 183x23 scrollHeight 374
     LayoutBlockFlow {OPTION} at (1,358) size 183x17 [color=#323232] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 47x16
         text run at (2,0) width 47: "Item 0.2"
-layer at (12,417) size 200x25 clip at (13,418) size 183x23 scrollHeight 20978
-  LayoutListBox {SELECT} at (4,409) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (12,419) size 200x25 clip at (13,420) size 183x23 scrollHeight 20978
+  LayoutListBox {SELECT} at (4,411) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 183x17 [color=#323232] [bgcolor=#C8C8C8]
       LayoutText {#text} at (2,0) size 36x16
         text run at (2,0) width 36: "Item 1"
