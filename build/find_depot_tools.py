@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -5,6 +6,9 @@
 
 Will throw an ImportError exception if depot_tools can't be found since it
 imports breakpad.
+
+This can also be used as a standalone script to print out the depot_tools
+directory location.
 """
 
 import os
@@ -39,7 +43,18 @@ def add_depot_tools_to_path():
   print >> sys.stderr, 'Failed to find depot_tools'
   return None
 
-add_depot_tools_to_path()
+DEPOT_TOOLS_PATH = add_depot_tools_to_path()
 
 # pylint: disable=W0611
 import breakpad
+
+
+def main():
+  if DEPOT_TOOLS_PATH is None:
+    return 1
+  print DEPOT_TOOLS_PATH
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())

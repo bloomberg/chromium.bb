@@ -38,7 +38,7 @@ root_path = os.path.realpath(
         os.pardir,
         os.pardir))
 
-find_depot_tools_path = os.path.join(root_path, "tools", "find_depot_tools.py")
+find_depot_tools_path = os.path.join(root_path, "build", "find_depot_tools.py")
 find_depot_tools = imp.load_source("find_depot_tools", find_depot_tools_path)
 
 depot_tools_path = find_depot_tools.add_depot_tools_to_path()

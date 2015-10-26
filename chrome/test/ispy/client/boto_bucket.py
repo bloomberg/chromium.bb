@@ -7,9 +7,9 @@ import os
 import sys
 
 # boto requires depot_tools/third_party be in the path. Use
-# src/tools/find_depot_tools.py to add this directory.
+# src/build/find_depot_tools.py to add this directory.
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                             os.pardir, os.pardir, 'tools'))
+                             os.pardir, os.pardir, 'build'))
 import find_depot_tools
 DEPOT_TOOLS_PATH = find_depot_tools.add_depot_tools_to_path()
 sys.path.append(os.path.join(os.path.abspath(DEPOT_TOOLS_PATH), 'third_party'))
@@ -45,7 +45,7 @@ class BotoCloudBucket(cloud_bucket.BaseCloudBucket):
     key.set_contents_from_string(contents)
     # Open permissions for the appengine account to read/write.
     key.add_email_grant('FULL_CONTROL',
-        'ispy.google.com@appspot.gserviceaccount.com') 
+        'ispy.google.com@appspot.gserviceaccount.com')
 
   # override
   def DownloadFile(self, path):

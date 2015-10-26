@@ -12,7 +12,7 @@ import unittest
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.extend([
-    os.path.normpath(os.path.join(test_dir, '..', '..', 'tools')),
+    os.path.normpath(os.path.join(test_dir, '..', '..', 'build')),
     os.path.join(test_dir),
 ])
 

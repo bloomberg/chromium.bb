@@ -15,6 +15,7 @@ import time
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 SRC_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, os.pardir))
+sys.path.insert(0, os.path.join(SRC_DIR, 'build'))
 import find_depot_tools
 find_depot_tools.add_depot_tools_to_path()
 import rietveld

@@ -10,7 +10,7 @@ from sys import path as sys_path
 import unittest
 
 _HERE = os_path.dirname(os_path.abspath(__file__))
-sys_path.append(os_path.join(_HERE, '..', '..', '..', 'tools'))
+sys_path.append(os_path.join(_HERE, '..', '..', '..', 'build'))
 
 import find_depot_tools  # pylint: disable=W0611
 from testing_support.super_mox import SuperMoxTestBase

@@ -82,7 +82,7 @@ class WebKitFinder(object):
 
     def depot_tools_base(self):
         if not self._depot_tools:
-            # This basically duplicates src/tools/find_depot_tools.py without the side effects
+            # This basically duplicates src/build/find_depot_tools.py without the side effects
             # (adding the directory to sys.path and importing breakpad).
             self._depot_tools = (self._check_paths_for_depot_tools(self._sys_path) or
                                  self._check_paths_for_depot_tools(self._env_path) or
