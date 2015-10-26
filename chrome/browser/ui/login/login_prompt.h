@@ -134,7 +134,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
                           const base::string16& password);
 
   // Notify observers that authentication is cancelled.
-  void NotifyAuthCancelled();
+  void NotifyAuthCancelled(bool cancel_navigation);
 
   // Marks authentication as handled and returns the previous handled
   // state.
@@ -143,6 +143,10 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Calls SetAuth from the IO loop.
   void SetAuthDeferred(const base::string16& username,
                        const base::string16& password);
+
+  // Cancels the auth. If |cancel_navigation| is true, the existing login
+  // interstitial (if any) is closed and the pending navigation is cancelled.
+  void DoCancelAuth(bool cancel_navigation);
 
   // Calls CancelAuth from the IO loop.
   void CancelAuthDeferred();

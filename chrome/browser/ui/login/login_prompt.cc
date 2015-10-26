@@ -206,8 +206,10 @@ void LoginHandler::OnRequestCancelled() {
   // Reference is no longer valid.
   request_ = NULL;
 
-  // Give up on auth if the request was cancelled.
-  CancelAuth();
+  // Give up on auth if the request was cancelled. Since the dialog was canceled
+  // by the ResourceLoader and not the user, we should cancel the navigation as
+  // well. This can happen when a new navigation interrupts the current one.
+  DoCancelAuth(true);
 }
 
 void LoginHandler::BuildViewWithPasswordManager(
@@ -289,26 +291,10 @@ void LoginHandler::SetAuth(const base::string16& username,
 }
 
 void LoginHandler::CancelAuth() {
-  if (TestAndSetAuthHandled())
-    return;
-
-  // Similar to how we deal with notifications above in SetAuth()
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    NotifyAuthCancelled();
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&LoginHandler::NotifyAuthCancelled, this));
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginHandler::CloseContentsDeferred, this));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&LoginHandler::CancelAuthDeferred, this));
+  // Cancel the auth without canceling the navigation, so that the auth error
+  // page commits.
+  DoCancelAuth(false);
 }
-
 
 void LoginHandler::Observe(int type,
                            const content::NotificationSource& source,
@@ -402,7 +388,7 @@ void LoginHandler::ReleaseSoon() {
         base::Bind(&LoginHandler::CancelAuthDeferred, this));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&LoginHandler::NotifyAuthCancelled, this));
+        base::Bind(&LoginHandler::NotifyAuthCancelled, this, false));
   }
 
   BrowserThread::PostTask(
@@ -452,7 +438,7 @@ void LoginHandler::NotifyAuthSupplied(const base::string16& username,
       content::Details<AuthSuppliedLoginNotificationDetails>(&details));
 }
 
-void LoginHandler::NotifyAuthCancelled() {
+void LoginHandler::NotifyAuthCancelled(bool dismiss_navigation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(WasAuthHandled());
 
@@ -461,8 +447,15 @@ void LoginHandler::NotifyAuthCancelled() {
   NavigationController* controller = NULL;
 
   WebContents* requesting_contents = GetWebContentsForLogin();
-  if (requesting_contents)
+  if (requesting_contents) {
     controller = &requesting_contents->GetController();
+    if (dismiss_navigation) {
+      content::InterstitialPage* interstitial_page =
+          requesting_contents->GetInterstitialPage();
+      if (interstitial_page)
+        interstitial_page->DontProceed();
+    }
+  }
 
   LoginNotificationDetails details(this);
 
@@ -488,6 +481,26 @@ void LoginHandler::SetAuthDeferred(const base::string16& username,
     request_->SetAuth(net::AuthCredentials(username, password));
     ResetLoginHandlerForRequest(request_);
   }
+}
+
+void LoginHandler::DoCancelAuth(bool dismiss_navigation) {
+  if (TestAndSetAuthHandled())
+    return;
+
+  // Similar to how we deal with notifications above in SetAuth().
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    NotifyAuthCancelled(dismiss_navigation);
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&LoginHandler::NotifyAuthCancelled, this,
+                                       dismiss_navigation));
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoginHandler::CloseContentsDeferred, this));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&LoginHandler::CancelAuthDeferred, this));
 }
 
 // Calls CancelAuth from the IO loop.
