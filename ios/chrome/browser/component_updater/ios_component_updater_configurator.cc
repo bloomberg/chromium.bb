@@ -43,8 +43,6 @@ class IOSConfigurator : public update_client::Configurator {
   bool UseBackgroundDownloader() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
-      const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
@@ -130,11 +128,6 @@ IOSConfigurator::GetSequencedTaskRunner() const {
       ->GetSequencedTaskRunnerWithShutdownBehavior(
           web::WebThread::GetBlockingPool()->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-IOSConfigurator::GetSingleThreadTaskRunner() const {
-  return web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE);
 }
 
 }  // namespace

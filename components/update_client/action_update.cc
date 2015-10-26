@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -68,11 +67,11 @@ void ActionUpdate::Run(UpdateContext* update_context, Callback callback) {
 
   const bool is_background_download(IsBackgroundDownload(item));
 
-  crx_downloader_.reset(
-      (*update_context_->crx_downloader_factory)(
-          is_background_download, update_context_->config->RequestContext(),
-          update_context_->blocking_task_runner,
-          update_context_->single_thread_task_runner).release());
+  crx_downloader_.reset((*update_context_->crx_downloader_factory)(
+                            is_background_download,
+                            update_context_->config->RequestContext(),
+                            update_context_->blocking_task_runner)
+                            .release());
   crx_downloader_->set_progress_callback(
       base::Bind(&ActionUpdate::DownloadProgress, base::Unretained(this), id));
 

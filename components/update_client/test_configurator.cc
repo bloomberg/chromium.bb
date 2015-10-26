@@ -113,10 +113,4 @@ TestConfigurator::GetSequencedTaskRunner() const {
   return worker_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-TestConfigurator::GetSingleThreadTaskRunner() const {
-  // This is NULL because tests do not use the background downloader.
-  return NULL;
-}
-
 }  // namespace update_client

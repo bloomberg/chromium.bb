@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 
 #include <string>
+#include <vector>
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
@@ -42,8 +43,6 @@ class ChromeConfigurator : public update_client::Configurator {
   bool DeltasEnabled() const override;
   bool UseBackgroundDownloader() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
       const override;
 
  private:
@@ -130,12 +129,6 @@ ChromeConfigurator::GetSequencedTaskRunner() const {
       ->GetSequencedTaskRunnerWithShutdownBehavior(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-ChromeConfigurator::GetSingleThreadTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::FILE);
 }
 
 }  // namespace

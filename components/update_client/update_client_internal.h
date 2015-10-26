@@ -79,6 +79,8 @@ class UpdateClientImpl : public UpdateClient {
 
   // Used to post responses back to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // Used to execute blocking tasks.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateClientImpl);

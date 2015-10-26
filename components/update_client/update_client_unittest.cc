@@ -238,9 +238,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -377,9 +376,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -583,9 +581,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -824,9 +821,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -1085,9 +1081,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -1325,9 +1320,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -1547,9 +1541,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -1754,9 +1747,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -1886,9 +1878,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
@@ -2017,9 +2008,8 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     static scoped_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            background_task_runner) {
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
       return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 

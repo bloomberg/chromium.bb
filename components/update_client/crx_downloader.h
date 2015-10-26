@@ -18,7 +18,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -87,11 +86,10 @@ class CrxDownloader {
   // bytes is not guaranteed to monotonically increment over time.
   using ProgressCallback = base::Callback<void(const Result& result)>;
 
-  using Factory = scoped_ptr<CrxDownloader>(*)(
+  using Factory = scoped_ptr<CrxDownloader> (*)(
       bool,
       net::URLRequestContextGetter*,
-      const scoped_refptr<base::SequencedTaskRunner>&,
-      const scoped_refptr<base::SingleThreadTaskRunner>&);
+      const scoped_refptr<base::SequencedTaskRunner>&);
 
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
@@ -102,9 +100,7 @@ class CrxDownloader {
   static scoped_ptr<CrxDownloader> Create(
       bool is_background_download,
       net::URLRequestContextGetter* context_getter,
-      const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          background_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner);
   virtual ~CrxDownloader();
 
   void set_progress_callback(const ProgressCallback& progress_callback);

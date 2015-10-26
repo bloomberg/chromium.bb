@@ -116,8 +116,8 @@ void CrxDownloaderTest::SetUp() {
   // Do not use the background downloader in these tests.
   crx_downloader_.reset(
       CrxDownloader::Create(false, context_.get(),
-                            base::ThreadTaskRunnerHandle::Get(),
-                            NULL).release());
+                            base::ThreadTaskRunnerHandle::Get())
+          .release());
   crx_downloader_->set_progress_callback(progress_callback_);
 
   get_interceptor_.reset(

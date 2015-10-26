@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/update_client/action_update_check.h"
@@ -35,7 +34,6 @@ UpdateContext::UpdateContext(
       callback(callback),
       main_task_runner(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner(config->GetSequencedTaskRunner()),
-      single_thread_task_runner(config->GetSingleThreadTaskRunner()),
       update_checker_factory(update_checker_factory),
       crx_downloader_factory(crx_downloader_factory),
       ping_manager(ping_manager) {

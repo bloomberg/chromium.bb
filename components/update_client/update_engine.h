@@ -123,9 +123,6 @@ struct UpdateContext {
   // Runs tasks in a blocking thread pool.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
 
-  // Runs tasks in the same single thread.
-  scoped_refptr<base::SingleThreadTaskRunner> single_thread_task_runner;
-
   // Creates instances of UpdateChecker;
   UpdateChecker::Factory update_checker_factory;
 

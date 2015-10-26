@@ -12,7 +12,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }
 
 namespace extensions {
@@ -23,8 +22,6 @@ class UpdateClientConfig : public update_client::Configurator {
   UpdateClientConfig();
 
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
       const override;
 
  protected:

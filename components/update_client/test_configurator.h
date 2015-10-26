@@ -18,7 +18,6 @@ class GURL;
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace update_client {
@@ -73,8 +72,6 @@ class TestConfigurator : public Configurator {
   bool UseBackgroundDownloader() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
-      const override;
 
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(int seconds);
@@ -85,7 +82,6 @@ class TestConfigurator : public Configurator {
   ~TestConfigurator() override;
 
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   int initial_time_;
   int ondemand_time_;

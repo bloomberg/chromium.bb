@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/update_client/url_fetcher_downloader.h"
 
@@ -35,15 +34,14 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 scoped_ptr<CrxDownloader> CrxDownloader::Create(
     bool is_background_download,
     net::URLRequestContextGetter* context_getter,
-    const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& background_task_runner) {
-  scoped_ptr<CrxDownloader> url_fetcher_downloader(scoped_ptr<CrxDownloader>(
-      new UrlFetcherDownloader(scoped_ptr<CrxDownloader>().Pass(),
-                               context_getter, url_fetcher_task_runner)));
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+  scoped_ptr<CrxDownloader> url_fetcher_downloader(
+      scoped_ptr<CrxDownloader>(new UrlFetcherDownloader(
+          scoped_ptr<CrxDownloader>().Pass(), context_getter, task_runner)));
 #if defined(OS_WIN)
   if (is_background_download) {
     return scoped_ptr<CrxDownloader>(new BackgroundDownloader(
-        url_fetcher_downloader.Pass(), context_getter, background_task_runner));
+        url_fetcher_downloader.Pass(), context_getter, task_runner));
   }
 #endif
 

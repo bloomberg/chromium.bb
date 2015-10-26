@@ -18,12 +18,6 @@ UpdateClientConfig::GetSequencedTaskRunner() const {
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-UpdateClientConfig::GetSingleThreadTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::FILE);
-}
-
 UpdateClientConfig::~UpdateClientConfig() {}
 
 }  // namespace extensions
