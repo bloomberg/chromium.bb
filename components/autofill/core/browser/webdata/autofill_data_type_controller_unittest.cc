@@ -2,27 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
-#include "chrome/browser/web_data_service_factory.h"
-#include "chrome/test/base/testing_profile.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/webdata_services/web_data_service_test_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +30,6 @@ namespace browser_sync {
 
 namespace {
 
-using content::BrowserThread;
 using testing::_;
 using testing::Return;
 
@@ -54,12 +49,13 @@ class NoOpAutofillBackend : public AutofillWebDataBackend {
 // Fake WebDataService implementation that stubs out the database loading.
 class FakeWebDataService : public AutofillWebDataService {
  public:
-  FakeWebDataService()
-      : AutofillWebDataService(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)),
+  FakeWebDataService(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner)
+      : AutofillWebDataService(ui_task_runner, db_task_runner),
         is_database_loaded_(false),
-        db_loaded_callback_(base::Callback<void(void)>()){}
+        db_task_runner_(db_task_runner),
+        db_loaded_callback_(base::Callback<void(void)>()) {}
 
   // Mark the database as loaded and send out the appropriate notification.
   void LoadDatabase() {
@@ -81,9 +77,10 @@ class FakeWebDataService : public AutofillWebDataService {
     // The |autofill_profile_syncable_service_| must be constructed on the DB
     // thread.
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-        base::Bind(&FakeWebDataService::CreateSyncableService,
-                   base::Unretained(this)), run_loop.QuitClosure());
+    db_task_runner_->PostTaskAndReply(
+        FROM_HERE, base::Bind(&FakeWebDataService::CreateSyncableService,
+                              base::Unretained(this)),
+        run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -91,65 +88,52 @@ class FakeWebDataService : public AutofillWebDataService {
   ~FakeWebDataService() override {}
 
   void CreateSyncableService() {
-    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    ASSERT_TRUE(db_task_runner_->BelongsToCurrentThread());
     // These services are deleted in DestroySyncableService().
     autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
-        this,
-        &autofill_backend_);
+        this, &autofill_backend_);
   }
 
   bool is_database_loaded_;
   NoOpAutofillBackend autofill_backend_;
+  const scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
   base::Callback<void(void)> db_loaded_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
-};
-
-class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
- public:
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
-    return make_scoped_ptr(new MockWebDataServiceWrapperSyncable());
-  }
-
-  MockWebDataServiceWrapperSyncable()
-      : MockWebDataServiceWrapper(new FakeWebDataService(), NULL) {
-  }
-
-  void Shutdown() override {
-    static_cast<FakeWebDataService*>(
-        fake_autofill_web_data_.get())->ShutdownOnUIThread();
-    // Make sure WebDataService is shutdown properly on DB thread before we
-    // destroy it.
-    base::RunLoop run_loop;
-    ASSERT_TRUE(BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::DoNothing), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperSyncable);
 };
 
 class SyncAutofillDataTypeControllerTest : public testing::Test,
                                            public sync_driver::FakeSyncClient {
  public:
   SyncAutofillDataTypeControllerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
+      : db_thread_("DB_Thread"),
         last_start_result_(sync_driver::DataTypeController::OK),
         weak_ptr_factory_(this) {}
   ~SyncAutofillDataTypeControllerTest() override {}
 
   // FakeSyncClient overrides.
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override {
-    return WebDataServiceFactory::GetAutofillWebDataForProfile(
-                               &profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    return web_data_service_;
   }
 
   void SetUp() override {
-    WebDataServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, MockWebDataServiceWrapperSyncable::Build);
-    autofill_dtc_ =
-        new AutofillDataTypeController(base::Bind(&base::DoNothing), this);
+    db_thread_.Start();
+    web_data_service_ = new FakeWebDataService(
+        base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner());
+    autofill_dtc_ = new AutofillDataTypeController(
+        base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner(),
+        base::Bind(&base::DoNothing), this);
+  }
+
+  void TearDown() override {
+    web_data_service_->ShutdownOnUIThread();
+
+    // Make sure WebDataService is shutdown properly on DB thread before we
+    // destroy it.
+    base::RunLoop run_loop;
+    ASSERT_TRUE(db_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   // Passed to AutofillDTC::Start().
@@ -165,19 +149,18 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
     EXPECT_EQ(type, syncer::AUTOFILL);
   }
 
-  void TearDown() override { autofill_dtc_ = NULL; }
-
   void BlockForDBThread() {
     base::RunLoop run_loop;
-    ASSERT_TRUE(BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::DoNothing), run_loop.QuitClosure()));
+    ASSERT_TRUE(db_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  base::MessageLoop message_loop_;
+  base::Thread db_thread_;
   scoped_refptr<AutofillDataTypeController> autofill_dtc_;
+  scoped_refptr<FakeWebDataService> web_data_service_;
 
   // Stores arguments of most recent call of OnStartFinished().
   sync_driver::DataTypeController::ConfigureResult last_start_result_;
@@ -189,13 +172,10 @@ class SyncAutofillDataTypeControllerTest : public testing::Test,
 // immediately try to start association and fail (due to missing DB
 // thread).
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
-  FakeWebDataService* web_db = static_cast<FakeWebDataService*>(
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          &profile_, ServiceAccessType::EXPLICIT_ACCESS).get());
-  web_db->LoadDatabase();
+  web_data_service_->LoadDatabase();
   autofill_dtc_->LoadModels(
-    base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
-               weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
@@ -222,10 +202,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
             autofill_dtc_->state());
 
-  FakeWebDataService* web_db = static_cast<FakeWebDataService*>(
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          &profile_, ServiceAccessType::EXPLICIT_ACCESS).get());
-  web_db->LoadDatabase();
+  web_data_service_->LoadDatabase();
 
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,

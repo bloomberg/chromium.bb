@@ -11,7 +11,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
+#include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -174,8 +174,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL)) {
-    sync_service->RegisterDataTypeController(
-        new AutofillDataTypeController(error_callback, sync_client));
+    sync_service->RegisterDataTypeController(new AutofillDataTypeController(
+        ui_thread, db_thread, error_callback, sync_client));
   }
 
   // Autofill profile sync is enabled by default.  Register unless explicitly

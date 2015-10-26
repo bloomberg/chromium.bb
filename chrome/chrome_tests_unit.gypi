@@ -222,7 +222,6 @@
       'browser/sync/abstract_profile_sync_service_test.cc',
       'browser/sync/abstract_profile_sync_service_test.h',
       'browser/sync/backend_migrator_unittest.cc',
-      'browser/sync/glue/autofill_data_type_controller_unittest.cc',
       'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
       'browser/sync/glue/local_device_info_provider_unittest.cc',
       'browser/sync/glue/search_engine_data_type_controller_unittest.cc',

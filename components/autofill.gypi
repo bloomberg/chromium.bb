@@ -203,6 +203,8 @@
         'autofill/core/browser/webdata/autocomplete_syncable_service.h',
         'autofill/core/browser/webdata/autofill_change.cc',
         'autofill/core/browser/webdata/autofill_change.h',
+        'autofill/core/browser/webdata/autofill_data_type_controller.cc',
+        'autofill/core/browser/webdata/autofill_data_type_controller.h',
         'autofill/core/browser/webdata/autofill_entry.cc',
         'autofill/core/browser/webdata/autofill_entry.h',
         'autofill/core/browser/webdata/autofill_profile_data_type_controller.cc',

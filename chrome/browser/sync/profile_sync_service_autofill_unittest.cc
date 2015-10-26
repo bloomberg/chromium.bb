@@ -27,7 +27,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -40,6 +39,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
+#include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
@@ -675,8 +675,10 @@ class ProfileSyncServiceAutofillTest
   DataTypeController* CreateDataTypeController(syncer::ModelType type) {
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
     if (type == AUTOFILL) {
-      return new AutofillDataTypeController(base::Bind(&base::DoNothing),
-                                            sync_client_.get());
+      return new AutofillDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          base::Bind(&base::DoNothing), sync_client_.get());
     } else {
       return new AutofillProfileDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),

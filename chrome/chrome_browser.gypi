@@ -2857,8 +2857,6 @@
     'chrome_browser_sync_sources': [
       'browser/sync/chrome_sync_client.cc',
       'browser/sync/chrome_sync_client.h',
-      'browser/sync/glue/autofill_data_type_controller.cc',
-      'browser/sync/glue/autofill_data_type_controller.h',
       'browser/sync/glue/extensions_activity_monitor.cc',
       'browser/sync/glue/extensions_activity_monitor.h',
       'browser/sync/glue/local_device_info_provider_impl.cc',

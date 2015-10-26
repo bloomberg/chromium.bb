@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_DATA_TYPE_CONTROLLER_H__
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
@@ -19,11 +20,13 @@ class AutofillWebDataService;
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
-class AutofillDataTypeController
-    : public sync_driver::NonUIDataTypeController {
+class AutofillDataTypeController : public sync_driver::NonUIDataTypeController {
  public:
-  explicit AutofillDataTypeController(const base::Closure& error_callback,
-                                      sync_driver::SyncClient* sync_client);
+  AutofillDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const base::Closure& error_callback,
+      sync_driver::SyncClient* sync_client);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;
@@ -51,9 +54,12 @@ class AutofillDataTypeController
 
   sync_driver::SyncClient* const sync_client_;
 
+  // A reference to the DB thread's task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_DATA_TYPE_CONTROLLER_H__
