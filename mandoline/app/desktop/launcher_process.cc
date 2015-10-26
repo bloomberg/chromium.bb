@@ -60,9 +60,6 @@ int LauncherProcessMain(int argc, char** argv) {
     shell_context.Shutdown();
   }
 
-  if (trace_startup)
-    tracer.StopAndFlushToFile();
-
   return 0;
 }
 

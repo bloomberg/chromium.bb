@@ -20,7 +20,9 @@ namespace runner {
 Tracer::Tracer()
     : tracing_(false), first_chunk_written_(false), trace_file_(nullptr) {}
 
-Tracer::~Tracer() {}
+Tracer::~Tracer() {
+  StopAndFlushToFile();
+}
 
 void Tracer::Start(const std::string& categories,
                    const std::string& duration_seconds_str,

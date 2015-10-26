@@ -31,10 +31,7 @@ class Tracer;
 //class Context : public edk::ProcessDelegate {
 class Context : public embedder::ProcessDelegate {
  public:
-  // TODO(erg): There are enough uses of Context() that I am going to make the
-  // default value cleanup in another patch. crbug.com/534895
-  explicit Context(const base::FilePath& shell_file_root,
-                   Tracer* tracer = nullptr);
+  Context(const base::FilePath& shell_file_root, Tracer* tracer);
   ~Context() override;
 
   static void EnsureEmbedderIsInitialized();

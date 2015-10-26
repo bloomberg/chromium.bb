@@ -30,7 +30,8 @@ void QuitIfRunning() {
 
 }  // namespace
 
-ShellTestBase::ShellTestBase() : shell_context_(GetTestAppFilePath()) {}
+ShellTestBase::ShellTestBase()
+    : shell_context_(GetTestAppFilePath(), nullptr) {}
 
 ShellTestBase::~ShellTestBase() {
 }

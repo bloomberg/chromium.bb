@@ -46,7 +46,7 @@ class TestChildProcessHost : public ChildProcessHost {
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
-  Context context(shell_dir);
+  Context context(shell_dir, nullptr);
   base::MessageLoop message_loop(
       scoped_ptr<base::MessagePump>(new common::MessagePumpMojo()));
   context.Init();
