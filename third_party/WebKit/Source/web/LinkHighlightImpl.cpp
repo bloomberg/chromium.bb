@@ -82,11 +82,12 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     m_clipLayer = adoptPtr(compositorSupport->createLayer());
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
         m_compositorPlayer = adoptPtr(compositorSupport->createAnimationPlayer());
         ASSERT(m_compositorPlayer);
         m_compositorPlayer->setAnimationDelegate(this);
-        m_owningWebViewImpl->linkHighlightsTimeline()->playerAttached(*this);
+        if (m_owningWebViewImpl->linkHighlightsTimeline())
+            m_owningWebViewImpl->linkHighlightsTimeline()->playerAttached(*this);
         m_compositorPlayer->attachLayer(m_contentLayer->layer());
     } else {
         owningWebViewImpl->registerForAnimations(m_contentLayer->layer());
@@ -102,7 +103,8 @@ LinkHighlightImpl::~LinkHighlightImpl()
 {
     if (m_compositorPlayer) {
         m_compositorPlayer->detachLayer();
-        m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
+        if (m_owningWebViewImpl->linkHighlightsTimeline())
+            m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
         m_compositorPlayer->setAnimationDelegate(nullptr);
     }
     m_compositorPlayer.clear();

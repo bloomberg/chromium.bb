@@ -31,7 +31,7 @@ ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(ScrollableArea* scrollabl
     , m_compositorAnimationId(0)
     , m_compositorAnimationGroupId(0)
 {
-    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->isThreadedAnimationEnabled()) {
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
         ASSERT(Platform::current()->compositorSupport());
         m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
         ASSERT(m_compositorPlayer);
