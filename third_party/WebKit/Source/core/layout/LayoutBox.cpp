@@ -4408,7 +4408,10 @@ bool LayoutBox::hasUnsplittableScrollingOverflow() const
 
 bool LayoutBox::isUnsplittableForPagination() const
 {
-    return isReplaced() || hasUnsplittableScrollingOverflow() || (parent() && isWritingModeRoot());
+    return isReplaced()
+        || hasUnsplittableScrollingOverflow()
+        || (parent() && isWritingModeRoot())
+        || (isOutOfFlowPositioned() && style()->position() == FixedPosition);
 }
 
 LayoutUnit LayoutBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction, LinePositionMode /*linePositionMode*/) const
