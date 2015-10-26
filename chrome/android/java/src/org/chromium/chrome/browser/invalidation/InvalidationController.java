@@ -266,9 +266,17 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     public static InvalidationController get(Context context) {
         synchronized (LOCK) {
             if (sInstance == null) {
-                boolean canDisableSessionInvalidations =
+                // The PageRevisitInstrumentation trial needs sessions invalidations to be on such
+                // that local session data is current and can be used to perform checks. Its
+                // preference should override the AndroidSessionNotifications trial.
+                boolean requireInvalidationsForInstrumentation =
+                        FieldTrialList.findFullName("PageRevisitInstrumentation").equals("Enabled");
+                boolean tryToDisableInvalidationsAsOptimization =
                         FieldTrialList.findFullName("AndroidSessionNotifications")
                                 .equals("Disabled");
+                boolean canDisableSessionInvalidations = !requireInvalidationsForInstrumentation
+                        && tryToDisableInvalidationsAsOptimization;
+
                 boolean canUseGcmUpstream =
                         FieldTrialList.findFullName("InvalidationsGCMUpstream").equals("Enabled");
                 sInstance = new InvalidationController(
