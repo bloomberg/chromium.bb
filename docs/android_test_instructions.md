@@ -124,7 +124,9 @@ If you build in an output directory other than "out", you may have to tell
 test\_runner.py where you place it. Say you build your android code in
 out\_android, then do `export CHROMIUM_OUT_DIR=out_android` before running the
 command below. You have to do this even if your "out" directory is a symlink
-pointing to "out_android".
+pointing to "out_android". You can also use `--output-directory` to point to the
+path of your output directory, for example,
+`--output-directory=out_android/Debug`.
 
 ## INSTALL\_FAILED\_CONTAINER\_ERROR or INSTALL\_FAILED\_INSUFFICIENT\_STORAGE
 
@@ -148,6 +150,33 @@ traces, pipe the output through
 `third_party/android_platform/development/scripts/stack`. If you build in an
 output directory other than "out", pass
 `--chrome-symbols-dir=out_directory/{Debug,Release}/lib` to the script as well.
+
+## JUnit tests
+
+JUnit tests are Java unittests running on the host instead of the target device.
+They are faster to run and therefore are recommended over instrumentation tests
+when possible.
+
+The JUnits tests are usually following the pattern of *target*\_junit\_tests,
+for example, `content_junit_tests` and `chrome_junit_tests`.
+
+When adding a new JUnit test, the associated `BUILD.gn` file must be updated.
+For example, adding a test to `chrome_junit_tests` requires to update
+`chrome/android/BUILD.gn`. If you are a GYP user, you will not need to do that
+step in order to run the test locally but it is still required for GN users to
+run the test.
+
+```shell
+# Build the test suite.
+ninja -C out/Release chrome_junit_tests
+
+# Run the test suite.
+build/android/test_runner.py junit -s chrome_junit_tests --release -vvv
+
+# Run a subset of tests. You might need to pass the package name for some tests.
+build/android/test_runner.py junit -s chrome_junit_tests --release -vvv
+-f "org.chromium.chrome.browser.media.*"
+```
 
 ## Gtests
 
