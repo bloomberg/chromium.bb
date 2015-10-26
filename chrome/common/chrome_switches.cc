@@ -332,9 +332,6 @@ const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 // and allocates certain resources accordingly.
 const char kDisableSiteEngagementService[] = "disable-site-engagement-service";
 
-// Disables the suggestions service.
-const char kDisableSuggestionsService[]     = "disable-suggestions-service";
-
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -534,9 +531,6 @@ const char kDisableSimplifiedFullscreenUI[] =
 // Enable the Site Engagement service, which records interaction with sites and
 // allocates certain resources accordingly.
 const char kEnableSiteEngagementService[]   = "enable-site-engagement-service";
-
-// Enables the suggestions service.
-const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 
 // Enables the supervised user managed bookmarks folder.
 const char kEnableSupervisedUserManagedBookmarksFolder[] =

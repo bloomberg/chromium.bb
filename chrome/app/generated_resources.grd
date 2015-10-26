@@ -6071,12 +6071,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description for the flag to enable the stale-while-revalidate cache directive.">
         Enable the experimental implementation of the Cache-Control: stale-while-revalidate directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_NAME" desc="Name of the flag to enable the suggestions service.">
-        Enable the Suggestions Service
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_DESCRIPTION" desc="Description for the flag to enable suggestions service.">
-        Enable the experimental Chrome suggestions service.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME" desc="Name of the flag to enable the managed bookmarks folder for supervised users.">
         Enable managed bookmarks for supervised users
       </message>

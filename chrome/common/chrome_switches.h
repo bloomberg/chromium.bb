@@ -154,7 +154,6 @@ extern const char kDisableSettingsWindow[];
 extern const char kEnableSimplifiedFullscreenUI[];
 extern const char kDisableSimplifiedFullscreenUI[];
 extern const char kEnableSiteEngagementService[];
-extern const char kEnableSuggestionsService[];
 extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];
