@@ -474,6 +474,7 @@ interface Permissions
     method constructor
     method query
     method request
+    method requestAll
     method revoke
 interface PromiseRejectionEvent
     getter promise

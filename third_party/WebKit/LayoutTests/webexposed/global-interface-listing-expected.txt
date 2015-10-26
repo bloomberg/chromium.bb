@@ -3729,6 +3729,7 @@ interface Permissions
     method constructor
     method query
     method request
+    method requestAll
     method revoke
 interface Plugin
     getter description

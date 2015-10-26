@@ -12,6 +12,6 @@
 ] interface Permissions {
     [CallWith=ScriptState, Measure] Promise<PermissionStatus> query(Dictionary permission);
     [RuntimeEnabled=PermissionsRequestRevoke, CallWith=ScriptState, Measure] Promise<PermissionStatus> request(Dictionary permissions);
-    [RuntimeEnabled=PermissionsRequestRevoke, CallWith=ScriptState, Measure] Promise<sequence<PermissionStatus>> request(sequence<Dictionary> permissions);
     [RuntimeEnabled=PermissionsRequestRevoke, CallWith=ScriptState, Measure] Promise<PermissionStatus> revoke(Dictionary permission);
+    [RuntimeEnabled=PermissionsRequestRevoke, CallWith=ScriptState, Measure] Promise<sequence<PermissionStatus>> requestAll(sequence<Dictionary> permissions);
 };

@@ -28,8 +28,8 @@ public:
 
     ScriptPromise query(ScriptState*, const Dictionary&);
     ScriptPromise request(ScriptState*, const Dictionary&);
-    ScriptPromise request(ScriptState*, const Vector<Dictionary>&);
     ScriptPromise revoke(ScriptState*, const Dictionary&);
+    ScriptPromise requestAll(ScriptState*, const Vector<Dictionary>&);
 };
 
 } // namespace blink
