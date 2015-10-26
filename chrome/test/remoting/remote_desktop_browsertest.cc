@@ -238,7 +238,7 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
 
 void RemoteDesktopBrowserTest::StartChromotingApp() {
   ClickOnControl("browser-test-continue-init");
-};
+}
 
 void RemoteDesktopBrowserTest::Authorize() {
   // The chromoting extension should be installed.
@@ -394,13 +394,13 @@ void RemoteDesktopBrowserTest::DisconnectMe2Me() {
 
 void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
     ui::KeyboardCode keyCode,
-    const char* code) {
+    const std::string& code) {
   SimulateKeyPressWithCode(keyCode, code, false, false, false, false);
 }
 
 void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
     ui::KeyboardCode keyCode,
-    const char* code,
+    const std::string& code,
     bool control,
     bool shift,
     bool alt,
@@ -515,7 +515,7 @@ content::WebContents* RemoteDesktopBrowserTest::SetUpTest() {
   // This causes the test to fail because of a recent bug:
   // crbug.com/430676
   // TODO(anandc): Reactivate this call after above bug is fixed.
-  //EnsureRemoteConnectionEnabled(app_web_content);
+  // EnsureRemoteConnectionEnabled(app_web_content);
   return app_web_content;
 }
 

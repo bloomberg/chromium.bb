@@ -1406,7 +1406,7 @@ void EventSender::KeyDown(const std::string& code_str,
   event_down.modifiers = modifiers;
   event_down.windowsKeyCode = code;
   event_down.domCode = static_cast<int>(
-      ui::KeycodeConverter::CodeStringToDomCode(domString.c_str()));
+      ui::KeycodeConverter::CodeStringToDomCode(domString));
 
   if (generate_char) {
     event_down.text[0] = text;

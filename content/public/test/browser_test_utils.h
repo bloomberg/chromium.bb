@@ -161,7 +161,7 @@ void SimulateKeyPress(WebContents* web_contents,
 //   native key code: 0x0026 (for Linux).
 void SimulateKeyPressWithCode(WebContents* web_contents,
                               ui::KeyboardCode key_code,
-                              const char* code,
+                              const std::string& code,
                               bool control,
                               bool shift,
                               bool alt,

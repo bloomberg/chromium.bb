@@ -107,10 +107,11 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   void DisconnectMe2Me();
 
   // Simulate a key event.
-  void SimulateKeyPressWithCode(ui::KeyboardCode keyCode, const char* code);
+  void SimulateKeyPressWithCode(ui::KeyboardCode keyCode,
+                                const std::string& code);
 
   void SimulateKeyPressWithCode(ui::KeyboardCode keyCode,
-                                const char* code,
+                                const std::string& code,
                                 bool control,
                                 bool shift,
                                 bool alt,

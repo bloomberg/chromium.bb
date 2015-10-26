@@ -536,12 +536,12 @@ void SimulateKeyPress(WebContents* web_contents,
                       bool alt,
                       bool command) {
   SimulateKeyPressWithCode(
-      web_contents, key_code, NULL, control, shift, alt, command);
+      web_contents, key_code, std::string(), control, shift, alt, command);
 }
 
 void SimulateKeyPressWithCode(WebContents* web_contents,
                               ui::KeyboardCode key_code,
-                              const char* code,
+                              const std::string& code,
                               bool control,
                               bool shift,
                               bool alt,

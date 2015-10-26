@@ -95,14 +95,11 @@ int KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
 }
 
 // static
-DomCode KeycodeConverter::CodeStringToDomCode(const char* code) {
-  if (!code || !*code) {
-    LOG(WARNING) << "empty code string";
+DomCode KeycodeConverter::CodeStringToDomCode(const std::string& code) {
+  if (code.empty())
     return DomCode::NONE;
-  }
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].code &&
-        strcmp(usb_keycode_map[i].code, code) == 0) {
+    if (usb_keycode_map[i].code && code == usb_keycode_map[i].code) {
       return static_cast<DomCode>(usb_keycode_map[i].usb_keycode);
     }
   }
@@ -172,16 +169,16 @@ DomKeyLocation KeycodeConverter::DomCodeToLocation(DomCode dom_code) {
 }
 
 // static
-DomKey KeycodeConverter::KeyStringToDomKey(const char* key) {
-  if (!key || !*key)
+DomKey KeycodeConverter::KeyStringToDomKey(const std::string& key) {
+  if (key.empty())
     return DomKey::NONE;
   // Check for standard key names.
   for (size_t i = 0; i < kDomKeyMapEntries; ++i) {
-    if (dom_key_map[i].string && strcmp(dom_key_map[i].string, key) == 0) {
+    if (dom_key_map[i].string && key == dom_key_map[i].string) {
       return dom_key_map[i].dom_key;
     }
   }
-  if (strcmp(key, "Dead") == 0) {
+  if (key == "Dead") {
     // The web KeyboardEvent string does not encode the combining character,
     // so we just set it to the Unicode designated non-character 0xFFFF.
     // This will round-trip convert back to 'Dead' but take no part in
@@ -192,7 +189,7 @@ DomKey KeycodeConverter::KeyStringToDomKey(const char* key) {
   // the key value is that character.
   int32_t char_index = 0;
   uint32_t character;
-  if (base::ReadUnicodeCharacter(key, static_cast<int32_t>(strlen(key)),
+  if (base::ReadUnicodeCharacter(key.c_str(), static_cast<int32>(key.length()),
                                  &char_index, &character) &&
       key[++char_index] == 0) {
     return DomKey::FromCharacter(character);
@@ -302,13 +299,12 @@ uint32_t KeycodeConverter::DomCodeToUsbKeycode(DomCode dom_code) {
 }
 
 // static
-uint32_t KeycodeConverter::CodeToUsbKeycode(const char* code) {
-  if (!code || !*code)
+uint32_t KeycodeConverter::CodeToUsbKeycode(const std::string& code) {
+  if (code.empty())
     return InvalidUsbKeycode();
 
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
-    if (usb_keycode_map[i].code &&
-        strcmp(usb_keycode_map[i].code, code) == 0) {
+    if (usb_keycode_map[i].code && code == usb_keycode_map[i].code) {
       return usb_keycode_map[i].usb_keycode;
     }
   }

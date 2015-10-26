@@ -15,7 +15,7 @@ namespace remoting {
 
 class Me2MeBrowserTest : public RemoteDesktopBrowserTest {
  protected:
-  void TestKeypressInput(ui::KeyboardCode, const char*);
+  void TestKeypressInput(ui::KeyboardCode, const std::string&);
 
   void ConnectPinlessAndCleanupPairings(bool cleanup_all);
   bool IsPairingSpinnerHidden();
@@ -164,7 +164,7 @@ void Me2MeBrowserTest::SetupForRemoteHostTest() {
 
 void Me2MeBrowserTest::TestKeypressInput(
     ui::KeyboardCode keyCode,
-    const char* code) {
+    const std::string& code) {
   remote_test_helper()->ClearLastEvent();
   VLOG(1) << "Pressing " << code;
   SimulateKeyPressWithCode(keyCode, code);

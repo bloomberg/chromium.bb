@@ -204,12 +204,12 @@ Response InputHandler::DispatchKeyEvent(
 
   if (code) {
     event.domCode = static_cast<int>(
-        ui::KeycodeConverter::CodeStringToDomCode(code->c_str()));
+        ui::KeycodeConverter::CodeStringToDomCode(*code));
   }
 
   if (key) {
     event.domKey = static_cast<int>(
-        ui::KeycodeConverter::KeyStringToDomKey(key->c_str()));
+        ui::KeycodeConverter::KeyStringToDomKey(*key));
   }
 
   if (!host_)

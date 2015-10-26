@@ -312,8 +312,8 @@ bool InputMethodEngine::SendKeyEvents(
 
     ui::KeyEvent ui_event(
         type, key_code,
-        ui::KeycodeConverter::CodeStringToDomCode(event.code.c_str()), flags,
-        ui::KeycodeConverter::KeyStringToDomKey(event.key.c_str()),
+        ui::KeycodeConverter::CodeStringToDomCode(event.code), flags,
+        ui::KeycodeConverter::KeyStringToDomKey(event.key),
         ui::EventTimeForNow());
     base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
                                                         &ui_event);

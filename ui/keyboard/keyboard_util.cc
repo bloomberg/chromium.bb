@@ -340,9 +340,7 @@ bool SendKeyEvent(const std::string type,
       }
     }
 
-    ui::DomCode dom_code = ui::DomCode::NONE;
-    if (!key_name.empty())
-      dom_code = ui::KeycodeConverter::CodeStringToDomCode(key_name.c_str());
+    ui::DomCode dom_code = ui::KeycodeConverter::CodeStringToDomCode(key_name);
     if (dom_code == ui::DomCode::NONE)
       dom_code = ui::UsLayoutKeyboardCodeToDomCode(code);
     CHECK(dom_code != ui::DomCode::NONE);
