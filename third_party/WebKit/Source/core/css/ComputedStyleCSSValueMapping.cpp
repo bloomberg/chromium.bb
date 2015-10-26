@@ -1631,7 +1631,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return valueForFontVariant(style);
     case CSSPropertyFontWeight:
         return valueForFontWeight(style);
-    case CSSPropertyWebkitFontFeatureSettings: {
+    case CSSPropertyFontFeatureSettings: {
         const FontFeatureSettings* featureSettings = style.fontDescription().featureSettings();
         if (!featureSettings || !featureSettings->size())
             return cssValuePool().createIdentifierValue(CSSValueNormal);

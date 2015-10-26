@@ -1189,7 +1189,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyQuotes:
     case CSSPropertyWebkitHighlight:
     case CSSPropertyFontVariantLigatures:
-    case CSSPropertyWebkitFontFeatureSettings:
+    case CSSPropertyFontFeatureSettings:
     case CSSPropertyFontVariant:
     case CSSPropertyFontFamily:
     case CSSPropertyFontWeight:

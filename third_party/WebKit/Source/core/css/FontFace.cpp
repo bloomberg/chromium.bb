@@ -127,7 +127,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStretch)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyUnicodeRange)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontVariant)
-        && fontFace->setPropertyFromStyle(properties, CSSPropertyWebkitFontFeatureSettings)
+        && fontFace->setPropertyFromStyle(properties, CSSPropertyFontFeatureSettings)
         && !fontFace->family().isEmpty()
         && fontFace->traits().bitfield()) {
         fontFace->initCSSFontFace(document, src);
@@ -154,7 +154,7 @@ FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const 
     setPropertyFromString(document, descriptors.stretch(), CSSPropertyFontStretch);
     setPropertyFromString(document, descriptors.unicodeRange(), CSSPropertyUnicodeRange);
     setPropertyFromString(document, descriptors.variant(), CSSPropertyFontVariant);
-    setPropertyFromString(document, descriptors.featureSettings(), CSSPropertyWebkitFontFeatureSettings);
+    setPropertyFromString(document, descriptors.featureSettings(), CSSPropertyFontFeatureSettings);
 
     suspendIfNeeded();
 }
@@ -220,7 +220,7 @@ void FontFace::setVariant(ExecutionContext* context, const String& s, ExceptionS
 
 void FontFace::setFeatureSettings(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(toDocument(context), s, CSSPropertyWebkitFontFeatureSettings, &exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyFontFeatureSettings, &exceptionState);
 }
 
 void FontFace::setPropertyFromString(const Document* document, const String& s, CSSPropertyID propertyID, ExceptionState* exceptionState)
@@ -261,7 +261,7 @@ bool FontFace::setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue> value, CSSPrope
     case CSSPropertyFontVariant:
         m_variant = value;
         break;
-    case CSSPropertyWebkitFontFeatureSettings:
+    case CSSPropertyFontFeatureSettings:
         m_featureSettings = value;
         break;
     default:

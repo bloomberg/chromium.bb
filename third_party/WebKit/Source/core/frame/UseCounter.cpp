@@ -64,7 +64,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyFontVariant: return 9;
     case CSSPropertyFontWeight: return 10;
     case CSSPropertyTextRendering: return 11;
-    case CSSPropertyWebkitFontFeatureSettings: return 12;
+    case CSSPropertyAliasWebkitFontFeatureSettings: return 12;
     case CSSPropertyFontKerning: return 13;
     case CSSPropertyWebkitFontSmoothing: return 14;
     case CSSPropertyFontVariantLigatures: return 15;
@@ -546,6 +546,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyGridColumnGap: return 511;
     case CSSPropertyGridRowGap: return 512;
     case CSSPropertyGridGap: return 513;
+    case CSSPropertyFontFeatureSettings: return 514;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -562,7 +563,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 513; }
+static int maximumCSSSampleId() { return 514; }
 
 void UseCounter::muteForInspector()
 {

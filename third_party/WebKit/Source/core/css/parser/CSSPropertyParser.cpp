@@ -1225,7 +1225,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeWebkitHighlight(m_range);
     case CSSPropertyFontVariantLigatures:
         return consumeFontVariantLigatures(m_range);
-    case CSSPropertyWebkitFontFeatureSettings:
+    case CSSPropertyFontFeatureSettings:
         return consumeFontFeatureSettings(m_range);
     case CSSPropertyFontVariant:
         return consumeFontVariant(m_range);
@@ -1421,7 +1421,7 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
     case CSSPropertyFontWeight:
         parsedValue = consumeFontWeight(m_range);
         break;
-    case CSSPropertyWebkitFontFeatureSettings:
+    case CSSPropertyFontFeatureSettings:
         parsedValue = consumeFontFeatureSettings(m_range);
         break;
     default:
