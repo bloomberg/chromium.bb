@@ -21,11 +21,12 @@ class CrashesDOMHandler;
 // as a 'friend' below.
 class IOSChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
+  friend class IOSChromeMetricsServicesManagerClient;
+
   // TODO(blundell): Remove these //chrome classes as friends once they're no
   // longer used by the iOS port.
   friend class ::CrashesDOMHandler;
   friend class DataReductionProxyChromeSettings;
-  friend class MetricsServicesManager;
 
   FRIEND_TEST_ALL_PREFIXES(IOSChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

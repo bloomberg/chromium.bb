@@ -127,4 +127,12 @@ void ChromeBrowserProvider::GetFaviconForURL(
     const std::vector<int>& desired_sizes_in_pixel,
     const favicon_base::FaviconResultsCallback& callback) const {}
 
+
+bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
+    const base::Closure& on_update_callback) {
+  return false;
+}
+
+void ChromeBrowserProvider::OnMetricsServicesManagerClientDestroyed() {}
+
 }  // namespace ios

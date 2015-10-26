@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "components/favicon_base/favicon_callback.h"
 
 class GURL;
@@ -138,6 +139,14 @@ class ChromeBrowserProvider {
       const GURL& page_url,
       const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback) const;
+
+  // Returns whether safe browsing is enabled. See the comment on
+  // metrics_services_manager_client.h for details on |on_update_callback|.
+  virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
+
+  // Called when the IOSChromeMetricsServiceClientManager instance is
+  // destroyed.
+  virtual void OnMetricsServicesManagerClientDestroyed();
 };
 
 }  // namespace ios

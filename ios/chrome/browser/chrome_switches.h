@@ -15,6 +15,7 @@ extern const char kEnableIOSBlockUnpromptedExternalURLs[];
 extern const char kEnableIOSWKWebView[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kDisableKeyboardCommands[];
+extern const char kIOSMetricsRecordingOnly[];
 
 }  // namespace switches
 
