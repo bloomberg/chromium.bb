@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/metrics_service.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -305,10 +306,12 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(FULL_SAFE_BROWSING)
-  return (database_manager_->download_protection_enabled() &&
-          ui_manager_->CanReportStats()) ||
-      (download_protection_service() &&
-       download_protection_service()->enabled());
+  const metrics::MetricsService* metrics = g_browser_process->metrics_service();
+  const bool metrics_active = metrics && metrics->reporting_active();
+
+  return (database_manager_->download_protection_enabled() && metrics_active) ||
+         (download_protection_service() &&
+          download_protection_service()->enabled());
 #else
   return false;
 #endif

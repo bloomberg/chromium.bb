@@ -177,13 +177,12 @@ class DownloadSBClient
     for (size_t i = 0; i < url_chain_.size(); ++i) {
       post_data += url_chain_[i].spec() + "\n";
     }
-    ui_manager_->ReportSafeBrowsingHit(url_chain_.back(),   // malicious_url
-                                       url_chain_.front(),  // page_url
-                                       referrer_url_,
-                                       true,  // is_subresource
-                                       threat_type,
-                                       post_data,
-                                       is_extended_reporting_);
+    ui_manager_->MaybeReportSafeBrowsingHit(url_chain_.back(),  // malicious_url
+                                            url_chain_.front(),  // page_url
+                                            referrer_url_,
+                                            true,  // is_subresource
+                                            threat_type, post_data,
+                                            is_extended_reporting_);
   }
 
   void UpdateDownloadCheckStats(SBStatsType stat_type) {

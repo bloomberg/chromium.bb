@@ -96,10 +96,6 @@ class SafeBrowsingUIManager
   // on IO thread. If shutdown is true, the manager is disabled permanently.
   void StopOnIOThread(bool shutdown);
 
-  // Called on UI thread to decide if safe browsing related stats
-  // could be reported.
-  virtual bool CanReportStats() const;
-
   // Called on the UI thread to display an interstitial page.
   // |url| is the url of the resource that matches a safe browsing list.
   // If the request contained a chain of redirects, |url| is the last url
@@ -128,13 +124,14 @@ class SafeBrowsingUIManager
   // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  If |post_data| is
   // non-empty, the request will be sent as a POST instead of a GET.
-  virtual void ReportSafeBrowsingHit(const GURL& malicious_url,
-                                     const GURL& page_url,
-                                     const GURL& referrer_url,
-                                     bool is_subresource,
-                                     SBThreatType threat_type,
-                                     const std::string& post_data,
-                                     bool is_extended_reporting);
+  // Will report only for UMA || is_extended_reporting.
+  virtual void MaybeReportSafeBrowsingHit(const GURL& malicious_url,
+                                          const GURL& page_url,
+                                          const GURL& referrer_url,
+                                          bool is_subresource,
+                                          SBThreatType threat_type,
+                                          const std::string& post_data,
+                                          bool is_extended_reporting);
 
   // Report an invalid TLS/SSL certificate chain to the server. Can only
   // be called on UI thread.

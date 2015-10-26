@@ -75,8 +75,7 @@ SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     const scoped_refptr<SafeBrowsingService>& service)
-    : sb_service_(service) {
-}
+    : sb_service_(service) {}
 
 SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
 
@@ -91,12 +90,6 @@ void SafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
 }
 
-// Only report SafeBrowsing related stats when UMA is enabled. User must also
-// ensure that safe browsing is enabled from the calling profile.
-bool SafeBrowsingUIManager::CanReportStats() const {
-  const metrics::MetricsService* metrics = g_browser_process->metrics_service();
-  return metrics && metrics->reporting_active();
-}
 
 void SafeBrowsingUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
@@ -170,8 +163,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     return;
   }
 
-  if (resource.threat_type != SB_THREAT_TYPE_SAFE &&
-      CanReportStats()) {
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
     GURL page_url = web_contents->GetURL();
     GURL referrer_url;
     NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
@@ -193,15 +185,15 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    bool is_extended_reporting =
+    const bool is_extended_reporting =
         profile &&
         profile->GetPrefs()->GetBoolean(
             prefs::kSafeBrowsingExtendedReportingEnabled);
 
-    ReportSafeBrowsingHit(resource.url, page_url, referrer_url,
-                          resource.is_subresource, resource.threat_type,
-                          std::string(), /* post_data */
-                          is_extended_reporting);
+    MaybeReportSafeBrowsingHit(resource.url, page_url, referrer_url,
+                               resource.is_subresource, resource.threat_type,
+                               std::string(), /* post_data */
+                               is_extended_reporting);
   }
 
   if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
@@ -211,22 +203,28 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 }
 
 // A safebrowsing hit is sent after a blocking page for malware/phishing
-// or after the warning dialog for download urls, only for UMA users.
-void SafeBrowsingUIManager::ReportSafeBrowsingHit(const GURL& malicious_url,
-                                                  const GURL& page_url,
-                                                  const GURL& referrer_url,
-                                                  bool is_subresource,
-                                                  SBThreatType threat_type,
-                                                  const std::string& post_data,
-                                                  bool is_extended_reporting) {
+// or after the warning dialog for download urls, only for
+// UMA || extended_reporting users.
+void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
+    const GURL& malicious_url,
+    const GURL& page_url,
+    const GURL& referrer_url,
+    bool is_subresource,
+    SBThreatType threat_type,
+    const std::string& post_data,
+    bool is_extended_reporting) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!CanReportStats())
-    return;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread, this,
-                 malicious_url, page_url, referrer_url, is_subresource,
-                 threat_type, post_data, is_extended_reporting));
+
+  // Decide if we should send this report.
+  const metrics::MetricsService* metrics = g_browser_process->metrics_service();
+  const bool metrics_active = metrics && metrics->reporting_active();
+  if (metrics_active || is_extended_reporting) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread,
+                   this, malicious_url, page_url, referrer_url, is_subresource,
+                   threat_type, post_data, is_extended_reporting));
+  }
 }
 
 void SafeBrowsingUIManager::ReportInvalidCertificateChain(
