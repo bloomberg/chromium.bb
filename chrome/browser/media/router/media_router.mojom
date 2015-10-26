@@ -189,6 +189,18 @@ interface MediaRouteProvider {
 // Interface for a service which observes state changes across media
 // sources, sinks, and issues.
 interface MediaRouter {
+
+  // Represents overall media sink availability states.
+  // UNAVAILABLE - No sinks are available.
+  // PER_SOURCE - Sinks are available, but are only compatible with specific
+  //              media sources.
+  // AVAILABLE - A sink is available regardless of source.
+  enum SinkAvailability {
+    UNAVAILABLE,
+    PER_SOURCE,
+    AVAILABLE
+  };
+
   // Registers a MediaRouteProvider with the MediaRouter.
   // Returns a string that uniquely identifies the Media Router browser
   // process.
@@ -203,5 +215,8 @@ interface MediaRouter {
 
   // Called when list of routes has been updated.
   OnRoutesUpdated(array<MediaRoute> routes);
+
+  // Called when the overall availability of media sinks has been updated.
+  OnSinkAvailabilityUpdated(SinkAvailability availability);
 };
 

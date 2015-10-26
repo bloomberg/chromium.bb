@@ -264,8 +264,15 @@ define('media_router_bindings', [
   };
 
   /**
+   * Called by the provider manager when sink availability has been updated.
+   * @param {!MediaRouter.SinkAvailability} The new sink availability.
+   */
+  MediaRouter.prototype.onSinkAvailabilityUpdated = function(availability) {
+    this.service_.onSinkAvailabilityUpdated(availability);
+  };
+
+  /**
    * Object containing callbacks set by the provider manager.
-   * TODO(mfoltz): Better named ProviderManagerDelegate?
    *
    * @constructor
    * @struct
@@ -361,7 +368,6 @@ define('media_router_bindings', [
   /*
    * Sets the callback handler used to invoke methods in the provider manager.
    *
-   * TODO(mfoltz): Rename to something more explicit?
    * @param {!MediaRouterHandlers} handlers
    */
   MediaRouteProvider.prototype.setHandlers = function(handlers) {

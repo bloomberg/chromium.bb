@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/local_media_routes_observer.h"
@@ -25,6 +26,9 @@
 #define DLOG_WITH_INSTANCE(level) DLOG(level) << "MR #" << instance_id_ << ": "
 
 namespace media_router {
+
+using SinkAvailability = interfaces::MediaRouter::SinkAvailability;
+
 namespace {
 
 // TODO(imcheng): We should handle failure in this case. One way is to invoke
@@ -75,6 +79,10 @@ MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::
 ~MediaRouterMediaRoutesObserver() {
 }
 
+MediaRouterMojoImpl::MediaSinksQuery::MediaSinksQuery() = default;
+
+MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
+
 void MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::OnRoutesUpdated(
     const std::vector<media_router::MediaRoute>& routes) {
   bool has_local_route =
@@ -89,11 +97,14 @@ void MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::OnRoutesUpdated(
   router_->UpdateHasLocalRoute(has_local_route);
 }
 
+// TODO(mfoltz): Flip the default sink availability to UNAVAILABLE, once the
+// MRPM sends initial availability status.
 MediaRouterMojoImpl::MediaRouterMojoImpl(
     extensions::EventPageTracker* event_page_tracker)
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
-      has_local_route_(false) {
+      has_local_route_(false),
+      availability_(interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE) {
   DCHECK(event_page_tracker_);
 }
 
@@ -172,12 +183,13 @@ void MediaRouterMojoImpl::OnSinksReceived(
     sinks_converted.push_back(sinks[i].To<MediaSink>());
   }
 
-  auto it = sinks_observers_.find(media_source);
-  if (it == sinks_observers_.end()) {
+  auto it = sinks_queries_.find(media_source);
+  if (it == sinks_queries_.end() ||
+      !(it->second->observers.might_have_observers())) {
     DVLOG_WITH_INSTANCE(1)
         << "Received sink list without any active observers: " << media_source;
   } else {
-    FOR_EACH_OBSERVER(MediaSinksObserver, *it->second,
+    FOR_EACH_OBSERVER(MediaSinksObserver, it->second->observers,
                       OnSinksReceived(sinks_converted));
   }
 }
@@ -329,21 +341,24 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // Create an observer list for the media source and add |observer|
   // to it. Fail if |observer| is already registered.
   const std::string& source_id = observer->source().id();
-  base::ObserverList<MediaSinksObserver>* observer_list =
-      sinks_observers_.get(source_id);
-  if (!observer_list) {
-    observer_list = new base::ObserverList<MediaSinksObserver>;
-    sinks_observers_.add(source_id, make_scoped_ptr(observer_list));
+  auto* sinks_query = sinks_queries_.get(source_id);
+  if (!sinks_query) {
+    sinks_query = new MediaSinksQuery;
+    sinks_queries_.add(source_id, make_scoped_ptr(sinks_query));
   } else {
-    DCHECK(!observer_list->HasObserver(observer));
+    DCHECK(!sinks_query->observers.HasObserver(observer));
   }
 
   // We need to call DoStartObservingMediaSinks every time an observer is
   // added to ensure the observer will be notified with a fresh set of results.
+  // The exception is if it is known that no sinks are available, then there is
+  // no need to call to MRPM.
   // TODO(imcheng): Implement caching. (crbug.com/492451)
-  observer_list->AddObserver(observer);
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
-                        base::Unretained(this), source_id));
+  sinks_query->observers.AddObserver(observer);
+  if (availability_ != interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+    RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
+                          base::Unretained(this), source_id));
+  }
   return true;
 }
 
@@ -352,8 +367,8 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const MediaSource::Id& source_id = observer->source().id();
-  auto* observer_list = sinks_observers_.get(source_id);
-  if (!observer_list || !observer_list->HasObserver(observer)) {
+  auto* sinks_query = sinks_queries_.get(source_id);
+  if (!sinks_query || !sinks_query->observers.HasObserver(observer)) {
     return;
   }
 
@@ -361,11 +376,20 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
   // observing sinks for it.
   // might_have_observers() is reliable here on the assumption that this call
   // is not inside the ObserverList iteration.
-  observer_list->RemoveObserver(observer);
-  if (!observer_list->might_have_observers()) {
-    RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopObservingMediaSinks,
-                          base::Unretained(this), source_id));
-    sinks_observers_.erase(source_id);
+  sinks_query->observers.RemoveObserver(observer);
+  if (!sinks_query->observers.might_have_observers()) {
+    // Only ask MRPM to stop observing media sinks if the availability is not
+    // UNAVAILABLE.
+    // Otherwise, the MRPM would have discarded the queries already.
+    if (availability_ !=
+        interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+      // The |sinks_queries_| entry will be removed in the immediate or deferred
+      // |DoStopObservingMediaSinks| call.
+      RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopObservingMediaSinks,
+                            base::Unretained(this), source_id));
+    } else {
+      sinks_queries_.erase(source_id);
+    }
   }
 }
 
@@ -580,6 +604,30 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
                            base::Unretained(this), route_id));
 }
 
+void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
+    SinkAvailability availability) {
+  if (!interfaces::MediaRouter::SinkAvailability_IsValidValue(availability)) {
+    DLOG(WARNING) << "Unknown SinkAvailability value " << availability;
+    return;
+  }
+
+  if (availability_ == availability)
+    return;
+
+  availability_ = availability;
+  if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+    // Sinks are no longer available. MRPM has already removed all sink queries.
+    for (auto& source_and_query : sinks_queries_)
+      source_and_query.second->is_active = false;
+  } else {
+    // Sinks are now available. Tell MRPM to start all sink queries again.
+    for (const auto& source_and_query : sinks_queries_) {
+      RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
+                            base::Unretained(this), source_and_query.first));
+    }
+  }
+}
+
 void MediaRouterMojoImpl::DoOnPresentationSessionDetached(
     const MediaRoute::Id& route_id) {
   DVLOG_WITH_INSTANCE(1) << "DoOnPresentationSessionDetached " << route_id;
@@ -593,13 +641,36 @@ bool MediaRouterMojoImpl::HasLocalRoute() const {
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaSinks: " << source_id;
+  // No need to call MRPM if there are no sinks available.
+  if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE)
+    return;
+
+  // No need to call MRPM if all observers have been removed in the meantime.
+  auto* sinks_query = sinks_queries_.get(source_id);
+  if (!sinks_query || !sinks_query->observers.might_have_observers()) {
+    return;
+  }
+
+  DVLOG_WITH_INSTANCE(1) << "MRPM.StartObservingMediaSinks: " << source_id;
   media_route_provider_->StartObservingMediaSinks(source_id);
+  sinks_query->is_active = true;
 }
 
 void MediaRouterMojoImpl::DoStopObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStopObservingMediaSinks: " << source_id;
+
+  auto* sinks_query = sinks_queries_.get(source_id);
+  // No need to call MRPM if observers have been added in the meantime,
+  // or StopObservingMediaSinks has already been called.
+  if (!sinks_query || !sinks_query->is_active ||
+      sinks_query->observers.might_have_observers()) {
+    return;
+  }
+
+  DVLOG_WITH_INSTANCE(1) << "MRPM.StopObservingMediaSinks: " << source_id;
   media_route_provider_->StopObservingMediaSinks(source_id);
+  sinks_queries_.erase(source_id);
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaRoutes() {

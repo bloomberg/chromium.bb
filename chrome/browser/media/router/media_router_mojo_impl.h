@@ -102,6 +102,11 @@ class MediaRouterMojoImpl : public MediaRouter,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaSinksObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           RegisterMediaSinksObserverWithAvailabilityChange);
+  FRIEND_TEST_ALL_PREFIXES(
+      MediaRouterMojoImplTest,
+      RegisterAndUnregisterMediaSinksObserverWithAvailabilityChange);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaRoutesObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
@@ -121,6 +126,20 @@ class MediaRouterMojoImpl : public MediaRouter,
     MediaRouterMojoImpl* const router_;
 
     DISALLOW_COPY_AND_ASSIGN(MediaRouterMediaRoutesObserver);
+  };
+
+  // Represents a query to the MRPM for media sinks and holds observers for the
+  // query.
+  struct MediaSinksQuery {
+   public:
+    MediaSinksQuery();
+    ~MediaSinksQuery();
+
+    // True if the query has been sent to the MRPM.  False otherwise.
+    bool is_active = false;
+    base::ObserverList<MediaSinksObserver> observers;
+
+    DISALLOW_COPY_AND_ASSIGN(MediaSinksQuery);
   };
 
   // Standard constructor, used by
@@ -208,6 +227,8 @@ class MediaRouterMojoImpl : public MediaRouter,
   void OnSinksReceived(const mojo::String& media_source,
                        mojo::Array<interfaces::MediaSinkPtr> sinks) override;
   void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes) override;
+  void OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SinkAvailability availability) override;
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
@@ -223,9 +244,8 @@ class MediaRouterMojoImpl : public MediaRouter,
   // becomes ready.
   std::vector<base::Closure> pending_requests_;
 
-  base::ScopedPtrHashMap<MediaSource::Id,
-                         scoped_ptr<base::ObserverList<MediaSinksObserver>>>
-      sinks_observers_;
+  base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaSinksQuery>>
+      sinks_queries_;
 
   base::ObserverList<LocalMediaRoutesObserver> local_routes_observers_;
 
@@ -274,6 +294,9 @@ class MediaRouterMojoImpl : public MediaRouter,
   // Observes local routes in order to notify LocalMediaRoutesObservers when
   // there are no more local routes.
   scoped_ptr<MediaRoutesObserver> routes_observer_;
+
+  // The last reported sink availability from the media route provider manager.
+  interfaces::MediaRouter::SinkAvailability availability_;
 
   base::ThreadChecker thread_checker_;
 

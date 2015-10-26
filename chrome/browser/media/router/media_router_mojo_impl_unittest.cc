@@ -188,6 +188,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
           const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
         cb.Run(route.Pass(), mojo::String());
       }));
+  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes());
 
   RouteResponseCallbackHandler handler;
   EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), Not(""), ""));
@@ -242,6 +243,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(route.Pass(), mojo::String());
       }));
+  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes());
 
   RouteResponseCallbackHandler handler;
   EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), Not(""), ""));
@@ -335,7 +337,8 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
 
   MockMediaRouter mock_router;
   EXPECT_CALL(mock_media_route_provider_,
-              StartObservingMediaSinks(mojo::String(kSource))).Times(2);
+              StartObservingMediaSinks(mojo::String(kSource)))
+      .Times(2);
   EXPECT_CALL(mock_media_route_provider_,
               StartObservingMediaSinks(mojo::String(kSource2)));
 
@@ -390,6 +393,95 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   router()->UnregisterMediaSinksObserver(&sinks_observer);
   router()->UnregisterMediaSinksObserver(&extra_sinks_observer);
   router()->UnregisterMediaSinksObserver(&unrelated_sinks_observer);
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest,
+       RegisterMediaSinksObserverWithAvailabilityChange) {
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE);
+  MediaSource media_source(kSource);
+  scoped_ptr<MockMediaSinksObserver> sinks_observer(
+      new MockMediaSinksObserver(router(), media_source));
+  MediaSource media_source2(kSource2);
+  scoped_ptr<MockMediaSinksObserver> sinks_observer2(
+      new MockMediaSinksObserver(router(), media_source2));
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource)))
+      .Times(0);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource2)))
+      .Times(0);
+  ProcessEventLoop();
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource)))
+      .Times(1);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource2)))
+      .Times(1);
+  ProcessEventLoop();
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource)))
+      .Times(0);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource2)))
+      .Times(0);
+  ProcessEventLoop();
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
+
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE);
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaSinks(mojo::String(kSource)))
+      .Times(0);
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaSinks(mojo::String(kSource2)))
+      .Times(0);
+  sinks_observer.reset();
+  sinks_observer2.reset();
+  ProcessEventLoop();
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
+}
+
+TEST_F(MediaRouterMojoImplTest,
+       RegisterAndUnregisterMediaSinksObserverWithAvailabilityChange) {
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE);
+  MediaSource media_source(kSource);
+  scoped_ptr<MediaSinksObserver> sinks_observer =
+      make_scoped_ptr(new MockMediaSinksObserver(router(), media_source));
+  MediaSource media_source2(kSource2);
+  scoped_ptr<MediaSinksObserver> sinks_observer2 =
+      make_scoped_ptr(new MockMediaSinksObserver(router(), media_source2));
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource)))
+      .Times(0);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource2)))
+      .Times(0);
+  ProcessEventLoop();
+  router()->OnSinkAvailabilityUpdated(
+      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource)))
+      .Times(1);
+  EXPECT_CALL(mock_media_route_provider_,
+              StartObservingMediaSinks(mojo::String(kSource2)))
+      .Times(1);
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaSinks(mojo::String(kSource)))
+      .Times(1);
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaSinks(mojo::String(kSource2)))
+      .Times(1);
+  sinks_observer.reset();   // Unregisters kSource from router().
+  sinks_observer2.reset();  // Unregisters kSource2 from router().
   ProcessEventLoop();
 }
 
