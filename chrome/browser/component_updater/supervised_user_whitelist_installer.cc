@@ -386,6 +386,13 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
        it.Advance()) {
     const base::DictionaryValue* dict = nullptr;
     it.value().GetAsDictionary(&dict);
+
+    // Skip whitelists with no clients. This can happen when a whitelist was
+    // previously registered with an empty client ID.
+    const base::ListValue* clients = nullptr;
+    if (!dict->GetList(kClients, &clients) || clients->empty())
+      continue;
+
     std::string name;
     bool result = dict->GetString(kName, &name);
     DCHECK(result);
@@ -413,22 +420,25 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
                               prefs::kRegisteredSupervisedUserWhitelists);
   base::DictionaryValue* pref_dict = update.Get();
   base::DictionaryValue* whitelist_dict = nullptr;
-  bool newly_added = false;
-  if (!pref_dict->GetDictionaryWithoutPathExpansion(crx_id, &whitelist_dict)) {
+  const bool newly_added =
+      !pref_dict->GetDictionaryWithoutPathExpansion(crx_id, &whitelist_dict);
+  if (newly_added) {
     whitelist_dict = new base::DictionaryValue;
     whitelist_dict->SetString(kName, name);
     pref_dict->SetWithoutPathExpansion(crx_id, whitelist_dict);
-    newly_added = true;
   }
 
-  base::ListValue* clients = nullptr;
-  if (!whitelist_dict->GetList(kClients, &clients)) {
-    DCHECK(newly_added);
-    clients = new base::ListValue;
-    whitelist_dict->Set(kClients, clients);
+  if (!client_id.empty()) {
+    base::ListValue* clients = nullptr;
+    if (!whitelist_dict->GetList(kClients, &clients)) {
+      DCHECK(newly_added);
+      clients = new base::ListValue;
+      whitelist_dict->Set(kClients, clients);
+    }
+    bool success =
+        clients->AppendIfNotPresent(new base::StringValue(client_id));
+    DCHECK(success);
   }
-  bool success = clients->AppendIfNotPresent(new base::StringValue(client_id));
-  DCHECK(success);
 
   if (!newly_added) {
     // Sanity-check that the stored name is equal to the name passed in.

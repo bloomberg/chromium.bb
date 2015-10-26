@@ -64,7 +64,8 @@ class SupervisedUserWhitelistInstaller {
 
   // Registers a new whitelist with the given |crx_id|.
   // The |client_id| should be a unique identifier for the client that is stable
-  // across restarts.
+  // across restarts. If it is empty, the registration will not be persisted in
+  // Local State.
   virtual void RegisterWhitelist(const std::string& client_id,
                                  const std::string& crx_id,
                                  const std::string& name) = 0;

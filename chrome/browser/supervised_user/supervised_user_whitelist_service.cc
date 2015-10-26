@@ -84,12 +84,7 @@ void SupervisedUserWhitelistService::Init() {
       whitelist.CopyToString(&id);
     }
 
-    // Skip whitelists that were already registered.
-    if (registered_whitelists_.count(id) > 0u)
-      continue;
-
-    bool new_installation = true;
-    RegisterWhitelist(id, name, new_installation);
+    RegisterWhitelist(id, name, FROM_COMMAND_LINE);
   }
 }
 
@@ -269,8 +264,7 @@ void SupervisedUserWhitelistService::AddNewWhitelist(
     const sync_pb::ManagedUserWhitelistSpecifics& whitelist) {
   base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Added"));
 
-  bool new_installation = true;
-  RegisterWhitelist(whitelist.id(), whitelist.name(), new_installation);
+  RegisterWhitelist(whitelist.id(), whitelist.name(), FROM_SYNC);
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   SetWhitelistProperties(dict.get(), whitelist);
   pref_dict->SetWithoutPathExpansion(whitelist.id(), dict.release());
@@ -294,11 +288,16 @@ void SupervisedUserWhitelistService::RemoveWhitelist(
 
 void SupervisedUserWhitelistService::RegisterWhitelist(const std::string& id,
                                                        const std::string& name,
-                                                       bool new_installation) {
+                                                       WhitelistSource source) {
   bool result = registered_whitelists_.insert(id).second;
   DCHECK(result);
 
-  installer_->RegisterWhitelist(client_id_, id, name);
+  // Using an empty client ID for whitelists installed from the command line
+  // causes the installer to not persist the installation, so the whitelist will
+  // be removed the next time the browser is started without the command line
+  // flag.
+  installer_->RegisterWhitelist(
+      source == FROM_COMMAND_LINE ? std::string() : client_id_, id, name);
 }
 
 void SupervisedUserWhitelistService::GetLoadedWhitelists(
