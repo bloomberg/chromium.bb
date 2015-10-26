@@ -2,23 +2,16 @@
 <div id="pass" style="visibility: hidden">PASS</div>
 <div id="fail" style="visibility: visible">FAIL</div>
 <script>
-requestAnimationFrame(function() {
-  document.getElementById('pass').animate([{visibility: 'visible'}, {visibility: 'visible'}], 10);
-  document.getElementById('fail').animate([{visibility: 'hidden'}, {visibility: 'hidden'}], 10);
-  requestAnimationFrame(function() {
-    document.documentElement.textContent = 'FAIL: Produced a second frame.';
-  });
-});
 if (window.testRunner) {
   testRunner.dumpAsText();
   testRunner.waitUntilDone();
-  setTimeout(function() {
-    if (window.testRunner) {
-      // Note that the test wont actually finish until the next frame is complete.
-      testRunner.notifyDone();
-    }
-  }, 0);
-} else {
-  document.documentElement.textContent = 'FAIL: Test must be run under test harness.';
 }
+
+requestAnimationFrame(function() {
+  document.getElementById('pass').animate([{visibility: 'visible'}, {visibility: 'visible'}], 10);
+  document.getElementById('fail').animate([{visibility: 'hidden'}, {visibility: 'hidden'}], 10);
+  if (window.testRunner) {
+    testRunner.notifyDone();
+  }
+});
 </script>
