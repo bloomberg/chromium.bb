@@ -84,6 +84,7 @@
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
         '../third_party/openh264/tests/openh264_unittests.gyp:*',
         '../third_party/smhasher/smhasher.gyp:pmurhash',
+        '../tools/battor_agent/battor_agent.gyp:battor_agent',
         '../tools/telemetry/telemetry.gyp:bitmaptools#host',
         '../ui/accessibility/accessibility.gyp:accessibility_unittests',
         '../ui/base/ui_base_tests.gyp:ui_base_unittests',

@@ -176,6 +176,7 @@ group("both_gn_and_gyp") {
       "//third_party/WebKit/Source/web:webkit_unit_tests",
       "//third_party/WebKit/Source/wtf:wtf_unittests",
       "//third_party/smhasher:pmurhash",
+      "//tools/battor_agent",
       "//tools/imagediff($host_toolchain)",
       "//tools/telemetry:bitmaptools($host_toolchain)",
       "//ui/display:display_unittests",
