@@ -771,7 +771,11 @@ class MediaCodecBridge {
         // If the stream runs too long, getPlaybackHeadPosition() could
         // overflow. AudioTimestampHelper in MediaSourcePlayer has the same
         // issue. See http://crbug.com/358801.
-        return mAudioTrack.getPlaybackHeadPosition();
+
+        // The method AudioTrack.getPlaybackHeadPosition() returns int that should be
+        // interpreted as unsigned 32 bit value. Convert the return value of
+        // getPlaybackHeadPosition() into unsigned int using the long mask.
+        return 0xFFFFFFFFL & mAudioTrack.getPlaybackHeadPosition();
     }
 
     @SuppressWarnings("deprecation")
