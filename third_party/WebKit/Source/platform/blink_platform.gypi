@@ -1066,6 +1066,8 @@
       'testing/GeometryPrinters.h',
       'testing/PaintPrinters.cpp',
       'testing/PaintPrinters.h',
+      'testing/TransformPrinters.cpp',
+      'testing/TransformPrinters.h',
     ],
     'conditions': [
       ['OS=="win"',

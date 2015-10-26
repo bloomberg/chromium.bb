@@ -17,11 +17,11 @@ TEST(TransformationMatrixTest, NonInvertableBlendTest)
 
     result = to;
     result.blend(from, 0.25);
-    EXPECT_TRUE(result == from);
+    EXPECT_EQ(result, from);
 
     result = to;
     result.blend(from, 0.75);
-    EXPECT_TRUE(result == to);
+    EXPECT_EQ(result, to);
 }
 
 TEST(TransformationMatrixTest, IsIdentityOr2DTranslation)

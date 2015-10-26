@@ -183,6 +183,10 @@ private:
     Transform m_transform;
 };
 
+// Redeclared here to avoid ODR issues.
+// See platform/testing/TransformPrinters.h.
+void PrintTo(const AffineTransform&, std::ostream*);
+
 }
 
 #endif

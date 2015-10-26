@@ -30,29 +30,6 @@ void PrintTo(const PaintChunkProperties& properties, std::ostream* os)
     *os << ")";
 }
 
-// TODO(pdr): Create and move this to TransformPrinters.cpp.
-static void PrintTo(const TransformationMatrix& matrix, std::ostream* os)
-{
-    TransformationMatrix::DecomposedType decomposition;
-    if (!matrix.decompose(decomposition)) {
-        *os << "TransformationMatrix(degenerate)";
-        return;
-    }
-
-    if (matrix.isIdentityOrTranslation()) {
-        *os << "TransformationMatrix(translation=(" << decomposition.translateX << "," << decomposition.translateY << "," << decomposition.translateZ << "))";
-        return;
-    }
-
-    *os << "TransformationMatrix("
-        << "translation=(" << decomposition.translateX << "," << decomposition.translateY << "," << decomposition.translateZ << ")"
-        << ", scale=(" << decomposition.scaleX << "," << decomposition.scaleY << "," << decomposition.scaleZ << ")"
-        << ", skew=(" << decomposition.skewXY << "," << decomposition.skewXZ << "," << decomposition.skewYZ << ")"
-        << ", quaternion=(" << decomposition.quaternionX << "," << decomposition.quaternionY << "," << decomposition.quaternionZ << "," << decomposition.quaternionW << ")"
-        << ", perspective=(" << decomposition.perspectiveX << "," << decomposition.perspectiveY << "," << decomposition.perspectiveZ << "," << decomposition.perspectiveW << ")"
-        << ")";
-}
-
 void PrintTo(const TransformPaintPropertyNode& transformPaintProperty, std::ostream* os)
 {
     *os << "TransformPaintPropertyNode(matrix=";

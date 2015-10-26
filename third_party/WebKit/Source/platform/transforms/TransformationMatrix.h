@@ -398,6 +398,10 @@ private:
     Matrix4 m_matrix;
 };
 
+// Redeclared here to avoid ODR issues.
+// See platform/testing/TransformPrinters.h.
+void PrintTo(const TransformationMatrix&, std::ostream*);
+
 } // namespace blink
 
 #endif // TransformationMatrix_h
