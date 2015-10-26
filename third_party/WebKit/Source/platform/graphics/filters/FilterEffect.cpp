@@ -203,7 +203,11 @@ PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBu
 bool FilterEffect::hasConnectedInput() const
 {
     for (unsigned i = 0; i < m_inputEffects.size(); i++) {
+#ifdef SK_SAVE_LAYER_BOUNDS_ARE_FILTERED
         if (m_inputEffects[i]) {
+#else
+        if (m_inputEffects[i] && m_inputEffects[i]->filterEffectType() != FilterEffectTypeSourceInput) {
+#endif
             return true;
         }
     }
@@ -217,6 +221,7 @@ SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) c
     if (!hasConnectedInput() && !filter()->filterRegion().isEmpty()) {
         rect = filter()->filterRegion();
         flags = SkImageFilter::CropRect::kHasAll_CropEdge;
+        rect.move(cropOffset);
     }
     FloatRect boundaries = effectBoundaries();
     boundaries.move(cropOffset);
