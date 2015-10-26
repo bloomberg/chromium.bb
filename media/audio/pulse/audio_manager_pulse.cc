@@ -254,7 +254,7 @@ bool AudioManagerPulse::Init() {
   pa_context_set_state_callback(input_context_, &pulse::ContextStateCallback,
                                 input_mainloop_);
   if (pa_context_connect(input_context_, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL)) {
-    VLOG(0) << "Failed to connect to the context.  Error: "
+    VLOG(1) << "Failed to connect to the context.  Error: "
             << pa_strerror(pa_context_errno(input_context_));
     return false;
   }
