@@ -86,6 +86,7 @@ namespace {
 
 const char kFooResponseBody[] = "Artichoke hearts make me happy.";
 const char kBarResponseBody[] = "Palm hearts are pretty delicious, also.";
+const float kSessionToStreamRatio = 1.5;
 
 // Run all tests with the cross products of all versions.
 struct TestParams {
@@ -283,6 +284,17 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     client->UseWriter(writer);
     client->Connect();
     return client;
+  }
+
+  void set_smaller_flow_control_receive_window() {
+    const uint32 kClientIFCW = 64 * 1024;
+    const uint32 kServerIFCW = 1024 * 1024;
+    set_client_initial_stream_flow_control_receive_window(kClientIFCW);
+    set_client_initial_session_flow_control_receive_window(
+        kSessionToStreamRatio * kClientIFCW);
+    set_server_initial_stream_flow_control_receive_window(kServerIFCW);
+    set_server_initial_session_flow_control_receive_window(
+        kSessionToStreamRatio * kServerIFCW);
   }
 
   void set_client_initial_stream_flow_control_receive_window(uint32 window) {
@@ -1590,15 +1602,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
 }
 
 TEST_P(EndToEndTest, FlowControlsSynced) {
-  const uint32 kClientIFCW = 64 * 1024;
-  const uint32 kServerIFCW = 1024 * 1024;
-  const float kSessionToStreamRatio = 1.5;
-  set_client_initial_stream_flow_control_receive_window(kClientIFCW);
-  set_client_initial_session_flow_control_receive_window(kSessionToStreamRatio *
-                                                         kClientIFCW);
-  set_server_initial_stream_flow_control_receive_window(kServerIFCW);
-  set_server_initial_session_flow_control_receive_window(kSessionToStreamRatio *
-                                                         kServerIFCW);
+  set_smaller_flow_control_receive_window();
 
   ASSERT_TRUE(Initialize());
 
@@ -1971,9 +1975,9 @@ class ServerStreamWithErrorResponseBody : public QuicSpdyServerStream {
   string response_body_;
 };
 
-// TODO(rtenneti): EarlyResponseFinRecording is flaky on valgrind bots.
-// http://crbug.com/547085.
-TEST_P(EndToEndTest, DISABLED_EarlyResponseFinRecording) {
+TEST_P(EndToEndTest, EarlyResponseFinRecording) {
+  set_smaller_flow_control_receive_window();
+
   // Verify that an incoming FIN is recorded in a stream object even if the read
   // side has been closed.  This prevents an entry from being made in
   // locally_close_streams_highest_offset_ (which will never be deleted).
