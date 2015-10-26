@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 
 #include "base/logging.h"
+#import "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
@@ -39,6 +41,20 @@ const CGFloat kAnimationDuration = 0.2;
   resizeAnimation_.reset([[NSViewAnimation alloc] init]);
   [resizeAnimation_ setDuration:kAnimationDuration];
   [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
+  // Disable Force Touch in the Omnibox. Note that this API is defined in
+  // 10.10.3 and higher so have to check more than just isYosmiteOrLater().
+  // Also, because NSPressureConfiguration is not in the original 10.10 SDK,
+  // use NSClassFromString() to instantiate it (otherwise there's a
+  // linker error).
+  if (base::mac::IsOSYosemiteOrLater() &&
+      [self respondsToSelector:@selector(setPressureConfiguration:)]) {
+    NSPressureConfiguration* pressureConfiguration =
+        [[[NSClassFromString(@"NSPressureConfiguration") alloc]
+            initWithPressureBehavior:NSPressureBehaviorPrimaryClick]
+                autorelease];
+    [self setPressureConfiguration:pressureConfiguration];
+  }
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {

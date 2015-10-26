@@ -496,6 +496,27 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
 - (void)viewDidLoad;
 @end
 
+enum {
+  NSPressureBehaviorUnknown = -1,
+  NSPressureBehaviorPrimaryDefault = 0,
+  NSPressureBehaviorPrimaryClick = 1,
+  NSPressureBehaviorPrimaryGeneric = 2,
+  NSPressureBehaviorPrimaryAccelerator = 3,
+  NSPressureBehaviorPrimaryDeepClick = 5,
+  NSPressureBehaviorPrimaryDeepDrag = 6
+};
+typedef NSInteger NSPressureBehavior;
+
+@interface NSPressureConfiguration : NSObject
+- (instancetype)initWithPressureBehavior:(NSPressureBehavior)pressureBehavior;
+@end
+
+@class NSPressureConfiguration;
+
+@interface NSView (YosemiteSDK)
+- (void)setPressureConfiguration:(NSPressureConfiguration*)aConfiguration;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_10
 
 // ----------------------------------------------------------------------------
