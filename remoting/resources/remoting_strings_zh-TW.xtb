@@ -85,7 +85,7 @@
 <translation id="2919669478609886916">您目前正與另一位使用者共用這台電腦，您要繼續共用嗎？</translation>
 <translation id="2921543551052660690">您先前曾以<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 身分登入。如要透過該帳戶存取您的電腦，請使用該帳戶<ph name="LINK_BEGIN" />登入 Chromium<ph name="LINK_END" />，並重新安裝 Chromoting。</translation>
 <translation id="2926340305933667314">無法停用這台電腦的遠端存取功能，請稍後再試。</translation>
-<translation id="2930135165929238380">找不到部分必要元件。請前往 chrome://plugins 並確認已啟用 Native Client。</translation>
+<translation id="2930135165929238380">找不到部分必要元件。請開啟 chrome://plugins 頁面，確認您已啟用 Native Client。</translation>
 <translation id="2939145106548231838">主機驗證</translation>
 <translation id="2998137343848432918">• 新增「製作人員名單」畫面。
 • 修正無法在鍵盤顯示時開啟全螢幕的問題。</translation>
@@ -97,7 +97,6 @@
 <translation id="3150823315463303127">主機無法讀取政策。</translation>
 <translation id="3194245623920924351">Chrome 遠端桌面</translation>
 <translation id="3197730452537982411">遠端桌面</translation>
-<translation id="3244258558056547981">顯示 Cardboard 畫面。</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="327263477022142889">想要協助改善 Chrome 遠端桌面嗎？<ph name="LINK_BEGIN" />請填寫我們的問卷調查<ph name="LINK_END" />。</translation>
 <translation id="3286521253923406898">Chromoting 主機控制器</translation>

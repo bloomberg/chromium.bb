@@ -159,7 +159,6 @@
 Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chrome. Permanenteng mauugnay ang iyong data ng Chrome sa account na ito. Ang pagdiskonekta mula sa account na ito ay magtatanggal sa lokal na data ng Chrome.</translation>
 <translation id="3410346880900521918">Kung madalas mo itong makita, subukan ang <ph name="BEGIN_LINK" />mga suhestyon<ph name="END_LINK" /> na ito.</translation>
 <translation id="3414952576877147120">Laki:</translation>
-<translation id="3455798674391346847">Gumamit ng mas kaunting data sa pamamagitan ng paggamit sa Google upang i-optimize ang mga page na binibisita mo. Ang mga page na ina-access gamit ang HTTPS o Incognito ay hindi mao-optimize o makikita ng Google.</translation>
 <translation id="3485544713029068372">Smart Lock para sa Mga Password</translation>
 <translation id="3492207499832628349">Bagong tab na incognito</translation>
 <translation id="3518985090088779359">Tanggapin, magpatuloy</translation>
@@ -314,7 +313,6 @@ Kasama sa mga istatistika sa paggamit ang impormasyon tulad ng mga kagustuhan, p
 
 Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong pagba-browse sa iyong employer, iyong internet service provider o sa mga binibisita mong website.</translation>
 <translation id="572328651809341494">Mga kamakailang tab</translation>
-<translation id="5733727110006255111">Kapag naka-on ang feature na ito, gagamitin ng Chrome ang mga server ng Google para i-compress ang mga binibisita mong page bago sila i-download. Hindi isasama ang mga page na gumagamit ng SSL at incognito mode.</translation>
 <translation id="5749068826913805084">Kailangan ng Chrome ng access sa storage upang mag-download ng mga file.</translation>
 <translation id="5763382633136178763">Mga tab na incognito</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
@@ -543,6 +541,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="885701979325669005">Storage</translation>
 <translation id="886510833909353412">I-encrypt ang lahat gamit ang passphrase</translation>
 <translation id="8872441722924401214">Piliin ang certificate para sa pagpapatotoo</translation>
+<translation id="8891135217544884558">Mga kalapit na URL</translation>
 <translation id="8901170036886848654">Walang nakitang bookmark</translation>
 <translation id="8909135823018751308">Ibahagi…</translation>
 <translation id="8912362522468806198">Google Account</translation>

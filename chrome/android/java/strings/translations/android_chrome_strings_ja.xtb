@@ -159,7 +159,6 @@
 管理対象アカウントでログインし、アカウントの管理者に自分の Chrome プロフィールの管理を委ねようとしています。あなたの Chrome データはこのアカウントに永続的に関連付けられます。このアカウントを切り離すと、ローカルの Chrome データが削除されます。</translation>
 <translation id="3410346880900521918">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
 <translation id="3414952576877147120">サイズ:</translation>
-<translation id="3455798674391346847">アクセス先のページを Google で最適化することにより処理データを減らします。HTTPS やシークレット モードでアクセスしたページについては、Google による最適化や確認は行われません。</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3518985090088779359">同意して続行</translation>
@@ -314,7 +313,6 @@
 
 あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="572328651809341494">最近使ったタブ</translation>
-<translation id="5733727110006255111">この機能が有効になっている場合、訪問先のページはダウンロード前に Google サーバーで圧縮されます。SSL 対応のページとシークレット モードのページは対象外です。</translation>
 <translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="5763382633136178763">シークレット タブ</translation>
 <translation id="5765780083710877561">説明:</translation>

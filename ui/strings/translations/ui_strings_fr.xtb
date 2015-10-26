@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="111910763555783249">Paramètres de notification</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Il y a 1 jour}one{Il y a # jour}other{Il y a # jours}}</translation>
 <translation id="1167268268675672572">Déplacer au début de la ligne et modifier la sélection</translation>
 <translation id="1190609913194133056">Centre de notification</translation>

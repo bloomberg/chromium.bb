@@ -159,7 +159,6 @@
 Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Chrome. Údaje Chrome budou trvale přidruženy k tomuto účtu. Odpojením od tohoto účtu budou místní údaje Chrome trvale smazány.</translation>
 <translation id="3410346880900521918">Pokud se vám tato stránka zobrazuje často, zkuste využít tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Velikost:</translation>
-<translation id="3455798674391346847">Využijte Google k optimalizaci navštěvovaných stránek a utrácejte za data méně. Stránky zobrazené prostřednictvím protokolu HTTPS nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
 <translation id="3485544713029068372">Smart Lock na hesla</translation>
 <translation id="3492207499832628349">Nová anonymní karta</translation>
 <translation id="3518985090088779359">PŘIJMOUT A POKRAČOVAT</translation>
@@ -314,7 +313,6 @@ Statistiky využití obsahují informace, jako jsou předvolby, kliknutí na tla
 
 Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="572328651809341494">Nedávno použité karty</translation>
-<translation id="5733727110006255111">Je-li tato funkce zapnutá, Chrome navštívené stránky před stažením zkomprimuje pomocí serverů Google. Stránky SSL a stránky navštívené v anonymním režimu nebudou zahrnuty.</translation>
 <translation id="5749068826913805084">Aby bylo možné stahovat soubory, Chrome potřebuje přístup k úložišti.</translation>
 <translation id="5763382633136178763">Anonymní karty</translation>
 <translation id="5765780083710877561">Popis:</translation>

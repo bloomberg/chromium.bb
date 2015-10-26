@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
 <translation id="127345590676626841">Chrome స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణని కలిగి ఉంటారు. ఈ డౌన్‌లోడ్ పూర్తయినప్పుడు, Chrome పునఃప్రారంభించబడుతుంది మరియు మీరు మీ పనిని కొనసాగించవచ్చు.</translation>
 <translation id="1302523850133262269">దయచేసి Chrome తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
-<translation id="1348153800635493797">మీరు తప్పనిసరిగా Google Walletను ఉపయోగించడానికి Chromeను అప్‌గ్రేడ్ చేయాలి [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome అసాధారణ ప్రవర్తనను గుర్తించింది</translation>
 <translation id="1393853151966637042">Chromeని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="1399397803214730675">ఈ కంప్యూటర్‌లో ఇప్పటికే Google Chrome యొక్క తాజా సంస్కరణ ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chromeను అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Google API కీలు లేవు. Google Chrome కార్యాచరణలో కొంత భాగం నిలిపివేయబడుతుంది.</translation>
 <translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్‌స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>
 <translation id="2316129865977710310">వద్దు, ధన్యవాదాలు</translation>
+<translation id="2334084861041072223">కాపీరైట్ <ph name="YEAR" /> Google Inc. సర్వ హక్కులు ప్రత్యేకించబడ్డాయి.</translation>
 <translation id="2346876346033403680">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromeకు సైన్ ఇన్ చేసారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి క్రొత్త Chrome వినియోగదారును సృష్టించండి.
 
 ఏదేమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chrome సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
@@ -62,7 +62,6 @@
 <translation id="2769762047821873045">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు.</translation>
 <translation id="2770231113462710648">డిఫాల్ట్ బ్రౌజర్‌ను దీనికి మార్చు:</translation>
 <translation id="2871893339301912279">మీరు Chromeకు సైన్ ఇన్ చేసారు!</translation>
-<translation id="2874156562296220396">Google Chrome <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> ఓపెన్ సోర్స్ ప్రాజెక్ట్‌ మరియు ఇతర <ph name="BEGIN_LINK_OSS" />open source software‌<ph name="END_LINK_OSS" /> వల్ల సాధ్యం అవుతుంది.</translation>
 <translation id="3037838751736561277">Google Chrome నేపథ్య మోడ్‌లో ఉంది.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" />ని డిస్‌కనెక్ట్ చేయడం వలన ఈ పరికరంలో నిల్వ చేయబడిన మీ చరిత్ర, బుక్‌మార్క్‌లు, సెట్టింగ్‌లు మరియు ఇతర Chrome డేటా క్లియర్ చేయబడతాయి. మీ Google ఖాతాలో నిల్వ చేయబడిన డేటా క్లియర్ చేయబడదు మరియు దాన్ని <ph name="GOOGLE_DASHBOARD_LINK" />Google డాష్‌బోర్డ్<ph name="END_GOOGLE_DASHBOARD_LINK" />లో నిర్వహించవచ్చు.</translation>
 <translation id="3080151273017101988">Google Chrome మూసివేసినపుడు అనువర్తనాలను నేపథ్యంలో అమలు చేయడాన్ని కొనసాగించు</translation>

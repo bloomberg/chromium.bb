@@ -159,7 +159,6 @@
 Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata Chrome-profiiliasi. Chrome-tietosi yhdistetään tähän tiliin pysyvästi. Jos irrotat Chrome-tiedot tilistä, paikalliset Chrome-tiedot poistetaan.</translation>
 <translation id="3410346880900521918">Jos näet tämän ilmoituksen usein, kokeile näitä <ph name="BEGIN_LINK" />ehdotuksia<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Koko:</translation>
-<translation id="3455798674391346847">Vähennä tiedonsiirtoa optimoimalla vierailemasi sivut Googlen avulla. Google ei optimoi tai näe HTTPS- tai incognito-tilassa käytettyjä sivuja.</translation>
 <translation id="3485544713029068372">Smart Lock salasanoille</translation>
 <translation id="3492207499832628349">Uusi incognito-välilehti</translation>
 <translation id="3518985090088779359">Hyväksy ja jatka</translation>
@@ -314,7 +313,6 @@ Käyttötilastot sisältävät tietoja esimerkiksi asetuksista, painetuista pain
 
 Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työnantajaltasi, internetpalveluntarjoajaltasi tai vierailemiltasi verkkosivustoilta.</translation>
 <translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
-<translation id="5733727110006255111">Kun tämä toiminto on käytössä, Chrome pakkaa lukemasi sivut Googlen palvelimilla ennen niiden lataamista. SSL- ja incognito-sivuja ei pakata.</translation>
 <translation id="5749068826913805084">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="5763382633136178763">Incognito-välilehdet</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>

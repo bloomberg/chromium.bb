@@ -159,7 +159,6 @@
 Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilinizi denetleme olanağı veriyorsunuz. Chrome verileriniz bu hesaba kalıcı olarak bağlanır. Bu hesabın bağlantısı kesildiğinde yerel Chrome verileriniz silinir.</translation>
 <translation id="3410346880900521918">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
 <translation id="3414952576877147120">Boyut:</translation>
-<translation id="3455798674391346847">Ziyaret ettiğiniz sayfaları optimize etmek için Google'ı kullanarak daha az veri harcayın. HTTPS veya gizli modla erişilen sayfalar Google tarafından optimize edilmez veya görülmez.</translation>
 <translation id="3485544713029068372">Şifreler için Smart Lock</translation>
 <translation id="3492207499832628349">Yeni gizli sekme</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
@@ -314,7 +313,6 @@ Kullanım istatistikleri; tercihler, tıklanan düğmeler ve bellek kullanımı 
 
 Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden saklamaz.</translation>
 <translation id="572328651809341494">Son sekmeler</translation>
-<translation id="5733727110006255111">Bu özellik açık olduğunda, Chrome, ziyaret ettiğiniz sayfaları indirmeden önce sıkıştırmak için Google sunucularını kullanır. SSL kullanan veya Gizli modda erişilen sayfalar dahil edilmez.</translation>
 <translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="5763382633136178763">Gizli mod sekmeleri</translation>
 <translation id="5765780083710877561">Açıklama:</translation>

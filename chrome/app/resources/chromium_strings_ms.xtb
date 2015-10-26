@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Pilihan: Bantu jadikan Chromium lebih baik dengan menghantar statistik penggunaan dan laporan ranap kepada Google secara automatik.</translation>
 <translation id="2910007522516064972">Mengenai &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium perlu melancarkan aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME" />. Pautan yang diminta adalah <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa
+dan salah. Hal ini mungkin berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="3032787606318309379">Menambah ke Chromium...</translation>
 <translation id="3046695367536568084">Anda perlu log masuk ke Chromium untuk menggunakan apl. Tindakan ini membolehkan Chromium menyegerakkan apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada semua peranti.</translation>
 <translation id="3068515742935458733">Bantu jadikan Chromium lebih baik dengan menghantar laporan ranap dan <ph name="UMA_LINK" /> kepada Google.</translation>
@@ -182,7 +184,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Modul yang dimuatkan dalam Chromium</translation>
 <translation id="6970811910055250180">Mengemas kini peranti anda...</translation>
-<translation id="7023267510504981715">Anda mesti menaik taraf Chromium untuk menggunakan Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Chromium tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu memasang semula Chromium secara manual.</translation>
 <translation id="705851970750939768">Kemas kini Chromium</translation>
 <translation id="7064610482057367130">Pemasangan Chromium tidak ditemui untuk dikemas kini.</translation>

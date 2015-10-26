@@ -61,6 +61,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2886012850691518054">Voliteľné: Pomôžte vylepšiť služby prehliadača Chromium tým, že nastavíte automatické odosielanie štatistík používania a správ o zlyhaní spoločnosti Google.</translation>
 <translation id="2910007522516064972">Informácie o prehliadači &amp;Chromium</translation>
 <translation id="2966088006374919794">Systém Chromium potrebuje na spracovanie odkazov typu <ph name="SCHEME" /> spustiť externú aplikáciu. Typ požadovaného odkazu: <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Webové stránky <ph name="SITE" /> zvyčajne chránia vaše informácie pomocou šifrovania. Keď sa Chromium tentokrát pokúsil pripojiť k webovým stránkam <ph name="SITE" />, odoslali späť nezvyčajné a nesprávne poverenia. Môže sa to stať vtedy, keď sa za stránky <ph name="SITE" /> snaží vydávať útočník alebo keď pripojenie preruší prihlasovacia obrazovka siete Wi-Fi. Vaše informácie sú stále zabezpečené, pretože Chromium zastavil pripojenie ešte pred výmenou údajov.</translation>
 <translation id="3032787606318309379">Pridáva sa do prehliadača Chromium...</translation>
 <translation id="3046695367536568084">Aplikácie môžete používať až po prihlásení do prehliadača Chromium. Prehliadaču Chromium tým umožníte synchronizovať vaše aplikácie, záložky, históriu, heslá a ďalšie nastavenia na všetkých zariadeniach.</translation>
 <translation id="3068515742935458733">Pomôcť zlepšiť prehliadač Chromium odosielaním správ o zlyhaní a <ph name="UMA_LINK" /> spoločnosti Google</translation>
@@ -184,7 +185,6 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduly načítané do prehliadača Chromium</translation>
 <translation id="6970811910055250180">Prebieha aktualizácia zariadenia...</translation>
-<translation id="7023267510504981715">Ak chcete používať Peňaženku Google, musíte inovovať prehliadač Chromium [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Prehliadač Chromium sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chromium je potrebné preinštalovať ručne.</translation>
 <translation id="705851970750939768">Aktualizovať Chromium</translation>
 <translation id="7064610482057367130">Nenašla sa žiadna inštalácia prehliadača Chromium, ktorú by bolo možné aktualizovať.</translation>

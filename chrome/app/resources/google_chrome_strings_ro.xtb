@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Sistemul de operare Chrome nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
 <translation id="127345590676626841">Chrome se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune. După această descărcare, Chrome va reporni și va fi gata de utilizare.</translation>
 <translation id="1302523850133262269">Așteaptă până când Chrome instalează cele mai recente actualizări de sistem.</translation>
-<translation id="1348153800635493797">Pentru a utiliza Google Wallet, trebuie să faceți upgrade browserului Chrome [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome a detectat un comportament neobișnuit</translation>
 <translation id="1393853151966637042">Obțineți ajutor în legătură cu utilizarea Chrome</translation>
 <translation id="1399397803214730675">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă software-ul nu funcționează, dezinstalați Google Chrome și încercați din nou.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Lipsesc chei pentru API-ul Google. Unele funcționalități Google Chrome vor fi dezactivate.</translation>
 <translation id="2290095356545025170">Sigur vrei să dezinstalezi Google Chrome?</translation>
 <translation id="2316129865977710310">Nu, mulțumesc</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="2346876346033403680">Un alt utilizator s-a conectat anterior la Chrome de pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Dacă acesta nu este contul dvs., creați un nou utilizator Chrome, pentru a vă păstra separat datele.
 
 Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricul și alte setări vor fi îmbinate cu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -62,7 +62,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
-<translation id="2874156562296220396">Google Chrome există ca urmare a proiectului open source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> și al altor <ph name="BEGIN_LINK_OSS" />software-uri open source<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome este în modul fundal.</translation>
 <translation id="3047079729301751317">Dacă deconectați utilizatorul <ph name="USERNAME" />, vor fi șterse istoricul, marcajele, setările și alte date Chrome salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK" />Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>

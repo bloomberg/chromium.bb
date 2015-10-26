@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Platnosť certifikátu na odomknutie alebo sprostredkovanie vypršala.</translation>
 <translation id="2328300916057834155">Neplatná záložka v indexe <ph name="ENTRY_INDEX" /> bola ignorovaná</translation>
 <translation id="2354001756790975382">Iné záložky</translation>
-<translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="2384307209577226199">Predvolené nastavenie na podnikovej úrovni</translation>
 <translation id="2386255080630008482">Certifikát servera bol zrušený.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
 <translation id="2721148159707890343">Žiadosť bola úspešná</translation>
 <translation id="2728127805433021124">Certifikát servera je podpísaný pomocou slabého podpisového algoritmu.</translation>
-<translation id="2774256287122201187">Môžete pokračovať. Ak budete pokračovať na stránku, toto upozornenie sa zobrazí až o päť minút.</translation>
 <translation id="277499241957683684">Chýbajúci záznam zariadenia</translation>
 <translation id="2835170189407361413">Vymazať formulár</translation>
 <translation id="2855922900409897335">Overenie karty <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Skopírovaný odkaz</translation>
 <translation id="375403751935624634">Preklad zlyhal v dôsledku chyby servera.</translation>
 <translation id="3759461132968374835">Nemáte žiadne nedávno nahlásené zlyhania. Na tejto stránke sa nezobrazujú zlyhania, ktoré nastali pri zakázanej možnosti hlásení zlyhaní.</translation>
-<translation id="385051799172605136">Naspäť</translation>
 <translation id="3858027520442213535">Aktualizovať dátum a čas</translation>
 <translation id="3884278016824448484">Kolidujúci identifikátor zariadenia</translation>
 <translation id="3885155851504623709">Okrsok</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Chyba overenia: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Chcete adresu odstrániť z prehliadača Chrome?</translation>
 <translation id="4594403342090139922">&amp;Vrátiť späť odstránenie</translation>
-<translation id="4607653538520819196">Šetrič dát nedokáže túto stránku smerovať cez proxy server</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, jej bezpečnostný certifikát obsahuje chyby. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="4726672564094551039">Znova načítať pravidlá</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Musí byť určená.</translation>
-<translation id="4968547170521245791">Nie je možné smerovať cez proxy server</translation>
 <translation id="498957508165411911">Preložiť z jazyka <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Zlý stav záložného ukladacieho priestoru</translation>
 <translation id="5031870354684148875">O službe Prekladač Google</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Odísť z tejto stránky</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
 <translation id="6550675742724504774">Možnosti</translation>
-<translation id="6597614308054261376">Pokúšate sa prejsť na stránku <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Šetrič dát túto stránku v súčasnosti nedokáže smerovať cez proxy server.</translation>
 <translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>
 <translation id="6646897916597483132">Zadajte štvormiestny kód CVC z prednej strany svojej karty</translation>

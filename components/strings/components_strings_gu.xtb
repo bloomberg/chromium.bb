@@ -66,7 +66,6 @@
 <translation id="229702904922032456">રૂટ અથવા મધ્યવર્તી પ્રમાણપત્રની સમય-સીમા સમાપ્ત થઈ.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> અનુક્રમણિકા પર અમાન્ય બુકમાર્ક અવગ્ણ્યો</translation>
 <translation id="2354001756790975382">અન્ય બુકમાર્ક્સ</translation>
-<translation id="2359808026110333948">ચાલુ રાખો</translation>
 <translation id="2367567093518048410">સ્તર</translation>
 <translation id="2384307209577226199">એન્ટરપ્રાઇઝ ડિફોલ્ટ</translation>
 <translation id="2386255080630008482">સર્વરનું પ્રમાણપત્ર રદ કરવામાં આવ્યું છે.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું છે.</translation>
-<translation id="2774256287122201187">તમે ચાલુ રાખી શકો છો. જો તમે પૃષ્ઠ પર ચાલુ રહો છો, તો આ ચેતવણી પાંચ મિનિટ માટે ફરીથી દેખાશે નહીં.</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
 <translation id="2855922900409897335">તમારું <ph name="CREDIT_CARD" /> ચકાસો</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">તમે કૉપિ કરેલ લિંક</translation>
 <translation id="375403751935624634">સર્વર ભૂલને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
 <translation id="3759461132968374835">તમે હાલમાં ક્રેશની જાણ કરી નથી. ક્રેશની જાણ કરવાનું અક્ષમ હતું ત્યારે થયેલા ક્રેશ અહીં દેખાશે નહીં.</translation>
-<translation id="385051799172605136">પાછળ</translation>
 <translation id="3858027520442213535">તારીખ અને સમય અપડેટ કરો</translation>
 <translation id="3884278016824448484">વિરોધાભાસી ઉપકરણ ઓળખકર્તા</translation>
 <translation id="3885155851504623709">પૅરિશ</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Chrome માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="4594403342090139922">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
-<translation id="4607653538520819196">આ પૃષ્ઠ ડેટા સેવર દ્વારા પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE" /> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
 <translation id="4926049483395192435">ઉલ્લેખિત હોવું આવશ્યક છે.</translation>
-<translation id="4968547170521245791">પ્રોક્સી કરી શકાતું નથી</translation>
 <translation id="498957508165411911">શું <ph name="ORIGINAL_LANGUAGE" /> માંથી <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરીએ?</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">આ પૃષ્ઠ છોડો</translation>
 <translation id="6529602333819889595">&amp;કાઢી નાખવું ફરી કરો</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
-<translation id="6597614308054261376">તમે <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પર પહોંચવાનો પ્રયાસ કરી રહ્યાં છો. ડેટા સેવર દ્વારા આ સમયે આ પૃષ્ઠ પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> શોધ</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
 <translation id="6646897916597483132">તમારા કાર્ડની આગળની બાજુ પરથી 4-અંકનો CVC દાખલ કરો</translation>

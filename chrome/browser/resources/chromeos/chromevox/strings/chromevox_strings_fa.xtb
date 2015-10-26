@@ -347,7 +347,7 @@
 <translation id="461613135510474570">جمله</translation>
 <translation id="4647836961514597010">انتخابگر رنگ</translation>
 <translation id="4661075872484491155">درخت</translation>
-<translation id="4668929960204016307">,</translation>
+<translation id="4668929960204016307">،</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">علامت مشخصه قبلی</translation>
 <translation id="4696413482802371445">عنوان سطح ۵ بعدی وجود ندارد.</translation>
@@ -467,7 +467,7 @@
 <translation id="5728409797179002635">جدولی یافت نشد.</translation>
 <translation id="5748623122140342504">عنوان قبلی سطح ۵</translation>
 <translation id="5750633686117194034">‏کلید تغییردهنده‌ای فشار داده نشده است؛ لطفاً یک یا چند کلید تغییردهنده را فشار دهید و نگهدارید؛ پس از انجام این کار انگشتان خود را بردارید تا صدای تنظیم کلیدها را بشنوید. برای خروج روی Tab بزنید.</translation>
-<translation id="5788275253279308023">برگه <ph name="TITLE" /> پنجره حالت ناشناس</translation>
+<translation id="5788275253279308023">برگه پنجره ناشناس <ph name="TITLE" /></translation>
 <translation id="5806206155699461681">‏بهبود تجربه سایت‌هایی خاص (مانند جستجوی Google).</translation>
 <translation id="5819072574982403430">مورد درختی</translation>
 <translation id="5826479389509458994">ردیف <ph name="ROW" /> ستون <ph name="COL" /></translation>

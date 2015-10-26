@@ -159,7 +159,6 @@
 Inicieu la sessió amb un compte gestionat, de manera que concediu al seu administrador el control sobre el vostre perfil de Chrome. Les vostres dades de Chrome estaran vinculades a aquest compte de manera permanent. Si desconnecteu aquest compte se suprimiran les dades de Chrome locals.</translation>
 <translation id="3410346880900521918">Si això passa sovint, proveu aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Mida:</translation>
-<translation id="3455798674391346847">Feu servir Google per optimitzar les pàgines que visiteu i gastareu menys dades. Google no optimitzarà ni veurà les pàgines a les quals hàgiu accedit en mode d'incògnit o amb HTTPS.</translation>
 <translation id="3485544713029068372">Smart Lock per a contrasenyes</translation>
 <translation id="3492207499832628349">Pestanya d'incògnit nova</translation>
 <translation id="3518985090088779359">Accepta i continua</translation>
@@ -314,7 +313,6 @@ Les estadístiques d'ús inclouen dades com ara les preferències, els clics en 
 
 Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="572328651809341494">Pestanyes recents</translation>
-<translation id="5733727110006255111">Si aquesta funció s'activa, Chrome fa servir els servidors de Google per comprimir les pàgines que visiteu abans de baixar-les. Les pàgines SSL i les del mode d'incògnit no s'hi inclouen.</translation>
 <translation id="5749068826913805084">Chrome necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
 <translation id="5763382633136178763">Pestanyes d'incògnit</translation>
 <translation id="5765780083710877561">Descripció:</translation>

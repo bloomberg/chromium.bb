@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="111910763555783249">Instellingen voor meldingen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 dag geleden}other{# dagen geleden}}</translation>
 <translation id="1167268268675672572">Naar begin van regel verplaatsen en selectie aanpassen</translation>
 <translation id="1190609913194133056">Meldingscentrum</translation>

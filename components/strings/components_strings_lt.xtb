@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Baigėsi šakninio ar tarpinio sertifikato galiojimas.</translation>
 <translation id="2328300916057834155">Nepaisoma netinkama žymė indekse <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Kitos žymės</translation>
-<translation id="2359808026110333948">Tęsti</translation>
 <translation id="2367567093518048410">Lygis</translation>
 <translation id="2384307209577226199">Numatytieji įmonės nustatymai</translation>
 <translation id="2386255080630008482">Serverio sertifikatas panaikintas.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="2728127805433021124">Serverio sertifikatas pasirašytas naudojant nepatikimą parašo algoritmą.</translation>
-<translation id="2774256287122201187">Galite tęsti. Jei tęsite veiksmus puslapyje, šis įspėjimas nebus vėl rodomas penkias minutes.</translation>
 <translation id="277499241957683684">Trūksta įrenginio įrašo</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
 <translation id="2855922900409897335">Patvirtinkite „<ph name="CREDIT_CARD" />“</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Nukopijuota nuoroda</translation>
 <translation id="375403751935624634">Vertimas nepavyko dėl serverio klaidos.</translation>
 <translation id="3759461132968374835">Nėra strigčių, apie kurias buvo neseniai pranešta. Strigtys, įvykusios tuo metu, kai strigčių ataskaitų teikimas buvo išjungtas, čia rodomos nebus.</translation>
-<translation id="385051799172605136">Grįžti</translation>
 <translation id="3858027520442213535">Atnaujinti datą ir laiką</translation>
 <translation id="3884278016824448484">Nesuderinamas įrenginio identifikatorius</translation>
 <translation id="3885155851504623709">Apylinkė</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Tikrinimo klaida: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Pašalinti adresą iš „Chrome“?</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
-<translation id="4607653538520819196">Šio puslapio negalima įgalioti naudojant Duomenų taupymo priemonę.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikate yra klaidų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE" /> k.</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
-<translation id="4968547170521245791">Negalima įgalioti</translation>
 <translation id="498957508165411911">Versti iš <ph name="ORIGINAL_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Bloga atsarginio atminties įrenginio būsena</translation>
 <translation id="5031870354684148875">Apie „Google“ vertėją</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Išeiti iš šio puslapio</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6550675742724504774">Parinktys</translation>
-<translation id="6597614308054261376">Bandote pasiekti <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Šiuo metu šio puslapio negalima įgalioti naudojant Duomenų taupymo priemonę.</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="6646897916597483132">Įveskite 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės priekyje</translation>

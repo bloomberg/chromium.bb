@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Un certificato principale o intermedio è scaduto.</translation>
 <translation id="2328300916057834155">Preferito non valido dell'indice <ph name="ENTRY_INDEX" /> ignorato</translation>
 <translation id="2354001756790975382">Altri Preferiti</translation>
-<translation id="2359808026110333948">Continua</translation>
 <translation id="2367567093518048410">Livello</translation>
 <translation id="2384307209577226199">Valore predefinito aziendale</translation>
 <translation id="2386255080630008482">Il certificato del server è stato revocato.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
-<translation id="2774256287122201187">Puoi continuare. Se rimani nella pagina, questo avviso non verrà più visualizzato per cinque minuti.</translation>
 <translation id="277499241957683684">Record del dispositivo mancante</translation>
 <translation id="2835170189407361413">Cancella modulo</translation>
 <translation id="2855922900409897335">Verifica la carta <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Link che hai copiato</translation>
 <translation id="375403751935624634">La traduzione non è riuscita a causa di un errore del server.</translation>
 <translation id="3759461132968374835">Non hai segnalato arresti anomali di recente. Quelli che si sono verificati quando la segnalazione degli arresti anomali era disabilitata non verranno visualizzati qui.</translation>
-<translation id="385051799172605136">Indietro</translation>
 <translation id="3858027520442213535">Aggiorna data e ora</translation>
 <translation id="3884278016824448484">Identificativo del dispositivo in conflitto</translation>
 <translation id="3885155851504623709">Parrocchia</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Errore di convalida. <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Rimuovere l'indirizzo da Chrome?</translation>
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
-<translation id="4607653538520819196">Impossibile eseguire il proxy della pagina tramite Risparmio dati.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza contiene errori. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="4726672564094551039">Ricarica norme</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
-<translation id="4968547170521245791">Impossibile eseguire il proxy</translation>
 <translation id="498957508165411911">Tradurre da <ph name="ORIGINAL_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>
 <translation id="5031870354684148875">Informazioni su Google Traduttore</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Esci dalla pagina</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6550675742724504774">Opzioni</translation>
-<translation id="6597614308054261376">Stai provando a visitare <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Al momento non è possibile eseguire il proxy della pagina tramite Risparmio dati.</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="6646897916597483132">Inserisci il codice CVC di quattro cifre indicato sulla parte anteriore della carta</translation>

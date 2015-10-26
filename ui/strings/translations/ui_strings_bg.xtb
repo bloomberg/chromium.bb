@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="111910763555783249">Настройки за известяване</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Преди 1 ден}other{Преди # дни}}</translation>
 <translation id="1167268268675672572">Преместване до началото на реда и промяна на избраното</translation>
 <translation id="1190609913194133056">Център за известия</translation>

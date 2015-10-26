@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="111910763555783249">Setări pentru notificări</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Acum o zi}few{Acum # zile}other{Acum # de zile}}</translation>
 <translation id="1167268268675672572">Mutați la începutul rândului și modificați selecția</translation>
 <translation id="1190609913194133056">Centrul pentru notificări</translation>

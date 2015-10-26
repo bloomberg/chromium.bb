@@ -454,9 +454,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2592091433672667839">Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Configure remote access options in <ph name="PRODUCT_NAME" />.
-
-      These features are ignored unless the Remote Access web application is installed.</translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 

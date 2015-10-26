@@ -159,7 +159,6 @@
 Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadziranje vašega profila v Google Chromu. Vaši podatki v Google Chromu bodo trajno povezani s tem računom. Če prekinete povezavo s tem računom, se izbrišejo lokalni podatki v Google Chromu.</translation>
 <translation id="3410346880900521918">Če se to pogosto pokaže, poskusite te <ph name="BEGIN_LINK" />predloge<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Velikost:</translation>
-<translation id="3455798674391346847">Porabite manj podatkov, tako da uporabite Google za optimizacijo strani, ki jih obiščete. Google ne optimizira in ne vidi strani, odprtih prek protokola HTTPS ali v načinu brez beleženja zgodovine.</translation>
 <translation id="3485544713029068372">Smart Lock za gesla</translation>
 <translation id="3492207499832628349">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="3518985090088779359">Sprejmi in nadaljuj</translation>
@@ -314,7 +313,6 @@ Statistični podatki o uporabi vključujejo podatke, kot so nastavitve, kliki gu
 
 Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne skrijete brskanja pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiskujete.</translation>
 <translation id="572328651809341494">Nedavni zavihki</translation>
-<translation id="5733727110006255111">Ko je ta funkcija vklopljena, Chrome strani, ki jih obiščete, pred prenosom stisne z uporabo Googlovih strežnikov. To ne velja za strani, ki uporabljajo povezavo SSL ali jih obiščete v načinu brez beleženja zgodovine.</translation>
 <translation id="5749068826913805084">Chrome potrebuje za prenos datotek dostop do shrambe.</translation>
 <translation id="5763382633136178763">Zavihki brez beleženja zgodovine</translation>
 <translation id="5765780083710877561">Opis:</translation>
@@ -458,7 +456,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7648422057306047504">Šifriranje gesel s poverilnicami za Google</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
-<translation id="7761240775244195612">Želite izbrisati kopije brez povezave (<ph name="PAGES_NUMBER" />), ki jih v zadnjem mesecu niste uporabljali. S tem boste sprostili <ph name="TOTAL_PAGE_SIZE" /> prostora.</translation>
+<translation id="7761240775244195612">Želite izbrisati kopije brez povezave (<ph name="PAGES_NUMBER" />), ki jih v zadnjem mesecu niste uporabljali? S tem boste sprostili <ph name="TOTAL_PAGE_SIZE" /> prostora.</translation>
 <translation id="7764225426217299476">Dodaj naslov</translation>
 <translation id="7765158879357617694">Premakni</translation>
 <translation id="7767746238359002192">Če želite stran shraniti za način brez povezave, jo obiščite</translation>

@@ -159,7 +159,6 @@
 Du loggar in med ett hanterat konto, vilket innebär att administratören kontrollerar din Chrome-profil. Din Chrome-data kommer att knytas permanent till det här kontot. Om du kopplar ifrån det här kontot raderas din lokala Chrome-data.</translation>
 <translation id="3410346880900521918">Om du ser detta ofta provar du <ph name="BEGIN_LINK" />de här förslagen<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Storlek:</translation>
-<translation id="3455798674391346847">Använd mindre data genom att låta Google optimera sidorna du besöker. Sidor som öppnas med HTTPS eller i inkognitoläge kan varken optimeras eller visas av Google.</translation>
 <translation id="3485544713029068372">Smart Lock för lösenord</translation>
 <translation id="3492207499832628349">Ny inkognitoflik</translation>
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
@@ -314,7 +313,6 @@ Användningsstatistiken innehåller information som inställningar, knappklick o
 
 Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
 <translation id="572328651809341494">Senaste flikarna</translation>
-<translation id="5733727110006255111">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. SSL- och inkognitosidor inkluderas inte.</translation>
 <translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="5763382633136178763">Inkognitoflikar</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>

@@ -15,7 +15,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="123620459398936149">Chrome OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="127345590676626841">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi. Až toto stahování skončí, Chrome se restartuje a budete moci pokračovat.</translation>
 <translation id="1302523850133262269">Počkejte prosím, než Chrome nainstaluje nejnovější aktualizace systému.</translation>
-<translation id="1348153800635493797">Pokud chcete používat Peněženku Google, je třeba Chrome upgradovat [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Prohlížeč Chrome zjistil neobvyklé chování</translation>
 <translation id="1393853151966637042">Pomoc s používáním Chromu</translation>
 <translation id="1399397803214730675">V tomto počítači je již nainstalována novější verze prohlížeče Google Chrome. Jestliže software nefunguje, odinstalujte prosím prohlížeč Google Chrome a zkuste to znovu.</translation>
@@ -47,6 +46,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2290014774651636340">Chybí klíče rozhraní Google API. Některé funkce Google Chrome nebudou k dispozici.</translation>
 <translation id="2290095356545025170">Opravdu chcete odinstalovat Google Chrome?</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2346876346033403680">Prohlížeč Chrome v tomto počítači je již přihlášen k účtu <ph name="ACCOUNT_EMAIL_LAST" />. Pokud se nejedná o váš účet, vytvořte nového uživatele prohlížeče Chrome, aby vaše data zůstala oddělená.
 
 Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například záložky, historie a další nastavení) sloučena s účtem <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -66,7 +66,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2769762047821873045">Google Chrome není vaším výchozím prohlížečem.</translation>
 <translation id="2770231113462710648">Změnit výchozí prohlížeč na:</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
-<translation id="2874156562296220396">Google Chrome staví na projektu s otevřeným zdrojovým kódem <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> a využívá i další <ph name="BEGIN_LINK_OSS" />otevřený software<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome je v režimu na pozadí.</translation>
 <translation id="3047079729301751317">Odpojení uživatele <ph name="USERNAME" /> smaže také historii, záložky, nastavení a další data Chromu uložená v tomto zařízení. Data uložená ve vašem účtu Google nebudou vymazána a lze je spravovat na <ph name="GOOGLE_DASHBOARD_LINK" />Hlavním panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>

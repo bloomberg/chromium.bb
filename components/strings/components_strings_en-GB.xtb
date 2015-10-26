@@ -66,7 +66,6 @@
 <translation id="229702904922032456">A root or intermediate certificate has expired.</translation>
 <translation id="2328300916057834155">Ignored invalid bookmark at index <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Other bookmarks</translation>
-<translation id="2359808026110333948">Continue</translation>
 <translation id="2367567093518048410">Level</translation>
 <translation id="2384307209577226199">Enterprise default</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Value doesn't match format.</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
-<translation id="2774256287122201187">You may continue. If you continue to the page, this warning will not appear again for five minutes.</translation>
 <translation id="277499241957683684">Missing device record</translation>
 <translation id="2835170189407361413">Clear form</translation>
 <translation id="2855922900409897335">Verify your <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Link that you copied</translation>
 <translation id="375403751935624634">The translation failed because of a server error.</translation>
 <translation id="3759461132968374835">You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.</translation>
-<translation id="385051799172605136">Back</translation>
 <translation id="3858027520442213535">Update date and time</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
 <translation id="3885155851504623709">Parish</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Remove address from Chrome?</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
-<translation id="4607653538520819196">This page cannot be proxied by Data Saver.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="4726672564094551039">Reload policies</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">View</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Must be specified.</translation>
-<translation id="4968547170521245791">Cannot Proxy</translation>
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Backing store in bad state</translation>
 <translation id="5031870354684148875">About Google Translate</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Leave this Page</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6550675742724504774">Options</translation>
-<translation id="6597614308054261376">You are trying to reach <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. This page cannot be proxied by Data Saver at this time.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6646897916597483132">Enter the 4-digit CVC from the front of your card</translation>

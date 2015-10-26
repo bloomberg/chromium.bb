@@ -300,15 +300,15 @@
 
       Mithilfe der Richtlinie wird verhindert, dass Nutzer Webseiten von URLs auf der schwarzen Liste laden. Die schwarze Liste stellt eine Liste von URL-Mustern bereit, die angeben, welche URLs auf die schwarze Liste gesetzt werden.
 
-      Jedes URL-Muster kann entweder als Muster für lokale Dateien oder als ein generisches URL-Muster fungieren. Muster für lokale Dateien weisen das Format "datei://pfad" auf, wobei "pfad" ein absoluter zu blockierender Pfad sein sollte. Sämtliche Speicherorte im Dateisystem, für die dieser Pfad ein Präfix darstellt, werden blockiert.
+      Jedes URL-Muster kann entweder als Muster für lokale Dateien oder als ein generisches URL-Muster fungieren. Muster für lokale Dateien weisen das Format "file://path" auf, wobei "path" ein absoluter zu blockierender Pfad sein sollte. Sämtliche Speicherorte im Dateisystem, für die dieser Pfad ein Präfix darstellt, werden blockiert.
 
-      Ein generisches URL-Muster hast das Format "schema://host:port/pfad".
-      Falls vorhanden, wird nur das angegebene Schema blockiert. Wird das Präfix "schema://" nicht angegeben, werden alle Schemas blockiert.
+      Ein generisches URL-Muster hat das Format "scheme://host:port/path".
+      Falls vorhanden, wird nur das angegebene Schema blockiert. Wird das Präfix "scheme://" nicht angegeben, werden alle Schemas blockiert.
       Der Host muss angegeben werden und kann ein Hostname oder eine IP-Adresse sein. Subdomains eines Hostnamens werden ebenfalls blockiert. Fügen Sie vor den Hostnamen einen Punkt "." ein, damit keine Subdomains blockiert werden. Der spezielle Hostname "*" blockiert alle Domains.
       Der optionale Port besteht aus einer gültigen Portnummer zwischen 1 und 65535. Wenn kein Port ausgewählt wird, werden alle blockiert.
       Wurde der optionale Pfad angegeben, werden nur Pfade mit diesem Präfix blockiert.
 
-      Ausnahmen können in der Richtlinie für die weiße URL-Liste definiert werden. Diese Richtlinien sind auf 1000 Einträge begrenzt, weitere Einträge werden ignoriert.
+      Ausnahmen können in der Richtlinie für die URL-Whitelist definiert werden. Diese Richtlinien sind auf 1000 Einträge begrenzt, weitere Einträge werden ignoriert.
 
       Wird diese Richtlinie nicht konfiguriert, werden im Browser keine URLs zur schwarzen Liste hinzugefügt.</translation>
 <translation id="240213793013362302">Hintergrundbild konfigurieren
@@ -368,7 +368,7 @@ Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird und bei ein
 
 Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie automatische Anmeldung, sofern konfiguriert, nicht umgangen werden.</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>
-<translation id="2466131534462628618">Captive Portal-Authentifizierung ignoriert Proxy</translation>
+<translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="2483146640187052324">Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen</translation>
 <translation id="2488010520405124654">Aktivierung der Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus
@@ -403,7 +403,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2592091433672667839">Dauer der Inaktivität, bevor im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
-<translation id="2629448496147630947">Konfigurieren Sie die Optionen für Remote-Zugriff in <ph name="PRODUCT_NAME" />. Diese Einstellungen sind nur aktiv, wenn die Web-App für Remote-Zugriff installiert ist.</translation>
 <translation id="2633084400146331575">Gesprochenes Feedback aktivieren</translation>
 <translation id="2646290749315461919">Ermöglicht Ihnen festzulegen, ob Websites den Standort des Nutzers mitverfolgen dürfen. Die Mitverfolgung des Standorts kann standardmäßig gestattet oder nicht gestattet sein oder auf Anfrage beim Nutzer erfolgen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskGeolocation" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="2650049181907741121">Auszuführende Aktion beim Zuklappen des Geräts</translation>
@@ -414,7 +413,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Ist diese Richtlinie nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> die Standardmindestversion TLS 1.0 in <ph name="PRODUCT_NAME" /> 44 und TLS 1.1 in späteren Versionen. Die Unterstützung von TLS 1.0 wird dadurch nicht deaktiviert, es wird lediglich festgelegt, ob <ph name="PRODUCT_NAME" /> fehlerträchtige Server umgeht, die keine korrekten Versionsaushandlungen durchführen können.
 
-      Anderenfalls kann einer der folgenden Werte eingestellt werden: "tls1", "tls1.1" oder "tls1.2". Wenn die Kompatibilität mit einem fehlerträchtigen Server aufrechterhalten werden muss, kann "tls1" eingestellt werden. Hierbei handelt es sich um einen provisorischen Wert und der Server sollte schnell repariert werden.
+      Andernfalls kann einer der folgenden Werte eingestellt werden: "tls1", "tls1.1" oder "tls1.2". Wenn die Kompatibilität mit einem fehlerträchtigen Server aufrechterhalten werden muss, kann "tls1" eingestellt werden. Hierbei handelt es sich um einen provisorischen Wert und der Server sollte schnell repariert werden.
 
       Mit der Einstellung "tls1.2" wird der gesamte Fallback-Vorgang deaktiviert. Dies kann sich jedoch erheblich auf die Kompatibilität auswirken.</translation>
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
@@ -510,13 +509,13 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
-<translation id="2998881342848488968">Diese Richtlinie ermöglicht <ph name="PRODUCT_OS_NAME" />, zur Erfassungsportal-Authentifizierung alle Proxys zu umgehen.
+<translation id="2998881342848488968">Diese Richtlinie ermöglicht <ph name="PRODUCT_OS_NAME" />, zur Captive-Portal-Authentifizierung alle Proxys zu umgehen.
 
       Die Richtlinie kommt nur dann zum Einsatz, wenn ein Proxy konfiguriert ist, zum Beispiel über eine Richtlinie, vom Nutzer unter chrome://settings oder von Erweiterungen.
 
-      Wenn diese Einstellung aktiviert ist, werden alle Seiten der Erfassungsportal-Authentifizierung – also alle Webseiten ab der Anmeldeseite, bis <ph name="PRODUCT_NAME" /> eine funktionierende Internetverbindung erkennt – in einem separaten Fenster angezeigt und alle Richtlinieneinstellungen und -beschränkungen für den aktuellen Nutzer ignoriert.
+      Wenn diese Einstellung aktiviert ist, werden alle Seiten der Captive-Portal-Authentifizierung – also alle Webseiten ab der Anmeldeseite, bis <ph name="PRODUCT_NAME" /> eine funktionierende Internetverbindung erkennt – in einem separaten Fenster angezeigt und alle Richtlinieneinstellungen und -beschränkungen für den aktuellen Nutzer ignoriert.
 
-      Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden alle Seiten der Erfassungsportal-Authentifizierung auf einem regulären neuen Browsertab angezeigt und es kommen die Proxy-Einstellungen des aktuellen Nutzers zum Einsatz.</translation>
+      Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden alle Seiten der Captive-Portal-Authentifizierung auf einem regulären neuen Browsertab angezeigt und es kommen die Proxy-Einstellungen des aktuellen Nutzers zum Einsatz.</translation>
 <translation id="3021409116652377124">Plug-in-Suchfunktion deaktivieren</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
@@ -538,7 +537,7 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 <translation id="3072847235228302527">Nutzungsbedingungen für ein lokales Gerätekonto festlegen</translation>
 <translation id="3096595567015595053">Liste der aktivierten Plug-ins</translation>
 <translation id="3101501961102569744">Auswählen, wie Proxyserver-Einstellungen angegeben werden</translation>
-<translation id="3153348162326497318">Ermöglicht Ihnen zu bestimmen, welche Erweiterungen Nutzer nicht installieren dürfen. Bereits installierte Erweiterungen werden entfernt, wenn sie auf die schwarze Liste gesetzt werden. Der Wert "*" in einer schwarzen Liste bedeutet, dass alle Erweiterungen auf die schwarze Liste gesetzt sind. Ausnahmen bilden lediglich solche, die ausdrücklich in der weißen Liste geführt sind. Wenn die Richtlinie nicht konfiguriert ist, so ist es dem Nutzer gestattet, beliebige Erweiterungen in <ph name="PRODUCT_NAME" /> zu installieren.</translation>
+<translation id="3153348162326497318">Ermöglicht Ihnen zu bestimmen, welche Erweiterungen Nutzer nicht installieren dürfen. Bereits installierte Erweiterungen werden entfernt, wenn sie auf die schwarze Liste gesetzt werden. Der Wert "*" in einer schwarzen Liste bedeutet, dass alle Erweiterungen auf die schwarze Liste gesetzt sind. Ausnahmen bilden lediglich solche, die ausdrücklich in der Whitelist geführt sind. Wenn die Richtlinie nicht konfiguriert ist, so ist es dem Nutzer gestattet, beliebige Erweiterungen in <ph name="PRODUCT_NAME" /> zu installieren.</translation>
 <translation id="316778957754360075">Diese Einstellung wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet. Zur Einrichtung einer Sammlung mit Erweiterungen oder Apps, die von der Organisation gehostet wird, empfehlen wir, die Host-Website der CRX-Pakete in "ExtensionInstallSources" einzufügen und auf einer Webseite direkte Downloadlinks zu den Paketen bereitzustellen. Ein Launcher für diese Webseite kann mithilfe der Richtlinie "ExtensionInstallForcelist" erstellt werden.</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
@@ -671,9 +670,9 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 <translation id="382476126209906314">TalkGadget-Präfix für Remote-Zugriff-Hosts konfigurieren</translation>
 <translation id="383466854578875212">Ermöglicht Ihnen, anzugeben, welche Hosts für natives Messaging nicht in die schwarze Liste aufgenommen werden sollen
 
-          Der Wert "*" für die schwarze Liste bedeutet, dass alle Hosts für natives Messaging in die schwarze Liste aufgenommen werden und dass nur Hosts für natives Messaging geladen werden, die auf der weißen Liste stehen.
+          Der Wert "*" für die schwarze Liste bedeutet, dass alle Hosts für natives Messaging in die schwarze Liste aufgenommen werden und dass nur Hosts für natives Messaging geladen werden, die auf der Whitelist stehen.
 
-          Standardmäßig stehen alle Hosts für natives Messaging auf der weißen Liste. Wenn jedoch alle Hosts für natives Messaging durch eine Richtlinie zur schwarzen Liste hinzugefügt wurden, kann diese Richtlinie mithilfe der weißen Liste außer Kraft gesetzt werden.</translation>
+          Standardmäßig stehen alle Hosts für natives Messaging auf der Whitelist. Wenn jedoch alle Hosts für natives Messaging durch eine Richtlinie zur schwarzen Liste hinzugefügt wurden, kann diese Richtlinie mithilfe der Whitelist außer Kraft gesetzt werden.</translation>
 <translation id="384743459174066962">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Öffnen von Pop-ups nicht gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites der globale Standardwert der Richtlinie "DefaultPopupsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="3859780406608282662">Fügt einen Parameter für den Abruf des Varianten-Seeds in <ph name="PRODUCT_OS_NAME" /> hinzu.
 
@@ -696,7 +695,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
 <translation id="3891357445869647828">JavaScript aktivieren</translation>
 <translation id="389421284571827139">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxyserver anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern. Wenn Sie sich dafür entscheiden, nie einen Proxyserver, sondern immer eine direkte Verbindung zu nutzen, so werden alle anderen Optionen ignoriert. Sollten Sie die automatische Erkennung des Proxyservers wählen, werden ebenfalls alle anderen Optionen ignoriert. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL" />. Wenn Sie diese Einstellung aktivieren, so ignoriert <ph name="PRODUCT_NAME" /> alle Proxy-bezogenen Optionen, die über die Befehlszeile angegeben werden. Sind diese Richtlinien nicht konfiguriert, so können Nutzer ihre eigenen Proxy-Einstellungen wählen.</translation>
-<translation id="3907986150060929099">Empfohlene Gebietsschemata für eine öffentliche Sitzung festlegen</translation>
+<translation id="3907986150060929099">Empfohlene Gebietsschemas für eine öffentliche Sitzung festlegen</translation>
 <translation id="391531815696899618">Bei Festlegung auf "true" wird die Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktiviert. Es werden dann keine Daten in Google Drive hochgeladen.
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
@@ -924,7 +923,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
           Wenn diese Richtlinie nicht festgelegt wird, wird die Standardbefehlszeile verwendet.</translation>
 <translation id="5182055907976889880">Google Drive in <ph name="PRODUCT_OS_NAME" /> konfigurieren</translation>
-<translation id="5183383917553127163">Mit dieser Richtlinie können Sie festlegen, welche Erweiterungen nicht auf die schwarze Liste gesetzt werden. Der Wert "*" in der schwarzen Liste gibt an, dass alle Erweiterungen ausgeschlossen sind und dass Nutzer nur Erweiterungen installieren können, die in der weißen Liste enthalten sind. Standardmäßig können alle Erweiterungen installiert werden. Wurden jedoch alle Erweiterungen durch eine Richtlinie auf die schwarze Liste gesetzt, kann diese Richtlinie mithilfe der weißen Liste außer Kraft gesetzt werden.</translation>
+<translation id="5183383917553127163">Mit dieser Richtlinie können Sie festlegen, welche Erweiterungen nicht auf die schwarze Liste gesetzt werden. Der Wert "*" in der schwarzen Liste gibt an, dass alle Erweiterungen ausgeschlossen sind und dass Nutzer nur Erweiterungen installieren können, die in der Whitelist enthalten sind. Standardmäßig können alle Erweiterungen installiert werden. Wurden jedoch alle Erweiterungen durch eine Richtlinie auf die schwarze Liste gesetzt, kann diese Richtlinie mithilfe der Whitelist außer Kraft gesetzt werden.</translation>
 <translation id="5192837635164433517">Aktiviert die Verwendung alternativer Fehlerseiten, die in <ph name="PRODUCT_NAME" /> integriert sind, etwa "Seite nicht gefunden", und verhindert, dass die Einstellung durch Nutzer geändert wird. Wenn Sie diese Einstellung aktivieren, kommen alternative Fehlerseiten zum Einsatz. Sollten Sie sie deaktivieren, werden alternative Fehlerseiten grundsätzlich nicht verwendet. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen. Wird die Richtlinie nicht konfiguriert, so ist die Funktion aktiv, aber der Nutzer kann dies ändern.</translation>
 <translation id="5196805177499964601">Entwicklermodus blockieren:
 
@@ -937,7 +936,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5255162913209987122">Empfehlenswert</translation>
 <translation id="527237119693897329">Ermöglicht Ihnen, festzulegen, welche Hosts für natives Messaging nicht geladen werden sollen
 
-          Der Wert "*" für die schwarze Liste bedeutet, dass alle Hosts für natives Messaging in die schwarze Liste aufgenommen werden, es sei denn, sie stehen explizit auf der weißen Liste.
+          Der Wert "*" für die schwarze Liste bedeutet, dass alle Hosts für natives Messaging in die schwarze Liste aufgenommen werden, es sei denn, sie stehen explizit auf der Whitelist.
 
           Wenn für diese Richtlinie kein Wert angegeben wird, lädt <ph name="PRODUCT_NAME" /> alle installierten Hosts für natives Messaging.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
@@ -1721,7 +1720,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Mithilfe dieser Richtlinie können Ausnahmen von restriktiven schwarzen Listen geöffnet werden. So können beispielsweise mit "*" alle Anfragen blockiert werden, während mit dieser Richtlinie der Zugriff auf eine eingeschränkte Liste von URLs erlaubt werden kann. Hiermit können Ausnahmen von bestimmten Schemata, Sub-Domains anderer Domains, Ports oder bestimmten Pfaden geöffnet werden.
 
-      Der spezifischste Filter bestimmt, ob eine URL blockiert oder erlaubt ist. Die weiße Liste hat Vorrang vor der schwarzen Liste.
+      Der spezifischste Filter bestimmt, ob eine URL blockiert oder erlaubt ist. Die Whitelist hat Vorrang vor der schwarzen Liste.
 
       Diese Richtlinie ist auf 1000 Einträge beschränkt. Alle weiteren Einträge werden ignoriert.
 

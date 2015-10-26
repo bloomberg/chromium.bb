@@ -159,7 +159,6 @@
 Ön jelenleg kezelt fiókkal jelentkezik be, és engedélyezi a rendszergazdának az Ön Chrome-profiljához való hozzáférést. Chrome-adatai ezután véglegesen ehhez a fiókhoz társulnak. A fiók leválasztásával törölheti a helyi Chrome-adatokat.</translation>
 <translation id="3410346880900521918">Ha gyakran látja ezt, próbálja ki ezeket a <ph name="BEGIN_LINK" />javaslatokat<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Méret:</translation>
-<translation id="3455798674391346847">Csökkentse adatforgalmát: használja a Google-t a felkeresett oldalak optimalizálására. A HTTPS vagy inkognitómód segítségével megnyitott oldalakat a Google nem optimalizálja és nem látja.</translation>
 <translation id="3485544713029068372">Smart Lock a jelszavakhoz</translation>
 <translation id="3492207499832628349">Új inkognitólap</translation>
 <translation id="3518985090088779359">Elfogadás és tovább</translation>
@@ -314,7 +313,6 @@ A használati statisztika részét alkotják például a beállítások, a gombo
 
 Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem rejtheti el böngészési tevékenységét munkaadója, internetszolgáltatója vagy a felkeresett webhelyek elől.</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
-<translation id="5733727110006255111">Amikor ezt a funkciót bekapcsolja, a Chrome a Google-szerverek segítségével tömöríti az Ön által meglátogatott oldalakat, mielőtt letöltené azokat. Az SSL használatával, illetve az inkognitómódban megtekintett oldalakat ez nem érinti.</translation>
 <translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5763382633136178763">Inkognitólapok</translation>
 <translation id="5765780083710877561">Leírás:</translation>

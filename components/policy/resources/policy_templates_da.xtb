@@ -405,7 +405,6 @@
 <translation id="2592091433672667839">Varighed af inaktivitet, før pauseskærmen vises på loginskærmen i detailtilstand</translation>
 <translation id="2623014935069176671">Vent på første aktivitet fra brugeren</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Konfigurer indstillinger for fjernadgang i <ph name="PRODUCT_NAME" />. Disse funktioner ignoreres, medmindre webapplikationen Fjernadgang er installeret.</translation>
 <translation id="2633084400146331575">Aktivér talefeedback</translation>
 <translation id="2646290749315461919">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering. Hvis denne politik ikke angives, anvendes "AskGeolocation", og brugeren vil kunne ændre den.</translation>
 <translation id="2650049181907741121">Handling, der skal udføres, når brugeren slår skærmen ned</translation>
@@ -516,9 +515,9 @@
 
       Denne politik træder kun i kraft, hvis der er konfigureret en proxy (f.eks. via en politik, af en bruger på chrome://settings eller via udvidelser).
 
-      Hvis du aktiverer denne indstilling, vises alle godkendelsessider med loginportal (dvs. alle websider, der kræver adgang via en loginside, indtil <ph name="PRODUCT_NAME" /> registrerer en internetforbindelse) i et separat vindue, og alle politikindstillinger og -begrænsninger for den aktuelle bruger ignoreres
+      Hvis du aktiverer denne indstilling, vises alle godkendelsessider med loginportal (dvs. alle websider, der kræver adgang via en loginside, indtil <ph name="PRODUCT_NAME" /> registrerer en internetforbindelse) i et separat vindue, og alle politikindstillinger og -begrænsninger for den aktuelle bruger ignoreres.
 
-      Hvis du deaktiverer denne indstilling eller undlader at indstille den, vises alle godkendelsessider med loginportal i en (almindelig) ny browserfane ved hjælp af brugerens proxyindstillinger.</translation>
+      Hvis du deaktiverer denne indstilling eller undlader at indstille den, vises alle godkendelsessider i loginportalen i en (almindelig) ny browserfane ved hjælp af brugerens proxyindstillinger.</translation>
 <translation id="3021409116652377124">Deaktiver pluginsøgning</translation>
 <translation id="3030000825273123558">Aktivér metrics-rapportering</translation>
 <translation id="3034580675120919256">Giver dig mulighed for at angive, om websites må køre JavaScript. Kørsel af JavaScript kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "AllowJavaScript", og brugeren vil kunne ændre det.</translation>

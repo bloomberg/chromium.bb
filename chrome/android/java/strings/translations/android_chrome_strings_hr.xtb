@@ -159,7 +159,6 @@
 Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadzor nad svojim Chrome profilom. Vaši podaci na Chromeu bit će trajno povezani s ovim računom. Prekidanje veze s ovim računom dovest će do brisanja lokalnih podataka na Chromeu.</translation>
 <translation id="3410346880900521918">Ako se to često prikazuje, pokušajte s ovim <ph name="BEGIN_LINK" />prijedlozima<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Veličina:</translation>
-<translation id="3455798674391346847">Google može optimizirati posjećene stranice radi uštede pri prijenosu podataka. Google neće optimizirati niti vidjeti stranice kojima se pristupi HTTPS-om ili anonimno.</translation>
 <translation id="3485544713029068372">Smart Lock za zaporke</translation>
 <translation id="3492207499832628349">Nova anonimna kartica</translation>
 <translation id="3518985090088779359">Prihvati i nastavi</translation>
@@ -314,8 +313,7 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite "Prijava na Chr
 
 Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od vašeg poslodavca, davatelja internetskih usluga i web-lokacija koje posjetite.</translation>
 <translation id="572328651809341494">Nedavne kartice</translation>
-<translation id="5733727110006255111">Kada je ta značajka uključena, Chrome će upotrebljavati Googleove poslužitelje kako bi komprimirao posjećene stranice prije preuzimanja. SSL i anonimne stranice neće se uključivati.</translation>
-<translation id="5749068826913805084">Chrome treba pristup pohrani da bi preuzimao datoteke.</translation>
+<translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
 <translation id="5763382633136178763">Anonimne kartice</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5771382037724542929">Želite li zamijeniti postojeću datoteku <ph name="FILE_NAME" /> u direktoriju <ph name="DIRECTORY_NAME" />?</translation>
@@ -324,7 +322,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5817918615728894473">Upari</translation>
 <translation id="5832934273103296195">Prošireno – kliknite za sažimanje</translation>
 <translation id="583891442612896534">Chrome ne može pristupiti Googleovim poslužiteljima za kompresiju podataka. Ušteda na prijenosu podataka može biti ograničena.</translation>
-<translation id="585027516397408832">Ušteda podataka omogućena je</translation>
+<translation id="585027516397408832">Ušteda podataka omogućena</translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="5869522115854928033">Spremljene zaporke</translation>
 <translation id="588258955323874662">Puni zaslon</translation>
@@ -497,7 +495,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8168435359814927499">Sadržaj</translation>
 <translation id="8209050860603202033">Otvori sliku</translation>
 <translation id="8218346974737627104">Potvrda prijave</translation>
-<translation id="8218934717680664417">Sada možete pretraživati ​​jednim dodirom</translation>
+<translation id="8218934717680664417">Sada možete pretraživati jednim dodirom</translation>
 <translation id="8237438615979997762">Podaci spremljeni na ovom uređaju, kao i podaci spremljeni na vašem Google računu ostat će na oba mjesta. Međutim, novi podaci ili promjene podataka neće se sinkronizirati između ta dva mjesta.</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8275818695183729150">Dopusti (za pretraživanja u adresnoj traci)</translation>

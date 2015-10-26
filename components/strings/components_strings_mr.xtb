@@ -66,7 +66,6 @@
 <translation id="229702904922032456">अंतस्थ प्रमाणपत्राचा रूट कालबाह्य झाला आहे.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> अनुक्रमणिकेमधील अवैध बुकमार्ककडे दुर्लक्ष केले</translation>
 <translation id="2354001756790975382">इतर बुकमार्क</translation>
-<translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2367567093518048410">दर्जा</translation>
 <translation id="2384307209577226199">एंटरप्राइझ डीफॉल्ट</translation>
 <translation id="2386255080630008482">सर्व्हरचे प्रमाणपत्र निरस्त केले गेले.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="2728127805433021124">सर्व्हरचे प्रमाणपत्र कमकुवत स्वाक्षरी अल्गोरिदम वापरून स्वाक्षरित केले आहे.</translation>
-<translation id="2774256287122201187">आपण सुरु ठेवू शकता. आपण पृष्ठावर सुरु ठेवल्यास, ही चेतावणी पाच मिनिटे पुन्हा दिसणार नाही.</translation>
 <translation id="277499241957683684">डिव्हाइस रेकॉर्ड गहाळ</translation>
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
 <translation id="2855922900409897335">आपले <ph name="CREDIT_CARD" /> सत्यापित करा</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">आपण कॉपी केलेल्याचा दुवा जोडा</translation>
 <translation id="375403751935624634">सर्व्हर त्रुटीमुळे अनुवाद अयशस्वी झाला.</translation>
 <translation id="3759461132968374835">आपण अलीकडे कोणतेही क्रॅश नोंदवले नाहीत. क्रॅश नोंदवणे अक्षम असताना झालेले क्रॅश येथे दिसून येणार नाहीत.</translation>
-<translation id="385051799172605136">मागील</translation>
 <translation id="3858027520442213535">तारीख आणि वेळ अद्यतनित करा</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
 <translation id="3885155851504623709">पॅरिश</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">प्रमाणीकरण त्रुटी: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Chrome मधून पत्ता काढायचा?</translation>
 <translation id="4594403342090139922">&amp;हटवा पूर्ववत करा</translation>
-<translation id="4607653538520819196">डेटा बचतकर्त्याद्वारे हे पृष्ठ प्रॉक्सी केले जाऊ शकत नाही.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याच्या सुरक्षितता प्रमाणपत्रात त्रुटी आहेत. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="4726672564094551039">धोरणे रीलोड करा</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">पहा</translation>
 <translation id="4923417429809017348">हे पृष्ठ अज्ञात भाषेतून <ph name="LANGUAGE_LANGUAGE" /> मध्ये अनुवादित करण्यात आले</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
-<translation id="4968547170521245791">प्रॉक्सी करू शकत नाही</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरित करायचे?</translation>
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>
 <translation id="5031870354684148875">Google अनुवाद बद्दल</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">हे पृष्ठ सोडा</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
 <translation id="6550675742724504774">पर्याय</translation>
-<translation id="6597614308054261376">आपण <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर्यंत पोहोचण्याचा प्रयत्न करीत आहात. यावेळी डेटा बचतकर्त्याद्वारे हे पृष्ठ प्रॉक्सी केले जाऊ शकत नाही.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>
 <translation id="6644283850729428850">हे धोरण नापसंत आहे.</translation>
 <translation id="6646897916597483132">आपल्या कार्डच्या पुढील भागावर असलेले 4-अंकी CVC प्रविष्ट करा</translation>

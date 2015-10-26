@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Валидността на основен или междинен сертификат е изтекла.</translation>
 <translation id="2328300916057834155">Пренебрегната бе невалидна отметка в индекс <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Други отметки</translation>
-<translation id="2359808026110333948">Напред</translation>
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="2384307209577226199">Зададено по подразбиране в корпоративна среда</translation>
 <translation id="2386255080630008482">Сертификатът на сървъра е анулиран.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Стойността не съответства на формата.</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
-<translation id="2774256287122201187">Може да продължите към страницата. Ако го направите, това предупреждение няма да се показва пет минути.</translation>
 <translation id="277499241957683684">Липсващ запис за устройството</translation>
 <translation id="2835170189407361413">Изчистване на формуляра</translation>
 <translation id="2855922900409897335">Потвърждаване на <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Копирана от вас връзка</translation>
 <translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
 <translation id="3759461132968374835">Наскоро не сте съобщавали за сривове. Тези, възникнали при деактивирано изпращане на сигнали за сривове, не се показват тук.</translation>
-<translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Актуализиране на датата и часа</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
 <translation id="3885155851504623709">Община</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Грешка при потвърждаването: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Адресът да се премахне ли от Chrome?</translation>
 <translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
-<translation id="4607653538520819196">Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност съдържа грешки. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="4726672564094551039">Презареждане на правилата</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
-<translation id="4968547170521245791">Работата като прокси сървър не е възможна</translation>
 <translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
 <translation id="5031870354684148875">Всичко за Google Преводач</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Излизане от тази страница</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
 <translation id="6550675742724504774">Опции</translation>
-<translation id="6597614308054261376">Опитвате се да достигнете до <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Понастоящем Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="6646897916597483132">Въведете четирицифрения код за проверка от лицевата страна на картата си</translation>

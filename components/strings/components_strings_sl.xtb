@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Korensko ali vmesno potrdilo je poteklo.</translation>
 <translation id="2328300916057834155">Neveljaveni zaznamek na indeksu <ph name="ENTRY_INDEX" /> je bil prezrt</translation>
 <translation id="2354001756790975382">Drugi zaznamki</translation>
-<translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2367567093518048410">Raven</translation>
 <translation id="2384307209577226199">Privzeto za podjetja</translation>
 <translation id="2386255080630008482">Potrdilo strežnika je bilo preklicano.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Vrednost se ne ujema z obliko.</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
 <translation id="2728127805433021124">Strežnikovo potrdilo je podpisano s šibkim podpisnim algoritmom.</translation>
-<translation id="2774256287122201187">Lahko nadaljujete. Če nadaljujete na stran, to opozorilo ne bo prikazano naslednjih pet minut.</translation>
 <translation id="277499241957683684">Manjka zapis o napravi</translation>
 <translation id="2835170189407361413">Počisti obrazec</translation>
 <translation id="2855922900409897335">Preverjanje kartice <ph name="CREDIT_CARD" /></translation>
@@ -136,7 +134,6 @@
 <translation id="3739623965217189342">Povezava, ki ste jo kopirali</translation>
 <translation id="375403751935624634">Prevajanje ni uspelo zaradi napake strežnika.</translation>
 <translation id="3759461132968374835">Nimate nedavnih poročil o zrušitvah. Zrušitve, do katerih je prišlo, ko je bilo poročanje onemogočeno, ne bodo prikazane zukaj.</translation>
-<translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
 <translation id="3885155851504623709">Okrožje</translation>
@@ -167,7 +164,6 @@
 <translation id="4506176782989081258">Napaka pri preverjanju veljavnosti: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Želite odstraniti naslov iz Chroma?</translation>
 <translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
-<translation id="4607653538520819196">Te strani ni mogoče prenesti prek strežnika proxy za varčevanje s podatki.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo vsebuje napake. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="4726672564094551039">Znova naloži pravilnike</translation>
@@ -180,7 +176,6 @@
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE" />«</translation>
 <translation id="4926049483395192435">Vrednost mora biti določena.</translation>
-<translation id="4968547170521245791">Prenos prek strežnika proxy ni mogoč</translation>
 <translation id="498957508165411911">Želite prevesti iz jezika <ph name="ORIGINAL_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Neprimerno stanje rezervne shrambe</translation>
 <translation id="5031870354684148875">Google Prevajalnik – vizitka</translation>
@@ -241,7 +236,6 @@
 <translation id="6512448926095770873">Zapusti to stran</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
 <translation id="6550675742724504774">Možnosti</translation>
-<translation id="6597614308054261376">Doseči poskušate <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Te strani trenutno ni mogoče prenesti prek strežnika proxy za varčevanje s podatki.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
 <translation id="6646897916597483132">Vnesite štirimestno kodo CVC na sprednji strani kartice</translation>

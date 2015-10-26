@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="127345590676626841">Chrome স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনার কাছে সর্বদা নবীনতম সংস্করণটি থাকে৷ এই ডাউনলোডটি সম্পূর্ণ হলে, Chrome পুনরায় চালু হবে এবং আপনি আবার আগের মতো Chrome ব্যবহার করতে পারবেন৷</translation>
 <translation id="1302523850133262269">Chrome যখন সাম্প্রতিক সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
-<translation id="1348153800635493797">Google Wallet [<ph name="ERROR_CODE" />] ব্যবহার করতে আপনাকে অবশ্যই আপনার Chrome আপগ্রেড করতে হবে৷</translation>
 <translation id="1350930993895295930">Chrome অস্বাভাবিক আচরণ সনাক্ত করেছে</translation>
 <translation id="1393853151966637042">Chrome ব্যবহার করে সাহায্য নিন</translation>
 <translation id="1399397803214730675">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome -এর অতি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি আবার ডাউনলোড করুন৷</translation>
@@ -45,6 +44,7 @@
 <translation id="2290014774651636340">Google API কীগুলি অনুপস্থিত৷ Google Chrome এর কিছু বৈশিষ্ট্য নিষ্ক্রিয় হয়ে যাবে৷</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
+<translation id="2334084861041072223">কপিরাইট <ph name="YEAR" /> Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="2346876346033403680">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST" /> হিসাবে Chrome এ সাইন ইন করেছিল৷ যদি সেটি আপনার অ্যাকাউন্ট না হয় তাহলে, আপনার তথ্য আলাদা করে রাখতে একটি নতুন Chrome ব্যবহারকারী তৈরি করুন৷
 
 যেকোনো উপায়ে সাইন ইন করা হলে তা বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংসের মত Chrome তথ্যকে <ph name="ACCOUNT_EMAIL_NEW" /> এ মার্জ করবে৷</translation>
@@ -64,7 +64,6 @@
 <translation id="2769762047821873045">Google Chrome আপনার ডিফল্ট ব্রাউসার নয় ৷</translation>
 <translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
 <translation id="2871893339301912279">আপনি Chrome এ সাইন ইন করেছেন৷</translation>
-<translation id="2874156562296220396">Google Chrome, সম্ভবত <ph name="BEGIN_LINK_CHROMIUM" />ক্রোমিয়াম<ph name="END_LINK_CHROMIUM" /> মুক্ত উৎস প্রোজেক্ট এবং অন্যান্য <ph name="BEGIN_LINK_OSS" />মুক্ত উৎস সফ্টওয়্যার<ph name="END_LINK_OSS" /> দ্বারা তৈরি করা হয়েছে৷</translation>
 <translation id="3037838751736561277">Google Chrome পটভূমি মোডে রয়েছে।</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> সংযোগ বিচ্ছিন্ন করলে তা আপনার ইতিহাস, বুকমার্ক, সেটিংস, এবং এই ডিভাইসে সঞ্চিত অন্যান্য Chrome ডেটা মুছে দেবে। আপনার Google অ্যাকাউন্টে সঞ্চিত ডেটা সাফ করা হবে না এবং <ph name="GOOGLE_DASHBOARD_LINK" />Google ড্যাশবোর্ড <ph name="END_GOOGLE_DASHBOARD_LINK" /> এ তা পরিচালনা করা যেতে পারে।</translation>
 <translation id="3080151273017101988">Google Chrome বন্ধ হলে পশ্চাদপট অ্যাপ্লিকেশানের চলা অবিরত রাখুন</translation>

@@ -66,7 +66,7 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">No se puede establecer conexión con el host. Es probable que el error se deba a la configuración de la red que se está utilizando.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Visto por última vez online <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Ayuda y opiniones</translation>
+<translation id="2498359688066513246">Ayuda y sugerencias</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que estén disponibles todas las combinaciones de teclas, puedes configurar la aplicación Escritorio remoto de Chrome para que se abra como una ventana.</translation>
 <translation id="2540992418118313681">¿Quieres compartir este ordenador para que otro usuario pueda acceder a él y controlarlo?</translation>
@@ -97,7 +97,6 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="3150823315463303127">El host no ha podido leer la política.</translation>
 <translation id="3194245623920924351">Escritorio remoto de Chrome</translation>
 <translation id="3197730452537982411">Escritorio remoto</translation>
-<translation id="3244258558056547981">Mostrar vista de Cardboard.</translation>
 <translation id="3258789396564295715">Puedes acceder de forma segura a este ordenador con Escritorio remoto de Chrome.</translation>
 <translation id="327263477022142889">¿Quieres ayudar a mejorar Escritorio remoto de Chrome? <ph name="LINK_BEGIN" />Rellena nuestra encuesta<ph name="LINK_END" /></translation>
 <translation id="3286521253923406898">Controlador de host de Chromoting</translation>

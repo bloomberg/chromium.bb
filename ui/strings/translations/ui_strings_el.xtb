@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="111910763555783249">Ρυθμίσεις ειδοποιήσεων</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Πριν από 1 ημέρα}other{Πριν από # ημέρες}}</translation>
 <translation id="1167268268675672572">Μετακίνηση στην αρχή της γραμμής και τροποποίηση επιλογής</translation>
 <translation id="1190609913194133056">Κέντρο ειδοποιήσεων</translation>

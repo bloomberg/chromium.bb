@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="127345590676626841">Chrome се актуализира автоматично, така че винаги да имате най-новата версия. Когато това изтегляне завърши, браузърът ще се рестартира и ще можете да започнете работа.</translation>
 <translation id="1302523850133262269">Моля, изчакайте, докато Chrome инсталира най-новите системни актуализации.</translation>
-<translation id="1348153800635493797">Трябва да надстроите Chrome, за да използвате Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome установи необичайно поведение</translation>
 <translation id="1393853151966637042">Получаване на помощ за използването на Chrome</translation>
 <translation id="1399397803214730675">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и опитайте отново.</translation>
@@ -45,6 +44,7 @@
 <translation id="2290014774651636340">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Google Chrome ще бъдат деактивирани.</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="2316129865977710310">Не, благодаря</translation>
+<translation id="2334084861041072223">Авторски права <ph name="YEAR" /> Google Inc. Всички права запазени.</translation>
 <translation id="2346876346033403680">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Ако това не е профилът ви, създайте нов потребител в браузъра, за да се съхранява отделно информацията ви.
 
 В случай че влезете въпреки това, данните в Chrome като отметки, история и други настройки ще се обединят с/ъс <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -64,7 +64,6 @@
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
-<translation id="2874156562296220396">Google Chrome съществува благодарение на проекта с отворен код <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> и други <ph name="BEGIN_LINK_OSS" />софтуерни продукти с отворен код<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome работи на заден план.</translation>
 <translation id="3047079729301751317">Прекратяването на връзката с/ъс <ph name="USERNAME" /> ще изчисти историята, отметките, настройките и другите данни в Chrome, съхранени на това устройство. Данните в профила ви в Google няма да бъдат изчистени и могат да се управляват в <ph name="GOOGLE_DASHBOARD_LINK" />Google Табло за управление<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>

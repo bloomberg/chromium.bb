@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Ha caducat un certificat arrel o intermedi.</translation>
 <translation id="2328300916057834155">S'ha ignorat l'adreça d'interès no vàlida a l'índex <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Altres adreces d'interès</translation>
-<translation id="2359808026110333948">Continua</translation>
 <translation id="2367567093518048410">Nivell</translation>
 <translation id="2384307209577226199">Predeterminada de l'empresa</translation>
 <translation id="2386255080630008482">El certificat del servidor s'ha revocat.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2728127805433021124">El certificat del servidor està signat mitjançant un algoritme de signatura dèbil.</translation>
-<translation id="2774256287122201187">Podeu continuar. Si accediu a la pàgina, no es tornarà a mostrar aquest advertiment fins d'aquí a cinc minuts.</translation>
 <translation id="277499241957683684">Falta el registre del dispositiu</translation>
 <translation id="2835170189407361413">Esborra el formulari</translation>
 <translation id="2855922900409897335">Verifica la targeta <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Enllaç que heu copiat</translation>
 <translation id="375403751935624634">S'ha produït un error en el procés de traducció a causa d'un error del servidor.</translation>
 <translation id="3759461132968374835">No heu informat de cap bloqueig recentment. Els bloquejos que es van produir mentre la creació d'informes de bloqueig estava desactivada no apareixeran aquí.</translation>
-<translation id="385051799172605136">Enrere</translation>
 <translation id="3858027520442213535">Actualitza la data i l'hora</translation>
 <translation id="3884278016824448484">L'identificador del dispositiu ja s'està utilitzant</translation>
 <translation id="3885155851504623709">Diòcesi</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Error de validació: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Voleu suprimir l'adreça de Chrome?</translation>
 <translation id="4594403342090139922">&amp;Desfés la supressió</translation>
-<translation id="4607653538520819196">Economitzador de dades no pot enviar aquesta pàgina a un servidor intermediari.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4726672564094551039">Torna a carregar les polítiques</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
-<translation id="4968547170521245791">No es pot utilitzar el servidor intermediari</translation>
 <translation id="498957508165411911">Voleu traduir de <ph name="ORIGINAL_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">L'emmagatzematge de la còpia de seguretat està en mal estat</translation>
 <translation id="5031870354684148875">Sobre el Traductor de Google</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
 <translation id="6529602333819889595">&amp;Refés la supressió</translation>
 <translation id="6550675742724504774">Opcions</translation>
-<translation id="6597614308054261376">Esteu intentant accedir a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. En aquest moment Economitzador de dades no pot enviar aquesta pàgina a un servidor intermediari.</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
 <translation id="6646897916597483132">Introduïu el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>

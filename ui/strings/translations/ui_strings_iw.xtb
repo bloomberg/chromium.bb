@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="111910763555783249">הגדרות של הודעות</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{לפני יום אחד}two{לפני יומיים}many{לפני # ימים}other{לפני # ימים}}</translation>
 <translation id="1167268268675672572">עבור לתחילת השורה ושנה את הבחירה</translation>
 <translation id="1190609913194133056">מרכז התראות</translation>

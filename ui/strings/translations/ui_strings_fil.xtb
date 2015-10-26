@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="111910763555783249">Mga setting ng notification</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 araw ang nakalipas}one{# araw ang nakalipas}other{# na araw ang nakalipas}}</translation>
 <translation id="1167268268675672572">Lumipat Sa Umpisa Ng Linya At Baguhin ang Pinili</translation>
 <translation id="1190609913194133056">Notification Center</translation>

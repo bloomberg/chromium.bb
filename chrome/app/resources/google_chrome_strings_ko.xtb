@@ -15,7 +15,6 @@
 <translation id="123620459398936149">Chrome OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="127345590676626841">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chrome이 다시 시작되며 계속 작업할 수 있습니다.</translation>
 <translation id="1302523850133262269">Chrome에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
-<translation id="1348153800635493797">Google 월렛을 사용하려면 Chrome을 업그레이드해야 합니다. [<ph name="ERROR_CODE" />]</translation>
 <translation id="1350930993895295930">Chrome에서 비정상적인 동작을 감지했습니다.</translation>
 <translation id="1393853151966637042">Chrome 사용에 대한 도움말</translation>
 <translation id="1399397803214730675">컴퓨터에 Chrome 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 시도하세요.</translation>
@@ -47,6 +46,7 @@
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2346876346033403680">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST" />(으)로 Chrome에 로그인했습니다. 본인의 계정이 아닌 경우 새 Chrome 사용자를 만들어 개인 정보를 분리하세요.
 
 로그인하면 북마크, 방문 기록 및 기타 설정과 같은 Chrome 정보가 <ph name="ACCOUNT_EMAIL_NEW" />에 병합됩니다.</translation>
@@ -66,7 +66,6 @@
 <translation id="2769762047821873045">Chrome이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
-<translation id="2874156562296220396">Chrome은 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 오픈소스 프로젝트를 비롯한 여러 <ph name="BEGIN_LINK_OSS" />오픈소스 소프트웨어<ph name="END_LINK_OSS" />에 기초해 만들어진 브라우저입니다.</translation>
 <translation id="3037838751736561277">Chrome이 백그라운드 모드로 실행 중입니다.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" />의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 기타 Chrome 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK" />Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK" />에서 관리될 수 있습니다.</translation>
 <translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
@@ -146,7 +145,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
-<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소에 액세스해야 합니다.</translation>
+<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5785746630574083988">Windows 8 모드로 다시 실행하면 Chrome 앱이 닫혔다가 다시 실행됩니다.</translation>
 <translation id="5799551393681493217">iframe 기반 Chrome 로그인 절차 사용(이 플래그는 웹 기반 로그인 사용보다 우선함)</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>

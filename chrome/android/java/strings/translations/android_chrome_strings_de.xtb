@@ -159,7 +159,6 @@
 Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrator des Kontos Kontrolle über Ihr Chrome-Profil. Ihre Chrome-Daten werden dauerhaft mit diesem Konto verknüpft. Wenn Sie sich aus diesem Konto abmelden, werden alle lokalen Chrome-Daten gelöscht.</translation>
 <translation id="3410346880900521918">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
 <translation id="3414952576877147120">Größe:</translation>
-<translation id="3455798674391346847">Sie können den Datenverbrauch reduzieren, indem Sie besuchte Seiten von Google komprimieren lassen. Über HTTPS oder den Inkognito-Modus aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
 <translation id="3485544713029068372">Smart Lock für Passwörter</translation>
 <translation id="3492207499832628349">Neuer Inkognito-Tab</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
@@ -314,7 +313,6 @@ Nutzungsstatistiken enthalten Informationen wie Einstellungen, Klicks auf Schalt
 
 Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
-<translation id="5733727110006255111">Wenn diese Funktion aktiviert ist, nutzt Chrome Google-Server, um besuchte Seiten vor dem Download zu komprimieren. Dies gilt nicht für SSL- und Inkognito-Seiten.</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="5763382633136178763">Inkognito-Tabs</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>

@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Ένα πιστοποιητικό ρίζας ή ένα ενδιάμεσο πιστοποιητικό έχει λήξει.</translation>
 <translation id="2328300916057834155">Μη έγκυρος σελιδοδείκτης στο ευρετήριο <ph name="ENTRY_INDEX" /> που παραβλέφθηκε</translation>
 <translation id="2354001756790975382">Άλλοι σελιδοδείκτες</translation>
-<translation id="2359808026110333948">Συνέχεια</translation>
 <translation id="2367567093518048410">Επίπεδο</translation>
 <translation id="2384307209577226199">Προεπιλογή επιχείρησης</translation>
 <translation id="2386255080630008482">Το πιστοποιητικό του διακομιστή ανακλήθηκε.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Η τιμή δεν συμφωνεί με τη μορφή.</translation>
 <translation id="2721148159707890343">Το αίτημα ήταν επιτυχές</translation>
 <translation id="2728127805433021124">Το πιστοποιητικό του διακομιστή είναι υπογεγραμμένο με έναν αδύναμο αλγόριθμο υπογραφής.</translation>
-<translation id="2774256287122201187">Μπορείτε να συνεχίσετε. Αν συνεχίσετε στη σελίδα, αυτή η προειδοποίηση δεν θα εμφανιστεί ξανά για πέντε λεπτά.</translation>
 <translation id="277499241957683684">Λείπει κάποιο αρχείο συσκευής</translation>
 <translation id="2835170189407361413">Διαγραφή φόρμας</translation>
 <translation id="2855922900409897335">Επαλήθευση της κάρτας <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Σύνδεσμος που αντιγρ.</translation>
 <translation id="375403751935624634">Η μετάφραση απέτυχε λόγω σφάλματος διακομιστή.</translation>
 <translation id="3759461132968374835">Δεν έχετε πρόσφατα αναφερθέντα σφάλματα. Τα σφάλματα που προέκυψαν όταν η αναφορά σφαλμάτων ήταν απενεργοποιημένη δεν θα εμφανιστούν εδώ.</translation>
-<translation id="385051799172605136">Πίσω</translation>
 <translation id="3858027520442213535">Ενημέρωση ημερομηνίας και ώρας</translation>
 <translation id="3884278016824448484">Αναγνωριστικό συσκευής που προκαλεί διένεξη</translation>
 <translation id="3885155851504623709">Ενορία</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Σφάλμα επικύρωσης: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Κατάργηση διεύθυνσης από το Chrome;</translation>
 <translation id="4594403342090139922">&amp;Αναίρεση διαγραφής</translation>
-<translation id="4607653538520819196">Δεν είναι δυνατή η μεσολάβηση αυτής της σελίδας από την Εξοικονόμηση δεδομένων.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Ο διακομιστής δεν κατάφερε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του περιέχει σφάλματα. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="4726672564094551039">Επανάληψη φόρτωσης πολιτικών</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4923417429809017348">Αυτή η σελίδα έχει μεταφραστεί από μια άγνωστη γλώσσας στα <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Πρέπει να καθοριστεί.</translation>
-<translation id="4968547170521245791">Δεν είναι δυνατή η μεσολάβηση</translation>
 <translation id="498957508165411911">Μετάφραση των <ph name="ORIGINAL_LANGUAGE" /> στα <ph name="TARGET_LANGUAGE" />;</translation>
 <translation id="5019198164206649151">Η αποθήκευση αντιγράφων ασφαλείας είναι σε κακή κατάσταση</translation>
 <translation id="5031870354684148875">Σχετικά με τη Google Μετάφραση</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Έξοδος από αυτή τη σελίδα</translation>
 <translation id="6529602333819889595">&amp;Επανάληψη διαγραφής</translation>
 <translation id="6550675742724504774">Επιλογές</translation>
-<translation id="6597614308054261376">Προσπαθείτε να φτάσετε στο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Προς το παρόν δεν είναι δυνατή η μεσολάβηση αυτής της σελίδας από την Εξοικονόμηση δεδομένων.</translation>
 <translation id="6628463337424475685">Αναζήτηση <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Αυτή η πολιτική έχει αποσυρθεί.</translation>
 <translation id="6646897916597483132">Εισαγάγετε τον τετραψήφιο κωδικό CVC από το μπροστινό μέρος της κάρτας σας</translation>

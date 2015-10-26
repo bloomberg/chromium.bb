@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="111910763555783249">Märguandeseaded</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 päev tagasi}other{# päeva tagasi}}</translation>
 <translation id="1167268268675672572">Liiguta rea algusesse ja muuda valikut</translation>
 <translation id="1190609913194133056">Märguannete keskus</translation>

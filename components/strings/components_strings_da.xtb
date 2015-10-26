@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Et rodcertifikat eller et midlertidigt certifikat er udløbet.</translation>
 <translation id="2328300916057834155">Ugyldigt bogmærke ved indeks <ph name="ENTRY_INDEX" /> er ignoreret</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
-<translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="2384307209577226199">Virksomhedsstandard</translation>
 <translation id="2386255080630008482">Serverens certifikat er blevet tilbagekaldt.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
-<translation id="2774256287122201187">Du kan nu fortsætte. Denne advarsel vises ikke igen i de næste fem minutter, hvis du fortsætter til siden.</translation>
 <translation id="277499241957683684">Manglende enhedsregistrering</translation>
 <translation id="2835170189407361413">Ryd formular</translation>
 <translation id="2855922900409897335">Bekræft dit <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Link, du har kopieret</translation>
 <translation id="375403751935624634">Oversættelsen mislykkedes på grund af en serverfejl.</translation>
 <translation id="3759461132968374835">Du har ingen nyligt rapporterede nedbrud. Nedbrud, der opstod, mens rapportering om nedbrud var deaktiveret, vises ikke her.</translation>
-<translation id="385051799172605136">Tilbage</translation>
 <translation id="3858027520442213535">Opdater dato og tid</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
 <translation id="3885155851504623709">Sogn</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Valideringsfejl: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
-<translation id="4607653538520819196">Denne side kan ikke oprettes via proxy med datasparefunktion.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="4726672564094551039">Opdater politikker</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Skal angives.</translation>
-<translation id="4968547170521245791">Kan ikke oprettes via proxy</translation>
 <translation id="498957508165411911">Vil du oversætte fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Forlad denne side</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
-<translation id="6597614308054261376">Du forsøger at gå til <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Denne side kan ikke oprettes via proxy med datasparefunktion på nuværende tidspunkt.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søg</translation>
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="6646897916597483132">Indtast den firecifrede kontrolkode, som ses på forsiden af dit kort</translation>

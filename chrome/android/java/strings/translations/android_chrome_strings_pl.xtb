@@ -159,7 +159,6 @@
 Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad swoim profilem Chrome. Twoje dane Chrome zostaną na stałe powiązane z tym kontem. Odłączenie od tego konta spowoduje usunięcie lokalnych danych Chrome.</translation>
 <translation id="3410346880900521918">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
-<translation id="3455798674391346847">Pozwól Google optymalizować strony, by ograniczyć transmisję danych. Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz w trybie incognito.</translation>
 <translation id="3485544713029068372">Smart Lock na hasła</translation>
 <translation id="3492207499832628349">Nowa karta incognito</translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
@@ -314,7 +313,6 @@ Statystyki użytkowania obejmują np. dane o ustawieniach, kliknięciach przycis
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
-<translation id="5733727110006255111">Kiedy ta funkcja jest włączona, Chrome korzysta z serwerów Google, by kompresować strony przed ich pobraniem. Nie dotyczy to stron SSL ani trybu incognito.</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5763382633136178763">Karty incognito</translation>
 <translation id="5765780083710877561">Opis:</translation>

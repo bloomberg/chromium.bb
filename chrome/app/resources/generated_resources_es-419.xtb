@@ -405,7 +405,7 @@
 <translation id="1559235587769913376">Introducir caracteres Unicode</translation>
 <translation id="1560991001553749272">Agregado a Marcadores.</translation>
 <translation id="1566958206723629112">Flash y PDF</translation>
-<translation id="1567723158593978621">Cuando se habilita, se usa un nuevo flujo de acceso separado de la contraseña gaia para acceder al navegador..</translation>
+<translation id="1567723158593978621">Cuando se habilita, se usa un nuevo flujo de acceso separado de la contraseña de GAIA para acceder al navegador.</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
 <translation id="1568822834048182062">Se están sincronizando los marcadores, el historial, las contraseñas y otras opciones de configuración con tu cuenta de Google.</translation>
 <translation id="1570677382738576200">Inhabilita el nuevo Administrador de tareas.</translation>
@@ -440,7 +440,6 @@
 <translation id="1611649489706141841">adelante</translation>
 <translation id="1611704746353331382">Exportar marcadores a un archivo HTML...</translation>
 <translation id="1612129875274679969">Mantener este dispositivo en modo kiosco de forma permanente</translation>
-<translation id="1613473800233050843">Habilitar el botón Mostrar copia guardada</translation>
 <translation id="1613703494520735460">Permite predecir la futura posición del dedo durante los desplazamientos, de modo que se puede ver el marco antes de que el dedo llegue a él.</translation>
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1617097702943948177">Almacenamiento temporal:</translation>
@@ -469,7 +468,6 @@
     <ph name="BEGIN_BOLD" />revisar<ph name="END_BOLD" /> sitios web que visite el usuario supervisado y
     <ph name="BEGIN_BOLD" />administrar<ph name="END_BOLD" /> otros parámetros de configuración.</translation>
 <translation id="1648797160541174252">Proxy de red para <ph name="NETWORK_NAME" /></translation>
-<translation id="1648976820776088709">Habilitar mensaje emergente de la extensión Reducir datos del celular</translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1650709179466243265">Agrega www. y .com y abre la dirección</translation>
 <translation id="1652965563555864525">Silenciar</translation>
@@ -508,7 +506,7 @@
 <translation id="1697068104427956555">Selecciona una región cuadrada en la imagen.</translation>
 <translation id="1697532407822776718">¡Listo!</translation>
 <translation id="1699274548822076330">Esto se debe usar junto con la marca trace-upload-url.
-        ADVERTENCIA: En caso de estar habilitado, Chrome registrará los datos de rendimiento de cada navegación y los subirá a la URL especificada en la marca trace-upload-url. El seguimiento puede incluir información de identificación personal (PII por sus siglas en inglés) como los títulos y las URL de los sitios web que se visitan.</translation>
+        ADVERTENCIA: En caso de estar habilitado, Chrome registrará los datos de rendimiento de cada navegación y los subirá a la URL especificada en la marca trace-upload-url. El seguimiento puede incluir información de identificación personal (PII, por sus siglas en inglés), como los títulos y las URL de los sitios web que se visitan.</translation>
 <translation id="1699395855685456105">Revisión de hardware:</translation>
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
 <translation id="1702534956030472451">Europa Occidental</translation>
@@ -864,7 +862,6 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2251861737500412684">Sobredesplazamiento del teclado virtual</translation>
 <translation id="225240747099314620">Permitir identificadores para el contenido protegido (es posible que sea necesario reiniciar de la computadora)</translation>
 <translation id="2255317897038918278">Impresión de fecha de Microsoft</translation>
-<translation id="225943865679747347">Código de error: <ph name="ERROR_CODE" /></translation>
 <translation id="2260567344816042527">Google Chrome usará los datos del celular si no estás conectado a otra red.</translation>
 <translation id="2260654768907572711">COMPLEMENTO DEL NAVEGADOR</translation>
 <translation id="226269835214688456">Si desactivas Smart Lock para Chromebook, no podrás desbloquear los dispositivos Chrome que usan tu teléfono. Deberás escribir la contraseña.</translation>
@@ -927,7 +924,6 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">Ingresa un nombre nuevo.</translation>
 <translation id="2339641773402824483">Comprobando actualizaciones...</translation>
-<translation id="2340201908900687462">Se usa la extensión Reducir datos con advertencias de omisión. El proxy debe estar habilitado en la configuración para que la marca funcione.</translation>
 <translation id="2340731767474969294">La Chromebox debe reiniciarse.</translation>
 <translation id="2344028582131185878">Descargas automáticas</translation>
 <translation id="2344262275956902282">Utilizar las teclas - y = para enviar una lista de candidatos</translation>
@@ -949,7 +945,7 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2368075211218459617">Habilitar búsqueda contextual</translation>
 <translation id="2370882663124746154">Habilitar modo Doble pinyin</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
-<translation id="2372036074421194686">Chrome encontró un programa no deseado (<ph name="UWS_NAME" />) instalado en tu computadora. Para eliminarlo, ejecuta la Herramienta para limpiar Chrome.</translation>
+<translation id="2372036074421194686">Chrome encontró un programa no deseado (<ph name="UWS_NAME" />) que se instaló en tu computadora. Para eliminarlo, ejecuta la Herramienta para limpiar Chrome.</translation>
 <translation id="2375701438512326360">Fuerza la compatibilidad de pantalla táctil para que siempre esté habilitada o inhabilitada, o para que se habilite cuando se detecta una pantalla táctil al iniciar el sistema (la configuración predeterminada es Automática).</translation>
 <translation id="2377619091472055321">Restablecer configuración modificada de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
@@ -1411,7 +1407,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2989474696604907455">no conectado</translation>
 <translation id="2989786307324390836">Certificado binario único con codificación DER</translation>
 <translation id="2993517869960930405">Información de la aplicación</translation>
-<translation id="2994417860113047071">Permite habilitar un mensaje emergente, que se muestra al detectarse una red de telefonía celular, para redireccionar al usuario a la página de la extensión Reducir datos en Chrome Web Store.</translation>
 <translation id="299483336428448530">Instalado por tus padres</translation>
 <translation id="3002017044809397427">Se detectó tu <ph name="PHONE_TYPE" />, pero Smart Lock solamente se admite en los dispositivos con Android 5.0 y versiones posteriores. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="3003623123441819449">Caché CSS</translation>
@@ -1462,7 +1457,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3065041951436100775">La pestaña terminó los comentarios.</translation>
 <translation id="3065140616557457172">Puedes escribir una consulta o bien la dirección URL de la página que quieres visitar, lo que prefieras.</translation>
 <translation id="3067198360141518313">Ejecutar este complemento</translation>
-<translation id="3075066926036244931">No se pudieron guardar los datos en Google Payments.</translation>
 <translation id="3075239840551149663">Se creó <ph name="NEW_PROFILE_NAME" /> como usuario supervisado</translation>
 <translation id="3075874217500066906">Es necesario reiniciar el dispositivo antes de comenzar el proceso de la función Powerwash. Luego de reiniciar, debes confirmar que quieres continuar.</translation>
 <translation id="3076677906922146425">Permitir que cualquiera agregue una persona a Chrome</translation>
@@ -1481,7 +1475,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3087329981864897625">Si se habilita esta opción, los subprocesos de la trama escriben directamente en la memoria GPU asociada a mosaicos.</translation>
 <translation id="3088034400796962477">Transliteración (salam ← سلام)</translation>
 <translation id="3088325635286126843">Cambia&amp;r nombre...</translation>
-<translation id="3088757355463573099">Permite habilitar un proxy de reducción de datos específico del proveedor para la prueba.</translation>
 <translation id="308903551226753393">Configurar automáticamente</translation>
 <translation id="3090819949319990166">No se puede copiar el archivo crx externo a <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" sincronizado</translation>
@@ -1540,7 +1533,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3170544058711792988">Mantener el foco de la lupa centrado en la pantalla</translation>
 <translation id="3172213052701798825">Google Smart Lock para contraseñas</translation>
 <translation id="317583078218509884">La nueva configuración de permisos del sitio se aplicará al volver a cargar la página.</translation>
-<translation id="3176592269865293091">Google Payments detectó un error.</translation>
 <translation id="3177048931975664371">Haz clic para ocultar la contraseña</translation>
 <translation id="3180365125572747493">Ingresa una contraseña para encriptar este archivo de certificado.</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
@@ -1592,7 +1584,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3244621381664913240">Habilitar "Ok Google" para iniciar una búsqueda por voz</translation>
 <translation id="3245321423178950146">Artista desconocido</translation>
 <translation id="324533084080637716">Con marcas estructuradas de artículo</translation>
-<translation id="324743268744517458">Advertencia: no estás conectado a los servidores de producción de Google Payments; en consecuencia, las tarjetas emitidas no serán válidas.</translation>
 <translation id="3251759466064201842">&lt;No forma parte de un certificado&gt;</translation>
 <translation id="3252266817569339921">Francés</translation>
 <translation id="3254409185687681395">Agregar esta página a Marcadores</translation>
@@ -1628,7 +1619,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3298461240075561421">Aunque hayas descargado archivos de este sitio web anteriormente, es posible que el sitio esté pirateado. En lugar de recuperar el archivo, puedes volver a intentar descargarlo más tarde.</translation>
 <translation id="3298789223962368867">Se ingresó un URL no válido.</translation>
 <translation id="3300394989536077382">Firmado por</translation>
-<translation id="3301256054007749965">Habilitar nuevo flujo de acceso separado de la contraseña gaia</translation>
+<translation id="3301256054007749965">Habilitar nuevo flujo de acceso separado de la contraseña de GAIA</translation>
 <translation id="33022249435934718">A cargo de GDI</translation>
 <translation id="3302340765592941254">Notificación de descarga completa</translation>
 <translation id="3302709122321372472">No se pudo cargar <ph name="RELATIVE_PATH" /> css para la secuencia de comandos del contenido.</translation>
@@ -1812,7 +1803,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3539171420378717834">Conservar una copia de la tarjeta en el dispositivo.</translation>
 <translation id="354060433403403521">Adaptador de CA</translation>
 <translation id="3541661933757219855">Presiona Ctrl+Alt+/ o Escape para ocultar.</translation>
-<translation id="354211537509721945">El administrador ha desactivado las actualizaciones.</translation>
 <translation id="3543393733900874979">Error de actualización (error: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3544347428588533940">Smart Lock está casi listo</translation>
 <translation id="3549644494707163724">Encriptar todos los datos sincronizados con tu propia frase de contraseña para sincronización</translation>
@@ -1911,8 +1901,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3655670868607891010">Si este mensaje aparece con frecuencia, haz clic aquí: <ph name="HELP_LINK" />.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
 <translation id="3656059567098593256"><ph name="APP_NAME" /> desea compartir el contenido de la pantalla con <ph name="TARGET_NAME" />. Elige lo que quieras compartir.</translation>
-<translation id="3657468915905674858">Habilitar PPAPI Win32k Lockdown.</translation>
-<translation id="3660127367837350905">Google Payments protege tu tarjeta</translation>
+<translation id="3657468915905674858">Habilitar bloqueo de Win32k para PPAPI</translation>
 <translation id="3660234220361471169">No es de confianza</translation>
 <translation id="3665371460012342183">Habilitar la burbuja con zoom que aparece en las pantallas táctiles cuando se toca accidentalmente más de un vínculo al mismo tiempo</translation>
 <translation id="3665589677786828986">Chrome detectó que otro programa dañó algunas opciones de configuración, por lo que la restableció a los valores predeterminados.</translation>
@@ -1982,7 +1971,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3737514536860147030">Más información sobre la navegación en modo incógnito</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739798227959604811">Tiempo para repetición:</translation>
-<translation id="3740601730372300467">El administrador inhabilitó las actualizaciones manuales. Las actualizaciones automáticas están habilitadas.</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> aparecerá ahora en la Consola del administrador.</translation>
 <translation id="3741243925913727067">Crea una copia de seguridad de las fotos y los videos del dispositivo de medios en Google Drive.</translation>
 <translation id="3743492083222969745">Permite habilitar o inhabilitar la opción de entrada gestual en la página de configuración del teclado virtual.</translation>
@@ -2044,7 +2032,6 @@ No creo que este sitio deba estar bloqueado.</translation>
     Ya es posible crear una copia de seguridad en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="3816844797124379499">No se pudo agregar la aplicación debido a un conflicto con "<ph name="APP_NAME" />".</translation>
 <translation id="3819007103695653773">Permitir que todos los sitios envíen mensajes de inserción en segundo plano</translation>
-<translation id="3819415294190923087">Seleccionar una red</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
 <translation id="3822265067668554284">No permitir que los sitios rastreen mi ubicación física</translation>
 <translation id="382518646247711829">Si utilizas un servidor proxy...</translation>
@@ -2066,7 +2053,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3838543471119263078">Cookies y otros datos de sitios y de complementos</translation>
 <translation id="3840053866656739575">Se perdió la conexión con la Chromebox. Acércate más o comprueba el dispositivo mientras intentamos volver a establecer la conexión.</translation>
 <translation id="3842552989725514455">Fuente Serif</translation>
-<translation id="3843027123789255408">Reducir datos en modo de baja fidelidad</translation>
 <translation id="3846214748874656680">Salir de pantalla completa</translation>
 <translation id="3846593650622216128">Una extensión administra estas configuraciones.</translation>
 <translation id="3846833722648675493">Se muestran ventanas de aplicaciones después del primer trazo. Las ventanas de las aplicaciones grandes cuyos recursos se carguen de forma síncrona tardarán bastante más en aparecer que las de las aplicaciones que carguen la mayoría de sus recursos de forma asíncrona, que apenas tardarán en mostrarse.</translation>
@@ -2087,7 +2073,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3872687746103784075">Depuración de Native Client basada en GDB</translation>
 <translation id="3878840326289104869">Creando usuario supervisado</translation>
 <translation id="3887557525921873910">Esto se debe utilizar junto con la marca enable-navigation-tracing.
-        Selecciona la etiqueta que mejor describe los seguimientos registrados. De esta forma, se elegirá el destino donde los seguimientos se subirán. Si no estás seguro, selecciona "other." Si no seleccionas nada, los seguimientos no se subirán.</translation>
+        Selecciona la etiqueta que mejor describe los seguimientos registrados. De esta forma, se elegirá el destino donde los seguimientos se subirán. Si no estás seguro, selecciona "otro". Si no seleccionas nada, los seguimientos no se subirán.</translation>
 <translation id="3888118750782905860">Administración de consumidores</translation>
 <translation id="3893536212201235195">Leer y cambiar la configuración de accesibilidad</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
@@ -2142,10 +2128,8 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="3950924596163729246">No se puede acceder al sistema.</translation>
 <translation id="3951872452847539732">Tu configuración de proxy de red es administrada por una extensión.</translation>
-<translation id="3952352999940960981">Permite usar el servicio de configuración del proxy de reducción de datos para la autenticación y la configuración del proxy.</translation>
 <translation id="3954354850384043518">En curso</translation>
 <translation id="3954582159466790312">Deshacer Silenciar</translation>
-<translation id="3957769504621887787">Usar Google Payments</translation>
 <translation id="3958088479270651626">Importar marcadores y configuración</translation>
 <translation id="3960121209995357026">Habilitar corrección ortográfica automática</translation>
 <translation id="3960566196862329469">ONC</translation>
@@ -2307,7 +2291,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4221832029456688531">Coincidencia de subcadenas para las sugerencias de Autocompletar</translation>
 <translation id="4235200303672858594">Toda la pantalla</translation>
 <translation id="4235813040357936597">Agregar cuenta para <ph name="PROFILE_NAME" /></translation>
-<translation id="4237357878101553356">No pudimos verificar la información de la cuenta. |Solucionar este problema|</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> no se puede mostrar en este idioma</translation>
 <translation id="4240511609794012987">Memoria compartida</translation>
 <translation id="4241404202385006548">Inhabilita las extensiones y vuelve a cargar esta página web.</translation>
@@ -2370,7 +2353,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
     <ph name="LINE_BREAK1" />
     Se encontraron <ph name="FILE_COUNT" /> fotos nuevas.</translation>
 <translation id="4316363078957068868">Habilitar la compatibilidad para pantallas táctiles que permiten desplazamiento</translation>
-<translation id="4316693445078347518">Generando la tarjeta virtual de Google Payments…</translation>
 <translation id="4316850752623536204">Sitio web del programador</translation>
 <translation id="4317408933658370267">Habilitar coincidencias basadas en afiliación en el administrador de contraseñas</translation>
 <translation id="4320697033624943677">Agregar usuarios</translation>
@@ -2381,7 +2363,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4326999707196471878">Cuadros de diálogo del navegador de vistas de kit de herramientas</translation>
 <translation id="4330406155931244378">Habilitar corrector ortográfico multilingüe</translation>
 <translation id="4330523403413375536">Habilita experimentos en las Herramientas para desarrolladores. Utiliza el panel de configuración de las Herramientas para desarrolladores para alternar entre experimentos individuales.</translation>
-<translation id="4332213577120623185">Se necesita más información para completar esta compra.</translation>
 <translation id="4333854382783149454">PKCS N. º 1, SHA-1 con encriptación RSA</translation>
 <translation id="4335713051520279344">Esta computadora se reiniciará en 1 segundo.
 Presiona cualquier tecla para seguir navegando.</translation>
@@ -2461,7 +2442,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
 <translation id="4467798014533545464">Mostrar URL</translation>
 <translation id="4470564870223067757">Hangul de doble alternancia</translation>
-<translation id="4472267599557161876">Borrar la reducción de datos al iniciarse la aplicación</translation>
 <translation id="4474155171896946103">Agregar a marcadores todas las pestañas...</translation>
 <translation id="4475552974751346499">Buscar descargas</translation>
 <translation id="4477219268485577442">Búlgaro fonético</translation>
@@ -2504,7 +2484,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4542520061254486227">Leer los datos en <ph name="WEBSITE_1" /> y <ph name="WEBSITE_2" /></translation>
 <translation id="4543733025292526486">esc</translation>
 <translation id="4543778593405494224">Administrador de certificados</translation>
-<translation id="4544744325790288581">Utiliza una versión experimental del proxy de reducción de datos. Este proxy debe estar habilitado en la configuración para que la marca funcione.</translation>
 <translation id="4545759655004063573">No es posible guardar porque no tienes los permisos adecuados. Guarda en otra ubicación.</translation>
 <translation id="4547659257713117923">No hay pestañas de otros dispositivos</translation>
 <translation id="4547992677060857254">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "$1" acceso de escritura permanente a esta carpeta?</translation>
@@ -2521,7 +2500,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4570444215489785449">Ahora puedes bloquear este dispositivo de forma remota en cualquier momento en el administrador de Chrome.</translation>
 <translation id="4572659312570518089">La autenticación se canceló mientras se establecía la conexión a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
-<translation id="4573096868619592038">Se inhabilitó Google Payments</translation>
 <translation id="457386861538956877">Más ...</translation>
 <translation id="4575703660920788003">Presiona Shift + Alt para cambiar de diseño de teclado.</translation>
 <translation id="4580526846085481512">¿Estás seguro de que deseas eliminar los elementos $1?</translation>
@@ -2546,7 +2524,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4619415398457343772">Compromiso de AA</translation>
 <translation id="4620809267248568679">Una extensión administra esta configuración.</translation>
 <translation id="4622797390298627177">Omite las verificaciones de participación del usuario para mostrar banners de aplicaciones; por ejemplo, no se requiere que los usuarios hayan visitado el sitio antes ni que el banner no haya aparecido recientemente. Esta marca permite a los programadores probar si se cumplieron otros requisitos de elegibilidad (como tener un manifiesto) para mostrar banners de aplicaciones.</translation>
-<translation id="4622830015832263832">Conexiones lentas únicamente</translation>
 <translation id="462288279674432182">IP restringido:</translation>
 <translation id="4623525071606576283">Las páginas que no puedan cargarse mientras el navegador se utiliza sin conexión volverán a cargarse automáticamente cuando se recupere la conexión.</translation>
 <translation id="4623537843784569564">Es posible que esta extensión se haya actualizado de manera incorrecta. Intenta volver a instalarla.</translation>
@@ -2851,7 +2828,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5061708541166515394">Contraste</translation>
 <translation id="5062930723426326933">Se produjo un error al acceder. Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="5063180925553000800">Nuevo PIN:</translation>
-<translation id="5067399438976153555">Siempre activado</translation>
 <translation id="5067867186035333991">Preguntar si <ph name="HOST" /> quiere acceder al micrófono</translation>
 <translation id="5068787915627988398">Si está habilitada esta opción, se permite a cualquier origen usar los dispositivos WebUSB conectados sin solicitar permiso al usuario.</translation>
 <translation id="507075806566596212">Estás a punto de registrar tu <ph name="DEVICE_TYPE" /> en Google para habilitar la función que permite localizar el dispositivo, bloquearlo y borrar sus datos de forma remota. Para esto, debes reiniciar el dispositivo. ¿Quieres continuar?</translation>
@@ -2906,7 +2882,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5145331109270917438">Fecha de modificación</translation>
 <translation id="5148652308299789060">Inhabilitar el rasterizador de software 3D</translation>
 <translation id="5150254825601720210">Nombre del servidor SSL para el certificado de Microsoft</translation>
-<translation id="5151034238407558331">Lamentablemente, solamente los compradores que tengan una dirección en EE. UU. podrán usar Google Payments con este comerciante. Si resides en EE. UU., |cambia tu dirección particular en Google Payments| o realiza el pago sin usar Google Payments.</translation>
 <translation id="5152451685298621771">(Cuenta para niños)</translation>
 <translation id="5154108062446123722">Configuración avanzada para <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
@@ -2979,7 +2954,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5234764350956374838">Rechazar</translation>
 <translation id="5238278114306905396">Se eliminó automáticamente la aplicación "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5238369540257804368">Ámbitos</translation>
-<translation id="5239691211406966873">Chrome encontró <ph name="NUMBER_OF_UWS_GREATER_THAN_ONE" /> programas no deseados (<ph name="IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES" />) instalados en tu computadora. Para eliminar estos programas, ejecuta la Herramienta para limpiar Chrome.</translation>
+<translation id="5239691211406966873">Chrome encontró <ph name="NUMBER_OF_UWS_GREATER_THAN_ONE" /> programas no deseados (<ph name="IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES" />) que se instalaron en tu computadora. Para eliminar estos programas, ejecuta la Herramienta para limpiar Chrome.</translation>
 <translation id="5241128660650683457">Leer todos los datos de los sitios web que visitas</translation>
 <translation id="5241298539944515331">Teclado vietnamita (VIQR)</translation>
 <translation id="5241364149922736632">Los comerciantes suelen necesitar esta información en caso de que haya algún problema con el envío del pedido.</translation>
@@ -3035,7 +3010,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5311260548612583999">Archivo de clave privada (opcional):</translation>
 <translation id="5316588172263354223">Búsqueda por voz en cualquier momento</translation>
 <translation id="5316716239522500219">Reflejar monitores</translation>
-<translation id="5317217568993504939">O bien, selecciona una nueva red</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5319782540886810524">Teclado letón</translation>
 <translation id="5321676762462132688">Si se habilita esta opción, la Configuración aparecerá en una ventana separada en lugar de en una pestaña de navegador.</translation>
@@ -3116,7 +3090,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5425722269016440406">Debes estar conectado a Internet para activar Smart Lock porque esta configuración se sincroniza al teléfono y a otros dispositivos. Primero, conéctate a una red.</translation>
 <translation id="5427459444770871191">Girar &amp;a la derecha</translation>
 <translation id="5428105026674456456">Español</translation>
-<translation id="5428707027149023335">Habilitar: principal</translation>
 <translation id="542872847390508405">Estás navegando como invitado</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (actualización disponible)</translation>
 <translation id="5429818411180678468">Ancho completo</translation>
@@ -3168,7 +3141,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5486561344817861625">Simular reinicio de navegador</translation>
 <translation id="54870580363317966">Elige un avatar para este usuario supervisado.</translation>
 <translation id="5488468185303821006">Permitir modo incógnito</translation>
-<translation id="5493905423961633717">Guarda y protege tus datos con Google Payments.</translation>
 <translation id="5494362494988149300">Abrir cuan&amp;do esté listo</translation>
 <translation id="5494920125229734069">Seleccionar todo</translation>
 <translation id="5495466433285976480">Esta acción eliminará todos los archivos, los datos y los usuarios locales, entre otros parámetros de configuración, la próxima vez que reinicies. Todos los usuarios deberán volver a acceder.</translation>
@@ -3278,7 +3250,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5646376287012673985">Ubicación</translation>
 <translation id="5649768706273821470">Escuchar</translation>
 <translation id="5649823029736413118"><ph name="URL" /> necesita identificar de forma única tu dispositivo para reproducir contenido de calidad superior.</translation>
-<translation id="5650203097176527467">Cargando detalles del pago</translation>
 <translation id="5650551054760837876">No se han encontrado resultados de búsqueda.</translation>
 <translation id="5651448275201436327">Permite que las aplicaciones alojadas se abran en ventanas.</translation>
 <translation id="5653140146600257126">El directorio llamado "$1" ya existe. Elige otro nombre.</translation>
@@ -3299,7 +3270,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5680545064257783621">Proporciona una función de desconexión para el experimento de marcadores mejorados.</translation>
 <translation id="568428328938709143">Cuenta eliminada</translation>
 <translation id="5684661240348539843">Identificador de recursos</translation>
-<translation id="5687806278383548994">Advertencias de omisión de proxy de la extensión Reducir datos</translation>
 <translation id="569068482611873351">Importar...</translation>
 <translation id="56907980372820799">Vincular datos</translation>
 <translation id="569109051430110155">Detección automática</translation>
@@ -3428,7 +3398,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5854409662653665676">Si estás experimentando problemas frecuentes, podrías intentar lo siguiente para resolver este problema con este módulo.</translation>
 <translation id="5854912040170951372">Porción</translation>
 <translation id="5855119960719984315">cambiar de ventana</translation>
-<translation id="5855756842026516189">Protege tus pagos con Google Payments.</translation>
 <translation id="5856721540245522153">Habilitar funciones de depuración</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5859272821192576954">Todo listo para utilizar Hangouts</translation>
@@ -3476,7 +3445,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
   Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="59174027418879706">Activado</translation>
-<translation id="592068147111860043">Especifica los complementos PPAPI que se ejecutarán en la política de zona de pruebas de Win32k lockdown.</translation>
+<translation id="592068147111860043">Especifica los complementos PPAPI que se ejecutarán en la política de zona de pruebas de bloqueo de Win32k.</translation>
 <translation id="5925147183566400388">Puntero de declaración de práctica de certificación</translation>
 <translation id="5930693802084567591">Tus datos se encriptaron con tu contraseña de Google desde el día <ph name="TIME" />. Debes ingresarla a continuación.</translation>
 <translation id="5931146425219109062">Leer y modificar todos los datos de los sitios web que visites</translation>
@@ -3530,7 +3499,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6007237601604674381">Se produjo un error en al mover el archivo (<ph name="ERROR_MESSAGE" />).</translation>
 <translation id="6015796118275082299">Año</translation>
 <translation id="6016551720757758985">Confirmar Powerwash con retorno a la versión anterior</translation>
-<translation id="6016640600871825812">Google Payments exige al menos un nombre y un apellido.</translation>
 <translation id="6016809788585079594">Di "OK Google" por última vez.</translation>
 <translation id="6017225534417889107">Cambiar</translation>
 <translation id="6017981840202692187">Agregar a la carpeta Aplicaciones</translation>
@@ -3654,7 +3622,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6196041699996825846">Más información sobre la navegación como invitado</translation>
 <translation id="6196207969502475924">Búsqueda por voz</translation>
 <translation id="6196854373336333322">La extensión "<ph name="EXTENSION_NAME" />" tomó el control de la configuración de proxy, lo que significa que puede modificar, dañar o espiar cualquier actividad que lleves a cabo en línea. Si no sabes con certeza por qué se produjo este cambio, probablemente no lo desees.</translation>
-<translation id="6196870635398338994">Habilitar el cliente de servicio de configuración del proxy de reducción de datos</translation>
 <translation id="6198102561359457428">Salir y volver a acceder</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6199801702437275229">Esperando información sobre espacio...</translation>
@@ -3693,7 +3660,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6263082573641595914">Versión de entidad de certificación de Microsoft</translation>
 <translation id="6263284346895336537">No crítico</translation>
 <translation id="6263541650532042179">restablecer sincronización</translation>
-<translation id="6263625581655667292">Fuerza que siempre esté habilitada la extensión para Reducir datos en modo de baja fidelidad, que esté habilitada solo en conexiones celulares o que esté inhabilitada. Reducir datos debe estar habilitado para poder usar el modo de baja fidelidad.</translation>
 <translation id="6264347891387618177">Transliteración (selam → ሰላም)</translation>
 <translation id="6264365405983206840">Seleccion&amp;ar todo</translation>
 <translation id="6264485186158353794">Volver a seguridad</translation>
@@ -3701,14 +3667,12 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6267166720438879315">Seleccionar un certificado para autenticarte como <ph name="HOST_NAME" /></translation>
 <translation id="6268647269805730940">No se completaron los primeros pasos de ejecución del dispositivo.</translation>
 <translation id="6268747994388690914">Importar marcadores desde un archivo HTML...</translation>
-<translation id="6269540072308453256">Google Payments no está disponible en este momento.</translation>
 <translation id="6272765239698781406">Estrategia de liberación agresiva de caché</translation>
 <translation id="6273677812470008672">Calidad</translation>
 <translation id="62751439899495218">Cambiar foto</translation>
 <translation id="6276301056778294989">Asegúrate de que el dispositivo muestre el mismo código.</translation>
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
 <translation id="6277518330158259200">Tomar captura de pantalla</translation>
-<translation id="6281743458679673853">Experimenta para que todas las API reflejen la ventana gráfica de diseño. Esto producirá propiedades window.scroll relacionadas con la ventana gráfica de diseño.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Nueva impresora en la red}other{Nuevas impresoras en la red}}</translation>
 <translation id="6285395082104474418">La bandeja de estado te muestra el estado actual de la red y de la batería, entre otras cosas.</translation>
 <translation id="6285905808004014074">Habilitar modo de volver a cargar páginas automáticamente sin conexión</translation>
@@ -3791,7 +3755,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6418481728190846787">Eliminar el acceso para todas las aplicaciones de forma permanente</translation>
 <translation id="6419902127459849040">Europa Central</translation>
 <translation id="6420676428473580225">Agregar al escritorio</translation>
-<translation id="6421289605565391955">Permite usar un proxy de reducción de datos específicos del proveedor para pruebas.</translation>
 <translation id="6422329785618833949">Foto girada</translation>
 <translation id="6422732120309392130">Inhabilitar el filtrado de texto en el modo de vista general</translation>
 <translation id="642282551015776456">Este nombre no se puede utilizar como archivo del nombre de la carpeta</translation>
@@ -3927,7 +3890,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6596745167571172521">Inhabilitar el bloqueo de mayúsculas</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
 <translation id="6597017209724497268">Muestras</translation>
-<translation id="6602090339694176254">Permite habilitar el servicio experimental de sugerencias de Chrome.</translation>
 <translation id="6602956230557165253">Utiliza las teclas de flecha hacia la izquierda y derecha para navegar.</translation>
 <translation id="660380282187945520">F9</translation>
 <translation id="6606070663386660533">Pestaña 8</translation>
@@ -3951,7 +3913,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6637478299472506933">Error en la descarga</translation>
 <translation id="6639554308659482635">Memoria SQLite</translation>
 <translation id="6640442327198413730">Falta un recurso en la memoria caché</translation>
-<translation id="6644715561133361290">Habilita o inhabilita el uso de la versión de desarrollo del proxy de reducción de datos.</translation>
 <translation id="6644756108386233011">¿Quieres restablecer la configuración modificada de <ph name="IDS_SHORT_PRODUCT_NAME" />?</translation>
 <translation id="6647228709620733774">URL de revocación de entidad de certificación de Netscape</translation>
 <translation id="665061930738760572">Abrir en una &amp;nueva ventana</translation>
@@ -4007,7 +3968,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6731320427842222405">Esto puede demorar unos minutos</translation>
 <translation id="6731638353631257659">Modo de almacenamiento en caché V8.</translation>
 <translation id="6732586201820838268">No se pudo establecer una conexión con el teléfono. Asegúrate de que tienes un teléfono Android compatible, y que esté encendido y al alcance de tu mano. &lt;a&gt;Más información&lt;/a&gt;</translation>
-<translation id="6733366118632732411">Habilitar el servicio de sugerencias</translation>
 <translation id="6735304988756581115">Mostrar cookies y otros datos de sitio...</translation>
 <translation id="6736045498964449756">Las contraseñas no coinciden.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
@@ -4130,7 +4090,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
         los cambios en esta ruta causen fallos en gran parte del contenido.</translation>
 <translation id="6935367737854035550">Establece los elementos de material design en la parte superior del navegador de Chrome.</translation>
 <translation id="6937152069980083337">Entrada en japonés de Google (para teclado estadounidense)</translation>
-<translation id="6938162839153260184">Google Payments no admite esta versión de Chrome o no reconoce la clave de la API de Google.</translation>
 <translation id="6938928695307934375">Permite exigir el modo de ahorro de energía experimental para el contenido de los complementos periféricos. Se anula la configuración del contenido.</translation>
 <translation id="6941427089482296743">Eliminar todo lo que se muestra</translation>
 <translation id="6941937518557314510">Accede a <ph name="TOKEN_NAME" /> para autenticarte en <ph name="HOST_NAME" /> con tu certificado.</translation>
@@ -4159,7 +4118,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6976108581241006975">Consola de JavaScript</translation>
 <translation id="6978611942794658017">Este archivo está diseñado para computadoras que utilizan software de Windows, por lo que no es compatible con tu dispositivo, el cual ejecuta el Sistema operativo Chrome. Busca una aplicación equivalente adecuada en Chrome Web Store.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6980604578217046176">Habilitar proxy de reducción de datos experimentales</translation>
 <translation id="6980956047710795611">Migrar todos los datos del sistema operativo de Chrome a la nueva contraseña (requiere la contraseña anterior)</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="6982896539684144327">Se detectó una impresora de <ph name="VENDOR_NAME" />.</translation>
@@ -4458,7 +4416,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7410344089573941623">Preguntar si <ph name="HOST" /> quiere acceder a la cámara y al micrófono</translation>
 <translation id="7410744438574300812">No mostrar la barra de información cuando una extensión se conecta a una página a través de la API chrome.debugger. Esta marca es necesaria para depurar las páginas de fondo de la extensión.</translation>
 <translation id="7412226954991670867">Memoria de GPU</translation>
-<translation id="7414321908956986214">Versión alternativa del proxy de reducción de datos</translation>
 <translation id="7416362041876611053">Error de red desconocido</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa de Google</translation>
@@ -4573,7 +4530,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7564847347806291057">Finalizar proceso</translation>
 <translation id="7566723889363720618">F12</translation>
 <translation id="7568790562536448087">Actualizando</translation>
-<translation id="7570496663860904543">Cuando se produce un error al cargar una página, si existe una copia inactiva de la página en la memoria caché del navegador, se muestra un botón para permitirle al usuario cargar esa copia inactiva. La opción principal coloca el botón en la posición más destacada de la página de error; la opción secundaria lo coloca en segundo lugar respecto del botón para volver a cargar la página.</translation>
 <translation id="7572787314531933228">Habilitar marcadores administrados para usuarios supervisados</translation>
 <translation id="7573172247376861652">Carga de batería</translation>
 <translation id="7576032389798113292">6 x 4</translation>
@@ -4640,7 +4596,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659584679870740384">No tienes autorización para utilizar este dispositivo. Para obtener permiso de acceso, comunícate con el administrador.</translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth no compatible: "<ph name="DEVICE_NAME" />"</translation>
-<translation id="766494940855677502">Habilitar <ph name="META_TAG_NAME" /> en el modo de fichas.</translation>
+<translation id="766494940855677502">Habilitar <ph name="META_TAG_NAME" /> en el modo de fichas</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
 <translation id="766747607778166022">Administrar tarjetas de crédito...</translation>
 <translation id="7668654391829183341">Dispositivo desconocido</translation>
@@ -4738,7 +4694,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7814458197256864873">&amp;Copiar</translation>
 <translation id="7816975051619137001">Corregir ortografía automáticamente</translation>
 <translation id="7818135753970109980">Se agregó un tema nuevo (<ph name="EXTENSION_NAME" />).</translation>
-<translation id="78196818692136852">Google Payments no puede procesar la transacción.</translation>
 <translation id="7819857487979277519">PSK (WPA o RSN)</translation>
 <translation id="782057141565633384">Copiar dirección del video</translation>
 <translation id="7821009361098626711">El servidor <ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña. Mensaje del servidor: <ph name="REALM" />.</translation>
@@ -4775,7 +4730,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7857823885309308051">Esto puede demorar unos minutos...</translation>
 <translation id="7857949311770343000">¿Esta es la página Nueva pestaña que esperabas ver?</translation>
 <translation id="7861215335140947162">&amp;Descargas</translation>
-<translation id="7863133010182113457">Permite borrar la reducción de datos que se obtuvo al usar el proxy de reducción de datos cada vez que se inicia Chrome.</translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
 <translation id="7870790288828963061">No se encontraron aplicaciones de kiosco con una versión más reciente. No hay nada para actualizar. Desconecta el dispositivo USB.</translation>
 <translation id="787150342916295244">Escaneo de la tarjeta de crédito</translation>
@@ -4843,7 +4797,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7965010376480416255">Memoria compartida</translation>
 <translation id="7966241909927244760">Copiar dirección de la imagen</translation>
 <translation id="7967437925638594022">Extensiones y apps</translation>
-<translation id="7968728703861615399">Se produjo un error en tu cuenta de Google Payments.</translation>
 <translation id="7968796119156413760">Usa la API de Android Midi para WebMIDI (solamente en dispositivos Android M y versiones posteriores).</translation>
 <translation id="7968833647796919681">Habilitar recopilación de datos de rendimiento</translation>
 <translation id="7968982339740310781">Ver los detalles</translation>
@@ -4859,7 +4812,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7979036127916589816">Error de sincronización</translation>
 <translation id="7980084013673500153">ID de activo: <ph name="ASSET_ID" /></translation>
 <translation id="7982083145464587921">Reinicia el dispositivo para corregir el error.</translation>
-<translation id="7982740804274085295">Los programadores pueden usar el servicio de zona de pruebas para las solicitudes de requestAutocomplete() de la API de Google Payments.</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="7984180109798553540">Para mayor seguridad, <ph name="PRODUCT_NAME" /> encriptará tus datos.</translation>
 <translation id="798525203920325731">Espacios de nombres de red</translation>
@@ -4889,7 +4841,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8009669262342650481">Habilita Web Bluetooth, que podría permitir a los sitios web conectarse a tus dispositivos Bluetooth y controlarlos, incluidos teclados, cámaras y micrófonos, entre otros.</translation>
 <translation id="8012382203418782830">Se tradujo esta página.</translation>
 <translation id="8012647001091218357">No pudimos comunicarnos con tus padres. Vuelve a intentarlo.</translation>
-<translation id="8014154204619229810">El actualizador se está ejecutando en este momento. Actualiza dentro de un minuto para verificar de vuelta.</translation>
+<translation id="8014154204619229810">El actualizador se está ejecutando en este momento. Actualiza dentro de un minuto para verificarlo de nuevo.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> no puede volver a la versión instalada previamente. Vuelve a intentarlo para utilizar la función Powerwash en el dispositivo.</translation>
 <translation id="8016174103774548813">Es probable que el servidor SSL esté obsoleto</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
@@ -4925,7 +4877,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8059417245945632445">&amp;Inspeccionar dispositivos</translation>
 <translation id="8061298200659260393">No permitir que ningún sitio envíe mensajes de inserción</translation>
 <translation id="8064671687106936412">Clave:</translation>
-<translation id="8066238397346344588">Inhabilitar Google Payments</translation>
 <translation id="806705617346045388">Comportamiento inusual detectado</translation>
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
@@ -4990,7 +4941,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8155481074575809396">Si se habilita esta opción, el texto se procesa con campos de distancia con signos en lugar de con máscaras alfa de mapa de bits.</translation>
 <translation id="8156020606310233796">Vista de lista</translation>
 <translation id="8157939133946352716">7 x 5</translation>
-<translation id="8158362770816748971">La tarjeta virtual está lista.</translation>
 <translation id="8160015581537295331">Teclado español</translation>
 <translation id="8160034811930768364">Este marcador controla el modo de carga interregional</translation>
 <translation id="816055135686411707">Error en la configuración de confiabilidad del certificado</translation>
@@ -5108,6 +5058,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8307376264102990850">Calculando el tiempo de carga hasta completarse</translation>
 <translation id="8308179586020895837">Preguntar si <ph name="HOST" /> quiere acceder a la cámara</translation>
 <translation id="830868413617744215">Beta</translation>
+<translation id="8309505303672555187">Selecciona una red:</translation>
 <translation id="8312871300878166382">Pegar en la carpeta</translation>
 <translation id="8314013494437618358">Composición por subprocesos</translation>
 <translation id="8319414634934645341">Uso extendido de la clave</translation>
@@ -5239,7 +5190,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="852269967951527627">No permitir que los sitios muestren notificaciones</translation>
 <translation id="8524066305376229396">Almacenamiento permanente:</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
-<translation id="852605377609758011">Se usará una tarjeta virtual de Google Payments para la transacción. Una tarjeta virtual te brinda un nuevo número de tarjeta para que el vendedor no tenga acceso al número real de tu tarjeta de crédito.</translation>
 <translation id="8528962588711550376">Accediendo.</translation>
 <translation id="8535005006684281994">URL de renovación del certificado Netscape</translation>
 <translation id="8539727552378197395">No (HttpOnly)</translation>
@@ -5296,7 +5246,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8605428685123651449">Memoria SQLite</translation>
 <translation id="8605503133013456784">Error al desconectar y al desincronizar con "<ph name="DEVICE_NAME" />".</translation>
 <translation id="8606726445206553943">Usar tus dispositivos MIDI</translation>
-<translation id="8609432254184257462">Tu tarjeta está protegida con la tarjeta virtual de Google Payments (<ph name="FRONTING_CREDIT_CARD" />), y se mostrará este número en el recibo. De todos modos, el cargo de la compra se efectuará en la tarjeta <ph name="BACKING_CREDIT_CARD" />.</translation>
 <translation id="8610892630019863050">Preguntarme cuando un sitio quiera mostrar notificaciones (recomendado)</translation>
 <translation id="8615618338313291042">Aplicación de incógnito: <ph name="APP_NAME" /></translation>
 <translation id="8616748524633185354">Algunas páginas web utilizan extensiones de JavaScript heredadas o no estándares que pueden entrar en conflicto con las funciones más recientes de JavaScript. Esta opción inhabilita la compatibilidad con esas funciones en esas páginas.</translation>
@@ -5446,7 +5395,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8811462119186190367">Después de sincronizar tu configuración, el idioma de Chrome se cambió de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />".</translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="881450003165101303">Google Payments no es compatible con este comerciante.</translation>
 <translation id="881799181680267069">Ocultar otros</translation>
 <translation id="8818152613617627612">Detalles de facturación</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -5458,7 +5406,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8830796635868321089">La búsqueda de actualizaciones no pudo usar la configuración del servidor proxy actual. Ajusta tu <ph name="PROXY_SETTINGS_LINK_START" />configuración de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831623914872394308">Configuración del puntero</translation>
 <translation id="8837103518490433332">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> guarde tu contraseña para <ph name="ORIGIN" />?</translation>
-<translation id="8841142799574815336">Vista del puerto visual inerte.</translation>
 <translation id="884264119367021077">Dirección de envío</translation>
 <translation id="8846141544112579928">Buscando teclado…</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -5529,7 +5476,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="894360074127026135">Suplemento especial internacional de Netscape</translation>
 <translation id="8944779739948852228">Impresora detectada</translation>
 <translation id="8946359700442089734">Las funciones de depuración no se habilitaron completamente en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8950446148892140517">Solo celular</translation>
 <translation id="89515141420106838">Permite habilitar la aplicación de la galería de Chrome Web Store para controladores de impresora. La aplicación busca, en Chrome Web Store, expansiones que admitan la impresión en una impresora USB con un ID de USB específico.</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
@@ -5598,7 +5544,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9026731007018893674">descarga</translation>
 <translation id="9027459031423301635">Abrir vínculo en la pes&amp;taña nueva</translation>
 <translation id="9027603907212475920">Configurar sincronización...</translation>
-<translation id="9029813342499149822">Habilitar: secundario</translation>
 <translation id="9033453977881595182">ID de token</translation>
 <translation id="9033580282188396791">Permite habilitar la herramienta de resolución de proxy V8 fuera del proceso. Se ejecuta la herramienta en un proceso de utilidad en lugar de hacerlo en un proceso del navegador.</translation>
 <translation id="9033780830059217187">El proxy se aplica mediante una extensión.</translation>
@@ -5718,7 +5663,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9207194316435230304">ATOK</translation>
 <translation id="9208886416788010685">Adobe Reader está desactualizado.</translation>
 <translation id="9210991923655648139">Accesible para secuencia de comandos:</translation>
-<translation id="9213566138414731677"><ph name="WALLET_ERROR" /> Puedes completar la transacción sin usar Google Payments.</translation>
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Comunícate con el representante de asistencia.</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" agregada</translation>
 <translation id="9217413363143870800">Habilitar la detección de Bluetooth de baja energía con Smart Lock</translation>

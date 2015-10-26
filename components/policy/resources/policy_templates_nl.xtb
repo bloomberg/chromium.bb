@@ -29,7 +29,7 @@
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'Nieuw tabblad' als startpagina te gebruiken of een eigen pagina als startpagina te gebruiken.
 
-          Dit beleid is niet beschikbaar op Windows-exemplaren die niet
+          Dit beleid is niet beschikbaar op Windows-instanties die niet
           aan een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="1090892140761957285">URL voor het valideren van verificatietoken voor client voor externe toegang.
 
@@ -84,7 +84,7 @@
 <translation id="1330985749576490863">Schakelt Google Drive uit via mobiele verbindingen in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Naam van beleid</translation>
 <translation id="1353966721814789986">Startpagina's</translation>
-<translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast- logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
+<translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
 
       Als dit beleid is ingesteld op 'onwaar', staat <ph name="PRODUCT_NAME" /> niet toe dat er gastprofielen worden gestart.</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
@@ -145,7 +145,7 @@
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
 <translation id="1617235075406854669">Verwijderen van browser- en downloadgeschiedenis inschakelen</translation>
-<translation id="1617384279878333801">Persoon toevoegen in profielbeheer toestaan</translation>
+<translation id="1617384279878333801">'Persoon toevoegen in profielbeheer' toestaan</translation>
 <translation id="1655229863189977773">Grootte van schijfcache in bytes instellen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
@@ -196,7 +196,7 @@
       Houd er rekening mee dat dit beleid kan worden overschreven door EnabledPlugins en DisabledPluginsExceptions.
 
       Als dit beleid niet is ingesteld, kan de gebruiker alle plug-ins gebruiken die op het systeem zijn geïnstalleerd, met uitzondering van plug-ins die hardcoded incompatibel, verouderd of gevaarlijk zijn.</translation>
-<translation id="1865417998205858223">Hoofdrechten</translation>
+<translation id="1865417998205858223">Rechten voor sleutels</translation>
 <translation id="186719019195685253">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op netspanning</translation>
 <translation id="187819629719252111">Hiermee wordt toegang tot lokale bestanden op de computer toegestaan doordat <ph name="PRODUCT_NAME" /> dialoogvensters voor het selecteren van bestanden kan weergeven.
 
@@ -405,7 +405,7 @@
 
       Als dit beleid is ingesteld als 'false', kan het automatisch inloggen zonder uitstel (indien geconfigureerd) niet worden overgeslagen.</translation>
 <translation id="2463365186486772703">Landinstelling voor applicatie</translation>
-<translation id="2466131534462628618">Captive portal-verificatie negeert proxy</translation>
+<translation id="2466131534462628618">Captive portal-verificatie negeert proxyserver</translation>
 <translation id="2482676533225429905">Systeemeigen berichten</translation>
 <translation id="2483146640187052324">Netwerkacties voorspellen voor elke netwerkverbinding</translation>
 <translation id="2488010520405124654">Prompt voor netwerkconfiguratie inschakelen als je offline bent.
@@ -444,9 +444,6 @@
 <translation id="2592091433672667839">Duur van inactiviteit voordat de schermbeveiliging wordt weergegeven in het inlogvenster in de winkelmodus</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
-<translation id="2629448496147630947">Opties voor externe toegang configureren in <ph name="PRODUCT_NAME" />.
-
-      Deze functies worden genegeerd, tenzij de webapp Remote Access is geïnstalleerd.</translation>
 <translation id="2633084400146331575">Gesproken feedback inschakelen</translation>
 <translation id="2646290749315461919">Hiermee kun je instellen of websites de fysieke locatie van gebruikers mogen bijhouden. Het bijhouden van de fysieke locatie van gebruikers kan standaard worden toegestaan, standaard worden geweigerd of het kan de gebruiker telkens worden gevraagd wanneer een website zijn fysieke locatie opvraagt.
 
@@ -457,7 +454,7 @@
 
       Wanneer een TLS-handshake mislukt, probeert <ph name="PRODUCT_NAME" /> opnieuw verbinding te maken met een lagere versie van TLS om bugs in HTTPS-servers te omzeilen. Deze instelling configureert de versie waarbij dit fallbackproces wordt stopgezet. Als een server de versieonderhandeling correct uitvoert (dat wil zeggen: zonder de verbinding te verbreken), is deze instelling niet van toepassing. Desondanks moet de resulterende verbinding nog steeds voldoen aan 'SSLVersionMin'.
 
-      Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimumversie. Dit is TLS 1.0 in <ph name="PRODUCT_NAME" /> 44 en TLS 1.1 in latere versies. Let op: hiermee wordt de ondersteuning voor TLS 1.0 niet uitgeschakeld, maar alleen het proces van <ph name="PRODUCT_NAME" /> om servers met bugs te omzeilen die versieonderhandelingen niet correct kunnen uitvoeren.
+      Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimumversie. Dit is TLS 1.0 in <ph name="PRODUCT_NAME" /> 44 en TLS 1.1 in latere versies. Let op: Hiermee wordt de ondersteuning voor TLS 1.0 niet uitgeschakeld, maar alleen het proces van <ph name="PRODUCT_NAME" /> om servers met bugs te omzeilen die versieonderhandelingen niet correct kunnen uitvoeren.
 
       In andere gevallen kan het worden ingesteld op een van de volgende waarden: 'tls1', 'tls1.1' of 'tls1.2'. Als de compatibiliteit met een server met bugs moet worden behouden, kan dit worden ingesteld op 'tls1'. Dit is slechts een noodoplossing. De server moet snel worden gerepareerd.
 
@@ -589,7 +586,7 @@
           Indien aanroepen zijn ingesteld als 'false' of als ze niet zijn ingesteld, zullen aanroepen van de API mislukken en wordt een foutcode weergegeven.</translation>
 <translation id="3069958900488014740">Hiermee kan WPAD-optimalisatie (Web Proxy Auto-Discovery) worden uitgeschakeld in <ph name="PRODUCT_NAME" />.
 
-      Als dit beleid is ingesteld op 'false', wordt WPAD-optimalisatie uitgeschakeld, waardoor <ph name="PRODUCT_NAME" /> langer moet wachten op DNS-gebaseerde WPAD-servers. Als het beleid niet is ingesteld of is ingeschakeld, is WPAD-optimalisatie ingeschakeld.
+      Als dit beleid is ingesteld op 'onwaar', wordt WPAD-optimalisatie uitgeschakeld, waardoor <ph name="PRODUCT_NAME" /> langer moet wachten op DNS-gebaseerde WPAD-servers. Als het beleid niet is ingesteld of is ingeschakeld, is WPAD-optimalisatie ingeschakeld.
 
       Onafhankelijk van of en hoe dit beleid is ingesteld, kan de instelling voor WPAD-optimalisatie niet worden gewijzigd door gebruikers.</translation>
 <translation id="3072045631333522102">Schermbeveiliging voor gebruik in het inlogvenster in de winkelmodus</translation>
@@ -759,7 +756,7 @@
 <translation id="3864818549971490907">Standaardinstelling voor plug-ins</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
 <translation id="3866530186104388232">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, worden in het aanmeldscherm van <ph name="PRODUCT_OS_NAME" /> bestaande gebruikers weergegeven die kunnen worden geselecteerd. Als dit beleid is ingesteld op 'false', krijgt de gebruiker bij aanmelding op <ph name="PRODUCT_OS_NAME" /> de vraag de combinatie van gebruikersnaam/wachtwoord in te voeren.</translation>
-<translation id="3866824067696705379">Hoe vaak bijgehouden hartslagen worden verzonden, in milliseconden.
+<translation id="3866824067696705379">Hoe vaak bijgehouden heartbeats worden verzonden, in milliseconden.
 
       Als dit beleid niet wordt ingesteld, is de standaardfrequentie 3 minuten. De
       minimumfrequentie is 30 seconden en de maximumfrequentie is 24 uur.
@@ -865,7 +862,7 @@
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 of hoger</translation>
 <translation id="4325690621216251241">Een afmeldknop toevoegen aan de systeembalk</translation>
-<translation id="4337944790873898250">Als dit beleid is ingesteld op 'waar', maximaliseert <ph name="PRODUCT_NAME" /> onvoorwaardelijk het eerste venster dat bij eerste uitvoering wordt weergegeven.
+<translation id="4337944790873898250">Als dit beleid is ingesteld op 'waar', maximaliseert <ph name="PRODUCT_NAME" /> automatisch het eerste venster dat bij eerste uitvoering wordt weergegeven.
       Als dit beleid is ingesteld op 'onwaar' of niet is geconfigureerd, bepaalt een heuristiek of het eerst weergegeven venster moet worden gemaximaliseerd, op basis van de schermgrootte.</translation>
 <translation id="436581050240847513">Apparaatnetwerkinterface rapporteren</translation>
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
@@ -952,7 +949,7 @@
 
           Als je dit beleid niet instelt, delegeert <ph name="PRODUCT_NAME" /> geen gebruikersreferenties, zelfs niet als een server wordt gedetecteerd als intranet.</translation>
 <translation id="4752880493649142945">Clientcertificaat voor verbinding maken met RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">De frequentie van het bijhouden van hartslagen</translation>
+<translation id="4768493164188395498">De frequentie van het bijhouden van heartbeats</translation>
 <translation id="4791031774429044540">De toegankelijkheidsfunctie 'Grote muisaanwijzer' inschakelen.
 
           Als dit beleid op 'waar' is ingesteld, is de grote muisaanwijzer altijd ingeschakeld.
@@ -1196,7 +1193,7 @@
 
           Wanneer |IdleAction| niet is ingesteld, wordt de standaardactie uitgevoerd (tijdelijk blokkeren).
 
-          Er zijn ook afzonderlijke instellingen voor wanneer het apparaat op netstroom of op de accu werkt..
+          Er zijn ook afzonderlijke instellingen voor wanneer het apparaat op netstroom of op de accu werkt.
           </translation>
 <translation id="5560039246134246593">Een parameter toevoegen aan het ophalen van de seed voor varianten in <ph name="PRODUCT_NAME" />.
 
@@ -1270,13 +1267,13 @@
 
           Als je het beleid niet instelt, wordt gesproken feedback uitgeschakeld wanneer het inlogscherm voor het eerst wordt weergegeven. Gebruikers kunnen gesproken feedback op elk moment in- of uitschakelen en de status op het inlogscherm is permanent tussen gebruikers.</translation>
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
-<translation id="588135807064822874">Tikken om te zoeken toestaan</translation>
+<translation id="588135807064822874">'Tikken om te zoeken' toestaan</translation>
 <translation id="5883015257301027298">Standaardinstelling voor cookies</translation>
 <translation id="5887291617378691520">Als 'Een lijst met URL's openen' als actie na het starten is geselecteerd, kun je hier de lijst met URL's opgeven die worden geopend. Als er geen waarde is opgegeven, worden er na het starten geen URL's geopend.
 
           Dit beleid werkt alleen als het beleid RestoreOnStartup is ingesteld op RestoreOnStartupIsURLs.
 
-          Dit beleid is niet beschikbaar op Windows-exemplaren die niet aan een
+          Dit beleid is niet beschikbaar op Windows-instanties die niet aan een
           Active Directory-domein zijn gekoppeld.</translation>
 <translation id="5887414688706570295">Hiermee configureer je het voorvoegsel voor het TalkGadget dat wordt gebruikt door hosts voor externe toegang en voorkom je dat gebruikers dit wijzigen.
 
@@ -1378,9 +1375,9 @@
 
       De toegang tot sleutels die zijn bedoeld voor zakelijk gebruik, wordt uitsluitend beheerd door dit beleid. De gebruiker kan de toegang tot zakelijke sleutels niet verlenen aan of verwijderen uit extensies.
 
-      Een extensie kan standaard geen sleutel gebruiken die is bedoeld voor zakelijk gebruik. Dit staat gelijk aan het instellen van allowCorporateKeyUsage op 'onwaar' (false) voor die extensie.
+      Een extensie kan standaard geen sleutel gebruiken die is bedoeld voor zakelijk gebruik. Dit staat gelijk aan het instellen van allowCorporateKeyUsage op 'onwaar' voor die extensie.
 
-      Alleen als allowCorporateKeyUsage is ingesteld op 'waar' (true), kan deze elke platformsleutel gebruiken die is gemarkeerd voor zakelijk gebruik om willekeurige gegevens te ondertekenen. Deze toestemming mag alleen worden verleend als de extensie toegang tot de sleutel op betrouwbare wijze beveiligt tegen aanvallers.</translation>
+      Alleen als allowCorporateKeyUsage is ingesteld op 'waar', kan deze elke platformsleutel gebruiken die is gemarkeerd voor zakelijk gebruik om willekeurige gegevens te ondertekenen. Deze toestemming mag alleen worden verleend als de extensie toegang tot de sleutel op betrouwbare wijze beveiligt tegen aanvallers.</translation>
 <translation id="6211428344788340116">Perioden van apparaatgebruik melden.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'waar' (true), melden aangemelde apparaten perioden waarin een gebruiker het apparaat gebruikt. Als deze instelling is ingesteld op 'onwaar' (false), worden perioden van apparaatgebruik niet geregistreerd of gemeld.</translation>
@@ -1656,18 +1653,18 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid niet wordt ingesteld, wordt de achtergrondmodus aanvankelijk uitgeschakeld en kan deze door de gebruiker worden beheerd in de browserinstellingen.</translation>
 <translation id="7123297102171034788">Hiermee kun je het gedrag bij het opstarten specificeren.
 
-          Als je 'Nieuwe tabbladpagina openen' kiest, wordt de nieuwe tabbladpagina altijd geopend als je <ph name="PRODUCT_NAME" /> start.
+          Als je 'Pagina 'Nieuwe tabblad' openen' kiest, wordt de nieuwe tabbladpagina altijd geopend als je <ph name="PRODUCT_NAME" /> start.
 
           Als je 'De laatste sessie herstellen' kiest, worden de URL's die waren geopend de laatste keer dat <ph name="PRODUCT_NAME" /> werd gesloten, opnieuw geopend en wordt de browsersessie hersteld naar de situatie op het moment van afsluiten.
-          Als je deze optie kiest, worden enkele instellingen uitgeschakeld die afhankelijk zijn van sessies of acties uitvoeren bij afsluiten (zoals browsergegevens wissen na afsluiten of sessiecookies).
+          Als je deze optie kiest, worden enkele instellingen uitgeschakeld die afhankelijk zijn van sessies of die acties uitvoeren bij afsluiten (zoals browsergegevens wissen na afsluiten of sessiecookies).
 
-          Als je 'Een lijst met URL's openen' kiest, wordt de lijst 'URL's die moeten worden geopend bij opstarten' geopend als de gebruiker <ph name="PRODUCT_NAME" /> opstart.
+          Als je 'Een lijst met URL's openen' kiest, wordt de lijst 'URL's die worden geopend bij starten' geopend als de gebruiker <ph name="PRODUCT_NAME" /> opstart.
 
           Als je deze instelling inschakelt, kunnen gebruikers de lijst niet wijzigen of negeren in <ph name="PRODUCT_NAME" />.
 
           Het uitschakelen van deze instelling heeft hetzelfde effect als het niet configureren van de instelling. De gebruiker houdt de mogelijkheid om de lijst te wijzigen in <ph name="PRODUCT_NAME" />.
 
-          Dit beleid is niet beschikbaar op Windows-exemplaren die niet aan
+          Dit beleid is niet beschikbaar op Windows-instanties die niet aan
           een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="7128918109610518786">Hiermee worden de app-ID's vermeld die <ph name="PRODUCT_OS_NAME" /> weergeeft als vastgezette apps in de balk van het opstartprogramma.
 
@@ -1761,7 +1758,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als deze instelling niet is ingesteld of is ingesteld op 'waar' (true), melden de aangemelde apparaten regelmatig de OS- en firmwareversie. Als deze instelling is ingesteld op 'onwaar' (false), wordt geen versie-informatie gemeld.</translation>
 <translation id="7511361072385293666">Als dit beleid wordt ingesteld op 'waar' of niet wordt ingesteld, wordt het gebruik van het QUIC-protocol in <ph name="PRODUCT_NAME" /> toegestaan.
       Als dit beleid wordt ingesteld op 'onwaar', wordt het gebruik van het QUIC-protocol niet toegestaan.</translation>
-<translation id="7523476810162382273">Bijgehouden hartslagen naar de beheerserver verzenden</translation>
+<translation id="7523476810162382273">Bijgehouden heartbeats naar de beheerserver verzenden</translation>
 <translation id="7529100000224450960">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop pop-ups mogen worden geopend.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1817,7 +1814,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als dit beleid niet wordt ingesteld, wordt 'AllowImages' gebruikt en kan dit door de gebruiker worden gewijzigd.</translation>
 <translation id="7766336524667238790">Informatie rapporteren over de actie kiosksessie, zoals
-      de id en versie van de app.
+      de ID en versie van de app.
 
       Als het beleid is ingesteld op 'onwaar', worden er geen sessiegegevens
       gerapporteerd. Als het beleid is ingesteld op 'waar' of als er geen beleid is
@@ -1856,7 +1853,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als er geen waarde voor dit beleid wordt opgegeven, wordt de standaardzoekprovider ingeschakeld en kan de gebruiker de lijst met zoekproviders zelf instellen.
 
-          Dit beleid is niet beschikbaar op Windows-exemplaren die niet aan
+          Dit beleid is niet beschikbaar op Windows-instanties die niet aan
           een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
@@ -1884,11 +1881,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           De 'installation_mode' kan ook worden geconfigureerd voor meerdere extensies, waaronder de extensie '*' (als standaardinstellingen) en extensies met dezelfde update-URL. Alleen de waarden 'allowed' en 'blocked' kunnen in dit geval worden gebruikt.
 
-          Als de modus is ingesteld op 'force_installed' of 'normal_installed', moet er ook een 'update_url' worden geconfigureerd. Let op: de in dit beleid ingestelde update-URL wordt alleen gebruikt voor de aanvankelijke installatie. Volgende updates van de extensie gebruiken de update-URL die in het manifest van de update-URL is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
+          Als de modus is ingesteld op 'force_installed' of 'normal_installed', moet er ook een 'update_url' worden geconfigureerd. Let op: De in dit beleid ingestelde update-URL wordt alleen gebruikt voor de aanvankelijke installatie. Volgende updates van de extensie gebruiken de update-URL die in het manifest van de update-URL is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
 
           'blocked_permissions': is gekoppeld aan een lijst van tekenreeksen die de geblokkeerde API-rechten voor de extensie aangeven. De namen van de rechten zijn hetzelfde als de tekenreeksen voor rechten die zijn opgenomen in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC3" />. Deze instelling kan ook worden geconfigureerd voor de extensie '*'. Als er rechten zijn vereist voor de extensie die op de blokkeerlijst staan, kan deze niet worden geladen. Als deze geblokkeerde rechten als optionele vereiste bevat, wordt deze als gebruikelijk behandeld, maar wordt de aanvraag van conflicterende rechten automatisch afgewezen tijdens de uitvoering.
 
-          'allowed_permissions': vergelijkbaar met 'blocked_permissions', maar in dit geval worden sommige rechten expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met globaal geblokkeerde rechten. Deze instelling kan daarom niet worden geconfigureerd voor de extensie '*'. Let op: deze instelling geeft niet automatisch goedgekeurde rechten af aan extensies.
+          'allowed_permissions': vergelijkbaar met 'blocked_permissions', maar in dit geval worden sommige rechten expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met globaal geblokkeerde rechten. Deze instelling kan daarom niet worden geconfigureerd voor de extensie '*'. Let op: Deze instelling geeft niet automatisch goedgekeurde rechten af aan extensies.
 
           'minimum_version_required': is gekoppeld aan een versiereeks. De opmaak van de versiereeks is hetzelfde als de opmaak in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC4" />. Een extensie met een versie die ouder is dan de opgegeven minimumversie wordt uitgeschakeld. Dit is ook van toepassing op automatisch geïnstalleerde extensies.
 
@@ -1976,11 +1973,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Het type startpagina kan worden ingesteld op een URL die je hier opgeeft of op 'Nieuwe tabbladpagina'. Als je 'Nieuwe tabbladpagina' selecteert, wordt dit beleid niet van kracht.
 
-          Als er geen instelling voor dit beleid wordt opgegeven, kunnen gebruikers de URL voor hun startpagina in <ph name="PRODUCT_NAME" />, niet wijzigen, maar kunnen ze er nog steeds voor kiezen de 'Nieuwe tabbladpagina' als startpagina te gebruiken.
+          Als deze instelling is ingeschakeld, kunnen gebruikers de URL voor hun startpagina in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze er nog steeds voor kiezen de 'Nieuwe tabbladpagina' als startpagina te gebruiken.
 
           Als dit beleid niet is ingesteld, kan de gebruiker de gewenste startpagina zelf kiezen als HomepageIsNewTabPage ook niet is ingesteld.
 
-          Dit beleid is niet beschikbaar op Windows-exemplaren die niet aan een
+          Dit beleid is niet beschikbaar op Windows-instanties die niet aan een
           Active Directory-domein zijn gekoppeld.</translation>
 <translation id="8244525275280476362">Maximum vertraging voor ophalen na ongeldigverklaring voor beleid</translation>
 <translation id="8256688113167012935">Hiermee wordt de weergave van de accountnaam in <ph name="PRODUCT_OS_NAME" /> op het aanmeldscherm beheerd voor het bijbehorende lokale account van het apparaat.
@@ -2068,10 +2065,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als je deze instelling inschakelt, worden anonieme gebruiks- en crashgegevens
       naar Google verzonden. Als je deze instelling uitschakelt, wordt deze informatie
       niet naar Google verzonden. In beide gevallen kunnen gebruikers de instelling niet aanpassen of negeren.
-      Als dit beleid niet wordt ingesteld, komt de instelling overeen met de keuze van de gebruiker
-      bij installatie/eerste uitvoering.
+      Als dit beleid niet wordt ingesteld, komt de instelling overeen met de keuze van de gebruiker bij installatie/eerste uitvoering.
 
-      Dit beleid is niet beschikbaar op Windows-exemplaren die niet aan
+      Dit beleid is niet beschikbaar op Windows-instanties die niet aan
       een Active Directory-domein zijn gekoppeld. (Zie voor Chrome OS
       het beleid 'DeviceMetricsReportingEnabled'.)</translation>
 <translation id="868187325500643455">Alle sites toestaan automatisch plug-ins uit te voeren</translation>
@@ -2170,10 +2166,10 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="9042911395677044526">Hiermee kun je een gebruikerspecifieke netwerkconfiguratie toepassen op een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specificeer of videoactiviteit invloed heeft op stroombeheer</translation>
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
-<translation id="9104138886225968319">Bijgehouden hartslagen naar de beheerde server verzenden, zodat de
+<translation id="9104138886225968319">Bijgehouden heartbeats naar de beheerde server verzenden, zodat de
       server kan detecteren of het apparaat offline is.
 
-      Als dit beleid op 'waar' is ingesteld, worden er bijgehouden hartslagen verzonden. Als dit beleid op 'onwaar' is ingesteld of als er geen waarde is opgegeven, worden er geen bijgehouden hartslagen verzonden.</translation>
+      Als dit beleid op 'waar' is ingesteld, worden er bijgehouden heartbeats verzonden. Als dit beleid op 'onwaar' is ingesteld of als er geen waarde is opgegeven, worden er geen bijgehouden heartbeats verzonden.</translation>
 <translation id="9112897538922695510">Hiermee kun je een lijst met protocolhandlers registreren. Dit kan alleen een aanbevolen beleid zijn. De eigenschap |protocol| moet worden ingesteld op het schema, zoals 'mailto', en de eigenschap |url| moet worden ingesteld op het URL-patroon van de app die het schema verwerkt. Het patroon kan een '%s' bevatten, die indien aanwezig wordt vervangen door de verwerkte URL.
 
           De protocolhandlers die door het beleid zijn geregistreerd, worden samengevoegd met de handlers die door de gebruiker zijn geregistreerd en kunnen beide worden gebruikt. De gebruiker kan de protocolhandlers die door het beleid zijn geïnstalleerd, overschrijven door een nieuwe standaardhandler te installeren. Een protocolhandler die door het beleid is geregistreerd, kan echter niet worden verwijderd.</translation>
@@ -2193,7 +2189,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet is ingesteld, wordt dit ingeschakeld en kan de gebruiker de incognitomodus gebruiken.</translation>
 <translation id="915194831143859291">Als dit beleid wordt ingesteld op 'onwaar' of niet wordt geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> de gebruiker toe het apparaat af te sluiten.
-      Als dit beleid wordt ingesteld op 'waar', activeert <ph name="PRODUCT_OS_NAME" /> een herstart wanneer de gebruiker het apparaat afsluit. <ph name="PRODUCT_OS_NAME" /> vervangt alle instanties van afsluitknoppen in de gebruikersinterface door herstartknoppen. Als de gebruiker het apparaat afsluit met de aan/uit-knop, wordt het apparaat niet automatisch opnieuw gestart, ook niet wanneer het beleid is ingeschakeld.</translation>
+      Als dit beleid wordt ingesteld op 'waar', activeert <ph name="PRODUCT_OS_NAME" /> een herstart wanneer de gebruiker het apparaat afsluit. <ph name="PRODUCT_OS_NAME" /> vervangt alle instanties van afsluitknoppen in de gebruikersinterface door herstartknoppen. Als de gebruiker het apparaat afsluit met de aan/uit-knop, wordt het apparaat niet automatisch opnieuw opgestart, ook niet wanneer het beleid is ingeschakeld.</translation>
 <translation id="9187743794267626640">Koppelen van externe opslag uitschakelen</translation>
 <translation id="9197740283131855199">Percentage waarmee de dimvertraging van het scherm wordt geschaald als de gebruiker actief wordt na het dimmen</translation>
 <translation id="9200828125069750521">Parameters voor afbeeldings-URL die POST gebruikt</translation>

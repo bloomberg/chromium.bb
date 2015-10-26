@@ -159,7 +159,6 @@
 Je logt in met een beheerd account en geeft de beheerder controle over je Chrome-profiel. Je Chrome-gegevens worden permanent gekoppeld aan dit account. Als je dit account loskoppelt, worden de lokale Chrome-gegevens verwijderd.</translation>
 <translation id="3410346880900521918">Als je deze melding vaker ziet, probeer je deze <ph name="BEGIN_LINK" />suggesties<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Grootte:</translation>
-<translation id="3455798674391346847">Bespaar data door Google pagina's te laten optimaliseren die je bezoekt. Pagina's die via HTTPS of incognito worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google.</translation>
 <translation id="3485544713029068372">Smart Lock voor wachtwoorden</translation>
 <translation id="3492207499832628349">Nieuw incognitotabblad</translation>
 <translation id="3518985090088779359">Accept. en doorgaan</translation>
@@ -314,7 +313,6 @@ Gebruiksstatistieken omvatten informatie zoals voorkeuren, klikken op knoppen en
 
 Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="572328651809341494">Recent gebruikte tabbladen</translation>
-<translation id="5733727110006255111">Als deze functie is ingeschakeld, gebruikt Chrome Google-servers om pagina's die je bezoekt te comprimeren voordat ze worden gedownload. Dit geldt niet voor SSL- en incognitopagina's.</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
 <translation id="5763382633136178763">Incognitotabbladen</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>

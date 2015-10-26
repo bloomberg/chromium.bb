@@ -93,7 +93,7 @@
 <translation id="6820355525329141109">No se ha podido cargar el complemento.</translation>
 <translation id="6843725295806269523">silenciar</translation>
 <translation id="6845533974506654842">pulsar</translation>
-<translation id="6853785296079745596">ocultar subtítulos cerrados</translation>
+<translation id="6853785296079745596">ocultar subtítulos opcionales</translation>
 <translation id="7057186640035488495">cronología de la película</translation>
 <translation id="709897737746224366">Utiliza un formato que coincida con el solicitado</translation>
 <translation id="7223624360433298498">tiempo transcurrido</translation>
@@ -102,13 +102,13 @@
 <translation id="739024184232394898">Otra...</translation>
 <translation id="7673697353781729403">Horas</translation>
 <translation id="7720026100085573005">tiempo restante</translation>
-<translation id="7740016676195725605">dejar de mostrar subtítulos cerrados</translation>
+<translation id="7740016676195725605">dejar de mostrar subtítulos opcionales</translation>
 <translation id="7740050170769002709">Contenido HTML</translation>
 <translation id="7789962463072032349">pausar</translation>
 <translation id="7888071071722539607">Incluye un signo "<ph name="ATSIGN" />" en la dirección de correo electrónico. La dirección "<ph name="INVALIDADDRESS" />" no incluye el signo "<ph name="ATSIGN" />".</translation>
 <translation id="795667975304826397">Ningún archivo seleccionado</translation>
 <translation id="8053789581856978548">campo para buscar texto</translation>
-<translation id="8115662671911883373">iniciar la visualización de subtítulos cerrados</translation>
+<translation id="8115662671911883373">iniciar la visualización de subtítulos opcionales</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8141602879876242471">Se trata de un índice que admite búsquedas. Introduce las palabras clave de búsqueda:</translation>
 <translation id="819205353528511139">reproducir la película en modo de pantalla completa</translation>
@@ -129,7 +129,7 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">tiempo actual en segundos</translation>
 <translation id="9048119486235211610">navegación</translation>
-<translation id="9050748414552849310">mostrar subtítulos cerrados</translation>
+<translation id="9050748414552849310">mostrar subtítulos opcionales</translation>
 <translation id="9108370397979208512">expresión matemática</translation>
 <translation id="9132465097189459683">Otra...</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir del <ph name="WEEK_START_DATE" /></translation>

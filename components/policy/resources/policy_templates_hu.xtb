@@ -73,7 +73,7 @@
 <translation id="1330985749576490863">Letiltja a Google Drive használatát mobiladat-kapcsolaton keresztül a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="13356285923490863">A szabály neve</translation>
 <translation id="1353966721814789986">Kezdőoldalak</translation>
-<translation id="1359553908012294236">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> engedélyezi a vendég módban történő bejelentkezést. A vendég mód olyan profil a <ph name="PRODUCT_NAME" /> böngészőben, amelyben az összes ablak inkognitómódban van.
+<translation id="1359553908012294236">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> engedélyezi a vendégüzemmódban történő bejelentkezést. A vendégüzemmód olyan profil a <ph name="PRODUCT_NAME" /> böngészőben, amelyben az összes ablak inkognitómódban van.
 
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1397855852561539316">Alapértelmezett keresési szolgáltató javasolt URL-je</translation>
@@ -404,7 +404,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="2592091433672667839">Inaktivitás időtartama, mielőtt megjelenne a képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
-<translation id="2629448496147630947">Konfigurálja a(z) <ph name="PRODUCT_NAME" /> távoli elérési beállításait. A funkciók csak akkor lépnek életbe, ha a távoli elérésű internetes alkalmazás telepítve van.</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
 <translation id="2646290749315461919">Lehetővé teszi, hogy megadja azon weboldalak listáját, amelyek követhetik a felhasználók tartózkodási helyét. A felhasználók tartózkodási helyének követése lehet alapértelmezetten engedélyezett, alapértelmezetten tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely a tartózkodási helyét szeretné tudni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskGeolocation" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="2650049181907741121">Az a művelet, amelyet akkor végez a rendszer, ha a felhasználó lezárja a fedelet</translation>
@@ -726,7 +725,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="4088589230932595924">Inkognitómód kényszerítve</translation>
 <translation id="4088983553732356374">Azt határozza meg, hogy a webhelyek tárolhatnak-e helyi adatokat. A helyi adatok beállítását egyszerre lehet engedélyezni vagy letiltani az összes webhelynél.
 
-          A „Cookie-k megtartása a munkamenet idejére” beállítás esetében a munkamenet befejezése után a cookie-k törlődnek. Felhívjuk figyelmét, hogy a <ph name="PRODUCT_NAME" /> „háttérmódban” fut, akkor előfordulhat, hogy a munkamenet nem fejeződik be az utolsó ablak bezárásakor. E viselkedés konfigurálásáról a „BackgroundModeEnabled” házirendnél talál további tájékoztatást.
+          A „Cookie-k megtartása a munkamenet idejére” beállítás esetében a munkamenet befejezése után a cookie-k törlődnek. Felhívjuk figyelmét, hogy ha a <ph name="PRODUCT_NAME" /> „háttérmódban” fut, akkor előfordulhat, hogy a munkamenet nem fejeződik be az utolsó ablak bezárásakor. E viselkedés konfigurálásáról a „BackgroundModeEnabled” házirendnél talál további tájékoztatást.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző az „AllowCookies” beállítást fogja használni, amelyet a felhasználó módosíthat.</translation>
 <translation id="410478022164847452">Meghatározza azt a felhasználói bevitel nélkül eltelt időtartamot, amely után a rendszer tétlen állapotba kerül, ha hálózati áramról működik.
@@ -1243,7 +1242,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Amikor a felhasználó SAML IdP használatával hajtja végre a hitelesítést a bejelentkezés során, az IdP által beállított cookie-k először egy ideiglenes profilba kerülnek. Ezeket a cookie-kat át lehet adni a felhasználó profiljának, hogy a hitelesített állapot megmaradjon.
 
-      Ha a házirend igaz értékre van állítva, akkor az IdP által beállított cookie-k minden olyan alkalommal átkerülnek a felhasználó profiljába, amikor a felhasználó az SAML IdP használatával hajtja végre a hitelesítés a bejelentkezés során.
+      Ha a házirend igaz értékre van állítva, akkor az IdP által beállított cookie-k minden olyan alkalommal átkerülnek a felhasználó profiljába, amikor a felhasználó az SAML IdP használatával hajtja végre a hitelesítést a bejelentkezés során.
 
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át a felhasználó profiljába.
 
@@ -1286,7 +1285,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="6401669939808766804">Felhasználó kijelentkeztetése</translation>
 <translation id="6417861582779909667">Lehetővé teszi olyan URL-minták listájának megadását, amelyek meghatározzák azokat a webhelyeket, amelyek nem állíthatnak be cookie-kat. Ha a házirend konfigurálatlanul marad, a rendszer a globális alapértelmezés szerinti értéket használja a "DefaultCookiesSetting" házirendből (ha az be van állítva), vagy egyébként a felhasználó személyes konfigurációjából.</translation>
 <translation id="6467433935902485842">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak bővítményeket. Ha a házirend konfigurálatlanul marad, akkor a rendszer a "DefaultPluginsSetting" házirend globális alapértelmezett értékét használja (ha az be van állítva), vagy pedig a felhasználó saját személyes beállítását.</translation>
-<translation id="6473334971332473690">Lehetővé teszi a Smart Lock használatát a <ph name="PRODUCT_OS_NAME" />-eszközökön.
+<translation id="6473334971332473690">Lehetővé teszi a Smart Lock használatát a <ph name="PRODUCT_OS_NAME" /> rendszert futtató eszközökön.
 
       Ha aktiválja ezt a beállítást, a felhasználók használhatják a Smart Lock funkciót, amennyiben minden megfelel a vonatkozó követelményeknek.
 
@@ -1602,8 +1601,8 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a beállítás le van tiltva vagy nincs megadva, akkor a kétlépcsős azonosítás nincs engedélyezve, és alapértelmezés szerint a felhasználó által megadott PIN kód szükséges.</translation>
 <translation id="7750991880413385988">Új lap oldal megnyitása</translation>
 <translation id="7763311235717725977">Lehetővé teszi annak meghatározását, hogy a webhelyek számára engedélyezett-e a képek megjelenítése. A képek megjelenítését engedélyezheti vagy tilthatja minden webhely számára. Ha ez a házirend beállítatlanul marad, akkor a rendszer az "AllowImages" értéket használja, és ezt a felhasználó módosíthatja.</translation>
-<translation id="7766336524667238790">Információk jelentése az aktív kioszkmunkamenetről; például
-      alkalmazásazonosító és -verzió.
+<translation id="7766336524667238790">Információk (például alkalmazásazonosító és -verzió) jelentése
+      az aktív kioszkmunkamenetről.
 
       Ha a házirend értéke hamis, a böngésző nem jelenti a munkamenet
       információit. Ha igaz, illetve ha nincs beállítva, a böngésző jelenti
@@ -1630,7 +1629,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha engedélyezi ezt a beállítást, a böngésző alapértelmezett keresést hajt végre, ha a felhasználó olyan szöveget gépel be a cím- és keresősávba, amely nem URL-cím.
 
-          Az alapértelmezett keresésre vonatkozó többi irányelv beállításával megadhatja az alapértelmezett keresésszolgáltatót. Ha nem állítja be ezeket, akkor a felhasználó választhatja ki az alapértelmezett szolgáltatót.
+          Az alapértelmezett keresésre vonatkozó többi házirend beállításával megadhatja az alapértelmezett keresésszolgáltatót. Ha nem állítja be ezeket, akkor a felhasználó választhatja ki az alapértelmezett szolgáltatót.
 
           Ha letiltja ezt a beállítást, a böngésző nem hajt végre keresést, amikor a felhasználó olyan szöveget ír be a cím- és keresősávba, amely nem URL.
 
@@ -1741,7 +1740,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha egy bővítmény nincs a listán, vagy a lista nincs beállítva, akkor az API hívása hibakóddal leáll.</translation>
 <translation id="8211174979203781791">A <ph name="PRODUCT_NAME" /> kezdőlapjának URL-jét állítja be, és megakadályozza, hogy a felhasználók módosítsák azt.
 
-          A kezdőlap a Kezdőlap gomb megnyomásakor megnyitott weboldal. Az indításkor megnyitott oldalakat a RestoreOnStartup házirendek használatával lehet beállítani.
+          A kezdőlap a Kezdőlap gomb megnyomásakor megnyitott weboldal. Az indításkor megnyitott oldalakat a RestoreOnStartup házirend használatával lehet beállítani.
 
           A kezdőlap lehet egy itt megadott URL vagy az Új lap oldal. Ha az Új lap oldalt választja, akkor ennek a házirendnek nem lesz hatása.
 
@@ -1913,7 +1912,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend beállítása egy domainnevet jelképező karakterlánc, a <ph name="PRODUCT_OS_NAME" /> megjeleníti az automatikus kiegészítés egyik lehetőségét a felhasználó bejelentkezése során, így annak csak a felhasználónevét kell beírnia (a domainnév nélkül). A felhasználó felülírhatja a domainnév-kiegészítést.</translation>
 <translation id="8970205333161758602">A(z) <ph name="PRODUCT_FRAME_NAME" /> kikapcsolási figyelmeztetésének elrejtése</translation>
 <translation id="8971221018777092728">Nyilvános munkamenet automatikus bejelentkezési időzítője</translation>
-<translation id="8976248126101463034">„Gnubby” hitelesítés engedélyezése a távoli hitelesítésű gazdagépeknél</translation>
+<translation id="8976248126101463034">Gnubby hitelesítés engedélyezése a távoli hitelesítésű gazdagépeknél</translation>
 <translation id="8992176907758534924">Egy webhely sem jeleníthet meg képeket</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>

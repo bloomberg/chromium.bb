@@ -166,7 +166,7 @@
 <translation id="6475912303565314141">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="6485906693002546646">Upotrebljavate <ph name="PROFILE_EMAIL" /> za sinkronizaciju sadržaja u Chromiumu. Za ažuriranje postavki sinkroniziranja ili upotrebu Chromiuma bez Google računa posjetite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Deinstaliranje Chromiuma</translation>
-<translation id="6526111688217511984">Chromium treba pristup pohrani da bi preuzimao datoteke.</translation>
+<translation id="6526111688217511984">Chromium treba pristup pohrani radi preuzimanja datoteka.</translation>
 <translation id="6637001341228460105">Chromium treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
 <translation id="6638567566961868659">Pronađite oznake u izborniku Chromium ili na traci oznaka.</translation>
 <translation id="6676384891291319759">Pristup Internetu</translation>
@@ -182,7 +182,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduli učitani u Chromium</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
-<translation id="7023267510504981715">Da biste upotrebljavali Google novčanik, morate nadograditi Chromium [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Chromium se nije uspio ažurirati na najnoviju verziju, tako da se nisu instalirale sjajne nove značajke i sigurnosni popravci. Ponovo instalirajte Chromium ručno.</translation>
 <translation id="705851970750939768">Ažuriraj Chromium</translation>
 <translation id="7064610482057367130">Nije pronađena nijedna instalacija Chromiuma za ažuriranje.</translation>

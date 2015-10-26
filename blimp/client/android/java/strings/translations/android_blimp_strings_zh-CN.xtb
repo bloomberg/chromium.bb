@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="3407245330823033366">请选择一个帐户，以便使用 Blimp。</translation>
+<translation id="3407245330823033366">请选择一个要使用 Blimp 的帐户。</translation>
 <translation id="4641972508298030550">无法对用户进行身份验证。</translation>
 <translation id="8514856595257368555">已检索到令牌。</translation>
 </translationbundle>

@@ -159,7 +159,6 @@
 您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chrome 个人资料。您的 Chrome 数据将永远与此帐户相关联。断开与此帐户的关联将删除本地 Chrome 数据。</translation>
 <translation id="3410346880900521918">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="3414952576877147120">大小：</translation>
-<translation id="3455798674391346847">使用 Google 对您访问的网页进行优化，借此节省数据流量。Google 将不会优化（也看不到）您以 HTTPS 或隐身模式访问的网页。</translation>
 <translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="3492207499832628349">新的隐身标签页</translation>
 <translation id="3518985090088779359">接受并继续</translation>
@@ -314,7 +313,6 @@
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
-<translation id="5733727110006255111">此功能处于开启状态时，Chrome 会在加载您要访问的网页之前使用 Google 服务器对其进行压缩。采用 SSL 加密的网页和以隐身模式浏览的网页不在此列。</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5763382633136178763">隐身标签页</translation>
 <translation id="5765780083710877561">说明：</translation>

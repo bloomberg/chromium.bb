@@ -164,6 +164,7 @@
 <translation id="6475912303565314141">Chromium ஐத் தொடங்கும்போது காண்பிக்கப்படும் பக்கத்தையும் இது கட்டுப்படுத்துகிறது.</translation>
 <translation id="6485906693002546646">உங்கள் Chromium விஷயங்களை ஒத்திசைக்க, <ph name="PROFILE_EMAIL" /> ஐப் பயன்படுத்துகிறீர்கள். உங்கள் ஒத்திசைவு விருப்பத்தேர்வைப் புதுப்பிக்க அல்லது Google கணக்கு இல்லாமல் Chromium ஐப் பயன்படுத்த, <ph name="SETTINGS_LINK" /> ஐப் பார்வையிடவும்.</translation>
 <translation id="6510925080656968729">Chromium ஐ நிறுவல் நீக்கு</translation>
+<translation id="6526111688217511984">கோப்புகளைப் பதிவிறக்க Chromiumக்கு சேமிப்பிட அணுகல் தேவை.</translation>
 <translation id="6637001341228460105">இந்தத் தளத்துடன் மைக்ரோஃபோன் அணுகலை Chromium பகிர்ந்து கொள்ள வேண்டும்.</translation>
 <translation id="6638567566961868659">Chromium மெனுவில் அல்லது புக்மார்க்குகள் பட்டியில் உங்கள் புக்மார்க்குகளைக் கண்டறிக.</translation>
 <translation id="6676384891291319759">இணையத்தை அணுகுதல்</translation>
@@ -179,7 +180,6 @@
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Chromium இல் தொகுதிக்கூறுகள் ஏற்றப்பட்டன</translation>
 <translation id="6970811910055250180">உங்கள் சாதனம் புதுப்பிக்கப்படுகிறது...</translation>
-<translation id="7023267510504981715">Google Wallet ஐப் பயன்படுத்த, நீங்கள் Chromium ஐ மேம்படுத்த வேண்டும் [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Chromium சமீபத்திய பதிப்பிற்கு தானாகவே புதுப்பித்து கொள்ளாது, இதனால் நீங்கள் அற்புதமான பல அம்சங்களையும், பாதுகாப்பு விஷயங்களையும் இழக்கிறீர்கள். நீங்களாகவேதான் Chromium ஐ கைமுறையாக மீண்டும் நிறுவவேண்டும்.</translation>
 <translation id="705851970750939768">Chromiumஐப் புதுப்பி</translation>
 <translation id="7064610482057367130">புதுப்பிப்பதற்கு Chromium இன் நிறுவல் எதுவுமில்லை.</translation>

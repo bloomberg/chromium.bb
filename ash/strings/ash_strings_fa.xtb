@@ -17,7 +17,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">راه‌انداز</translation>
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
-<translation id="1602076796624386989">فعال کردن اطلاعات تلفن همراه</translation>
+<translation id="1602076796624386989">فعال کردن داده‌های تلفن همراه</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
 <translation id="1723752762323179280">خروج از جلسه</translation>
@@ -112,7 +112,7 @@
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
 <translation id="4895488851634969361">باتری پر است.</translation>
-<translation id="4918086044614829423">پذیرش</translation>
+<translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4957722034734105353">اطلاعات بیشتر...</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -155,7 +155,7 @@
 <translation id="6359806961507272919">پیامک از <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
 <translation id="6406704438230478924">دگرساز راست</translation>
-<translation id="6426039856985689743">غیرفعال کردن اطلاعات تلفن همراه</translation>
+<translation id="6426039856985689743">غیرفعال کردن داده‌های تلفن همراه</translation>
 <translation id="6452181791372256707">عدم پذیرش</translation>
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME" /></translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
@@ -206,7 +206,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> تا پر شود</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8528322925433439945">تلفن همراه...</translation>
-<translation id="8654520615680304441">‏روشن کردن Wi-Fi در...</translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

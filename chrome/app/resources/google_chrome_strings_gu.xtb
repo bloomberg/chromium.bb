@@ -15,7 +15,6 @@
 <translation id="123620459398936149">Chrome OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી. કૃપા કરીને તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
 <translation id="127345590676626841">Chrome આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chrome પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
 <translation id="1302523850133262269">કૃપા કરીને Chrome નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
-<translation id="1348153800635493797">Google Wallet નો ઉપયોગ કરવા માટે તમારે Chrome અપગ્રેડ કરવું આવશ્યક છે [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome એ અસામાન્ય વર્તન શોધ્યું</translation>
 <translation id="1393853151966637042">Chrome નો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="1399397803214730675">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome નું વધુ તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કામ ન કરતું હોય, તો કૃપા કરીને Google Chrome ને અનઇન્સ્ટોલ કરો અને ફરી પ્રયાસ કરો.</translation>
@@ -47,6 +46,7 @@
 <translation id="2290014774651636340">Google API કીઝ ખૂટે છે. Google Chrome ની કેટલીક કાર્યક્ષમતા અક્ષમ થશે.</translation>
 <translation id="2290095356545025170">શું તમને ખાતરી છે કે તમારે Google Chromeને અનઇન્સ્ટોલ કરવું છે?</translation>
 <translation id="2316129865977710310">નહીં, આભાર</translation>
+<translation id="2334084861041072223">કોપિરાઇટ <ph name="YEAR" /> Google Inc. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="2346876346033403680">કોઇએ પહેલાં Chrome માં આ કમ્પ્યુટર પર <ph name="ACCOUNT_EMAIL_LAST" /> તરીકે સાઇન ઇન કર્યું છે. જો તે તમારું એકાઉન્ટ નથી, તો તમારી માહિતીને અલગ રાખવા માટે નવો Chrome વપરાશકર્તા બનાવો.
 
 કોઈપણ રીતે સાઇન ઇન કરવું બુકમાર્ક્સ, ઇતિહાસ, અને અન્ય સેટિંગ્સ જેવી Chrome માહિતીને <ph name="ACCOUNT_EMAIL_NEW" /> માં મર્જ કરશે.</translation>
@@ -66,7 +66,6 @@
 <translation id="2769762047821873045">Google Chrome તમારુ ડિફોલ્ટ બ્રાઉઝર નથીં.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
 <translation id="2871893339301912279">તમે હમણાં Chrome માં સાઇન ઇન છો!</translation>
-<translation id="2874156562296220396">Google Chrome <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> ઓપન સોર્સ પ્રોજેક્ટ અને અન્ય <ph name="BEGIN_LINK_OSS" />ઓપન સોર્સ સૉફ્ટવેર<ph name="END_LINK_OSS" /> દ્વારા સંભવ થયું છે.</translation>
 <translation id="3037838751736561277">Google Chrome પૃષ્ઠભૂમિ મોડમાં છે.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> ને ડિસ્કનેક્ટ કરવું આ ઉપકરણ પર સંગ્રહિત તમારા ઇતિહાસ, બુકમાર્ક્સ, સેટિંગ્સ અને અન્ય Chrome ડેટાને સાફ કરશે. તમારા Google એકાઉન્ટમાં સંગ્રહિત ડેટા સાફ થશે નહીં અને તે <ph name="GOOGLE_DASHBOARD_LINK" />Google ડેશબોર્ડ<ph name="END_GOOGLE_DASHBOARD_LINK" /> પર સંચાલિત કરી શકાય છે.</translation>
 <translation id="3080151273017101988">જ્યારે Google Chrome બંધ થાય ત્યારે પૃષ્ઠભૂમિમાં  એપ્લિકેશનો ચલાવવાનું ચાલુ રાખો </translation>

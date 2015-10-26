@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="111910763555783249">알림 설정</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1일 전}other{#일 전}}</translation>
 <translation id="1167268268675672572">첫 줄로 이동 및 선택사항 수정</translation>
 <translation id="1190609913194133056">알림 센터</translation>

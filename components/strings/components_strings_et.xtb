@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Juur- või kesktaseme sertifikaat on aegunud.</translation>
 <translation id="2328300916057834155">Ignoreeriti vale järjehoidjat registris <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Muud järjehoidjad</translation>
-<translation id="2359808026110333948">Jätka</translation>
 <translation id="2367567093518048410">Tase</translation>
 <translation id="2384307209577226199">Ettevõtte vaikeseade</translation>
 <translation id="2386255080630008482">Serveri sertifikaat on tühistatud.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
 <translation id="2721148159707890343">Taotlus õnnestus</translation>
 <translation id="2728127805433021124">Serveri sertifikaat on allkirjastatud nõrga allkirjaalgoritmiga.</translation>
-<translation id="2774256287122201187">Võite jätkata. Kui liigute edasi lehele, ei ilmu see hoiatus järgmise viie minuti jooksul uuesti.</translation>
 <translation id="277499241957683684">Seadme kirje puudub</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
 <translation id="2855922900409897335">Kaardi <ph name="CREDIT_CARD" /> kinnitamine</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Teie kopeeritud link</translation>
 <translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
 <translation id="3759461132968374835">Hiljuti teatatud krahhe ei ole. Siin ei ilmu krahhid, mis toimusid siis, kui krahhide aruandlus oli keelatud.</translation>
-<translation id="385051799172605136">Tagasi</translation>
 <translation id="3858027520442213535">Värskenda kuupäeva ja kellaaega</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
 <translation id="3885155851504623709">Vald</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Valideerimisviga: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Kas eemaldada Chrome'ist aadress?</translation>
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
-<translation id="4607653538520819196">Andmemahu säästja ei saa seda lehte puhverdada.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat sisaldab vigu. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="4726672564094551039">Laadi reeglid uuesti</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="4923417429809017348">Leht on tõlgitud teadmata keelest <ph name="LANGUAGE_LANGUAGE" /> keelde</translation>
 <translation id="4926049483395192435">Tuleb määrata.</translation>
-<translation id="4968547170521245791">Puhverserverit ei saa kasutada</translation>
 <translation id="498957508165411911">Kas tõlkida <ph name="ORIGINAL_LANGUAGE" /> keelest <ph name="TARGET_LANGUAGE" /> keelde?</translation>
 <translation id="5019198164206649151">Varusalves esineb probleeme</translation>
 <translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
@@ -231,6 +226,7 @@
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
+<translation id="6355080345576803305">Avaliku seansi alistamine</translation>
 <translation id="6387478394221739770">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie beetakanalit aadressil chrome.com/beta.</translation>
 <translation id="6445051938772793705">Riik</translation>
 <translation id="6458467102616083041">Seda eiratakse, kuna vaikeotsing on reegliga keelatud.</translation>
@@ -239,7 +235,6 @@
 <translation id="6512448926095770873">Lahku sellelt leheküljelt</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
 <translation id="6550675742724504774">Valikud</translation>
-<translation id="6597614308054261376">Soovite pääseda lehele <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Andmemahu säästja ei saa seda lehte praegu puhverdada.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />'i otsing</translation>
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="6646897916597483132">Sisestage 4-kohaline CVC kaardi tagaküljelt</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="111910763555783249">Tetapan pemberitahuan</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 hari yang lalu}other{# hari yang lalu}}</translation>
 <translation id="1167268268675672572">Alihkan Ke Permulaan Baris Dan Ubah Suai Pilihan</translation>
 <translation id="1190609913194133056">Pusat Pemberitahuan</translation>

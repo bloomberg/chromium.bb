@@ -159,7 +159,6 @@
 您即將登入受管理的帳戶，並且讓帳戶管理員控制您的 Chrome 設定檔。您的 Chrome 資料將與這個帳戶建立永久連結。如果與這個帳戶解除連結，本機 Chrome 資料將會遭到刪除。</translation>
 <translation id="3410346880900521918">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="3414952576877147120">空間大小：</translation>
-<translation id="3455798674391346847">讓 Google 對您造訪的網頁進行最佳化處理，以減少數據用量。透過 HTTPS 或無痕模式存取網頁時，Google 不會進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="3485544713029068372">密碼專用 Smart Lock</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
@@ -314,8 +313,7 @@
 
 然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
-<translation id="5733727110006255111">啟用這項擴充功能後，Chrome 會先使用 Google 伺服器壓縮您要瀏覽的網頁，然後再下載這些網頁 (SSL 和無痕式網頁內容除外)。</translation>
-<translation id="5749068826913805084">Chrome 需要儲存空間的存取權才能下載檔案。</translation>
+<translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5771382037724542929">您要取代「<ph name="DIRECTORY_NAME" />」目錄中現有的 <ph name="FILE_NAME" /> 嗎？</translation>
@@ -458,7 +456,7 @@
 <translation id="7648422057306047504">使用 Google 憑證為密碼加密</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
-<translation id="7761240775244195612">您要刪除過去一個月內未使用的 <ph name="PAGES_NUMBER" /> 個離線複本嗎？這樣可以釋出 <ph name="TOTAL_PAGE_SIZE" /> 的空間。</translation>
+<translation id="7761240775244195612">您要刪除上個月未使用的 <ph name="PAGES_NUMBER" /> 個離線複本嗎？這樣可以釋出 <ph name="TOTAL_PAGE_SIZE" /> 的空間。</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7767746238359002192">前往您要離線儲存的網頁</translation>

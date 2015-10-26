@@ -159,7 +159,6 @@
 관리 계정으로 로그인하면 사용자의 Chrome 프로필에 대한 제어 권한이 관리자에게 부여됩니다. 사용자의 Chrome 데이터는 이 계정에 영구적으로 연결되며, 이 계정의 연결을 해제하면 로컬 Chrome 데이터가 삭제됩니다.</translation>
 <translation id="3410346880900521918">이 메시지가 자주 표시된다면 <ph name="BEGIN_LINK" />권장 조치<ph name="END_LINK" />를 시도해 보세요.</translation>
 <translation id="3414952576877147120">크기:</translation>
-<translation id="3455798674391346847">Google을 사용하여 데이터 사용을 줄이면 방문하는 페이지를 최적화할 수 있습니다. HTTP 또는 시크릿 모드를 사용하여 액세스한 페이지는 Google에서 최적화하거나 인식할 수 없습니다.</translation>
 <translation id="3485544713029068372">비밀번호 대용 Smart Lock</translation>
 <translation id="3492207499832628349">새 시크릿 탭</translation>
 <translation id="3518985090088779359">동의하고 계속</translation>
@@ -314,8 +313,7 @@
 
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(IPS), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="572328651809341494">최근 탭</translation>
-<translation id="5733727110006255111">이 기능을 사용 설정하면 Chrome은 Google 서버를 이용해 방문한 페이지를 압축한 다음 다운로드합니다. 단, SSL 및 시크릿 페이지에서는 작동하지 않습니다.</translation>
-<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소에 액세스해야 합니다.</translation>
+<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5763382633136178763">시크릿 탭</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" />에 있는 기존 <ph name="FILE_NAME" /> 파일을 바꾸시겠습니까?</translation>
@@ -458,7 +456,7 @@
 <translation id="7648422057306047504">비밀번호를 Google 사용자 인증 정보로 암호화</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7665369617277396874">계정 추가</translation>
-<translation id="7761240775244195612">지난달에 사용되지 않은 <ph name="PAGES_NUMBER" />의 오프라인 사본을 삭제하시겠습니까? <ph name="TOTAL_PAGE_SIZE" /> 저장공간이 확보됩니다.</translation>
+<translation id="7761240775244195612">지난달에 사용되지 않은 <ph name="PAGES_NUMBER" />개의 오프라인 사본을 삭제하시겠습니까? <ph name="TOTAL_PAGE_SIZE" />의 저장공간이 확보됩니다.</translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7767746238359002192">오프라인으로 저장할 페이지 방문</translation>
@@ -474,7 +472,7 @@
 <translation id="7925108652071887026">데이터 자동완성</translation>
 <translation id="7926911226829060241">열린 북마크, 방문 기록, 비밀번호 등이 Google 계정과 동기화 중입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
-<translation id="7961015016161918242">완료되지 않음</translation>
+<translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7963646190083259054">공급업체:</translation>
 <translation id="7977858705483383621">세이프서치</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>

@@ -405,7 +405,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2592091433672667839">Käyttämättömyysaika, jonka kuluttua näytönsäästäjä näytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Määritä etäkäyttöasetukset tuotteelle <ph name="PRODUCT_NAME" />. Nämä ominaisuudet ohitetaan, ellei etäkäytön verkkosovellusta ole asennettu.</translation>
 <translation id="2633084400146331575">Ota äänipalaute käyttöön</translation>
 <translation id="2646290749315461919">Voit määrittää, voivatko sivustot seurata käyttäjän fyysistä sijaintia. Voit sallia tai kieltää käyttäjien sijainnin seuraamisen oletuksena, tai kysyä käyttäjältä aina sivuston pyytäessä sijaintitietoja. Jos tätä käytäntöä ei ole määritetty, AskGeolocation-käytäntöä käytetään ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="2650049181907741121">Toiminto, kun käyttäjä sulkee kannen</translation>

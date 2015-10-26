@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="111910763555783249">Impostazioni di notifica</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 giorno fa}other{# giorni fa}}</translation>
 <translation id="1167268268675672572">Sposta fino a inizio riga e modifica selezione</translation>
 <translation id="1190609913194133056">Centro notifiche</translation>

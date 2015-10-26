@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Saknes sertifikāts vai starpnieksertifikāts vairs nav derīgs.</translation>
 <translation id="2328300916057834155">Nederīga grāmatzīme ignorēta <ph name="ENTRY_INDEX" />. rādītājā</translation>
 <translation id="2354001756790975382">Citas grāmatzīmes</translation>
-<translation id="2359808026110333948">Turpināt</translation>
 <translation id="2367567093518048410">Līmenis</translation>
 <translation id="2384307209577226199">Uzņēmuma noklusējuma politika</translation>
 <translation id="2386255080630008482">Servera sertifikāts ir atsaukts.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Vērtība neatbilst formātam.</translation>
 <translation id="2721148159707890343">Pieprasījums bija veiksmīgs.</translation>
 <translation id="2728127805433021124">Servera sertifikāts ir parakstīts, izmantojot vāju paraksta algoritmu.</translation>
-<translation id="2774256287122201187">Jūs varat turpināt. Ja turpināsiet lietot lapu, šis brīdinājums netiks rādīts vēlreiz piecas minūtes.</translation>
 <translation id="277499241957683684">Trūkst ierīces ieraksta.</translation>
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
 <translation id="2855922900409897335">Verificējiet kredītkarti <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Jūsu kopētā saite</translation>
 <translation id="375403751935624634">Tulkojums neizdevās servera kļūdas dēļ.</translation>
 <translation id="3759461132968374835">Pēdējā laikā neesat ziņojis par avārijām. Šeit nebūs redzamas avārijas, kas radās laikā, kad avāriju pārskatu izveide bija atspējota.</translation>
-<translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3858027520442213535">Atjaunināt datumu un laiku</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
 <translation id="3885155851504623709">Pagasts</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Validācijas kļūda: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Vai noņemt adresi no pārlūka Chrome?</translation>
 <translation id="4594403342090139922">&amp;Dzēšanas atsaukšana</translation>
-<translation id="4607653538520819196">Datu lietojuma samazinātājs nevar apstrādāt šo lapu, izmantojot starpniekserveri.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikātā ir kļūdas. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="4726672564094551039">Atkārtoti ielādēt politikas</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
-<translation id="4968547170521245791">Nevar apstrādāt, izmantojot starpniekserveri</translation>
 <translation id="498957508165411911">Vai tulkot no <ph name="ORIGINAL_LANGUAGE" /> valodas <ph name="TARGET_LANGUAGE" /> valodā?</translation>
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>
 <translation id="5031870354684148875">Par Google tulkotāju</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Pamest šo lapu</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6550675742724504774">Opcijas</translation>
-<translation id="6597614308054261376">Jūs mēģināt atvērt vietni <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Pašlaik datu lietojuma samazinātājs nevar apstrādāt šo lapu, izmantojot starpniekserveri.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> meklēšana</translation>
 <translation id="6644283850729428850">Šī politika ir izbeigta.</translation>
 <translation id="6646897916597483132">Ievadiet 4 ciparu CVC kodu, kas norādīts jūsu kredītkartes priekšpusē.</translation>

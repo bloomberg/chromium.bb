@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Opcional: ajude a melhorar o Chromium enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="2910007522516064972">Acerca do &amp;Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa de iniciar uma aplicação externa para processar links de <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou ligar-se a <ph name="SITE" /> desta vez, o Website devolveu credenciais
+invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="3032787606318309379">A adicionar ao Chromium...</translation>
 <translation id="3046695367536568084">É obrigatório ter sessão iniciada no Chromium para utilizar aplicações. Deste modo, o Chromium pode sincronizar as aplicações, os marcadores, o histórico, as palavras-passe e outras definições entre dispositivos.</translation>
 <translation id="3068515742935458733">Ajudar a melhorar o Chromium ao enviar relatórios de falhas e <ph name="UMA_LINK" /> à Google</translation>
@@ -182,7 +184,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
-<translation id="7023267510504981715">Tem de atualizar o Chromium para poder utilizar o Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Não foi possível atualizar automaticamente o Chromium para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de reinstalar manualmente o Chromium.</translation>
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7064610482057367130">Não foi encontrada qualquer instalação do Chromium para atualização.</translation>

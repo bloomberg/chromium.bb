@@ -159,7 +159,6 @@
 Vas a acceder con una cuenta administrada, lo que significa que proporcionarás control sobre tu perfil de Chrome al administrador. Los datos de Chrome que tengas se vincularán de forma permanente a esta cuenta. Si la desconectas, se eliminarán los datos locales de Chrome.</translation>
 <translation id="3410346880900521918">Si el mensaje aparece con frecuencia, intenta seguir estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
-<translation id="3455798674391346847">Gaste menos datos al usar a Google para optimizar las páginas que visitas. Google no optimizará ni verá las páginas a las que accedas con HTTPS o en el modo de navegación de incógnito.</translation>
 <translation id="3485544713029068372">Smart Lock para contraseñas</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
@@ -315,7 +314,6 @@ Las estadísticas de uso incluyen información, como las preferencias, los clics
 
 Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación de incógnito no oculta tu información de navegación de un empleador, del proveedor de servicios de Internet ni de los sitios web que visitas.</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
-<translation id="5733727110006255111">Cuando se active esta función, Chrome usará los servidores de Google para comprimir las páginas que visites antes de descargarlas. No se incluirán las páginas de incógnito ni SSL.</translation>
 <translation id="5749068826913805084">Chrome necesita acceder al almacenamiento para descargar archivos.</translation>
 <translation id="5763382633136178763">Pestañas en modo de incógnito</translation>
 <translation id="5765780083710877561">Descripción:</translation>

@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Een root- of tussenliggend certificaat is verlopen.</translation>
 <translation id="2328300916057834155">Ongeldige bladwijzer genegeerd bij index <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Andere bladwijzers</translation>
-<translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="2384307209577226199">Standaardinstelling van bedrijf</translation>
 <translation id="2386255080630008482">Het servercertificaat is ingetrokken.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
-<translation id="2774256287122201187">Je kunt doorgaan. Als je doorgaat naar de pagina, wordt deze waarschuwing gedurende vijf minuten niet opnieuw weergegeven.</translation>
 <translation id="277499241957683684">Apparaatrecord ontbreekt</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
 <translation id="2855922900409897335">Je <ph name="CREDIT_CARD" /> verifiëren</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
 <translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
-<translation id="385051799172605136">Vorige</translation>
 <translation id="3858027520442213535">Datum en tijd updaten</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
 <translation id="3885155851504623709">Gemeente</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Validatiefout: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Adres verwijderen uit Chrome?</translation>
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
-<translation id="4607653538520819196">Deze pagina kan niet via proxy worden overgedragen door Databesparing.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="4923417429809017348">Deze pagina is vertaald uit een onbekende taal naar het <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
-<translation id="4968547170521245791">Kan niet overdragen via proxy</translation>
 <translation id="498957508165411911">Vertalen uit het <ph name="ORIGINAL_LANGUAGE" /> naar het <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
 <translation id="5031870354684148875">Over Google Translate</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6550675742724504774">Opties</translation>
-<translation id="6597614308054261376">Je probeert <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> te bereiken. Deze pagina kan momenteel niet via proxy worden overgedragen door Databesparing.</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="6646897916597483132">Geef de viercijferige CVC-code op die op de voorkant van je kaart staat</translation>

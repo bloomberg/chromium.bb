@@ -19,7 +19,7 @@
 
       Se questa norma non viene definita, l'impostazione verrà attivata ma l'utente sarà in grado di modificarla.</translation>
 <translation id="1062011392452772310">Attivazione dell'attestazione da remoto per il dispositivo</translation>
-<translation id="108735515923160176">Consente di configurare il tipo della pagina iniziale predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare le preferenze della pagina iniziale. Il tipo di Pagina iniziale può essere impostato sull'URL specificato oppure sulla pagina Nuova scheda.
+<translation id="108735515923160176">Consente di configurare il tipo della pagina iniziale predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare le preferenze della pagina iniziale. Il tipo di pagina iniziale può essere impostato sull'URL specificato oppure sulla pagina Nuova scheda.
 
           Se viene attivata questa impostazione, per la pagina iniziale viene sempre utilizzata la pagina Nuova scheda e la posizione dell'URL della pagina iniziale viene ignorata.
 
@@ -395,12 +395,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2592091433672667839">Durata inattività prima della visualizzazione dello screensaver nella schermata di accesso in modalità retail</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Configura le opzioni di accesso remoto in <ph name="PRODUCT_NAME" />. Se l'applicazione web Accesso remoto non è installata, queste funzioni vengono ignorate.</translation>
 <translation id="2633084400146331575">Attiva la funzione di lettura vocale</translation>
 <translation id="2646290749315461919">Permette di stabilire se consentire o meno il monitoraggio della posizione fisica degli utenti da parte dei siti web. Il monitoraggio della posizione fisica degli utenti può essere consentito o negato per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera conoscere la posizione fisica. Se questa norma non viene impostata, verrà utilizzato il valore "AskGeolocation", che potrà essere modificato dagli utenti.</translation>
 <translation id="2650049181907741121">Azione da compiere quando l'utente chiude il coperchio</translation>
 <translation id="2660846099862559570">Non utilizzare mai un proxy</translation>
-<translation id="2665596266623707739">Avviso: il fallback della versione TLS 1.0 sarà rimosso da <ph name="PRODUCT_NAME" /> per le versioni successive alla 47 (circa nel mese di gennaio 2016) e l'opzione "tls1" smetterà di funzionare.
+<translation id="2665596266623707739">Avviso: il fallback della versione TLS 1.0 sarà rimosso da <ph name="PRODUCT_NAME" /> per le versioni successive alla 47 (da gennaio 2016) e l'opzione "tls1" smetterà di funzionare.
 
       Se non viene completato il processo di handshake TLS, <ph name="PRODUCT_NAME" /> proverà a stabilire una connessione con una versione precedente di TLS per risolvere i bug nei server HTTPS. Con questa impostazione viene configurata la versione in cui verrà interrotto questo processo di fallback. Se un server esegue correttamente la negoziazione della versione (ad esempio senza interrompere la connessione), questa impostazione non viene applicata. In ogni caso, la connessione risultante deve essere conforme a SSLVersionMin.
 
@@ -704,7 +703,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
 <translation id="4088983553732356374">Consente di stabilire se consentire o meno ai siti web di impostare dati locali. L'impostazione dei dati locali può essere consentita o vietata per tutti i siti web.
 
-          Se questa norma viene impostata su "Conserva cookie per tutta la durata della sessione", i cookie vengono cancellati alla chiusura della sessione. Si tenga presente che, quando <ph name="PRODUCT_NAME" /> è in esecuzione in "modalità background", è possibile che la sessione non si chiuda quando viene chiusa l'ultima finestra. Leggere la norma "BackgroundModeEnabled" per avere ulteriori informazioni sulla configurazione di questo comportamento.
+          Se questa norma viene impostata su "Conserva cookie per tutta la durata della sessione", i cookie vengono cancellati alla chiusura della sessione. Quando <ph name="PRODUCT_NAME" /> è in esecuzione in "modalità background", è possibile che la sessione non si chiuda quando viene chiusa l'ultima finestra. Leggere la norma "BackgroundModeEnabled" per avere ulteriori informazioni sulla configurazione di questo comportamento.
 
           Se questa norma non viene impostata, verrà utilizzata la norma "AllowCookies", che potrà essere modificata dall'utente.</translation>
 <translation id="410478022164847452">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene utilizzata la corrente alternata.
@@ -1415,12 +1414,11 @@ Questa norma viene applicata per tutti i tipi di ingressi audio e non soltanto p
 
           Se viene selezionata l'opzione "Apri un elenco di URL", quando un utente avvia <ph name="PRODUCT_NAME" /> viene aperto l'elenco di "URL da aprire all'avvio".
 
-          Se questa impostazione viene attivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
+          Se questa impostazione viene attivata, gli utenti non potranno modificarla o ignorarla in <ph name="PRODUCT_NAME" />.
 
           Disattivare questa impostazione equivale a non configurarla. Gli utenti potranno modificarla in <ph name="PRODUCT_NAME" />.
 
-          
-Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
+          Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="7128918109610518786">Consente di elencare gli ID delle applicazioni da visualizzare in <ph name="PRODUCT_OS_NAME" /> sotto forma di applicazioni bloccate nella barra Avvio applicazioni.
 
 Se questa norma viene configurata, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
@@ -1586,7 +1584,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 
           Se questa impostazione viene disattivata, non viene eseguita alcuna ricerca quando l'utente inserisce testo diverso da un URL nella omnibox.
 
-          Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
+          Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o ignorarla in <ph name="PRODUCT_NAME" />.
 
           Se questa norma non viene impostata, viene attivato il provider di ricerca predefinito e l'utente potrà impostare l'elenco di provider di ricerca.
 
@@ -1847,7 +1845,7 @@ Il metodo consigliato per bloccare lo schermo in caso di inattività consiste ne
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori al ritardo di inattività.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Segnala posizione del dispositivo</translation>
-<translation id="89493502583189945">Consente di specificare i contrassegni da applicare all'avvio di <ph name="PRODUCT_NAME" />. I contrassegni specificati vengono applicati prima che <ph name="PRODUCT_NAME" /> venga avviato, anche per la schermata di acces</translation>
+<translation id="89493502583189945">Consente di specificare i contrassegni da applicare all'avvio di <ph name="PRODUCT_NAME" />. I contrassegni specificati vengono applicati prima che <ph name="PRODUCT_NAME" /> venga avviato, anche per la schermata di accesso.</translation>
 <translation id="8951350807133946005">Impostazione directory della cache su disco</translation>
 <translation id="8955719471735800169">Torna all'inizio</translation>
 <translation id="8960850473856121830">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione audio viene concesso senza richieste.

@@ -15,7 +15,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="127345590676626841">Chrome updates automatically so that you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
-<translation id="1348153800635493797">You must upgrade Chrome to use Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome has detected unusual behaviour</translation>
 <translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
@@ -47,6 +46,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2290014774651636340">Google API keys are missing. Some functionality of Google Chrome will be disabled.</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="2316129865977710310">No, thank you</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2346876346033403680">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. If that isn't your account, create a new Chrome user to keep your information separate.
 
 Signing in anyway will merge Chrome information like bookmarks, history and other settings to <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -66,7 +66,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
-<translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open source project and other <ph name="BEGIN_LINK_OSS" />open source software<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome is in background mode.</translation>
 <translation id="3047079729301751317">Disconnecting <ph name="USERNAME" /> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>

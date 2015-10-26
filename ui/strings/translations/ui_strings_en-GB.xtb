@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="111910763555783249">Notification settings</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 day ago}other{# days ago}}</translation>
 <translation id="1167268268675672572">Move To Beginning Of Line And Modify Selection</translation>
 <translation id="1190609913194133056">Notification Centre</translation>

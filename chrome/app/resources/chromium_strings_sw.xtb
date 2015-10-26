@@ -58,9 +58,10 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2770231113462710648">Badilisha kivinjari chaguo msingi kiwe:</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> ni hasidi, na Chromium imeizuia.</translation>
 <translation id="2847479871509788944">Ondoa kwenye Chromium...</translation>
-<translation id="2886012850691518054">Hiari: Saidia kuboresha Chromium kwa kutuma takwimu za matumizi na ripoti za uharibifu kiotomatiki kwa Google.</translation>
+<translation id="2886012850691518054">Si lazima: Saidia kuboresha Chromium kwa kutumia Google takwimu za matumizi na ripoti wakati wowote huduma hii inapoacha kufanya kazi.</translation>
 <translation id="2910007522516064972">Kuhusu Chromium</translation>
 <translation id="2966088006374919794">Chromium inahitaji kuzindua programu ya nje ili kushughulikia viungo vya <ph name="SCHEME" />. Kiungo kilichoombwa ni <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilirudisha kitambulisho kisichokuwa cha kawaida na batili. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote haijabadilishwa.</translation>
 <translation id="3032787606318309379">Inaongeza kwenye Chromium...</translation>
 <translation id="3046695367536568084">Unapaswa kuwa umeingia katika akaunti ya Chromium ili utumie programu hizi. Hii inaruhusu Chromium kusawazisha programu, alamisho, historia, manenosiri yako, na mipangilio mingine katika vifaa vyote.</translation>
 <translation id="3068515742935458733">Saidia kuboresha Chromium kwa kutuma ripoti za kuacha kufanya kazi na <ph name="UMA_LINK" /> kwenda Google</translation>
@@ -184,7 +185,6 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Vipengee vilivyopakiwa kwenye Chromium</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
-<translation id="7023267510504981715">Lazima upate toleo jipya la Chrome ili utumie Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Chromium haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kusakinisha Chromium tena mwenyewe.</translation>
 <translation id="705851970750939768">Sasisha Chromium</translation>
 <translation id="7064610482057367130">Hakuna usakinishi wa Chromium uliopatikana kusasishwa.</translation>

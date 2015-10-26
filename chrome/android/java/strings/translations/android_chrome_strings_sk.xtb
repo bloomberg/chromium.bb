@@ -159,7 +159,6 @@
 Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete úplnú kontrolu nad vaším profilom Chrome. Vaše údaje prehliadača Chrome sa natrvalo prepoja s týmto účtom. Po odpojení tohto účtu sa odstránia miestne údaje prehliadača Chrome.</translation>
 <translation id="3410346880900521918">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
-<translation id="3455798674391346847">Využite službu Google na optimalizáciu navštívených stránok a miňte menej dát. Google neoptimalizuje ani neuvidí stránky, ku ktorým pristupujete prostredníctvom protokolu HTTPS alebo v režime inkognito.</translation>
 <translation id="3485544713029068372">Smart Lock na heslá</translation>
 <translation id="3492207499832628349">Nová karta inkognito</translation>
 <translation id="3518985090088779359">Prijať a pokračovať</translation>
@@ -314,7 +313,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 
 Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše prehliadanie pred vaším zamestnávateľom, poskytovateľom internetových služieb či webovými stránkami, ktoré navštívite.</translation>
 <translation id="572328651809341494">Nedávne karty</translation>
-<translation id="5733727110006255111">Keď je táto funkcia zapnutá, Chrome navštívené stránky pred stiahnutím komprimuje pomocou serverov Google. Funkcia nemá vplyv na stránky používajúce protokol SSL a stránky navštívené v režime Inkognito.</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
 <translation id="5763382633136178763">Karty inkognito</translation>
 <translation id="5765780083710877561">Popis:</translation>
@@ -541,6 +539,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, �
 <translation id="885701979325669005">Úložisko</translation>
 <translation id="886510833909353412">Šifrovať všetko prístupovou frázou</translation>
 <translation id="8872441722924401214">Vyberte certifikát na overenie totožnosti</translation>
+<translation id="8891135217544884558">Webové adresy v okolí</translation>
 <translation id="8901170036886848654">Nenašli sa žiadne záložky</translation>
 <translation id="8909135823018751308">Zdieľať…</translation>
 <translation id="8912362522468806198">účtu Google</translation>

@@ -159,7 +159,6 @@
 Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chrome Anda. Data Chrome Anda akan terikat dengan akun ini secara permanen. Memutuskan tautan dengan akun ini akan menghapus data Chrome lokal.</translation>
 <translation id="3410346880900521918">Jika ini sering terjadi, coba <ph name="BEGIN_LINK" />saran-saran yang ada di sini<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Ukuran:</translation>
-<translation id="3455798674391346847">Hemat data menggunakan Google untuk mengoptimalkan laman yang Anda kunjungi. Laman yang diakses dengan HTTPS atau Penyamaran tidak akan dioptimalkan atau dilihat oleh Google.</translation>
 <translation id="3485544713029068372">Smart Lock untuk Sandi</translation>
 <translation id="3492207499832628349">Tab penyamaran baru</translation>
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
@@ -175,7 +174,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” selesai</translation>
 <translation id="3828029223314399057">Cari bookmark</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
-<translation id="3895926599014793903">Memaksa pengaktifan pembesaran/pengecilan</translation>
+<translation id="3895926599014793903">Paksa pengaktifan zoom</translation>
 <translation id="3917783807003067648">Lokasi diblokir</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="393697183122708255">Tidak ada penelusuran suara yang aktif</translation>
@@ -184,7 +183,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3992315671621218278">Simpan tautan</translation>
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4023950129927433024">Jika lupa sandi Anda, berhenti dan setel ulang Sinkronisasi melalui <ph name="BEGIN_LINK" />Dasbor Google<ph name="END_LINK" />.</translation>
-<translation id="4042870126885713738">Tampilkan saran saat alamat web tidak dapat menyelesaikan masalah atau sambungan tidak dapat dibuat</translation>
+<translation id="4042870126885713738">Tampilkan saran saat alamat web tidak dapat diselesaikan atau sambungan tidak dapat dibuat</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Sentuh tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
@@ -314,7 +313,6 @@ Statistik penggunaan mencakup informasi seperti preferensi, klik tombol, dan pen
 
 Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode penyamaran tidak akan menyembunyikan penjelajahan yang Anda lakukan dari atasan di kantor, dari penyedia layanan internet, maupun situs web yang Anda kunjungi.</translation>
 <translation id="572328651809341494">Tab baru-baru ini</translation>
-<translation id="5733727110006255111">Saat fitur ini diaktifkan, Chrome akan menggunakan server Google untuk mengompresi laman yang Anda kunjungi sebelum mengunduhnya. Laman penyamaran dan SSL tidak akan disertakan.</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mengunduh file.</translation>
 <translation id="5763382633136178763">Tab penyamaran</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
@@ -458,11 +456,11 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="7648422057306047504">Enkripsi sandi dengan kredensial Google</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665369617277396874">Tambahkan akun</translation>
-<translation id="7761240775244195612">Hapus <ph name="PAGES_NUMBER" /> salinan offline yang tidak digunakan selama satu bulan terakhir? Tindakan ini akan menghapus <ph name="TOTAL_PAGE_SIZE" /> ruang.</translation>
+<translation id="7761240775244195612">Hapus <ph name="PAGES_NUMBER" /> salinan offline yang tidak digunakan selama satu bulan terakhir? Tindakan ini akan mengosongkan ruang penyimpanan sebesar <ph name="TOTAL_PAGE_SIZE" />.</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7767746238359002192">Kunjungi laman guna menyimpan untuk offline</translation>
-<translation id="7772032839648071052">Konfirmasikan frasa sandi</translation>
+<translation id="7772032839648071052">Konfirmasi frasa sandi</translation>
 <translation id="7788788617745289808">Chrome memerlukan akses kamera untuk berbagi dengan situs ini.</translation>
 <translation id="7791543448312431591">Tambahkan</translation>
 <translation id="780301667611848630">Lain kali</translation>

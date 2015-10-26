@@ -159,7 +159,6 @@
 Stai per eseguire l'accesso con un account gestito e consentire al relativo amministratore di controllare il tuo profilo Chrome. I tuoi dati di Chrome verranno associati definitivamente a questo account. La disconnessione dall'account comporterà l'eliminazione dei dati di Chrome locali.</translation>
 <translation id="3410346880900521918">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
-<translation id="3455798674391346847">Consuma meno dati utilizzando Google per ottimizzare le pagine visitate. Le pagine visualizzate in modalità di navigazione in incognito o HTTPS non saranno ottimizzate o visualizzate da Google.</translation>
 <translation id="3485544713029068372">Smart Lock per password</translation>
 <translation id="3492207499832628349">Nuova scheda in incognito</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
@@ -314,7 +313,6 @@ Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui p
 
 Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione in incognito non consente di nascondere la navigazione al tuo datore di lavoro, al tuo provider di servizi Internet o ai siti web da te visitati.</translation>
 <translation id="572328651809341494">Schede recenti</translation>
-<translation id="5733727110006255111">Quando questa funzione è attiva, Chrome utilizza i server di Google per comprimere le pagine che visiti prima di scaricarle. Le pagine SSL e di navigazione in incognito non vengono incluse.</translation>
 <translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
 <translation id="5763382633136178763">Schede in incognito</translation>
 <translation id="5765780083710877561">Descrizione:</translation>

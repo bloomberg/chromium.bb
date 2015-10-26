@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="111910763555783249">Indstillinger for underretninger</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{for 1 dag siden}one{for # dage siden}other{for # dage siden}}</translation>
 <translation id="1167268268675672572">Flyt til begyndelsen af linjen, og rediger markering</translation>
 <translation id="1190609913194133056">Underretningcenter</translation>

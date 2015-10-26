@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="111910763555783249">Paziņojumu iestatījumi</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pirms 1 dienas}zero{Pirms # dienām}one{Pirms # dienas}other{Pirms # dienām}}</translation>
 <translation id="1167268268675672572">Pārvietot uz rindiņas sākumu un mainīt atlasi</translation>
 <translation id="1190609913194133056">Paziņojumu centrs</translation>

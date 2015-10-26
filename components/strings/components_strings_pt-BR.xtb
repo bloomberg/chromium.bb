@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Um certificado de raiz ou intermediário expirou.</translation>
 <translation id="2328300916057834155">Favorito inválido ignorado no índice <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Outros favoritos</translation>
-<translation id="2359808026110333948">Continuar</translation>
 <translation id="2367567093518048410">Nível</translation>
 <translation id="2384307209577226199">Padrão da empresa</translation>
 <translation id="2386255080630008482">O certificado do servidor foi revogado.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">O valor não corresponde ao formato.</translation>
 <translation id="2721148159707890343">Solicitação bem-sucedida</translation>
 <translation id="2728127805433021124">O certificado do servidor é assinado com um algoritmo de assinatura fraco.</translation>
-<translation id="2774256287122201187">Você pode prosseguir. Se prosseguir para a página, este aviso não aparecerá novamente por cinco minutos.</translation>
 <translation id="277499241957683684">Registro de dispositivo não encontrado</translation>
 <translation id="2835170189407361413">Limpar formulário</translation>
 <translation id="2855922900409897335">Verificar seu <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Link que você copiou</translation>
 <translation id="375403751935624634">A tradução falhou devido a um erro no servidor.</translation>
 <translation id="3759461132968374835">Você não relatou falhas recentemente. As falhas que ocorreram quando o relatório de erros estava desativado não aparecerão aqui.</translation>
-<translation id="385051799172605136">Voltar</translation>
 <translation id="3858027520442213535">Atualizar data e hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo em conflito</translation>
 <translation id="3885155851504623709">Paróquia</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Remover endereço do Chrome?</translation>
 <translation id="4594403342090139922">&amp;Desfazer exclusão</translation>
-<translation id="4607653538520819196">A Economia de dados não consegue utilizar esta página com proxy.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança contém erros. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4726672564094551039">Atualizar políticas</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Visualizar</translation>
 <translation id="4923417429809017348">Esta página foi traduzida de um idioma desconhecido para o <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Deve ser especificado.</translation>
-<translation id="4968547170521245791">Não é possível usar o proxy</translation>
 <translation id="498957508165411911">Traduzir de <ph name="ORIGINAL_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Armazenamento de backup em estado inválido</translation>
 <translation id="5031870354684148875">Sobre o Google Tradutor</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Sair desta página</translation>
 <translation id="6529602333819889595">&amp;Refazer excluir</translation>
 <translation id="6550675742724504774">Opções</translation>
-<translation id="6597614308054261376">Você está tentando acessar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. No momento, a Economia de dados não consegue utilizar esta página com proxy.</translation>
 <translation id="6628463337424475685">Pesquisa do <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Esta política foi encerrada.</translation>
 <translation id="6646897916597483132">Digite o CVC de quatro dígitos que aparece na parte frontal do seu cartão</translation>

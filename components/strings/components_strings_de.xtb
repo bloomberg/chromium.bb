@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Ein Stamm- oder Zwischenzertifikat ist abgelaufen.</translation>
 <translation id="2328300916057834155">Ungültiges Lesezeichen bei Index <ph name="ENTRY_INDEX" /> ignoriert</translation>
 <translation id="2354001756790975382">Weitere Lesezeichen</translation>
-<translation id="2359808026110333948">Weiter</translation>
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="2384307209577226199">Standardeinstellung durch Unternehmen</translation>
 <translation id="2386255080630008482">Das Serverzertifikat wurde aufgehoben.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
-<translation id="2774256287122201187">Sie können zu der Seite gehen. In diesem Fall wird diese Warnung fünf Minuten lang nicht mehr angezeigt.</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> bestätigen</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
-<translation id="385051799172605136">Zurück</translation>
 <translation id="3858027520442213535">Datum und Uhrzeit aktualisieren</translation>
 <translation id="3884278016824448484">In Konflikt stehende Gerätekennung</translation>
 <translation id="3885155851504623709">Gemeinde</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Fehler bei der Überprüfung: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Adresse aus Chrome entfernen?</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
-<translation id="4607653538520819196">Datenkomprimierungs-Proxy kann für diese Seite nicht verwendet werden</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat enthält Fehler. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
-<translation id="4968547170521245791">Proxynutzung nicht möglich</translation>
 <translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
 <translation id="5031870354684148875">Über Google Übersetzer</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6550675742724504774">Optionen</translation>
-<translation id="6597614308054261376">Sie versuchen, <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zu erreichen. Für diese Seite kann der Datenkomprimierungs-Proxy derzeit nicht verwendet werden.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="6646897916597483132">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>

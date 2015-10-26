@@ -95,9 +95,8 @@
 <translation id="3106379468611574572">‏رایانه راه دور به درخواست اتصال پاسخ نمی‌‎دهد. لطفاً بررسی کنید این رایانه آنلاین باشد و دوباره امتحان کنید.</translation>
 <translation id="310979712355504754">حذف همه</translation>
 <translation id="3150823315463303127">میزبان نتوانست خط‌مشی را بخواند.</translation>
-<translation id="3194245623920924351">‏کنترل دسک‌تاپ از راه دور Chrome</translation>
+<translation id="3194245623920924351">‏رایانه راه دور Chrome</translation>
 <translation id="3197730452537982411">دسک‌تاپ از راه دور</translation>
-<translation id="3244258558056547981">‏نمایش نمای Cardboard.</translation>
 <translation id="3258789396564295715">‏می‌توانید با استفاده از کنترل دسک‌تاپ از راه دور Chrome به این رایانه به صورت امن دسترسی پیدا کنید.</translation>
 <translation id="327263477022142889">‏آیا می‌خواهید به بهبود کنترل دسک‌تاپ راه دور Chrome کمک کنید؟ <ph name="LINK_BEGIN" />در نظرسنجی شرکت کنید.<ph name="LINK_END" /></translation>
 <translation id="3286521253923406898">‏کنترل‌کننده برنامه میزبان کار با Chrome</translation>
@@ -158,11 +157,11 @@
 <translation id="4812684235631257312">میزبان</translation>
 <translation id="4867841927763172006">‏ارسال PrtScn</translation>
 <translation id="4913529628896049296">در انتظار برقراری اتصال...</translation>
-<translation id="4918086044614829423">پذیرش</translation>
+<translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="492843737083352574">با صفحه‌کلید یا موشواره‌ام مشکل دارم.</translation>
 <translation id="4973800994433240357">‏با دانلود «نصب‌کننده میزبان Chromoting»، موافقتتان را با <ph name="LINK_BEGIN" />شرایط خدمات<ph name="LINK_END" /> Google اعلام می‌کنید.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (آفلاین)</translation>
-<translation id="5070121137485264635">‏میزبان راه دور از شما می‌خواهد که در وب سایت شخص ثالثی تأیید هویت شوید. برای ادامه، باید با مجوزهای اضافی Chrome Remote Desktop برای دسترسی به این آدرس موافقت کنید:</translation>
+<translation id="5070121137485264635">‏میزبان راه دور از شما می‌خواهد که در وب سایت شخص ثالثی تأیید هویت شوید. برای ادامه، باید با مجوزهای اضافی «‏‫کنترل کامپیوتر از راه دور Chrome‬» برای دستیابی به این آدرس موافقت کنید:</translation>
 <translation id="5156271271724754543">لطفاً یک پین یکسان را در هر دو کادر وارد کنید.</translation>
 <translation id="5168917394043976756">بازکردن کشوی پیمایش</translation>
 <translation id="5170982930780719864">شناسه میزبان نامعتبر است.</translation>

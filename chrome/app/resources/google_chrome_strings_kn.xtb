@@ -13,7 +13,6 @@
 <translation id="123620459398936149">ನಿಮ್ಮ ಡೇಟಾವನ್ನು Chrome OS ಗೆ ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
 <translation id="127345590676626841">Chrome ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನವೀಕರಿಸುತ್ತದೆ ಈ ಮೂಲಕ ನೀವು ಯಾವಾಗಲೂ ತಾಜಾ ಆವೃತ್ತಿಯುನ್ನು ಹೊಂದಿರುತ್ತೀರಿ. ಈ ಡೌನ್‌ಲೋಡ್‌ ಸಂಪೂರ್ಣಗೊಂಡಾಗ, Chrome ಮರುಪ್ರಾರಂಭಿಸುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಮಾರ್ಗದಲ್ಲಿ ನೀವು ಇರಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="1302523850133262269">ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chrome ಸ್ಥಾಪಿಸುವಾಗ ದಯವಿಟ್ಟು ಕಾಯಿರಿ.</translation>
-<translation id="1348153800635493797">Google Wallet ಬಳಸಲು ನೀವು Chrome ಅಪ್‌ಗ್ರೇಡ್‌ ಮಾಡಬೇಕು [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome ಅಸಹಜ ವರ್ತನೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಿದೆ</translation>
 <translation id="1393853151966637042">Chrome ಅನ್ನು ಬಳಸಿಕೊಳ್ಳುವುದರೊಂದಿಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="1399397803214730675">ಈ ಕಂಪ್ಯೂಟರ್ ಈಗಾಗಲೇ ತೀರಾ ಇತ್ತೀಚೆಗಿನ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯ ನಿರ್ವಹಿಸದೆ ಇದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -45,6 +44,7 @@
 <translation id="2290014774651636340">Google API ಕೀಗಳು ಕಾಣೆಯಾಗಿವೆ. Google Chrome ನ ಕೆಲವು ಕಾರ್ಯವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="2290095356545025170">ನೀವು ಖಚಿತವಾಗಿ Google Chrome ಸ್ಥಾಪನೆಯನ್ನು ತೆಗೆಯಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2316129865977710310">ಬೇಡ, ಧನ್ಯವಾದಗಳು</translation>
+<translation id="2334084861041072223">ಹಕ್ಕುಸ್ವಾಮ್ಯ <ph name="YEAR" /> Google Inc. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="2346876346033403680">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chrome ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ <ph name="ACCOUNT_EMAIL_LAST" /> ಹೆಸರಿನಲ್ಲಿ  ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ಅದು ನಿಮ್ಮ ಖಾತೆಯಲ್ಲವಾದರೆ ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ಹೊಸ Chrome ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.
 
 ಸೈನ್‌ ಇನ್ ಮಾಡುವುದು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಹಾಗೂ ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಂತಹ Chrome ಮಾಹಿತಿಯನ್ನು <ph name="ACCOUNT_EMAIL_NEW" /> ಗೆ ಹೇಗಿದ್ದರೂ ವಿಲೀನಗೊಳಿಸುತ್ತದೆ.</translation>
@@ -64,7 +64,6 @@
 <translation id="2769762047821873045">Google Chrome ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ.</translation>
 <translation id="2770231113462710648">ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ಇದ್ಕಕೆ ಬದಲಿಸಿ:</translation>
 <translation id="2871893339301912279">ನೀವೀಗ Chrome ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ!</translation>
-<translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> ತೆರೆದ ಮೂಲ ಪ್ರಾಜೆಕ್ಟ್ ಮತ್ತು ಇತರ <ph name="BEGIN_LINK_OSS" />ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್‌‌<ph name="END_LINK_OSS" /> ನಿಂದ Google Chrome ಅನ್ನು ಸಾಧ್ಯವಾಗಿಸಲಾಗಿದೆ.</translation>
 <translation id="3037838751736561277">Google Chrome ಹಿನ್ನೆಲೆ ಮೋಡ್‌ನಲ್ಲಿದೆ.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> ಅವರ ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸುವುದರಿಂದ ನಿಮ್ಮ ಇತಿಹಾಸ, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಇತರ Chrome ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ ಮತ್ತು <ph name="GOOGLE_DASHBOARD_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ<ph name="END_GOOGLE_DASHBOARD_LINK" /> ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>
 <translation id="3080151273017101988">Google Chrome ಮುಚ್ಚಿದಾಗ ರನ್‌ ಆಗುತ್ತಿರುವ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮುಂದುವರಿಸು</translation>

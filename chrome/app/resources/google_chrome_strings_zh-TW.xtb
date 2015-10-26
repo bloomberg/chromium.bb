@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS 無法同步處理您的資料，請更新您的同步通關密語。</translation>
 <translation id="127345590676626841">Chrome 會自動更新，隨時讓您使用最新版本。完成這項下載作業後，Chrome 會重新啟動，自動為您進行更新。</translation>
 <translation id="1302523850133262269">請稍候，Chrome 正在安裝最新的系統更新。</translation>
-<translation id="1348153800635493797">您必須升級 Chrome 才能使用 Google 電子錢包 [<ph name="ERROR_CODE" />]。</translation>
 <translation id="1350930993895295930">Chrome 偵測到異常行為</translation>
 <translation id="1393853151966637042">前往 Chrome 說明頁面</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">缺少 Google API 金鑰，系統將停用 Google Chrome 的部分功能。</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
 <translation id="2346876346033403680">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這台電腦上登入 Chrome。如果這不是您的帳戶，請建立新的 Chrome 使用者以便個別保存您的資訊。
 
 如果您仍要繼續登入帳戶，各項 Chrome 資訊 (例如書籤、紀錄和其他設定) 則會合併至 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
@@ -62,7 +62,6 @@
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
 <translation id="2871893339301912279">您已登入 Chrome！</translation>
-<translation id="2874156562296220396">Google Chrome 的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 開放原始碼計劃與其他<ph name="BEGIN_LINK_OSS" />開放原始碼軟體<ph name="END_LINK_OSS" />的協助才得以完成。</translation>
 <translation id="3037838751736561277">Google Chrome 正在背景模式中執行。</translation>
 <translation id="3047079729301751317">解除與 <ph name="USERNAME" /> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chrome 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK" />Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK" />管理這些資料。</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
@@ -140,7 +139,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
-<translation id="5749068826913805084">Chrome 需要儲存空間的存取權才能下載檔案。</translation>
+<translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="5785746630574083988">如果在 Windows 8 模式中重新啟動，Chrome 應用程式將會關閉並重新啟動。</translation>
 <translation id="5799551393681493217">啟用 iframe 型 Chrome 登入流程。這個標記會覆寫 --enable-web-based-signin。</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>

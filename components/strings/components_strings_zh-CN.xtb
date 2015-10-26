@@ -66,7 +66,6 @@
 <translation id="229702904922032456">根证书或中间证书已过期。</translation>
 <translation id="2328300916057834155">已忽略索引<ph name="ENTRY_INDEX" />中的无效书签</translation>
 <translation id="2354001756790975382">其他书签</translation>
-<translation id="2359808026110333948">继续</translation>
 <translation id="2367567093518048410">级别</translation>
 <translation id="2384307209577226199">在企业环境中默认实施</translation>
 <translation id="2386255080630008482">服务器的证书已撤消。</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">值不符合格式要求。</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
-<translation id="2774256287122201187">您可以继续。如果您继续前往该页面，那么在接下来的 5 分钟内将不会再看到此警告。</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
 <translation id="2835170189407361413">清除表单</translation>
 <translation id="2855922900409897335">验证您的 <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">您复制的链接</translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
-<translation id="385051799172605136">后退</translation>
 <translation id="3858027520442213535">更新日期和时间</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
 <translation id="3885155851504623709">区</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
-<translation id="4607653538520819196">此网页不能由流量节省程序代理进行处理。</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">视图</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4926049483395192435">必须指定。</translation>
-<translation id="4968547170521245791">无法代理</translation>
 <translation id="498957508165411911">是否将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" />？</translation>
 <translation id="5019198164206649151">后备存储状态不佳</translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">离开此页</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6550675742724504774">选项</translation>
-<translation id="6597614308054261376">您正在尝试访问 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />。此网页目前不能由流量节省程序代理进行处理。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
 <translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>

@@ -13,7 +13,6 @@
 <translation id="123620459398936149">OS Chrome nije mogao sinkronizirati vaše podatke. Ažurirajte zaporku za sinkronizaciju.</translation>
 <translation id="127345590676626841">Chrome se ažurira automatski, pa uvijek imate najnoviju verziju. Kada se ovo preuzimanje dovrši, Chrome će se ponovo pokrenuti i moći ćete nastaviti.</translation>
 <translation id="1302523850133262269">Pričekajte da Chrome instalira najnovija ažuriranja sustava.</translation>
-<translation id="1348153800635493797">Morate nadograditi Chrome za upotrebu Google novčanika [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome je otkrio neuobičajeno ponašanje</translation>
 <translation id="1393853151966637042">Pomoć za upotrebu Chromea</translation>
 <translation id="1399397803214730675">Na ovom računalu već postoji novija verzija programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Nedostaju ključevi Google API-ja. Neke funkcije Google Chromea bit će onemogućene.</translation>
 <translation id="2290095356545025170">Jeste li sigurni da želite deinstalirati Google Chrome?</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
+<translation id="2334084861041072223">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2346876346033403680">Netko se prethodno prijavio na Chrome na ovom računalu kao <ph name="ACCOUNT_EMAIL_LAST" />. Ako to nije vaš račun, izradite novog korisnika sustava Chrome kako bi vaši podaci bili odvojeni.
 
 Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i ostale postavke spojit će se s korisnikom <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -62,7 +62,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="2769762047821873045">Google Chrome nije vaš zadani preglednik.</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
 <translation id="2871893339301912279">Prijavljeni ste na Chrome!</translation>
-<translation id="2874156562296220396">Google Chrome omogućili su <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />, projekt utemeljen na otvorenom kôdu i drugi <ph name="BEGIN_LINK_OSS" />softveri utemeljeni na otvorenom kôdu<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome radi u pozadini.</translation>
 <translation id="3047079729301751317">Prekidanjem veze s računom <ph name="USERNAME" /> izbrisat ćete svoju povijest, oznake, postavke i ostale Chromeove podatke pohranjene na ovom uređaju. Podaci pohranjeni na vašem Google računu neće se izbrisati. Tim podacima možete upravljati na <ph name="GOOGLE_DASHBOARD_LINK" />Google nadzornoj ploči<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Nastavi prikazivati ​​pozadinske aplikacije po zatvaranju preglednika Google Chrome</translation>
@@ -138,7 +137,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
 <translation id="573759479754913123">O OS-u Chrome</translation>
-<translation id="5749068826913805084">Chrome treba pristup pohrani da bi preuzimao datoteke.</translation>
+<translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
 <translation id="5785746630574083988">Ponovno pokretanje u načinu Windows 8 zatvorit će i ponovo pokrenuti vaše aplikacije Chrome.</translation>
 <translation id="5799551393681493217">Omogućuje postupke prijave na Chrome na temelju iframea. Ta oznaka premošćuje omogućivanje prijave na temelju weba.</translation>
 <translation id="5855036575689098185">Softver koji se izvodi na vašem računalu nije kompatibilan s Google Chromeom.</translation>

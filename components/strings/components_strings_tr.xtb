@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Bir kök ya da ara sertifikanın süresi geçmiş.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> dizininde yok sayılan geçersiz yer işareti</translation>
 <translation id="2354001756790975382">Diğer yer işaretleri</translation>
-<translation id="2359808026110333948">Devam Et</translation>
 <translation id="2367567093518048410">Düzey</translation>
 <translation id="2384307209577226199">Kuruluşun varsayılan ayarı</translation>
 <translation id="2386255080630008482">Sunucunun sertifikası iptal edildi.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Değer, biçimle eşleşmiyor.</translation>
 <translation id="2721148159707890343">İstek başarılı oldu</translation>
 <translation id="2728127805433021124">Sunucunun sertifikası, zayıf bir imza algoritması kullanılarak imzalanmış.</translation>
-<translation id="2774256287122201187">Devam edebilirsiniz. Söz konusu sayfaya devam ederseniz bu uyarı beş dakika boyunca bir daha görünmez.</translation>
 <translation id="277499241957683684">Eksik cihaz kaydı</translation>
 <translation id="2835170189407361413">Formu temizle</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> kredi kartınızı doğrulayın</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Kopyaladığınız bağlantı</translation>
 <translation id="375403751935624634">Çeviri, bir sunucu hatası nedeniyle başarısız oldu.</translation>
 <translation id="3759461132968374835">Son zamanda herhangi bir kilitlenme bildirmediniz. Kilitlenme bildirme özelliği devre dışıyken oluşan kilitlenmeler burada görünmez.</translation>
-<translation id="385051799172605136">Geri</translation>
 <translation id="3858027520442213535">Tarih ve saati güncelle</translation>
 <translation id="3884278016824448484">Çakışan cihaz tanımlayıcısı</translation>
 <translation id="3885155851504623709">Bucak</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Doğrulama hatası: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Adres Chrome'dan kaldırılsın mı?</translation>
 <translation id="4594403342090139922">Silmeyi &amp;Geri Al</translation>
-<translation id="4607653538520819196">Veri Tasarrufu bu sayfaya proxy uygulayamıyor.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasında hatalar var. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="4726672564094551039">Politikaları yeniden yükle</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Görüntüle</translation>
 <translation id="4923417429809017348">Bu sayfa, bilinmeyen bir dilden <ph name="LANGUAGE_LANGUAGE" /> diline çevrildi</translation>
 <translation id="4926049483395192435">Belirtilmelidir.</translation>
-<translation id="4968547170521245791">Proxy uygulayamıyor</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> dilinden <ph name="TARGET_LANGUAGE" /> diline çevrilsin mi?</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
 <translation id="5031870354684148875">Google Çeviri Hakkında</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Bu Sayfadan Ayrıl</translation>
 <translation id="6529602333819889595">Silmeyi &amp;Yeniden Yap</translation>
 <translation id="6550675742724504774">Seçenekler</translation>
-<translation id="6597614308054261376"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesine ulaşmaya çalışıyorsunuz. Şu anda bu sayfaya Veri Tasarrufu tarafından proxy uygulanamıyor.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Arama</translation>
 <translation id="6644283850729428850">Bu politika uygun bulunmadı.</translation>
 <translation id="6646897916597483132">Kartınızın önündeki 4 basamaklı CVC'yi girin</translation>

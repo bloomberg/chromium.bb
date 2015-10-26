@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="111910763555783249">การตั้งค่าการแจ้งเตือน</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 วันที่ผ่านมา}other{# วันที่ผ่านมา}}</translation>
 <translation id="1167268268675672572">เลื่อนไปจุดเริ่มต้นของบรรทัดและปรับการเลือก</translation>
 <translation id="1190609913194133056">ศูนย์การแจ้งเตือน</translation>

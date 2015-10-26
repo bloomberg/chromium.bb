@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Et rotsertifikat eller mellomliggende sertifikat er utløpt.</translation>
 <translation id="2328300916057834155">Ignorerte ugyldig bokmerke ved indeks <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Andre bokmerker</translation>
-<translation id="2359808026110333948">Fortsett</translation>
 <translation id="2367567093518048410">Nivå</translation>
 <translation id="2384307209577226199">Bedriftsstandard</translation>
 <translation id="2386255080630008482">Tjenerens sertifikat er tilbakekalt.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
-<translation id="2774256287122201187">Du kan fortsette. Hvis du fortsetter til siden, vises ikke denne advarselen igjen før det har gått fem minutter.</translation>
 <translation id="277499241957683684">Manglende enhetsoppføring</translation>
 <translation id="2835170189407361413">Slett skjemaet</translation>
 <translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">En link du kopierte</translation>
 <translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
 <translation id="3759461132968374835">Du har ingen nylig rapportert programstopp. Programstopp som inntraff når rapportering om programstopp var deaktivert, blir ikke vist her.</translation>
-<translation id="385051799172605136">Tilbake</translation>
 <translation id="3858027520442213535">Oppdater dato og klokkeslett</translation>
 <translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
 <translation id="3885155851504623709">Kommune</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
-<translation id="4607653538520819196">Denne siden kan ikke sendes gjennom Datasparing.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren inneholder feil. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="4726672564094551039">Last inn retningslinjer på nytt</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4926049483395192435">Må angis.</translation>
-<translation id="4968547170521245791">Kan ikke sende gjennom proxy-tjeneren</translation>
 <translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
 <translation id="5031870354684148875">Om Google Oversett</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Forlat siden</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6550675742724504774">Alternativer</translation>
-<translation id="6597614308054261376">Du prøver å nå <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Denne siden kan ikke sendes gjennom Datasparing akkurat nå.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
 <translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
 <translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>

@@ -455,9 +455,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2592091433672667839">Trajanje nedejavnosti, preden se v maloprodajnem načinu na zaslonu za prijavo pokaže ohranjevalnik zaslona</translation>
 <translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Nastavite možnosti za oddaljen dostop v <ph name="PRODUCT_NAME" />.
-
-      Te funkcije so prezrte, če ni nameščen spletni program za oddaljen dostop.</translation>
 <translation id="2633084400146331575">Vklop izgovorjave</translation>
 <translation id="2646290749315461919">Omogoča nastavitev, ali lahko spletna mesta sledijo uporabnikovi fizični lokaciji. Sledenje uporabnikovi fizični lokaciji je lahko privzeto dovoljeno, privzeto zavrnjeno ali pa je lahko uporabnik vprašan vsakič, ko spletno mesto zahteva fizično lokacijo.
 
@@ -649,7 +646,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, uporabniki ne morejo omogočiti proxyja, računalnik pa tiskalnikov ne bo smel dati v skupno rabo s storitvijo <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3357181471604560535">Chromium in Google Chrome podpirata isto skupino
       pravilnikov. Upoštevajte, da so lahko v tem dokumentu pravilniki,
-      namenjeni za neizdane različice programske opreme (tj. njihov vnos »podprto na«
+      namenjeni za neizdane različice programske opreme (tj. njihov vnos »podprto v različici«
       se nanaša na neizdano različico) in take pravilnike lahko
       brez obvestila spremenimo ali odstranimo.
 
@@ -1395,7 +1392,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Razširitev privzeto ne more uporabljati ključa, namenjenega rabi v podjetju, kar je enakovredno onemogočanju pravilnika allowCorporateKeyUsage za to razširitev.
 
-      Samo če je pravilnik allowCorporateKeyUsage za razširitev omogočen, lahko ta uporablja kateri koli ključ okolja, označen za rabo v podjetju, za podpisovanje poljubnih podatkov. To dovoljenje odobrite samo, če ste prepričani, da razširitev lahko zaščiti dostop do ključa pred napadalci.iive</translation>
+      Samo če je pravilnik allowCorporateKeyUsage za razširitev omogočen, lahko ta uporablja kateri koli ključ okolja, označen za rabo v podjetju, za podpisovanje poljubnih podatkov. To dovoljenje odobrite samo, če ste prepričani, da razširitev lahko zaščiti dostop do ključa pred napadalci.</translation>
 <translation id="6211428344788340116">Poročanje o času dejavnosti v napravi.
 
       Če nastavitev ni nastavljena ali je nastavljena na »True«, včlanjene naprave poročajo o času, ko je uporabnik aktiven v napravi. Če je nastavitev nastavljena na »False«, se čas dejavnosti v napravi ne beleži in se o njem ne poroča.</translation>
@@ -1968,9 +1965,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
 
           Če pravilnika ne nastavite, je visokokontrastni način prvotno onemogočen, vendar ga lahko uporabnik kadar koli omogoči.</translation>
-<translation id="8164246350636985940">The default behavior for sites not in any content pack.
+<translation id="8164246350636985940">Privzeto delovanje za spletna mesta, ki niso v paketih vsebine.
 
-          This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
+          Ta pravilnik je namenjen za notranjo uporabo v brskalniku <ph name="PRODUCT_NAME" /> samem.</translation>
 <translation id="8170878842291747619">Omogoča integrirano storitev Google Prevajalnik v brskalniku <ph name="PRODUCT_NAME" />.
 
      Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME" /> prikazal integrirano orodno vrstico z možnostjo prevoda strani za uporabnika, ko bo to primerno.

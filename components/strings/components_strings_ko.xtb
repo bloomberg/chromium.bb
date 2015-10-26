@@ -66,7 +66,6 @@
 <translation id="229702904922032456">루트 또는 중개 인증서가 만료되었습니다.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> 색인의 잘못된 북마크 무시됨</translation>
 <translation id="2354001756790975382">기타 북마크</translation>
-<translation id="2359808026110333948">계속</translation>
 <translation id="2367567093518048410">수준</translation>
 <translation id="2384307209577226199">엔터프라이즈 기본값</translation>
 <translation id="2386255080630008482">서버 인증서가 폐기되었습니다.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
-<translation id="2774256287122201187">계속 사용할 수 있습니다. 이 페이지를 계속 이용하는 경우 5분 동안 이 경고가 다시 표시되지 않습니다.</translation>
 <translation id="277499241957683684">기기 기록 없음</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> 인증</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">복사한 링크</translation>
 <translation id="375403751935624634">서버 오류가 발생하여 번역하지 못했습니다.</translation>
 <translation id="3759461132968374835">최근에 보고된 충돌이 없습니다. 충돌 보고를 사용 중지했을 때 발생한 충돌은 여기에 표시되지 않습니다.</translation>
-<translation id="385051799172605136">뒤로</translation>
 <translation id="3858027520442213535">시간과 날짜 업데이트</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
 <translation id="3885155851504623709">교구</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">유효성 검사 오류 <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Chrome에서 주소를 삭제하시겠습니까?</translation>
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
-<translation id="4607653538520819196">이 페이지는 데이터 세이버에 의해 프록시될 수 없습니다.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">보기</translation>
 <translation id="4923417429809017348">페이지가 알 수 없는 언어에서 <ph name="LANGUAGE_LANGUAGE" />(으)로 번역되었습니다.</translation>
 <translation id="4926049483395192435">지정해야 합니다.</translation>
-<translation id="4968547170521245791">프록시할 수 없음</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" />에서 <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
 <translation id="5019198164206649151">보조 기억 장치 상태가 잘못됨</translation>
 <translation id="5031870354684148875">Google 번역 정보</translation>
@@ -231,7 +226,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6282194474023008486">우편번호</translation>
 <translation id="6337534724793800597">이름별로 정책 필터링</translation>
-<translation id="6355080345576803305">공개 세션 재정의</translation>
+<translation id="6355080345576803305">공개 세션 무시</translation>
 <translation id="6387478394221739770">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/beta 페이지에서 베타 채널을 방문해 보세요.</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="6458467102616083041">정책에 의해 기본 검색의 사용이 중지되었기 때문에 무시됨</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">이 페이지 나오기</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6550675742724504774">옵션</translation>
-<translation id="6597614308054261376"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />에 접속을 시도하고 있습니다. 이 페이지는 현재 데이터 세이버에 의해 프록시될 수 없습니다.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 검색</translation>
 <translation id="6644283850729428850">이 정책은 사용되지 않습니다.</translation>
 <translation id="6646897916597483132">카드 앞면의 4자리 CVC를 입력하세요.</translation>
@@ -301,7 +295,7 @@
 <translation id="7938958445268990899">서버 인증서가 유효하지 않습니다.</translation>
 <translation id="7951415247503192394">(32비트)</translation>
 <translation id="7956713633345437162">모바일 북마크</translation>
-<translation id="7961015016161918242">완료되지 않음</translation>
+<translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7977590112176369853">&lt;검색어 입력&gt;</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" />를 항상 <ph name="TARGET_LANGUAGE" />로 번역</translation>
 <translation id="7988324688042446538">데스크톱 북마크</translation>

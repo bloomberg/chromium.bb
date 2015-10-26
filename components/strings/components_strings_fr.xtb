@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Un certificat racine ou intermédiaire a expiré.</translation>
 <translation id="2328300916057834155">Favori non valide ignoré (index <ph name="ENTRY_INDEX" />)</translation>
 <translation id="2354001756790975382">Autres favoris</translation>
-<translation id="2359808026110333948">Continuer</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="2384307209577226199">Valeur par défaut définie par l'entreprise</translation>
 <translation id="2386255080630008482">Le certificat du serveur a été révoqué.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
-<translation id="2774256287122201187">Vous pouvez continuer. Si vous accédez à la page, cet avertissement ne s'affichera pas pendant cinq minutes.</translation>
 <translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
 <translation id="2835170189407361413">Effacer le formulaire</translation>
 <translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Lien copié</translation>
 <translation id="375403751935624634">Échec de la traduction en raison d'une erreur de serveur</translation>
 <translation id="3759461132968374835">Aucune erreur n'a été signalée récemment. Les erreurs n'apparaissent ici que lorsque l'envoi de rapports d'erreur est activé.</translation>
-<translation id="385051799172605136">Retour</translation>
 <translation id="3858027520442213535">Mettre à jour la date et l'heure</translation>
 <translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
 <translation id="3885155851504623709">Paroisse</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
-<translation id="4607653538520819196">Impossible d'envoyer cette page par proxy via l'économiseur de données</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE" />.</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
-<translation id="4968547170521245791">Proxy impossible</translation>
 <translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE" /> cette page affichée en <ph name="ORIGINAL_LANGUAGE" /> ?</translation>
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Quitter cette page</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6550675742724504774">Options</translation>
-<translation id="6597614308054261376">Vous essayez d'accéder à <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Cette page ne peut pas être envoyée par proxy via l'économiseur de données pour le moment.</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>

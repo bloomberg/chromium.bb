@@ -13,7 +13,6 @@
 <translation id="123620459398936149">உங்கள் தரவை Chrome OS ஆல் ஒத்திசைக்க முடியவில்லை. உங்கள் கடவுச்சொற்றொடரைப் புதுப்பிக்கவும்.</translation>
 <translation id="127345590676626841">Chrome தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள். இந்தப் பதிவிறக்கம் முடியும்போது, Chrome மறுதொடக்கம் செய்யும், பிறகு உங்கள் பணியைத் தொடரலாம்.</translation>
 <translation id="1302523850133262269">சமீபத்திய முறைமை புதுப்பிப்புகளை Chrome நிறுவும் வரை காத்திருக்கவும்.</translation>
-<translation id="1348153800635493797">Google Wallet ஐப் பயன்படுத்த, நீங்கள் Chrome ஐ மேம்படுத்தவேண்டும் [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">வழக்கத்திற்கு மாறான செயல்பாட்டை Chrome கண்டறிந்தது</translation>
 <translation id="1393853151966637042">Chrome ஐப் பயன்படுத்தி உதவி பெறுக</translation>
 <translation id="1399397803214730675">Google Chrome இன் மிகச் சமீபத்திய பதிப்பு இந்தக் கணினியில் ஏற்கனவே உள்ளது. மென்பொருள் பணிபுரியவில்லை என்றால், Google Chrome சட்டகத்தினை நிறுவல்நீக்கம் செய்துவிட்டு, மீண்டும் முயற்சி செய்க.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Google API விசைகள் காணப்படவில்லை. Google Chrome இன் சில செயல்பாடுகள் முடக்கப்படும்.</translation>
 <translation id="2290095356545025170">Google Chrome நிறுவல் நீக்கம் செய்வதில் உறுதியாக உள்ளீர்களா?</translation>
 <translation id="2316129865977710310">வேண்டாம், நன்றி</translation>
+<translation id="2334084861041072223">பதிப்புரிமை <ph name="YEAR" /> Google Inc. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
 <translation id="2346876346033403680">இதற்கு முன்னர் ஒருவர் இந்தக் கணினியிலுள்ள Chrome இல் <ph name="ACCOUNT_EMAIL_LAST" /> ஆக உள்நுழைந்திருந்தார். அது உங்கள் கணக்கு இல்லையெனில், உங்கள் தகவலைத் தனியாக வைத்திருக்க புதிய Chrome பயனரை உருவாக்கவும்.
 
 எப்படியிருந்தாலும் உள்நுழைதல் <ph name="ACCOUNT_EMAIL_NEW" /> க்கான புக்மார்க்குகள், வரலாறு, மற்றும் பிற அமைப்புகள் போன்ற Chrome தகவலைப் பிணைக்கும்.</translation>
@@ -62,7 +62,6 @@
 <translation id="2769762047821873045">Google Chrome உங்கள் இயல்பு உலாவி அல்ல.</translation>
 <translation id="2770231113462710648">இயல்புநிலை உலாவியாக இதை அமை:</translation>
 <translation id="2871893339301912279">Chrome இல் உள்நுழைந்துள்ளீர்கள்!</translation>
-<translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />ஓபன் சோர்ஸ் திட்டப்பணி மற்றும் <ph name="BEGIN_LINK_OSS" />ஓபன் சோர்ஸ் மென்பொருள்<ph name="END_LINK_OSS" /> இவற்றால் Google Chrome ஐ உருவாக்குவது சாத்தியமானது.</translation>
 <translation id="3037838751736561277">Google Chrome பின்புலப் பயன்முறையில் இயங்குகிறது.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> ஐத் துண்டிப்பது, இந்தச் சாதனத்தில் உள்ள உங்கள் வரலாறு, புத்தகக்குறிகள், அமைப்புகள் மற்றும் பிற Chrome தரவை அழிக்கும். உங்கள் Google கணக்கில் சேமிக்கப்பட்ட தரவு அழிக்கப்படாது, மேலும் <ph name="GOOGLE_DASHBOARD_LINK" />Google டாஷ்போர்டில்<ph name="END_GOOGLE_DASHBOARD_LINK" /> நிர்வகிக்கலாம்.</translation>
 <translation id="3080151273017101988">Google Chrome மூடப்பட்டிருக்கும்போது பின்புல பயன்பாடுகளை இயக்க அனுமதி</translation>
@@ -138,6 +137,7 @@
 <translation id="5620765574781326016">பக்கத்தை விட்டு வெளியேறாமலே, இணையதளங்களில் தலைப்புகளைப் பற்றி அறியலாம்.</translation>
 <translation id="568643307450491754">Chrome மெனுவில் அல்லது புக்மார்க்குகள் பட்டியில் உங்கள் புக்மார்க்குகளைக் கண்டறிக.</translation>
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
+<translation id="5749068826913805084">கோப்புகளைப் பதிவிறக்க Chromeக்கு சேமிப்பிட அணுகல் தேவை.</translation>
 <translation id="5785746630574083988">Windows 8 பயன்முறையில் மீண்டும் தொடங்குவது, உங்கள் Chrome பயன்பாடுகளை மூடிவிட்டு மறுதுவக்கம் செய்யும்.</translation>
 <translation id="5799551393681493217">iframe-சார்ந்த Chrome உள்நுழைவு செயல்களை இயக்குகிறது. இந்தக் கொடி, வலை சார்ந்த உள்நுழைவை இயக்கு என்ற அமைப்பை மேலெழுதும்.</translation>
 <translation id="5855036575689098185">உங்கள் கணினியில் இயங்கும் மென்பொருள் Google Chrome உடன் இணங்கவில்லை.</translation>

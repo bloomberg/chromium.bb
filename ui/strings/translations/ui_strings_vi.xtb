@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="111910763555783249">Cài đặt thông báo</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ngày trước}other{# ngày trước}}</translation>
 <translation id="1167268268675672572">Di chuyển tới đầu dòng và sửa đổi lựa chọn</translation>
 <translation id="1190609913194133056">Trung tâm thông báo</translation>

@@ -389,7 +389,6 @@
 <translation id="2592091433672667839">在零售模式登录屏幕上显示屏幕保护程序之前的闲置时间</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">在<ph name="PRODUCT_NAME" />中配置远程访问选项。除非安装了远程访问网络应用，否则这些功能将被忽略。</translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="2650049181907741121">当用户合上屏幕时执行的操作</translation>
@@ -515,11 +514,11 @@
 <translation id="3067188277482006117">如果将此政策设为 true，那么用户可以使用 Chrome 设备上的硬件，通过 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 远程向隐私认证中心 (Privacy CA) 认证自己的身份。
 
           如果将此政策设为 false 或未进行设置，则会导致无法调用 API，并返回错误代码。</translation>
-<translation id="3069958900488014740">允许在<ph name="PRODUCT_NAME" />中停用 WPAD（网络代理自动发现）优化。
+<translation id="3069958900488014740">允许停用 <ph name="PRODUCT_NAME" /> 中的 WPAD（网络代理自动发现）优化设置。
 
-      如果此政策被设置为 false，那么 WPAD 优化将处于停用状态，这会致使<ph name="PRODUCT_NAME" />需要等待更长的时间才能收到基于 DNS 的 WPAD 服务器的响应。如果此政策未被设置或已被启用，那么 WPAD 优化将处于启用状态。
+      如果此政策设置为 false，那么 WPAD 优化将处于停用状态，这会延长 <ph name="PRODUCT_NAME" /> 等待基于 DNS 的 WPAD 服务器响应的时间。如果未设置或已启用此政策，那么 WPAD 优化设置将处于启用状态。
 
-      无论此政策是否已被设置或如何设置，WPAD 优化设置都无法由用户更改。</translation>
+      无论是否设置此政策或如何设置此政策，用户都无法更改 WPAD 优化设置。</translation>
 <translation id="3072045631333522102">用于零售模式登录屏幕的屏幕保护程序</translation>
 <translation id="3072847235228302527">为设备本地帐户设置服务条款</translation>
 <translation id="3096595567015595053">已启用插件的列表</translation>
@@ -861,9 +860,9 @@
 
       如果未配置此政策或将其设置为 true，那么只要 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME" /> 未阻止登录，用户就可以创建新的用户帐户。</translation>
 <translation id="4962195944157514011">指定要在执行默认搜索时使用的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在查询时将该字符串替换为用户搜索的字词。在启用了“DefaultSearchProviderEnabled”政策的情况下，此选项是必须设置的，而且只有在这种情况下才应遵循。</translation>
-<translation id="4971529314808359013">可让您指定一系列网址格式，从而指定在相应网站请求证书时<ph name="PRODUCT_NAME" />应自动为哪些网站选择客户端证书。
+<translation id="4971529314808359013">可让您指定一系列网址格式，从而指定 <ph name="PRODUCT_NAME" /> 应为哪些网站自动选择客户端证书（如果相应网站要求提供证书 ）。
 
-          此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 样式，其中 $URL_PATTERN 是内容设置格式。$FILTER 会限制相应浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与该服务器的证书请求相匹配的证书。如果 $FILTER 采用 { "ISSUER": { "CN": "$ISSUER_CN" } } 样式，系统则只会选择与该服务器的证书请求相匹配且由 CommonName 为 $ISSUER_CN 的证书颁发机构颁发的客户端证书。如果 $FILTER 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。
+          此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 样式，其中 $URL_PATTERN 是内容设置格式，而 $FILTER 会限制相应浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与该服务器的证书请求相匹配的证书。如果 $FILTER 采用 { "ISSUER": { "CN": "$ISSUER_CN" } } 样式，系统则只会选择由 CommonName 为 $ISSUER_CN 的证书颁发机构颁发的客户端证书。如果 $FILTER 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。
 
           如果未设置此政策，系统将不会为任何网站自动选择证书。</translation>
 <translation id="4980301635509504364">允许或拒绝视频捕获。
@@ -942,7 +941,7 @@
 
       允许用户登录到 <ph name="PRODUCT_NAME" />。
 
-      如果您设置了此政策，则可以指定是否允许用户登录到 <ph name="PRODUCT_NAME" />。如果将此政策设为“False”，使用 chrome.identity API 的应用和扩展程序将无法正常运行，因此我们建议您改用 SyncDisabled。</translation>
+      如果您设置了此政策，则可以配置是否允许用户登录到 <ph name="PRODUCT_NAME" />。如果将此政策设为“False”，使用 chrome.identity API 的应用和扩展程序将无法正常运行，因此我们建议您改用 SyncDisabled。</translation>
 <translation id="5304269353650269372">指定在使用电池供电时用户停止输入后隔多久系统才显示警告对话框。
 
           如果设置了此政策，则只要机器闲置的时间达到了此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会显示警告对话框，提示用户系统将会采取闲置操作。
@@ -1210,7 +1209,7 @@
 <translation id="6233173491898450179">设置下载目录</translation>
 <translation id="6244210204546589761">启动时打开的网址</translation>
 <translation id="6258193603492867656">指定生成的 Kerberos SPN 是否应包括非标准端口。如果您启用了此设置，并输入某个非标准端口（即除 80 或 443 以外的端口），该端口就会包括在生成的 Kerberos SPN 中。如果您停用或未配置此设置，生成的 Kerberos SPN 在任何情况下都不会包括端口。</translation>
-<translation id="6279809962528392889">指定在用户登录期间 SAML IdP 设置的身份验证 Cookie 是否转移到用户的个人资料中。
+<translation id="6279809962528392889">指定在用户登录期间 SAML IdP 设置的身份验证 Cookie 是否应转移到用户的个人资料中。
 
       当用户在登录期间通过 SAML IdP 进行身份验证时，IdP 设置的 Cookie 会先写入到临时的个人资料中。这些 Cookie 可以转移到用户的个人资料中，以便更新身份验证状态。
 

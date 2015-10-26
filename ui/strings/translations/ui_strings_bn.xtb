@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="111910763555783249">বিজ্ঞপ্তি সেটিংস</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{১ দিন পূর্বে}one{# দিন পূর্বে}other{# দিন পূর্বে}}</translation>
 <translation id="1167268268675672572">লাইনের শুরু পর্যন্ত সরান এবং নির্বাচন পরিবর্তন করুন</translation>
 <translation id="1190609913194133056">বিজ্ঞপ্তি কেন্দ্র</translation>

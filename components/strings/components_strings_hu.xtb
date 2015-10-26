@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Lejárt egy gyökér- vagy köztes tanúsítvány.</translation>
 <translation id="2328300916057834155">Mellőzött érvénytelen könyvjelző a(z) <ph name="ENTRY_INDEX" />. indexnél</translation>
 <translation id="2354001756790975382">További könyvjelzők</translation>
-<translation id="2359808026110333948">Folytatás</translation>
 <translation id="2367567093518048410">Szint</translation>
 <translation id="2384307209577226199">Vállalati alapértelmezett</translation>
 <translation id="2386255080630008482">A szerver tanúsítványát visszavonták.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
-<translation id="2774256287122201187">Folytathatja a böngészést. Ha továbblép az oldalra, akkor ez a figyelmeztetés a következő öt percben nem fog újra megjelenni.</translation>
 <translation id="277499241957683684">Hiányzó eszközrekord</translation>
 <translation id="2835170189407361413">Űrlap törlése</translation>
 <translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD" /> kártya igazolása</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Átmásolt link</translation>
 <translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
 <translation id="3759461132968374835">Nincs a közelmúltban bejelentett rendszerösszeomlás. A kikapcsolt jelentésküldés során történt összeomlások nem jelennek meg itt.</translation>
-<translation id="385051799172605136">Vissza</translation>
 <translation id="3858027520442213535">Dátum és idő frissítése</translation>
 <translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
 <translation id="3885155851504623709">Körzet</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
 <translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
-<translation id="4607653538520819196">Ez az oldal nem jeleníthető meg az Adatforgalom-csökkentő használatával.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa hibákat tartalmaz. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="4726672564094551039">Házirendek újratöltése</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
-<translation id="4968547170521245791">A helyettesítés (proxy) nem hajtható végre</translation>
 <translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE" /> nyelvről <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6550675742724504774">Beállítások</translation>
-<translation id="6597614308054261376">A következő webhelyet próbálja elérni: <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Az Adatforgalom-csökkentő jelenleg nem tudja megjeleníteni ezt az oldalt.</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>

@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านสำหรับการซิงค์</translation>
 <translation id="127345590676626841">Chrome ทำการอัปเดตโดยอัตโนมัติเพื่อให้คุณมีเวอร์ชันใหม่ล่าสุดเสมอ เมื่อดาวน์โหลดเสร็จ Chrome จะรีสตาร์ท และคุณจะสามารถใช้งานได้ทันที</translation>
 <translation id="1302523850133262269">โปรดรอขณะที่ Chrome ติดตั้งการอัปเดตระบบล่าสุด</translation>
-<translation id="1348153800635493797">คุณต้องอัปเกรด Chrome เพื่อใช้ Google Wallet [<ph name="ERROR_CODE" />]</translation>
 <translation id="1350930993895295930">Chrome ตรวจพบการทำงานที่ผิดปกติ</translation>
 <translation id="1393853151966637042">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome</translation>
 <translation id="1399397803214730675">คอมพิวเตอร์เครื่องนี้มี Google Chrome รุ่นใหม่กว่าแล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome แล้วลองใหม่อีกครั้ง</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">คีย์ API ของ Google หายไป การทำงานบางอย่างของ Google Chrome จะถูกปิดใช้งาน</translation>
 <translation id="2290095356545025170">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการติดตั้ง Google Chrome</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
+<translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2346876346033403680">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chrome บนคอมพิวเตอร์นี้ในชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> หากนั่นไม่ใช่บัญชีของคุณ ให้สร้างผู้ใช้ Chrome ใหม่เพื่อเก็บข้อมูลแยก
 
 การลงชื่อเข้าใช้ต่อไปจะรวมข้อมูล Chrome เช่น บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ เข้ากับ <ph name="ACCOUNT_EMAIL_NEW" /></translation>
@@ -62,7 +62,6 @@
 <translation id="2769762047821873045">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้นโดยอัตโนมัติของคุณ</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="2871893339301912279">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว!</translation>
-<translation id="2874156562296220396">Google Chrome เป็นจริงขึ้นได้จากโครงการโอเพนซอร์ส <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> และ <ph name="BEGIN_LINK_OSS" />ซอฟต์แวร์โอเพนซอร์สอื่นๆ<ph name="END_LINK_OSS" /></translation>
 <translation id="3037838751736561277">Google Chrome กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>
 <translation id="3047079729301751317">การยกเลิกการเชื่อมต่อกับ <ph name="USERNAME" /> จะล้างประวัติการเข้าชม บุ๊กมาร์ก การตั้งค่า และข้อมูลอื่นๆ ของ Chrome ที่เก็บไว้ในอุปกรณ์นี้ ข้อมูลที่เก็บไว้ในบัญชี Google ของคุณจะไม่ถูกล้างและสามารถจัดการได้บน <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" /></translation>
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>

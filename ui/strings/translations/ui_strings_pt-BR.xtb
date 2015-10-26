@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="111910763555783249">Configurações de notificação</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Um dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
 <translation id="1167268268675672572">Mover para o começo da linha e modificar seleção</translation>
 <translation id="1190609913194133056">Central de Notificações</translation>

@@ -9,7 +9,7 @@
 
       Si esta política se establece en false, las estadísticas no se informarán.
       Si se establece en true o se deja sin configurar, las estadísticas se informarán.</translation>
-<translation id="1046484220783400299">Habilitar funciones de Web Platform en desuso durante un período limitado</translation>
+<translation id="1046484220783400299">Habilitar funciones de Web Platform, que dejaron de estar disponibles, durante un período limitado</translation>
 <translation id="1047128214168693844">No permitir que ningún sitio rastree la ubicación física de los usuarios.</translation>
 <translation id="1057535219415338480">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
 
@@ -31,7 +31,7 @@
 
           Esta política no está disponible en instancias de Windows que no estén unidas
           a un dominio de Active Directory.</translation>
-<translation id="1090892140761957285">URL para la validación del token de autenticación del cliente de acceso remoto.
+<translation id="1090892140761957285">URL para la validación del token de autenticación del cliente de acceso remoto
 
           Si esta política se establece, el host de acceso remoto usará esta URL para validar tokens de autenticación de clientes de acceso remoto para aceptar conexiones. Se debe usar junto con RemoteAccessHostTokenUrl.
 
@@ -48,10 +48,9 @@
 
       Si esta política se establece en "False", no se informará sobre el estado del conmutador de dispositivo.</translation>
 <translation id="1160939557934457296">Inhabilita continuar desde la página de advertencia de Navegación segura.</translation>
-<translation id="1198465924256827162">Frecuencia de envío de subidas de estado del dispositivo, en milisegundos.
+<translation id="1198465924256827162">Frecuencia de envío de cargas de estado del dispositivo, en milisegundos.
 
-      Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia
-      mínima permitida es de 60 segundos.</translation>
+      Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia mínima permitida es de 60 segundos.</translation>
 <translation id="1213523811751486361">Especifica la URL del motor de búsqueda que se utiliza para brindar sugerencias de búsqueda. La URL debe contener la cadena "<ph name="SEARCH_TERM_MARKER" />", que será reemplazada al realizar la consulta por el texto que el usuario haya introducido hasta el momento. Esta política es opcional. Si no se establece, no se utilizará ninguna URL sugerida. Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="1221359380862872747">Cargar las URL especificadas en el inicio de sesión del demo</translation>
 <translation id="1240643596769627465">Especifica la URL del motor de búsqueda que se utiliza para proporcionar resultados inmediatos. La URL debe contener la cadena <ph name="SEARCH_TERM_MARKER" />, que será reemplazada al realizar la consulta por el texto que el usuario haya introducido hasta el momento. Esta política es opcional. Si no se establece, no se proporcionarán resultados de búsqueda instantáneos. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
@@ -74,7 +73,7 @@
 <translation id="1330985749576490863">Inhabilita Google Drive a través de conexiones móviles en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nombre de la política</translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
-<translation id="1359553908012294236">Si esta política no se configura o se establece en true, <ph name="PRODUCT_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de navegación de incógnito.
+<translation id="1359553908012294236">Si esta política no se configura o se establece en true, <ph name="PRODUCT_NAME" /> permitirá acceder como invitado. Los accesos como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de navegación de incógnito.
 
       Si esta política se establece en false, <ph name="PRODUCT_NAME" /> no permitirá que se inicien perfiles de invitado.</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
@@ -218,9 +217,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
-<translation id="2166715102875984646">Inhabilitar la compatibilidad para API gráficas en 3D.
+<translation id="2166715102875984646">Inhabilitar la compatibilidad para API gráficas en 3D
 
-      Al habilitar esta configuración, las páginas web no pueden acceder a la unidad de procesamiento gráfico (GPU). Las páginas web no pueden acceder específicamente a la API WebGL y los complementos no pueden usar la API Pepper 3D.
+      Al habilitar esta configuración, las páginas web no pueden acceder a la unidad de procesamiento gráfico (GPU). Las páginas web no pueden acceder específicamente a la API WebGL, y los complementos no pueden usar la API Pepper 3D.
 
       Si se inhabilita esta configuración o no se establece, se permite potencialmente a las páginas web usar la API WebGL y a los complementos utilizar la API Pepper 3D. Es posible que las configuraciones predeterminadas del navegador aún necesiten que se pasen argumentos de línea de comandos para poder usar estas API.
 
@@ -229,9 +228,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="2175836933294053665">Configura una lista de marcadores administrados.
 
-      La política consiste en una lista de marcadores en la que cada marcador es un diccionario con las teclas "name" y "url" que contienen el nombre del marcador y el destino. Se puede configurar una subcarpeta, al definir un marcador sin una tecla "url" pero con una tecla adicional "children" que contiene una lista de marcadores como se definió anteriormente (algunos de los cuales pueden ser carpetas). <ph name="PRODUCT_NAME" /> corrige las URL incompletas como si se enviaran a través de un cuadro multifunción, por ejemplo "google.com" se convierte en "https://google.com/".
+      La política consiste en una lista de marcadores en la que cada marcador es un diccionario con las teclas "name" y "url" que contienen el nombre del marcador y el destino. Se puede configurar una subcarpeta al definir un marcador sin una tecla "url" pero con una tecla adicional "children" que contiene una lista de marcadores como se definió anteriormente (algunos de los cuales pueden ser carpetas). <ph name="PRODUCT_NAME" /> corrige las URL incompletas como si se enviaran a través de un cuadro multifunción; por ejemplo, "google.com" se convierte en "https://google.com/".
 
-      Estos marcadores se ubican en una carpeta de marcadores administrados. El usuario no puede modificarla, pero puede ocultarla de la barra de marcadores. Los marcadores administrados no están sincronizados con la cuenta del usuario y las extensiones no pueden modificarlos.</translation>
+      Estos marcadores se ubican en una carpeta de marcadores administrados. El usuario no puede modificarla, pero puede ocultarla de la barra de marcadores. Los marcadores administrados no están sincronizados con la cuenta del usuario, y las extensiones no pueden modificarlos.</translation>
 <translation id="2188979373208322108">Habilita la barra de marcadores en <ph name="PRODUCT_NAME" />. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> mostrará una barra de marcadores. Si se inhabilita esta configuración, los usuarios no podrán ver la barra de marcadores. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />. Si esta configuración no se configura, el usuario podrá decidir si desea usar esta función o no.</translation>
 <translation id="2201555246697292490">Configurar la lista blanca de mensajería nativa</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
@@ -306,9 +305,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Es posible definir excepciones en la política de lista blanca de URL. Estas políticas se limitan a 1000 entradas; las entradas posteriores se ignorarán.
 
       Si esta política no se configura, no se incluirá ninguna URL en la lista negra en el navegador.</translation>
-<translation id="240213793013362302">Configurar la imagen del fondo de pantalla.
+<translation id="240213793013362302">Configurar la imagen del fondo de pantalla
 
-      Esta política permite configurar la imagen del fondo de pantalla del escritorio y el fondo de la pantalla de acceso del usuario. Para establecerla, se debe indicar la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen del fondo de pantalla y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG y el tamaño de archivo no debe superar los 16 MB. Se debe poder acceder a la URL sin autenticación previa.
+      Esta política permite configurar la imagen del fondo de pantalla del escritorio y el fondo de la pantalla de acceso del usuario. Para establecerla, se debe indicar la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen del fondo de pantalla y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG, y el tamaño de archivo no debe superar los 16 MB. Se debe poder acceder a la URL sin autenticación previa.
 
       La imagen del fondo de pantalla se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
 
@@ -398,7 +397,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2592091433672667839">Duración de la inactividad antes de que se muestre el protector de pantalla en el modo de venta</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Configura las opciones de acceso remoto de <ph name="PRODUCT_NAME" />. Estas funciones no se tienen en cuenta a menos que se instale la aplicación web para acceso remoto.</translation>
 <translation id="2633084400146331575">Habilitar los comentarios de voz</translation>
 <translation id="2646290749315461919">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. El rastreo de la ubicación física de los usuarios puede autorizarse en forma predeterminada, puede denegarse en forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física. Si esta política no se configura, se usará "AskGeolocation" y el usuario podrá cambiarla.</translation>
 <translation id="2650049181907741121">Medida que se debe tomar cuando el usuario cierra la tapa</translation>
@@ -407,7 +405,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Cuando ocurra un error de enlace de TLS, <ph name="PRODUCT_NAME" /> volverá a probar la conexión con una versión anterior de TLS para que solucione los errores en los servidores HTTPS. Este ajuste configura la versión en la que se interrumpirá el proceso de resguardo. Si un servidor realiza una negociación de versión correctamente (es decir, sin interrumpir la conexión), esta configuración no se aplica. Independientemente de esto, la conexión resultante debe cumplir con SSLVersionMin.
 
-      Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada que es TLS 1.0 en <ph name="PRODUCT_NAME" /> 44 y TLS 1.1 en versiones posteriores. Se debe tener en cuenta que esto no inhabilita la compatibilidad con TLS 1.0, únicamente si <ph name="PRODUCT_NAME" /> funcionará con servidores con errores que no pueden negociar versiones correctamente.
+      Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada que es TLS 1.0 en <ph name="PRODUCT_NAME" /> 44 y TLS 1.1 en versiones posteriores. Se debe tener en cuenta que esto no inhabilita la compatibilidad con TLS 1.0, únicamente si <ph name="PRODUCT_NAME" /> soluciona los servidores con errores que no pueden negociar versiones correctamente.
 
       De lo contrario, puede establecerse en uno de los siguientes valores: "tls1", "tls1.1" o "tls1.2". Si se debe mantener la compatibilidad con un servidor con errores, se puede establecer en "tls1". Esta es una medida temporal y los errores del servidor se deben solucionar rápidamente.
 
@@ -526,7 +524,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si se establece como Falso o si no se establece ninguna opción, las llamadas a la API fallarán y mostrarán un código de error.</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (Web Proxy Auto-Discovery) en <ph name="PRODUCT_NAME" />.
 
-      Si esta política se establece en false, la optimización de WPAD se inhabilita, lo que hace que <ph name="PRODUCT_NAME" /> espere más tiempo a los servidores de WPAD basados en DNS.  Si la política se habilita o no se establece, la optimización de WPAD se habilita.
+      Si esta política se establece en false, la optimización de WPAD se inhabilita, lo que hace que <ph name="PRODUCT_NAME" /> espere más tiempo a los servidores de WPAD basados en DNS. Si la política se habilita o no se establece, la optimización de WPAD se habilita.
 
       Independientemente de si se establece esta política o de cómo se configura, los usuarios no pueden cambiar la configuración de optimización de WPAD.</translation>
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
@@ -631,15 +629,15 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758249152301468420">Inhabilitar herramientas para desarrolladores</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario que saldrá del navegador porque se encuentra inactivo</translation>
-<translation id="3768412594120638208">Permite controlar el tipo de aplicaciones o extensiones que se pueden instalar.
+<translation id="3768412594120638208">Permite controlar el tipo de apps o extensiones que se pueden instalar.
 
-          Esta configuración incluye en la lista blanca los tipos de extensiones o aplicaciones que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas y cada una de ellas debe ser uno de los siguientes elementos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información, consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" />.
+          Esta configuración incluye en la lista blanca los tipos de extensiones o apps que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas y cada una de ellas debe ser uno de los siguientes elementos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información, consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" />.
 
-          Ten en cuenta que esta política también fuerza a las extensiones y a las aplicaciones para que se instalen a través de ExtensionInstallForcelist.
+          Ten en cuenta que esta política también fuerza a las extensiones y a las apps para que se instalen a través de ExtensionInstallForcelist.
 
-          Si esta opción se configura, no se instalarán las extensiones o aplicaciones que tengan un tipo que no esté incluido en la lista.
+          Si esta opción se configura, no se instalarán las extensiones o apps que tengan un tipo que no esté incluido en la lista.
 
-          Si esta opción no se configura, no se aplicará ninguna restricción sobre los tipos de extensiones o aplicaciones aceptados.</translation>
+          Si esta opción no se configura, no se aplicará ninguna restricción sobre los tipos de extensiones o apps aceptados.</translation>
 <translation id="3780152581321609624">Incluir puerto no estándar en el SPN de Kerberos</translation>
 <translation id="3788662722837364290">Configuración de la administración de energía cuando el usuario está inactivo</translation>
 <translation id="3793095274466276777">Configura los controles del navegador predeterminado en <ph name="PRODUCT_NAME" /> y evita que los usuarios los cambien. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> siempre comprobará al iniciarse si es el navegador predeterminado y se registrará automáticamente en caso de ser posible. Si esta opción está inhabilitada, <ph name="PRODUCT_NAME" /> nunca verificará si es el navegador predeterminado e inhabilitará los controles de usuario para poder configurar esta opción. Si no se ha establecido esta configuración, <ph name="PRODUCT_NAME" /> permitirá al usuario controlar si es el navegador predeterminado y si las notificaciones para el usuario deben mostrarse cuando no lo es.</translation>
@@ -716,9 +714,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="4052765007567912447">Controla si el usuario puede mostrar contraseñas no cifradas en el administrador de contraseñas. Si se inhabilita esta configuración, el administrador de contraseñas no permitirá mostrar las contraseñas no cifradas en la ventana del administrador de contraseñas. Si se habilita esta política o si no se configura, los usuarios podrán ver sus contraseñas no cifradas en el administrador de contraseñas.</translation>
 <translation id="4056910949759281379">Inhabilitar el protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo incógnito forzado</translation>
-<translation id="4088983553732356374">Permite establecer si los sitios web pueden configurar datos locales. La configuración de datos locales puede permitirse para todos los sitios web o rechazarse para todos los sitios web.
+<translation id="4088983553732356374">Permite establecer si los sitios web pueden configurar datos locales. La configuración de datos locales puede permitirse para todos los sitios web o rechazarse para todos ellos.
 
-          Si esta política se establece en "Guardar las cookies durante la sesión", las cookies se borrarán cuando se cierre la sesión. Se debe tener en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en "modo en segundo plano", es posible que la sesión no se cierre cuando se cierre la última ventana. Para obtener más información sobre cómo configurar este comportamiento, se debe consultar la política "BackgroundModeEnabled".
+          Si esta política se establece en "Guardar las cookies durante la sesión", las cookies se borrarán cuando se cierre la sesión. Se debe tener en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en "modo en segundo plano", es posible que la sesión no se cierre cuando se cierre la última ventana. Para obtener más información sobre cómo configurar este comportamiento, se debe consultar la política "BackgroundModeEnabled". 
 
           Si esta política no se establece, se usará "AllowCookies" y el usuario podrá modificarlo.</translation>
 <translation id="410478022164847452">Especifica el período de tiempo sin intervención del usuario después de que se tome la medida de inactividad si se usa alimentación de CA.
@@ -729,9 +727,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           El valor de la política debe especificarse en milisegundos.</translation>
 <translation id="4121350739760194865">Impedir que aparezcan las promociones de aplicaciones en la página de la nueva pestaña</translation>
-<translation id="4147054660081653009">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl.
+<translation id="4147054660081653009">Certificado de cliente para conectarse a  RemoteAccessHostTokenValidationUrl
 
-          Si esta política está establecida, el host usará un certificado de cliente con el CN de emisor determinado para autenticarse en RemoteAccessHostTokenValidationUrl. Si se establece en "*", se usa cualquier certificado de cliente disponible.
+          Si esta política se establece, el host usará un certificado de cliente con el CN de emisor determinado para autenticarse en RemoteAccessHostTokenValidationUrl. Si se establece en "*", se usa cualquier certificado de cliente disponible.
 
           Actualmente, esta función está inhabilitada del lado del servidor.</translation>
 <translation id="4157003184375321727">Informar la versión de firmware y SO.</translation>
@@ -761,8 +759,8 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
-<translation id="4337944790873898250">Si esta política está establecida en true, <ph name="PRODUCT_NAME" /> maximizará incondicionalmente la primera ventana que se muestre en la primera ejecución .
-      Si esta política está establecida en false o no está configurada, un método heurístico decidirá si se maximizará la primera ventana mostrada en función del tamaño de pantalla.</translation>
+<translation id="4337944790873898250">Si esta política se establece en true, <ph name="PRODUCT_NAME" /> maximizará incondicionalmente la primera ventana que se muestre en la primera ejecución.
+      Si esta política se establece en false o no se configura, un método heurístico decidirá si se maximizará la primera ventana que se muestra, en función del tamaño de la pantalla.</translation>
 <translation id="436581050240847513">Informar interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir a todos los sitios que muestren todas las imágenes</translation>
@@ -817,14 +815,14 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="4650759511838826572">Inhabilitar los esquemas de protocolo de la dirección URL</translation>
 <translation id="465099050592230505">Indica la URL de la tienda web de la empresa (en desuso).</translation>
 <translation id="4655130238810647237">Habilita o inhabilita la edición de marcadores en <ph name="PRODUCT_NAME" />. Si se habilita esta configuración, los marcadores se podrán agregar, quitar o modificar. Este también es el valor predeterminado cuando no se configura la política. Si se inhabilita esta configuración, los marcadores no se podrán agregar, eliminar ni modificar. Los marcadores existentes aún están disponibles.</translation>
-<translation id="4665897631924472251">Configuración de administración de extensiones</translation>
+<translation id="4665897631924472251">Configuración de la administración de extensiones</translation>
 <translation id="4668325077104657568">Configuración de imágenes predeterminadas</translation>
 <translation id="467236746355332046">Características admitidas</translation>
 <translation id="467449052039111439">Abrir una lista de direcciones URL</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
 <translation id="4723829699367336876">Habilitar el cruce seguro de firewall desde clientes de acceso remoto</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación de HTTP integrada</translation>
-<translation id="4744190513568488164">Servidores a los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios.
+<translation id="4744190513568488164">Servidores a los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios
 
           Separa los distintos nombres de servidor con comas. Se permite el uso de caracteres comodín (*).
 
@@ -883,7 +881,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="4962195944157514011">Especifica la URL del motor de búsqueda que se utiliza para realizar una búsqueda predeterminada. La URL debe contener la cadena "<ph name="SEARCH_TERM_MARKER" />", que será reemplazada al realizar la consulta por los términos que el usuario está buscando. Esta opción debe configurarse cuando la política "DefaultSearchProviderEnabled" esté habilitada y solo se respetará en este caso.</translation>
 <translation id="4971529314808359013">Permite especificar una lista de patrones de url que especifican sitios para los cuales <ph name="PRODUCT_NAME" /> debería seleccionar de forma automática un certificado de cliente, en caso de que el sitio requiera un certificado.
 
-          El valor debe ser una serie de diccionarios JSON con strings. Cada diccionario debe tener la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, donde $URL_PATTERN es un patrón de configuración de contenido. $FILTER restringe los certificados de cliente que el navegador seleccionará de forma automática. Independientemente del filtro, solo se seleccionarán los certificados que coincidan con la solicitud de certificado del servidor. Si $FILTER tiene la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, solo se seleccionarán de forma adicional los certificados de cliente emitidos por un certificado con el nombre común $ISSUER_CN. Si $FILTER es el diccionario vacío {}, las selección de certificados de cliente no se restringe de forma adicional.
+          El valor debe ser una serie de diccionarios JSON con strings. Cada diccionario debe tener la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, donde $URL_PATTERN es un patrón de configuración de contenido. $FILTER restringe los certificados de cliente que el navegador seleccionará de forma automática. Independientemente del filtro, solo se seleccionarán los certificados que coincidan con la solicitud de certificado del servidor. Si $FILTER tiene la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, solo se seleccionarán de forma adicional los certificados de cliente emitidos por un certificado con el nombre común $ISSUER_CN. Si $FILTER es el diccionario vacío {}, la selección de certificados de cliente no se restringe de forma adicional.
 
           Si no se establece esta política, no se realizará ninguna autoselección para ningún sitio.</translation>
 <translation id="4980301635509504364">Permite o rechaza la captura de video.
@@ -968,7 +966,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Permite que el usuario acceda a <ph name="PRODUCT_NAME" />.
 
-      Si se establece esta política, se puede configurar si un usuario puede acceder a <ph name="PRODUCT_NAME" />. Si esta política se establece en "False", se impedirá que funcionen las aplicaciones y extensiones que usan la API chrome.identity, por lo que se puede usar SyncDisabled en su lugar.</translation>
+      Si se establece esta política, se puede configurar si un usuario puede acceder a <ph name="PRODUCT_NAME" />. Si esta política se establece en "False", se impedirá que funcionen las apps y extensiones que usan la API chrome.identity, por lo que se puede usar SyncDisabled en su lugar.</translation>
 <translation id="5304269353650269372">Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con batería.
 
           Cuando se establece esta política, se especifica la cantidad de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
@@ -1101,7 +1099,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="5815129011704381141">Reinicia automáticamente después de la actualización.</translation>
 <translation id="5826047473100157858">Especifica si el usuario puede abrir páginas en modo incógnito en <ph name="PRODUCT_NAME" />. Si se habilita o si  no se configura la política, las páginas podrán abrirse en modo incógnito. Si se inhabilita, las páginas no podrán abrirse en modo incógnito. Si se fuerza el modo incógnito, las páginas podrán abrirse SOLO en modo incógnito.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
-<translation id="5845159892130426052">Habilitar API ShowModalDialog hasta el 04-30-2015</translation>
+<translation id="5845159892130426052">Habilitar API ShowModalDialog hasta el 30-04-2015</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de los comentarios por voz en la pantalla de acceso.
 
           Si esta política se establece como verdadera, los comentarios por voz estarán habilitados cuando se muestre la pantalla de acceso.
@@ -1114,12 +1112,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="5868414965372171132">Configuración de red de usuario</translation>
 <translation id="588135807064822874">Habilitar Tocar para buscar</translation>
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
-<translation id="5887291617378691520">Si se selecciona "Abrir una lista de direcciones URL" como acción de inicio, esto permitirá especificar la lista de URL que se abrirán. Si no se establece, no se abrirá ninguna URL en el inicio.
+<translation id="5887291617378691520">Si se selecciona "Abrir una lista de direcciones URL" como acción de inicio, esto permitirá especificar la lista de las URL que se abrirán. Si no se establece, no se abrirá ninguna URL en el inicio.
 
           Esta política solo funciona si la política "RestoreOnStartup" está establecida en "RestoreOnStartupIsURLs".
 
-          Esta política no está disponible en instancias de Windows que no estén unidas
-          a un dominio de Active Directory.</translation>
+          Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="5887414688706570295">Configura el prefijo TalkGadget que será utilizado por los hosts de acceso remoto y que evita que los usuarios lo cambien.
 
           Si se especifica, este prefijo se antepone al nombre base de TalkGadget para crear un nombre de dominio completo para TalkGadget. El nombre de dominio base de TalkGadget es ".talkgadget.google.com".
@@ -1165,9 +1162,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="602728333950205286">URL instantánea del proveedor de búsqueda predeterminado</translation>
 <translation id="603410445099326293">Parámetros para URL de sugerencia que utiliza POST</translation>
 <translation id="6036523166753287175">Habilitar el cruce seguro de firewall desde hosts de acceso remoto</translation>
-<translation id="6059543311891422586">Usar aceleración de hardware cuando esté disponible.
+<translation id="6059543311891422586">Usar aceleración de hardware cuando esté disponible
 
-      Si esta política se establece en true o no se establece, se habilitará la aceleración de hardware a menos que una función de GPU específica esté incluida en la lista negra.
+      Si esta política se establece en true o no se establece, se habilitará la aceleración de hardware, a menos que una función de GPU específica esté incluida en la lista negra.
 
       Si esta política se establece en false, se inhabilitará la aceleración de hardware.</translation>
 <translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio.</translation>
@@ -1194,13 +1191,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
 <translation id="6157537876488211233">Lista separada por comas de las normas de omisión de proxy</translation>
 <translation id="6158324314836466367">Indica el nombre de la tienda web de la empresa (en desuso).</translation>
-<translation id="6167074305866468481">Advertencia: La compatibilidad con SSLv3 se eliminará completamente de <ph name="PRODUCT_NAME" /> después de la versión 43 (alrededor de julio de 2015) y esta política se eliminará en el mismo momento.
+<translation id="6167074305866468481">Advertencia: La compatibilidad con SSLv3 se eliminará completamente de <ph name="PRODUCT_NAME" /> después de la versión 43 (alrededor de julio de 2015), y esta política se eliminará en el mismo momento.
 
-      Si esta política no está configurada, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada que es SSLv3 en <ph name="PRODUCT_NAME" /> 39 y TLS 1.0 en versiones posteriores.
+      Si esta política no está configurada, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada que es SSLv3 en <ph name="PRODUCT_NAME" /> 39 y TLS 1.0 in en versiones posteriores.
 
       De lo contrario, se puede establecer en uno de los siguientes valores: "sslv3", "tls1", "tls1.1" o "tls1.2". Cuando esté establecida, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS inferiores a la versión especificada. Se ignorarán los valores no reconocidos.
 
-      Se debe tener en cuenta que, a pesar del número, "sslv3" es una versión anterior que "tls1".</translation>
+      Se debe tener en cuenta que, a pesar del número, "sslv3" es una versión anterior a "tls1".</translation>
 <translation id="6177482277304066047">Establece una versión de destino para las Actualizaciones automáticas.
 
       Especifica el prefijo de una versión de destino a la que <ph name="PRODUCT_OS_NAME" /> se debe actualizar. Si el dispositivo se ejecuta en una versión anterior al prefijo especificado, se actualizará a la versión más reciente con el prefijo dado. Si el dispositivo ya está en una versión más reciente, no se realizarán cambios (es decir, no se cambia a una versión anterior) y el dispositivo permanecerá en la versión actual. El formato de prefijo funciona de acuerdo al componente como se demuestra en el siguiente ejemplo:
@@ -1236,14 +1233,14 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Cuando esta política se establece en true, las cookies establecidas por el IdP se transfieren al perfil del usuario cada vez que se autentica con el IdP de SAML durante el acceso.
 
-      Cuando esta política se establece en false o no se establece, las cookies establecidas por el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en un dispositivo.
+      Cuando esta política se establece en false o no se configura, las cookies establecidas por el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en un dispositivo.
 
-      Esta política afecta solamente a los usuarios cuyo dominio coincida con el dominio de inscripción del dispositivo. Para todos los demás usuarios, las cookies establecidas por el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en el dispositivo.</translation>
+      Esta política afecta solamente a los usuarios cuyo dominio coincide con el dominio de inscripción del dispositivo. Para todos los demás usuarios, las cookies establecidas por el IdP se transfieren al perfil del usuario únicamente durante el primer acceso en el dispositivo.</translation>
 <translation id="6281043242780654992">Permite configurar las políticas de mensajería nativa. A menos que se incluyan en la lista blanca, los hosts de mensajería nativa incluidos en la lista negra estarán bloqueados.</translation>
 <translation id="6282799760374509080">Permitir o rechazar la captura de audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Habilitar la opción de autocompletar el nombre de dominio durante el accceso del usuario</translation>
-<translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política está establecida en true, los usuarios pueden hacer clic en estas páginas de advertencia.
+<translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
       Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>
 <translation id="6353901068939575220">Especifica los parámetros utilizados al buscar una URL con POST. Se compone de pares de nombre/valor separados por comas. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
@@ -1279,7 +1276,7 @@ desactivarlo).</translation>
 
       Si se inhabilita esta configuración, los usuarios no podrán usar Smart Lock.
 
-      Si esta política no se establece, el ajuste predeterminado es que no se permite el uso para usuarios administrados por empresas y se permite para usuarios no administrados.</translation>
+      Si esta política no se establece, el ajuste predeterminado no se permite para usuarios administrados por empresas y sí se permite para usuarios no administrados.</translation>
 <translation id="6513756852541213407">Te permite establecer el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy. Si se elige no utilizar un servidor proxy y conectarse siempre directamente, todas las demás opciones se ignoran. Si se elige utilizar la configuración del proxy del sistema o la detección automática del servidor proxy, todas las demás opciones se ignoran. Si se elige el modo proxy del servidor, se pueden establecer más opciones en "Dirección o URL del servidor proxy" y "Lista separada por comas de las normas de omisión de proxy". Si se elige usar una secuencia de comandos proxy .pac, se debe especificar la dirección URL en la secuencia de comandos en la "URL a un archivo proxy .pac". Para obtener ejemplos más detallados, visita <ph name="PROXY_HELP_URL" />. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> ignora todas las opciones relacionadas con el proxy especificadas desde la línea de comandos. Si esta política no se configura, los usuarios podrán elegir la configuración de proxy.</translation>
 <translation id="6520802717075138474">Importar los motores de búsqueda desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="653608967792832033">Especifica el período de tiempo sin intervención del usuario después del cual la pantalla se bloquea si funciona con alimentación de batería.
@@ -1371,7 +1368,7 @@ desactivarlo).</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
-<translation id="6828905844648501476">Si esta política se establece en true o no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción de agregar persona desde el administrador de usuarios.
+<translation id="6828905844648501476">Si esta política se establece en true o no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción de agregar una persona desde el administrador de usuarios.
 
       Si esta política se establece en false, <ph name="PRODUCT_NAME" /> no permitirá la creación de perfiles nuevos desde el administrador de perfiles.</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
@@ -1435,11 +1432,11 @@ desactivarlo).</translation>
       micrófono integrado.</translation>
 <translation id="7115494316187648452">Determina si se inició un proceso de <ph name="PRODUCT_NAME" /> en el SO y mantiene su ejecución cuando se cierra la última ventana del navegador, lo que permite que las aplicaciones en segundo plano y la sesión de navegación actual se mantengan activas, incluidas las cookies de la sesión. El proceso en segundo plano muestra un ícono en la bandeja del sistema y siempre se puede cerrar desde allí.
 
-      Si esta política se establece en True, se habilita el modo en segundo plano y el usuario no puede controlarlo en la configuración del navegador.
+      Si esta política se establece en True, se habilita el modo en segundo plano, y el usuario no puede controlarlo en la configuración del navegador.
 
-      Si esta política se establece en False, se inhabilita el modo en segundo plano y el usuario no puede controlarlo en la configuración del navegador.
+      Si esta política se establece en False, se inhabilita el modo en segundo plano, y el usuario no puede controlarlo en la configuración del navegador.
 
-      Si esta política no se establece, el modo en segundo plano se inhabilita inicialmente y el usuario puede controlarlo en la configuración del navegador.</translation>
+      Si esta política no se establece, el modo en segundo plano se inhabilita inicialmente, y el usuario puede controlarlo en la configuración del navegador.</translation>
 <translation id="7123297102171034788">Permite especificar el comportamiento en el inicio.
 
           Si se selecciona "Abrir la página Nueva pestaña", siempre se abrirá la página Nueva pestaña cuando se inicie <ph name="PRODUCT_NAME" />.
@@ -1453,8 +1450,7 @@ desactivarlo).</translation>
 
           Si se inhabilita esta opción, se considerará que no se configuró y el usuario podrá cambiarla en <ph name="PRODUCT_NAME" />.
 
-          Esta política no está disponible en instancias de Windows que no estén unidas
-          a un dominio de Active Directory.</translation>
+          Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="7128918109610518786">Muestra la lista de identificadores de las aplicaciones que <ph name="PRODUCT_OS_NAME" /> muestra como aplicaciones fijas en la barra del menú de aplicaciones.
 
       Si se configura esta política, se fijará el conjunto de aplicaciones y el usuario no podrá cambiarlo.
@@ -1592,12 +1588,9 @@ desactivarlo).</translation>
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
 <translation id="7763311235717725977">Te permite configurar si los sitios web pueden mostrar imágenes. La visualización de imágenes se puede permitir o denegar para todos los sitios web. Si esta política no se configura, se usará "AllowImages" y el usuario podrá cambiarlo.</translation>
-<translation id="7766336524667238790">Informar datos sobre la sesión de kiosco activa, como
-      el ID de aplicación y la versión.
+<translation id="7766336524667238790">Informa datos sobre la sesión de kiosco activa, como el ID de aplicación y la versión.
 
-      Si la política se establece en false, no se informarán los datos de
-      la sesión. Si se establece en true o no se establece, se informarán los datos de
-      la sesión.</translation>
+      Si la política se establece en false, no se informarán los datos de la sesión. Si se establece en true o no se establece, se informarán los datos de la sesión.</translation>
 <translation id="7774768074957326919">Usar la configuración del proxy del sistema</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar complementos. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPluginsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
@@ -1616,22 +1609,21 @@ desactivarlo).</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="793134539373873765">Especifica si se debe utilizar la conexión P2P para cargas de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas de actualizaciones en la red LAN, y reducirán de forma potencial la congestión y el uso del ancho de banda de Internet. Si la carga de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilita la creación de usuarios supervisados.</translation>
-<translation id="7936098023732125869">Habilita el uso de un proveedor de búsqueda predeterminado.
+<translation id="7936098023732125869">Permite el uso de un proveedor de búsqueda predeterminado.
 
-          Si se habilita esta configuración, cuando el usuario ingresa texto en el cuadro multifunción que no sea una URL, se realiza una búsqueda predeterminada.
+          Si se habilita esta configuración, cuando el usuario ingresa texto que no es una URL en el cuadro multifunción, se realiza una búsqueda predeterminada.
 
-          Es posible especificar el proveedor de búsqueda predeterminado que se utilizará al especificar el resto de las políticas de búsqueda predeterminadas. Si se dejan vacías, el usuario podrá elegir el proveedor predeterminado.
+          Es posible especificar el proveedor de búsqueda predeterminado que se utilizará al configurar el resto de las políticas de búsqueda predeterminadas. Si se dejan vacías, el usuario podrá elegir el proveedor predeterminado.
 
-          Si se inhabilita esta configuración, no se realizará ninguna búsqueda cuando el usuario ingrese texto que no sea una URL en el cuadro multifunción.
+          Si se inhabilita esta configuración, no se realizará ninguna búsqueda cuando el usuario ingrese texto que no es una URL en el cuadro multifunción.
 
           Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
 
-          Si esta política no se configura, se habilitará el proveedor de búsqueda predeterminado y el usuario podrá establecer la lista de proveedores de búsqueda.
+          Si esta política no se configura, se habilitará el proveedor de búsqueda predeterminado, y el usuario podrá establecer la lista de proveedores de búsqueda.
 
-          Esta política no está disponible en instancias de Windows que no estén unidas
-          a un dominio de Active Directory.</translation>
+          Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
-<translation id="7941975817681987555">No predecir acciones de la red en cualquier conexión de red</translation>
+<translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política ya no es compatible. Habilita el uso de servidores STUN y de retransmisión cuando se establece una conexión con un cliente remoto. Si se habilita esta configuración, esta máquina podrá descubrir y conectarse a máquinas host remotas, incluso si están separadas por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo se conectará a máquinas host dentro de la red local.</translation>
@@ -1643,29 +1635,29 @@ desactivarlo).</translation>
 
           La configuración de cada extensión (o extensiones con la misma URL de actualización) es otro diccionario que puede contener los campos documentados a continuación.
 
-          "installation_mode": Se asigna a una cadena que indica el modo de instalación de la extensión. Las cadenas válidas son:
-          * "allowed": Permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
-          * "blocked": Bloquea la instalación de la extensión.
-          * "force_installed": La extensión se instala automáticamente y el usuario no puede eliminarla.
-          * "normal_installed": La extensión se instala automáticamente, pero el usuario puede inhabilitarla.
+          "installation_mode": se asigna a una cadena que indica el modo de instalación de la extensión. Las cadenas válidas son:
+          * "allowed": permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
+          * "blocked": bloquea la instalación de la extensión.
+          * "force_installed": la extensión se instala automáticamente y el usuario no puede eliminarla.
+          * "normal_installed": la extensión se instala automáticamente, pero el usuario puede inhabilitarla.
 
           También se puede configurar "installation_mode" para varias extensiones, incluida la extensión "*" (como configuración predeterminada) y para extensiones con la misma URL de actualización. En este caso, solo se pueden usar los valores "allowed" y "blocked".
 
           Si el modo se establece en "force_installed" o "normal_installed", se debe configurar también "update_url". Se debe tener en cuenta que la URL de actualización establecida en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el manifiesto de la extensión. La URL de actualización debería apuntar a un documento XML de manifiesto de actualización, como se mencionó más arriba.
 
-          "blocked_permissions": Se asigna a una lista de cadenas que indican los permisos de API bloqueados para la extensión. Los nombres de los permisos son iguales que las cadenas de permisos declaradas en el manifiesto de la extensión, como se describió en <ph name="LINK_TO_EXTENSION_DOC3" />. Este ajuste también se puede configurar para la extensión "*". Si la extensión requiere un permiso incluido en la lista de bloqueo, no se podrá cargar. Si contiene un permiso bloqueado como requisito opcional, se tratará de forma normal, pero la solicitud de permisos en conflicto se rechazará automáticamente en el tiempo de ejecución.
+          "blocked_permissions": se asigna a una lista de cadenas que indican los permisos de API bloqueados para la extensión. Los nombres de los permisos son iguales que las cadenas de permisos declaradas en el manifiesto de la extensión, como se describió en <ph name="LINK_TO_EXTENSION_DOC3" />. Este ajuste también se puede configurar para la extensión "*". Si la extensión requiere un permiso incluido en la lista de bloqueo, no se podrá cargar. Si contiene un permiso bloqueado como requisito opcional, se tratará de forma normal, pero la solicitud de permisos en conflicto se rechazará automáticamente en el tiempo de ejecución.
 
-          "allowed_permissions": Es similar a "blocked_permissions" pero, en su lugar, permite explícitamente algunos permisos que podrían bloquearse con la lista de permisos bloqueados globales, por lo que no se puede configurar para la extensión "*". Se debe tener en cuenta que esta configuración no da permisos otorgados a extensiones automáticamente.
+          "allowed_permissions": es similar a "blocked_permissions" pero, en su lugar, permite, explícitamente, algunos permisos que podrían bloquearse con la lista de permisos bloqueados globales, por lo que no se puede configurar para la extensión "*". Se debe tener en cuenta que esta configuración no da permisos otorgados a extensiones automáticamente.
 
-          "minimum_version_required": Se asigna a una cadena de versión. El formato de la cadena de versión es igual que el que se usa en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC4" />. Las extensiones con una versión anterior a la versión mínima especificada se inhabilitarán. Esto se aplica también a las extensiones instaladas a la fuerza.
+          "minimum_version_required": se asigna a una cadena de versión. El formato de la cadena de versión es igual al que se usa en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC4" />. Las extensiones con una versión anterior a la versión mínima especificada se inhabilitarán. Esto se aplica también a las extensiones instaladas a la fuerza.
 
           La siguiente configuración se puede usar únicamente para la configuración de "*" predeterminada:
 
-          "install_sources": Cada elemento de la lista es un patrón que coincide con el estilo de la extensiones (se puede consultar https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente los elementos desde cualquier URL que coincida con un elemento de esta lista. Estos patrones deberán permitir tanto la ubicación del archivo *.crx como la página desde donde se inicia la descarga (es decir, la URL de referencia).
+          "install_sources": cada elemento de la lista es un patrón que coincide con el estilo de la extensiones (se puede consultar https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente los elementos desde cualquier URL que coincida con un elemento de esta lista. Estos patrones deberán permitir tanto la ubicación del archivo *.crx como la página desde donde se inicia la descarga (es decir, la URL de referencia).
 
-          "allowed_types": Esta configuración incluye en la lista blanca los tipos de extensión/aplicaciones permitidos que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas, cada una de las cuales debe ser una de las siguientes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, se puede consultar la documentación de extensiones de <ph name="PRODUCT_NAME" />.
+          "allowed_types": esta configuración incluye en la lista blanca los tipos de extensión/aplicaciones permitidos que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas, cada una de las cuales debe ser una de las siguientes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, se puede consultar la documentación de extensiones de <ph name="PRODUCT_NAME" />.
 
-          Esta política todavía no está preparada para que se use; se solicita que no se use.
+          Esta política todavía no está lista para usarse; se solicita que no se use.
           </translation>
 <translation id="8044493735196713914">Modo de notificación de inicio de dispositivo</translation>
 <translation id="8059164285174960932">URL donde los clientes de acceso remoto deben obtener el token de autenticación</translation>
@@ -1739,8 +1731,7 @@ desactivarlo).</translation>
 
           Si esta política no se establece, el usuario puede elegir la página principal si tampoco se establece HomepageIsNewTabPage.
 
-          Esta política no está disponible en instancias de Windows que no estén unidas
-          a un dominio de Active Directory.</translation>
+          Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="8244525275280476362">Demora de recuperación máxima después de invalidar una política</translation>
 <translation id="8256688113167012935">Controla el nombre de cuenta <ph name="PRODUCT_OS_NAME" /> que aparece en la pantalla de acceso de la cuenta local del dispositivo que corresponda.
 
@@ -1814,7 +1805,7 @@ desactivarlo).</translation>
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá las solicitudes de IWA. Si se detecta un servidor como Internet, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que provengan de ese servidor.</translation>
 <translation id="8668394701842594241">Especifica una lista de complementos que están habilitados en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración. Los caracteres comodines "*" y "?" se pueden usar para que coincidan con las secuencias de caracteres arbitrarios. "*" coincide con un número arbitrario de caracteres y "?" especifica un solo carácter opcional, es decir, coincide con un carácter o con ninguno. El carácter de escape es "\" y se puede colocar delante de "*", "?" o "\" para obtener coincidencias con ellos. <ph name="PRODUCT_NAME" /> usa siempre la lista especificada de complementos, si están instalados. Los complementos se marcan como habilitados en "about: plugins" y los usuarios no pueden inhabilitarlos. Ten en cuenta que esta política anula tanto DisabledPlugins como DisabledPluginsExceptions. Si esta política no se configura, el usuario puede inhabilitar cualquier complemento instalado en el sistema.</translation>
 <translation id="8672321184841719703">Versión de destino para las actualizaciones automáticas</translation>
-<translation id="868068801094828689">Habilita la opción de informar a Google de manera anónima acerca del uso y datos relacionados con bloqueos de <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+<translation id="868068801094828689">Habilita la opción de informar a Google de manera anónima acerca del uso y datos relacionados con bloqueos de <ph name="PRODUCT_NAME" />, e impide que los usuarios cambien esta configuración.
 
       Si se habilita esta configuración, se enviarán informes anónimos acerca del uso y datos relacionados con bloqueos
       a Google. Si se inhabilita, esta información no se enviará
@@ -1867,11 +1858,11 @@ desactivarlo).</translation>
 <translation id="8870318296973696995">Página principal</translation>
 <translation id="8905426178924715309">Esta política dejó de estar disponible; se deben usar ForceGoogleSafeSearch y ForceYouTubeSafetyMode en su lugar. Esta política se ignorará si se establecen las políticas ForceGoogleSafeSearch o ForceYouTubeSafetyMode.
 
-      Permite forzar las consultas en la Búsqueda de Google para que se realicen con SafeSearch activado y evitar que los usuarios modifiquen esta configuración. Esta configuración también fuerza el modo de seguridad en YouTube.
+      Permite forzar las consultas en la Búsqueda web de Google para que se realicen con SafeSearch activado y evitar que los usuarios modifiquen esta configuración. Esta configuración también fuerza el modo de seguridad en YouTube.
 
       Si se habilita esta opción, SafeSearch está siempre activado en la Búsqueda de Google y en YouTube.
 
-      Si se inhabilita esta opción o no se establece un valor, no se aplicará SafeSearch en la Búsqueda de Google y en YouTube.</translation>
+      Si se inhabilita esta opción o no se establece un valor, no se aplicará SafeSearch en la Búsqueda de Google ni en YouTube.</translation>
 <translation id="8906768759089290519">Activar el modo de invitado</translation>
 <translation id="8908294717014659003">Te permite establecer si se autoriza que los sitios web tengan acceso a dispositivos de captura de contenido multimedia. El acceso a estos dispositivos puede permitirse de manera predeterminada, o se puede preguntar al usuario cada vez que un sitio web quiera acceder a dispositivos de captura de contenido multimedia.
 
@@ -1892,9 +1883,7 @@ desactivarlo).</translation>
 <translation id="89493502583189945">Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican antes de que <ph name="PRODUCT_NAME" /> se inicie, incluso en la pantalla de acceso.</translation>
 <translation id="8951350807133946005">Configurar el directorio de caché de disco</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
-<translation id="8960850473856121830">Los patrones de esta lista se compararán con el origen de
-      seguridad de la URL solicitante. Si se encuentra una coincidencia, se concede acceso a los dispositivos de
-      captura de audio sin solicitarlo.
+<translation id="8960850473856121830">Los patrones de esta lista se compararán con el origen de seguridad de la URL solicitante. Si se encuentra una coincidencia, se concederá acceso a los dispositivos de captura de audio sin solicitarlo.
 
       NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</translation>
 <translation id="8965758116018152083">Si esta política no se configura o se establece como una cadena en blanco, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción de autocompletar durante el flujo de acceso del usuario.
@@ -1907,18 +1896,16 @@ desactivarlo).</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Especificar si la actividad de video afecta a la administración de energía</translation>
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
-<translation id="9104138886225968319">Enviar señales de monitoreo al servidor de administración para permitir
-      que el servidor detecte si el dispositivo está sin conexión.
+<translation id="9104138886225968319">Envía señales de monitoreo al servidor de administración para permitir que el servidor detecte si el dispositivo está sin conexión.
 
-      Si esta política se establece en true, se enviarán señales de monitoreo. Si se establece
-      en false o no se configura, no se enviarán señales.</translation>
+      Si esta política se establece en true, se enviarán señales de monitoreo. Si se establece en false o no se configura, no se enviarán señales.</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolo. Esto solo puede ser una política recomendada. La propiedad |protocol| se debe establecer para el esquema (por ejemplo, "mailto") de la URL, y la propiedad |url| se debe establecer para el patrón de la URL de la aplicación que controla el esquema. El patrón puede incluir una especificación "%s" que, si está presente, se reemplazará por la URL controlada.
 
           Los controladores de protocolo registrados por la política se fusionan con los registrados por el usuario, y todos están disponibles para utilizarse. El usuario puede anular los controladores de protocolos instalados por la política si instala un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de las URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Enviar registros del sistema al servidor de administración para permitir
-      que los administradores supervisen los registros del sistema.
+      que los administradores supervisen los registros del sistema
 
       Si esta política se establece en true, se enviarán registros del sistema. Si se establece
       en false o no se configura, no se enviarán registros del sistema.</translation>

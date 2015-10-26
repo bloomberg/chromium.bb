@@ -159,7 +159,6 @@
 Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta administratoram pārvaldīt jūsu Chrome profilu. Jūsu Chrome dati tiks neatgriezeniski saistīti ar šo kontu. Noņemot saiti no šī konta, tiks dzēsti lokālie Chrome dati.</translation>
 <translation id="3410346880900521918">Ja šis ziņojums tiek bieži rādīts, izmēģiniet šos <ph name="BEGIN_LINK" />ieteikumus<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Lielums:</translation>
-<translation id="3455798674391346847">Tērējiet mazāk datu, izmantojot Google, lai optimizētu apmeklētās lapas. Lapas, kuru atvēršanai tika izmantots protokols HTTPS vai inkognito režīms, netiks optimizētas, un Google tās nevarēs skatīt.</translation>
 <translation id="3485544713029068372">Smart Lock parolēm</translation>
 <translation id="3492207499832628349">Jauna inkognito cilne</translation>
 <translation id="3518985090088779359">Piekrist un turpināt</translation>
@@ -314,7 +313,6 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 
 Ņemiet vērā, ka inkognito režīmā jūs neesat neredzams. Jūsu pārlūkošanas darbības inkognito režīmā netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
-<translation id="5733727110006255111">Ja šī funkcija ir ieslēgta, Chrome izmantos Google serverus, lai saspiestu jūsu apmeklētās lapas pirms to lejupielādes. Netiks ietvertas lapas, kas atvērtas, izmantojot SSL vai inkognito režīmu.</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5763382633136178763">Inkognito režīma cilnes</translation>
 <translation id="5765780083710877561">Apraksts:</translation>

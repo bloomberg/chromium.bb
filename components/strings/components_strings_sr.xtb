@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Сертификат основног или средњег нивоа је истекао.</translation>
 <translation id="2328300916057834155">Неважећи обележивач је игнорисан у индексу <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Остали обележивачи</translation>
-<translation id="2359808026110333948">Настави</translation>
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="2384307209577226199">Подразумеване смернице за предузеће</translation>
 <translation id="2386255080630008482">Сертификат сервера је опозван.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Вредност се не подудара са форматом.</translation>
 <translation id="2721148159707890343">Захтев је успео</translation>
 <translation id="2728127805433021124">Сертификат сервера је потписан слабим алгоритмом.</translation>
-<translation id="2774256287122201187">Можете да наставите. Ако наставите до странице, ово упозорење се неће поново појавити у наредних пет минута.</translation>
 <translation id="277499241957683684">Недостаје евиденција уређаја</translation>
 <translation id="2835170189407361413">Обриши образац</translation>
 <translation id="2855922900409897335">Верификујте <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Линк који сте копирали</translation>
 <translation id="375403751935624634">Превођење није успело због грешке сервера.</translation>
 <translation id="3759461132968374835">Немате ниједно недавно пријављено отказивање. Отказивања која су се десила док је пријављивање отказивања било онемогућено неће се овде приказати.</translation>
-<translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Ажурирајте датум и време</translation>
 <translation id="3884278016824448484">Неусаглашени идентификатор уређаја</translation>
 <translation id="3885155851504623709">Парохија</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Грешка при потврди ваљаности: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Желите ли да уклоните адресу из Chrome-а?</translation>
 <translation id="4594403342090139922">&amp;Опозови брисање</translation>
-<translation id="4607653538520819196">Уштеда података не може да пренесе ову страницу.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат садржи грешке. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="4726672564094551039">Поново учитај смернице</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4923417429809017348">Ова страница је преведена са непознатог језика на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Мора да буде наведено.</translation>
-<translation id="4968547170521245791">Пренос није могућ</translation>
 <translation id="498957508165411911">Желите ли да преведете са језика <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Складиште тока података је у лошем стању</translation>
 <translation id="5031870354684148875">О Google преводиоцу</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Затвори ову страницу</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
 <translation id="6550675742724504774">Опције</translation>
-<translation id="6597614308054261376">Покушавате да одете на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Уштеда података тренутно не може да пренесе ту страницу.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> претрага</translation>
 <translation id="6644283850729428850">Ове смернице су застареле.</translation>
 <translation id="6646897916597483132">Унесите четвороцифрени CVC који се налази на предњој страни картице</translation>

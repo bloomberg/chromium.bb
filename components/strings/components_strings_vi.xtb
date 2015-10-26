@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Chứng chỉ sơ cấp hoặc trung cấp đã hết hạn.</translation>
 <translation id="2328300916057834155">Đã bỏ qua dấu trang không hợp lệ tại chỉ mục <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Dấu trang khác</translation>
-<translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2367567093518048410">Mức độ</translation>
 <translation id="2384307209577226199">Đặt mặc định trong môi trường doanh nghiệp</translation>
 <translation id="2386255080630008482">Chứng chỉ của máy chủ đã bị thu hồi.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="2728127805433021124">Chứng chỉ của máy chủ đã được ký bằng thuật toán chữ ký yếu.</translation>
-<translation id="2774256287122201187">Bạn có thể tiếp tục. Nếu bạn tiếp tục đến trang, cảnh báo này sẽ không xuất hiện lại sau năm phút.</translation>
 <translation id="277499241957683684">Thiếu hồ sơ thiết bị</translation>
 <translation id="2835170189407361413">Xóa biểu mẫu</translation>
 <translation id="2855922900409897335">Xác minh <ph name="CREDIT_CARD" /> của bạn</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Liên kết đã sao chép</translation>
 <translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
 <translation id="3759461132968374835">Bạn không nhận được báo cáo sự cố nào gần đây. Sự cố xảy ra khi báo cáo sự cố đã bị tắt sẽ không xuất hiện ở đây.</translation>
-<translation id="385051799172605136">Quay lại</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
 <translation id="3885155851504623709">Xã</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4587425331216688090">Xóa địa chỉ khỏi Chrome?</translation>
 <translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
-<translation id="4607653538520819196">Trình tiết kiệm dữ liệu không thể ủy quyền trang này.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có lỗi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4923417429809017348">Trang này đã được dịch từ một ngôn ngữ không xác định sang <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Phải được chỉ định.</translation>
-<translation id="4968547170521245791">Không thể ủy quyền</translation>
 <translation id="498957508165411911">Dịch từ <ph name="ORIGINAL_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
 <translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Rời khỏi Trang này</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
-<translation id="6597614308054261376">Bạn đang cố gắng truy cập vào <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Trình tiết kiệm dữ liệu không thể ủy quyền trang này tại thời điểm này.</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
 <translation id="6646897916597483132">Nhập CVC gồm 4 chữ số ở mặt trước thẻ của bạn</translation>

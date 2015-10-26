@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="127345590676626841">Chrome diperbarui secara otomatis sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chrome akan dimulai ulang dan segera siap digunakan.</translation>
 <translation id="1302523850133262269">Harap tunggu selagi Chrome memasang pembaruan sistem terkini.</translation>
-<translation id="1348153800635493797">Anda harus meningkatkan versi Chrome untuk menggunakan Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome telah mendeteksi perilaku yang tidak biasa</translation>
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
 <translation id="1399397803214730675">Komputer ini telah memiliki versi Google Chrome yang lebih anyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome dan coba lagi.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Kunci API Google tidak ada. Beberapa fungsi Google Chrome tidak akan berfungsi.</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
 <translation id="2316129865977710310">Lain kali</translation>
+<translation id="2334084861041072223">Hak cipta <ph name="YEAR" /> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="2346876346033403680">Sebelumnya ada seseorang yang masuk ke Chrome di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Jika itu bukan akun Anda, buatlah pengguna Chrome baru untuk menjaga informasi Anda tetap terpisah.
 
 Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -62,7 +62,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="2769762047821873045">Google Chrome bukan browser default.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2871893339301912279">Anda sudah masuk ke Chrome!</translation>
-<translation id="2874156562296220396">Google Chrome bisa ada berkat proyek sumber terbuka yaitu <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> dan berbagai <ph name="BEGIN_LINK_OSS" />perangkat lunak sumber terbuka<ph name="END_LINK_OSS" /> lainnya.</translation>
 <translation id="3037838751736561277">Google Chrome berjalan di mode latar belakang.</translation>
 <translation id="3047079729301751317">Memutuskan sambungan <ph name="USERNAME" /> akan menghapus riwayat, bookmark, setelan, dan data Chrome Anda lainnya yang tersimpan di perangkat. Data tersimpan di Akun Google tidak akan dihapus dan dapat dikelola di <ph name="GOOGLE_DASHBOARD_LINK" />Google Dasbor<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>

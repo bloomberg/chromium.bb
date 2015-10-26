@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="111910763555783249">የማሳወቂያ ቅንብሮች</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ቀን በፊት}one{# ቀኖች በፊት}other{# ቀኖች በፊት}}</translation>
 <translation id="1167268268675672572">ወደ የመስመር መጀመሪያ ውሰድ እና ምርጫ ቀይር</translation>
 <translation id="1190609913194133056">የማሳወቂያ ማዕከል</translation>

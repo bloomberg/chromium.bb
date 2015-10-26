@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Pää- tai keskitason varmenne on vanhentunut.</translation>
 <translation id="2328300916057834155">Ohitettiin virheellinen kirjanmerkki kohdassa <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Muut kirjanmerkit</translation>
-<translation id="2359808026110333948">Jatka</translation>
 <translation id="2367567093518048410">Taso</translation>
 <translation id="2384307209577226199">Yrityksen oletus</translation>
 <translation id="2386255080630008482">Palvelimen varmenne on kumottu.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Arvo ei vastaa muotoa.</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="2728127805433021124">Palvelimen varmenne on allekirjoitettu heikolla allekirjoitusalgoritmilla.</translation>
-<translation id="2774256287122201187">Voit jatkaa. Jos jatkat sivulle, tätä varoitusta ei näytetä uudelleen viiteen minuuttiin.</translation>
 <translation id="277499241957683684">Laitetallenne puuttuu</translation>
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
 <translation id="2855922900409897335">Vahvista <ph name="CREDIT_CARD" />.</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Kopioimasi linkki</translation>
 <translation id="375403751935624634">Käännös epäonnistui palvelinvirheen vuoksi.</translation>
 <translation id="3759461132968374835">Ei viimeaikaisia kaatumisilmoituksia. Jos selain kaatui kaatumisilmoitusten ollessa pois käytöstä, ilmoituksia ei näytetä täällä.</translation>
-<translation id="385051799172605136">Edellinen</translation>
 <translation id="3858027520442213535">Päivitä päivämäärä ja aika</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
 <translation id="3885155851504623709">Kunta</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Todennusvirhe: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Poistetaanko osoite Chromen tiedoista?</translation>
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
-<translation id="4607653538520819196">Data Saver ei voi lähettää tätä sivua välityspalvelimelle.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne sisältää virheitä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="4923417429809017348">Tämä sivu on käännetty tuntemattomasta kielestä kielelle <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">On määritettävä.</translation>
-<translation id="4968547170521245791">Ei voi lähettää välityspalvelimelle</translation>
 <translation id="498957508165411911">Käännetäänkö kielestä <ph name="ORIGINAL_LANGUAGE" /> kielelle <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>
 <translation id="5031870354684148875">Tietoja Google-kääntäjästä</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Poistu tältä sivulta</translation>
 <translation id="6529602333819889595">&amp;Toista poisto</translation>
 <translation id="6550675742724504774">Asetukset</translation>
-<translation id="6597614308054261376">Yrität avata sivuston <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. Data Saver ei voi lähettää tätä sivua välityspalvelimelle tällä hetkellä.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-haku</translation>
 <translation id="6644283850729428850">Tämä käytäntö on vanhentunut.</translation>
 <translation id="6646897916597483132">Anna nelinumeroinen CVC luottokortin etupuolelta.</translation>

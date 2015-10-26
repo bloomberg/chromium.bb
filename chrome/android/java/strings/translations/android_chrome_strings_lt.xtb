@@ -159,7 +159,6 @@
 Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti jūsų „Chrome“ profilį. „Chrome“ duomenys bus visam laikui susieti su šia paskyra. Atsijungus nuo šios paskyros bus ištrinti vietiniai „Chrome“ duomenys.</translation>
 <translation id="3410346880900521918">Jei tai rodoma dažnai, peržiūrėkite šiuos <ph name="BEGIN_LINK" />pasiūlymus<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Dydis:</translation>
-<translation id="3455798674391346847">Išeikvokite mažiau duomenų naudodami „Google“ puslapiams, kuriuose lankotės, optimizuoti. Naudojant HTTPS arba inkognito režimą pasiekti puslapiai nebus optimizuojami ir „Google“ jų nematys.</translation>
 <translation id="3485544713029068372">„Smart Lock“, skirta slaptažodž.</translation>
 <translation id="3492207499832628349">Naujas inkognito skirtukas</translation>
 <translation id="3518985090088779359">Sutikti ir tęsti</translation>
@@ -315,7 +314,6 @@ Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų pas
 
 Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, interneto paslaugų teikėjas ar lankomos svetainės vis tiek gali pasiekti naršymo informaciją.</translation>
 <translation id="572328651809341494">Naujausi skirtukai</translation>
-<translation id="5733727110006255111">Kai ši funkcija įjungta, „Chrome“ naudoja „Google“ serverius, kad glaudintų aplankytus puslapius prieš juos atsisiųsdama. SSL ir inkognito režimu aplankyti puslapiai nebus įtraukti.</translation>
 <translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
 <translation id="5763382633136178763">Inkognito skirtukai</translation>
 <translation id="5765780083710877561">Aprašas:</translation>

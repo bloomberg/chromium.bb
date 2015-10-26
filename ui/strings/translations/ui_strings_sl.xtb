@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="111910763555783249">Nastavitve obvestil</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pred 1 dnevom}one{Pred # dnevom}two{Pred # dnevoma}few{Pred # dnevi}other{Pred # dnevi}}</translation>
 <translation id="1167268268675672572">Premik na začetek vrstice in sprememba izbire</translation>
 <translation id="1190609913194133056">Središče za obvestila</translation>

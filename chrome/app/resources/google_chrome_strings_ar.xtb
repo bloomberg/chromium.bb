@@ -13,7 +13,6 @@
 <translation id="123620459398936149">‏تعذر على نظام التشغيل Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="127345590676626841">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار. عند اكتمال هذا التحميل، ستتم إعادة تشغيل Chrome وستبدأ العمل.</translation>
 <translation id="1302523850133262269">‏الرجاء الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
-<translation id="1348153800635493797">‏يتعيّن عليك ترقية Chrome حتى يتسنى لك استخدام محفظة Google [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">‏لقد اكتشف Chrome سلوكًا غير معتاد</translation>
 <translation id="1393853151966637042">‏الحصول على مساعدة بشأن استخدام Chrome</translation>
 <translation id="1399397803214730675">‏يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
@@ -45,6 +44,7 @@
 <translation id="2290014774651636340">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
 <translation id="2290095356545025170">‏هل تريد بالتأكيد إزالة Google Chrome؟</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
+<translation id="2334084861041072223">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="2346876346033403680">‏سجّل شخص ما الدخول من قبل إلى Chrome على هذا الكمبيوتر باعتباره <ph name="ACCOUNT_EMAIL_LAST" />. فإذا لم يكن هذا هو حسابك، فأنشئ حساب مستخدم Chrome جديدًا للإبقاء على معلوماتك بشكل منفصل.
 
 سيؤدي تسجيل الدخول على أية حال إلى دمج معلومات Chrome مثل الإشارات المرجعية والسجل والإعدادات الأخرى مع <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -64,7 +64,6 @@
 <translation id="2769762047821873045">‏ليس Google Chrome متصفحك الافتراضي.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="2871893339301912279">‏تم تسجيل دخولك إلى Chrome!</translation>
-<translation id="2874156562296220396">‏نوفر لكم Google Chrome بفضل المشروع المفتوح المصدر <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> و<ph name="BEGIN_LINK_OSS" />برامج أخرى مفتوحة المصدر<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">‏Google Chrome في وضع الخلفية.</translation>
 <translation id="3047079729301751317">‏سيؤدي قطع اتصال <ph name="USERNAME" /> إلى مسح السجّل والإشارات المرجعية والإعدادات وبيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK" />لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Google Chrome</translation>

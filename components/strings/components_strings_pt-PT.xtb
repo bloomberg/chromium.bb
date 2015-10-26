@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Um certificado de raiz ou intermédio expirou.</translation>
 <translation id="2328300916057834155">Marcador inválido ignorado no índice <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Outros marcadores</translation>
-<translation id="2359808026110333948">Continuar</translation>
 <translation id="2367567093518048410">Nível</translation>
 <translation id="2384307209577226199">Predefinição empresarial</translation>
 <translation id="2386255080630008482">O certificado do servidor foi revogado.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">O valor não corresponde ao formato.</translation>
 <translation id="2721148159707890343">Pedido com êxito</translation>
 <translation id="2728127805433021124">O certificado do servidor foi assinado utilizando um algoritmo de assinatura fraco.</translation>
-<translation id="2774256287122201187">Pode continuar. Se avançar para a página, este aviso só volta a aparecer dentro de cinco minutos.</translation>
 <translation id="277499241957683684">Registo do dispositivo em falta</translation>
 <translation id="2835170189407361413">Limpar formulário</translation>
 <translation id="2855922900409897335">Valide o seu cartão <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Link copiado por si</translation>
 <translation id="375403751935624634">A tradução falhou devido a um erro do servidor.</translation>
 <translation id="3759461132968374835">Não tem comunicado falhas recentemente. As falhas que tenham ocorrido enquanto a criação de relatórios de falha esteve desativada não surgem aqui.</translation>
-<translation id="385051799172605136">Anterior</translation>
 <translation id="3858027520442213535">Atualizar a data e a hora</translation>
 <translation id="3884278016824448484">Identificador do dispositivo em conflito</translation>
 <translation id="3885155851504623709">Freguesia</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Pretende remover o endereço do Chrome?</translation>
 <translation id="4594403342090139922">&amp;Anular eliminação</translation>
-<translation id="4607653538520819196">A Poupança de dados não consegue utilizar esta página com proxy.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança contém erros. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4726672564094551039">Recarregar políticas</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4923417429809017348">Esta página foi traduzida de um idioma desconhecido para <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Tem de ser especificado.</translation>
-<translation id="4968547170521245791">Não é possível utilizar com proxy</translation>
 <translation id="498957508165411911">Traduzir de <ph name="ORIGINAL_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
 <translation id="5031870354684148875">Acerca do Google Tradutor</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Sair desta página</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6550675742724504774">Opções</translation>
-<translation id="6597614308054261376">Está a tentar comunicar com <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. De momento, a Poupança de dados não consegue utilizar esta página com proxy.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pesquisar</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646897916597483132">Introduza o Código de Segurança/CVC de quatro dígitos que se encontra na parte da frente do cartão</translation>

@@ -159,7 +159,6 @@
 Du logger på med en administrert konto, og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine blir permanent knyttet til denne kontoen. Hvis du kobler fra denne kontoen, slettes de lokale Chrome-dataene.</translation>
 <translation id="3410346880900521918">Hvis du ser denne meldingen ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
-<translation id="3455798674391346847">Bruk mindre data ved å la Google optimalisere sidene du går til. HTTPS-sider og sider du åpner i inkognitomodus, blir ikke optimalisert eller sett av Google.</translation>
 <translation id="3485544713029068372">Smart Lock for passord</translation>
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3518985090088779359">Godta og fortsett</translation>
@@ -314,7 +313,6 @@ Bruksstatistikken inneholder informasjon om for eksempel innstillinger, knappekl
 
 Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
 <translation id="572328651809341494">Nylige faner</translation>
-<translation id="5733727110006255111">Når denne funksjonen er slått på, brukes Google-tjenerne til å komprimere sider du besøker i Chrome, før de lastes ned. SSL- og inkognitosider inkluderes ikke.</translation>
 <translation id="5749068826913805084">Chrome må ha lagringstilgang for å laste ned filer.</translation>
 <translation id="5763382633136178763">Inkognitofaner</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>

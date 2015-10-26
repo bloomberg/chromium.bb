@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="111910763555783249">إعدادات الإشعارات</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{قبل يوم واحد}zero{قبل # من الأيام}two{قبل يومين (#)}few{قبل # أيام}many{قبل # يومًا}other{قبل # من الأيام}}</translation>
 <translation id="1167268268675672572">الانتقال إلى بداية السطر وتعديل التحديد</translation>
 <translation id="1190609913194133056">مركز الإشعارات</translation>

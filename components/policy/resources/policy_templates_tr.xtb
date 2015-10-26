@@ -459,7 +459,6 @@
 <translation id="2592091433672667839">Perakende modunda oturum açma ekranında ekran koruyucunun devreye girmesi için geçecek boşta kalma süresi</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME" /> için gönderilmesini etkinleştir</translation>
-<translation id="2629448496147630947"><ph name="PRODUCT_NAME" /> içindeki uzaktan erişim seçeneklerini yapılandırın. Bu özellikler Remote Access web uygulaması yüklü olmadığı takdirde göz ardı edilir.</translation>
 <translation id="2633084400146331575">Sözlü geribildirimi etkinleştir</translation>
 <translation id="2646290749315461919">Web sitelerinin kullanıcının fiziksel konumunu izlemelerine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Kullanıcıların fiziksel konumunun izlenmesine varsayılan olarak izin verilebilir, bu varsayılan olarak reddedilebilir veya bir web sitesi her fiziksel konum isteğinde bulunduğunda kullanıcıya sorulabilir.
 
@@ -484,7 +483,7 @@
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
 <translation id="2742843273354638707">Chrome Web Mağazası uygulamasını ve alt bilgi bağlantısını Yeni Sekme Sayfası'nda ve <ph name="PRODUCT_OS_NAME" /> uygulama başlatıcısında gizle.
 
-      Bu politika doğru değerinde ayarlandığında simgeler gizlenir.
+      Bu politika doğru değerine ayarlandığında simgeler gizlenir.
 
       Bu politika yanlış değerine ayarlandığında veya yapılandırılmadığında simgeler görünür.</translation>
 <translation id="2744751866269053547">Protokol işleyicilerini kaydet</translation>
@@ -531,7 +530,7 @@
 
           <ph name="PRODUCT_NAME" /> 21 sürümünden başlayarak, uzantıların, uygulamaların ve kullanıcı komut dosyalarının Chrome Web Mağazası dışından yüklenmesi daha zor hale getirilmiştir. Önceden, kullanıcılar bir *.crx dosyası bağlantısını tıklayarak <ph name="PRODUCT_NAME" /> ürününün birkaç uyarıdan sonra dosyayı yüklemesini sağlayabiliyordu. <ph name="PRODUCT_NAME" /> 21'den sonra, bu tür dosyaların indirilmesi ve <ph name="PRODUCT_NAME" /> ayarları sayfasına sürüklenmesi zorunlu tutulmuştur. Bu ayar, belirli URL'lerin eski, daha kolay yükleme akışına sahip olmasına olanak sağlar.
 
-          Bu listedeki her öğe bir uzantı stili eşleşme kalıbıdır (http://code.google.com/chrome/extensions/match_patterns.html sayfasına (yalnızca İngilizce) bakın). Kullanıcılar, bu listedeki bir öğeyle eşleşen herhangi bir URL'deki öğeleri kolayca yükleyebilirler. Bu kalıplar hem *.crx dosyasının konumuna, hem de indirmenin başlatıldığı sayfaya (başa deyişle yönlendirene) izin vermelidir.
+          Bu listedeki her öğe bir uzantı stili eşleşme kalıbıdır (http://code.google.com/chrome/extensions/match_patterns.html sayfasına (yalnızca İngilizce) bakın). Kullanıcılar, bu listedeki bir öğeyle eşleşen herhangi bir URL'deki öğeleri kolayca yükleyebilirler. Bu kalıplar hem *.crx dosyasının konumuna, hem de indirmenin başlatıldığı sayfaya (başka deyişle yönlendirene) izin vermelidir.
 
           ExtensionInstallBlacklist, bu politikaya göre daha önceliklidir. Diğer bir deyişle, kara listedeki bir uzantı bu listedeki bir sitede bulunsa bile yüklenmeyecektir.</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
@@ -712,7 +711,7 @@
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
-<translation id="3715448429089775791">YouTube Güvenlik Modu'nu etkin olmaya zorlar ve kullanıcıların bu ayarı değiştirmesinin önler.
+<translation id="3715448429089775791">YouTube Güvenlik Modu'nu etkin olmaya zorlar ve kullanıcıların bu ayarı değiştirmesini önler.
 
       Bu ayarı etkinleştirirseniz YouTube'da Güvenlik Modu her zaman etkin olur.
 
@@ -1271,7 +1270,7 @@ politikayı geçersiz kılamaz.
 
       'Zorlama' seçeneği belirlenirse, sayfalar YALNIZCA Gizli modda açılabilir.</translation>
 <translation id="5836064773277134605">Uzaktan erişen ana makine tarafından kullanılan UDP bağlantı noktası aralığını kısıtla</translation>
-<translation id="5845159892130426052">ShowModalDialog API'sını 2015.04.30 tarihine kadar etkinleştir</translation>
+<translation id="5845159892130426052">ShowModalDialog API'sını 30.04.2015 tarihine kadar etkinleştir</translation>
 <translation id="5862253018042179045">Giriş ekranında sesli geri bildirim erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
           Bu politika true (doğru) olarak ayarlanırsa, giriş ekranı görüntülendiğinde sesli geri bildirim etkinleştirilir.
@@ -1371,7 +1370,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan bir minimum sürüm kullanır. Bu, <ph name="PRODUCT_NAME" /> 39'da SSLv3, daha sonraki sürümlerde ise TLS 1.0'dır.
 
-      Veya şu değerlerden birine ayarlanabilir: "sslv3", "tls1", "tls1.1" ya da "tls1.2". Bu politika yapılandırıldığında, <ph name="PRODUCT_NAME" /> ürünü belirtilen sürümden daha eski SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer ise yoksayılır.
+      Aksi durumda, şu değerlerden birine ayarlanabilir: "sslv3", "tls1", "tls1.1" ya da "tls1.2". Bu politika yapılandırıldığında, <ph name="PRODUCT_NAME" /> ürünü belirtilen sürümden daha eski SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer ise yoksayılır.
 
       "sslv3"ün numarası büyük olsa da, "tls1"den daha eski bir sürüm olduğunu unutmayın.</translation>
 <translation id="6177482277304066047">Otomatik Güncellemeler için hedef sürüm ayarlar.
@@ -1563,7 +1562,7 @@ politikayı geçersiz kılamaz.
 <translation id="6693751878507293182">Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> ürününde eksik eklentilerin otomatik olarak aranması ve kurulumu devre dışı bırakılır.
 
       Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, eklenti bulma işlevini etkin hale getirir.</translation>
-<translation id="6697474194550078937">SAML aracılığıyla kimliği doğrulanmış bir kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırlayın.
+<translation id="6697474194550078937">SAML aracılığıyla kimliği doğrulanmış bir kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırlar.
 
       <ph name="PRODUCT_OS_NAME" />, giriş yapılırken bir sunucu (çevrimiçi) veya önbelleğe alınmış bir şifre (çevrimdışı) ile kimlik doğrulaması yapabilir.
 
@@ -1592,7 +1591,7 @@ politikayı geçersiz kılamaz.
 <translation id="6786747875388722282">Uzantılar</translation>
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
-<translation id="6828905844648501476">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevini kullanılmasına izin verir.
+<translation id="6828905844648501476">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevinin kullanılmasına izin verir.
 
       Bu politika yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, profil yöneticisinin yeni profiller oluşturmasına izin vermez.</translation>
 <translation id="687046793986382807">Bu politika, <ph name="PRODUCT_NAME" /> sürüm 35 itibarı ile kullanımdan kaldırılmıştır.
@@ -1800,7 +1799,7 @@ politikayı geçersiz kılamaz.
 
       Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa, <ph name="PRODUCT_NAME" /> ya kullanıcının belirttiği tercih edilen yerel ayarı (yapılandırıldıysa), ya sistem yerel ayarını ya da yedek yerel ayarı ('en-US') kullanır.</translation>
 <translation id="7651739109954974365">Veri dolaşımının etkin olup olmayacağını belirler. True olarak ayarlanırsa, veri dolaşımına izin verilir. Hiç ayarlanmazsa veya false değerine ayarlanırsa, veri dolaşımına izin verilmez.</translation>
-<translation id="76810863974142048">Uzaktan erişim istemcilerinin kimlik doğrulma jetonunu edinmesi gereken URL.
+<translation id="76810863974142048">Uzaktan erişim istemcilerinin kimlik doğrulama jetonunu edinmesi gereken URL.
 
           Bu politika ayarlanırsa uzaktan erişim ana makinesi, kimlik doğrulaması yapan istemcilerin bağlanmak için bu URL'den bir kimlik doğrulama jetonu almasını gerektirir. RemoteAccessHostTokenValidationUrl ile birlikte kullanılmalıdır.
 
@@ -1889,7 +1888,7 @@ politikayı geçersiz kılamaz.
           Her bir uzantının (veya aynı güncelleme URL'sine sahip uzantıların) yapılandırması aşağıda açıklanan alanların yer aldığı ayrı bir sözlüktür.
 
           "installation_mode": Uzantı için yükleme modunu belirten bir dizeye eşler. Geçerli dizeler şunlardır:
-          * "allowed": Kullanıcının uzantıyı yüklenmesine izin verir. Bu varsayılan davranıştır.
+          * "allowed": Kullanıcının uzantıyı yüklemesine izin verir. Bu varsayılan davranıştır.
           * "blocked": Uzantının yüklenmesini engeller.
           * "force_installed": Uzantı otomatik olarak yüklenir ve kullanıcı tarafından kaldırılamaz.
           * "normal_installed": Uzantı otomatik olarak yüklenir, ancak kullanıcı tarafından devre dışı bırakılabilir.
@@ -1990,7 +1989,7 @@ politikayı geçersiz kılamaz.
 
           Bu ayarı etkinleştirirseniz, kullanıcılar <ph name="PRODUCT_NAME" /> ürününde ana sayfa URL'lerini değiştiremezler, ancak ana sayfa olarak yine de Yeni Sekme Sayfası'nı seçebilirler.
 
-          Bu politika ayarlanmadan bırakılırsa ve HomepageIsNewTabPage de ayarlanmamışsa kullanıcının kendi ana sayfasını istediği gibi seçmesine izin verir.
+          HomepageIsNewTabPage de ayarlanmamışsa, bu politikanın ayarlanmadan bırakılması kullanıcının kendi ana sayfasını istediği gibi seçmesine izin verir.
 
           Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="8244525275280476362">Bir politika iptal edildikten sonra maksimum getirme gecikmesi</translation>
@@ -2134,7 +2133,7 @@ politikayı geçersiz kılamaz.
 <translation id="8870318296973696995">Ana sayfa</translation>
 <translation id="8905426178924715309">Bu politika kullanımdan kaldırılmıştır. Bunun yerine lütfen ForceGoogleSafeSearch'ü ve ForceYouTubeSafetyMode'u kullanın. ForceGoogleSafeSearch veya ForceYouTubeSafetyMode politikası ayarlanırsa bu politika yoksayılır.
 
-      Google Web Araması'ndaki sorguların Güvenli Arama etkin olarak ayarlanmış halde yapılmasını sağlar ve kullanıcıların bu ayarı değiştirmesini önler. Bu ayar aynı zamanda YouTube'da da Güvenli Mod'un kullanılmasını sağlar
+      Google Web Araması'ndaki sorguların Güvenli Arama etkin olarak ayarlanmış halde yapılmasını sağlar ve kullanıcıların bu ayarı değiştirmesini önler. Bu ayar aynı zamanda YouTube'da da Güvenli Mod'un kullanılmasını sağlar.
 
       Bu ayarı etkinleştirirseniz, Google Arama'da ve YouTube'da Güvenli Arama her zaman etkin olur.
 
@@ -2195,7 +2194,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, bu özellik etkinleştirilir ve kullanıcı gizli modu kullanabilir.</translation>
 <translation id="915194831143859291">Bu politika yanlış seçeneğine ayarlanırsa veya hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcının cihazı kapatmasına izin verir.
-      Bu politika doğru seçeneğine ayarlanırsa, kullanıcı cihazı kapattığında <ph name="PRODUCT_OS_NAME" />, yeniden başlatma işlemi tetikler. <ph name="PRODUCT_OS_NAME" />, kullanıcı arayüzdeki tüm kapatma düğmelerini yeniden başlatma düğmeleriyle değiştirir. Kullanıcı güç düğmesini kullanarak cihazı kapatırsa, politika etkinleştirilmiş olsa dahi cihaz otomatik olarak yeniden başlatılmaz.</translation>
+      Bu politika doğru seçeneğine ayarlanırsa, kullanıcı cihazı kapattığında <ph name="PRODUCT_OS_NAME" />, yeniden başlatma işlemi tetikler. <ph name="PRODUCT_OS_NAME" />, kullanıcı arayüzündeki tüm kapatma düğmelerini yeniden başlatma düğmeleriyle değiştirir. Kullanıcı güç düğmesini kullanarak cihazı kapatırsa, politika etkinleştirilmiş olsa dahi cihaz otomatik olarak yeniden başlatılmaz.</translation>
 <translation id="9187743794267626640">Harici depolama birimi eklemeyi devre dışı bırak</translation>
 <translation id="9197740283131855199">Kullanıcı, ekran kararmasından sonra etkin duruma gelirse ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
 <translation id="9200828125069750521">POST kullanan resim URL'si için parametreler</translation>

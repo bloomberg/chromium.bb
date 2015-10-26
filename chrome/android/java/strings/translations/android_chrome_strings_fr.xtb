@@ -159,7 +159,6 @@
 Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le contrôle de votre profil Google Chrome. Vos données Chrome vont être associées à ce compte de manière définitive. Si vous vous en déconnectez, les données Chrome locales sont supprimées.</translation>
 <translation id="3410346880900521918">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="3414952576877147120">Taille :</translation>
-<translation id="3455798674391346847">Consommez moins de données grâce à l'optimisation des pages par Google. Les pages HTTPS et celles visitées en mode navigation privée ne seront ni optimisées ni vues par Google.</translation>
 <translation id="3485544713029068372">Smart Lock pour les mots de passe</translation>
 <translation id="3492207499832628349">Nouvel onglet nav. privée</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
@@ -315,7 +314,6 @@ Les statistiques d'utilisation englobent des informations telles que les préfé
 
 Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
 <translation id="572328651809341494">Onglets récents</translation>
-<translation id="5733727110006255111">Lorsque cette fonctionnalité est activée, les pages consultées dans Chrome sont d'abord compressées via les serveurs Google avant d'être téléchargées, à l'exception des pages SSL et des pages de navigation privée.</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5765780083710877561">Description :</translation>
@@ -498,7 +496,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8168435359814927499">Contenu</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
-<translation id="8218934717680664417">Vous pouvez maintenant effectuer des recherches à l'aide d'un seul geste.</translation>
+<translation id="8218934717680664417">Vous pouvez maintenant effectuer des recherches d'une seule pression.</translation>
 <translation id="8237438615979997762">Les données stockées sur cet appareil et dans votre compte Google seront conservées. Toutefois, les nouvelles données ou les modifications apportées aux données ne seront pas synchronisées entre ces deux emplacements.</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8275818695183729150">Autoriser (pour les recherches dans la barre d'adresse)</translation>

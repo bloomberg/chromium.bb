@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS आपका डेटा समन्वयित नहीं कर सका. कृपया अपना समन्वयन पासफ़्रेज़ अपडेट करें.</translation>
 <translation id="127345590676626841">Chrome अपने आप अपडेट हो जाता है ताकि आपके पास हमेशा सबसे नवीनतम वर्शन रहे. जब यह डाउनलोड पूर्ण हो जाता है, तो Chrome पुन: प्रारंभ होगा और आप आगे बढ़ जाएंगे.</translation>
 <translation id="1302523850133262269">कृपया Chrome के द्वारा नवीनतम सिस्टम अपडेट इंस्टॉल करने के दौरान प्रतीक्षा करें.</translation>
-<translation id="1348153800635493797">Google वॉलेट का उपयोग करने के लिए आपको Chrome को अपग्रेड करना होगा [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome ने असामान्‍य व्‍यवहार का पता लगाया है</translation>
 <translation id="1393853151966637042">Chrome का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन वर्शन पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और फिर से प्रयास करें.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Google API कुंजियां अनुपलब्ध हैं. Google Chrome की कुछ कार्यक्षमता अक्षम कर दी जाएगी.</translation>
 <translation id="2290095356545025170">क्या आप वाकई Google Chrome को विस्थापित करना चाहते हैं?</translation>
 <translation id="2316129865977710310">जी रहने दें</translation>
+<translation id="2334084861041072223">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2346876346033403680">इस कंप्यूटर पर किसी अन्य व्यक्ति ने <ph name="ACCOUNT_EMAIL_LAST" /> के रूप में Chrome में प्रवेश किया था. यदि वह आपका खाता नहीं है, तो अपनी जानकारी अलग रखने के लिए आप एक नया Chrome उपयोगकर्ता बना सकते हैं.
 
 किसी भी तरह प्रवेश करने से बुकमार्क, इतिहास, और अन्य सेटिंग जैसी Chrome जानकारी <ph name="ACCOUNT_EMAIL_NEW" /> में मर्ज हो जाएगी.</translation>
@@ -62,7 +62,6 @@
 <translation id="2769762047821873045">Google Chrome आपका सामान्य ब्राउज़र नहीं है.</translation>
 <translation id="2770231113462710648">डिफ़ॉल्ट ब्राउज़र को इसमें बदलें:</translation>
 <translation id="2871893339301912279">आप Chrome में प्रवेश हैं.</translation>
-<translation id="2874156562296220396">Google Chrome को <ph name="BEGIN_LINK_CHROMIUM" />क्रोमियम<ph name="END_LINK_CHROMIUM" /> ओपन सोर्स प्रोजेक्ट और अन्य <ph name="BEGIN_LINK_OSS" />ओपन सोर्स सॉफ्टवेयर<ph name="END_LINK_OSS" /> ने संभव बनाया है.</translation>
 <translation id="3037838751736561277">Google Chrome पृष्ठभूमि मोड में है.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> को डिस्कनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK" />Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> पर प्रबंधित किया जा सकता है.</translation>
 <translation id="3080151273017101988">Google Chrome के बंद होने पर पृष्ठभूमि ऐप्स  चलाना जारी रखें</translation>

@@ -14,7 +14,6 @@
 <translation id="123620459398936149">Chrome OS आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन सांकेतिक वाक्यांश अद्यतनित करा.</translation>
 <translation id="127345590676626841">Chrome स्वयंचलितपणे अद्यतनित होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chrome रीस्टार्ट होईल आणि आपण आपल्या मार्गावर असाल.</translation>
 <translation id="1302523850133262269">कृपया Chrome नवीनतम सिस्टीम अद्यतने स्थापित करताना प्रतीक्षा करा.</translation>
-<translation id="1348153800635493797">Google Wallet वापरण्यासाठी आपण Chrome श्रेणीसुधारित करणे आवश्यक आहे [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome ला असामान्य वर्तन आढळले आहे</translation>
 <translation id="1393853151966637042">Chrome वापरून मदत मिळवा</translation>
 <translation id="1399397803214730675">या संगणकात आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर कार्य करत नसल्यास, कृपया Google Chrome विस्थापित करा आणि पुन्हा प्रयत्न करा.</translation>
@@ -46,6 +45,7 @@
 <translation id="2290014774651636340">Google API की गहाळ आहेत. Google Chrome ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="2290095356545025170">आपली खात्री आहे की आपण Google Chrome विस्थापित करू इच्छिता?</translation>
 <translation id="2316129865977710310">नाही, धन्यवाद</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. सर्व हक्क राखीव.</translation>
 <translation id="2346876346033403680">कोणीतरी यापूर्वी या संगणकावरील Chrome मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> या रुपात साइन इन केले होते. ते आपले खाते नसल्यास, आपली माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.
 
 तरीही साइन इन करण्यामुळे <ph name="ACCOUNT_EMAIL_NEW" /> मध्ये बुकमार्क, इतिहास यासारखी Chrome माहिती आणि अन्य सेटिंग्ज विलीन होतील.</translation>
@@ -65,7 +65,6 @@
 <translation id="2769762047821873045">Google Chrome आपला डीफॉल्ट ब्राउझर नाही.</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
 <translation id="2871893339301912279">आपण Chrome मध्‍ये साइन इन केले आहे!</translation>
-<translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> मुक्त-स्रोत प्रोजेक्ट आणि अन्य <ph name="BEGIN_LINK_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_OSS" /> द्वारे Google Chrome ची निर्मिती करणे शक्य झाले.</translation>
 <translation id="3037838751736561277">Google Chrome पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> डिस्कनेक्ट केल्याने या डिव्हाइसवरील आपला इतिहास, बुकमार्क, सेटिंग्ज आणि अन्य Chrome डेटा साफ होईल. आपल्या Google खात्यात संचयित केलेला डेटा साफ केला जाणार नाही आणि तो <ph name="GOOGLE_DASHBOARD_LINK" />Google डॅशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> वर व्यवस्थापित केला जाऊ शकतो.</translation>
 <translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत अनुप्रयोग चालणे सुरू ठेवा</translation>

@@ -159,7 +159,6 @@
 Du logger ind med en administreret konto, og du giver administratoren kontrol over din Chrome-profil. Dine Chrome-data vil blive knyttet permanent til denne konto. Hvis du logger ud af denne konto, slettes de lokale Chrome-data.</translation>
 <translation id="3410346880900521918">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
-<translation id="3455798674391346847">Spar på dataoverførslen ved at få Google til at optimere de sider, du besøger. Google optimerer og viser ikke sider, der besøges via HTTPS eller i inkognitotilstand.</translation>
 <translation id="3485544713029068372">Smart Lock til adgangskoder</translation>
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
@@ -314,7 +313,6 @@ Brugsstatistik indeholder oplysninger, såsom præferencer, antal klik på en kn
 
 Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="572328651809341494">Seneste faner</translation>
-<translation id="5733727110006255111">Når denne funktion er aktiveret, vil Chrome bruge Googles servere til at komprimere de sider, du besøger, før de downloades. SSL- og inkognitosider medtages ikke.</translation>
 <translation id="5749068826913805084">Chrome skal have lageradgang for at kunne downloade filer.</translation>
 <translation id="5763382633136178763">Inkognitofaner</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>

@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="127345590676626841">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
-<translation id="1348153800635493797">Чтобы воспользоваться Google Кошельком, обновите Chrome [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">В работе Chrome обнаружены сбои</translation>
 <translation id="1393853151966637042">Справочный центр</translation>
 <translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
+<translation id="2334084861041072223">© Google Inc, <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2346876346033403680">Ранее вход в Chrome на этом компьютере выполнялся из аккаунта <ph name="ACCOUNT_EMAIL_LAST" />. Если это не ваш аккаунт и вы хотите закрыть доступ к своим данным, создайте новый профиль Chrome.
 
 Если войти в систему сейчас, закладки, история и прочие данные Chrome будут синхронизированы с аккаунтом <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -62,7 +62,6 @@
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
-<translation id="2874156562296220396">Браузер Google Chrome создан на основе проекта <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> и другого <ph name="BEGIN_LINK_OSS" />программного обеспечения с открытым исходным кодом<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome работает в фоновом режиме</translation>
 <translation id="3047079729301751317">Если вы отключите аккаунт <ph name="USERNAME" />, все сохраненные на этом устройстве закладки, настройки, история и другие данные Chrome будут удалены. Данные в вашем аккаунте Google сохранятся, и вы сможете управлять ими в <ph name="GOOGLE_DASHBOARD_LINK" />Личном кабинете Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>

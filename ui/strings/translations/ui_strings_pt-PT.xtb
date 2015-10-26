@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="111910763555783249">Definições de notificação</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Há 1 dia}other{Há # dias}}</translation>
 <translation id="1167268268675672572">Mover para o início da linha e modificar seleção</translation>
 <translation id="1190609913194133056">Centro de Notificações</translation>

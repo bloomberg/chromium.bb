@@ -159,7 +159,6 @@
 You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
 <translation id="3410346880900521918">If you're seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Size:</translation>
-<translation id="3455798674391346847">Spend less data by using Google to optimise the pages that you visit. Pages accessed with HTTPS or Incognito will not be optimised or seen by Google.</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
@@ -314,7 +313,6 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 
 However, you aren't invisible. Going incognito doesn't hide your browsing from your employer, your Internet service provider or the websites you visit.</translation>
 <translation id="572328651809341494">Recent tabs</translation>
-<translation id="5733727110006255111">When this feature is turned on, Chrome will use Google servers to compress pages that you visit before downloading them. SSL and incognito pages will not be included.</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5763382633136178763">Incognito tabs</translation>
 <translation id="5765780083710877561">Description:</translation>

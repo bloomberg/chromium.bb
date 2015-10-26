@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="111910763555783249">Configuració de notificacions</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{fa 1 dia}other{fa # dies}}</translation>
 <translation id="1167268268675672572">Mou al començament de la línia i modifica la selecció</translation>
 <translation id="1190609913194133056">Centre de notificacions</translation>

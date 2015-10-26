@@ -159,7 +159,6 @@
 Urmează să vă conectați cu un cont gestionat și să acordați administratorului control asupra profilului Chrome. Datele din Chrome vor fi asociate definitiv acestui cont. Dacă vă deconectați de la acest cont, datele locale Chrome se vor șterge.</translation>
 <translation id="3410346880900521918">Dacă acest mesaj apare frecvent, încearcă aceste <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Dimensiune:</translation>
-<translation id="3455798674391346847">Reduce volumul de date folosind Google pentru a optimiza paginile pe care le accesezi. Google nu va vedea și nu va optimiza paginile accesate prin HTTPS sau incognito.</translation>
 <translation id="3485544713029068372">Smart Lock pentru parole</translation>
 <translation id="3492207499832628349">Filă incognito nouă</translation>
 <translation id="3518985090088779359">Acceptă și continuă</translation>
@@ -314,7 +313,6 @@ Statisticile de utilizare includ informații precum preferințele, clicurile pe 
 
 Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="572328651809341494">File recente</translation>
-<translation id="5733727110006255111">Când această funcție este activată, Chrome va utiliza serverele Google pentru a comprima paginile pe care le accesezi, înainte de a le descărca. Paginile SSL și incognito nu vor fi incluse.</translation>
 <translation id="5749068826913805084">Pentru a descărca fișiere, Chrome necesită acces la stocare.</translation>
 <translation id="5763382633136178763">File incognito</translation>
 <translation id="5765780083710877561">Descriere:</translation>

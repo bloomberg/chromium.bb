@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Impossibile sincronizzare i tuoi dati in Chrome OS. Aggiorna la passphrase di sincronizzazione.</translation>
 <translation id="127345590676626841">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente. Al termine del download, Chrome si riavvierà e potrai procedere.</translation>
 <translation id="1302523850133262269">Attendi mentre Chrome installa gli aggiornamenti di sistema più recenti.</translation>
-<translation id="1348153800635493797">Per utilizzare Google Wallet, devi eseguire l'upgrade di Chrome [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome ha rilevato un comportamento insolito</translation>
 <translation id="1393853151966637042">Ricevi assistenza per l'utilizzo di Chrome</translation>
 <translation id="1399397803214730675">Su questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e riprova.</translation>
@@ -43,6 +42,7 @@
 <translation id="2290014774651636340">Mancano le chiavi dell'API di Google. Alcune funzionalità di Google Chrome verranno disattivate.</translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>
 <translation id="2316129865977710310">No, grazie</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2346876346033403680">Qualcuno ha già eseguito l'accesso a Chrome su questo computer come <ph name="ACCOUNT_EMAIL_LAST" />. Se non si tratta del tuo account, crea un nuovo utente Chrome per tenere separate le tue informazioni.
 
 Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronologia e altre impostazioni verranno unite a quelle di <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -62,7 +62,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="2871893339301912279">Hai eseguito l'accesso a Chrome.</translation>
-<translation id="2874156562296220396">Google Chrome è reso possibile dal progetto open source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> e da altri <ph name="BEGIN_LINK_OSS" />software open source<ph name="END_LINK_OSS" />.</translation>
 <translation id="3037838751736561277">Google Chrome è in modalità background.</translation>
 <translation id="3047079729301751317">Se ti disconnetti da <ph name="USERNAME" /> verranno cancellati la cronologia, i Preferiti, le impostazioni e gli altri dati di Chrome memorizzati sul dispositivo. I dati memorizzati nel tuo account Google non verranno cancellati e potrai gestirli su <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Continua a eseguire applicazioni in background dopo la chiusura di Google Chrome</translation>

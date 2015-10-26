@@ -66,7 +66,6 @@
 <translation id="229702904922032456">گواهینامه واسط یا ریشه منقضی شده است.</translation>
 <translation id="2328300916057834155">نشانک نامعتبر در نمایه <ph name="ENTRY_INDEX" /> نادیده گرفته شد</translation>
 <translation id="2354001756790975382">نشانک‌های دیگر</translation>
-<translation id="2359808026110333948">ادامه</translation>
 <translation id="2367567093518048410">سطح</translation>
 <translation id="2384307209577226199">پیش‌فرض شرکتی</translation>
 <translation id="2386255080630008482">گواهی سرور باطل شده است.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">مقدار با فرمت مطابقت ندارد.</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
 <translation id="2728127805433021124">گواهی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است.</translation>
-<translation id="2774256287122201187">می‌توانید ادامه دهید. اگر رفتن به صفحه را ادامه دهید، این هشدار به مدت پنج دقیقه دوباره ظاهر نمی‌شود.</translation>
 <translation id="277499241957683684">ثبت دستگاه موجود نیست</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> را تأیید کنید</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
 <translation id="375403751935624634">بدلیل خطای سرور ترجمه انجام نشد.</translation>
 <translation id="3759461132968374835">شما اخیراً گزارش خرابی ارسال نکرده‌اید. مشکلاتی که در هنگام غیرفعال بودن ویژگی ارائه گزارش خرابی ایجاد شده است، در اینجا نمایش داده نمی‌شود.</translation>
-<translation id="385051799172605136">بازگشت</translation>
 <translation id="3858027520442213535">به‌روزرسانی تاریخ و زمان</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
 <translation id="3885155851504623709">بخش</translation>
@@ -166,8 +163,7 @@
 <translation id="4506176782989081258">خطای ارزیابی: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">‏آدرس از Chrome پاک شود؟</translation>
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
-<translation id="4607653538520819196">این صفحه نمی‌تواند با «صرفه‌جویی در مصرف داده» پشتیبانی شود.</translation>
-<translation id="4668929960204016307">,</translation>
+<translation id="4668929960204016307">،</translation>
 <translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">نما</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است.</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
-<translation id="4968547170521245791">پروکسی ممکن نیست</translation>
 <translation id="498957508165411911">از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>
 <translation id="5031870354684148875">‏درباره Google Translate</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">ترک کردن این صفحه</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
-<translation id="6597614308054261376">می‌خواهید به <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> دسترسی پیدا کنید. این صفحه نمی‌تواند در این زمان با «صرفه‌جویی در مصرف داده» پشتیبانی شود.</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
@@ -276,7 +270,7 @@
 <translation id="7334320624316649418">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
 <translation id="7353601530677266744">خط فرمان</translation>
 <translation id="7378627244592794276">نه</translation>
-<translation id="7400418766976504921">URL</translation>
+<translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7419106976560586862">مسیر نمایه</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
@@ -291,7 +285,7 @@
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
 <translation id="7674629440242451245">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال برنامه‌نویسان ما را در chrome.com/dev امتحان کنید.</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
-<translation id="7761701407923456692">‏گواهی سرور با URL مطابقت ندارد.</translation>
+<translation id="7761701407923456692">گواهی سرور با نشانی وب مطابقت ندارد.</translation>
 <translation id="777702478322588152">حوزه اداری</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7805768142964895445">وضعیت</translation>

@@ -66,7 +66,6 @@
 <translation id="229702904922032456">మూల లేదా మధ్యస్థ ప్రమాణపత్రం గడువు ముగిసింది.</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" />వ సూచికలో చెల్లని బుక్‌మార్క్ విస్మరించబడింది</translation>
 <translation id="2354001756790975382">ఇతర బుక్‌మార్క్‌లు</translation>
-<translation id="2359808026110333948">కొనసాగు</translation>
 <translation id="2367567093518048410">స్థాయి</translation>
 <translation id="2384307209577226199">ఎంటర్‌ప్రైజ్ డిఫాల్ట్</translation>
 <translation id="2386255080630008482">సర్వర్ ప్రమాణపత్రం రద్దు చెయ్యబడింది.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">విలువ ఆకృతికి సరిపోలలేదు.</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>
 <translation id="2728127805433021124">సర్వర్ యొక్క ప్రమాణపత్రం ఒక బలహీనమైన సంతకం అల్గారిథమ్ ఉపయోగించి సంతకం చేయబడింది.</translation>
-<translation id="2774256287122201187">మీరు కొనసాగించవచ్చు. మీరు పేజీకి కొనసాగిస్తే, ఈ హెచ్చరిక ఐదు నిమిషాల పాటు మళ్లీ కనిపించదు.</translation>
 <translation id="277499241957683684">పరికరం రికార్డ్ లేదు</translation>
 <translation id="2835170189407361413">ఫారమ్‌ను తుడిచివేయి</translation>
 <translation id="2855922900409897335">మీ <ph name="CREDIT_CARD" />ని ధృవీకరించండి</translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">మీరు కాపీ చేసిన లింక్</translation>
 <translation id="375403751935624634">సర్వర్ లోపం వల్ల అనువాదం విఫలమైంది.</translation>
 <translation id="3759461132968374835">మీకు ఇటీవల నివేదించిన క్రాష్‌లు లేవు. క్రాష్‌ నివేదన నిలిపివేసినపుడు ఏర్పడే క్రాష్‌లు ఇక్కడ కనిపించవు.</translation>
-<translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3858027520442213535">తేదీ మరియు సమయాన్ని నవీకరించు</translation>
 <translation id="3884278016824448484">వైరుధ్యమైన పరికరం ఐడెంటిఫైయర్</translation>
 <translation id="3885155851504623709">పారిష్</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">ధృవీకరణ లోపం: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Chrome నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="4594403342090139922">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
-<translation id="4607653538520819196">ఈ పేజీ డేటా సేవర్ ద్వారా ప్రాక్సీ చేయబడదు.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రంలో లోపాలు ఉన్నాయి. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="4726672564094551039">విధానాలను మళ్లీ లోడ్ చేయి</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE" />కు అనువదించబడింది</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
-<translation id="4968547170521245791">ప్రాక్సీ చేయలేనివి</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> నుండి <ph name="TARGET_LANGUAGE" />కి అనువదించాలా?</translation>
 <translation id="5019198164206649151">బ్యాకింగ్ నిల్వ చెల్లని స్థితిలో ఉంది</translation>
 <translation id="5031870354684148875">Google అనువాదం గురించి</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">ఈ పేజీని వదిలివేయండి</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
-<translation id="6597614308054261376">మీరు <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />ని సందర్శించడానికి ప్రయత్నిస్తున్నారు. ప్రస్తుతం ఈ పేజీ డేటా సేవర్ ద్వారా ప్రాక్సీ చేయబడదు.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> శోధన</translation>
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
 <translation id="6646897916597483132">మీ కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>

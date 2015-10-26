@@ -159,7 +159,6 @@
 Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với hồ sơ trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome trên máy.</translation>
 <translation id="3410346880900521918">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
-<translation id="3455798674391346847">Sử dụng ít dữ liệu hơn bằng cách sử dụng Google để tối ưu hóa các trang bạn truy cập. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng HTTPS hoặc Chế độ ẩn danh.</translation>
 <translation id="3485544713029068372">Smart Lock cho Mật khẩu</translation>
 <translation id="3492207499832628349">Tab ẩn danh mới</translation>
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
@@ -314,7 +313,6 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
-<translation id="5733727110006255111">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Trang ẩn danh và SSL sẽ không được bao gồm.</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="5763382633136178763">Tab ẩn danh</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
@@ -458,7 +456,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7648422057306047504">Mã hóa mật khẩu bằng thông tin đăng nhập Google</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
-<translation id="7761240775244195612">Xóa <ph name="PAGES_NUMBER" /> bản sao ngoại tuyến không được sử dụng trong tháng qua? Thao tác này sẽ giải phóng <ph name="TOTAL_PAGE_SIZE" /> dung lượng.</translation>
+<translation id="7761240775244195612">Xóa <ph name="PAGES_NUMBER" /> bản sao ngoại tuyến không sử dụng trong tháng qua? Thao tác này sẽ giải phóng <ph name="TOTAL_PAGE_SIZE" /> dung lượng.</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7767746238359002192">Truy cập trang để lưu bản sao ngoại tuyến</translation>

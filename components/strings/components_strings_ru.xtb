@@ -66,7 +66,6 @@
 <translation id="229702904922032456">Срок действия корневого или промежуточного сертификата истек.</translation>
 <translation id="2328300916057834155">Пропущена недопустимая закладка, индекс <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Другие закладки</translation>
-<translation id="2359808026110333948">Далее</translation>
 <translation id="2367567093518048410">Уровень</translation>
 <translation id="2384307209577226199">Для предприятий (по умолчанию)</translation>
 <translation id="2386255080630008482">Сертификат сервера отозван.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">Значение не соответствует формату.</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
-<translation id="2774256287122201187">Вы можете продолжить работу. Если вы останетесь на странице, предупреждение будет показано снова через 5 минут.</translation>
 <translation id="277499241957683684">Устройство не зарегистрировано</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
 <translation id="2855922900409897335">Подтвердите данные карты <ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">Скопированная ссылка</translation>
 <translation id="375403751935624634">Сбой при переводе вследствие ошибки сервера.</translation>
 <translation id="3759461132968374835">Нет записей о недавних сбоях. Сбои, которые произошли при отключенной функции записи сбоев, здесь не отображаются.</translation>
-<translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Обновить дату и время</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
 <translation id="3885155851504623709">Округ</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">Ошибка проверки: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">Удалить адрес из Chrome?</translation>
 <translation id="4594403342090139922">&amp;Отменить удаление</translation>
-<translation id="4607653538520819196">Эту страницу нельзя открыть в режиме экономии трафика.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности содержит ошибки. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="4726672564094551039">Повторно загрузить политики</translation>
@@ -179,7 +175,6 @@
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
-<translation id="4968547170521245791">Невозможно использовать прокси-сервер</translation>
 <translation id="498957508165411911">Выполнить перевод (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
 <translation id="5019198164206649151">Данные в хранилище повреждены</translation>
 <translation id="5031870354684148875">О Переводчике Google</translation>
@@ -240,7 +235,6 @@
 <translation id="6512448926095770873">Покинуть эту страницу</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6550675742724504774">Параметры</translation>
-<translation id="6597614308054261376">В настоящее время сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> нельзя открыть в режиме экономии трафика.</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="6646897916597483132">Введите четырехзначный CVC-код, указанный на лицевой стороне карты.</translation>

@@ -82,6 +82,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
+<translation id="1445397020763995734">Tipo de conta para negociar autenticação HTTP</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="1464848559468748897">Controla o comportamento do usuário em uma sessão de diversos perfis nos dispositivos com <ph name="PRODUCT_OS_NAME" />.
 
@@ -198,6 +199,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2006530844219044261">Gerenciamento de energia</translation>
 <translation id="201557587962247231">Frequência de uploads de relatórios de status do dispositivo</translation>
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
+<translation id="206623763829450685">Especifica quais esquemas de autenticação HTTP são compatíveis com <ph name="PRODUCT_NAME" />.
+
+          Os valores possíveis são "básico", "resumo", "ntlm" e "negociar". Separe valores múltiplos com vírgulas.
+
+          Se esta política não for definida, os quatro esquemas serão utilizados.</translation>
 <translation id="2067011586099792101">Bloquear acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2077273864382355561">Intervalo de desligamento da tela no funcionamento com energia da bateria</translation>
@@ -390,7 +396,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2592091433672667839">Duração da inatividade antes do protetor de tela ser mostrado na tela de login no modo de varejo</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="2629448496147630947">Configurar opções de acesso remoto em <ph name="PRODUCT_NAME" />. Estes recursos serão ignorados a menos que o aplicativo de Acesso Remoto seja instalado.</translation>
 <translation id="2633084400146331575">Ativar feedback falado</translation>
 <translation id="2646290749315461919">Permite que você defina se os websites são autorizados a rastrear a localização física dos usuários. O rastreamento da localização física dos usuários pode ser permitido ou bloqueado por padrão ou o usuário será solicitado cada vez a dar sua localização física. Se esta política for deixada sem definição, a política "AskGeolocation" será utilizada e o usuário será capaz de modificá-la.</translation>
 <translation id="2650049181907741121">Ação a ser realizada quando o usuário fecha a tampa</translation>
@@ -504,6 +509,39 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se você ativa esta configuração, todas as páginas de autenticação de portal cativo (ou seja, todas as páginas da Web iniciadas por uma página de login de portal cativo até que o <ph name="PRODUCT_NAME" /> detecte uma conexão com a Internet) são exibidas em uma janela separada, ignorando todas as configurações e restrições de política para o usuário atual.
 
       Se você desativa esta configuração ou não a define, todas as páginas de autenticação de portal cativo são exibidas em uma nova guia (normal) do navegador, usando as configurações de proxy de usuário atuais.</translation>
+<translation id="3001569025430882724">Substitui as regras de seleção de impressora padrão do <ph name="PRODUCT_NAME" />.
+
+      Esta política determina as regras para seleção da impressora padrão no
+ <ph name="PRODUCT_NAME" />, o que na primeira vez em que a função de impressão é usado com um perfil.
+
+      Quando esta política é configurada, o <ph name="PRODUCT_NAME" /> tenta encontrar uma impressora que corresponda a todos os atributos especificados e a seleciona como impressora padrão. A primeira impressora encontrada que corresponda à política é selecionada. Caso haja mais de uma correspondência, qualquer impressora correspondente pode ser selecionada, dependendo da ordem em que as impressoras são descobertas.
+
+      Se esta política não for configurada ou se a impressora correspondente não for encontrada dentro do tempo limite, a impressora padrão passa a ser a impressora de PDF incorporada, ou nenhuma impressora é selecionada quando a impressora de PDF não estiver disponível.
+
+      O valor é analisado como um objeto JSON, em conformidade com o seguinte esquema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
+            "type": {
+              "enum": [ "local", "na nuvem" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expressão regular que corresponda ao Id da impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expressão regular que corresponde ao nome de exibição da impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      As impressoras conectadas ao Google Cloud Print são consideradas "na nuvem", e as demais são classificadas como "local". 
+      A omissão de um campo significa que todos os valores correspondem. Por exemplo, a não especificação da conectividade fará com que a visualização da impressão inicie a descoberta de todos os tipos de impressoras, locais e na nuvem.
+      Os padrões de expressão regulares devem seguir a sintaxe do JavaScript RegExp e as correspondências diferenciam maiúsculas de minúsculas.</translation>
 <translation id="3021409116652377124">Desativar localizador de plug-ins</translation>
 <translation id="3030000825273123558">Ativa relatórios de métricas</translation>
 <translation id="3034580675120919256">Permite que você defina se os websites estão autorizados a executar JavaScript. O JavaScript em execução pode ser permitido ou negado para todos os websites. Se esta política for deixada sem definição, a política "AllowJavaScript" será utilizada, podendo ser modificada pelo usuário.</translation>
@@ -1068,11 +1106,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se essa política não está ativada ou é definida como "false", o <ph name="PRODUCT_NAME" /> usa as configurações de verificação de revogação on-line já existentes.</translation>
 <translation id="5732972008943405952">Importar dados de preenchimento automático de formulários do navegador padrão na primeira execução</translation>
+<translation id="5751004203256768694">Especifica o tipo das contas fornecidas pelo app de autenticação Android compatível com a autenticação de negociação HTTP (por ex., autenticação Kerberos). Esta informação deve ser disponibilizada pelo fornecedor do app de autenticação. Para ver outros detalhes, consulte https://goo.gl/hajyfN.
+
+          Se nenhuma configuração é providenciada, a Autenticação de negociação é desativada no Android.</translation>
 <translation id="5761030451068906335">Define as configurações de proxy para o <ph name="PRODUCT_NAME" />. Essa política ainda não está pronta para uso, não a use.</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5770738360657678870">Canal de desenvolvedores (pode ser instável)</translation>
 <translation id="5774856474228476867">URL de pesquisa do provedor de pesquisa padrão</translation>
 <translation id="5776485039795852974">Perguntar cada vez que um site quiser exibir notificações da área de trabalho</translation>
+<translation id="5781412041848781654">Especifica qual biblioteca GSSAPI deve ser utilizada para autenticação HTTP. Você pode definir apenas um nome de biblioteca ou um caminho completo.
+
+          Se nenhuma configuração for fornecida, o <ph name="PRODUCT_NAME" /> voltará a utilizar um nome de biblioteca padrão.</translation>
 <translation id="5781806558783210276">Especifica depois de quanto tempo de inatividade do usuário é executada a ação de inatividade no funcionamento com energia da bateria.
 
           Quando esta política está definida, especifica por quanto tempo o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> execute a ação de inatividade, que pode ser configurada separadamente.
@@ -1222,7 +1266,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Quando esta política é definida como "false" ou não é configurada, os cookies definidos pelo IDP são transferidos para o perfil do usuário durante o primeiro login dele/dela apenas em um dispositivo.
 
-      Esta política afeta os usuários cujo domínio corresponde apenas ao domínio de inscrição do dispositivo. Para todos os outros usuários, os cookies definidos pelo IDP são transferidos para o perfil do usuário durante o primeiro login apenas no dispositivo.</translation>
+      Esta política afeta os usuários cujo domínio corresponde apenas ao domínio de inscrição do dispositivo. Para todos os outros usuários, os cookies definidos pelo IDP são transferidos para o perfil do usuário somente durante o primeiro login no dispositivo.</translation>
 <translation id="6281043242780654992">Configura políticas para as mensagens nativas. Os hosts de mensagens nativas presentes na lista negra não serão permitidos, a menos que estejam na lista de permissões.</translation>
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1294,6 +1338,22 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se você definir essa política, os usuários poderão modificá-la temporariamente ao ativar ou desativar o teclado na tela. No entanto, a opção do usuário não é permanente, e o padrão é restaurado sempre que a tela de login é exibida novamente ou que o usuário permanece inativo na tela de login por um minuto.
 
           Se essa política não for definida, o teclado na tela será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativá-lo ou desativá-lo a qualquer momento e seu status na tela de login é mantido entre os usuários.</translation>
+<translation id="6571885270348124154">Define uma ou mais localidades recomendadas para uma sessão pública, permitindo que os usuários escolham com facilidade uma dessas localidades.
+
+      O usuário pode escolher uma localidade e um layout de teclado antes de iniciar uma sessão pública. Por padrão, todas as localidades compatíveis com <ph name="PRODUCT_OS_NAME" /> são listadas em ordem alfabética. Você pode usar esta política para mover um conjunto de localidades recomendadas para o topo da lista.
+
+      Se esta política não for configurada, a localidade da interface do usuário atual será pré-selecionada.
+
+      Se esta política for configurada, as localidades recomendadas serão movidas para o topo da lista e ficarão visualmente separadas de todas as outras localidades. As localidades recomendadas serão listadas na ordem em que aparecem na política. A primeira localidade recomendada será pré-selecionada.
+
+      Se houver mais de uma localidade recomendada, presume-se que os usuários desejarão selecionar uma das localidades. A seleção da localidade e do layout do teclado será oferecida com destaque no início de uma sessão pública. Caso contrário, presume-se que a maioria dos usuários desejará usar a localidade pré-selecionada. A seleção da localidade e do layout do teclado será oferecida com menos destaque no início de uma sessão pública. 
+
+      Quando esta política é configurada, e o login automático está ativado (consulte as políticas |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), a sessão pública iniciada automaticamente usa a primeira localidade recomendada e o layout de teclado mais usado nessa localidade.
+
+      O layout do teclado pré-selecionado é sempre o layout mais usado na localidade pré-selecionada.
+
+      Esta política só pode ser configurada como recomendada. Você pode usá-la para mover um conjunto de localidades recomendadas para o topo, mas os usuários têm permissão para escolher qualquer localidade compatível com o <ph name="PRODUCT_OS_NAME" /> para a sessão deles.
+      </translation>
 <translation id="6598235178374410284">Imagem do avatar do usuário</translation>
 <translation id="6633160536638196468">Especificar uma lista de recursos de uso suspenso da plataforma Web para reativar temporariamente.
 
@@ -1523,6 +1583,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
 <translation id="7468416082528382842">Local do registro do Windows:</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
+<translation id="7485481791539008776">Regras de seleção de impressora padrão</translation>
 <translation id="749556411189861380">Informa a versão do sistema operacional e do firmware dos dispositivos inscritos.
 
       Se essa configuração não for definida ou for definida como "True", os dispositivos inscritos informarão a versão do sistema operacional e do firmware periodicamente. Se essa configuração for definida como "False", as informações de versão não serão informadas.</translation>
@@ -1614,7 +1675,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Esta política não está disponível em instâncias do Windows que não estejam vinculadas
           a um domínio Active Directory.</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
-<translation id="7941975817681987555">Não prever ações da rede em qualquer conexão de rede</translation>
+<translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
@@ -1886,6 +1947,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="9042911395677044526">Permite aplicar a configuração de rede por usuário de dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica se a atividade de vídeo afeta o gerenciamento de energia</translation>
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
+<translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9104138886225968319">Enviar batimentos cardíacos de monitoramento ao servidor de gerenciamento para permitir
       que o servidor detecte se o dispositivo está off-line.
 

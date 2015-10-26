@@ -37,7 +37,7 @@
 <translation id="1710259589646384581">מערכת הפעלה</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">דווח על באג</translation>
-<translation id="1753706481035618306">מספר עמוד</translation>
+<translation id="1753706481035618306">מספר דף</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
@@ -66,7 +66,6 @@
 <translation id="229702904922032456">פג תוקפו של אישור שורש או אישור ביניים.</translation>
 <translation id="2328300916057834155">המערכת התעלמה מסימניה לא חוקית באינדקס <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">סימניות אחרות</translation>
-<translation id="2359808026110333948">המשך</translation>
 <translation id="2367567093518048410">רמה</translation>
 <translation id="2384307209577226199">ברירת מחדל של ארגון</translation>
 <translation id="2386255080630008482">אישור השרת נשלל.</translation>
@@ -89,7 +88,6 @@
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
-<translation id="2774256287122201187">אתה רשאי להמשיך. אם תמשיך אל הדף, האזהרה הזו לא תופיע שוב למשך חמש דקות.</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
 <translation id="2835170189407361413">נקה טופס</translation>
 <translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD" /></translation>
@@ -135,7 +133,6 @@
 <translation id="3739623965217189342">קישור שהעתקת</translation>
 <translation id="375403751935624634">התרגום נכשל עקב שגיאת שרת.</translation>
 <translation id="3759461132968374835">לא התקבלו דיווחים על קריסות לאחרונה. קריסות שהתרחשו בזמן שאפשרות הדיווח על קריסות היתה מושבתת לא יופיעו כאן.</translation>
-<translation id="385051799172605136">חזור</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
 <translation id="3885155851504623709">קהילה</translation>
@@ -166,7 +163,6 @@
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4587425331216688090">‏האם להסיר את הכתובת מ-Chrome?</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
-<translation id="4607653538520819196">‏לא ניתן להעביר את הדף הזה דרך שרת proxy באמצעות חוסך הנתונים (Data Saver).</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
@@ -183,7 +179,6 @@ Del</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
-<translation id="4968547170521245791">‏לא ניתן להעביר דרך שרת proxy</translation>
 <translation id="498957508165411911">האם לתרגם מ<ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
 <translation id="5031870354684148875">‏מידע על Google Translate</translation>
@@ -244,7 +239,6 @@ Del</translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
-<translation id="6597614308054261376">‏אתה מנסה ליצור קשר עם <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />. לא ניתן כעת להעביר את הדף הזה דרך שרת proxy באמצעות חוסך הנתונים (Data Saver).</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>

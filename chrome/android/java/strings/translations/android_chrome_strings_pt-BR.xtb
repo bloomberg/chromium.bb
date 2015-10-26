@@ -159,7 +159,6 @@
 Você está fazendo login com uma conta gerenciada e fornecendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Chrome serão permanentemente vinculados a esta conta. Se você se desconectar desta conta, os dados locais do Chrome serão excluídos.</translation>
 <translation id="3410346880900521918">Se você estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
-<translation id="3455798674391346847">Gaste menos dados usando o Google para otimizar as páginas que você visita. Páginas acessadas com HTTPS ou no modo de navegação anônima não são otimizadas nem vistas pelo Google.</translation>
 <translation id="3485544713029068372">Smart Lock para senhas</translation>
 <translation id="3492207499832628349">Nova guia anônima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -313,7 +312,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5719837394786370183">As páginas que você visualiza nas guias anônimas não permanecem no histórico do navegador, no armazenamento de cookies nem no histórico de pesquisa depois que você fecha todas as guias anônimas. Os arquivos que você transfere por download ou os favoritos que cria são mantidos.
          No entanto, você não fica invisível. O modo anônimo não oculta sua navegação do seu empregador, do seu provedor de acesso à Internet ou dos websites que você visita.</translation>
 <translation id="572328651809341494">Guias recentes</translation>
-<translation id="5733727110006255111">Quando este elemento está ativado, o Chrome usa os servidores do Google para compactar as páginas que você visita antes de fazer o download delas. Páginas no modo anônimo e em SSL não são incluídas.</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
 <translation id="5763382633136178763">Guias anônimas</translation>
 <translation id="5765780083710877561">Descrição:</translation>
@@ -541,6 +539,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="886510833909353412">Criptografar tudo com senha</translation>
 <translation id="8872441722924401214">Escolher certificado para autenticação</translation>
+<translation id="8891135217544884558">URLs nas proximidades</translation>
 <translation id="8901170036886848654">Nenhum favorito encontrado</translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
 <translation id="8912362522468806198">Conta do Google</translation>

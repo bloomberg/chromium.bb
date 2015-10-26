@@ -159,7 +159,6 @@
 Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administrador controlo sobre o seu perfil do Chrome. Os seus dados do Chrome ficarão associados permanentemente a esta conta. Desassociar esta conta irá eliminar os dados locais do Chrome.</translation>
 <translation id="3410346880900521918">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
-<translation id="3455798674391346847">Gaste menos dados ao utilizar o Google para otimizar as páginas que visita. As páginas acedidas com HTTPS ou no Modo de navegação anónima não são otimizadas nem vistas pelo Google.</translation>
 <translation id="3485544713029068372">Smart Lock para palavras-passe</translation>
 <translation id="3492207499832628349">Novo sep. navegação anónima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -314,7 +313,6 @@ As estatísticas de utilização incluem informações como preferências, cliqu
 
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Websites que visitar.</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
-<translation id="5733727110006255111">Com esta funcionalidade ativada, o Chrome utiliza os servidores da Google para comprimir as páginas visitadas antes de as transferir. As páginas SSL e de navegação anónima não são incluídas.</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="5763382633136178763">Separadores de navegação anónima</translation>
 <translation id="5765780083710877561">Descrição:</translation>
@@ -543,6 +541,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="886510833909353412">Encriptar todos com frase de acesso</translation>
 <translation id="8872441722924401214">Escolher o certificado para autenticação</translation>
+<translation id="8891135217544884558">URLs próximos</translation>
 <translation id="8901170036886848654">Nenhum marcador encontrado</translation>
 <translation id="8909135823018751308">Partilhar…</translation>
 <translation id="8912362522468806198">Conta Google</translation>

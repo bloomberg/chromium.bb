@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="111910763555783249">Aviseringsinställningar</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{för 1 dag sedan}other{för # dagar sedan}}</translation>
 <translation id="1167268268675672572">Flytta till radens början och ändra markeringen</translation>
 <translation id="1190609913194133056">Meddelandecenter</translation>

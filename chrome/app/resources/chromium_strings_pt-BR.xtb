@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Opcional: Ajude a tornar o Chromium melhor enviando automaticamente as estatísticas de uso e os relatórios de erros ao Google.</translation>
 <translation id="2910007522516064972">Sobre o &amp;Chromium</translation>
 <translation id="2966088006374919794">O Chromium precisa iniciar um aplicativo externo para lidar com os links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">O site <ph name="SITE" /> geralmente usa criptografia para proteger suas informações. Quando o Chromium tentou se conectar a <ph name="SITE" /> desta vez, o website retornou credenciais
+incomuns e incorretas. Isso pode acontecer quando que um invasor está fingindo ser <ph name="SITE" /> ou quando uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chromium interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="3032787606318309379">Adicionando ao Chromium...</translation>
 <translation id="3046695367536568084">É necessário estar conectado ao Chromium para usar os aplicativos. Isso permite que o Chromium sincronize seus aplicativos, favoritos, histórico, senhas e outras configurações entre diferentes dispositivos.</translation>
 <translation id="3068515742935458733">Ajude a melhorar o Chromium. Envie relatórios de erros e <ph name="UMA_LINK" /> para o Google</translation>
@@ -178,7 +180,6 @@
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
 <translation id="6970811910055250180">Atualizando o dispositivo...</translation>
-<translation id="7023267510504981715">É necessário fazer upgrade do Chromium para usar a Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="7027298027173928763">Não foi possível atualizar o Chromium para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Reinstale o Chromium manualmente.</translation>
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7064610482057367130">Nenhuma instalação do Chromium foi encontrada para atualização.</translation>
