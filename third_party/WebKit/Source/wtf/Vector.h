@@ -151,7 +151,7 @@ struct VectorMover<false, T> {
             }
         }
     }
-    static void swap(T* src, T* srcEnd, T* dst) 
+    static void swap(T* src, T* srcEnd, T* dst)
     {
         std::swap_ranges(src, srcEnd, dst);
     }
@@ -287,7 +287,7 @@ struct VectorTypeOperations {
     {
         VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(src, srcEnd, dst);
     }
-    
+
     static void uninitializedFill(T* dst, T* dstEnd, const T& val)
     {
         VectorFiller<VectorTraits<T>::canFillWithMemset, T>::uninitializedFill(dst, dstEnd, val);
@@ -786,6 +786,10 @@ public:
 
     template <typename VisitorDispatcher> void trace(VisitorDispatcher);
 
+protected:
+    using Base::checkUnusedSlots;
+    using Base::clearUnusedSlots;
+
 private:
     void expandCapacity(size_t newMinCapacity);
     const T* expandCapacity(size_t newMinCapacity, const T*);
@@ -799,8 +803,6 @@ private:
     using Base::swapVectorBuffer;
     using Base::allocateBuffer;
     using Base::allocationSize;
-    using Base::clearUnusedSlots;
-    using Base::checkUnusedSlots;
 };
 
 template <typename T, size_t inlineCapacity, typename Allocator>

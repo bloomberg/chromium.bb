@@ -626,17 +626,39 @@ class PersistentHeapHashCountedSet : public PersistentHeapCollectionBase<HeapHas
 template<typename T, size_t inlineCapacity = 0>
 class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>> {
 public:
-    PersistentHeapVector() { }
+    PersistentHeapVector()
+    {
+        initializeUnusedSlots();
+    }
 
     explicit PersistentHeapVector(size_t size)
         : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(size)
     {
+        initializeUnusedSlots();
+    }
+
+    PersistentHeapVector(const PersistentHeapVector& other)
+        : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(other)
+    {
+        initializeUnusedSlots();
     }
 
     template<size_t otherCapacity>
     PersistentHeapVector(const HeapVector<T, otherCapacity>& other)
         : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity>>(other)
     {
+        initializeUnusedSlots();
+    }
+
+private:
+    void initializeUnusedSlots()
+    {
+        // The PersistentHeapVector is allocated off heap along with its
+        // inline buffer (if any.) Maintain the invariant that unused
+        // slots are cleared for the off-heap inline buffer also.
+        size_t unusedSlots = this->capacity() - this->size();
+        if (unusedSlots)
+            this->clearUnusedSlots(this->end(), this->end() + unusedSlots);
     }
 };
 

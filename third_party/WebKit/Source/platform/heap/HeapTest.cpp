@@ -6434,4 +6434,34 @@ TEST(HeapTest, CrossThreadWeakPersistent)
     parkMainThread();
 }
 
+class TestPersistentHeapVectorWithUnusedSlots : public PersistentHeapVector<VectorObject, 16> {
+public:
+    void checkUnused()
+    {
+        checkUnusedSlots(end(), end() + (capacity() - size()));
+    }
+};
+
+TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots)
+{
+    TestPersistentHeapVectorWithUnusedSlots vector1;
+    TestPersistentHeapVectorWithUnusedSlots vector2(vector1);
+
+    vector1.checkUnused();
+    vector2.checkUnused();
+
+    vector2.append(VectorObject());
+    vector2.checkUnused();
+
+    EXPECT_EQ(0u, vector1.size());
+
+    EXPECT_EQ(1u, vector2.size());
+// TODO(Oilpan): when Vector.h's contiguous container support no longer disables
+// Vector<>s with inline capacity, remove.
+#if !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
+    EXPECT_EQ(16u, vector1.capacity());
+    EXPECT_EQ(16u, vector2.capacity());
+#endif
+}
+
 } // namespace blink
