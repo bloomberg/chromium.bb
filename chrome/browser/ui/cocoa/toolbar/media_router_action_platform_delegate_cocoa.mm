@@ -28,7 +28,7 @@ MediaRouterActionPlatformDelegateCocoa::
     ~MediaRouterActionPlatformDelegateCocoa() {
 }
 
-void MediaRouterActionPlatformDelegateCocoa::CloseOverflowMenuIfOpen() {
+bool MediaRouterActionPlatformDelegateCocoa::CloseOverflowMenuIfOpen() {
   // TODO(apacible): This should be factored to share code with extension
   // actions.
   WrenchMenuController* wrenchMenuController =
@@ -36,6 +36,9 @@ void MediaRouterActionPlatformDelegateCocoa::CloseOverflowMenuIfOpen() {
           browserWindowControllerForWindow:
               browser_->window()->GetNativeWindow()]
           toolbarController] wrenchMenuController];
-  if ([wrenchMenuController isMenuOpen])
-    [wrenchMenuController cancel];
+  if (![wrenchMenuController isMenuOpen])
+    return false;
+
+  [wrenchMenuController cancel];
+  return true;
 }

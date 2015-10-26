@@ -216,9 +216,13 @@ Polymer({
   },
 
   attached: function() {
-    // Turn off the spinner after 3 seconds.
+    // Turn off the spinner after 3 seconds, then report the current number of
+    // sinks.
     this.async(function() {
       this.justOpened_ = false;
+      this.fire('report-sink-count', {
+        sinkCount: this.allSinks.length,
+      });
     }, 3000 /* 3 seconds */);
   },
 

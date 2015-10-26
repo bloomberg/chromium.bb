@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -130,9 +132,14 @@ ui::MenuModel* MediaRouterAction::GetContextMenu() {
 }
 
 bool MediaRouterAction::ExecuteAction(bool by_user) {
+  base::RecordAction(base::UserMetricsAction("MediaRouter_Icon_Click"));
+
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
-  if (GetPlatformDelegate())
-    GetPlatformDelegate()->CloseOverflowMenuIfOpen();
+  if (GetPlatformDelegate()) {
+    media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+        GetPlatformDelegate()->CloseOverflowMenuIfOpen() ?
+            media_router::OVERFLOW_MENU : media_router::TOOLBAR);
+  }
   return true;
 }
 

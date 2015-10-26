@@ -18,8 +18,9 @@ class MediaRouterActionPlatformDelegate {
   // platform-specific implementation for the class.
   static scoped_ptr<MediaRouterActionPlatformDelegate> Create(Browser* browser);
 
-  // Closes the overflow menu, if it was open.
-  virtual void CloseOverflowMenuIfOpen() = 0;
+  // Closes the overflow menu, if it was open. Returns whether or not the
+  // overflow menu was closed.
+  virtual bool CloseOverflowMenuIfOpen() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_PLATFORM_DELEGATE_H_

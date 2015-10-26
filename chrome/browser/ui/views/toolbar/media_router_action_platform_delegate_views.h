@@ -15,7 +15,7 @@ class MediaRouterActionPlatformDelegateViews :
   ~MediaRouterActionPlatformDelegateViews() override;
 
   // MediaRouterActionPlatformDelegate:
-  void CloseOverflowMenuIfOpen() override;
+  bool CloseOverflowMenuIfOpen() override;
 
  private:
   // The corresponding browser.

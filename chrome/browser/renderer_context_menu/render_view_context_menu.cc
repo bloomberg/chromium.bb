@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -1855,6 +1856,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         return;
 
       dialog_controller->ShowMediaRouterDialog();
+
+      media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+          media_router::CONTEXTUAL_MENU);
+
       break;
     }
 

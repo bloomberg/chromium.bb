@@ -25,11 +25,14 @@ MediaRouterActionPlatformDelegateViews::
     ~MediaRouterActionPlatformDelegateViews() {
 }
 
-void MediaRouterActionPlatformDelegateViews::CloseOverflowMenuIfOpen() {
+bool MediaRouterActionPlatformDelegateViews::CloseOverflowMenuIfOpen() {
   AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()
           ->app_menu_button();
-  if (app_menu_button->IsMenuShowing())
-    app_menu_button->CloseMenu();
+  if (!app_menu_button->IsMenuShowing())
+    return false;
+
+  app_menu_button->CloseMenu();
+  return true;
 }

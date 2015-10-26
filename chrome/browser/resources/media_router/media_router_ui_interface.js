@@ -144,6 +144,15 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the current number of sinks.
+   *
+   * @param {number} sinkCount
+   */
+  function reportSinkCount(sinkCount) {
+    chrome.send('reportSinkCount', [sinkCount]);
+  }
+
+  /**
    * Requests data to initialize the WebUI with.
    * The data will be returned via media_router.ui.setInitialData.
    */
@@ -167,6 +176,7 @@ cr.define('media_router.browserApi', function() {
     actOnIssue: actOnIssue,
     closeDialog: closeDialog,
     closeRoute: closeRoute,
+    reportSinkCount: reportSinkCount,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,
   };

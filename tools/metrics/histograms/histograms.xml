@@ -18739,6 +18739,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Icon.Click.Location"
+    enum="MediaRouterDialogOpenOrigin">
+  <owner>apacible@chromium.org</owner>
+  <summary>Location the user clicked to open the Media Router dialog.</summary>
+</histogram>
+
+<histogram name="MediaRouter.Ui.Action.StartLocalSessionSuccessful"
+    enum="BooleanSuccess">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    The number of times a session was successfully started versus failed.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Ui.Device.Count">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    Counts the number of devices known and populated to the Media Router dialog
+    three seconds after the dialog loads. Always expected to be non-negative.
+  </summary>
+</histogram>
+
 <histogram name="Memory.BackingStore">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -66126,6 +66148,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MediaRouterDialogOpenOrigin" type="int">
+  <int value="0" label="Toolbar"/>
+  <int value="1" label="Overflow Menu"/>
+  <int value="2" label="Contextual Menu"/>
+  <int value="3" label="Page"/>
 </enum>
 
 <enum name="MediaSessionActionSource" type="int">

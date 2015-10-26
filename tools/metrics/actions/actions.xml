@@ -7703,6 +7703,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaRouter_Icon_Click">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User clicked the MediaRouterAction icon, also known as Cast icon, to open
+    the Media Router dialog.
+  </description>
+</action>
+
 <action name="Menu_Take_Screenshot">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

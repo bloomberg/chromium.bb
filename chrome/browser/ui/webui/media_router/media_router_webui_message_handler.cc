@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
@@ -27,6 +28,7 @@ const char kCreateRoute[] = "requestRoute";
 const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kCloseDialog[] = "closeDialog";
+const char kReportSinkCount[] = "reportSinkCount";
 
 // JS function names.
 const char kSetInitialData[] = "media_router.ui.setInitialData";
@@ -202,10 +204,14 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
         media_router_ui_->GetRouteProviderExtensionId()));
     web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
                                      base::StringValue(sink_id), *route_value);
+    UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
+                          true);
   } else {
     web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
                                      base::StringValue(sink_id),
                                      *base::Value::CreateNullValue());
+    UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
+                          false);
   }
 }
 
@@ -245,6 +251,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kCloseDialog,
       base::Bind(&MediaRouterWebUIMessageHandler::OnCloseDialog,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReportSinkCount,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
                  base::Unretained(this)));
 }
 
@@ -371,6 +381,17 @@ void MediaRouterWebUIMessageHandler::OnCloseDialog(
 
   dialog_closing_ = true;
   media_router_ui_->Close();
+}
+
+void MediaRouterWebUIMessageHandler::OnReportSinkCount(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportSinkCount";
+  int sink_count;
+  if (!args->GetInteger(0, &sink_count)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  UMA_HISTOGRAM_COUNTS_100("MediaRouter.Ui.Device.Count", sink_count);
 }
 
 bool MediaRouterWebUIMessageHandler::ActOnIssueType(

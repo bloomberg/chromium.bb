@@ -23,6 +23,8 @@
       'media_router_dialog_controller.h',
       'media_router_factory.cc',
       'media_router_factory.h',
+      'media_router_metrics.cc',
+      'media_router_metrics.h',
       'media_routes_observer.cc',
       'media_routes_observer.h',
       'media_sink.cc',
