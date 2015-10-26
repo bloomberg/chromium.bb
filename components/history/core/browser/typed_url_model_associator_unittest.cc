@@ -8,18 +8,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/typed_url_model_associator.h"
 #include "components/sync_driver/fake_sync_service.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using browser_sync::TypedUrlModelAssociator;
-using content::BrowserThread;
 
 namespace {
 class SyncTypedUrlModelAssociatorTest : public testing::Test {
@@ -408,8 +406,9 @@ TEST_F(SyncTypedUrlModelAssociatorTest, NoTypedVisits) {
 // association on the UI thread, then ensure that AssociateModels() returns
 // false.
 TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
-  content::TestBrowserThreadBundle thread_bundle(
-      content::TestBrowserThreadBundle::REAL_DB_THREAD);
+  base::Thread db_thread("DB_Thread");
+  db_thread.Start();
+
   base::WaitableEvent startup(false, false);
   base::WaitableEvent aborted(false, false);
   base::WaitableEvent done(false, false);
@@ -420,7 +419,7 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
   base::Closure callback = base::Bind(
       &CreateModelAssociatorAsync, &startup, &aborted, &done, &associator,
                                    &service);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
+  db_thread.task_runner()->PostTask(FROM_HERE, callback);
   // Wait for the model associator to get created and start assocation.
   ASSERT_TRUE(startup.TimedWait(TestTimeouts::action_timeout()));
   // Abort the model assocation - this should be callable from any thread.
@@ -429,4 +428,5 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
   aborted.Signal();
   // Block until CreateModelAssociator() exits.
   ASSERT_TRUE(done.TimedWait(TestTimeouts::action_timeout()));
+  db_thread.Stop();
 }

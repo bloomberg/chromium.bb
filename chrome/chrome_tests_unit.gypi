@@ -232,7 +232,6 @@
       'browser/sync/glue/synced_session_tracker_unittest.cc',
       'browser/sync/glue/synced_session_util_unittest.cc',
       'browser/sync/glue/synced_tab_delegate_unittest.cc',
-      'browser/sync/glue/typed_url_model_associator_unittest.cc',
       'browser/sync/profile_sync_auth_provider_unittest.cc',
       'browser/sync/profile_sync_components_factory_impl_unittest.cc',
       'browser/sync/profile_sync_service_autofill_unittest.cc',

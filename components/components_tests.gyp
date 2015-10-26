@@ -277,6 +277,7 @@
       'history/core/browser/top_sites_cache_unittest.cc',
       'history/core/browser/top_sites_database_unittest.cc',
       'history/core/browser/top_sites_impl_unittest.cc',
+      'history/core/browser/typed_url_model_associator_unittest.cc',
       'history/core/browser/typed_url_syncable_service_unittest.cc',
       'history/core/browser/url_database_unittest.cc',
       'history/core/browser/url_utils_unittest.cc',
