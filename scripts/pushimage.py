@@ -49,6 +49,8 @@ _SUPPORTED_IMAGE_TYPES = (
     constants.IMAGE_TYPE_FACTORY,
     constants.IMAGE_TYPE_FIRMWARE,
     constants.IMAGE_TYPE_NV_LP0_FIRMWARE,
+    constants.IMAGE_TYPE_ACCESSORY_USBPD,
+    constants.IMAGE_TYPE_ACCESSORY_RWSIG,
     constants.IMAGE_TYPE_BASE,
 )
 
@@ -303,6 +305,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     firmware_basename = _ImageNameBase(constants.IMAGE_TYPE_FIRMWARE)
     nv_lp0_firmware_basename = _ImageNameBase(
         constants.IMAGE_TYPE_NV_LP0_FIRMWARE)
+    acc_usbpd_basename = _ImageNameBase(constants.IMAGE_TYPE_ACCESSORY_USBPD)
+    acc_rwsig_basename = _ImageNameBase(constants.IMAGE_TYPE_ACCESSORY_RWSIG)
     test_basename = _ImageNameBase(constants.IMAGE_TYPE_TEST)
     base_basename = _ImageNameBase(constants.IMAGE_TYPE_BASE)
     hwqual_tarball = 'chromeos-hwqual-%s-%s.tar.bz2' % (board, versionrev)
@@ -335,6 +339,12 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
         ('firmware_from_source.tar.bz2', nv_lp0_firmware_basename, 'tar.bz2',
          constants.IMAGE_TYPE_NV_LP0_FIRMWARE),
+
+        ('firmware_from_source.tar.bz2', acc_usbpd_basename, 'tar.bz2',
+         constants.IMAGE_TYPE_ACCESSORY_USBPD),
+
+        ('firmware_from_source.tar.bz2', acc_rwsig_basename, 'tar.bz2',
+         constants.IMAGE_TYPE_ACCESSORY_RWSIG),
     )
 
     # The following build artifacts are copied and marked for signing, if

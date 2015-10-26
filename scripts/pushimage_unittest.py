@@ -233,7 +233,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  sign_types=['recovery'])
-    self.assertEqual(self.gs_mock.call_count, 22)
+    self.assertEqual(self.gs_mock.call_count, 26)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
 
@@ -251,7 +251,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  sign_types=['base'])
-    self.assertEqual(self.gs_mock.call_count, 24)
+    self.assertEqual(self.gs_mock.call_count, 28)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
 
@@ -259,7 +259,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     """Verify nothing is signed when we request an unavailable type"""
     urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                sign_types=['nononononono'])
-    self.assertEqual(self.gs_mock.call_count, 20)
+    self.assertEqual(self.gs_mock.call_count, 24)
     self.assertFalse(self.mark_mock.called)
     self.assertEqual(urls, {})
 
