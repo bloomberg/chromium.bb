@@ -128,6 +128,7 @@ struct arg {
 	char *interface_name;
 	struct wl_list link;
 	char *summary;
+	char *enumeration_name;
 };
 
 struct enumeration {
@@ -136,6 +137,7 @@ struct enumeration {
 	struct wl_list entry_list;
 	struct wl_list link;
 	struct description *description;
+	bool bitfield;
 };
 
 struct entry {
@@ -540,6 +542,8 @@ start_element(void *data, const char *element_name, const char **atts)
 	const char *summary = NULL;
 	const char *since = NULL;
 	const char *allow_null = NULL;
+	const char *enumeration_name = NULL;
+	const char *bitfield = NULL;
 	int i, version = 0;
 
 	ctx->loc.line_number = XML_GetCurrentLineNumber(ctx->parser);
@@ -562,6 +566,10 @@ start_element(void *data, const char *element_name, const char **atts)
 			since = atts[i + 1];
 		if (strcmp(atts[i], "allow-null") == 0)
 			allow_null = atts[i + 1];
+		if (strcmp(atts[i], "enum") == 0)
+			enumeration_name = atts[i + 1];
+		if (strcmp(atts[i], "bitfield") == 0)
+			bitfield = atts[i + 1];
 	}
 
 	ctx->character_data_length = 0;
@@ -655,6 +663,11 @@ start_element(void *data, const char *element_name, const char **atts)
 				     "allow-null is only valid for objects, strings, and arrays");
 		}
 
+		if (enumeration_name == NULL || strcmp(enumeration_name, "") == 0)
+			arg->enumeration_name = NULL;
+		else
+			arg->enumeration_name = xstrdup(enumeration_name);
+
 		if (summary)
 			arg->summary = xstrdup(summary);
 
@@ -665,6 +678,16 @@ start_element(void *data, const char *element_name, const char **atts)
 			fail(&ctx->loc, "no enum name given");
 
 		enumeration = create_enumeration(name);
+
+		if (bitfield == NULL || strcmp(bitfield, "false") == 0)
+			enumeration->bitfield = false;
+		else if (strcmp(bitfield, "true") == 0)
+			enumeration->bitfield = true;
+		else
+			fail(&ctx->loc,
+                             "invalid value (%s) for bitfield attribute (only true/false are accepted)",
+                             bitfield);
+
 		wl_list_insert(ctx->interface->enumeration_list.prev,
 			       &enumeration->link);
 
@@ -701,6 +724,46 @@ start_element(void *data, const char *element_name, const char **atts)
 }
 
 static void
+verify_arguments(struct parse_context *ctx, struct wl_list *messages, struct wl_list *enumerations)
+{
+	struct message *m;
+	wl_list_for_each(m, messages, link) {
+		struct arg *a;
+		wl_list_for_each(a, &m->arg_list, link) {
+			struct enumeration *e, *f;
+
+			if (!a->enumeration_name)
+				continue;
+
+			f = NULL;
+			wl_list_for_each(e, enumerations, link) {
+				if(strcmp(e->name, a->enumeration_name) == 0)
+					f = e;
+			}
+
+			if (f == NULL)
+				fail(&ctx->loc,
+				     "could not find enumeration %s",
+				     a->enumeration_name);
+
+			switch (a->type) {
+			case INT:
+				if (f->bitfield)
+					fail(&ctx->loc,
+					     "bitfield-style enum must only be referenced by uint");
+				break;
+			case UNSIGNED:
+				break;
+			default:
+				fail(&ctx->loc,
+				     "enumeration-style argument has wrong type");
+			}
+		}
+	}
+
+}
+
+static void
 end_element(void *data, const XML_Char *name)
 {
 	struct parse_context *ctx = data;
@@ -723,6 +786,12 @@ end_element(void *data, const XML_Char *name)
 			     ctx->enumeration->name);
 		}
 		ctx->enumeration = NULL;
+	} else if (strcmp(name, "interface") == 0) {
+		struct interface *i = ctx->interface;
+
+		verify_arguments(ctx, &i->request_list, &i->enumeration_list);
+		verify_arguments(ctx, &i->event_list, &i->enumeration_list);
+
 	}
 }
 
