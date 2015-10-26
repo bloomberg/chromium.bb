@@ -1122,9 +1122,6 @@ crbug.com/509025 [ Yosemite ] virtual/rootlayerscrolls/scrollbars/short-scrollba
 
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
-crbug.com/536999 fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
-crbug.com/536999 virtual/syncpaint/fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
-
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
 # Unclear semantics of ToString (actually ToPrimitive) across iframes.
