@@ -234,6 +234,8 @@ interface Blob
 interface CDATASection : Text
     method constructor
 interface CSS
+    static method escape
+    static method supports
     method constructor
 interface CSSFontFaceRule : CSSRule
     getter style
@@ -2610,6 +2612,10 @@ interface IDBIndex
     method openCursor
     method openKeyCursor
 interface IDBKeyRange
+    static method bound
+    static method lowerBound
+    static method only
+    static method upperBound
     getter lower
     getter lowerOpen
     getter upper
@@ -2833,6 +2839,7 @@ interface MediaQueryListEvent : Event
     getter media
     method constructor
 interface MediaSource : EventTarget
+    static method isTypeSupported
     getter activeSourceBuffers
     getter duration
     getter readyState
@@ -2852,6 +2859,7 @@ interface MediaStreamEvent : Event
     getter stream
     method constructor
 interface MediaStreamTrack : EventTarget
+    static method getSources
     getter enabled
     getter id
     getter kind
@@ -3087,6 +3095,8 @@ interface NodeList
     method constructor
     method item
 interface Notification : EventTarget
+    static getter permission
+    static method requestPermission
     getter body
     getter data
     getter dir
@@ -3379,6 +3389,8 @@ interface Request
     method json
     method text
 interface Response
+    static method error
+    static method redirect
     getter body
     getter bodyUsed
     getter headers
@@ -4338,6 +4350,9 @@ interface SVGTransformList
     method removeItem
     method replaceItem
 interface SVGUnitTypes
+    static attribute SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
+    static attribute SVG_UNIT_TYPE_UNKNOWN
+    static attribute SVG_UNIT_TYPE_USERSPACEONUSE
     method constructor
 interface SVGUseElement : SVGGraphicsElement
     getter height
@@ -4357,6 +4372,9 @@ interface SVGViewElement : SVGElement
     method constructor
     setter zoomAndPan
 interface SVGViewSpec
+    static attribute SVG_ZOOMANDPAN_DISABLE
+    static attribute SVG_ZOOMANDPAN_MAGNIFY
+    static attribute SVG_ZOOMANDPAN_UNKNOWN
     getter preserveAspectRatio
     getter preserveAspectRatioString
     getter transform
@@ -4701,6 +4719,8 @@ interface UIEvent : Event
     method constructor
     method initUIEvent
 interface URL
+    static method createObjectURL
+    static method revokeObjectURL
     getter hash
     getter host
     getter hostname
@@ -5519,6 +5539,10 @@ interface webkitIDBIndex
     method openCursor
     method openKeyCursor
 interface webkitIDBKeyRange
+    static method bound
+    static method lowerBound
+    static method only
+    static method upperBound
     getter lower
     getter lowerOpen
     getter upper
@@ -5693,6 +5717,8 @@ interface webkitSpeechRecognitionEvent : Event
     getter results
     method constructor
 interface webkitURL
+    static method createObjectURL
+    static method revokeObjectURL
     getter hash
     getter host
     getter hostname

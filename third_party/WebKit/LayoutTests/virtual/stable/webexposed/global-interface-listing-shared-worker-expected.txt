@@ -279,6 +279,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker] interface IDBKeyRange
+[Worker]     static method bound
+[Worker]     static method lowerBound
+[Worker]     static method only
+[Worker]     static method upperBound
 [Worker]     getter lower
 [Worker]     getter lowerOpen
 [Worker]     getter upper
@@ -365,6 +369,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method start
 [Worker]     setter onmessage
 [Worker] interface Notification : EventTarget
+[Worker]     static getter permission
 [Worker]     getter body
 [Worker]     getter data
 [Worker]     getter dir
@@ -422,6 +427,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method json
 [Worker]     method text
 [Worker] interface Response
+[Worker]     static method error
+[Worker]     static method redirect
 [Worker]     getter body
 [Worker]     getter bodyUsed
 [Worker]     getter headers
@@ -473,6 +480,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method encode
 [Worker] interface URL
+[Worker]     static method createObjectURL
+[Worker]     static method revokeObjectURL
 [Worker]     getter hash
 [Worker]     getter host
 [Worker]     getter hostname
@@ -666,6 +675,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker] interface webkitIDBKeyRange
+[Worker]     static method bound
+[Worker]     static method lowerBound
+[Worker]     static method only
+[Worker]     static method upperBound
 [Worker]     getter lower
 [Worker]     getter lowerOpen
 [Worker]     getter upper

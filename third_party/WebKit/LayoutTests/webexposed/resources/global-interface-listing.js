@@ -96,15 +96,16 @@ function isWebIDLConstructor(propertyName) {
 }
 
 function collectPropertyInfo(object, propertyName, output) {
+    var keywords = ('prototype' in object) ? 'static ' : '';
     var descriptor = Object.getOwnPropertyDescriptor(object, propertyName);
     if ('value' in descriptor) {
         var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
-        output.push('    ' + type + ' ' + propertyName);
+        output.push('    ' + keywords + type + ' ' + propertyName);
     } else {
         if (descriptor.get)
-            output.push('    getter ' + propertyName);
+            output.push('    ' + keywords + 'getter ' + propertyName);
         if (descriptor.set)
-            output.push('    setter ' + propertyName);
+            output.push('    ' + keywords + 'setter ' + propertyName);
     }
 }
 
@@ -118,12 +119,26 @@ interfaceNames.forEach(function(interfaceName) {
         debug('interface ' + interfaceName + ' : ' + inheritsFrom);
     else
         debug('interface ' + interfaceName);
-    var propertyStrings = [];
-    var prototype = this[interfaceName].prototype;
-    Object.getOwnPropertyNames(prototype).forEach(function(propertyName) {
-        collectPropertyInfo(prototype, propertyName, propertyStrings);
+    // List static properties then prototype properties.
+    [this[interfaceName], this[interfaceName].prototype].forEach(function(object) {
+        if ('prototype' in object) {
+            // Skip properties that aren't static (e.g. consts), or are inherited.
+            var protoProperties = new Set(Object.keys(object.prototype).concat(
+                                          Object.keys(object.__proto__)));
+            var propertyNames = Object.keys(object).filter(function(name) {
+                // TODO(johnme): Stop filtering out 'toString' once
+                //               https://crbug.com/547773 is fixed.
+                return !protoProperties.has(name) && name !== 'toString';
+            });
+        } else {
+            var propertyNames = Object.getOwnPropertyNames(object);
+        }
+        var propertyStrings = [];
+        propertyNames.forEach(function(propertyName) {
+            collectPropertyInfo(object, propertyName, propertyStrings);
+        });
+        propertyStrings.sort().forEach(debug);
     });
-    propertyStrings.sort().forEach(debug);
 });
 
 debug('[GLOBAL OBJECT]');
