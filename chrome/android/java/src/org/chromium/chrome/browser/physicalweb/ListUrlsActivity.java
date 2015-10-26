@@ -12,19 +12,24 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.chromium.chrome.R;
+
+import java.util.Collection;
+
 /**
  * This activity displays a list of nearby URLs as stored in the {@link UrlManager}.
  * This activity does not and should not rely directly or indirectly on the native library.
  */
 public class ListUrlsActivity extends ListActivity {
     private static final String TAG = "PhysicalWeb";
-    private ArrayAdapter<String> mAdapter;
+    private ArrayAdapter<PwsResult> mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.physical_web_list_urls_activity);
 
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        mAdapter = new NearbyUrlsAdapter(this);
         setListAdapter(mAdapter);
     }
 
@@ -32,7 +37,11 @@ public class ListUrlsActivity extends ListActivity {
     protected void onResume() {
         super.onResume();
         mAdapter.clear();
-        mAdapter.addAll(UrlManager.getInstance(this).getUrls());
+        Collection<String> urls = UrlManager.getInstance(this).getUrls();
+        for (String url : urls) {
+            PwsResult pwsResult = new PwsResult(url, url, "", "");
+            mAdapter.add(pwsResult);
+        }
     }
 
     /**
@@ -44,9 +53,20 @@ public class ListUrlsActivity extends ListActivity {
      */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        String url = mAdapter.getItem(position);
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(url));
+        PwsResult pwsResult = mAdapter.getItem(position);
+        Intent intent = createNavigateToUrlIntent(pwsResult);
         startActivity(intent);
+    }
+
+    private static Intent createNavigateToUrlIntent(PwsResult pwsResult) {
+        String url = pwsResult.siteUrl;
+        if (url == null) {
+            url = pwsResult.requestUrl;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setData(Uri.parse(url));
+        return intent;
     }
 }

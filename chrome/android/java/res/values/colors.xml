@@ -160,4 +160,10 @@
     <!-- Smart Lock for Passwords UI colors-->
     <color name="smart_lock_auto_signin_snackbar_background_color">#2196F3</color>
 
+    <!-- Physical Web Nearby URLs colors -->
+    <color name="nearby_urls_header_color">#1c47c1</color>
+    <color name="nearby_urls_url_color">#099f39</color>
+    <color name="nearby_urls_description_color">#545454</color>
+    <color name="nearby_urls_background_color">#fff</color>
+
 </resources>

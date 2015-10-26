@@ -407,6 +407,7 @@ by a child template that "extends" this file.
         <!-- Activity to list Physical Web Urls -->
         <activity android:name="org.chromium.chrome.browser.physicalweb.ListUrlsActivity"
             android:label="@string/physical_web_list_urls_activity_title"
+            android:theme="@style/PhysicalWebNearbyUrlsListStyle"
             android:exported="false">
         </activity>
 

@@ -404,6 +404,11 @@
         <item name="android:textSize">@dimen/contextual_search_text_size</item>
     </style>
 
+    <!-- Physical Web styles -->
+    <style name="PhysicalWebNearbyUrlsListStyle">
+        <item name="android:windowBackground">@color/nearby_urls_background_color</item>
+    </style>
+
     <!-- Misc styles -->
     <style name="SnackbarAnimation">
         <item name="android:windowEnterAnimation">@anim/snackbar_in</item>
