@@ -78,36 +78,19 @@ public:
 
     // Context creation attributes.
     struct Attributes {
-        Attributes()
-            : alpha(true)
-            , depth(true)
-            , stencil(true)
-            , antialias(true)
-            , premultipliedAlpha(true)
-            , canRecoverFromContextLoss(true)
-            , noExtensions(false)
-            , shareResources(true)
-            , preferDiscreteGPU(false)
-            , noAutomaticFlushes(false)
-            , failIfMajorPerformanceCaveat(false)
-            , webGL(false)
-            , webGLVersion(0)
-        {
-        }
-
-        bool alpha;
-        bool depth;
-        bool stencil;
-        bool antialias;
-        bool premultipliedAlpha;
-        bool canRecoverFromContextLoss;
-        bool noExtensions;
-        bool shareResources;
-        bool preferDiscreteGPU;
-        bool noAutomaticFlushes;
-        bool failIfMajorPerformanceCaveat;
-        bool webGL;
-        unsigned webGLVersion;
+        bool alpha = true;
+        bool depth = true;
+        bool stencil = true;
+        bool antialias = true;
+        bool premultipliedAlpha = true;
+        bool canRecoverFromContextLoss = true;
+        bool noExtensions = false;
+        bool shareResources = true;
+        bool preferDiscreteGPU = false;
+        bool noAutomaticFlushes = false;
+        bool failIfMajorPerformanceCaveat = false;
+        bool webGL = false;
+        unsigned webGLVersion = 0;
         // FIXME: ideally this would be a WebURL, but it is currently not
         // possible to pass a WebURL by value across the WebKit API boundary.
         // See https://bugs.webkit.org/show_bug.cgi?id=103793#c13 .
