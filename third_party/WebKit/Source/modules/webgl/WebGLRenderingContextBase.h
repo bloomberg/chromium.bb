@@ -519,8 +519,8 @@ protected:
     // weakly kept. Each WebGLContextObject is responsible for detaching
     // itself upon finalization if the WebGLRenderingContextBase hasn't been
     // finalized already and detached them via detachAndRemoveAllObjects().
-    GC_PLUGIN_IGNORE("534524")
-    HashSet<WebGLContextObject*> m_contextObjects;
+    // See http://crbug.com/534524 for the details.
+    HashSet<UntracedMember<WebGLContextObject>> m_contextObjects;
 #endif
 
     PersistentWillBeMember<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
