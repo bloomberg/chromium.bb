@@ -56,7 +56,7 @@ bool IsCodecSupported(const std::string& codec) {
 
 }  // namespace
 
-net::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB() {
+::media::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB() {
   return base::Bind(&IsCodecSupported);
 }
 

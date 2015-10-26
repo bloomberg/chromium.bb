@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "net/base/mime_util.h"
 
-// TODO(gunsch/servolk): remove when this definition exists upstream.
-namespace net {
+// TODO(slan|servolk): remove when this definition exists upstream.
+namespace media {
 typedef base::Callback<bool(const std::string&)> IsCodecSupportedCB;
 }
 
@@ -20,7 +20,7 @@ namespace media {
 
 // Returns the callback to decide whether a given codec (passed in as a string
 // representation of the codec id conforming to RFC 6381) is supported or not.
-net::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB();
+::media::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB();
 
 }  // namespace media
 }  // namespace chromecast
