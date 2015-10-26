@@ -53,6 +53,7 @@ namespace blink {
 class Document;
 class Element;
 class Node;
+class WebLocalFrame;
 class WebLocalFrameImpl;
 
 // Responsible for serializing the specified frame into html
@@ -79,7 +80,7 @@ public:
     // saved links, which matched with vector:links one by one.
     // The parameter local_directory_name is relative path of directory which
     // contain all saved auxiliary files included all sub frames and resources.
-    WebPageSerializerImpl(WebFrame* frame,
+    WebPageSerializerImpl(WebLocalFrame*,
                           WebPageSerializerClient* client,
                           const WebVector<WebURL>& links,
                           const WebVector<WebString>& localPaths,

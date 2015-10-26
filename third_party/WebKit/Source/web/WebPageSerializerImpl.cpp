@@ -427,7 +427,7 @@ void WebPageSerializerImpl::buildContentForNode(Node* node,
     }
 }
 
-WebPageSerializerImpl::WebPageSerializerImpl(WebFrame* frame,
+WebPageSerializerImpl::WebPageSerializerImpl(WebLocalFrame* frame,
                                              WebPageSerializerClient* client,
                                              const WebVector<WebURL>& links,
                                              const WebVector<WebString>& localPaths,
