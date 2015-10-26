@@ -276,6 +276,7 @@ bool Display::MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx) {
     DCHECK(IsValidSurface(read));
     DCHECK(IsValidContext(ctx));
     gles2::SetGLContext(context_.get());
+    gl_context_->MakeCurrent(gl_surface_.get());
   }
   return true;
 }
