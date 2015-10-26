@@ -23,6 +23,12 @@
   <structure name="IDR_POLYMER_1_0_FONT_ROBOTO_ROBOTO_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/font-roboto/roboto.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_IRON_A11Y_KEYS_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys/iron-a11y-keys-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_IRON_A11Y_KEYS_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys/iron-a11y-keys.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_A11Y_KEYS_BEHAVIOR_IRON_A11Y_KEYS_BEHAVIOR_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior-extracted.js"
              type="chrome_html" />

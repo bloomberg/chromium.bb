@@ -5,6 +5,7 @@
     "polymer": "Polymer/polymer#^v1.0.0",
     "polymer-externs": "PolymerLabs/polymer-externs#^1.0.0",
     "font-roboto": "PolymerElements/font-roboto#^1.0.0",
+    "iron-a11y-keys": "PolymerElements/iron-a11y-keys#^1.0.0",
     "iron-a11y-keys-behavior": "PolymerElements/iron-a11y-keys-behavior#^1.0.0",
     "iron-autogrow-textarea": "PolymerElements/iron-autogrow-textarea#^1.0.0",
     "iron-checked-element-behavior": "PolymerElements/iron-checked-element-behavior#^1.0.0",
