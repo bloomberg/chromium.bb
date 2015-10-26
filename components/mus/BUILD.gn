@@ -35,6 +35,28 @@ if (is_android) {
       ":lib",
       "//mojo/application/public/cpp:sources",
     ]
+
+    if (is_win) {
+      deps += [ ":copy_gl_libraries" ]
+    }
+  }
+}
+
+if (is_win) {
+  copy("copy_gl_libraries") {
+    deps = [
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+    ]
+
+    sources = [
+      "$root_shlib_dir/libEGL.dll",
+      "$root_shlib_dir/libGLESv2.dll",
+    ]
+
+    outputs = [
+      "$root_out_dir/mus/{{source_file_part}}",
+    ]
   }
 }
 
