@@ -21,3 +21,8 @@ SyncObserverBridge::~SyncObserverBridge() {
 void SyncObserverBridge::OnStateChanged() {
   [delegate_ onSyncStateChanged];
 }
+
+void SyncObserverBridge::OnSyncConfigurationCompleted() {
+  if ([delegate_ respondsToSelector:@selector(onSyncConfigurationCompleted:)])
+    [delegate_ onSyncConfigurationCompleted];
+}

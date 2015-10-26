@@ -15,8 +15,10 @@ namespace sync_driver {
 class SyncService;
 }
 
-@protocol SyncObserverModelBridge
+@protocol SyncObserverModelBridge<NSObject>
 - (void)onSyncStateChanged;
+@optional
+- (void)onSyncConfigurationCompleted;
 @end
 
 // C++ class to monitor profile sync status in Objective-C type.
@@ -31,6 +33,7 @@ class SyncObserverBridge : public sync_driver::SyncServiceObserver {
  private:
    // sync_driver::SyncServiceObserver implementation:
    void OnStateChanged() override;
+   void OnSyncConfigurationCompleted() override;
 
   base::WeakNSProtocol<id<SyncObserverModelBridge>> delegate_;
   ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
