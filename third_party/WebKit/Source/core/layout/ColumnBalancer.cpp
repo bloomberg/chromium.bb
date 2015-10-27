@@ -33,15 +33,15 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
                 break;
             examineLine(*line);
         }
-        return;
     }
 
     const LayoutFlowThread* flowThread = group().columnSet().flowThread();
     bool isHorizontalWritingMode = flowThread->isHorizontalWritingMode();
 
-    // Look for breaks between and inside children.
+    // Look for breaks between and inside block-level children. Even if this is a block flow with
+    // inline children, there may be interesting floats to examine here.
     for (const LayoutObject* child = box.slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isBox())
+        if (!child->isBox() || child->isInline())
             continue;
         const LayoutBox& childBox = toLayoutBox(*child);
         LayoutRect overflowRect = childBox.layoutOverflowRect();
