@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 
+#include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_info.h"
 #include "net/base/network_change_notifier.h"
 
@@ -151,11 +153,32 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
                    base::Unretained(this)));
   }
 
-  // No point in tracing if there's nowhere to send it.
-  if (config && receive_callback.is_null())
-    return false;
+  scoped_ptr<const content::BackgroundTracingConfigImpl> config_impl(
+      static_cast<BackgroundTracingConfigImpl*>(config.release()));
 
-  config_.reset(static_cast<BackgroundTracingConfigImpl*>(config.release()));
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (config_impl) {
+    // No point in tracing if there's nowhere to send it.
+    if (receive_callback.is_null())
+      return false;
+
+    // If the scenario requires us to toggle Blink features, we want
+    // to neither override anything else nor to do we want to activate
+    // the scenario without doing the toggle, so if something else has
+    // configured these switches we just abort.
+    if (!config_impl->enable_blink_features().empty() &&
+        command_line->HasSwitch(switches::kEnableBlinkFeatures)) {
+      return false;
+    }
+
+    if (!config_impl->disable_blink_features().empty() &&
+        command_line->HasSwitch(switches::kDisableBlinkFeatures)) {
+      return false;
+    }
+  }
+
+  config_ = config_impl.Pass();
   receive_callback_ = receive_callback;
   requires_anonymized_data_ = requires_anonymized_data;
 
@@ -163,6 +186,16 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     DCHECK(!config_.get()->rules().empty());
     for (auto& rule : config_.get()->rules())
       static_cast<BackgroundTracingRule*>(rule)->Install();
+
+    if (!config_->enable_blink_features().empty()) {
+      command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                      config_->enable_blink_features());
+    }
+
+    if (!config_->disable_blink_features().empty()) {
+      command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
+                                      config_->disable_blink_features());
+    }
   }
 
   EnableRecordingIfConfigNeedsIt();
