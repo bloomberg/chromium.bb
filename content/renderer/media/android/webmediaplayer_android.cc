@@ -635,11 +635,8 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
 
   unsigned textureId = static_cast<unsigned>(
     (bitmap_.getTexture())->getTextureHandle());
-  if (!copyVideoTextureToPlatformTexture(
-          context3D,
-          CopyVideoTextureParams(CopyVideoTextureParams::FullCopy,
-                                 GL_TEXTURE_2D, textureId, GL_RGBA,
-                                 GL_UNSIGNED_BYTE, 0, 0, 0, true, false))) {
+  if (!copyVideoTextureToPlatformTexture(context3D, textureId,
+      GL_RGBA, GL_UNSIGNED_BYTE, true, false)) {
     return;
   }
 
@@ -663,12 +660,12 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     blink::WebGraphicsContext3D* web_graphics_context,
-    const CopyVideoTextureParams& params) {
+    unsigned int texture,
+    unsigned int internal_format,
+    unsigned int type,
+    bool premultiply_alpha,
+    bool flip_y) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK((params.copyType == CopyVideoTextureParams::FullCopy &&
-          !params.xoffset && !params.yoffset) ||
-         (params.copyType == CopyVideoTextureParams::SubCopy &&
-          !params.internalFormat && !params.type));
   // Don't allow clients to copy an encrypted video frame.
   if (needs_external_surface_)
     return false;
@@ -699,17 +696,9 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // value down to get the expected result.
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
-  if (params.copyType == CopyVideoTextureParams::FullCopy) {
-    web_graphics_context->copyTextureCHROMIUM(
-        params.target, src_texture, params.texture, params.internalFormat,
-        params.type, params.flipY, params.premultiplyAlpha, false);
-  } else {
-    web_graphics_context->copySubTextureCHROMIUM(
-        params.target, src_texture, params.texture, params.xoffset,
-        params.yoffset, 0, 0, video_frame->natural_size().width(),
-        video_frame->natural_size().height(), params.flipY,
-        params.premultiplyAlpha, false);
-  }
+  web_graphics_context->copyTextureCHROMIUM(
+      GL_TEXTURE_2D, src_texture, texture, internal_format, type,
+      flip_y, premultiply_alpha, false);
 
   web_graphics_context->deleteTexture(src_texture);
   web_graphics_context->flush();

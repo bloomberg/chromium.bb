@@ -138,7 +138,11 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
-      const CopyVideoTextureParams& params) override;
+      unsigned int texture,
+      unsigned int internal_format,
+      unsigned int type,
+      bool premultiply_alpha,
+      bool flip_y) override;
 
   // True if the loaded media has a playable video/audio track.
   virtual bool hasVideo() const;

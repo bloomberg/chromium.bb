@@ -4385,7 +4385,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
 
     if (!canvas->is3D()) {
         ImageBuffer* buffer = canvas->buffer();
-        if (!buffer->copyToPlatformTexture(webContext(), GL_TEXTURE_2D, targetTexture, targetInternalformat, targetType,
+        if (!buffer->copyToPlatformTexture(webContext(), targetTexture, targetInternalformat, targetType,
             targetLevel, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             ASSERT_NOT_REACHED();
         }
@@ -4415,51 +4415,6 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
         webContext()->deleteFramebuffer(tmpFBO);
         webContext()->deleteTexture(targetTexture);
     }
-}
-
-bool WebGLRenderingContextBase::texImage2DVideoByGPU(TexImageFunctionType functionType, WebGLTexture* texture, GLenum target,
-    GLint level, GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, HTMLVideoElement* video)
-{
-    typedef WebMediaPlayer::CopyVideoTextureParams CopyParams;
-    if (video->copyVideoTextureToPlatformTexture(webContext(),
-        CopyParams(
-            functionType == NotTexSubImage2D ? CopyParams::FullCopy : CopyParams::SubCopy,
-            target, texture->object(), internalformat, type, level, xoffset,
-            yoffset, m_unpackPremultiplyAlpha, m_unpackFlipY))) {
-        if (functionType == NotTexSubImage2D)
-            texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
-        return true;
-    }
-
-    // Try using an accelerated image buffer, this allows YUV conversion to be done on the GPU.
-    OwnPtr<ImageBufferSurface> surface = adoptPtr(new AcceleratedImageBufferSurface(IntSize(video->videoWidth(), video->videoHeight())));
-    if (surface->isValid()) {
-        OwnPtr<ImageBuffer> imageBuffer(ImageBuffer::create(surface.release()));
-        if (imageBuffer) {
-            // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
-            // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
-            // may still do a CPU conversion and upload the results).
-            video->paintCurrentFrame(imageBuffer->canvas(), IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
-
-            // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
-            switch (functionType) {
-            case NotTexSubImage2D:
-                if (imageBuffer->copyToPlatformTexture(webContext(), target, texture->object(), internalformat, type,
-                    level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-                    texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
-                    return true;
-                }
-                break;
-            case TexSubImage2D:
-                if (imageBuffer->copySubToPlatformTexture(webContext(), target, texture->object(), level,
-                    xoffset, yoffset, video->videoWidth(), video->videoHeight(), m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-                    return true;
-                }
-                break;
-            }
-        }
-    }
-    return false;
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
@@ -4508,9 +4463,31 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     // Otherwise, it will fall back to the normal SW path.
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     ASSERT(texture);
-    if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level)) {
-        if (texImage2DVideoByGPU(NotTexSubImage2D, texture, target, level, internalformat, type, 0, 0, video))
+    if (GL_TEXTURE_2D == target) {
+        if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level)
+            && video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+            texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
             return;
+        }
+
+        // Try using an accelerated image buffer, this allows YUV conversion to be done on the GPU.
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new AcceleratedImageBufferSurface(IntSize(video->videoWidth(), video->videoHeight())));
+        if (surface->isValid()) {
+            OwnPtr<ImageBuffer> imageBuffer(ImageBuffer::create(surface.release()));
+            if (imageBuffer) {
+                // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
+                // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
+                // may still do a CPU conversion and upload the results).
+                video->paintCurrentFrame(imageBuffer->canvas(), IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
+
+                // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
+                if (imageBuffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
+                    level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+                    texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
+                    return;
+                }
+            }
+        }
     }
 
     // Normal pure SW path.
@@ -4725,16 +4702,6 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     if (isContextLost() || !validateHTMLVideoElement("texSubImage2D", video, exceptionState)
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLVideoElement, target, level, 0, video->videoWidth(), video->videoHeight(), 0, format, type, xoffset, yoffset))
         return;
-
-    // Go through the fast path doing a GPU-GPU textures copy without a readback to system memory if possible.
-    // Otherwise, it will fall back to the normal SW path.
-    WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
-    ASSERT(texture);
-    if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, GL_RGBA, type, level)) {
-        if (texImage2DVideoByGPU(TexSubImage2D, texture, target, level, GL_FALSE,
-            GL_FALSE, xoffset, yoffset, video))
-            return;
-    }
 
     RefPtr<Image> image = videoFrameToImage(video);
     if (!image)

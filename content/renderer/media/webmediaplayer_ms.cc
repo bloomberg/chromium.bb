@@ -352,13 +352,13 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
 
 bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
     blink::WebGraphicsContext3D* web_graphics_context,
-    const CopyVideoTextureParams& params) {
+    unsigned int texture,
+    unsigned int internal_format,
+    unsigned int type,
+    bool premultiply_alpha,
+    bool flip_y) {
   TRACE_EVENT0("media", "WebMediaPlayerMS:copyVideoTextureToPlatformTexture");
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK((params.copyType == CopyVideoTextureParams::FullCopy &&
-          !params.xoffset && !params.yoffset) ||
-         (params.copyType == CopyVideoTextureParams::SubCopy &&
-          !params.internalFormat && !params.type));
 
   scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
@@ -372,15 +372,9 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
   gpu::gles2::GLES2Interface* const gl =
       static_cast<gpu_blink::WebGraphicsContext3DImpl*>(web_graphics_context)
           ->GetGLInterface();
-  typedef media::SkCanvasVideoRenderer::CopyFrameSingleTextureParams CopyParams;
   media::SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-      gl, video_frame.get(),
-      CopyParams(params.copyType == CopyVideoTextureParams::FullCopy
-                     ? CopyParams::FullCopy
-                     : CopyParams::SubCopy,
-                 params.target, params.texture, params.internalFormat,
-                 params.type, params.level, params.xoffset, params.yoffset,
-                 params.premultiplyAlpha, params.flipY));
+      gl, video_frame.get(), texture, internal_format, type, premultiply_alpha,
+      flip_y);
   return true;
 }
 
