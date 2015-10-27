@@ -100,7 +100,7 @@
             Activate
           </paper-button>
           <paper-button hidden$="[[!showConnect_(networkProperties)]]"
-              disabled="[[!enableConnect_(networkProperties)]]"
+              disabled="[[!enableConnect_(networkProperties, defaultNetwork)]]"
               on-tap="onConnectTap_">
             Connect
           </paper-button>

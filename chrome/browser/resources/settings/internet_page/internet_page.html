@@ -15,13 +15,16 @@
         section="internet">
       <neon-animatable id="main">
         <network-summary on-show-detail="onShowDetail_"
+            default-network="{{defaultNetwork}}"
             on-show-known-networks="onShowKnownNetworks_">
         </network-summary>
       </neon-animatable>
       <neon-animatable id="network-detail">
         <settings-subheader i18n-values="page-title:internetDetailPageTitle">
         </settings-subheader>
-        <settings-internet-detail-page guid="[[detailGuid]]"
+        <settings-internet-detail-page
+            guid="[[detailGuid]]"
+            default-network="[[defaultNetwork]]"
             on-close="onBackTap_">
         </settings-internet-detail-page>
       </neon-animatable>

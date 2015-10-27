@@ -83,7 +83,7 @@ Polymer({
    */
   deviceStateChanged_: function() {
     this.updateSelectable_();
-    if (!this.deviceIsEnabled_(this.deviceState))
+    if (this.expanded && !this.deviceIsEnabled_(this.deviceState))
       this.expanded = false;
   },
 

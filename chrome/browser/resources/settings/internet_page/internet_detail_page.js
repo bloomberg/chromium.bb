@@ -66,6 +66,15 @@ Polymer({
     },
 
     /**
+     * Highest priority connected network or null.
+     * @type {?CrOnc.NetworkStateProperties}
+     */
+    defaultNetwork: {
+      type: Object,
+      value: null
+    },
+
+    /**
      * Object providing network type values for data binding.
      * @const
      */
@@ -310,15 +319,18 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} properties
+   * @param {?CrOnc.NetworkStateProperties} defaultNetwork
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(properties) {
+  enableConnect_: function(properties, defaultNetwork) {
     if (!properties || !this.showConnect_(properties))
       return false;
     if (properties.Type == CrOnc.Type.CELLULAR && CrOnc.isSimLocked(properties))
       return false;
-    // TODO(stevenjb): For VPN, check connected state of any network.
+    if (properties.Type == CrOnc.Type.VPN && !defaultNetwork)
+      return false;
     return true;
   },
 
