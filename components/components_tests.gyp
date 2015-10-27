@@ -926,6 +926,7 @@
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../third_party/re2/re2.gyp:re2',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_test_support',

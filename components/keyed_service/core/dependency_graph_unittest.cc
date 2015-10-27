@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/strings/string_piece.h"
 #include "components/keyed_service/core/dependency_graph.h"
 #include "components/keyed_service/core/dependency_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/re2/re2.h"
 
 namespace {
 
@@ -153,6 +156,57 @@ TEST_F(DependencyGraphTest, DiamondConfiguration) {
   EXPECT_EQ(&middle2, destruction_order[1]);
   EXPECT_EQ(&middle1, destruction_order[2]);
   EXPECT_EQ(&parent, destruction_order[3]);
+}
+
+std::string NodeNameProvider(const std::string& name, DependencyNode* node) {
+  return name;
+}
+
+// When this returns true, then |name| is a valid ID according to the DOT
+// language specification [1]. Note that DOT language also allows HTML strings
+// as valid identifiers, but those are not used in the production code calling
+// the tested DumpAsGraphviz.
+// [1] http://www.graphviz.org/content/dot-language
+bool IsValidDotId(base::StringPiece name) {
+  static const char pattern[] =
+      "[a-zA-Z\\200-\\377_][0-9a-zA-Z\\200-\\377_]*"
+      "|-?(?:\\.[0-9]+|[0-9]+(\\.[0-9]*)?)"
+      "|\"(?:[^\"]|\\\")*\"";
+  return RE2::FullMatch(re2::StringPiece(name.data(), name.size()), pattern);
+}
+
+// Returns the source name of the first edge of the graphstr described in DOT
+// format in |graphstr|.
+base::StringPiece LocateNodeNameInGraph(base::StringPiece graphstr) {
+  re2::StringPiece name;
+  EXPECT_TRUE(RE2::FullMatch(
+      re2::StringPiece(graphstr.data(), graphstr.size()),
+      "(?sm).*^[ \\t]*([^ \\t]*(?:[ \\t]+[^ \\t]+)*)[ \\t]*->.*", &name))
+      << "graphstr=" << graphstr;
+  return base::StringPiece(name.data(), name.size());
+}
+
+// Node names in the dependency graph should be properly escaped.
+TEST_F(DependencyGraphTest, DumpAsGraphviz_Escaping) {
+  const char* names[] = {
+      "namespace::Service",           "justAlphabeticService",
+      "Service_with_underscores",     "AlphaNumeric123Service",
+      "123ServiceStartingWithDigits", "service with spaces",
+      "ServiceWith\"Quotes"};
+
+  DependencyGraph graph;
+  DummyNode parent(&graph);
+  DummyNode child(&graph);
+
+  graph.AddEdge(&parent, &child);
+
+  for (const char* name : names) {
+    SCOPED_TRACE(testing::Message("name=") << name);
+    std::string graph_str =
+        graph.DumpAsGraphviz("Test", base::Bind(&NodeNameProvider, name));
+    base::StringPiece dumped_name(LocateNodeNameInGraph(graph_str));
+    EXPECT_TRUE(IsValidDotId(dumped_name)) << "dumped_name=" << dumped_name;
+  }
 }
 
 }  // namespace

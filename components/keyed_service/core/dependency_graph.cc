@@ -8,6 +8,32 @@
 #include <deque>
 #include <iterator>
 
+#include "base/strings/string_piece.h"
+
+namespace {
+
+// Escapes |id| to be a valid ID in the DOT format [1]. This is implemented as
+// enclosing the string in quotation marks, and escaping any quotation marks
+// found with backslashes.
+// [1] http://www.graphviz.org/content/dot-language
+std::string Escape(base::StringPiece id) {
+  std::string result = "\"";
+  result.reserve(id.size() + 2);  // +2 for the enclosing quotes.
+  size_t after_last_quot = 0;
+  size_t next_quot = id.find('"');
+  while (next_quot != base::StringPiece::npos) {
+    result.append(id.data() + after_last_quot, next_quot - after_last_quot);
+    result.append("\"");
+    after_last_quot = next_quot + 1;
+    next_quot = id.find('"', after_last_quot);
+  }
+  result.append(id.data() + after_last_quot, id.size() - after_last_quot);
+  result.append("\"");
+  return result;
+}
+
+}  // namespace
+
 DependencyGraph::DependencyGraph() {}
 
 DependencyGraph::~DependencyGraph() {}
@@ -116,6 +142,7 @@ std::string DependencyGraph::DumpAsGraphviz(
     const base::Callback<std::string(DependencyNode*)>& node_name_callback)
     const {
   std::string result("digraph {\n");
+  std::string escaped_toplevel_name = Escape(toplevel_name);
 
   // Make a copy of all nodes.
   std::deque<DependencyNode*> nodes;
@@ -127,9 +154,9 @@ std::string DependencyGraph::DumpAsGraphviz(
   result.append("  /* Dependencies */\n");
   for (EdgeMap::const_iterator it = edges_.begin(); it != edges_.end(); ++it) {
     result.append("  ");
-    result.append(node_name_callback.Run(it->second));
+    result.append(Escape(node_name_callback.Run(it->second)));
     result.append(" -> ");
-    result.append(node_name_callback.Run(it->first));
+    result.append(Escape(node_name_callback.Run(it->first)));
     result.append(";\n");
 
     nodes_end = std::remove(nodes.begin(), nodes_end, it->second);
@@ -143,15 +170,15 @@ std::string DependencyGraph::DumpAsGraphviz(
        it != nodes.end();
        ++it) {
     result.append("  ");
-    result.append(node_name_callback.Run(*it));
+    result.append(Escape(node_name_callback.Run(*it)));
     result.append(" -> ");
-    result.append(toplevel_name);
+    result.append(escaped_toplevel_name);
     result.append(";\n");
   }
 
   result.append("\n  /* Toplevel node */\n");
   result.append("  ");
-  result.append(toplevel_name);
+  result.append(escaped_toplevel_name);
   result.append(" [shape=box];\n");
 
   result.append("}\n");
