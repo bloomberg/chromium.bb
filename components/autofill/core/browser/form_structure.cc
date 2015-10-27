@@ -69,6 +69,9 @@ const char kIgnorePatternInFieldName[] = "\\d{5,}+";
 // mismatches exceeds this threshold.
 const int kNumberOfMismatchesThreshold = 3;
 
+// Maximum number of characters in the field label to be encoded in XML.
+const int kMaxFieldLabelNumChars = 200;
+
 // Returns whether sending autofill field metadata to the server is enabled.
 bool IsAutofillFieldMetadataEnabled() {
   const std::string group_name =
@@ -127,8 +130,10 @@ buzz::XmlElement* EncodeFieldForQuery(const AutofillField& field,
     field_element->SetAttr(buzz::QName(kAttributeControlType),
                            field.form_control_type);
     if (!field.label.empty()) {
-      field_element->SetAttr(buzz::QName(kAttributeFieldLabel),
-                             base::UTF16ToUTF8(field.label));
+      std::string truncated;
+      base::TruncateUTF8ToByteSize(base::UTF16ToUTF8(field.label),
+                                   kMaxFieldLabelNumChars, &truncated);
+      field_element->SetAttr(buzz::QName(kAttributeFieldLabel), truncated);
     }
   }
   parent->AddElement(field_element);

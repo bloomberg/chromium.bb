@@ -2762,6 +2762,55 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   EXPECT_EQ(kRequest, encoded_xml);
 }
 
+TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
+  FormData form;
+  form.name = ASCIIToUTF16("the-name");
+  form.origin = GURL("http://cool.com");
+  form.action = form.origin.Resolve("/login");
+
+  FormFieldData field;
+  // No label on the first field.
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  // This label will be truncated in the XML request.
+  field.label = ASCIIToUTF16(
+      "Enter Your Really Really Really (Really!) Long Email Address Which We "
+      "Hope To Get In Order To Send You Unwanted Publicity Because That's What "
+      "Marketers Do! We Know That Your Email Address Has The Possibility Of "
+      "Exceeding A Certain Number Of Characters...");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Enter your Password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+  std::vector<std::string> encoded_signatures;
+  std::string encoded_xml;
+
+  const char kRequest[] =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"13906559713264665730\">"
+      "<field signature=\"239111655\" name=\"username\" type=\"text\"/>"
+      "<field signature=\"420638584\" name=\"email\" type=\"text\""
+      " label=\"Enter Your Really Really Really (Really!) Long Email Address"
+      " Which We Hope To Get In Order To Send You Unwanted Publicity Because"
+      " That's What Marketers Do! We Know That Your Email Address Has The"
+      " Poss\"/>"
+      "<field signature=\"2051817934\" name=\"password\" type=\"password\""
+      " label=\"Enter your Password\"/></form></autofillquery>";
+  EXPECT_TRUE(FormStructure::EncodeQueryRequest(
+      forms.get(), &encoded_signatures, &encoded_xml));
+  EXPECT_EQ(kRequest, encoded_xml);
+}
+
 // One name is missing from one field.
 TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   FormData form;
