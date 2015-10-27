@@ -151,6 +151,7 @@ template("nacl_irt_toolchain") {
     cxx = toolprefix + "clang++"
     ar = toolprefix + "ar"
     readelf = toolprefix + "readelf"
+    strip = toolprefix + "strip"
 
     # Always build the IRT with full debugging symbols, regardless of
     # how Chromium itself is being built (or other NaCl executables).

@@ -39,31 +39,65 @@ if (is_nacl) {
     ]
   }
 
-  copy("nacl_irt_copy") {
-    # TODO(phosek): We can remove this ugliness if we change the
-    # IRT file name in components/nacl/browser/nacl_browser.cc
-    if (target_cpu == "x86") {
-      suffix = "x86_32"
-    } else if (target_cpu == "x64") {
-      suffix = "x86_64"
-    } else if (target_cpu == "arm") {
-      suffix = "arm"
-    }
+  # TODO(phosek): We can remove this ugliness if we change the
+  # IRT file name in components/nacl/browser/nacl_browser.cc
+  if (target_cpu == "x86") {
+    irt_cpu = "x86_32"
+  } else if (target_cpu == "x64") {
+    irt_cpu = "x86_64"
+  } else {
+    irt_cpu = target_cpu
+  }
+  irt_name = "nacl_irt_" + irt_cpu + ".nexe"
 
+  copy("nacl_irt_debug") {
     sources = [
-      "${root_out_dir}/nacl_irt.nexe",
+      "${root_out_dir}/exe.unstripped/nacl_irt.nexe",
     ]
     outputs = [
-      "${root_build_dir}/{{source_name_part}}_${suffix}.nexe",
+      "${root_build_dir}/${irt_name}.debug",
     ]
     deps = [
       ":nacl_irt",
+    ]
+  }
+
+  action("nacl_irt_debuglink") {
+    deps = [
+      ":nacl_irt",
+      ":nacl_irt_debug",
+    ]
+
+    objcopy = "${nacl_toolprefix}objcopy"
+    irt_stripped = "${root_out_dir}/nacl_irt.nexe"
+    irt_debug = get_target_outputs(":nacl_irt_debug")
+    irt_debug = irt_debug[0]
+    irt_final = "${root_build_dir}/${irt_name}"
+
+    inputs = [
+      objcopy,
+    ]
+    sources = [
+      irt_debug,
+      irt_stripped,
+    ]
+    outputs = [
+      irt_final,
+    ]
+
+    script = "irt_debuglink.py"
+    args = [
+      rebase_path(objcopy),
+      rebase_path(irt_debug),
+      rebase_path(irt_stripped),
+      rebase_path(irt_final),
     ]
   }
 }
 
 group("irt") {
   public_deps = [
-    ":nacl_irt_copy(//build/toolchain/nacl:irt_${target_cpu})",
+    ":nacl_irt_debuglink(//build/toolchain/nacl:irt_${target_cpu})",
+    ":nacl_irt_debug(//build/toolchain/nacl:irt_${target_cpu})",
   ]
 }

@@ -11,6 +11,29 @@ declare_args() {
 
 nacl_toolchain_dir = "//native_client/toolchain/${host_os}_x86"
 
+if (is_nacl_glibc) {
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    nacl_toolchain_package = "nacl_x86_glibc"
+  } else if (current_cpu == "arm") {
+    nacl_toolchain_package = "nacl_arm_glibc"
+  }
+} else {
+  nacl_toolchain_package = "pnacl_newlib"
+}
+
+if (current_cpu == "pnacl") {
+  nacl_tuple = "pnacl"
+} else if (current_cpu == "x86" || current_cpu == "x64") {
+  nacl_tuple = "x86_64-nacl"
+} else if (current_cpu == "arm") {
+  nacl_tuple = "arm-nacl"
+}
+
+nacl_toolchain_bindir = "${nacl_toolchain_dir}/${nacl_toolchain_package}/bin"
+nacl_toolchain_tooldir =
+    "${nacl_toolchain_dir}/${nacl_toolchain_package}/${nacl_tuple}"
+nacl_toolprefix = "${nacl_toolchain_bindir}/${nacl_tuple}-"
+
 nacl_irt_toolchain = "//build/toolchain/nacl:irt_" + target_cpu
 is_nacl_irt = current_toolchain == nacl_irt_toolchain
 

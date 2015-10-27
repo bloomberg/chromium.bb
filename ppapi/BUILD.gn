@@ -218,7 +218,7 @@ if (enable_nacl) {
         pexe = "${root_out_dir}/ppapi_nacl_tests.pexe"
         nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
 
-        script = "${nacl_toolchain_dir}/pnacl_newlib/bin/pydir/loader.py"
+        script = "${nacl_toolchain_bindir}/pydir/loader.py"
         sources = [
           pexe,
         ]
@@ -298,26 +298,15 @@ if (enable_nacl) {
 
     action("generate_nmf") {
       if (is_nacl_glibc) {
-        if (current_cpu == "arm") {
-          toolchain_dir = "${nacl_toolchain_dir}/nacl_arm_glibc"
-        } else {
-          toolchain_dir = "${nacl_toolchain_dir}/nacl_x86_glibc"
-        }
         nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
       } else if (current_cpu == "pnacl") {
-        toolchain_dir = "${nacl_toolchain_dir}/pnacl_newlib"
         nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl.nmf"
       } else {
-        toolchain_dir = "${nacl_toolchain_dir}/nacl_x86_newlib"
         nmf = "${root_build_dir}/ppapi_nacl_tests_newlib.nmf"
       }
       nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
 
-      if (current_cpu == "arm") {
-        objdump = rebase_path("${toolchain_dir}/bin/arm-nacl-objdump")
-      } else {
-        objdump = rebase_path("${toolchain_dir}/bin/x86_64-nacl-objdump")
-      }
+      objdump = rebase_path("${nacl_toolprefix}objdump")
 
       script = "//native_client_sdk/src/tools/create_nmf.py"
       sources = [
@@ -334,17 +323,17 @@ if (enable_nacl) {
         nmf_flags += [ "--library-path=" + rebase_path(root_out_dir) ]
         if (current_cpu == "x86") {
           nmf_flags += [ "--library-path=" +
-                         rebase_path("${toolchain_dir}/x86_64-nacl/lib32") ]
+                         rebase_path("${nacl_toolchain_tooldir}/lib32") ]
           data += [ "$root_build_dir/lib32/" ]
         }
         if (target_cpu == "x64" || (target_cpu == "x86" && is_win)) {
           nmf_flags += [ "--library-path=" +
-                         rebase_path("${toolchain_dir}/x86_64-nacl/lib") ]
+                         rebase_path("${nacl_toolchain_tooldir}/lib") ]
           data += [ "$root_build_dir/lib64/" ]
         }
         if (current_cpu == "arm") {
           nmf_flags += [ "--library-path=" +
-                         rebase_path("${toolchain_dir}/arm-nacl/lib") ]
+                         rebase_path("${nacl_toolchain_tooldir}/lib") ]
           data += [ "$root_build_dir/lib/" ]
         }
       }
