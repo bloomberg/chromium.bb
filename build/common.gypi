@@ -5260,15 +5260,27 @@
           },  # configuration "Release"
         },  # configurations
         'xcode_settings': {
-          # Everything should include libc++ headers. Just passing
-          # -stdlib=libc++ doesn't just work in NaCl targets with asan enabled
-          # until http://crbug.com/544325 is fixed, so tell the compiler to not
-          # add any include paths, and instead below add the c++ include
-          # directory as include_dirs.  Then we can not set CLANG_CXX_LIBRARY
-          # to libc++ for NaCl targets and that way they'll link against
-          # libstdc++ on the ASan bots (ASan requires a C++ library to be linked
-          # even for the C-only NaCl programs).
-          'OTHER_CPLUSPLUSFLAGS': [ '$inherited', '-nostdinc++', ],
+          # Tell the compiler to use libc++'s headers and the linker to link
+          # against libc++.  The latter part normally requires OS X 10.7,
+          # but we still support running on 10.6.  How does this work?  Two
+          # parts:
+          # 1. Chromium's clang doesn't error on -mmacosx-version-min=10.6
+          #    combined with -stdlib=libc++ (it normally silently produced a
+          #    binary that doesn't run on 10.6)
+          # 2. Further down, library_dirs is set to
+          #    third_party/libc++-static, which contains a static
+          #    libc++.a library.  The linker then links against that instead
+          #    of against /usr/lib/libc++.dylib when it sees the -lc++ flag
+          #    added by the driver.
+          #
+          # In component builds, just link to the system libc++.  This has
+          # the effect of making everything depend on libc++, which means
+          # component-build binaries won't run on 10.6 (no libc++ there),
+          # but for a developer-only configuration that's ok.  (We don't
+          # want to raise the deployment target yet so that official and
+          # dev builds have the same deployment target.  This affects
+          # things like which functions are considered deprecated.)
+          'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
 
           'GCC_DYNAMIC_NO_PIC': 'NO',               # No -mdynamic-no-pic
                                                     # (Equivalent to -fPIC)
@@ -5286,42 +5298,8 @@
             # specified or not.
             '-fno-strict-aliasing',  # See http://crbug.com/32204.
           ],
-          'conditions': [
-            # TODO(thakis): Remove this condition once http://crbug.com/544325
-            # is fixed. Some targets below native_client still link use the
-            # 10.6 SDK which doesn't contain a libc++.
-            ['mac_sdk!="10.6"', {
-              # Tell the compiler to use libc++'s headers and the linker to link
-              # against libc++.  The latter part normally requires OS X 10.7,
-              # but we still support running on 10.6.  How does this work?  Two
-              # parts:
-              # 1. Chromium's clang doesn't error on -mmacosx-version-min=10.6
-              #    combined with -stdlib=libc++ (it normally silently produced a
-              #    binary that doesn't run on 10.6)
-              # 2. Further down, library_dirs is set to
-              #    third_party/libc++-static, which contains a static
-              #    libc++.a library.  The linker then links against that instead
-              #    of against /usr/lib/libc++.dylib when it sees the -lc++ flag
-              #    added by the driver.
-              #
-              # In component builds, just link to the system libc++.  This has
-              # the effect of making everything depend on libc++, which means
-              # component-build binaries won't run on 10.6 (no libc++ there),
-              # but for a developer-only configuration that's ok.  (We don't
-              # want to raise the deployment target yet so that official and
-              # dev builds have the same deployment target.  This affects
-              # things like which functions are considered deprecated.)
-              'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
-
-            }],
-          ],
         },
         'target_conditions': [
-          ['>(nacl_untrusted_build)==0', {
-            'include_dirs': [
-              '<(DEPTH)/third_party/llvm-build/Release+Asserts/include/c++/v1',
-            ],
-          }],
           ['>(nacl_untrusted_build)==0 and component=="static_library"', {
             # See the comment for CLANG_CXX_LIBRARY above for what this does.
             # The NaCl toolchains have their own toolchain and don't need this.

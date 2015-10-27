@@ -8,8 +8,8 @@ Version: 0
 Revision: 245965
 URL: http://libcxx.llvm.org/
 
-To upload:
-  python ~/depot_tools/upload_to_google_storage.py -b chromium-libcpp third_party/libc++-static.a
+To upload (run automatically by build.sh):
+  upload_to_google_storage.py -b chromium-libcpp third_party/libc++-static/libc++.a
 
 To initialize gsutil's credentials:
   python ~/depot_tools/third_party/gsutil/gsutil config
