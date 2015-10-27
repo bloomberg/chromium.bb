@@ -36,7 +36,11 @@ class MetricsWebContentsObserverTest
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
-    observer_ = make_scoped_ptr(new MetricsWebContentsObserver(web_contents()));
+    AttachObserver();
+  }
+
+  void AttachObserver() {
+    observer_.reset(new MetricsWebContentsObserver(web_contents()));
     observer_->WasShown();
   }
 
@@ -579,6 +583,33 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
   CheckCommittedEvent(COMMITTED_LOAD_STARTED, 1, false);
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
   CheckTotalEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
+  // Delete the observer for this test, add it once the navigation has started.
+  observer_.reset();
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(10);
+  timing.first_layout = base::TimeDelta::FromSeconds(2);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Start the navigation, then start observing the web contents. This used to
+  // crash us. Make sure we bail out and don't log histograms.
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+  AttachObserver();
+  rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+
+  // Navigate again to force histogram logging.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  AssertNoHistogramsLogged();
 }
 
 }  // namespace page_load_metrics

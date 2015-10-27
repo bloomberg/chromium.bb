@@ -267,7 +267,10 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 
   scoped_ptr<PageLoadTracker> finished_nav(
       provisional_loads_.take_and_erase(navigation_handle));
-  CHECK(finished_nav);
+  // There's a chance a navigation could have started before we were added to a
+  // tab. Bail out early if this is the case.
+  if (!finished_nav)
+    return;
 
   // Handle a pre-commit error here. Navigations that result in an error page
   // will be ignored. Note that downloads/204s will result in HasCommitted()
