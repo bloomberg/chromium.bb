@@ -1886,6 +1886,12 @@ def CMDconfig(parser, args):
     else:
       # specify an alternate relpath for the given URL.
       name = options.name
+      if not os.path.abspath(os.path.join(os.getcwd(), name)).startswith(
+          os.getcwd()):
+        parser.error('Do not pass a relative path for --name.')
+      if any(x in ('..', '.', '/', '\\') for x in name.split(os.sep)):
+        parser.error('Do not include relative path components in --name.')
+
     deps_file = options.deps_file
     safesync_url = ''
     if len(args) > 1:
