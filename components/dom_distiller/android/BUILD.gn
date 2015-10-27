@@ -57,4 +57,9 @@ source_set("jni_registrar") {
     "component_jni_registrar.cc",
     "component_jni_registrar.h",
   ]
+
+  deps = [
+    "//base",
+    "//components/dom_distiller/content:content_browser",
+  ]
 }
