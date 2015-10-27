@@ -57,8 +57,9 @@ PassOwnPtr<SpeechRecognitionClientProxy> SpeechRecognitionClientProxy::create(We
 
 void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const SpeechGrammarList* grammarList, const String& lang, const String& serviceURI, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)
 {
-    WebVector<WebSpeechGrammar> webSpeechGrammars(static_cast<size_t>(grammarList->length()));
-    for (unsigned long i = 0; i < grammarList->length(); ++i)
+    size_t length = grammarList ? static_cast<size_t>(grammarList->length()) : 0U;
+    WebVector<WebSpeechGrammar> webSpeechGrammars(length);
+    for (unsigned long i = 0; i < length; ++i)
         webSpeechGrammars[i] = grammarList->item(i);
 
     WebMediaStreamTrack track;
