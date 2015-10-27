@@ -2421,11 +2421,13 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(ScriptState* scriptState
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, buffer);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, buffer);
+        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, buffer);
+        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, buffer);
     } else {
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, buffer);
+        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, buffer);
     }
     applyStencilTest();
-    preserveObjectWrapper(scriptState, framebufferBinding, "renderbuffer", attachment, buffer);
 }
 
 void WebGLRenderingContextBase::framebufferTexture2D(ScriptState* scriptState, GLenum target, GLenum attachment, GLenum textarget, WebGLTexture* texture, GLint level)
@@ -2468,7 +2470,7 @@ void WebGLRenderingContextBase::framebufferTexture2D(ScriptState* scriptState, G
     }
     framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level);
     applyStencilTest();
-    preserveObjectWrapper(scriptState, framebufferBinding, "texture2d", attachment, texture);
+    preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
 }
 
 void WebGLRenderingContextBase::frontFace(GLenum mode)
