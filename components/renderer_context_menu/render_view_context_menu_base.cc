@@ -70,6 +70,7 @@ const size_t kMaxCustomMenuTotalItems = 1000;
 void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
                           size_t depth,
                           size_t* total_items,
+                          ScopedVector<ui::SimpleMenuModel>* submenus,
                           ui::SimpleMenuModel::Delegate* delegate,
                           ui::SimpleMenuModel* menu_model) {
   if (depth > kMaxCustomMenuDepth) {
@@ -110,8 +111,9 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
         break;
       case content::MenuItem::SUBMENU: {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate);
-        AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, delegate,
-                             submenu);
+        submenus->push_back(submenu);
+        AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, submenus,
+                             delegate, submenu);
         menu_model->AddSubMenu(
             RenderViewContextMenuBase::ConvertToContentCustomCommandId(
                 items[i].action),
@@ -241,8 +243,8 @@ BrowserContext* RenderViewContextMenuBase::GetBrowserContext() const {
 
 bool RenderViewContextMenuBase::AppendCustomItems() {
   size_t total_items = 0;
-  AddCustomItemsToMenu(params_.custom_items, 0, &total_items, this,
-                       &menu_model_);
+  AddCustomItemsToMenu(params_.custom_items, 0, &total_items, &custom_submenus_,
+                       this, &menu_model_);
   return total_items > 0;
 }
 

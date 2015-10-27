@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
@@ -193,6 +194,8 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   const int render_process_id_;
 
   scoped_ptr<ToolkitDelegate> toolkit_delegate_;
+
+  ScopedVector<ui::SimpleMenuModel> custom_submenus_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuBase);
 };
