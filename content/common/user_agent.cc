@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "build/util/webkit_version.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/utsname.h>
@@ -17,9 +18,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
-
-// Generated
-#include "webkit_version.h"  // NOLINT
 
 namespace content {
 

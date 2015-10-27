@@ -644,7 +644,7 @@
             '<(template)',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit_version.h',
+            '<(SHARED_INTERMEDIATE_DIR)/build/util/webkit_version.h',
           ],
           'action': ['python',
                      '<(script)',

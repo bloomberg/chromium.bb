@@ -13,7 +13,7 @@ action("webkit_version") {
     template_file,
   ]
 
-  output_file = "$root_gen_dir/webkit_version.h"
+  output_file = "$target_gen_dir/webkit_version.h"
   outputs = [
     output_file,
   ]
