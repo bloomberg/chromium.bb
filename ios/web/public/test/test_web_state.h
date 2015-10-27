@@ -32,6 +32,7 @@ class TestWebState : public WebState {
   bool ContentIsHTML() const override;
   const base::string16& GetTitle() const override;
   bool IsLoading() const override;
+  bool IsBeingDestroyed() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;

@@ -30,6 +30,7 @@ namespace web {
 
 WebStateImpl::WebStateImpl(BrowserState* browser_state)
     : is_loading_(false),
+      is_being_destroyed_(false),
       facade_delegate_(nullptr),
       web_controller_(nil),
       navigation_manager_(this, browser_state),
@@ -39,6 +40,8 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
 }
 
 WebStateImpl::~WebStateImpl() {
+  is_being_destroyed_ = true;
+
   // WebUI depends on web state so it must be destroyed first in case any WebUI
   // implementations depends on accessing web state during destruction.
   ClearWebUI();
@@ -147,6 +150,10 @@ void WebStateImpl::SetIsLoading(bool is_loading) {
 
 bool WebStateImpl::IsLoading() const {
   return is_loading_;
+}
+
+bool WebStateImpl::IsBeingDestroyed() const {
+  return is_being_destroyed_;
 }
 
 void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {

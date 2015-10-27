@@ -42,7 +42,7 @@ class WebStatePolicyDecider;
 class WebUIIOS;
 
 // Implementation of WebState.
-// Generally mirrors upstream's WebContents implementation.
+// Generally mirrors //content's WebContents implementation.
 // General notes on expected WebStateImpl ownership patterns:
 //  - Outside of tests, WebStateImpls are created
 //      (a) By @Tab, when creating a new Tab.
@@ -221,6 +221,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool ContentIsHTML() const override;
   const base::string16& GetTitle() const override;
   bool IsLoading() const override;
+  bool IsBeingDestroyed() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
@@ -270,6 +271,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Stores whether the web state is currently loading a page.
   bool is_loading_;
+
+  // Stores whether the web state is currently being destroyed.
+  bool is_being_destroyed_;
 
   // The delegate used to pass state to the web contents facade.
   WebStateFacadeDelegate* facade_delegate_;

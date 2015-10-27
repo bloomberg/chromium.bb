@@ -126,6 +126,9 @@ class WebState : public base::SupportsUserData {
   // Returns true if the current page is loading.
   virtual bool IsLoading() const = 0;
 
+  // Whether this instance is in the process of being destroyed.
+  virtual bool IsBeingDestroyed() const = 0;
+
   // Gets the URL currently being displayed in the URL bar, if there is one.
   // This URL might be a pending navigation that hasn't committed yet, so it is
   // not guaranteed to match the current page in this WebState. A typical

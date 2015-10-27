@@ -99,6 +99,7 @@ class TestWebStateObserver : public WebStateObserver {
   void UrlHashChanged() override { url_hash_changed_called_ = true; }
   void HistoryStateChanged() override { history_state_changed_called_ = true; }
   void WebStateDestroyed() override {
+    EXPECT_TRUE(web_state()->IsBeingDestroyed());
     web_state_destroyed_called_ = true;
     Observe(nullptr);
   }

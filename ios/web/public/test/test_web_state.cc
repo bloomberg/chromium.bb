@@ -76,6 +76,10 @@ bool TestWebState::IsLoading() const {
   return false;
 }
 
+bool TestWebState::IsBeingDestroyed() const {
+  return false;
+}
+
 void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }
