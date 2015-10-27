@@ -51866,6 +51866,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Encoder.CodecType" enum="WebRtcVideoCodecs">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Configured video codec for a sent video stream. Recorded when a
+    VideoSendStream is created.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.EncodeTimeInMs" units="ms">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -75231,6 +75239,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
   <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
+</enum>
+
+<enum name="WebRtcVideoCodecs" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="VP8"/>
+  <int value="2" label="VP9"/>
+  <int value="3" label="H264"/>
 </enum>
 
 <enum name="WebsiteSettingsAction" type="int">
