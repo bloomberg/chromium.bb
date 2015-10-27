@@ -184,10 +184,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
                                     const SkColorType color_type) = 0;
   // Ensures that the view does not drop the backing store even when hidden.
   virtual bool CanCopyFromBackingStore() = 0;
-#if defined(OS_ANDROID)
   virtual void LockBackingStore() = 0;
   virtual void UnlockBackingStore() = 0;
-#endif
 
   // Forwards the given message to the renderer. These are called by
   // the view when it has received a message.

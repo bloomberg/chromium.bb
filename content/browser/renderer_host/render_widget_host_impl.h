@@ -139,10 +139,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                             const ReadbackRequestCallback& callback,
                             const SkColorType preferred_color_type) override;
   bool CanCopyFromBackingStore() override;
-#if defined(OS_ANDROID)
   void LockBackingStore() override;
   void UnlockBackingStore() override;
-#endif
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
   void ForwardWheelEvent(const blink::WebMouseWheelEvent& wheel_event) override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;

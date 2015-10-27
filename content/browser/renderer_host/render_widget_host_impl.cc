@@ -769,7 +769,6 @@ bool RenderWidgetHostImpl::CanCopyFromBackingStore() {
   return false;
 }
 
-#if defined(OS_ANDROID)
 void RenderWidgetHostImpl::LockBackingStore() {
   if (view_)
     view_->LockCompositingSurface();
@@ -779,7 +778,6 @@ void RenderWidgetHostImpl::UnlockBackingStore() {
   if (view_)
     view_->UnlockCompositingSurface();
 }
-#endif
 
 #if defined(OS_MACOSX)
 void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {

@@ -139,10 +139,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 #endif  // defined(OS_MACOSX)
 
   // RenderWidgetHostViewBase implementation.
-#if defined(OS_ANDROID)
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(

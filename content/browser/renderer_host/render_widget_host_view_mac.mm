@@ -1591,6 +1591,14 @@ gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   return FlipNSRectToRectScreen(bounds);
 }
 
+void RenderWidgetHostViewMac::LockCompositingSurface() {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewMac::UnlockCompositingSurface() {
+  NOTIMPLEMENTED();
+}
+
 bool RenderWidgetHostViewMac::LockMouse() {
   if (mouse_locked_)
     return true;

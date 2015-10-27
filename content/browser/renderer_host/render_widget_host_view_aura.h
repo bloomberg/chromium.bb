@@ -184,6 +184,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ClearCompositorFrame() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
+  void LockCompositingSurface() override;
+  void UnlockCompositingSurface() override;
   uint32_t GetSurfaceIdNamespace() override;
   uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
                                      gfx::Point* transformed_point) override;

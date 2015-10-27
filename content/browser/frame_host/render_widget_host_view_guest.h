@@ -125,10 +125,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                                const SkBitmap& zoomed_bitmap) override;
 #endif  // defined(OS_ANDROID) || defined(USE_AURA)
 
-#if defined(OS_ANDROID)
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(

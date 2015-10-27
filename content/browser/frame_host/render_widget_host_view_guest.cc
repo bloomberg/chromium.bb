@@ -526,13 +526,13 @@ void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
 }
 #endif  // defined(OS_ANDROID) || defined(USE_AURA)
 
-#if defined(OS_ANDROID)
 void RenderWidgetHostViewGuest::LockCompositingSurface() {
+  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewGuest::UnlockCompositingSurface() {
+  NOTIMPLEMENTED();
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(

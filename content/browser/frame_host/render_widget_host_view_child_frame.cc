@@ -225,13 +225,13 @@ void RenderWidgetHostViewChildFrame::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
 }
 
-#if defined(OS_ANDROID)
 void RenderWidgetHostViewChildFrame::LockCompositingSurface() {
+  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
+  NOTIMPLEMENTED();
 }
-#endif
 
 void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32 output_surface_id,
                                                   cc::SurfaceDrawStatus drawn) {
