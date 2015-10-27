@@ -175,8 +175,8 @@ function test()
 
                 InspectorTest.addResult("Reloading with saved but diverged uiSourceCode:");
                 unloadScript();
-                InspectorTest.assertTrue(!resourceScriptMapping.scriptFile(uiSourceCode), "UISourceCode should not have script file after unloading scripts.");
-                InspectorTest.assertTrue(!sourceFrame._muted, "Saved but diverged source frame should not be muted");
+                InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
+                InspectorTest.addResult("Saved but diverged source frame should not be muted: " + !sourceFrame._muted);
 
                 InspectorTest.addResult("Loading script.");
                 loadScript();
@@ -204,8 +204,8 @@ function test()
 
                 InspectorTest.addResult("Reloading page:");
                 unloadScript();
-                InspectorTest.assertTrue(!resourceScriptMapping.scriptFile(uiSourceCode), "UISourceCode should not have script file after unloading scripts.");
-                InspectorTest.assertTrue(!sourceFrame._muted, "Saved and merged source frame should not be muted");
+                InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
+                InspectorTest.addResult("Saved and merged source frame should not be muted: " + !sourceFrame._muted);
                 InspectorTest.addResult("Loading script.");
                 loadScript();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
@@ -214,8 +214,8 @@ function test()
                 InspectorTest.addResult("Editing uiSourceCode again and reloading while it is dirty:");
                 uiSourceCode.setWorkingCopy("<foo content edited and dirty>");
                 unloadScript();
-                InspectorTest.assertTrue(!resourceScriptMapping.scriptFile(uiSourceCode), "UISourceCode should not have script file after unloading scripts.");
-                InspectorTest.assertTrue(sourceFrame._muted, "Dirty source frame should be muted");
+                InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
+                InspectorTest.addResult("Dirty source frame should be muted: " + sourceFrame._muted);
                 InspectorTest.addResult("Loading script.");
                 loadScript();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());

@@ -53,6 +53,8 @@ Dumping uiSourceCode and script content:
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
 Reloading with saved but diverged uiSourceCode:
+UISourceCode should not have script file after unloading scripts: true
+Saved but diverged source frame should not be muted: true
 Loading script.
 Workspace event: UISourceCodeAdded: debugger:/VM2 foo.js.
 Dumping uiSourceCode and script content:
@@ -72,11 +74,15 @@ Dumping uiSourceCode and script content:
  - hasDivergedFromVM: false
  - sourceFrame._muted: false
 Reloading page:
+UISourceCode should not have script file after unloading scripts: true
+Saved and merged source frame should not be muted: true
 Loading script.
 Workspace event: UISourceCodeAdded: debugger:/VM3 foo.js.
  - hasDivergedFromVM: false
  - sourceFrame._muted: false
 Editing uiSourceCode again and reloading while it is dirty:
+UISourceCode should not have script file after unloading scripts: true
+Dirty source frame should be muted: true
 Loading script.
 Workspace event: UISourceCodeAdded: debugger:/VM4 foo.js.
  - hasDivergedFromVM: true
