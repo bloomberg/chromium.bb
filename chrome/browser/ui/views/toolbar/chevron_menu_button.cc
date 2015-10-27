@@ -212,6 +212,7 @@ void ChevronMenuButton::MenuController::RunMenu(views::Widget* window) {
 }
 
 void ChevronMenuButton::MenuController::CloseMenu() {
+  icon_updaters_.clear();
   menu_->Cancel();
 }
 

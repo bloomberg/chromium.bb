@@ -256,6 +256,11 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     case TOGGLE_VISIBILITY: {
       bool currently_visible = button_visibility_ == VISIBLE;
+      // Without the toolbar redesign turned on, action visibility refers to
+      // any action presence in the toolbar, independent of whether the action
+      // is visible or overflowed. So any action present is considered visible.
+      if (!FeatureSwitch::extension_action_redesign()->IsEnabled())
+        currently_visible = true;
       ToolbarActionsModel::Get(browser_->profile())
           ->SetActionVisibility(extension->id(), !currently_visible);
       break;
