@@ -1300,11 +1300,6 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
   // transaction then metadata will be written to cache twice. If prefetching
   // becomes more common, consider combining the writes.
 
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch"));
-
   next_state_ = STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE;
   return WriteResponseInfoToEntry(false);
 }
@@ -1604,11 +1599,6 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
 }
 
 int HttpCache::Transaction::DoCacheWriteUpdatedResponse() {
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 HttpCache::Transaction::DoCacheWriteUpdatedResponse"));
-
   next_state_ = STATE_CACHE_WRITE_UPDATED_RESPONSE_COMPLETE;
   return WriteResponseInfoToEntry(false);
 }
@@ -1686,11 +1676,6 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
 }
 
 int HttpCache::Transaction::DoCacheWriteResponse() {
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 HttpCache::Transaction::DoCacheWriteResponse"));
-
   next_state_ = STATE_CACHE_WRITE_RESPONSE_COMPLETE;
   return WriteResponseInfoToEntry(truncated_);
 }
