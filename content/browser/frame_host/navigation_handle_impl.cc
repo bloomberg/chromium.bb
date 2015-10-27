@@ -205,7 +205,7 @@ void NavigationHandleImpl::WillStartRequest(
 
   // If the navigation is not deferred, run the callback.
   if (result != NavigationThrottle::DEFER)
-    complete_callback_.Run(result);
+    callback.Run(result);
 }
 
 void NavigationHandleImpl::WillRedirectRequest(
@@ -229,7 +229,7 @@ void NavigationHandleImpl::WillRedirectRequest(
 
   // If the navigation is not deferred, run the callback.
   if (result != NavigationThrottle::DEFER)
-    complete_callback_.Run(result);
+    callback.Run(result);
 }
 
 void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
