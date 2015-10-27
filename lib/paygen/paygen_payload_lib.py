@@ -359,9 +359,11 @@ class _PaygenPayload(object):
     # How big will the signatures be.
     signature_sizes = [str(size) for size in self.PAYLOAD_SIGNATURE_SIZES_BYTES]
 
+    # The out_metadata_hash_file flag requires out_hash_file flag to be set.
     with tempfile.NamedTemporaryFile('rb') as metadata_hash_file:
       cmd = ['delta_generator',
              '-in_file=' + self.payload_file,
+             '-out_hash_file=/dev/null',
              '-out_metadata_hash_file=' + metadata_hash_file.name,
              '-signature_size=' + ':'.join(signature_sizes)]
 
@@ -538,6 +540,7 @@ class _PaygenPayload(object):
       List of payload signatures, List of metadata signatures.
     """
     # Create hashes to sign.
+    # TODO(senj): Calculate the two hashes in one shot.
     payload_hash = self._GenPayloadHash()
     metadata_hash = self._GenMetadataHash()
 
