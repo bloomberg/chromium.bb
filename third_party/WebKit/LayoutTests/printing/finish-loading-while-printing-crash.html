@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<dialog
+   <form>
+     <!-- Any valid image encoded to data URL will do. -->
+     <!-- The important thing is that some valid image is loaded while -->
+     <!-- layout caused by print. -->
+     <!-- This causes test_runner to do WebTestProxyBase::checkDone. -->
+     <!-- If test_runner judges that the test is finished, CaptureDump -->
+     <!-- will be invoked and updateLayout will be invoked. -->
+     <!-- Since layout is running, the updateLayout causes crash. -->
+     <input src="data:image/gif;base64,R0lGODdhAgACAIABAAAAAP///ywAAAAAAgACAAACA0QCBQA7" type="image"/>
+</dialog>
+<!-- test for issue 539689: should not capture dump while printing. -->
+<!-- PASS if no crash occurs. -->
+<script>
+if (window.testRunner)
+    testRunner.setPrinting();
+print();
+</script>

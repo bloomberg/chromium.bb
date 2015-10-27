@@ -186,6 +186,7 @@ public:
     void printEnd() override;
     bool isPrintScalingDisabledForPlugin(const WebNode&) override;
     bool getPrintPresetOptionsForPlugin(const WebNode&, WebPrintPresetOptions*) override;
+    bool isPrinting() const override { return !!m_printContext; }
     bool hasCustomPageSizeStyle(int pageIndex) override;
     bool isPageBoxVisible(int pageIndex) override;
     void pageSizeAndMarginsInPixels(

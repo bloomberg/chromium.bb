@@ -117,6 +117,8 @@ public:
 
     // Returns true on success and sets the out parameter to the print preset options for the document.
     virtual bool getPrintPresetOptionsForPlugin(const WebNode&, WebPrintPresetOptions*) = 0;
+    // Returns true if not printing this frame.
+    virtual bool isPrinting() const = 0;
 
 
     // Scripting --------------------------------------------------------------
