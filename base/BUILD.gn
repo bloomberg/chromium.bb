@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/compiler/compiler.gni")
+import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -33,6 +34,16 @@ if (is_win) {
       "/DELAYLOAD:powrprof.dll",
       "/DELAYLOAD:setupapi.dll",
     ]
+  }
+}
+
+if (is_nacl_nonsfi) {
+  # Must be in a config because of how GN orders flags (otherwise -Wall will
+  # appear after this, and turn it back on).
+  config("nacl_nonsfi_warnings") {
+    # file_util_posix.cc contains a function which is not
+    # being used by nacl_helper_nonsfi.
+    cflags = [ "-Wno-unused-function" ]
   }
 }
 
@@ -746,21 +757,34 @@ component("base") {
       "cpu.cc",
       "files/file_enumerator_posix.cc",
       "files/file_proxy.cc",
-      "files/file_util.cc",
-      "files/file_util_posix.cc",
       "files/file_util_proxy.cc",
       "files/important_file_writer.cc",
       "files/important_file_writer.h",
       "files/scoped_temp_dir.cc",
-      "message_loop/message_pump_libevent.cc",
       "native_library_posix.cc",
       "path_service.cc",
-      "rand_util_posix.cc",
       "scoped_native_library.cc",
       "sync_socket_posix.cc",
       "sys_info.cc",
       "sys_info_posix.cc",
     ]
+
+    if (is_nacl_nonsfi) {
+      set_sources_assignment_filter([])
+      sources += [ "posix/unix_domain_socket_linux.cc" ]
+      set_sources_assignment_filter(sources_assignment_filter)
+      sources -= [ "rand_util_nacl.cc" ]
+      configs += [ ":nacl_nonsfi_warnings" ]
+    } else {
+      sources -= [
+        "files/file_util.cc",
+        "files/file_util.h",
+        "files/file_util_posix.cc",
+        "message_loop/message_pump_libevent.cc",
+        "message_loop/message_pump_libevent.h",
+        "rand_util_posix.cc",
+      ]
+    }
   } else {
     # Remove NaCl stuff.
     sources -= [
@@ -820,7 +844,7 @@ component("base") {
       "setupapi.lib",
     ]
     all_dependent_configs = [ ":base_win_linker_flags" ]
-  } else if (!is_nacl) {
+  } else if (!is_nacl || is_nacl_nonsfi) {
     # Non-Windows.
     deps += [ "//third_party/libevent" ]
   }

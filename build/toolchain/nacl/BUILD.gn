@@ -47,6 +47,22 @@ nacl_toolchain("newlib_pnacl") {
   link_outputs = [ finalized_file ]
 }
 
+nacl_toolchain("newlib_pnacl_nonsfi") {
+  toolchain_package = "pnacl_newlib"
+  toolchain_revision = pnacl_newlib_rev
+  toolchain_cpu = "pnacl"
+  toolprefix =
+      rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/pnacl-",
+                  root_build_dir)
+
+  is_clang = true
+  cc = toolprefix + "clang"
+  cxx = toolprefix + "clang++"
+  ar = toolprefix + "ar"
+  ld = cxx
+  executable_extension = ""
+}
+
 template("nacl_glibc_toolchain") {
   toolchain_cpu = target_name
   assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")

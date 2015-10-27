@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/nacl/config.gni")
 import("//testing/test.gni")
 
 declare_args() {
@@ -12,6 +13,14 @@ declare_args() {
 
   # On Android, use plain GTest.
   use_base_test_suite = is_linux
+}
+
+if (is_nacl_nonsfi) {
+  config("nacl_nonsfi_warnings") {
+    # There are number of platform specific functions in
+    # seccomp-bpf syscall helpers, which are not being used.
+    cflags = [ "-Wno-unused-function" ]
+  }
 }
 
 # We have two principal targets: sandbox and sandbox_linux_unittests
@@ -24,10 +33,10 @@ group("sandbox") {
     ":sandbox_services",
   ]
 
-  if (compile_suid_client) {
+  if (compile_suid_client || is_nacl_nonsfi) {
     deps += [ ":suid_sandbox_client" ]
   }
-  if (use_seccomp_bpf) {
+  if (use_seccomp_bpf || is_nacl_nonsfi) {
     deps += [
       ":seccomp_bpf",
       ":seccomp_bpf_helpers",
@@ -243,6 +252,19 @@ component("seccomp_bpf") {
     ":sandbox_services_headers",
     "//base",
   ]
+
+  if (is_nacl_nonsfi) {
+    cflags = [ "-fgnu-inline-asm" ]
+    sources -= [
+      "bpf_dsl/bpf_dsl_forward.h",
+      "bpf_dsl/bpf_dsl_impl.h",
+      "bpf_dsl/cons.h",
+      "bpf_dsl/errorcode.h",
+      "bpf_dsl/linux_syscall_ranges.h",
+      "bpf_dsl/seccomp_macros.h",
+      "bpf_dsl/trap_registry.h",
+    ]
+  }
 }
 
 component("seccomp_bpf_helpers") {
@@ -263,6 +285,16 @@ component("seccomp_bpf_helpers") {
     ":sandbox_services",
     ":seccomp_bpf",
   ]
+
+  if (is_nacl_nonsfi) {
+    sources -= [
+      "seccomp-bpf-helpers/baseline_policy.cc",
+      "seccomp-bpf-helpers/baseline_policy.h",
+      "seccomp-bpf-helpers/syscall_sets.cc",
+      "seccomp-bpf-helpers/syscall_sets.h",
+    ]
+    configs += [ ":nacl_nonsfi_warnings" ]
+  }
 }
 
 if (is_linux) {
@@ -328,7 +360,7 @@ component("sandbox_services") {
     "//base",
   ]
 
-  if (compile_credentials) {
+  if (compile_credentials || is_nacl_nonsfi) {
     sources += [
       "services/credentials.cc",
       "services/credentials.h",
@@ -339,6 +371,30 @@ component("sandbox_services") {
     ]
 
     deps += [ ":sandbox_services_headers" ]
+  }
+
+  if (is_nacl_nonsfi) {
+    sources -= [
+      "services/init_process_reaper.cc",
+      "services/init_process_reaper.h",
+      "services/scoped_process.cc",
+      "services/scoped_process.h",
+      "services/yama.cc",
+      "services/yama.h",
+      "syscall_broker/broker_channel.cc",
+      "syscall_broker/broker_channel.h",
+      "syscall_broker/broker_client.cc",
+      "syscall_broker/broker_client.h",
+      "syscall_broker/broker_common.h",
+      "syscall_broker/broker_file_permission.cc",
+      "syscall_broker/broker_file_permission.h",
+      "syscall_broker/broker_host.cc",
+      "syscall_broker/broker_host.h",
+      "syscall_broker/broker_policy.cc",
+      "syscall_broker/broker_policy.h",
+      "syscall_broker/broker_process.cc",
+      "syscall_broker/broker_process.h",
+    ]
   }
 }
 
@@ -360,7 +416,7 @@ source_set("sandbox_services_headers") {
   ]
 }
 
-if (compile_suid_client) {
+if (compile_suid_client || is_nacl_nonsfi) {
   component("suid_sandbox_client") {
     sources = [
       "suid/client/setuid_sandbox_client.cc",
@@ -376,6 +432,15 @@ if (compile_suid_client) {
       ":sandbox_services",
       "//base",
     ]
+
+    if (is_nacl_nonsfi) {
+      sources -= [
+        "suid/client/setuid_sandbox_host.cc",
+        "suid/client/setuid_sandbox_host.h",
+        "suid/common/sandbox.h",
+        "suid/common/suid_unsafe_environment_variables.h",
+      ]
+    }
   }
 }
 

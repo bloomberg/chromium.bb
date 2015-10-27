@@ -5,10 +5,13 @@
 #include <argz.h>
 #include <string.h>
 
+#include "build/build_config.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"
+
+#if !defined(OS_NACL_NONSFI)
 
 namespace {
 
@@ -115,3 +118,5 @@ const struct nacl_irt_private_pnacl_translator_compile
     nacl_irt_private_pnacl_translator_compile = {
   ServeTranslateRequest
 };
+
+#endif  // !defined(OS_NACL_NONSFI)

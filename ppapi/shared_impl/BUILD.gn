@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")
+
 component("shared_impl") {
   output_name = "ppapi_shared"
 
@@ -166,16 +168,12 @@ component("shared_impl") {
 
   deps = [
     "//base",
-    "//base:i18n",
-    "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
     "//ipc",
     "//media:shared_memory_support",
-    "//third_party/icu:icuuc",
-    "//url",
   ]
 
   if (!is_nacl) {
@@ -183,6 +181,15 @@ component("shared_impl") {
       "//skia",
       "//ui/events:events_base",
       "//ui/surface",
+    ]
+  }
+
+  if (!is_nacl_nonsfi) {
+    deps += [
+      "//base:i18n",
+      "//base/third_party/dynamic_annotations",
+      "//third_party/icu:icuuc",
+      "//url",
     ]
   }
 

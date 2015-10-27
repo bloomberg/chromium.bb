@@ -4,6 +4,7 @@
 
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -236,10 +237,74 @@ if (enable_nacl) {
       }
     }
   }
-} else {
-  group("nacl") {
+
+  if (is_nacl_nonsfi) {
+    executable("nacl_helper_nonsfi_nexe") {
+      output_name = "nacl_helper_nonsfi"
+      set_sources_assignment_filter([])
+      sources = [
+        "common/nacl_messages.cc",
+        "common/nacl_messages.h",
+        "common/nacl_types.cc",
+        "common/nacl_types.h",
+        "common/nacl_types_param_traits.cc",
+        "common/nacl_types_param_traits.h",
+        "loader/nacl_helper_linux.cc",
+        "loader/nacl_helper_linux.h",
+        "loader/nacl_trusted_listener.cc",
+        "loader/nacl_trusted_listener.h",
+        "loader/nonsfi/nonsfi_listener.cc",
+        "loader/nonsfi/nonsfi_listener.h",
+        "loader/nonsfi/nonsfi_main.cc",
+        "loader/nonsfi/nonsfi_main.h",
+      ]
+      deps = [
+        ":nacl_switches",
+        ":nacl_helper_nonsfi_sandbox",
+        "//base",
+        "//components/tracing",
+        "//content",
+        "//ipc",
+        "//native_client/src/nonsfi/irt:nacl_sys_private",
+        "//native_client/src/nonsfi/loader:elf_loader",
+        "//native_client/src/untrusted/nacl:nacl",
+        "//ppapi/proxy",
+        "//sandbox/linux:sandbox",
+      ]
+    }
+
+    source_set("nacl_helper_nonsfi_sandbox") {
+      set_sources_assignment_filter([])
+      sources = [
+        "loader/nonsfi/nonsfi_sandbox.cc",
+        "loader/nonsfi/nonsfi_sandbox.h",
+        "loader/sandbox_linux/nacl_sandbox_linux.cc",
+        "loader/sandbox_linux/nacl_sandbox_linux.h",
+      ]
+      deps = [
+        "//base",
+        "//content",
+        "//sandbox/linux:sandbox",
+      ]
+    }
+
+    copy("nacl_helper_nonsfi_copy") {
+      sources = [
+        "${root_out_dir}/nacl_helper_nonsfi",
+      ]
+      outputs = [
+        "${root_build_dir}/{{source_file_part}}",
+      ]
+      deps = [
+        ":nacl_helper_nonsfi_nexe",
+      ]
+    }
   }
-  group("nacl_helper") {
+
+  group("helper_nonsfi") {
+    deps = [
+      ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+    ]
   }
 }
 

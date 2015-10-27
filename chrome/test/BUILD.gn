@@ -427,9 +427,9 @@ if (!is_android) {
       ]
 
       if (enable_nacl) {
-        deps += [
+        data_deps += [
           "//components/nacl:nacl_helper",
-          # '../components/nacl_nonsfi.gyp:nacl_helper_nonsfi',  TODO(GYP)
+          "//components/nacl:helper_nonsfi",
         ]
       }
 
@@ -984,7 +984,7 @@ if (!is_android) {
       if (is_linux) {
         data_deps += [
           "//components/nacl:nacl_helper",
-          # "//components/nacl_nonsfi.gyp:nacl_helper_nonsfi",  # TODO(GYP) bug 512912.
+          "//components/nacl:helper_nonsfi",
         ]
       }
     }
