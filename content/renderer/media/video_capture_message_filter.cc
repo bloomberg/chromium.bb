@@ -160,7 +160,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
                              params.storage_type,
                              params.coded_size,
                              params.visible_rect,
-                             params.mailbox_holders);
+                             params.mailbox_holder);
 }
 
 void VideoCaptureMessageFilter::OnBufferDestroyed(int device_id,

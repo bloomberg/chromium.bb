@@ -49,9 +49,7 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
   VideoCaptureDeviceClientTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         controller_(new MockVideoCaptureController(1)),
-        device_client_(
-            controller_->NewDeviceClient(base::ThreadTaskRunnerHandle::Get())) {
-  }
+        device_client_(controller_->NewDeviceClient()) {}
   ~VideoCaptureDeviceClientTest() override {}
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }

@@ -42,7 +42,7 @@ IPC_STRUCT_BEGIN(VideoCaptureMsg_BufferReady_Params)
   IPC_STRUCT_MEMBER(media::VideoFrame::StorageType, storage_type)
   IPC_STRUCT_MEMBER(gfx::Size, coded_size)
   IPC_STRUCT_MEMBER(gfx::Rect, visible_rect)
-  IPC_STRUCT_MEMBER(std::vector<gpu::MailboxHolder>, mailbox_holders)
+  IPC_STRUCT_MEMBER(gpu::MailboxHolder, mailbox_holder)
 IPC_STRUCT_END()
 
 // TODO(nick): device_id in these messages is basically just a route_id. We

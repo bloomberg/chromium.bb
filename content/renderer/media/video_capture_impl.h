@@ -120,7 +120,7 @@ class CONTENT_EXPORT VideoCaptureImpl
       media::VideoFrame::StorageType storage_type,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
-      const std::vector<gpu::MailboxHolder>& mailbox_holders) override;
+      const gpu::MailboxHolder& mailbox_holder) override;
   void OnStateChanged(VideoCaptureState state) override;
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) override;

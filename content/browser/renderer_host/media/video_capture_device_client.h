@@ -36,8 +36,7 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
  public:
   VideoCaptureDeviceClient(
       const base::WeakPtr<VideoCaptureController>& controller,
-      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
-      const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner);
+      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool);
   ~VideoCaptureDeviceClient() override;
 
   // VideoCaptureDevice::Client implementation.
@@ -104,13 +103,6 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   // Indication to the Client to copy-transform the incoming data into
   // GpuMemoryBuffers.
   const bool use_gpu_memory_buffers_;
-
-  // Internal delegate for GpuMemoryBuffer-into-VideoFrame wrapping.
-  class TextureWrapHelper;
-  scoped_refptr<TextureWrapHelper> texture_wrap_helper_;
-  // Reference to Capture Thread task runner, where |texture_wrap_helper_|
-  // lives.
-  const scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
 
   media::VideoPixelFormat last_captured_pixel_format_;
 

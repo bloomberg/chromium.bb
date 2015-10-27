@@ -62,7 +62,8 @@ static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
 #endif
       (storage_type == VideoFrame::STORAGE_UNOWNED_MEMORY ||
        storage_type == VideoFrame::STORAGE_OWNED_MEMORY ||
-       storage_type == VideoFrame::STORAGE_SHMEM);
+       storage_type == VideoFrame::STORAGE_SHMEM ||
+       storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFERS);
 }
 
 // Returns the pixel size per element for given |plane| and |format|. E.g. 2x2
@@ -329,6 +330,44 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
   frame->data_[kYPlane] = y_data;
   frame->data_[kUPlane] = u_data;
   frame->data_[kVPlane] = v_data;
+  return frame;
+}
+
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvGpuMemoryBuffers(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    int32 y_stride,
+    int32 u_stride,
+    int32 v_stride,
+    uint8* y_data,
+    uint8* u_data,
+    uint8* v_data,
+    const gfx::GpuMemoryBufferHandle& y_handle,
+    const gfx::GpuMemoryBufferHandle& u_handle,
+    const gfx::GpuMemoryBufferHandle& v_handle,
+    base::TimeDelta timestamp) {
+  const StorageType storage = STORAGE_GPU_MEMORY_BUFFERS;
+  if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
+    DLOG(ERROR) << __FUNCTION__ << " Invalid config."
+                << ConfigToString(format, storage, coded_size, visible_rect,
+                                  natural_size);
+    return nullptr;
+  }
+
+  scoped_refptr<VideoFrame> frame(new VideoFrame(
+      format, storage, coded_size, visible_rect, natural_size, timestamp));
+  frame->strides_[kYPlane] = y_stride;
+  frame->strides_[kUPlane] = u_stride;
+  frame->strides_[kVPlane] = v_stride;
+  frame->data_[kYPlane] = y_data;
+  frame->data_[kUPlane] = u_data;
+  frame->data_[kVPlane] = v_data;
+  frame->gpu_memory_buffer_handles_.push_back(y_handle);
+  frame->gpu_memory_buffer_handles_.push_back(u_handle);
+  frame->gpu_memory_buffer_handles_.push_back(v_handle);
   return frame;
 }
 
@@ -703,6 +742,13 @@ size_t VideoFrame::shared_memory_offset() const {
   DCHECK_EQ(storage_type_, STORAGE_SHMEM);
   DCHECK(shared_memory_handle_ != base::SharedMemory::NULLHandle());
   return shared_memory_offset_;
+}
+
+const std::vector<gfx::GpuMemoryBufferHandle>&
+VideoFrame::gpu_memory_buffer_handles() const {
+  DCHECK_EQ(storage_type_, STORAGE_GPU_MEMORY_BUFFERS);
+  DCHECK(!gpu_memory_buffer_handles_.empty());
+  return gpu_memory_buffer_handles_;
 }
 
 #if defined(OS_LINUX)

@@ -35,22 +35,20 @@ class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
 
 struct BufferReceivedTestArg {
   BufferReceivedTestArg(media::VideoPixelFormat pixel_format,
-                        const std::vector<gpu::MailboxHolder>& mailbox_holders)
-      : pixel_format(pixel_format), mailbox_holders(mailbox_holders) {}
+                        const gpu::MailboxHolder& holder)
+      : pixel_format(pixel_format), mailbox_holder(holder) {}
 
   BufferReceivedTestArg(media::VideoPixelFormat pixel_format)
       : pixel_format(pixel_format) {}
 
   media::VideoPixelFormat pixel_format;
-  std::vector<gpu::MailboxHolder> mailbox_holders;
+  gpu::MailboxHolder mailbox_holder;
 };
 
-static const BufferReceivedTestArg kBufferFormats[]  = {
-  BufferReceivedTestArg(media::PIXEL_FORMAT_I420),
-  BufferReceivedTestArg(
-      media::PIXEL_FORMAT_ARGB,
-      std::vector<gpu::MailboxHolder>(
-          1, gpu::MailboxHolder(gpu::Mailbox::Generate(), 0, 0)))};
+static const BufferReceivedTestArg kBufferFormats[] = {
+    BufferReceivedTestArg(media::PIXEL_FORMAT_I420),
+    BufferReceivedTestArg(media::PIXEL_FORMAT_ARGB,
+                          gpu::MailboxHolder(gpu::Mailbox::Generate(), 0, 0))};
 
 class VideoCaptureImplTest
     : public ::testing::TestWithParam<BufferReceivedTestArg> {
@@ -186,11 +184,14 @@ class VideoCaptureImplTest
 
   void BufferReceived(int buffer_id, const gfx::Size& size,
                       media::VideoPixelFormat pixel_format,
-                      const std::vector<gpu::MailboxHolder>& mailbox_holders) {
+                      const gpu::MailboxHolder& mailbox_holder) {
+    const media::VideoFrame::StorageType storage_type =
+        pixel_format != media::PIXEL_FORMAT_ARGB
+            ? media::VideoFrame::STORAGE_UNOWNED_MEMORY
+            : media::VideoFrame::STORAGE_OPAQUE;
     video_capture_impl_->OnBufferReceived(
         buffer_id, base::TimeTicks::Now(), base::DictionaryValue(),
-        pixel_format, media::VideoFrame::STORAGE_SHMEM, size,
-        gfx::Rect(size), mailbox_holders);
+        pixel_format, storage_type, size, gfx::Rect(size), mailbox_holder);
   }
 
   void BufferDestroyed(int buffer_id) {
@@ -328,7 +329,7 @@ TEST_P(VideoCaptureImplTest, BufferReceivedWithFormat) {
   Init();
   StartCapture(0, params);
   NewBuffer(0, shm);
-  BufferReceived(0, size, buffer_arg.pixel_format, buffer_arg.mailbox_holders);
+  BufferReceived(0, size, buffer_arg.pixel_format, buffer_arg.mailbox_holder);
   StopCapture(0);
   BufferDestroyed(0);
   DeInit();
@@ -354,7 +355,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   NewBuffer(0, shm);
   StopCapture(0);
   BufferReceived(0, params_large_.requested_format.frame_size,
-                 media::PIXEL_FORMAT_I420, std::vector<gpu::MailboxHolder>());
+                 media::PIXEL_FORMAT_I420, gpu::MailboxHolder());
   BufferDestroyed(0);
   DeInit();
 

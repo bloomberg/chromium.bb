@@ -137,11 +137,10 @@ VideoCaptureController::GetWeakPtrForIOThread() {
 }
 
 scoped_ptr<media::VideoCaptureDevice::Client>
-VideoCaptureController::NewDeviceClient(
-    const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner) {
+VideoCaptureController::NewDeviceClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return make_scoped_ptr(new VideoCaptureDeviceClient(
-      this->GetWeakPtrForIOThread(), buffer_pool_, capture_task_runner));
+      this->GetWeakPtrForIOThread(), buffer_pool_));
 }
 
 void VideoCaptureController::AddClient(
@@ -237,6 +236,21 @@ bool VideoCaptureController::ResumeClient(
   return true;
 }
 
+int VideoCaptureController::GetClientCount() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return controller_clients_.size();
+}
+
+int VideoCaptureController::GetActiveClientCount() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  int active_client_count = 0;
+  for (ControllerClient* client : controller_clients_) {
+    if (!client->paused)
+      ++active_client_count;
+  }
+  return active_client_count;
+}
+
 void VideoCaptureController::StopSession(int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::StopSession, id " << session_id;
@@ -330,8 +344,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
 
     DCHECK(
         (frame->IsMappable() && frame->format() == media::PIXEL_FORMAT_I420) ||
-        (frame->HasTextures() && (frame->format() == media::PIXEL_FORMAT_ARGB ||
-                                  frame->format() == media::PIXEL_FORMAT_I420)))
+        (frame->HasTextures() && frame->format() == media::PIXEL_FORMAT_ARGB))
         << "Format and/or storage type combination not supported (received: "
         << media::VideoPixelFormatToString(frame->format()) << ")";
 
@@ -341,35 +354,8 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
 
       // On the first use of a buffer on a client, share the memory handles.
       const bool is_new_buffer = client->known_buffers.insert(buffer_id).second;
-      if (is_new_buffer) {
-        if (frame->HasTextures()) {
-          DCHECK(frame->coded_size() == frame->visible_rect().size())
-              << "Textures are always supposed to be tightly packed.";
-
-          if (frame->format() == media::PIXEL_FORMAT_I420) {
-            std::vector<gfx::GpuMemoryBufferHandle> handles(
-                VideoFrame::NumPlanes(frame->format()));
-            for (size_t i = 0; i < handles.size(); ++i)
-              buffer_pool_->ShareToProcess2(
-                  buffer_id, i, client->render_process_handle, &handles[i]);
-
-            client->event_handler->OnBufferCreated2(
-                client->controller_id, handles, buffer->dimensions(),
-                buffer_id);
-          } else {
-            DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_ARGB);
-          }
-        } else if (frame->IsMappable()) {
-          DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420);
-          base::SharedMemoryHandle remote_handle;
-          buffer_pool_->ShareToProcess(
-              buffer_id, client->render_process_handle, &remote_handle);
-
-          client->event_handler->OnBufferCreated(
-              client->controller_id, remote_handle, buffer->mapped_size(),
-              buffer_id);
-        }
-      }
+      if (is_new_buffer)
+        DoNewBufferOnIOThread(client, buffer.get(), frame);
 
       client->event_handler->OnBufferReady(client->controller_id,
                                            buffer_id,
@@ -434,6 +420,41 @@ void VideoCaptureController::DoBufferDestroyedOnIOThread(
   }
 }
 
+void VideoCaptureController::DoNewBufferOnIOThread(
+    ControllerClient* client,
+    media::VideoCaptureDevice::Client::Buffer* buffer,
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const int buffer_id = buffer->id();
+
+  if (frame->HasTextures()) {
+    DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_ARGB);
+    DCHECK(frame->coded_size() == frame->visible_rect().size())
+        << "Textures shouldn't be crop-marked or letterboxed.";
+    return;
+  }
+
+  DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420);
+  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
+    std::vector<gfx::GpuMemoryBufferHandle> handles;
+    for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame->format()); ++i) {
+      gfx::GpuMemoryBufferHandle remote_handle;
+      buffer_pool_->ShareToProcess2(buffer_id, i, client->render_process_handle,
+                                    &remote_handle);
+      handles.push_back(remote_handle);
+    }
+    client->event_handler->OnBufferCreated2(client->controller_id, handles,
+                                            buffer->dimensions(), buffer_id);
+  } else {
+    base::SharedMemoryHandle remote_handle;
+    buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle,
+                                 &remote_handle);
+
+    client->event_handler->OnBufferCreated(client->controller_id, remote_handle,
+                                           buffer->mapped_size(), buffer_id);
+  }
+}
+
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* handler,
@@ -453,21 +474,6 @@ VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
       return client;
   }
   return NULL;
-}
-
-int VideoCaptureController::GetClientCount() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return controller_clients_.size();
-}
-
-int VideoCaptureController::GetActiveClientCount() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int active_client_count = 0;
-  for (ControllerClient* client : controller_clients_) {
-    if (!client->paused)
-      ++active_client_count;
-  }
-  return active_client_count;
 }
 
 }  // namespace content

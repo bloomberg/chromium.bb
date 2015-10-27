@@ -211,7 +211,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 
   // TODO(perkj): Allow cropping / scaling of textures once
   // http://crbug/362521 is fixed.
-  if (frame->HasTextures()) {
+  if (frame->HasTextures() ||
+      frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
     DoDeliverFrame(frame, estimated_capture_time);
     return;
   }

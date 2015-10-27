@@ -109,7 +109,8 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
   SharedMemTracker();
   bool Init(media::VideoPixelFormat format,
             media::VideoPixelStorage storage_type,
-            const gfx::Size& dimensions) override;
+            const gfx::Size& dimensions,
+            base::Lock* lock) override;
 
   scoped_ptr<BufferHandle> GetBufferHandle() override {
     return make_scoped_ptr(new SimpleBufferHandle(
@@ -139,7 +140,8 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
   GpuMemoryBufferTracker();
   bool Init(media::VideoPixelFormat format,
             media::VideoPixelStorage storage_type,
-            const gfx::Size& dimensions) override;
+            const gfx::Size& dimensions,
+            base::Lock* lock) override;
   ~GpuMemoryBufferTracker() override;
 
   scoped_ptr<BufferHandle> GetBufferHandle() override {
@@ -171,7 +173,8 @@ VideoCaptureBufferPool::SharedMemTracker::SharedMemTracker() : Tracker() {}
 bool VideoCaptureBufferPool::SharedMemTracker::Init(
     media::VideoPixelFormat format,
     media::VideoPixelStorage storage_type,
-    const gfx::Size& dimensions) {
+    const gfx::Size& dimensions,
+    base::Lock* lock) {
   DVLOG(2) << "allocating ShMem of " << dimensions.ToString();
   set_pixel_format(format);
   set_storage_type(storage_type);
@@ -197,7 +200,8 @@ VideoCaptureBufferPool::GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
 bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
     media::VideoPixelFormat format,
     media::VideoPixelStorage storage_type,
-    const gfx::Size& dimensions) {
+    const gfx::Size& dimensions,
+    base::Lock* lock) {
   DVLOG(2) << "allocating GMB for " << dimensions.ToString();
   // BrowserGpuMemoryBufferManager::current() may not be accessed on IO Thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -213,6 +217,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
     return true;
   dimensions_ = dimensions;
 
+  lock->Release();
   const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format());
   for (size_t i = 0; i < num_planes; ++i) {
     const gfx::Size& size =
@@ -226,6 +231,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
     if (!gpu_memory_buffers_[i] || !gpu_memory_buffers_[i]->Map())
       return false;
   }
+  lock->Acquire();
   return true;
 }
 
@@ -235,39 +241,43 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::ShareToProcess2(
     gfx::GpuMemoryBufferHandle* new_handle) {
   DCHECK_LE(plane, static_cast<int>(gpu_memory_buffers_.size()));
 
-   const auto& current_gmb_handle = gpu_memory_buffers_[plane]->GetHandle();
-   switch (current_gmb_handle.type) {
-     case gfx::EMPTY_BUFFER:
-       NOTREACHED();
-       return false;
-     case gfx::SHARED_MEMORY_BUFFER: {
-       DCHECK(base::SharedMemory::IsHandleValid(current_gmb_handle.handle));
-       base::SharedMemory shared_memory(
-           base::SharedMemory::DuplicateHandle(current_gmb_handle.handle),
-           false);
-       shared_memory.ShareToProcess(process_handle, &new_handle->handle);
-       DCHECK(base::SharedMemory::IsHandleValid(new_handle->handle));
-       new_handle->type = gfx::SHARED_MEMORY_BUFFER;
-       new_handle->offset = current_gmb_handle.offset;
-       return true;
-     }
-     case gfx::IO_SURFACE_BUFFER:
-     case gfx::SURFACE_TEXTURE_BUFFER:
-     case gfx::OZONE_NATIVE_PIXMAP:
-       *new_handle = current_gmb_handle;
-       return true;
-   }
-   NOTREACHED();
-   return true;
- }
+  const auto& current_gmb_handle = gpu_memory_buffers_[plane]->GetHandle();
+  switch (current_gmb_handle.type) {
+    case gfx::EMPTY_BUFFER:
+      NOTREACHED();
+      return false;
+    case gfx::SHARED_MEMORY_BUFFER: {
+      DCHECK(base::SharedMemory::IsHandleValid(current_gmb_handle.handle));
+      base::SharedMemory shared_memory(
+          base::SharedMemory::DuplicateHandle(current_gmb_handle.handle),
+          false);
+      shared_memory.ShareToProcess(process_handle, &new_handle->handle);
+      DCHECK(base::SharedMemory::IsHandleValid(new_handle->handle));
+      new_handle->type = gfx::SHARED_MEMORY_BUFFER;
+      return true;
+    }
+    case gfx::IO_SURFACE_BUFFER:
+    case gfx::SURFACE_TEXTURE_BUFFER:
+    case gfx::OZONE_NATIVE_PIXMAP:
+      *new_handle = current_gmb_handle;
+      return true;
+  }
+  NOTREACHED();
+  return true;
+}
 
 // static
 scoped_ptr<VideoCaptureBufferPool::Tracker>
-VideoCaptureBufferPool::Tracker::CreateTracker(bool use_gmb) {
-  if (!use_gmb)
-    return make_scoped_ptr(new SharedMemTracker());
-  else
+VideoCaptureBufferPool::Tracker::CreateTracker(
+    media::VideoPixelStorage storage) {
+  DCHECK(storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER ||
+         storage == media::PIXEL_STORAGE_CPU ||
+         storage == media::PIXEL_STORAGE_TEXTURE);
+
+  if (storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER)
     return make_scoped_ptr(new GpuMemoryBufferTracker());
+  else
+    return make_scoped_ptr(new SharedMemTracker());
 }
 
 VideoCaptureBufferPool::Tracker::~Tracker() {}
@@ -401,7 +411,6 @@ int VideoCaptureBufferPool::ReserveForProducerInternal(
     const gfx::Size& dimensions,
     int* buffer_id_to_drop) {
   lock_.AssertAcquired();
-  *buffer_id_to_drop = kInvalidId;
 
   const size_t size_in_pixels = dimensions.GetArea();
   // Look for a tracker that's allocated, big enough, and not in use. Track the
@@ -442,12 +451,14 @@ int VideoCaptureBufferPool::ReserveForProducerInternal(
   // Create the new tracker.
   const int buffer_id = next_buffer_id_++;
 
-  scoped_ptr<Tracker> tracker = Tracker::CreateTracker(
-      storage_type == media::PIXEL_STORAGE_GPUMEMORYBUFFER);
-  if (!tracker->Init(pixel_format, storage_type, dimensions)) {
+  scoped_ptr<Tracker> tracker = Tracker::CreateTracker(storage_type);
+  // TODO(emircan): We pass the lock here to solve GMB allocation issue, see
+  // crbug.com/545238.
+  if (!tracker->Init(pixel_format, storage_type, dimensions, &lock_)) {
     DLOG(ERROR) << "Error initializing Tracker";
     return kInvalidId;
   }
+
   tracker->set_held_by_producer(true);
   trackers_[buffer_id] = tracker.release();
 
