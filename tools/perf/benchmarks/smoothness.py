@@ -154,7 +154,7 @@ class SmoothnessKeySilkCases(_Smoothness):
     return stories
 
 
-@benchmark.Enabled('android', "mac")
+@benchmark.Enabled('android', 'mac')
 class SmoothnessGpuRasterizationTop25(_Smoothness):
   """Measures rendering statistics for the top 25 with GPU rasterization.
   """
@@ -259,26 +259,38 @@ class SmoothnessFlingSimpleMobilePages(_Smoothness):
     return 'smoothness.fling.simple_mobile_sites'
 
 
-@benchmark.Enabled('android', 'chromeos', 'mac')
+@benchmark.Enabled('android')
 class SmoothnessToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases.
   """
-  page_set = page_sets.ToughPinchZoomCasesPageSet
+  page_set = page_sets.AndroidToughPinchZoomCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.tough_pinch_zoom_cases'
 
 
-@benchmark.Enabled('android', 'chromeos', 'mac')
+@benchmark.Enabled('chromeos', 'mac')
+class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
+  """Measures rendering statistics for pinch-zooming in the tough pinch zoom
+  cases. Uses lower zoom levels customized for desktop limits.
+  """
+  page_set = page_sets.DesktopToughPinchZoomCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.desktop_tough_pinch_zoom_cases'
+
+
+@benchmark.Enabled('android')
 class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases with GPU rasterization.
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = page_sets.ToughPinchZoomCasesPageSet
+  page_set = page_sets.AndroidToughPinchZoomCasesPageSet
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
@@ -286,6 +298,24 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_pinch_zoom_cases'
+
+
+@benchmark.Enabled('chromeos', 'mac')
+class SmoothnessGpuRasterizationDesktopToughPinchZoomCases(_Smoothness):
+  """Measures rendering statistics for pinch-zooming in the tough pinch zoom
+  cases with GPU rasterization. Uses lower zoom levels customized for desktop
+  limits.
+  """
+  tag = 'gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = page_sets.DesktopToughPinchZoomCasesPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.gpu_rasterization.desktop_tough_pinch_zoom_cases'
 
 
 @benchmark.Enabled('android', 'chromeos')

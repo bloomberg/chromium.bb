@@ -14,6 +14,7 @@ class ToughPinchZoomCasesPage(page_module.Page):
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
         credentials_path = 'data/credentials.json')
     self.archive_data_file = 'data/tough_pinch_zoom_cases.json'
+    self.target_scale_factor = page_set.target_scale_factor
 
   def RunPinchGesture(self, action_runner, left_anchor_ratio=0.5,
                       top_anchor_ratio=0.5, scale_factor=None,
@@ -29,10 +30,11 @@ class ToughPinchZoomCasesPage(page_module.Page):
   def RunPageInteractions(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
     for _ in xrange(0, 3):
-      self.RunPinchGesture(action_runner, scale_factor=7.0)
-      self.RunPinchGesture(action_runner, scale_factor=1/2.0)
-      self.RunPinchGesture(action_runner, scale_factor=1/2.0)
-      self.RunPinchGesture(action_runner, scale_factor=1/2.0)
+      current_scale_factor = self.target_scale_factor
+      self.RunPinchGesture(action_runner, scale_factor=current_scale_factor)
+      while current_scale_factor > 1.0:
+        current_scale_factor *= 1/2.0
+        self.RunPinchGesture(action_runner, scale_factor=1/2.0)
 
 class GoogleSearchPage(ToughPinchZoomCasesPage):
 
@@ -212,10 +214,12 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
 
   """ Set of pages that are tricky to pinch-zoom """
 
-  def __init__(self):
+  def __init__(self, target_scale_factor):
     super(ToughPinchZoomCasesPageSet, self).__init__(
       archive_data_file='data/tough_pinch_zoom_cases.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
+
+    self.target_scale_factor = target_scale_factor
 
     self.AddStory(GoogleSearchPage(self))
     self.AddStory(GmailPage(self))
@@ -251,3 +255,25 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
 
     # Why: #1 Alexa sports
     self.AddStory(ToughPinchZoomCasesPage('http://sports.yahoo.com/', self))
+
+
+class AndroidToughPinchZoomCasesPageSet(ToughPinchZoomCasesPageSet):
+
+  """
+  ToughPinchZoomCasesPageSet using the maximum Android zoom level. This is
+  chosen as 7x, which may seem to exceed the 5x value specified in
+  WebPreferences::default_maximum_page_scale_factor. However, as desktop sites
+  on Android start at less than 1x scale (up to 0.25x), a value of 7x does not
+  exceed the 5x limit.
+  """
+
+  def __init__(self):
+    super(AndroidToughPinchZoomCasesPageSet, self).__init__(7.0)
+
+
+class DesktopToughPinchZoomCasesPageSet(ToughPinchZoomCasesPageSet):
+
+  """ ToughPinchZoomCasesPageSet using the maximum desktop zoom level """
+
+  def __init__(self):
+    super(DesktopToughPinchZoomCasesPageSet, self).__init__(4.0)
