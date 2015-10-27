@@ -1725,7 +1725,13 @@ void Document::updateLayoutTree(StyleRecalcChange change)
         return;
 
     if (change != Force && !needsLayoutTreeUpdate()) {
-        ASSERT(lifecycle().state() != DocumentLifecycle::VisualUpdatePending);
+        if (lifecycle().state() < DocumentLifecycle::StyleClean) {
+            // needsLayoutTreeUpdate may change to false without any actual layout tree update.
+            // For example, needsAnimationTimingUpdate may change to false when time elapses.
+            // Advance lifecycle to StyleClean because style is actually clean now.
+            lifecycle().advanceTo(DocumentLifecycle::InStyleRecalc);
+            lifecycle().advanceTo(DocumentLifecycle::StyleClean);
+        }
         return;
     }
 
