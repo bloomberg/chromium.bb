@@ -33,3 +33,7 @@ paper-dialog {
   width: 384px;
 }
 
+#forgotPasswordDlg .buttons {
+  padding: 15px 24px 24px;
+}
+

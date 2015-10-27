@@ -32,6 +32,10 @@ paper-button {
   color: rgb(168,168,168);
 }
 
+:host([type='dialog']) paper-button {
+  padding: 8px 12px;
+}
+
 :host([type='link']) paper-button {
   border-radius: 0;
   margin-left: -0.57em;
