@@ -13084,7 +13084,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Choose an account from your Google Smart Lock
       </message>
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE" desc="The title of the auto-signin toast.">
-        Signed in as <ph name="username">$1<ex>chef@google.com</ex></ph>
+        Signing in as <ph name="username">$1<ex>chef@google.com</ex></ph>
       </message>
       <message name="IDS_MANAGE_PASSWORDS_DELETED_ACCOUNT" desc="The text that is used in the manage accounts bubble when an account is deleted.">
         Account removed
