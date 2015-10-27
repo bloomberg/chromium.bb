@@ -10,6 +10,7 @@ var automationInternal =
     require('binding').Binding.create('automationInternal').generate();
 var eventBindings = require('event_bindings');
 var Event = eventBindings.Event;
+var exceptionHandler = require('uncaught_exception_handler');
 var forEach = require('utils').forEach;
 var lastError = require('lastError');
 var logging = requireNative('logging');
@@ -193,9 +194,8 @@ automationInternal.onTreeChange.addListener(function(treeID,
     try {
       observers[i](treeChange);
     } catch (e) {
-      logging.WARNING('Error in tree change observer for ' +
-          treeChange.type + ': ' + e.message +
-          '\nStack trace: ' + e.stack);
+      exceptionHandler.handle('Error in tree change observer for ' +
+          treeChange.type, e);
     }
   }
 

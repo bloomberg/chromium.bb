@@ -5,6 +5,7 @@
 var AutomationEvent = require('automationEvent').AutomationEvent;
 var automationInternal =
     require('binding').Binding.create('automationInternal').generate();
+var exceptionHandler = require('uncaught_exception_handler');
 var IsInteractPermitted =
     requireNative('automationInternal').IsInteractPermitted;
 
@@ -437,9 +438,8 @@ AutomationNodeImpl.prototype = {
       try {
         listeners[i].callback(event);
       } catch (e) {
-        logging.WARNING('Error in event handler for ' + event.type +
-                        ' during phase ' + eventPhase + ': ' +
-                        e.message + '\nStack trace: ' + e.stack);
+        exceptionHandler.handle('Error in event handler for ' + event.type +
+            ' during phase ' + eventPhase, e);
       }
     }
   },
