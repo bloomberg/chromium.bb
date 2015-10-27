@@ -17,7 +17,7 @@
 #include "net/base/nss_memio.h"
 #include "net/log/net_log.h"
 #include "net/socket/ssl_server_socket.h"
-#include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_server_config.h"
 
 namespace net {
 
@@ -28,7 +28,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
   SSLServerSocketNSS(scoped_ptr<StreamSocket> socket,
                      scoped_refptr<X509Certificate> certificate,
                      crypto::RSAPrivateKey* key,
-                     const SSLConfig& ssl_config);
+                     const SSLServerConfig& ssl_config);
   ~SSLServerSocketNSS() override;
 
   // SSLServerSocket interface.
@@ -138,7 +138,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
   scoped_ptr<StreamSocket> transport_socket_;
 
   // Options for the SSL socket.
-  SSLConfig ssl_config_;
+  SSLServerConfig ssl_config_;
 
   // Certificate for the server.
   scoped_refptr<X509Certificate> cert_;

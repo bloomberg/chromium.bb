@@ -564,6 +564,8 @@
         'test/embedded_test_server/http_request.h',
         'test/embedded_test_server/http_response.cc',
         'test/embedded_test_server/http_response.h',
+        'test/embedded_test_server/request_handler_util.cc',
+        'test/embedded_test_server/request_handler_util.h',
         'test/event_waiter.h',
         'test/net_test_suite.cc',
         'test/net_test_suite.h',

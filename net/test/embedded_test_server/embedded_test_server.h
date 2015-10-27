@@ -12,17 +12,20 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/cert/x509_certificate.h"
+#include "net/socket/stream_socket.h"
+#include "net/socket/tcp_server_socket.h"
+#include "net/ssl/ssl_server_config.h"
 #include "url/gurl.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace net {
 
@@ -45,7 +48,7 @@ struct HttpRequest;
 //
 // void SetUp() {
 //   test_server_.reset(new EmbeddedTestServer());
-//   ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
+//   ASSERT_TRUE(test_server_.Start());
 //   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
 // }
@@ -63,11 +66,10 @@ struct HttpRequest;
 // }
 //
 // For a test that spawns another process such as browser_tests, it is
-// suggested to call InitializeAndWaitUntilReady in SetUpOnMainThread after
-// the process is spawned. If you have to do it before the process spawns,
-// you need to first setup the listen socket so that there is no no other
-// threads running while spawning the process. To do so, please follow
-// the following example:
+// suggested to call Start in SetUpOnMainThread after the process is spawned.
+//  If you have to do it before the process spawns, you need to first setup the
+// listen socket so that there is no no other threads running while spawning
+// the process. To do so, please follow the following example:
 //
 // void SetUp() {
 //   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -82,12 +84,39 @@ struct HttpRequest;
 //
 class EmbeddedTestServer {
  public:
+  enum Type {
+    TYPE_HTTP,
+    TYPE_HTTPS,
+  };
+
+  enum ServerCertificate {
+    CERT_OK,
+
+    CERT_MISMATCHED_NAME,
+    CERT_EXPIRED,
+
+    // A certificate with invalid notBefore and notAfter times. Windows'
+    // certificate library will not parse this certificate.
+    CERT_BAD_VALIDITY,
+
+    // Cross-signed certificate to test PKIX path building. Contains an
+    // intermediate cross-signed by an unknown root, while the client (via
+    // TestRootStore) is expected to have a self-signed version of the
+    // intermediate.
+    CERT_CHAIN_WRONG_ROOT,
+
+    // Causes the testserver to use a hostname that is a domain
+    // instead of an IP.
+    CERT_COMMON_NAME_IS_DOMAIN,
+  };
+
   typedef base::Callback<scoped_ptr<HttpResponse>(
       const HttpRequest& request)> HandleRequestCallback;
 
-  // Creates a http test server. InitializeAndWaitUntilReady() must be called
-  // to start the server.
+  // Creates a http test server. Start() must be called to start the server.
+  // |type| indicates the protocol type of the server (HTTP/HTTPS).
   EmbeddedTestServer();
+  explicit EmbeddedTestServer(Type type);
   ~EmbeddedTestServer();
 
   // Sets a connection listener, that would be notified when various connection
@@ -98,7 +127,11 @@ class EmbeddedTestServer {
   // Initializes and waits until the server is ready to accept requests.
   // This is the equivalent of calling InitializeAndListen() followed by
   // StartAcceptingConnections().
-  // Returns whether a listening socket has been succesfully created.
+  // Returns whether a listening socket has been successfully created.
+  bool Start();
+
+  // Deprecated method that calls Start().
+  // TODO(svaldez): Remove and replace with Start().
   bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
 
   // Starts listening for incoming connections but will not yet accept them.
@@ -114,6 +147,10 @@ class EmbeddedTestServer {
   // Checks if the server has started listening for incoming connections.
   bool Started() const {
     return listen_socket_.get() != NULL;
+  }
+
+  HostPortPair host_port_pair() const {
+    return HostPortPair::FromURL(base_url_);
   }
 
   // Returns the base URL to the server, which looks like
@@ -133,25 +170,54 @@ class EmbeddedTestServer {
               const std::string& relative_url) const;
 
   // Returns the address list needed to connect to the server.
-  bool GetAddressList(net::AddressList* address_list) const WARN_UNUSED_RESULT;
+  bool GetAddressList(AddressList* address_list) const WARN_UNUSED_RESULT;
 
   // Returns the port number used by the server.
   uint16 port() const { return port_; }
+
+  void SetSSLConfig(ServerCertificate cert, const SSLServerConfig& ssl_config);
+  void SetSSLConfig(ServerCertificate cert);
+
+  // Returns the file name of the certificate the server is using. The test
+  // certificates can be found in net/data/ssl/certificates/.
+  std::string GetCertificateName() const;
+
+  // Returns the certificate that the server is using.
+  scoped_refptr<X509Certificate> GetCertificate() const;
 
   // Registers request handler which serves files from |directory|.
   // For instance, a request to "/foo.html" is served by "foo.html" under
   // |directory|. Files under sub directories are also handled in the same way
   // (i.e. "/foo/bar.html" is served by "foo/bar.html" under |directory|).
+  // TODO(svaldez): Merge ServeFilesFromDirectory and
+  // ServeFilesFromSourceDirectory.
   void ServeFilesFromDirectory(const base::FilePath& directory);
+
+  // Serves files relative to DIR_SOURCE_ROOT.
+  void ServeFilesFromSourceDirectory(const std::string& relative);
+  void ServeFilesFromSourceDirectory(const base::FilePath& relative);
+
+  // Registers the default handlers and serve additional files from the
+  // |directory| directory, relative to DIR_SOURCE_ROOT.
+  void AddDefaultHandlers(const base::FilePath& directory);
 
   // The most general purpose method. Any request processing can be added using
   // this method. Takes ownership of the object. The |callback| is called
   // on UI thread.
   void RegisterRequestHandler(const HandleRequestCallback& callback);
 
+  // Adds default handlers, including those added by AddDefaultHandlers, to be
+  // tried after all other user-specified handlers have been tried.
+  void RegisterDefaultHandler(const HandleRequestCallback& callback);
+
  private:
   // Shuts down the server.
   void ShutdownOnIOThread();
+
+  // Upgrade the TCP connection to one over SSL.
+  scoped_ptr<StreamSocket> DoSSLUpgrade(scoped_ptr<StreamSocket> connection);
+  // Handles async callback when the SSL handshake has been completed.
+  void OnHandshakeDone(HttpConnection* connection, int rv);
 
   // Begins accepting new client connections.
   void DoAcceptLoop();
@@ -184,6 +250,8 @@ class EmbeddedTestServer {
   bool PostTaskToIOThreadAndWait(
       const base::Closure& closure) WARN_UNUSED_RESULT;
 
+  const bool is_using_ssl_;
+
   scoped_ptr<base::Thread> io_thread_;
 
   scoped_ptr<TCPServerSocket> listen_socket_;
@@ -197,15 +265,23 @@ class EmbeddedTestServer {
   // Owns the HttpConnection objects.
   std::map<StreamSocket*, HttpConnection*> connections_;
 
-  // Vector of registered request handlers.
+  // Vector of registered and default request handlers.
   std::vector<HandleRequestCallback> request_handlers_;
+  std::vector<HandleRequestCallback> default_request_handlers_;
 
   base::ThreadChecker thread_checker_;
+
+  net::SSLServerConfig ssl_config_;
+  ServerCertificate cert_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };
 
 }  // namespace test_server
+
+// TODO(svaldez): Refactor EmbeddedTestServer to be in the net namespace.
+using test_server::EmbeddedTestServer;
+
 }  // namespace net
 
 #endif  // NET_TEST_EMBEDDED_TEST_SERVER_EMBEDDED_TEST_SERVER_H_

@@ -47,9 +47,9 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -356,7 +356,7 @@ class SSLServerSocketTest : public PlatformTest {
   FakeDataChannel channel_1_;
   FakeDataChannel channel_2_;
   SSLConfig client_ssl_config_;
-  SSLConfig server_ssl_config_;
+  SSLServerConfig server_ssl_config_;
   scoped_ptr<SSLClientSocket> client_socket_;
   scoped_ptr<SSLServerSocket> server_socket_;
   ClientSocketFactory* socket_factory_;

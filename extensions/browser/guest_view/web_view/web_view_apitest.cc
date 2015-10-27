@@ -48,11 +48,6 @@ const char kTestServerPort[] = "testServer.port";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kSitePerProcess[] = "sitePerProcess";
 
-class EmptyHttpResponse : public net::test_server::HttpResponse {
- public:
-  std::string ToResponseString() const override { return std::string(); }
-};
-
 // Handles |request| by serving a redirect response if the |User-Agent| is
 // foobar.
 static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
@@ -122,7 +117,8 @@ scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
     const net::test_server::HttpRequest& request) {
   if (base::StartsWith(path, request.relative_url,
                        base::CompareCase::SENSITIVE)) {
-    return scoped_ptr<net::test_server::HttpResponse>(new EmptyHttpResponse);
+    return scoped_ptr<net::test_server::HttpResponse>(
+        new net::test_server::RawHttpResponse("", ""));
   }
 
   return scoped_ptr<net::test_server::HttpResponse>();

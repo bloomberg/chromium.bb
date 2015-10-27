@@ -5,10 +5,10 @@
 #ifndef NET_TEST_EMBEDDED_TEST_SERVER_HTTP_RESPONSE_H_
 #define NET_TEST_EMBEDDED_TEST_SERVER_HTTP_RESPONSE_H_
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_split.h"
 #include "net/http/http_status_code.h"
@@ -16,19 +16,30 @@
 namespace net {
 namespace test_server {
 
+// Callback called when the response is done being sent.
+using SendCompleteCallback = base::Callback<void(void)>;
+
+// Callback called when the response is ready to be sent that takes the
+// |response| that is being sent along with the callback |write_done| that is
+// called when the response has been fully written.
+using SendBytesCallback =
+    base::Callback<void(const std::string& response,
+                        const SendCompleteCallback& write_done)>;
+
 // Interface for HTTP response implementations.
 class HttpResponse{
  public:
   virtual ~HttpResponse();
 
-  // Returns raw contents to be written to the network socket
-  // in response. If you intend to make this a valid HTTP response,
-  // it should start with "HTTP/x.x" line, followed by response headers.
-  virtual std::string ToResponseString() const = 0;
+  // |send| will send the specified data to the network socket, and invoke
+  // |write_done| when complete. When the entire response has been sent,
+  // |done| must be called.
+  virtual void SendResponse(const SendBytesCallback& send,
+                            const SendCompleteCallback& done) = 0;
 };
 
 // This class is used to handle basic HTTP responses with commonly used
-// response headers such as "Content-Type".
+// response headers such as "Content-Type". Sends the response immediately.
 class BasicHttpResponse : public HttpResponse {
  public:
   BasicHttpResponse();
@@ -54,7 +65,10 @@ class BasicHttpResponse : public HttpResponse {
   }
 
   // Generates and returns a http response string.
-  std::string ToResponseString() const override;
+  std::string ToResponseString() const;
+
+  void SendResponse(const SendBytesCallback& send,
+                    const SendCompleteCallback& done) override;
 
  private:
   HttpStatusCode code_;
@@ -63,6 +77,23 @@ class BasicHttpResponse : public HttpResponse {
   base::StringPairs custom_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicHttpResponse);
+};
+
+class RawHttpResponse : public HttpResponse {
+ public:
+  RawHttpResponse(const std::string& headers, const std::string& contents);
+  ~RawHttpResponse() override;
+
+  void SendResponse(const SendBytesCallback& send,
+                    const SendCompleteCallback& done) override;
+
+  void AddHeader(const std::string& key_value_pair);
+
+ private:
+  std::string headers_;
+  const std::string contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(RawHttpResponse);
 };
 
 }  // namespace test_server

@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -27,6 +28,7 @@ enum HttpMethod {
   METHOD_PUT,
   METHOD_DELETE,
   METHOD_PATCH,
+  METHOD_CONNECT,
 };
 
 // Represents a HTTP request. Since it can be big, use scoped_ptr to pass it
@@ -35,6 +37,10 @@ enum HttpMethod {
 struct HttpRequest {
   HttpRequest();
   ~HttpRequest();
+
+  // Returns a GURL as a convenience to extract the path and query strings.
+  // TODO(svaldez): Use provided URL if available.
+  GURL GetURL() const;
 
   std::string relative_url;  // Starts with '/'. Example: "/test?query=foo"
   HttpMethod method;

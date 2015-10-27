@@ -18,7 +18,7 @@ class RSAPrivateKey;
 
 namespace net {
 
-struct SSLConfig;
+struct SSLServerConfig;
 class X509Certificate;
 
 class SSLServerSocket : public SSLSocket {
@@ -57,7 +57,7 @@ NET_EXPORT scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
     X509Certificate* certificate,
     crypto::RSAPrivateKey* key,
-    const SSLConfig& ssl_config);
+    const SSLServerConfig& ssl_config);
 
 }  // namespace net
 

@@ -191,6 +191,8 @@
       'ssl/ssl_info.cc',
       'ssl/ssl_info.h',
       'ssl/ssl_private_key.h',
+      'ssl/ssl_server_config.cc',
+      'ssl/ssl_server_config.h',
 
       # Most files in net/quic are in net_nacl_common_sources, except for the
       # files that have dependency on SPDY (net/spdy) or NSS.

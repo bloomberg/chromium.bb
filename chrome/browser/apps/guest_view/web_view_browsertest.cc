@@ -114,11 +114,6 @@ const char kCacheResponsePath[] = "/cache-control-response";
 const char kRedirectResponseFullPath[] =
     "/extensions/platform_apps/web_view/shim/guest_redirect.html";
 
-class EmptyHttpResponse : public net::test_server::HttpResponse {
- public:
-  std::string ToResponseString() const override { return std::string(); }
-};
-
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
  public:
   TestInterstitialPageDelegate() {
@@ -454,7 +449,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       const net::test_server::HttpRequest& request) {
     if (base::StartsWith(path, request.relative_url,
                          base::CompareCase::SENSITIVE))
-      return scoped_ptr<net::test_server::HttpResponse>(new EmptyHttpResponse);
+      return scoped_ptr<net::test_server::HttpResponse>(
+          new net::test_server::RawHttpResponse("", ""));
 
     return scoped_ptr<net::test_server::HttpResponse>();
   }

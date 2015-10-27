@@ -56,27 +56,7 @@ const char kSdchDictPath[] = "/sdch/dict/";
 
 net::test_server::EmbeddedTestServer* g_test_server = nullptr;
 
-class CustomHttpResponse : public net::test_server::HttpResponse {
- public:
-  CustomHttpResponse(const std::string& headers, const std::string& contents)
-      : headers_(headers), contents_(contents) {}
-
-  std::string ToResponseString() const override {
-    return headers_ + "\r\n" + contents_;
-  }
-
-  void AddHeader(const std::string& key_value_pair) {
-    headers_.append(base::StringPrintf("%s\r\n", key_value_pair.c_str()));
-  }
-
- private:
-  std::string headers_;
-  std::string contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomHttpResponse);
-};
-
-scoped_ptr<CustomHttpResponse> ConstructResponseBasedOnFile(
+scoped_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
     const base::FilePath& file_path) {
   std::string file_contents;
   bool read_file = base::ReadFileToString(file_path, &file_contents);
@@ -86,8 +66,8 @@ scoped_ptr<CustomHttpResponse> ConstructResponseBasedOnFile(
   std::string headers_contents;
   bool read_headers = base::ReadFileToString(headers_path, &headers_contents);
   DCHECK(read_headers);
-  scoped_ptr<CustomHttpResponse> http_response(
-      new CustomHttpResponse(headers_contents, file_contents));
+  scoped_ptr<net::test_server::RawHttpResponse> http_response(
+      new net::test_server::RawHttpResponse(headers_contents, file_contents));
   return http_response.Pass();
 }
 
@@ -150,7 +130,7 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
   if (base::StartsWith(request.relative_url, kSdchPath,
                        base::CompareCase::SENSITIVE)) {
     base::FilePath file_path = dir_path.Append("sdch/index");
-    scoped_ptr<CustomHttpResponse> response =
+    scoped_ptr<net::test_server::RawHttpResponse> response =
         ConstructResponseBasedOnFile(file_path).Pass();
     // Check for query params to see which dictionary to advertise.
     // For instance, ?q=dictionaryA will make the server advertise dictionaryA.

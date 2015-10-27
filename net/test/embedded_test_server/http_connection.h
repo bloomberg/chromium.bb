@@ -13,6 +13,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 namespace net {
 
@@ -37,9 +38,9 @@ class HttpConnection {
                  const HandleRequestCallback& callback);
   ~HttpConnection();
 
-  // Sends the HTTP response to the client.
-  void SendResponse(scoped_ptr<HttpResponse> response,
-                    const base::Closure& callback);
+  // Sends the |response_string| to the client and calls |callback| once done.
+  void SendResponseBytes(const std::string& response_string,
+                         const SendCompleteCallback& callback);
 
   // Accepts raw chunk of data from the client. Internally, passes it to the
   // HttpRequestParser class. If a request is parsed, then |callback_| is
