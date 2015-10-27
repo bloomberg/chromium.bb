@@ -29,7 +29,10 @@ mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
 }
 
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
-  mus::CreateSingleWindowTreeHost(app, this, &host_);
+  mus::mojom::WindowManagerPtr window_manager;
+  requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
+      mojo::GetProxy(&window_manager)));
+  mus::CreateSingleWindowTreeHost(app, this, &host_, window_manager.Pass());
 }
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
@@ -47,8 +50,10 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   host_->EnableWindowDraggingForChildren(
       GetWindowForContainer(Container::USER_WINDOWS)->id());
 
+  window_manager_.reset(new WindowManagerImpl(this));
   for (auto request : requests_)
-    new WindowManagerImpl(this, request->Pass());
+    window_manager_binding_.AddBinding(window_manager_.get(), request->Pass());
+  requests_.clear();
 }
 
 void WindowManagerApplication::OnConnectionLost(
@@ -61,7 +66,7 @@ void WindowManagerApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mus::mojom::WindowManager> request) {
   if (root_) {
-    new WindowManagerImpl(this, request.Pass());
+    window_manager_binding_.AddBinding(window_manager_.get(), request.Pass());
   } else {
     requests_.push_back(
         new mojo::InterfaceRequest<mus::mojom::WindowManager>(request.Pass()));

@@ -19,6 +19,11 @@
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
+namespace gfx {
+class Rect;
+class Size;
+}
+
 namespace mus {
 
 class ServiceProviderImpl;
@@ -146,6 +151,12 @@ class Window {
 
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
+
+  // The following make their way to the WindowManager. See
+  // window_manager.mojom for details.
+  void SetPreferredSize(const gfx::Size& size);
+  void RequestBoundsChange(const gfx::Rect& bounds);
+  void SetShowState(mojom::ShowState show_state);
 
   // Focus.
   void SetFocus();

@@ -4,36 +4,9 @@
 
 module mus.mojom;
 
+import "components/mus/public/interfaces/window_manager_constants.mojom";
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
-
-enum WindowManagerErrorCode {
-  SUCCESS,
-  ERROR_ACCESS_DENIED
-};
-
-enum ShowState {
-  RESTORED,
-  MINIMIZED,
-  MAXIMIZED,
-  IMMERSIVE,
-  PRESENTATION
-};
-
-enum Rotation {
-  VALUE_0,
-  VALUE_90,
-  VALUE_180,
-  VALUE_270,
-};
-
-struct Display {
-  int64 id;
-  mojo.Rect bounds;
-  mojo.Rect work_area;
-  float device_pixel_ratio;
-  Rotation rotation;
-};
 
 // Represents a core interface that should be implemented by any window manager
 // built on top of Mus.

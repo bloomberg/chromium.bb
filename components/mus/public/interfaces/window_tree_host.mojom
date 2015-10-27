@@ -4,6 +4,7 @@
 
 module mus.mojom;
 
+import "components/mus/public/interfaces/window_manager.mojom";
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/events/input_event_constants.mojom";
 import "ui/mojo/events/input_event_matcher.mojom";
@@ -42,5 +43,6 @@ interface WindowTreeHostClient {
 interface WindowTreeHostFactory {
   CreateWindowTreeHost(WindowTreeHost& window_tree_host,
                        WindowTreeHostClient? host_client,
-                       WindowTreeClient tree_client);
+                       WindowTreeClient tree_client,
+                       WindowManager? window_manager);
 };

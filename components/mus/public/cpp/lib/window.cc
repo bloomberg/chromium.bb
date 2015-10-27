@@ -14,6 +14,8 @@
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_tracker.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace mus {
 
@@ -357,6 +359,24 @@ void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
     static_cast<WindowTreeClientImpl*>(connection_)
         ->SetImeVisibility(id_, visible, state.Pass());
   }
+}
+
+void Window::SetPreferredSize(const gfx::Size& size) {
+  if (connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->SetPreferredSize(id_, size);
+}
+
+void Window::RequestBoundsChange(const gfx::Rect& bounds) {
+  if (connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->RequestBoundsChange(id_, bounds);
+}
+
+void Window::SetShowState(mojom::ShowState show_state) {
+  if (connection_)
+    static_cast<WindowTreeClientImpl*>(connection_)
+        ->SetShowState(id_, show_state);
 }
 
 void Window::SetFocus() {

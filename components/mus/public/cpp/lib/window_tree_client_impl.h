@@ -11,6 +11,11 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
+namespace gfx {
+class Rect;
+class Size;
+}
+
 namespace mus {
 class WindowTreeConnection;
 class WindowTreeDelegate;
@@ -84,6 +89,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // (as the last step of ~Window). This ordering ensures that the Window Server
   // is torn down after the root.
   void OnRootDestroyed(Window* root);
+
+  void SetPreferredSize(Id window_id, const gfx::Size& size);
+  void RequestBoundsChange(Id window_id, const gfx::Rect& bounds);
+  void SetShowState(Id window_id, mojom::ShowState show_state);
 
  private:
   typedef std::map<Id, Window*> IdToWindowMap;

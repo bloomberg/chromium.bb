@@ -14,6 +14,7 @@ mojom("interfaces") {
     "quads.mojom",
     "surface_id.mojom",
     "window_manager.mojom",
+    "window_manager_constants.mojom",
     "window_tree.mojom",
     "window_tree_host.mojom",
   ]

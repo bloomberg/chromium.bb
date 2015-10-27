@@ -86,7 +86,8 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       web_view_(this) {
   mus::mojom::WindowTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
-  mus::CreateWindowTreeHost(host_factory, host_client.Pass(), this, &host_);
+  mus::CreateWindowTreeHost(host_factory, host_client.Pass(), this, &host_,
+                            nullptr);
 }
 
 void BrowserWindow::LoadURL(const GURL& url) {

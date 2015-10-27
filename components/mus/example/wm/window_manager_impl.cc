@@ -12,12 +12,8 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 
-WindowManagerImpl::WindowManagerImpl(
-    WindowManagerApplication* state,
-    mojo::InterfaceRequest<mus::mojom::WindowManager> request)
-    : state_(state),
-      binding_(this, request.Pass()) {
-}
+WindowManagerImpl::WindowManagerImpl(WindowManagerApplication* state)
+    : state_(state) {}
 
 WindowManagerImpl::~WindowManagerImpl() {}
 
@@ -29,7 +25,6 @@ void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   const int height = (root->bounds().height - 240);
 
   mus::Window* child_window = root->connection()->NewWindow();
-  windows_.insert(child_window->id());
   mojo::Rect bounds;
   bounds.x = 40 + (state_->window_count() % 4) * 40;
   bounds.y = 40 + (state_->window_count() % 4) * 40;
@@ -47,11 +42,6 @@ void WindowManagerImpl::SetPreferredSize(
     mus::Id window_id,
     mojo::SizePtr size,
     const WindowManagerErrorCodeCallback& callback) {
-  if (windows_.count(window_id) == 0) {
-    callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
-    return;
-  }
-
   mus::Window* window = state_->GetWindowById(window_id);
   window->SetSharedProperty<mojo::Size>(
       mus::mojom::WindowManager::kPreferredSize_Property, *size);
@@ -63,11 +53,6 @@ void WindowManagerImpl::SetBounds(
     mus::Id window_id,
     mojo::RectPtr bounds,
     const WindowManagerErrorCodeCallback& callback) {
-  if (windows_.count(window_id) == 0) {
-    callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
-    return;
-  }
-
   mus::Window* window = state_->root()->GetChildById(window_id);
   window->SetBounds(*bounds);
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
@@ -77,11 +62,6 @@ void WindowManagerImpl::SetShowState(
     mus::Id window_id,
     mus::mojom::ShowState show_state,
     const WindowManagerErrorCodeCallback& callback){
-  if (windows_.count(window_id) == 0) {
-    callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
-    return;
-  }
-
   mus::Window* window = state_->GetWindowById(window_id);
   window->SetSharedProperty<int32_t>(
       mus::mojom::WindowManager::kShowState_Property, show_state);
@@ -100,10 +80,4 @@ void WindowManagerImpl::GetDisplays(const GetDisplaysCallback& callback) {
   displays[0]->device_pixel_ratio =
       state_->root()->viewport_metrics().device_pixel_ratio;
   callback.Run(displays.Pass());
-}
-
-void WindowManagerImpl::OnWindowDestroyed(mus::Window* window) {
-  auto it = std::find(windows_.begin(), windows_.end(), window->id());
-  DCHECK(it != windows_.end());
-  windows_.erase(it);
 }

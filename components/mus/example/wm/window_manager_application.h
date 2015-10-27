@@ -14,9 +14,12 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory_impl.h"
+#include "mojo/common/weak_binding_set.h"
 
 enum class Container;
 class WindowLayout;
+
+class WindowManagerImpl;
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
@@ -57,6 +60,11 @@ class WindowManagerApplication
   int window_count_;
 
   mus::mojom::WindowTreeHostPtr host_;
+
+  // |window_manager_| is created once OnEmbed() is called. Until that time
+  // |requests_| stores any pending WindowManager interface requests.
+  scoped_ptr<WindowManagerImpl> window_manager_;
+  mojo::WeakBindingSet<mus::mojom::WindowManager> window_manager_binding_;
   ScopedVector<mojo::InterfaceRequest<mus::mojom::WindowManager>> requests_;
 
   scoped_ptr<WindowLayout> layout_;

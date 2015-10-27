@@ -46,11 +46,6 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
                   mus::Window* window);
   ~NativeWidgetMus() override;
 
-  // TODO(beng): move to ctor.
-  void set_window_manager(mus::mojom::WindowManager* window_manager) {
-    window_manager_ = window_manager;
-  }
-
  private:
   void UpdateClientAreaInWindowManager();
 
@@ -172,7 +167,6 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  mus::mojom::WindowManager* window_manager_;
   mus::mojom::ShowState show_state_before_fullscreen_;
 
   // Aura configuration.

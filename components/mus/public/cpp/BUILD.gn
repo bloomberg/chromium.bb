@@ -51,11 +51,13 @@ mojo_sdk_source_set("cpp") {
     "//cc/surfaces:surface_id",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
+    "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
     "//mojo/gles2:headers",
     "//mojo/gpu:mojo_gles2_implementation",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",
+    "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]

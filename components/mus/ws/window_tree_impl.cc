@@ -712,6 +712,45 @@ void WindowTreeImpl::SetFocus(uint32_t window_id) {
   }
 }
 
+void WindowTreeImpl::SetPreferredSize(
+    uint32_t window_id,
+    mojo::SizePtr size,
+    const SetPreferredSizeCallback& callback) {
+  if (!GetHost() || !GetHost()->window_manager())
+    return;
+
+  // TODO(sky): verify window_id is valid for the client.
+  GetHost()->window_manager()->SetPreferredSize(window_id, size.Pass(),
+                                                callback);
+}
+
+void WindowTreeImpl::SetBounds(uint32_t window_id,
+                               mojo::RectPtr bounds,
+                               const SetBoundsCallback& callback) {
+  if (!GetHost() || !GetHost()->window_manager())
+    return;
+
+  // TODO(sky): verify window_id is valid for the client.
+  GetHost()->window_manager()->SetBounds(window_id, bounds.Pass(), callback);
+}
+
+void WindowTreeImpl::SetShowState(uint32_t window_id,
+                                  mojom::ShowState show_state,
+                                  const SetShowStateCallback& callback) {
+  if (!GetHost() || !GetHost()->window_manager())
+    return;
+
+  // TODO(sky): verify window_id is valid for the client.
+  GetHost()->window_manager()->SetShowState(window_id, show_state, callback);
+}
+
+void WindowTreeImpl::GetDisplays(const GetDisplaysCallback& callback) {
+  if (!GetHost() || !GetHost()->window_manager())
+    return;
+
+  GetHost()->window_manager()->GetDisplays(callback);
+}
+
 bool WindowTreeImpl::IsRootForAccessPolicy(const WindowId& id) const {
   return IsRoot(id);
 }

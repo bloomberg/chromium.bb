@@ -22,14 +22,16 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     ConnectionManager* connection_manager,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
-    const scoped_refptr<SurfacesState>& surfaces_state)
+    const scoped_refptr<SurfacesState>& surfaces_state,
+    mojom::WindowManagerPtr window_manager)
     : delegate_(nullptr),
       connection_manager_(connection_manager),
       client_(client.Pass()),
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
-      focus_controller_(new FocusController(this)) {
+      focus_controller_(new FocusController(this)),
+      window_manager_(window_manager.Pass()) {
   display_manager_->Init(this);
   if (client_) {
     client_.set_connection_error_handler(base::Bind(

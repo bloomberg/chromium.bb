@@ -4,6 +4,7 @@
 
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 
+#include "base/bind.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -13,8 +14,16 @@
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace mus {
+namespace {
+
+void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
+
+}  // namespace
 
 Id MakeTransportId(ConnectionSpecificId connection_id,
                    ConnectionSpecificId local_id) {
@@ -236,6 +245,24 @@ void WindowTreeClientImpl::OnRootDestroyed(Window* root) {
   // When the root is gone we can't do anything useful.
   if (!in_destructor_)
     delete this;
+}
+
+void WindowTreeClientImpl::SetPreferredSize(Id window_id,
+                                            const gfx::Size& size) {
+  tree_->SetPreferredSize(window_id, mojo::Size::From(size),
+                          base::Bind(&WindowManagerCallback));
+}
+
+void WindowTreeClientImpl::RequestBoundsChange(Id window_id,
+                                               const gfx::Rect& bounds) {
+  tree_->SetBounds(window_id, mojo::Rect::From(bounds),
+                   base::Bind(&WindowManagerCallback));
+}
+
+void WindowTreeClientImpl::SetShowState(Id window_id,
+                                        mojom::ShowState show_state) {
+  tree_->SetShowState(window_id, show_state,
+                      base::Bind(&WindowManagerCallback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

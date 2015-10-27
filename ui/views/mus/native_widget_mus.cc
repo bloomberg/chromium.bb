@@ -61,8 +61,6 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
 };
 
-void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +72,6 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
     : window_(window),
       shell_(shell),
       native_widget_delegate_(delegate),
-      window_manager_(nullptr),
       show_state_before_fullscreen_(mus::mojom::SHOW_STATE_RESTORED),
       content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
@@ -207,11 +204,7 @@ ui::InputMethod* NativeWidgetMus::GetInputMethod() {
 
 void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
   // TODO(beng): clear user-placed property and set preferred size property.
-  if (!window_manager_)
-    return;
-  window_manager_->SetPreferredSize(window_tree_host_->mus_window()->id(),
-                                    mojo::Size::From(size),
-                                    base::Bind(&WindowManagerCallback));
+  window_->SetPreferredSize(size);
 }
 
 void NativeWidgetMus::GetWindowPlacement(
@@ -251,23 +244,13 @@ gfx::Rect NativeWidgetMus::GetRestoredBounds() const {
 }
 
 void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
-  if (!window_manager_)
-    return;
-  window_manager_->SetBounds(window_tree_host_->mus_window()->id(),
-                             mojo::Rect::From(bounds),
-                             base::Bind(&WindowManagerCallback));
+  window_->RequestBoundsChange(bounds);
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {
-  if (!window_manager_)
-    return;
-  mojo::RectPtr bounds(mojo::Rect::New());
-  bounds->x = window_tree_host_->mus_window()->bounds().x;
-  bounds->y = window_tree_host_->mus_window()->bounds().y;
-  bounds->width = size.width();
-  bounds->height = size.height();
-  window_manager_->SetBounds(window_tree_host_->mus_window()->id(),
-                             bounds.Pass(), base::Bind(&WindowManagerCallback));
+  gfx::Rect bounds = window_->bounds().To<gfx::Rect>();
+  bounds.set_size(size);
+  window_->RequestBoundsChange(bounds);
 }
 
 void NativeWidgetMus::StackAbove(gfx::NativeView native_view) {

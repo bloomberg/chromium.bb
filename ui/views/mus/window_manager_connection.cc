@@ -125,7 +125,6 @@ NativeWidget* WindowManagerConnection::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
   NativeWidgetMus* native_widget =
       new NativeWidgetMus(delegate, app_->shell(), CreateWindow());
-  native_widget->set_window_manager(window_manager_.get());
   return native_widget;
 }
 

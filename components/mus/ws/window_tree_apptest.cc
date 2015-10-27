@@ -549,7 +549,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
 
     factory->CreateWindowTreeHost(GetProxy(&host_),
                                   mojom::WindowTreeHostClientPtr(),
-                                  tree_client_ptr.Pass());
+                                  tree_client_ptr.Pass(), nullptr);
 
     // Next we should get an embed call on the "window manager" client.
     vm_client1_->WaitForIncomingMethodCall();

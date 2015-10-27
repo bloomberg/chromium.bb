@@ -11,7 +11,6 @@
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 class WindowManagerApplication;
 
@@ -21,9 +20,8 @@ using WindowManagerErrorCodeCallback =
 class WindowManagerImpl : public mus::mojom::WindowManager,
                           public mus::WindowObserver {
  public:
-   WindowManagerImpl(WindowManagerApplication* state,
-                     mojo::InterfaceRequest<mus::mojom::WindowManager> request);
-   ~WindowManagerImpl() override;
+  explicit WindowManagerImpl(WindowManagerApplication* state);
+  ~WindowManagerImpl() override;
 
  private:
   // mus::mojom::WindowManager:
@@ -40,12 +38,7 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
                     const WindowManagerErrorCodeCallback& callback) override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
 
-  // mus::WindowObserver:
-  void OnWindowDestroyed(mus::Window* window) override;
-
   WindowManagerApplication* state_;
-  mojo::StrongBinding<mus::mojom::WindowManager> binding_;
-  std::set<mus::Id> windows_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };

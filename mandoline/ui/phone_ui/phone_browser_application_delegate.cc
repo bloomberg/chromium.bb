@@ -47,7 +47,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
       break;
     }
   }
-  mus::CreateSingleWindowTreeHost(app_, this, &host_);
+  mus::CreateSingleWindowTreeHost(app_, this, &host_, nullptr);
 }
 
 bool PhoneBrowserApplicationDelegate::ConfigureIncomingConnection(

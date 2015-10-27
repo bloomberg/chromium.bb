@@ -128,14 +128,15 @@ void MandolineUIServicesApp::Create(mojo::ApplicationConnection* connection,
 void MandolineUIServicesApp::CreateWindowTreeHost(
     mojo::InterfaceRequest<mojom::WindowTreeHost> host,
     mojom::WindowTreeHostClientPtr host_client,
-    mojom::WindowTreeClientPtr tree_client) {
+    mojom::WindowTreeClientPtr tree_client,
+    mojom::WindowManagerPtr window_manager) {
   DCHECK(connection_manager_.get());
 
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
-  ws::WindowTreeHostImpl* host_impl =
-      new ws::WindowTreeHostImpl(host_client.Pass(), connection_manager_.get(),
-                                 app_impl_, gpu_state_, surfaces_state_);
+  ws::WindowTreeHostImpl* host_impl = new ws::WindowTreeHostImpl(
+      host_client.Pass(), connection_manager_.get(), app_impl_, gpu_state_,
+      surfaces_state_, window_manager.Pass());
 
   // WindowTreeHostConnection manages its own lifetime.
   host_impl->Init(new ws::WindowTreeHostConnectionImpl(

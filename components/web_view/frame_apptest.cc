@@ -371,7 +371,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    mus::CreateSingleWindowTreeHost(application_impl(), this, &host_);
+    mus::CreateSingleWindowTreeHost(application_impl(), this, &host_, nullptr);
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);

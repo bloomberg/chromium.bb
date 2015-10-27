@@ -1,0 +1,35 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mus.mojom;
+
+import "ui/mojo/geometry/geometry.mojom";
+
+enum WindowManagerErrorCode {
+  SUCCESS,
+  ERROR_ACCESS_DENIED
+};
+
+enum ShowState {
+  RESTORED,
+  MINIMIZED,
+  MAXIMIZED,
+  IMMERSIVE,
+  PRESENTATION
+};
+
+enum Rotation {
+  VALUE_0,
+  VALUE_90,
+  VALUE_180,
+  VALUE_270,
+};
+
+struct Display {
+  int64 id;
+  mojo.Rect bounds;
+  mojo.Rect work_area;
+  float device_pixel_ratio;
+  Rotation rotation;
+};
