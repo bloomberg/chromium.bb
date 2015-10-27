@@ -10,7 +10,8 @@
 #include "ash/wm/dim_window.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window_event_dispatcher.h"
+//#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"
 
 namespace ash {
@@ -84,6 +85,30 @@ TEST_F(ScreenDimmerTest, RootDimmer) {
   // -100 is the magic number for root window.
   EXPECT_EQ(root_dimmer, ScreenDimmer::FindForTest(-100));
   EXPECT_EQ(nullptr, ScreenDimmer::FindForTest(-1));
+}
+
+TEST_F(ScreenDimmerTest, DimAtBottom) {
+  ScreenDimmer* root_dimmer = ScreenDimmer::GetForRoot();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(1, root_window));
+  root_dimmer->SetDimming(true);
+  std::vector<aura::Window*>::const_iterator dim_iter =
+      std::find(root_window->children().begin(), root_window->children().end(),
+                GetDimWindow());
+  ASSERT_TRUE(dim_iter != root_window->children().end());
+  // Dim layer is at top.
+  EXPECT_EQ(*dim_iter, *root_window->children().rbegin());
+
+  root_dimmer->SetDimming(false);
+  root_dimmer->set_at_bottom(true);
+  root_dimmer->SetDimming(true);
+
+  dim_iter = std::find(root_window->children().begin(),
+                       root_window->children().end(), GetDimWindow());
+  ASSERT_TRUE(dim_iter != root_window->children().end());
+  // Dom layer is at the bottom.
+  EXPECT_EQ(*dim_iter, *root_window->children().begin());
 }
 
 }  // namespace test
