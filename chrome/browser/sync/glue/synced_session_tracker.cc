@@ -7,12 +7,32 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/glue/synced_session_util.h"
+#include "components/sync_sessions/sync_sessions_client.h"
 
 namespace browser_sync {
 
-SyncedSessionTracker::SyncedSessionTracker() {
+namespace {
+
+// Helper for iterating through all tabs within a window, and all navigations
+// within a tab, to find if there's a valid syncable url.
+bool ShouldSyncSessionWindow(sync_sessions::SyncSessionsClient* sessions_client,
+                             const sessions::SessionWindow& window) {
+  for (sessions::SessionTab* const tab : window.tabs) {
+    for (const sessions::SerializedNavigationEntry& navigation :
+         tab->navigations) {
+      if (sessions_client->ShouldSyncURL(navigation.virtual_url())) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
+
+}  // namespace
+
+SyncedSessionTracker::SyncedSessionTracker(
+    sync_sessions::SyncSessionsClient* sessions_client)
+    : sessions_client_(sessions_client) {}
 
 SyncedSessionTracker::~SyncedSessionTracker() {
   Clear();
@@ -37,7 +57,7 @@ bool SyncedSessionTracker::LookupAllForeignSessions(
       for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator iter =
                foreign_session->windows.begin();
            iter != foreign_session->windows.end(); ++iter) {
-        if (ShouldSyncSessionWindow(*(iter->second))) {
+        if (ShouldSyncSessionWindow(sessions_client_, *(iter->second))) {
           found_tabs = true;
           break;
         }

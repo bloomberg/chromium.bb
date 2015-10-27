@@ -26,6 +26,10 @@
         'sync_sessions/revisit/bookmarks_by_url_provider_impl.h',
         'sync_sessions/revisit/bookmarks_page_revisit_observer.cc',
         'sync_sessions/revisit/bookmarks_page_revisit_observer.h',
+        'sync_sessions/synced_tab_delegate.cc',
+        'sync_sessions/synced_tab_delegate.h',
+        'sync_sessions/sync_sessions_client.cc',
+        'sync_sessions/sync_sessions_client.h',
         'sync_sessions/revisit/current_tab_matcher.cc',
         'sync_sessions/revisit/current_tab_matcher.h',
         'sync_sessions/revisit/offset_tab_matcher.cc',
@@ -51,5 +55,22 @@
         }],
       ],
     },
-  ],
+    {
+      'target_name': 'sync_sessions_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'sync_sessions',
+        '../base/base.gyp:base',
+        '../sync/sync.gyp:sync',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'sync_sessions/fake_sync_sessions_client.cc',
+        'sync_sessions/fake_sync_sessions_client.h',
+      ],
+    }
+  ]
 }

@@ -16,6 +16,10 @@
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/tab_node_pool.h"
 
+namespace sync_sessions {
+class SyncSessionsClient;
+}
+
 namespace browser_sync {
 
 // Class to manage synced sessions. The tracker will own all SyncedSession
@@ -25,7 +29,8 @@ namespace browser_sync {
 // the local session (whose tag we maintain separately).
 class SyncedSessionTracker {
  public:
-  SyncedSessionTracker();
+  explicit SyncedSessionTracker(
+      sync_sessions::SyncSessionsClient* sessions_client);
   ~SyncedSessionTracker();
 
   // We track and distinguish the local session from foreign sessions.
@@ -222,6 +227,9 @@ class SyncedSessionTracker {
   sessions::SessionTab* GetTabImpl(const std::string& session_tag,
                                    SessionID::id_type tab_id,
                                    int tab_node_id);
+
+  // The client of the sync sessions datatype.
+  sync_sessions::SyncSessionsClient* const sessions_client_;
 
   // Per client mapping of tab id's to their SessionTab objects.
   // Key: session tag.

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "components/sessions/core/session_id.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -20,27 +20,27 @@ class TabContentsSyncedTabDelegate
  public:
   ~TabContentsSyncedTabDelegate() override;
 
-  // Methods from SyncedTabDelegate.
+  // SyncedTabDelegate:
   SessionID::id_type GetWindowId() const override;
   SessionID::id_type GetSessionId() const override;
   bool IsBeingDestroyed() const override;
-  Profile* profile() const override;
   std::string GetExtensionAppId() const override;
   bool IsInitialBlankNavigation() const override;
   int GetCurrentEntryIndex() const override;
   int GetEntryCount() const override;
-  int GetPendingEntryIndex() const override;
-  content::NavigationEntry* GetPendingEntry() const override;
-  content::NavigationEntry* GetEntryAtIndex(int i) const override;
-  content::NavigationEntry* GetActiveEntry() const override;
+  GURL GetVirtualURLAtIndex(int i) const override;
+  GURL GetFaviconURLAtIndex(int i) const override;
+  ui::PageTransition GetTransitionAtIndex(int i) const override;
+  void GetSerializedNavigationAtIndex(
+      int i,
+      sessions::SerializedNavigationEntry* serialized_entry) const override;
   bool ProfileIsSupervised() const override;
-  const std::vector<const content::NavigationEntry*>* GetBlockedNavigations()
-      const override;
-  bool IsPinned() const override;
-  bool HasWebContents() const override;
-  content::WebContents* GetWebContents() const override;
+  const std::vector<const sessions::SerializedNavigationEntry*>*
+  GetBlockedNavigations() const override;
+  bool IsPlaceholderTab() const override;
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
+  bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
 
  private:
   explicit TabContentsSyncedTabDelegate(content::WebContents* web_contents);

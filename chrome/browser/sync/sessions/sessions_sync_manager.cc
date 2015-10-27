@@ -13,25 +13,19 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sync/glue/synced_tab_delegate.h"
-#include "chrome/common/url_constants.h"
-#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sync_driver/glue/synced_window_delegate.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/sessions/synced_window_delegates_getter.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
+#include "components/sync_sessions/sync_sessions_client.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/url_constants.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/api/time.h"
 
-using content::NavigationEntry;
-using sessions::ContentSerializedNavigationBuilder;
 using sessions::SerializedNavigationEntry;
 using sync_driver::DeviceInfo;
 using sync_driver::LocalDeviceInfoProvider;
@@ -76,11 +70,13 @@ bool SessionsRecencyComparator(const sync_driver::SyncedSession* s1,
 // |local_device| is owned by ProfileSyncService, its lifetime exceeds
 // lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
+    sync_sessions::SyncSessionsClient* sessions_client,
     Profile* profile,
     LocalDeviceInfoProvider* local_device,
-    scoped_ptr<LocalSessionEventRouter> router,
-    scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter)
-    : favicon_cache_(FaviconServiceFactory::GetForProfile(
+    scoped_ptr<LocalSessionEventRouter> router)
+    : sessions_client_(sessions_client),
+      session_tracker_(sessions_client),
+      favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS),
                      HistoryServiceFactory::GetForProfile(
@@ -94,12 +90,14 @@ SessionsSyncManager::SessionsSyncManager(
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()),
-      synced_window_getter_(synced_window_getter.Pass()),
       page_revisit_broadcaster_(this,
+                                sessions_client,
                                 HistoryServiceFactory::GetForProfile(
                                     profile,
                                     ServiceAccessType::EXPLICIT_ACCESS),
-                                BookmarkModelFactory::GetForProfile(profile)) {}
+                                BookmarkModelFactory::GetForProfile(profile)) {
+  synced_window_getter_ = sessions_client_->GetSyncedWindowDelegatesGetter();
+}
 
 LocalSessionEventRouter::~LocalSessionEventRouter() {}
 
@@ -206,7 +204,7 @@ void SessionsSyncManager::AssociateWindows(
 
   session_tracker_.ResetSessionTracking(local_tag);
   std::set<const SyncedWindowDelegate*> windows =
-      synced_window_getter_->GetSyncedWindowDelegates();
+      GetSyncedWindowDelegatesGetter()->GetSyncedWindowDelegates();
 
   for (std::set<const SyncedWindowDelegate*>::const_iterator i =
            windows.begin(); i != windows.end(); ++i) {
@@ -243,7 +241,7 @@ void SessionsSyncManager::AssociateWindows(
         if (!synced_tab)
           continue;
 
-        if (!synced_tab->HasWebContents()) {
+        if (synced_tab->IsPlaceholderTab()) {
           // For tabs without WebContents update the |tab_id|, as it could have
           // changed after a session restore.
           // Note: We cannot check if a tab is valid if it has no WebContents.
@@ -302,10 +300,8 @@ void SessionsSyncManager::AssociateWindows(
 
 void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
                                        syncer::SyncChangeList* change_output) {
-  DCHECK(tab->HasWebContents());
+  DCHECK(!tab->IsPlaceholderTab());
   SessionID::id_type tab_id = tab->GetSessionId();
-  if (tab->profile() != profile_)
-    return;
 
   if (tab->IsBeingDestroyed()) {
     // This tab is closing.
@@ -320,7 +316,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
     return;
   }
 
-  if (!tab->ShouldSync())
+  if (!tab->ShouldSync(sessions_client_))
     return;
 
   TabLinksMap::iterator local_tab_map_iter = local_tab_map_.find(tab_id);
@@ -360,12 +356,14 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
   change_output->push_back(syncer::SyncChange(
       FROM_HERE, syncer::SyncChange::ACTION_UPDATE, data));
 
-  const GURL new_url = GetCurrentVirtualURL(*tab);
+  int current_index = tab->GetCurrentEntryIndex();
+  const GURL new_url = tab->GetVirtualURLAtIndex(current_index);
   if (new_url != tab_link->url()) {
     tab_link->set_url(new_url);
-    favicon_cache_.OnFaviconVisited(new_url, GetCurrentFaviconURL(*tab));
+    favicon_cache_.OnFaviconVisited(new_url,
+                                    tab->GetFaviconURLAtIndex(current_index));
     page_revisit_broadcaster_.OnPageVisit(
-        new_url, tab->GetCurrentEntryMaybePending()->GetTransitionType());
+        new_url, tab->GetTransitionAtIndex(current_index));
   }
 
   session_tracker_.GetSession(current_machine_tag())->modified_time =
@@ -402,11 +400,10 @@ bool SessionsSyncManager::IsValidSessionHeader(
 }
 
 void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
-  const content::NavigationEntry* entry = modified_tab->GetActiveEntry();
-  if (!modified_tab->IsBeingDestroyed() &&
-      entry &&
-      entry->GetVirtualURL().is_valid() &&
-      entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
+  GURL virtual_url =
+      modified_tab->GetVirtualURLAtIndex(modified_tab->GetCurrentEntryIndex());
+  if (!modified_tab->IsBeingDestroyed() && virtual_url.is_valid() &&
+      virtual_url.spec() == kNTPOpenTabSyncURL) {
     DVLOG(1) << "Triggering sync refresh for sessions datatype.";
     const syncer::ModelTypeSet types(syncer::SESSIONS);
     content::NotificationService::current()->Notify(
@@ -424,11 +421,11 @@ void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
   }
 
   syncer::SyncChangeList changes;
-  // Associate tabs first so the synced session tracker is aware of them.
   AssociateTab(modified_tab, &changes);
   // Note, we always associate windows because it's possible a tab became
   // "interesting" by going to a valid URL, in which case it needs to be added
-  // to the window's tab information.
+  // to the window's tab information. Similarly, if a tab became
+  // "uninteresting", we remove it from the window's tab information.
   AssociateWindows(DONT_RELOAD_TABS, syncer::SyncDataList(), &changes);
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
@@ -891,24 +888,6 @@ bool SessionsSyncManager::DisassociateForeignSession(
   return session_tracker_.DeleteSession(foreign_session_tag);
 }
 
-// static
-GURL SessionsSyncManager::GetCurrentVirtualURL(
-    const SyncedTabDelegate& tab_delegate) {
-  const NavigationEntry* current_entry =
-      tab_delegate.GetCurrentEntryMaybePending();
-  return current_entry->GetVirtualURL();
-}
-
-// static
-GURL SessionsSyncManager::GetCurrentFaviconURL(
-    const SyncedTabDelegate& tab_delegate) {
-  const NavigationEntry* current_entry =
-      tab_delegate.GetCurrentEntryMaybePending();
-  return (current_entry->GetFavicon().valid ?
-          current_entry->GetFavicon().url :
-          GURL());
-}
-
 bool SessionsSyncManager::GetForeignSession(
     const std::string& tag,
     std::vector<const sessions::SessionWindow*>* windows) {
@@ -964,7 +943,8 @@ void SessionsSyncManager::LocalTabDelegateToSpecifics(
       session_tracker_.GetTab(current_machine_tag(),
                               tab_delegate.GetSessionId(),
                               tab_delegate.GetSyncId());
-  SetSessionTabFromDelegate(tab_delegate, base::Time::Now(), session_tab);
+  SetSessionTabFromDelegate(GetSyncedWindowDelegatesGetter(), tab_delegate,
+                            base::Time::Now(), session_tab);
   SetVariationIds(session_tab);
   sync_pb::SessionTab tab_s = session_tab->ToSyncData();
   specifics->set_session_tag(current_machine_tag_);
@@ -1022,16 +1002,20 @@ void SessionsSyncManager::AssociateRestoredPlaceholderTab(
 
 // static
 void SessionsSyncManager::SetSessionTabFromDelegate(
-      const SyncedTabDelegate& tab_delegate,
-      base::Time mtime,
-      sessions::SessionTab* session_tab) {
+    SyncedWindowDelegatesGetter* synced_window_getter,
+    const SyncedTabDelegate& tab_delegate,
+    base::Time mtime,
+    sessions::SessionTab* session_tab) {
   DCHECK(session_tab);
   session_tab->window_id.set_id(tab_delegate.GetWindowId());
   session_tab->tab_id.set_id(tab_delegate.GetSessionId());
   session_tab->tab_visual_index = 0;
   // Use -1 to indicate that the index hasn't been set properly yet.
   session_tab->current_navigation_index = -1;
-  session_tab->pinned = tab_delegate.IsPinned();
+  const SyncedWindowDelegate* window_delegate =
+      synced_window_getter->FindById(tab_delegate.GetWindowId());
+  session_tab->pinned =
+      window_delegate ? window_delegate->IsTabPinned(&tab_delegate) : false;
   session_tab->extension_app_id = tab_delegate.GetExtensionAppId();
   session_tab->user_agent_override.clear();
   session_tab->timestamp = mtime;
@@ -1043,17 +1027,16 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   session_tab->navigations.clear();
 
   for (int i = min_index; i < max_index; ++i) {
-    const NavigationEntry* entry = tab_delegate.GetEntryAtIndexMaybePending(i);
-    DCHECK(entry);
-    if (!entry->GetVirtualURL().is_valid())
+    if (!tab_delegate.GetVirtualURLAtIndex(i).is_valid())
       continue;
+    sessions::SerializedNavigationEntry serialized_entry;
+    tab_delegate.GetSerializedNavigationAtIndex(i, &serialized_entry);
 
     // Set current_navigation_index to the index in navigations.
     if (i == current_index)
       session_tab->current_navigation_index = session_tab->navigations.size();
 
-    session_tab->navigations.push_back(
-        ContentSerializedNavigationBuilder::FromNavigationEntry(i, *entry));
+    session_tab->navigations.push_back(serialized_entry);
     if (is_supervised) {
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_ALLOWED);
@@ -1068,13 +1051,12 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   }
 
   if (is_supervised) {
-    const std::vector<const NavigationEntry*>& blocked_navigations =
-        *tab_delegate.GetBlockedNavigations();
     int offset = session_tab->navigations.size();
+    const std::vector<const SerializedNavigationEntry*>& blocked_navigations =
+        *tab_delegate.GetBlockedNavigations();
     for (size_t i = 0; i < blocked_navigations.size(); ++i) {
-      session_tab->navigations.push_back(
-          ContentSerializedNavigationBuilder::FromNavigationEntry(
-              i + offset, *blocked_navigations[i]));
+      session_tab->navigations.push_back(*blocked_navigations[i]);
+      session_tab->navigations.back().set_index(offset + i);
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_BLOCKED);
       // TODO(bauerb): Add categories
@@ -1102,7 +1084,7 @@ FaviconCache* SessionsSyncManager::GetFaviconCache() {
 
 SyncedWindowDelegatesGetter*
 SessionsSyncManager::GetSyncedWindowDelegatesGetter() const {
-  return synced_window_getter_.get();
+  return synced_window_getter_;
 }
 
 void SessionsSyncManager::DoGarbageCollection() {

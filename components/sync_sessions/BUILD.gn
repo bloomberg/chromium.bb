@@ -23,6 +23,10 @@ source_set("sync_sessions") {
     "revisit/typed_url_page_revisit_observer.h",
     "revisit/typed_url_page_revisit_task.cc",
     "revisit/typed_url_page_revisit_task.h",
+    "sync_sessions_client.cc",
+    "sync_sessions_client.h",
+    "synced_tab_delegate.cc",
+    "synced_tab_delegate.h",
   ]
 
   deps = [
@@ -33,9 +37,26 @@ source_set("sync_sessions") {
     "//components/sessions",
     "//components/sync_driver",
     "//sync",
+    "//ui/base",
     "//ui/gfx",
     "//url",
   ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_sync_sessions_client.cc",
+    "fake_sync_sessions_client.h",
+  ]
+
+  public_deps = [
+    ":sync_sessions",
+    "//base",
+    "//url",
+  ]
+
+  deps = []
 }
 
 source_set("unit_tests") {
@@ -51,6 +72,7 @@ source_set("unit_tests") {
 
   deps = [
     ":sync_sessions",
+    ":test_support",
     "//base/test:test_support",
     "//testing/gmock",
     "//components/bookmarks/browser",

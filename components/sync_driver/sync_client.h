@@ -42,6 +42,10 @@ namespace syncer {
 class SyncableService;
 }  // namespace syncer
 
+namespace sync_sessions {
+class SyncSessionsClient;
+}  // namespace sync_sessions
+
 namespace sync_driver {
 
 class SyncApiComponentFactory;
@@ -84,6 +88,7 @@ class SyncClient {
   GetWebDataService() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoServiceIfExists() = 0;
   virtual scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() = 0;
+  virtual sync_sessions::SyncSessionsClient* GetSyncSessionsClient() = 0;
 
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.

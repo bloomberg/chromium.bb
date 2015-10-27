@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNCED_TAB_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNCED_TAB_DELEGATE_ANDROID_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -26,30 +28,27 @@ class SyncedTabDelegateAndroid : public browser_sync::SyncedTabDelegate {
   explicit SyncedTabDelegateAndroid(TabAndroid* owning_tab_);
   ~SyncedTabDelegateAndroid() override;
 
-  // Methods from SyncedTabDelegate.
+  // SyncedTabDelegate:
   SessionID::id_type GetWindowId() const override;
   SessionID::id_type GetSessionId() const override;
   bool IsBeingDestroyed() const override;
-  Profile* profile() const override;
   std::string GetExtensionAppId() const override;
   bool IsInitialBlankNavigation() const override;
   int GetCurrentEntryIndex() const override;
   int GetEntryCount() const override;
-  int GetPendingEntryIndex() const override;
-  content::NavigationEntry* GetPendingEntry() const override;
-  content::NavigationEntry* GetEntryAtIndex(int i) const override;
-  content::NavigationEntry* GetActiveEntry() const override;
-  bool IsPinned() const override;
-  bool HasWebContents() const override;
-  content::WebContents* GetWebContents() const override;
+  GURL GetVirtualURLAtIndex(int i) const override;
+  GURL GetFaviconURLAtIndex(int i) const override;
+  ui::PageTransition GetTransitionAtIndex(int i) const override;
+  void GetSerializedNavigationAtIndex(
+      int i,
+      sessions::SerializedNavigationEntry* serialized_entry) const override;
+  bool IsPlaceholderTab() const override;
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
-
-  // Supervised user related methods.
-
+  bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
   bool ProfileIsSupervised() const override;
-  const std::vector<const content::NavigationEntry*>* GetBlockedNavigations()
-      const override;
+  const std::vector<const sessions::SerializedNavigationEntry*>*
+  GetBlockedNavigations() const override;
 
   // Set the web contents for this tab. Also creates
   // TabContentsSyncedTabDelegate for this tab.

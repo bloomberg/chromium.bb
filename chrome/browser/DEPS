@@ -98,6 +98,7 @@ include_rules = [
   "+components/suggestions",
   "+components/sync_bookmarks",
   "+components/sync_driver",
+  "+components/sync_sessions",
   "+components/syncable_prefs",
   "+components/tracing",
   "+components/translate/content/browser",

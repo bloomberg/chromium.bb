@@ -114,6 +114,7 @@ source_set("test_support") {
     "//components/search_engines:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync_driver:test_support",
+    "//components/sync_sessions:test_support",
     "//components/syncable_prefs:test_support",
     "//components/update_client:test_support",
     "//content/public/app:both",

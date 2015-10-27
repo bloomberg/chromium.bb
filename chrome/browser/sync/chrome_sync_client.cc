@@ -19,8 +19,10 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
+#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -34,6 +36,7 @@
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
 #include "components/sync_driver/glue/ui_model_worker.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_sessions/sync_sessions_client.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
@@ -69,6 +72,10 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "components/wifi_sync/wifi_credential_syncable_service.h"
 #include "components/wifi_sync/wifi_credential_syncable_service_factory.h"
@@ -78,10 +85,50 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
+// Chrome implementation of SyncSessionsClient. Needs to be in a separate class
+// due to possible multiple inheritance issues, wherein ChromeSyncClient might
+// inherit from other interfaces with same methods.
+class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
+ public:
+  explicit SyncSessionsClientImpl(Profile* profile) {
+    window_delegates_getter_.reset(
+#if defined(OS_ANDROID)
+        // Android doesn't have multi-profile support, so no need to pass the
+        // profile in.
+        new browser_sync::SyncedWindowDelegatesGetterAndroid());
+#else
+        new browser_sync::BrowserSyncedWindowDelegatesGetter(profile));
+#endif
+  }
+  ~SyncSessionsClientImpl() override {}
+
+  // SyncSessionsClient implementation.
+  bool ShouldSyncURL(const GURL& url) const override {
+    if (url == GURL(chrome::kChromeUIHistoryURL)) {
+      // The history page is treated specially as we want it to trigger syncable
+      // events for UI purposes.
+      return true;
+    }
+    return url.is_valid() && !url.SchemeIs(content::kChromeUIScheme) &&
+           !url.SchemeIs(chrome::kChromeNativeScheme) && !url.SchemeIsFile();
+  }
+
+  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override {
+    return window_delegates_getter_.get();
+  }
+
+ private:
+  scoped_ptr<SyncedWindowDelegatesGetter> window_delegates_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
+};
+
 ChromeSyncClient::ChromeSyncClient(
     Profile* profile,
     scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory)
-    : profile_(profile), component_factory_(component_factory.Pass()) {}
+    : profile_(profile),
+      component_factory_(component_factory.Pass()),
+      sync_sessions_client_(new SyncSessionsClientImpl(profile)) {}
 ChromeSyncClient::~ChromeSyncClient() {
 }
 
@@ -154,6 +201,10 @@ BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
 scoped_refptr<syncer::ExtensionsActivity>
 ChromeSyncClient::GetExtensionsActivity() {
   return extensions_activity_monitor_.GetExtensionsActivity();
+}
+
+sync_sessions::SyncSessionsClient* ChromeSyncClient::GetSyncSessionsClient() {
+  return sync_sessions_client_.get();
 }
 
 base::WeakPtr<syncer::SyncableService>

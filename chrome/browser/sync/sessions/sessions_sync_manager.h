@@ -49,7 +49,6 @@ namespace browser_sync {
 
 class DataTypeErrorHandler;
 class SyncedTabDelegate;
-class SyncedWindowDelegate;
 class SyncedWindowDelegatesGetter;
 
 // An interface defining the ways in which local open tab events can interact
@@ -88,11 +87,10 @@ class SessionsSyncManager : public syncer::SyncableService,
                             public sync_driver::OpenTabsUIDelegate,
                             public LocalSessionEventHandler {
  public:
-  SessionsSyncManager(
-      Profile* profile,
-      sync_driver::LocalDeviceInfoProvider* local_device,
-      scoped_ptr<LocalSessionEventRouter> router,
-      scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter);
+  SessionsSyncManager(sync_sessions::SyncSessionsClient* sessions_client,
+                      Profile* profile,
+                      sync_driver::LocalDeviceInfoProvider* local_device,
+                      scoped_ptr<LocalSessionEventRouter> router);
   ~SessionsSyncManager() override;
 
   // syncer::SyncableService implementation.
@@ -305,6 +303,7 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Set |session_tab| from |tab_delegate| and |mtime|.
   static void SetSessionTabFromDelegate(
+      SyncedWindowDelegatesGetter* synced_window_getter,
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
       sessions::SessionTab* session_tab);
@@ -342,6 +341,9 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Validates the content of a SessionHeader protobuf.
   // Returns false if validation fails.
   static bool IsValidSessionHeader(const sync_pb::SessionHeader& header);
+
+  // The client of this sync sessions datatype.
+  sync_sessions::SyncSessionsClient* const sessions_client_;
 
   // Mapping of current open (local) tabs to their sync identifiers.
   TabLinksMap local_tab_map_;
@@ -386,7 +388,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   size_t stale_session_threshold_days_;
 
   scoped_ptr<LocalSessionEventRouter> local_event_router_;
-  scoped_ptr<SyncedWindowDelegatesGetter> synced_window_getter_;
+  SyncedWindowDelegatesGetter* synced_window_getter_;
 
   // Owns revisiting instrumentation logic for page visit events.
   PageRevisitBroadcaster page_revisit_broadcaster_;

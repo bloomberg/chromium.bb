@@ -31,6 +31,7 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
@@ -125,10 +126,9 @@ class RecentTabsSubMenuModelTest
                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
                       "device_id")) {
     manager_.reset(new browser_sync::SessionsSyncManager(
+        sync_service_.GetSyncClient()->GetSyncSessionsClient(),
         &testing_profile_, local_device_.get(),
-        scoped_ptr<browser_sync::LocalSessionEventRouter>(new DummyRouter()),
-        scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>(
-            new browser_sync::BrowserSyncedWindowDelegatesGetter())));
+        scoped_ptr<browser_sync::LocalSessionEventRouter>(new DummyRouter())));
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS,
         syncer::SyncDataList(),

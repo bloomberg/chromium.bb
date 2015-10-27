@@ -9,15 +9,22 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync_sessions/sync_sessions_client.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -33,12 +40,31 @@ using content::WebContents;
 
 namespace browser_sync {
 
+namespace {
+
+SyncedTabDelegate* GetSyncedTabDelegateFromWebContents(
+    content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  return tab ? tab->GetSyncedTabDelegate() : nullptr;
+#else   // !OS_ANDROID
+  SyncedTabDelegate* delegate =
+      TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+  return delegate;
+#endif  // OS_ANDROID
+}
+
+}  // namespace
+
 NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
-    Profile* profile, const syncer::SyncableService::StartSyncFlare& flare)
-        : handler_(NULL),
-          profile_(profile),
-          flare_(flare),
-          weak_ptr_factory_(this) {
+    Profile* profile,
+    sync_sessions::SyncSessionsClient* sessions_client,
+    const syncer::SyncableService::StartSyncFlare& flare)
+    : handler_(NULL),
+      profile_(profile),
+      sessions_client_(sessions_client),
+      flare_(flare),
+      weak_ptr_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -88,13 +114,16 @@ void NotificationServiceSessionsRouter::Observe(
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      if (Profile::FromBrowserContext(web_contents->GetBrowserContext()) !=
+          profile_)
+        return;
       SyncedTabDelegate* tab =
-          SyncedTabDelegate::ImplFromWebContents(web_contents);
-      if (!tab || tab->profile() != profile_)
+          GetSyncedTabDelegateFromWebContents(web_contents);
+      if (!tab)
         return;
       if (handler_)
         handler_->OnLocalTabModified(tab);
-      if (!tab->ShouldSync())
+      if (!tab->ShouldSync(sessions_client_))
         return;
       break;
     }
@@ -102,14 +131,18 @@ void NotificationServiceSessionsRouter::Observe(
     case content::NOTIFICATION_NAV_LIST_PRUNED:
     case content::NOTIFICATION_NAV_ENTRY_CHANGED:
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      SyncedTabDelegate* tab = SyncedTabDelegate::ImplFromWebContents(
-          content::Source<NavigationController>(source).ptr()->
-              GetWebContents());
-      if (!tab || tab->profile() != profile_)
+      WebContents* web_contents =
+          content::Source<NavigationController>(source).ptr()->GetWebContents();
+      if (Profile::FromBrowserContext(web_contents->GetBrowserContext()) !=
+          profile_)
+        return;
+      SyncedTabDelegate* tab =
+          GetSyncedTabDelegateFromWebContents(web_contents);
+      if (!tab)
         return;
       if (handler_)
         handler_->OnLocalTabModified(tab);
-      if (!tab->ShouldSync())
+      if (!tab->ShouldSync(sessions_client_))
         return;
       break;
     }
@@ -117,17 +150,20 @@ void NotificationServiceSessionsRouter::Observe(
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       extensions::TabHelper* extension_tab_helper =
           content::Source<extensions::TabHelper>(source).ptr();
-      if (extension_tab_helper->web_contents()->GetBrowserContext() !=
-              profile_) {
+      if (Profile::FromBrowserContext(
+              extension_tab_helper->web_contents()->GetBrowserContext()) !=
+          profile_) {
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        SyncedTabDelegate* tab = SyncedTabDelegate::ImplFromWebContents(
+        SyncedTabDelegate* tab = GetSyncedTabDelegateFromWebContents(
             extension_tab_helper->web_contents());
-        if (!tab || tab->profile() != profile_)
+        if (!tab)
           return;
         if (handler_)
           handler_->OnLocalTabModified(tab);
+        if (!tab->ShouldSync(sessions_client_))
+          return;
         break;
       }
       return;
@@ -146,12 +182,12 @@ void NotificationServiceSessionsRouter::Observe(
 
 void NotificationServiceSessionsRouter::OnNavigationBlocked(
     content::WebContents* web_contents) {
-  SyncedTabDelegate* tab =
-      SyncedTabDelegate::ImplFromWebContents(web_contents);
+  DCHECK_EQ(profile_,
+            Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  SyncedTabDelegate* tab = GetSyncedTabDelegateFromWebContents(web_contents);
   if (!tab || !handler_)
     return;
 
-  DCHECK(tab->profile() == profile_);
   handler_->OnLocalTabModified(tab);
 }
 

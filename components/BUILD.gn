@@ -318,7 +318,6 @@ test("components_unittests") {
     "//components/leveldb_proto:unit_tests",
     "//components/suggestions:unit_tests",
     "//components/omnibox/browser:unit_tests",
-    "//components/sessions:test_support",
   ]
 
   if (!is_ios) {

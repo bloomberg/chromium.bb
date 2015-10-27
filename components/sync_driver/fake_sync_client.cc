@@ -71,6 +71,10 @@ FakeSyncClient::GetExtensionsActivity() {
   return scoped_refptr<syncer::ExtensionsActivity>();
 }
 
+sync_sessions::SyncSessionsClient* FakeSyncClient::GetSyncSessionsClient() {
+  return nullptr;
+}
+
 base::WeakPtr<syncer::SyncableService>
 FakeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   return base::WeakPtr<syncer::SyncableService>();

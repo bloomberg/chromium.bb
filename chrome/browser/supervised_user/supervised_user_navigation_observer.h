@@ -11,6 +11,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class SupervisedUserService;
@@ -26,8 +27,8 @@ class SupervisedUserNavigationObserver
  public:
   ~SupervisedUserNavigationObserver() override;
 
-  const std::vector<const content::NavigationEntry*>*
-      blocked_navigations() const {
+  const std::vector<const sessions::SerializedNavigationEntry*>*
+  blocked_navigations() const {
     return &blocked_navigations_.get();
   }
 
@@ -63,7 +64,7 @@ class SupervisedUserNavigationObserver
   // Owned by SupervisedUserServiceFactory (lifetime of Profile).
   SupervisedUserService* supervised_user_service_;
 
-  ScopedVector<const content::NavigationEntry> blocked_navigations_;
+  ScopedVector<const sessions::SerializedNavigationEntry> blocked_navigations_;
 
   base::WeakPtrFactory<SupervisedUserNavigationObserver> weak_ptr_factory_;
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -277,9 +278,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
     signin->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    components_factory_.reset(new SyncApiComponentFactoryMock());
-    scoped_ptr<sync_driver::FakeSyncClient> sync_client(
-        new sync_driver::FakeSyncClient(components_factory_.get()));
+    scoped_ptr<SyncApiComponentFactoryMock> components_factory(
+        new SyncApiComponentFactoryMock());
+    components_factory_ = components_factory.get();
+    scoped_ptr<ChromeSyncClient> sync_client(
+        new ChromeSyncClient(profile_, components_factory.Pass()));
     service_.reset(new ProfileSyncService(
         sync_client.Pass(), profile_,
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
@@ -394,7 +397,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   SyncApiComponentFactoryMock* components_factory() {
-    return components_factory_.get();
+    return components_factory_;
   }
 
   void ClearBrowsingDataCallback(BrowsingDataRemover::Observer* observer,
@@ -424,7 +427,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   // The current component factory used by sync. May be null if the server
   // hasn't been created yet.
-  scoped_ptr<SyncApiComponentFactoryMock> components_factory_;
+  SyncApiComponentFactoryMock* components_factory_;
 };
 
 // Verify that the server URLs are sane.

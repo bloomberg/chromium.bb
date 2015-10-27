@@ -15,6 +15,7 @@
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 
@@ -85,7 +86,12 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetVirtualURL(url);
   entry->SetTimestamp(timestamp);
-  blocked_navigations_.push_back(entry.release());
+  scoped_ptr<sessions::SerializedNavigationEntry> serialized_entry(
+      new sessions::SerializedNavigationEntry());
+  *serialized_entry =
+      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
+          blocked_navigations_.size(), *entry);
+  blocked_navigations_.push_back(serialized_entry.release());
   supervised_user_service_->DidBlockNavigation(web_contents_);
 }
 

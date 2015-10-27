@@ -20,8 +20,6 @@ SyncedTabDelegateAndroid::SyncedTabDelegateAndroid(TabAndroid* tab_android)
     : web_contents_(nullptr),
       tab_android_(tab_android),
       tab_contents_delegate_(nullptr) {
-  SetSyncedWindowGetter(
-      make_scoped_ptr(new SyncedWindowDelegatesGetterAndroid()));
 }
 
 SyncedTabDelegateAndroid::~SyncedTabDelegateAndroid() {}
@@ -36,10 +34,6 @@ SessionID::id_type SyncedTabDelegateAndroid::GetSessionId() const {
 
 bool SyncedTabDelegateAndroid::IsBeingDestroyed() const {
   return tab_contents_delegate_->IsBeingDestroyed();
-}
-
-Profile* SyncedTabDelegateAndroid::profile() const {
-  return tab_contents_delegate_->profile();
 }
 
 std::string SyncedTabDelegateAndroid::GetExtensionAppId() const {
@@ -58,32 +52,26 @@ int SyncedTabDelegateAndroid::GetEntryCount() const {
   return tab_contents_delegate_->GetEntryCount();
 }
 
-int SyncedTabDelegateAndroid::GetPendingEntryIndex() const {
-  return tab_contents_delegate_->GetPendingEntryIndex();
+GURL SyncedTabDelegateAndroid::GetVirtualURLAtIndex(int i) const {
+  return tab_contents_delegate_->GetVirtualURLAtIndex(i);
 }
 
-NavigationEntry* SyncedTabDelegateAndroid::GetPendingEntry() const {
-  return tab_contents_delegate_->GetPendingEntry();
+GURL SyncedTabDelegateAndroid::GetFaviconURLAtIndex(int i) const {
+  return tab_contents_delegate_->GetFaviconURLAtIndex(i);
 }
 
-NavigationEntry* SyncedTabDelegateAndroid::GetEntryAtIndex(int i) const {
-  return tab_contents_delegate_->GetEntryAtIndex(i);
+ui::PageTransition SyncedTabDelegateAndroid::GetTransitionAtIndex(int i) const {
+  return tab_contents_delegate_->GetTransitionAtIndex(i);
 }
 
-NavigationEntry* SyncedTabDelegateAndroid::GetActiveEntry() const {
-  return tab_contents_delegate_->GetActiveEntry();
+void SyncedTabDelegateAndroid::GetSerializedNavigationAtIndex(
+    int i,
+    sessions::SerializedNavigationEntry* serialized_entry) const {
+  tab_contents_delegate_->GetSerializedNavigationAtIndex(i, serialized_entry);
 }
 
-bool SyncedTabDelegateAndroid::IsPinned() const {
-  return tab_contents_delegate_->IsPinned();
-}
-
-bool SyncedTabDelegateAndroid::HasWebContents() const {
-  return web_contents_ != NULL;
-}
-
-content::WebContents* SyncedTabDelegateAndroid::GetWebContents() const {
-  return web_contents_;
+bool SyncedTabDelegateAndroid::IsPlaceholderTab() const {
+  return web_contents_ == nullptr;
 }
 
 void SyncedTabDelegateAndroid::SetWebContents(
@@ -93,18 +81,17 @@ void SyncedTabDelegateAndroid::SetWebContents(
   // Store the TabContentsSyncedTabDelegate object that was created.
   tab_contents_delegate_ =
       TabContentsSyncedTabDelegate::FromWebContents(web_contents_);
-  // Tell it how to get SyncedWindowDelegates or some calls will fail.
-  tab_contents_delegate_->SetSyncedWindowGetter(
-      make_scoped_ptr(new SyncedWindowDelegatesGetterAndroid()));
 }
 
-void SyncedTabDelegateAndroid::ResetWebContents() { web_contents_ = NULL; }
+void SyncedTabDelegateAndroid::ResetWebContents() {
+  web_contents_ = nullptr;
+}
 
 bool SyncedTabDelegateAndroid::ProfileIsSupervised() const {
   return tab_contents_delegate_->ProfileIsSupervised();
 }
 
-const std::vector<const content::NavigationEntry*>*
+const std::vector<const sessions::SerializedNavigationEntry*>*
 SyncedTabDelegateAndroid::GetBlockedNavigations() const {
   return tab_contents_delegate_->GetBlockedNavigations();
 }
@@ -117,11 +104,9 @@ void SyncedTabDelegateAndroid::SetSyncId(int sync_id) {
   tab_android_->SetSyncId(sync_id);
 }
 
-// static
-SyncedTabDelegate* SyncedTabDelegate::ImplFromWebContents(
-    content::WebContents* web_contents) {
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  return tab ? tab->GetSyncedTabDelegate() : nullptr;
+bool SyncedTabDelegateAndroid::ShouldSync(
+    sync_sessions::SyncSessionsClient* sessions_client) {
+  return tab_contents_delegate_->ShouldSync(sessions_client);
 }
 
 }  // namespace browser_sync

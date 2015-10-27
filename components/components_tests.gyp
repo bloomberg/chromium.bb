@@ -1009,6 +1009,7 @@
         'components.gyp:suggestions',
         'components.gyp:sync_driver_test_support',
         'components.gyp:sync_sessions',
+        'components.gyp:sync_sessions_test_support',
         'components.gyp:syncable_prefs_test_support',
         'components.gyp:translate_core_browser',
         'components.gyp:translate_core_common',

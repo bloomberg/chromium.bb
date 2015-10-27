@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
@@ -183,6 +184,10 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
         TabEventHandler handler;
         browser_sync::NotificationServiceSessionsRouter router(
             test()->GetProfile(index),
+            ProfileSyncServiceFactory::GetInstance()
+                ->GetForProfile(test()->GetProfile(index))
+                ->GetSyncClient()
+                ->GetSyncSessionsClient(),
             syncer::SyncableService::StartSyncFlare());
         router.StartRoutingTo(&handler);
         content::RunMessageLoop();

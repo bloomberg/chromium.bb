@@ -7,7 +7,11 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sync_driver/glue/synced_window_delegate.h"
+#include "components/sync_driver/sessions/synced_window_delegates_getter.h"
+#include "components/sync_sessions/sync_sessions_client.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -25,6 +29,20 @@ using content::NavigationEntry;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabContentsSyncedTabDelegate);
 
+namespace {
+
+// Helper to access the correct NavigationEntry, accounting for pending entries.
+NavigationEntry* GetPossiblyPendingEntryAtIndex(
+    content::WebContents* web_contents,
+    int i) {
+  int pending_index = web_contents->GetController().GetPendingEntryIndex();
+  return (pending_index == i)
+             ? web_contents->GetController().GetPendingEntry()
+             : web_contents->GetController().GetEntryAtIndex(i);
+}
+
+}  // namespace
+
 TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate(
     content::WebContents* web_contents)
     : web_contents_(web_contents), sync_session_id_(0) {}
@@ -41,10 +59,6 @@ SessionID::id_type TabContentsSyncedTabDelegate::GetSessionId() const {
 
 bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
   return web_contents_->IsBeingDestroyed();
-}
-
-Profile* TabContentsSyncedTabDelegate::profile() const {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
@@ -69,27 +83,37 @@ int TabContentsSyncedTabDelegate::GetEntryCount() const {
   return web_contents_->GetController().GetEntryCount();
 }
 
-int TabContentsSyncedTabDelegate::GetPendingEntryIndex() const {
-  return web_contents_->GetController().GetPendingEntryIndex();
+GURL TabContentsSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
+  NavigationEntry* entry = GetPossiblyPendingEntryAtIndex(web_contents_, i);
+  return entry->GetVirtualURL();
 }
 
-NavigationEntry* TabContentsSyncedTabDelegate::GetPendingEntry() const {
-  return web_contents_->GetController().GetPendingEntry();
+GURL TabContentsSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
+  NavigationEntry* entry = GetPossiblyPendingEntryAtIndex(web_contents_, i);
+  return (entry->GetFavicon().valid ? entry->GetFavicon().url : GURL());
 }
 
-NavigationEntry* TabContentsSyncedTabDelegate::GetEntryAtIndex(int i) const {
-  return web_contents_->GetController().GetEntryAtIndex(i);
+ui::PageTransition TabContentsSyncedTabDelegate::GetTransitionAtIndex(
+    int i) const {
+  NavigationEntry* entry = GetPossiblyPendingEntryAtIndex(web_contents_, i);
+  return entry->GetTransitionType();
 }
 
-NavigationEntry* TabContentsSyncedTabDelegate::GetActiveEntry() const {
-  return web_contents_->GetController().GetVisibleEntry();
+void TabContentsSyncedTabDelegate::GetSerializedNavigationAtIndex(
+    int i,
+    sessions::SerializedNavigationEntry* serialized_entry) const {
+  NavigationEntry* entry = GetPossiblyPendingEntryAtIndex(web_contents_, i);
+  *serialized_entry =
+      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(i,
+                                                                        *entry);
 }
 
 bool TabContentsSyncedTabDelegate::ProfileIsSupervised() const {
-  return profile()->IsSupervised();
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+      ->IsSupervised();
 }
 
-const std::vector<const content::NavigationEntry*>*
+const std::vector<const sessions::SerializedNavigationEntry*>*
 TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver* navigation_observer =
@@ -102,17 +126,8 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #endif
 }
 
-bool TabContentsSyncedTabDelegate::IsPinned() const {
-  const browser_sync::SyncedWindowDelegate* window = GetSyncedWindowDelegate();
-
-  // We might not have a parent window, e.g. Developer Tools.
-  return window ? window->IsTabPinned(this) : false;
-}
-
-bool TabContentsSyncedTabDelegate::HasWebContents() const { return true; }
-
-content::WebContents* TabContentsSyncedTabDelegate::GetWebContents() const {
-  return web_contents_;
+bool TabContentsSyncedTabDelegate::IsPlaceholderTab() const {
+  return false;
 }
 
 int TabContentsSyncedTabDelegate::GetSyncId() const {
@@ -121,4 +136,29 @@ int TabContentsSyncedTabDelegate::GetSyncId() const {
 
 void TabContentsSyncedTabDelegate::SetSyncId(int sync_id) {
   sync_session_id_ = sync_id;
+}
+
+bool TabContentsSyncedTabDelegate::ShouldSync(
+    sync_sessions::SyncSessionsClient* sessions_client) {
+  if (sessions_client->GetSyncedWindowDelegatesGetter()->FindById(
+          GetWindowId()) == nullptr)
+    return false;
+
+  // Is there a valid NavigationEntry?
+  if (ProfileIsSupervised() && GetBlockedNavigations()->size() > 0)
+    return true;
+
+  if (IsInitialBlankNavigation())
+    return false;  // This deliberately ignores a new pending entry.
+
+  int entry_count = GetEntryCount();
+  for (int i = 0; i < entry_count; ++i) {
+    const GURL& virtual_url = GetVirtualURLAtIndex(i);
+    if (!virtual_url.is_valid())
+      continue;
+
+    if (sessions_client->ShouldSyncURL(virtual_url))
+      return true;
+  }
+  return false;
 }

@@ -18,6 +18,10 @@ namespace history {
 class HistoryService;
 }  // namespace history
 
+namespace sync_sessions {
+class SyncSessionsClient;
+}
+
 namespace browser_sync {
 
 class SessionsSyncManager;
@@ -28,6 +32,7 @@ class SessionsSyncManager;
 class PageRevisitBroadcaster {
  public:
   PageRevisitBroadcaster(SessionsSyncManager* sessions,
+                         sync_sessions::SyncSessionsClient* sessions_client,
                          history::HistoryService* history,
                          bookmarks::BookmarkModel* bookmarks);
   ~PageRevisitBroadcaster();
@@ -45,6 +50,9 @@ class PageRevisitBroadcaster {
   // particularly interested in and want to treat as first class values.
   static sync_sessions::PageVisitObserver::TransitionType ConvertTransitionEnum(
       const ui::PageTransition original);
+
+  // The client of this sync sessions datatype.
+  sync_sessions::SyncSessionsClient* const sessions_client_;
 
   ScopedVector<sync_sessions::PageVisitObserver> revisit_observers_;
 

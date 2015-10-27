@@ -11,6 +11,8 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 
+class Profile;
+
 namespace browser_sync {
 
 class SyncedWindowDelegate;
@@ -18,7 +20,7 @@ class SyncedWindowDelegate;
 // This class defines how to access SyncedWindowDelegates on desktop.
 class BrowserSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
  public:
-  BrowserSyncedWindowDelegatesGetter();
+  explicit BrowserSyncedWindowDelegatesGetter(Profile* profile);
   ~BrowserSyncedWindowDelegatesGetter() override;
 
   // SyncedWindowDelegatesGetter implementation
@@ -26,6 +28,8 @@ class BrowserSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   const SyncedWindowDelegate* FindById(SessionID::id_type id) override;
 
  private:
+  Profile* const profile_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSyncedWindowDelegatesGetter);
 };
 

@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -25,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
+#include "components/sync_driver/sync_client.h"
 #include "grit/theme_resources.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -73,12 +75,11 @@ class WrenchMenuControllerTest
     fake_model_.reset(new MockAppMenuModel);
 
     manager_.reset(new browser_sync::SessionsSyncManager(
-        profile(),
-        local_device_.get(),
-        scoped_ptr<browser_sync::LocalSessionEventRouter>(
-            new DummyRouter()),
-        scoped_ptr<browser_sync::SyncedWindowDelegatesGetter>(
-            new browser_sync::BrowserSyncedWindowDelegatesGetter())));
+        ProfileSyncServiceFactory::GetForProfile(profile())
+            ->GetSyncClient()
+            ->GetSyncSessionsClient(),
+        profile(), local_device_.get(),
+        scoped_ptr<browser_sync::LocalSessionEventRouter>(new DummyRouter())));
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS,
         syncer::SyncDataList(),

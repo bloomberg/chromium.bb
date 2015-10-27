@@ -20,6 +20,10 @@ namespace content {
 class WebContents;
 }
 
+namespace sync_sessions {
+class SyncSessionsClient;
+}
+
 namespace browser_sync {
 
 // A SessionsSyncManager::LocalEventRouter that drives session sync via
@@ -30,6 +34,7 @@ class NotificationServiceSessionsRouter
  public:
   NotificationServiceSessionsRouter(
       Profile* profile,
+      sync_sessions::SyncSessionsClient* sessions_client_,
       const syncer::SyncableService::StartSyncFlare& flare);
   ~NotificationServiceSessionsRouter() override;
 
@@ -62,6 +67,7 @@ class NotificationServiceSessionsRouter
   LocalSessionEventHandler* handler_;
   content::NotificationRegistrar registrar_;
   Profile* const profile_;
+  sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
 
   scoped_ptr<base::CallbackList<void(const std::set<GURL>&,

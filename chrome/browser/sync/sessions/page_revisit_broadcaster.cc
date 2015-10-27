@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/sync/glue/synced_session_util.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
@@ -17,6 +16,7 @@
 #include "components/sync_sessions/revisit/bookmarks_page_revisit_observer.h"
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 #include "components/sync_sessions/revisit/typed_url_page_revisit_observer.h"
+#include "components/sync_sessions/sync_sessions_client.h"
 
 namespace browser_sync {
 
@@ -45,8 +45,10 @@ class SessionsSyncManagerWrapper
 
 PageRevisitBroadcaster::PageRevisitBroadcaster(
     SessionsSyncManager* sessions,
+    sync_sessions::SyncSessionsClient* sessions_client,
     history::HistoryService* history,
-    bookmarks::BookmarkModel* bookmarks) {
+    bookmarks::BookmarkModel* bookmarks)
+    : sessions_client_(sessions_client) {
   const std::string group_name =
       base::FieldTrialList::FindFullName("PageRevisitInstrumentation");
   bool shouldInstrument = group_name == "Enabled";
@@ -69,7 +71,7 @@ PageRevisitBroadcaster::~PageRevisitBroadcaster() {}
 
 void PageRevisitBroadcaster::OnPageVisit(const GURL& url,
                                          const ui::PageTransition transition) {
-  if (ShouldSyncURL(url)) {
+  if (sessions_client_->ShouldSyncURL(url)) {
     sync_sessions::PageVisitObserver::TransitionType converted(
         ConvertTransitionEnum(transition));
     for (auto* observer : revisit_observers_) {

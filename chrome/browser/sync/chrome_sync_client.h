@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 #define CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 
+#include "base/macros.h"
 #include "components/sync_driver/sync_client.h"
 
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
@@ -40,6 +41,7 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
+  sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
@@ -58,6 +60,8 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
+  scoped_ptr<sync_sessions::SyncSessionsClient> sync_sessions_client_;
+
   // TODO(zea): this is a member only because Typed URLs needs access to
   // the UserShare and Cryptographer outside of the UI thread. Remove this
   // once that's no longer the case.
@@ -66,6 +70,8 @@ class ChromeSyncClient : public sync_driver::SyncClient {
 
   // Generates and monitors the ExtensionsActivity object used by sync.
   ExtensionsActivityMonitor extensions_activity_monitor_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeSyncClient);
 };
 
 }  // namespace browser_sync

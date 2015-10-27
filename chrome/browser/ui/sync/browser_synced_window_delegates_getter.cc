@@ -11,15 +11,20 @@
 
 namespace browser_sync {
 
-BrowserSyncedWindowDelegatesGetter::BrowserSyncedWindowDelegatesGetter() {}
+BrowserSyncedWindowDelegatesGetter::BrowserSyncedWindowDelegatesGetter(
+    Profile* profile)
+    : profile_(profile) {}
 BrowserSyncedWindowDelegatesGetter::~BrowserSyncedWindowDelegatesGetter() {}
 
 std::set<const SyncedWindowDelegate*>
 BrowserSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
   std::set<const SyncedWindowDelegate*> synced_window_delegates;
   // Add all the browser windows.
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->profile() != profile_)
+      continue;
     synced_window_delegates.insert(it->synced_window_delegate());
+  }
   return synced_window_delegates;
 }
 

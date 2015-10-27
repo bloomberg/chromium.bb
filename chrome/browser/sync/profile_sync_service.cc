@@ -40,7 +40,11 @@
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/sync_type_preference_provider.h"
-#include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -96,7 +100,6 @@
 #include "ui/base/l10n/time_format.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
 #include "sync/internal_api/public/read_transaction.h"
 #endif
 
@@ -263,8 +266,8 @@ ProfileSyncService::ProfileSyncService(
   syncer::SyncableService::StartSyncFlare flare(
       sync_start_util::GetFlareForSyncableService(profile->GetPath()));
   scoped_ptr<browser_sync::LocalSessionEventRouter> router(
-      new NotificationServiceSessionsRouter(profile, flare));
-
+      new NotificationServiceSessionsRouter(
+          profile, sync_client_->GetSyncSessionsClient(), flare));
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
   sync_stopped_reporter_.reset(
@@ -273,15 +276,9 @@ ProfileSyncService::ProfileSyncService(
               local_device_->GetSyncUserAgent(),
               profile_->GetRequestContext(),
               browser_sync::SyncStoppedReporter::ResultCallback()));
-  scoped_ptr<browser_sync::SyncedWindowDelegatesGetter> synced_window_getter(
-#if defined(OS_ANDROID)
-      new browser_sync::SyncedWindowDelegatesGetterAndroid());
-#else
-      new browser_sync::BrowserSyncedWindowDelegatesGetter());
-#endif
   sessions_sync_manager_.reset(
-      new SessionsSyncManager(profile, local_device_.get(), router.Pass(),
-                              synced_window_getter.Pass()));
+      new SessionsSyncManager(sync_client_->GetSyncSessionsClient(), profile,
+                              local_device_.get(), router.Pass()));
   device_info_sync_service_.reset(
       new DeviceInfoSyncService(local_device_.get()));
 
