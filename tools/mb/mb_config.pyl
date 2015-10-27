@@ -12,6 +12,7 @@
     'android_cast_gyp_debug_static_bot': ['android', 'cast', 'gyp', 'debug_static_bot'],
     'android_clang_asan_gyp_debug_bot': ['android', 'clang', 'asan', 'gyp', 'debug_bot'],
     'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
+    'android_aura_gn_debug_bot': ['android', 'gn', 'debug_bot', 'aura'],
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'android_gyp_debug_bot': ['android', 'gyp', 'debug_bot'],
@@ -131,6 +132,11 @@
     'asan': {
       'gn_args': 'is_asan=true',
       'gyp_defines': 'asan=1',
+    },
+
+    'aura': {
+      'gn_args': 'use_aura=true',
+      'gyp_defines': '# aura not supported on gyp',
     },
 
     'cast': {
@@ -318,6 +324,10 @@
   'masters': {
     'chrome': {
       'precise64': 'gyp_official',
+    },
+    'chromium.android': {
+      'Android GN (dbg)': 'android_gn_debug_bot',
+      'Android Aura GN (dbg)': 'android_aura_gn_debug_bot',
     },
     'chromium.chrome': {
       'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
