@@ -1,5 +1,8 @@
 CONSOLE WARNING: line 9: dummy log entry to avoid an empty -expected.txt in virtual/
 This is a testharness.js-based test.
-FAIL HTMLMediaElement set session Failed to construct 'MediaSession': Missing platform implementation.
+PASS Setup 
+FAIL Set HTMLMediaElement session when networkState is NETWORK_EMPTY Failed to construct 'MediaSession': Missing platform implementation.
+FAIL Set HTMLMediaElement session when networkState is NETWORK_NO_SOURCE Failed to construct 'MediaSession': Missing platform implementation.
+FAIL Set HTMLMediaElement session during or after load assert_throws: function "function () { mediaElement.session = new MediaSession(); }" threw object "NotSupportedError: Failed to construct 'MediaSession': Mi..." that is not a DOMException InvalidStateError: property "code" is equal to 9, expected 11
 Harness: the test ran to completion.
 

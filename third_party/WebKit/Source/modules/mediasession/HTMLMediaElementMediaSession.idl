@@ -8,5 +8,5 @@
     TypeChecking=Interface,
     RuntimeEnabled=MediaSession,
 ] partial interface HTMLMediaElement {
-    attribute MediaSession? session;
+    [RaisesException=Setter] attribute MediaSession? session;
 };

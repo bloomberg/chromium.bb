@@ -7,11 +7,14 @@
       assert_true(!window.internals || window.internals.runtimeFlags.mediaSessionEnabled,
           "Run either manually by passing the MediaSession flag or as part of the virtual mediasession testsuite.");
       console.warn("dummy log entry to avoid an empty -expected.txt in virtual/");
+  }, "Setup");
 
+  test(function() {
       var mediaElement = document.createElement('audio');
       assert_true(mediaElement instanceof HTMLMediaElement);
 
       var mediaSession = new MediaSession();
+      assert_equals(mediaElement.networkState, HTMLMediaElement.NETWORK_EMPTY);
       mediaElement.session = mediaSession;
       assert_equals(mediaElement.session, mediaSession);
 
@@ -22,5 +25,25 @@
 
       mediaElement.session = null;
       assert_equals(mediaElement.session, null);
-  });
+  }, "Set HTMLMediaElement session when networkState is NETWORK_EMPTY");
+
+  test(function() {
+      var mediaElement = document.createElement('audio');
+      var mediaSession = new MediaSession();
+      mediaElement.appendChild(document.createElement('source'));
+      assert_equals(mediaElement.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
+      mediaElement.session = mediaSession;
+      assert_equals(mediaElement.session, mediaSession);
+  }, "Set HTMLMediaElement session when networkState is NETWORK_NO_SOURCE");
+
+  async_test(function(t) {
+      var mediaElement = document.createElement('audio');
+      mediaElement.onloadeddata = t.step_func(function () {
+          assert_true(mediaElement.networkState == HTMLMediaElement.NETWORK_IDLE
+                      || mediaElement.networkState == HTMLMediaElement.NETWORK_LOADING);
+          assert_throws("InvalidStateError", function() { mediaElement.session = new MediaSession(); });
+          t.done();
+      });
+      mediaElement.src = '../resources/test-live.webm';
+  }, "Set HTMLMediaElement session during or after load");
 </script>

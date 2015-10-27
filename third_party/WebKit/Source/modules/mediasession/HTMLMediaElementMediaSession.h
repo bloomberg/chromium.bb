@@ -20,7 +20,7 @@ class HTMLMediaElementMediaSession final : public NoBaseWillBeGarbageCollected<H
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLMediaElementMediaSession);
 public:
     static MediaSession* session(HTMLMediaElement&);
-    static void setSession(HTMLMediaElement&, MediaSession*);
+    static void setSession(HTMLMediaElement&, MediaSession*, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 
