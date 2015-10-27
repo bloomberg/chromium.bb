@@ -1,0 +1,7 @@
+---
+##
+# Configuration file for the Google Play services related scripts.
+#
+
+# Mirrors @integer/google_play_services_version from the library.
+version_number: 8115000
