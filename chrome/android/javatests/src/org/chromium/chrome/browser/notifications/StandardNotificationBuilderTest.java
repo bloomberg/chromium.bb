@@ -23,6 +23,7 @@ import org.chromium.chrome.R;
  */
 // TODO(peter): remove @SuppressLint once crbug.com/501900 is fixed.
 @SuppressLint("NewApi")
+@SuppressWarnings("deprecation") // For |icon| and |largeIcon| properties of Notification.
 public class StandardNotificationBuilderTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Browser", "Notifications"})

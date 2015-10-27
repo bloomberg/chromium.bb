@@ -24,6 +24,7 @@ import org.chromium.chrome.R;
 /**
  * Instrumentation unit tests for CustomNotificationBuilder.
  */
+@SuppressWarnings("deprecation") // For the |icon| and |largeIcon| properties of Notification.
 public class CustomNotificationBuilderTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Browser", "Notifications"})
