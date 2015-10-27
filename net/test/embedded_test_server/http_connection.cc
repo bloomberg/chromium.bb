@@ -6,6 +6,7 @@
 
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 namespace net {
 namespace test_server {
@@ -19,8 +20,9 @@ HttpConnection::HttpConnection(scoped_ptr<StreamSocket> socket,
 HttpConnection::~HttpConnection() {
 }
 
-void HttpConnection::SendResponseBytes(const std::string& response_string,
-                                       const SendCompleteCallback& callback) {
+void HttpConnection::SendResponse(scoped_ptr<HttpResponse> response,
+                                  const base::Closure& callback) {
+  const std::string response_string = response->ToResponseString();
   if (response_string.length() > 0) {
     scoped_refptr<DrainableIOBuffer> write_buf(new DrainableIOBuffer(
         new StringIOBuffer(response_string), response_string.length()));
@@ -40,8 +42,6 @@ void HttpConnection::SendInternal(const base::Closure& callback,
     if (rv == ERR_IO_PENDING)
       return;
 
-    if (rv < 0)
-      break;
     buf->DidConsume(rv);
   }
 
@@ -53,10 +53,6 @@ void HttpConnection::SendInternal(const base::Closure& callback,
 void HttpConnection::OnSendInternalDone(const base::Closure& callback,
                                         scoped_refptr<DrainableIOBuffer> buf,
                                         int rv) {
-  if (rv < 0) {
-    callback.Run();
-    return;
-  }
   buf->DidConsume(rv);
   SendInternal(callback, buf);
 }
