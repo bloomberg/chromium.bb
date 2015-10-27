@@ -322,6 +322,8 @@
         'browser/net/retryable_url_fetcher.mm',
         'browser/open_from_clipboard/create_clipboard_recent_content.h',
         'browser/open_from_clipboard/create_clipboard_recent_content.mm',
+        'browser/passwords/ios_chrome_password_store_factory.cc',
+        'browser/passwords/ios_chrome_password_store_factory.h',
         'browser/passwords/password_generation_utils.h',
         'browser/passwords/password_generation_utils.mm',
         'browser/pref_names.cc',
