@@ -24,6 +24,8 @@
       'trace_event/memory_profiler_allocation_register_posix.cc',
       'trace_event/memory_profiler_allocation_register_win.cc',
       'trace_event/memory_profiler_allocation_register.h',
+      'trace_event/memory_profiler_heap_dump_writer.cc',
+      'trace_event/memory_profiler_heap_dump_writer.h',
       'trace_event/process_memory_dump.cc',
       'trace_event/process_memory_dump.h',
       'trace_event/process_memory_maps.cc',

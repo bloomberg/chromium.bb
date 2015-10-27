@@ -5,7 +5,9 @@
 #include "base/trace_event/memory_profiler_allocation_context.h"
 
 #include <algorithm>
+#include <cstring>
 
+#include "base/hash.h"
 #include "base/threading/thread_local_storage.h"
 
 namespace base {
@@ -20,22 +22,10 @@ ThreadLocalStorage::StaticSlot g_tls_alloc_ctx_tracker = TLS_INITIALIZER;
 AllocationStack::AllocationStack() {}
 AllocationStack::~AllocationStack() {}
 
-// This function is added to the TLS slot to clean up the instance when the
-// thread exits.
-void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
-  delete static_cast<AllocationContextTracker*>(alloc_ctx_tracker);
-}
-
-AllocationContextTracker* AllocationContextTracker::GetThreadLocalTracker() {
-  auto tracker =
-      static_cast<AllocationContextTracker*>(g_tls_alloc_ctx_tracker.Get());
-
-  if (!tracker) {
-    tracker = new AllocationContextTracker();
-    g_tls_alloc_ctx_tracker.Set(tracker);
-  }
-
-  return tracker;
+bool operator==(const Backtrace& lhs, const Backtrace& rhs) {
+  // Pointer equality of the stack frames is assumed, so instead of doing a deep
+  // string comparison on all of the frames, a |memcmp| suffices.
+  return std::memcmp(lhs.frames, rhs.frames, sizeof(lhs.frames)) == 0;
 }
 
 StackFrameDeduplicator::FrameNode::FrameNode(StackFrame frame,
@@ -46,7 +36,7 @@ StackFrameDeduplicator::FrameNode::~FrameNode() {}
 StackFrameDeduplicator::StackFrameDeduplicator() {}
 StackFrameDeduplicator::~StackFrameDeduplicator() {}
 
-int StackFrameDeduplicator::Insert(const AllocationContext::Backtrace& bt) {
+int StackFrameDeduplicator::Insert(const Backtrace& bt) {
   int frame_index = -1;
   std::map<StackFrame, int>* nodes = &roots_;
 
@@ -79,6 +69,24 @@ int StackFrameDeduplicator::Insert(const AllocationContext::Backtrace& bt) {
   }
 
   return frame_index;
+}
+
+// This function is added to the TLS slot to clean up the instance when the
+// thread exits.
+void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
+  delete static_cast<AllocationContextTracker*>(alloc_ctx_tracker);
+}
+
+AllocationContextTracker* AllocationContextTracker::GetThreadLocalTracker() {
+  auto tracker =
+      static_cast<AllocationContextTracker*>(g_tls_alloc_ctx_tracker.Get());
+
+  if (!tracker) {
+    tracker = new AllocationContextTracker();
+    g_tls_alloc_ctx_tracker.Set(tracker);
+  }
+
+  return tracker;
 }
 
 AllocationContextTracker::AllocationContextTracker() {}
@@ -173,3 +181,13 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
 
 }  // namespace trace_event
 }  // namespace base
+
+namespace BASE_HASH_NAMESPACE {
+using base::trace_event::Backtrace;
+
+size_t hash<Backtrace>::operator()(const Backtrace& backtrace) const {
+  return base::SuperFastHash(reinterpret_cast<const char*>(backtrace.frames),
+                             sizeof(backtrace.frames));
+}
+
+}  // BASE_HASH_NAMESPACE

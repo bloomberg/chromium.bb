@@ -24,6 +24,8 @@ source_set("trace_event") {
     "memory_profiler_allocation_register.h",
     "memory_profiler_allocation_register_posix.cc",
     "memory_profiler_allocation_register_win.cc",
+    "memory_profiler_heap_dump_writer.cc",
+    "memory_profiler_heap_dump_writer.h",
     "process_memory_dump.cc",
     "process_memory_dump.h",
     "process_memory_maps.cc",

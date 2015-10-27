@@ -231,7 +231,7 @@ TEST_F(AllocationContextTest, BacktraceTakesTop) {
 }
 
 TEST_F(StackFrameDeduplicatorTest, SingleBacktrace) {
-  AllocationContext::Backtrace bt = {
+  Backtrace bt = {
       {kBrowserMain, kCreateWidget, kMalloc, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   // The call tree should look like this (index in brackets).
@@ -260,10 +260,8 @@ TEST_F(StackFrameDeduplicatorTest, SingleBacktrace) {
 // frames). Also verify that frames with the same name but a different caller
 // are represented as distinct nodes.
 TEST_F(StackFrameDeduplicatorTest, MultipleRoots) {
-  AllocationContext::Backtrace bt0 = {
-      {kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-  AllocationContext::Backtrace bt1 = {
-      {kRendererMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  Backtrace bt0 = {{kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  Backtrace bt1 = {{kRendererMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   // The call tree should look like this (index in brackets).
   //
@@ -295,10 +293,8 @@ TEST_F(StackFrameDeduplicatorTest, MultipleRoots) {
 }
 
 TEST_F(StackFrameDeduplicatorTest, Deduplication) {
-  AllocationContext::Backtrace bt0 = {
-      {kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-  AllocationContext::Backtrace bt1 = {
-      {kBrowserMain, kInitialize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  Backtrace bt0 = {{kBrowserMain, kCreateWidget, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  Backtrace bt1 = {{kBrowserMain, kInitialize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   // The call tree should look like this (index in brackets).
   //

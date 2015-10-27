@@ -69,24 +69,15 @@ class BASE_EXPORT AllocationStack {
 //
 // See the design doc (https://goo.gl/4s7v7b) for more details.
 
-// The allocation context is context metadata that is kept for every allocation
-// when heap profiling is enabled. To simplify memory management for
-// bookkeeping, this struct has a fixed size. All |const char*|s here
-// must have static lifetime.
-struct BASE_EXPORT AllocationContext {
-  struct Backtrace {
-    // Unused backtrace frames are filled with nullptr frames. If the stack is
-    // higher than what can be stored here, the bottom frames are stored. Based
-    // on the data above, a depth of 12 captures the full stack in the vast
-    // majority of the cases.
-    StackFrame frames[12];
-  } backtrace;
-
-  // There is room for two arbitrary context fields, which can be set by the
-  // |TRACE_ALLOCATION_CONTEXT| macro. A nullptr key indicates that the field is
-  // unused.
-  std::pair<const char*, const char*> fields[2];
+struct BASE_EXPORT Backtrace {
+  // Unused backtrace frames are filled with nullptr frames. If the stack is
+  // higher than what can be stored here, the bottom frames are stored. Based
+  // on the data above, a depth of 12 captures the full stack in the vast
+  // majority of the cases.
+  StackFrame frames[12];
 };
+
+bool BASE_EXPORT operator==(const Backtrace& lhs, const Backtrace& rhs);
 
 // A data structure that allows grouping a set of backtraces in a space-
 // efficient manner by creating a call tree and writing it as a set of (node,
@@ -117,10 +108,9 @@ class BASE_EXPORT StackFrameDeduplicator {
   StackFrameDeduplicator();
   ~StackFrameDeduplicator();
 
-  // Inserts a backtrace and returns the index of its leaf node in the range
-  // defined by |begin| and |end|. I.e. if this returns |n|, the node is
-  // |begin() + n|. Returns -1 if the backtrace is empty.
-  int Insert(const AllocationContext::Backtrace& bt);
+  // Inserts a backtrace and returns the index of its leaf node in |frames_|.
+  // Returns -1 if the backtrace is empty.
+  int Insert(const Backtrace& bt);
 
   // Iterators over the frame nodes in the call tree.
   ConstIterator begin() const { return frames_.begin(); }
@@ -131,6 +121,19 @@ class BASE_EXPORT StackFrameDeduplicator {
   std::vector<FrameNode> frames_;
 
   DISALLOW_COPY_AND_ASSIGN(StackFrameDeduplicator);
+};
+
+// The |AllocationContext| is context metadata that is kept for every allocation
+// when heap profiling is enabled. To simplify memory management for
+// bookkeeping, this struct has a fixed size. All |const char*|s here
+// must have static lifetime.
+struct BASE_EXPORT AllocationContext {
+  Backtrace backtrace;
+
+  // There is room for two arbitrary context fields, which can be set by the
+  // |TRACE_ALLOCATION_CONTEXT| macro. A nullptr key indicates that the field is
+  // unused.
+  std::pair<const char*, const char*> fields[2];
 };
 
 // The allocation context tracker keeps track of thread-local context for heap
@@ -196,5 +199,14 @@ class BASE_EXPORT AllocationContextTracker {
 
 }  // namespace trace_event
 }  // namespace base
+
+namespace BASE_HASH_NAMESPACE {
+
+template <>
+struct hash<base::trace_event::Backtrace> {
+  size_t operator()(const base::trace_event::Backtrace& backtrace) const;
+};
+
+}  // BASE_HASH_NAMESPACE
 
 #endif  // BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_CONTEXT_H_
