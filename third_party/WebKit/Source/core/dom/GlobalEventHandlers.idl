@@ -80,14 +80,6 @@
     attribute EventHandler onpause;
     attribute EventHandler onplay;
     attribute EventHandler onplaying;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointercancel;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerdown;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerenter;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerleave;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointermove;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerout;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerover;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerup;
     attribute EventHandler onprogress;
     attribute EventHandler onratechange;
     attribute EventHandler onreset;
@@ -105,4 +97,15 @@
     attribute EventHandler ontoggle;
     attribute EventHandler onvolumechange;
     attribute EventHandler onwaiting;
+
+    // Pointer Events
+    // https://w3c.github.io/pointerevents/#extensions-to-the-globaleventhandlers-interface
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerdown;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointermove;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerup;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointercancel;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerover;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerout;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerenter;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerleave;
 };
