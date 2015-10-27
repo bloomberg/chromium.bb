@@ -26,6 +26,10 @@ class SelectedKeywordView : public IconLabelBubbleView {
                       Profile* profile);
   ~SelectedKeywordView() override;
 
+  // Resets the icon for this chip to its default (it may have been changed
+  // for an extension).
+  void ResetImage();
+
   // IconLabelBubbleView:
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;

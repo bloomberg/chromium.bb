@@ -12,16 +12,21 @@
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/theme_provider.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/painter.h"
 
 SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          Profile* profile)
-    : IconLabelBubbleView(IDR_KEYWORD_SEARCH_MAGNIFIER,
+    : IconLabelBubbleView(0,
                           font_list,
                           text_color,
                           parent_background_color,
@@ -45,6 +50,17 @@ SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
 }
 
 SelectedKeywordView::~SelectedKeywordView() {
+}
+
+void SelectedKeywordView::ResetImage() {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SkColor link_color =
+        GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
+    SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::KEYWORD_SEARCH, 16,
+                                   link_color));
+  } else {
+    SetImage(*GetThemeProvider()->GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
+  }
 }
 
 gfx::Size SelectedKeywordView::GetPreferredSize() const {

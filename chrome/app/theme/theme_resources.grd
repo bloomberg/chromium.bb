@@ -409,8 +409,8 @@
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT_MENU" file="common/input_alert_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_GOOD" file="common/input_good.png" />
-      <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="common/keyword_search_magnifier.png" />
       <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="legacy/keyword_search_magnifier.png" />
         <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="legacy/favicon_laptop.png" />
         <structure type="chrome_scaled_image" name="IDR_PHONE_FAVICON" file="legacy/favicon_phone.png" />
         <structure type="chrome_scaled_image" name="IDR_TABLET_FAVICON" file="legacy/favicon_tablet.png" />
