@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -38,8 +39,10 @@ bool ShouldAddPage(const GURL& url) {
     return false;
 
   if (url.SchemeIs(content::kChromeUIScheme)) {
-    if (url.host() == chrome::kChromeUISettingsHost)
+    if (url.host() == chrome::kChromeUISettingsHost ||
+        url.host() == chrome::kChromeUISettingsFrameHost) {
       return false;
+    }
 
     // For a settings page, the path will start with "/settings" not "settings"
     // so find() will return 1, not 0.
@@ -181,12 +184,12 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
   while (RowCount())
     RemoveWithoutNotification(0);
 
-  // And add all tabs for all open browsers with our profile.
+  // Add tabs from appropriate browser windows.
   int add_index = 0;
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
-    if (browser->profile() != profile_)
-      continue;  // Skip incognito browsers.
+    if (!ShouldIncludeBrowser(browser))
+      continue;
 
     for (int tab_index = 0;
          tab_index < browser->tab_strip_model()->count();
@@ -225,6 +228,18 @@ base::string16 CustomHomePagesTableModel::GetTooltip(int row) {
 
 void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
+}
+
+bool CustomHomePagesTableModel::ShouldIncludeBrowser(Browser* browser) {
+  // Do not include incognito browsers.
+  if (browser->profile() != profile_)
+    return false;
+  // Do not include the Settings window.
+  if (chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(
+          browser)) {
+    return false;
+  }
+  return true;
 }
 
 void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
