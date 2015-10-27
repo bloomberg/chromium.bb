@@ -103,7 +103,7 @@ void HTMLFieldSetElement::childrenChanged(const ChildrenChange& change)
 
 bool HTMLFieldSetElement::supportsFocus() const
 {
-    return HTMLElement::supportsFocus();
+    return HTMLElement::supportsFocus() && !isDisabledFormControl();
 }
 
 const AtomicString& HTMLFieldSetElement::formControlType() const
