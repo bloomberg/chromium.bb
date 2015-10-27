@@ -19,7 +19,7 @@ public class ExternalDataUseObserver {
     /**
      * Pointer to the native ExternalDataUseObserver object.
      */
-    protected long mNativeExternalDataUseObserver;
+    private long mNativeExternalDataUseObserver;
 
     @CalledByNative
     private static ExternalDataUseObserver create(Context context, long nativePtr) {
@@ -54,19 +54,65 @@ public class ExternalDataUseObserver {
         return false;
     }
 
+    /*
+     * {@link #fetchMatchingRulesCallback}  reports the result of {@link #fetchMatchingRules} to
+     * the native.
+     * @param appPackageName package name of the app that should be matched.
+     * @domainPathRegex regex in RE2 syntax that is used for matching URLs.
+     * @param label opaque label that must be applied to the data use reports, and must uniquely
+     * identify the matching rule. Each element in {@link #label} must have non-zero length.
+     * The three vectors are should have equal length. All three vectors may be empty which
+     * implies that no matching rules are active.
+     */
+    protected void fetchMatchingRulesCallback(
+            String[] appPackageName, String[] domainPathRegEx, String[] label) {
+        // Check if native object is destroyed. This may happen at the time of Chromium shutdown.
+        if (mNativeExternalDataUseObserver == 0) {
+            return;
+        }
+        nativeFetchMatchingRulesCallback(
+                mNativeExternalDataUseObserver, appPackageName, domainPathRegEx, label);
+    }
+
     /**
-     * Submits a data use report asynchronously.
-     * @param tag tag of the report.
+     * Asynchronously reports data use to the external observer.
+     * @param label the label provided by {@link #ExternalDataUseObserver} for the matching rule.
+     * “ChromeTab” in case traffic was performed in a Chromium tab, and “ChromePlate” in case it was
+     * performed within a ChromePlate.
+     * @param networkType type of the network on which the traffic was exchanged. This integer value
+     * must map to NetworkChangeNotifier.ConnectionType.
+     * @param mccMnc MCCMNC of the network on which the traffic was exchanged.
+     * @param startTimeInMillis start time of the report in milliseconds since the Epoch (January
+     * 1st 1970, 00:00:00.000).
+     * @param endTimeInMillis end time of the report in milliseconds since the Epoch (January 1st
+     * 1970, 00:00:00.000).
      * @param bytesDownloaded number of bytes downloaded by Chromium.
      * @param bytesUploaded number of bytes uploaded by Chromium.
      * The result of this request is returned asynchronously via
-     * {@link #nativeOnDataUseCallback}. A new report should be submitted only after the result
-     * has been returned via {@link #nativeOnDataUseCallback}.
+     * {@link #nativeOnReportDataUseDone}. A new report should be submitted only after the
+     * result has been returned via {@link #nativeOnReportDataUseDone}.
      */
     @CalledByNative
-    protected void submitDataUseReport(String tag, long bytesDownloaded, long bytesUploaded) {}
+    protected void reportDataUse(String label, int networkType, String mccMnc,
+            long startTimeInMillis, long endTimeInMillis, long bytesDownloaded,
+            long bytesUploaded) {}
 
-    public native void nativeFetchMatchingRulesCallback(long nativeExternalDataUseObserver);
+    /*
+     * {@link #onReportDataUseDone}  reports the result of {@link #reportDataUse} to
+     * the native.
+     * @param success true if the data report was sucessfully submitted to the external observer.
+     */
+    protected void onReportDataUseDone(boolean success) {
+        // Check if native object is destroyed.  This may happen at the time of Chromium shutdown.
+        if (mNativeExternalDataUseObserver == 0) {
+            return;
+        }
+        nativeOnReportDataUseDone(mNativeExternalDataUseObserver, success);
+    }
 
-    public native void nativeSubmitDataUseReportCallback(long nativeExternalDataUseObserver);
+    public native void nativeFetchMatchingRulesCallback(long nativeExternalDataUseObserver,
+            String[] appPackageName, String[] domainPathRegEx, String[] label);
+
+    public native void nativeOnReportDataUseDone(
+            long nativeExternalDataUseObserver, boolean success);
 }
