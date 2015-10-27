@@ -509,42 +509,46 @@ void BackgroundDownloader::OnDownloading() {
     return;
   }
 
+  bool is_handled =  false;
   switch (job_state) {
     case BG_JOB_STATE_TRANSFERRED:
-      OnStateTransferred();
-      return;
+      is_handled = OnStateTransferred();
+      break;
 
     case BG_JOB_STATE_ERROR:
-      OnStateError();
-      return;
+      is_handled = OnStateError();
+      break;
 
     case BG_JOB_STATE_CANCELLED:
-      OnStateCancelled();
-      return;
+      is_handled = OnStateCancelled();
+      break;
 
     case BG_JOB_STATE_ACKNOWLEDGED:
-      OnStateAcknowledged();
-      return;
+      is_handled = OnStateAcknowledged();
+      break;
 
     case BG_JOB_STATE_QUEUED:
     // Fall through.
     case BG_JOB_STATE_CONNECTING:
     // Fall through.
     case BG_JOB_STATE_SUSPENDED:
-      OnStateQueued();
+      is_handled = OnStateQueued();
       break;
 
     case BG_JOB_STATE_TRANSIENT_ERROR:
-      OnStateTransientError();
+      is_handled = OnStateTransientError();
       break;
 
     case BG_JOB_STATE_TRANSFERRING:
-      OnStateTransferring();
+      is_handled = OnStateTransferring();
       break;
 
     default:
       break;
   }
+
+  if (is_handled)
+    return;
 
   ResetInterfacePointers();
   main_task_runner_->PostTask(
@@ -612,13 +616,14 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
 // Called when the BITS job has been transferred successfully. Completes the
 // BITS job by removing it from the BITS queue and making the download
 // available to the caller.
-void BackgroundDownloader::OnStateTransferred() {
+bool BackgroundDownloader::OnStateTransferred() {
   EndDownload(CompleteJob());
+  return true;
 }
 
 // Called when the job has encountered an error and no further progress can
 // be made. Cancels this job and removes it from the BITS queue.
-void BackgroundDownloader::OnStateError() {
+bool BackgroundDownloader::OnStateError() {
   HRESULT error_code = S_OK;
   HRESULT hr = GetJobError(job_.get(), &error_code);
   if (FAILED(hr))
@@ -626,17 +631,31 @@ void BackgroundDownloader::OnStateError() {
 
   DCHECK(FAILED(error_code));
   EndDownload(error_code);
+  return true;
+}
+
+// Called when the download was completed. This notification is not seen
+// in the current implementation but provided here as a defensive programming
+// measure.
+bool BackgroundDownloader::OnStateAcknowledged() {
+  EndDownload(E_UNEXPECTED);
+  return true;
+}
+
+// Called when the download was cancelled. Same as above.
+bool BackgroundDownloader::OnStateCancelled() {
+  EndDownload(E_UNEXPECTED);
+  return true;
 }
 
 // Called when the job has encountered a transient error, such as a
 // network disconnect, a server error, or some other recoverable error.
-void BackgroundDownloader::OnStateTransientError() {
+bool BackgroundDownloader::OnStateTransientError() {
   // If the job appears to be stuck, handle the transient error as if
   // it were a final error. This causes the job to be cancelled and a specific
   // error be returned, if the error was available.
   if (IsStuck()) {
-    OnStateError();
-    return;
+    return OnStateError();
   }
 
   // Don't retry at all if the transient error was a 5xx.
@@ -644,17 +663,22 @@ void BackgroundDownloader::OnStateTransientError() {
   HRESULT hr = GetJobError(job_.get(), &error_code);
   if (SUCCEEDED(hr) &&
       IsHttpServerError(GetHttpStatusFromBitsError(error_code))) {
-    OnStateError();
-    return;
+    return OnStateError();
   }
+
+  return false;
 }
 
-void BackgroundDownloader::OnStateQueued() {
-  if (IsStuck())
-    EndDownload(E_ABORT);  // Return a generic error for now.
+bool BackgroundDownloader::OnStateQueued() {
+  if (!IsStuck())
+    return false;
+
+  // Terminate the download if the job has not made progress in a while.
+  EndDownload(E_ABORT);
+  return true;
 }
 
-void BackgroundDownloader::OnStateTransferring() {
+bool BackgroundDownloader::OnStateTransferring() {
   // Resets the baseline for detecting a stuck job since the job is transferring
   // data and it is making progress.
   job_stuck_begin_time_ = base::Time::Now();
@@ -663,7 +687,7 @@ void BackgroundDownloader::OnStateTransferring() {
   int64_t total_bytes = -1;
   HRESULT hr = GetJobByteCount(job_.get(), &downloaded_bytes, &total_bytes);
   if (FAILED(hr))
-    return;
+    return false;
 
   Result result;
   result.downloaded_bytes = downloaded_bytes;
@@ -672,17 +696,7 @@ void BackgroundDownloader::OnStateTransferring() {
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&BackgroundDownloader::OnDownloadProgress,
                             base::Unretained(this), result));
-}
-
-// Called when the download was cancelled. Since the observer should have
-// been disconnected by now, this notification must not be seen.
-void BackgroundDownloader::OnStateCancelled() {
-  EndDownload(E_UNEXPECTED);
-}
-
-// Called when the download was completed. Same as above.
-void BackgroundDownloader::OnStateAcknowledged() {
-  EndDownload(E_UNEXPECTED);
+  return false;
 }
 
 // Creates or opens a job for the given url and queues it up. Tries to

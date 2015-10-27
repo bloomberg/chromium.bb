@@ -60,21 +60,28 @@ class BackgroundDownloader : public CrxDownloader {
 
   HRESULT BeginDownloadHelper(const GURL& url);
 
-  // Handles the job state transitions to a final state.
-  void OnStateTransferred();
-  void OnStateError();
-  void OnStateCancelled();
-  void OnStateAcknowledged();
+  // Handles the job state transitions to a final state. Returns true always
+  // since the download has reached a final state and no further processing for
+  // this download is needed.
+  bool OnStateTransferred();
+  bool OnStateError();
+  bool OnStateCancelled();
+  bool OnStateAcknowledged();
 
   // Handles the transition to a transient state where the job is in the
-  // queue but not actively transferring data.
-  void OnStateQueued();
+  // queue but not actively transferring data. Returns true if the download has
+  // been in this state for too long and it will be abandoned, or false, if
+  // further processing for this download is needed.
+  bool OnStateQueued();
 
-  // Handles the job state transition to a transient, non-final error state.
-  void OnStateTransientError();
+  // Handles the job state transition to a transient error state, which may or
+  // may not be considered final, depending on the error. Returns true if
+  // the state is final, or false, if the download is allowed to continue.
+  bool OnStateTransientError();
 
-  // Handles the job state corresponding to transferring data.
-  void OnStateTransferring();
+  // Handles the job state corresponding to transferring data. Returns false
+  // always since this is never a final state.
+  bool OnStateTransferring();
 
   void StartTimer();
   void OnTimer();
