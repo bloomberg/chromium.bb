@@ -302,6 +302,7 @@ TEST_F(PageSerializerTest, CSS)
 
     registerURL("css_test_page.html", "text/html");
     registerURL("link_styles.css", "text/css");
+    registerURL("encoding.css", "text/css");
     registerURL("import_style_from_link.css", "text/css");
     registerURL("import_styles.css", "text/css");
     registerURL("do_not_serialize.png", "image.png", "image/png");
@@ -318,12 +319,13 @@ TEST_F(PageSerializerTest, CSS)
 
     serialize("css_test_page.html");
 
-    EXPECT_EQ(14U, getResources().size());
+    EXPECT_EQ(15U, getResources().size());
 
     EXPECT_FALSE(isSerialized("do_not_serialize.png", "image/png"));
 
     EXPECT_TRUE(isSerialized("css_test_page.html", "text/html"));
     EXPECT_TRUE(isSerialized("link_styles.css", "text/css"));
+    EXPECT_TRUE(isSerialized("encoding.css", "text/css"));
     EXPECT_TRUE(isSerialized("import_styles.css", "text/css"));
     EXPECT_TRUE(isSerialized("import_style_from_link.css", "text/css"));
     EXPECT_TRUE(isSerialized("red_background.png", "image/png"));
@@ -336,6 +338,10 @@ TEST_F(PageSerializerTest, CSS)
     EXPECT_TRUE(isSerialized("brown_background.png", "image/png"));
     EXPECT_TRUE(isSerialized("ul-dot.png", "image/png"));
     EXPECT_TRUE(isSerialized("ol-dot.png", "image/png"));
+
+    // Ensure that stylesheet contents are not NFC-normalized before encoding.
+    EXPECT_TRUE(getSerializedData("encoding.css", "text/css").contains("\xE4\xC5\xD1\xE2"));
+    EXPECT_FALSE(getSerializedData("encoding.css", "text/css").contains("\xE4\xC5\xE4\xC5"));
 }
 
 TEST_F(PageSerializerTest, CSSImport)
