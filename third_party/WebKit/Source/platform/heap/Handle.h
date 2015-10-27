@@ -981,6 +981,10 @@ public:
     ~DummyBase() { }
 };
 
+// We need this explicit instantiation for component build on Windows.
+template<>
+class PLATFORM_EXPORT DummyBase<void> { };
+
 // CPP-defined type names for the transition period where we want to
 // support both reference counting and garbage collection based on a
 // compile-time flag.
