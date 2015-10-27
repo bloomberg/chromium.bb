@@ -190,9 +190,9 @@ vector<TestParams> GetTestParams() {
               // version. Simulate an old server and exercise version downgrade
               // in the client. Protocol negotiation should occur. Skip the i =
               // 0 case because it is essentially the same as the default case.
-              for (const QuicVersion version : client_versions) {
+              for (size_t i = 1; i < client_versions.size(); ++i) {
                 QuicVersionVector server_supported_versions;
-                server_supported_versions.push_back(version);
+                server_supported_versions.push_back(client_versions[i]);
                 params.push_back(TestParams(
                     client_versions, server_supported_versions,
                     server_supported_versions.front(), use_fec,
