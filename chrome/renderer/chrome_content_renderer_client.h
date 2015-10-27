@@ -92,8 +92,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   bool HasErrorPage(int http_status_code, std::string* error_domain) override;
   bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
                                const GURL& url) override;
-  void GetNavigationErrorStrings(content::RenderView* render_view,
-                                 blink::WebFrame* frame,
+  void GetNavigationErrorStrings(content::RenderFrame* render_frame,
                                  const blink::WebURLRequest& failed_request,
                                  const blink::WebURLError& error,
                                  std::string* error_html,

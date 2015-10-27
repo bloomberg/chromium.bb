@@ -1891,7 +1891,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     bool replace) {
   std::string error_html;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
-      render_view(), frame_, failed_request, error, &error_html, NULL);
+      this, failed_request, error, &error_html, nullptr);
 
   frame_->loadHTMLString(error_html,
                          GURL(kUnreachableWebDataURL),
@@ -3081,11 +3081,10 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
   const WebURLRequest& failed_request = ds->request();
   base::string16 error_description;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
-      render_view_.get(),
-      frame,
+      this,
       failed_request,
       error,
-      NULL,
+      nullptr,
       &error_description);
   Send(new FrameHostMsg_DidFailLoadWithError(routing_id_,
                                              failed_request.url(),
@@ -5064,8 +5063,7 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
-      render_view_.get(), frame, request, error, NULL,
-      &params.error_description);
+      this, request, error, nullptr, &params.error_description);
   params.url = error.unreachableURL;
   params.showing_repost_interstitial = show_repost_interstitial;
   params.was_ignored_by_handler = error.wasIgnoredByHandler;

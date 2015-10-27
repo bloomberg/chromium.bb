@@ -133,8 +133,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // (lack of information on the error code) so the caller should take care to
   // initialize the string values with safe defaults before the call.
   virtual void GetNavigationErrorStrings(
-      content::RenderView* render_view,
-      blink::WebFrame* frame,
+      content::RenderFrame* render_frame,
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
       std::string* error_html,

@@ -43,7 +43,7 @@ class NetErrorHelper
       public error_page::NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate {
  public:
-  explicit NetErrorHelper(content::RenderFrame* render_view);
+  explicit NetErrorHelper(content::RenderFrame* render_frame);
   ~NetErrorHelper() override;
 
   // NetErrorPageController::Delegate implementation
@@ -65,22 +65,16 @@ class NetErrorHelper
   // RenderProcessObserver implementation.
   void NetworkStateChanged(bool online) override;
 
-  // Examines |frame| and |error| to see if this is an error worthy of a DNS
-  // probe.  If it is, initializes |error_strings| based on |error|,
-  // |is_failed_post|, and |locale| with suitable strings and returns true.
-  // If not, returns false, in which case the caller should look up error
-  // strings directly using LocalizedError::GetNavigationErrorStrings.
-  //
-  // Updates the NetErrorHelper with the assumption the page will be loaded
-  // immediately.
-  void GetErrorHTML(blink::WebFrame* frame,
-                    const blink::WebURLError& error,
+  // Initializes |error_html| with the HTML of an error page in response to
+  // |error|.  Updates internals state with the assumption the page will be
+  // loaded immediately.
+  void GetErrorHTML(const blink::WebURLError& error,
                     bool is_failed_post,
                     std::string* error_html);
 
-  // Returns whether a load for |url| in |frame| should have its error page
-  // suppressed.
-  bool ShouldSuppressErrorPage(blink::WebFrame* frame, const GURL& url);
+  // Returns whether a load for |url| in the |frame| the NetErrorHelper is
+  // attached to should have its error page suppressed.
+  bool ShouldSuppressErrorPage(const GURL& url);
 
  private:
   // NetErrorHelperCore::Delegate implementation:
@@ -93,8 +87,7 @@ class NetErrorHelper
       bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
       std::string* html) const override;
-  void LoadErrorPageInMainFrame(const std::string& html,
-                                const GURL& failed_url) override;
+  void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
   void EnablePageHelperFunctions() override;
   void UpdateErrorPage(const blink::WebURLError& error,
                        bool is_failed_post,

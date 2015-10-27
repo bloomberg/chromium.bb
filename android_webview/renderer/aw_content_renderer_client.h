@@ -26,8 +26,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   bool HasErrorPage(int http_status_code, std::string* error_domain) override;
-  void GetNavigationErrorStrings(content::RenderView* render_view,
-                                 blink::WebFrame* frame,
+  void GetNavigationErrorStrings(content::RenderFrame* render_frame,
                                  const blink::WebURLRequest& failed_request,
                                  const blink::WebURLError& error,
                                  std::string* error_html,

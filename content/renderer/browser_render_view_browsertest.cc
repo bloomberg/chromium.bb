@@ -49,8 +49,7 @@ class TestShellContentRendererClient : public ShellContentRendererClient {
         latest_error_reason_(0),
         latest_error_stale_copy_in_cache_(false) {}
 
-  void GetNavigationErrorStrings(content::RenderView* render_view,
-                                 blink::WebFrame* frame,
+  void GetNavigationErrorStrings(content::RenderFrame* render_frame,
                                  const blink::WebURLRequest& failed_request,
                                  const blink::WebURLError& error,
                                  std::string* error_html,

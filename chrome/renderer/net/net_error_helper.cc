@@ -34,8 +34,8 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/gurl.h"
@@ -57,15 +57,16 @@ namespace {
 // suggestions.  If it takes too long, just use the local error page.
 const int kNavigationCorrectionFetchTimeoutSec = 3;
 
-NetErrorHelperCore::PageType GetLoadingPageType(const blink::WebFrame* frame) {
-  GURL url = frame->provisionalDataSource()->request().url();
+NetErrorHelperCore::PageType GetLoadingPageType(RenderFrame* render_frame) {
+  blink::WebFrame* web_frame = render_frame->GetWebFrame();
+  GURL url = web_frame->provisionalDataSource()->request().url();
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
 }
 
-NetErrorHelperCore::FrameType GetFrameType(const blink::WebFrame* frame) {
-  if (!frame->parent())
+NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
+  if (render_frame->IsMainFrame())
     return NetErrorHelperCore::MAIN_FRAME;
   return NetErrorHelperCore::SUB_FRAME;
 }
@@ -82,6 +83,8 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
       command_line->HasSwitch(switches::kEnableOfflineAutoReload);
   bool auto_reload_visible_only =
       command_line->HasSwitch(switches::kEnableOfflineAutoReloadVisibleOnly);
+  // TODO(mmenke): Consider only creating a NetErrorHelperCore for main frames.
+  // subframes don't need any of the NetErrorHelperCore's extra logic.
   core_.reset(new NetErrorHelperCore(this,
                                      auto_reload_enabled,
                                      auto_reload_visible_only,
@@ -102,8 +105,8 @@ void NetErrorHelper::TrackClick(int tracking_id) {
 }
 
 void NetErrorHelper::DidStartProvisionalLoad() {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_->OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
+  core_->OnStartLoad(GetFrameType(render_frame()),
+                     GetLoadingPageType(render_frame()));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,
@@ -113,13 +116,12 @@ void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,
   // it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
 
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_->OnCommitLoad(GetFrameType(frame), frame->document().url());
+  core_->OnCommitLoad(GetFrameType(render_frame()),
+                      render_frame()->GetWebFrame()->document().url());
 }
 
 void NetErrorHelper::DidFinishLoad() {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_->OnFinishLoad(GetFrameType(frame));
+  core_->OnFinishLoad(GetFrameType(render_frame()));
 }
 
 void NetErrorHelper::OnStop() {
@@ -154,16 +156,15 @@ void NetErrorHelper::NetworkStateChanged(bool enabled) {
 }
 
 void NetErrorHelper::GetErrorHTML(
-    blink::WebFrame* frame,
     const blink::WebURLError& error,
     bool is_failed_post,
     std::string* error_html) {
-  core_->GetErrorHTML(GetFrameType(frame), error, is_failed_post, error_html);
+  core_->GetErrorHTML(GetFrameType(render_frame()), error, is_failed_post,
+                      error_html);
 }
 
-bool NetErrorHelper::ShouldSuppressErrorPage(blink::WebFrame* frame,
-                                             const GURL& url) {
-  return core_->ShouldSuppressErrorPage(GetFrameType(frame), url);
+bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
+  return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url);
 }
 
 void NetErrorHelper::GenerateLocalizedErrorPage(
@@ -202,13 +203,10 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   }
 }
 
-void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
-                                              const GURL& failed_url) {
-  blink::WebView* web_view = render_frame()->GetRenderView()->GetWebView();
-  if (!web_view)
-    return;
-  blink::WebFrame* frame = web_view->mainFrame();
-  frame->loadHTMLString(html, GURL(kUnreachableWebDataURL), failed_url, true);
+void NetErrorHelper::LoadErrorPage(const std::string& html,
+                                   const GURL& failed_url) {
+  render_frame()->GetWebFrame()->loadHTMLString(
+      html, GURL(kUnreachableWebDataURL), failed_url, true);
 }
 
 void NetErrorHelper::EnablePageHelperFunctions() {
@@ -251,11 +249,6 @@ void NetErrorHelper::FetchNavigationCorrections(
     const std::string& navigation_correction_request_body) {
   DCHECK(!correction_fetcher_.get());
 
-  blink::WebView* web_view = render_frame()->GetRenderView()->GetWebView();
-  if (!web_view)
-    return;
-  blink::WebFrame* frame = web_view->mainFrame();
-
   correction_fetcher_.reset(
       content::ResourceFetcher::Create(navigation_correction_url));
   correction_fetcher_->SetMethod("POST");
@@ -263,7 +256,7 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetHeader("Content-Type", "application/json");
 
   correction_fetcher_->Start(
-      frame,
+      render_frame()->GetWebFrame(),
       blink::WebURLRequest::RequestContextInternal,
       blink::WebURLRequest::FrameTypeNone,
       content::ResourceFetcher::PLATFORM_LOADER,
@@ -281,11 +274,6 @@ void NetErrorHelper::CancelFetchNavigationCorrections() {
 void NetErrorHelper::SendTrackingRequest(
     const GURL& tracking_url,
     const std::string& tracking_request_body) {
-  blink::WebView* web_view = render_frame()->GetRenderView()->GetWebView();
-  if (!web_view)
-    return;
-  blink::WebFrame* frame = web_view->mainFrame();
-
   // If there's already a pending tracking request, this will cancel it.
   tracking_fetcher_.reset(content::ResourceFetcher::Create(tracking_url));
   tracking_fetcher_->SetMethod("POST");
@@ -293,7 +281,7 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->SetHeader("Content-Type", "application/json");
 
   tracking_fetcher_->Start(
-      frame,
+      render_frame()->GetWebFrame(),
       blink::WebURLRequest::RequestContextInternal,
       blink::WebURLRequest::FrameTypeTopLevel,
       content::ResourceFetcher::PLATFORM_LOADER,

@@ -506,11 +506,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new nacl::NaClHelper(render_frame);
 #endif
 
-  if (render_frame->IsMainFrame()) {
-    // Only attach NetErrorHelper to the main frame, since only the main frame
-    // should get error pages.
-    new NetErrorHelper(render_frame);
+  new NetErrorHelper(render_frame);
 
+  if (render_frame->IsMainFrame()) {
     // Only attach MainRenderFrameObserver to the main frame, since
     // we only want to log page load metrics for the main frame.
     new page_load_metrics::MetricsRenderFrameObserver(render_frame);
@@ -1070,21 +1068,16 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
   // Unit tests for ChromeContentRendererClient pass a NULL RenderFrame here.
   // Unfortunately it's very difficult to construct a mock RenderView, so skip
   // this functionality in this case.
-  if (render_frame) {
-    content::RenderView* render_view = render_frame->GetRenderView();
-    content::RenderFrame* main_render_frame = render_view->GetMainRenderFrame();
-    blink::WebFrame* web_frame = render_frame->GetWebFrame();
-    NetErrorHelper* net_error_helper = NetErrorHelper::Get(main_render_frame);
-    if (net_error_helper->ShouldSuppressErrorPage(web_frame, url))
-      return true;
+  if (render_frame &&
+      NetErrorHelper::Get(render_frame)->ShouldSuppressErrorPage(url)) {
+    return true;
   }
   // Do not flash an error page if the Instant new tab page fails to load.
   return SearchBouncer::GetInstance()->IsNewTabPage(url);
 }
 
 void ChromeContentRendererClient::GetNavigationErrorStrings(
-    content::RenderView* render_view,
-    blink::WebFrame* frame,
+    content::RenderFrame* render_frame,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
     std::string* error_html,
@@ -1094,16 +1087,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   bool is_post = base::EqualsASCII(
       base::StringPiece16(failed_request.httpMethod()), "POST");
 
-  if (error_html) {
-    // TODO(ellyjones): change GetNavigationErrorStrings to take a RenderFrame
-    // instead of a RenderView, then pass that in.
-    // This is safe for now because we only install the NetErrorHelper on the
-    // main render frame anyway; see the TODO(ellyjones) in
-    // RenderFrameCreated.
-    content::RenderFrame* main_render_frame = render_view->GetMainRenderFrame();
-    NetErrorHelper* helper = NetErrorHelper::Get(main_render_frame);
-    helper->GetErrorHTML(frame, error, is_post, error_html);
-  }
+  if (error_html)
+    NetErrorHelper::Get(render_frame)->GetErrorHTML(error, is_post, error_html);
 
   if (error_description)
     *error_description = LocalizedError::GetErrorDetails(error, is_post);

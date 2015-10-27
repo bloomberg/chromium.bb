@@ -334,8 +334,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     *html = ErrorToString(error, is_failed_post);
   }
 
-  void LoadErrorPageInMainFrame(const std::string& html,
-                                const GURL& failed_url) override {
+  void LoadErrorPage(const std::string& html, const GURL& failed_url) override {
     error_html_update_count_++;
     last_error_html_ = html;
   }

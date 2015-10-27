@@ -2005,8 +2005,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
       return url == GURL("http://example.com/suppress");
     }
 
-    void GetNavigationErrorStrings(content::RenderView* render_view,
-                                   blink::WebFrame* frame,
+    void GetNavigationErrorStrings(content::RenderFrame* render_frame,
                                    const blink::WebURLRequest& failed_request,
                                    const blink::WebURLError& error,
                                    std::string* error_html,

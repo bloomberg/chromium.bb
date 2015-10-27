@@ -67,9 +67,9 @@ class NetErrorHelperCore {
         bool* show_cached_copy_button_shown,
         std::string* html) const = 0;
 
-    // Loads the given HTML in the main frame for use as an error page.
-    virtual void LoadErrorPageInMainFrame(const std::string& html,
-                                          const GURL& failed_url) = 0;
+    // Loads the given HTML in the frame for use as an error page.
+    virtual void LoadErrorPage(const std::string& html,
+                               const GURL& failed_url) = 0;
 
     // Create extra Javascript bindings in the error page. Will only be invoked
     // after an error page has finished loading.
@@ -131,14 +131,9 @@ class NetErrorHelperCore {
                      bool is_visible);
   ~NetErrorHelperCore();
 
-  // Examines |frame| and |error| to see if this is an error worthy of a DNS
-  // probe.  If it is, initializes |error_strings| based on |error|,
-  // |is_failed_post|, and |locale| with suitable strings and returns true.
-  // If not, returns false, in which case the caller should look up error
-  // strings directly using LocalizedError::GetNavigationErrorStrings.
-  //
-  // Updates the NetErrorHelper with the assumption the page will be loaded
-  // immediately.
+  // Initializes |error_html| with the HTML of an error page in response to
+  // |error|.  Updates internals state with the assumption the page will be
+  // loaded immediately.
   void GetErrorHTML(FrameType frame_type,
                     const blink::WebURLError& error,
                     bool is_failed_post,

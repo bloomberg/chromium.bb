@@ -790,9 +790,8 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   // TODO(mmenke):  Once the new API is in place, look into replacing this
   //                double page load by just updating the error page, like DNS
   //                probes do.
-  delegate_->LoadErrorPageInMainFrame(
-      error_html,
-      pending_error_page_info_->error.unreachableURL);
+  delegate_->LoadErrorPage(error_html,
+                           pending_error_page_info_->error.unreachableURL);
 }
 
 blink::WebURLError NetErrorHelperCore::GetUpdatedError(
