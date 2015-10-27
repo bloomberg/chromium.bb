@@ -314,6 +314,11 @@ public:
         return m_layoutObject->createPositionWithAffinity(offset, affinity);
     }
 
+    LineLayoutItem previousInPreOrder(const LayoutObject* stayWithin) const
+    {
+        return LineLayoutItem(m_layoutObject->previousInPreOrder(stayWithin));
+    }
+
 #ifndef NDEBUG
 
     const char* name() const

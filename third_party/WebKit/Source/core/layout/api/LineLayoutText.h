@@ -27,6 +27,11 @@ public:
 
     LineLayoutText() { }
 
+    InlineTextBox* firstTextBox() const
+    {
+        return toText()->firstTextBox();
+    }
+
     void extractTextBox(InlineTextBox* inlineTextBox)
     {
         toText()->extractTextBox(inlineTextBox);
@@ -85,6 +90,11 @@ public:
     unsigned textLength() const
     {
         return toText()->textLength();
+    }
+
+    unsigned resolvedTextLength() const
+    {
+        return toText()->resolvedTextLength();
     }
 
     const String& text() const

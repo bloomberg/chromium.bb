@@ -25,6 +25,11 @@ public:
 
     LineLayoutSVGInlineText() { }
 
+    SVGTextLayoutAttributes* layoutAttributes() const
+    {
+        return const_cast<SVGTextLayoutAttributes*>(toSVGInlineText()->layoutAttributes());
+    }
+
     bool characterStartsNewTextChunk(int position) const
     {
         return toSVGInlineText()->characterStartsNewTextChunk(position);
