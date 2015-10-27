@@ -40,15 +40,17 @@ SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
     const std::string& protocol_id,
     const std::string& host,
     uint16 port,
-    uint16 version,
     uint32 max_age,
-    double probability)
+    double probability,
+    VersionVector version)
     : protocol_id(protocol_id),
       host(host),
       port(port),
-      version(version),
       max_age(max_age),
-      probability(probability) {}
+      probability(probability),
+      version(version) {}
+
+SpdyAltSvcWireFormat::AlternativeService::~AlternativeService() {}
 
 // static
 bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
@@ -105,9 +107,9 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
     }
     ++c;
     // Parse parameters.
-    uint16 version = 0;
     uint32 max_age = 86400;
     double probability = 1.0;
+    VersionVector version;
     StringPiece::const_iterator parameters_end = std::find(c, value.end(), ',');
     while (c != parameters_end) {
       SkipWhiteSpace(&c, parameters_end);
@@ -138,11 +140,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
       if (c == parameter_value_begin) {
         return false;
       }
-      if (parameter_name.compare("v") == 0) {
-        if (!ParsePositiveInteger16(parameter_value_begin, c, &version)) {
-          return false;
-        }
-      } else if (parameter_name.compare("ma") == 0) {
+      if (parameter_name.compare("ma") == 0) {
         if (!ParsePositiveInteger32(parameter_value_begin, c, &max_age)) {
           return false;
         }
@@ -154,10 +152,41 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
         if (!ParseProbability(parameter_value_begin + 1, c - 1, &probability)) {
           return false;
         }
+      } else if (parameter_name.compare("v") == 0) {
+        // Version is a comma separated list of positive integers enclosed in
+        // quotation marks.  Since it can contain commas, which are not
+        // delineating alternative service entries, |parameters_end| and |c| can
+        // be invalid.
+        if (*parameter_value_begin != '"') {
+          return false;
+        }
+        c = std::find(parameter_value_begin + 1, value.end(), '"');
+        if (c == value.end()) {
+          return false;
+        }
+        ++c;
+        parameters_end = std::find(c, value.end(), ',');
+        StringPiece::const_iterator v_begin = parameter_value_begin + 1;
+        while (v_begin < c) {
+          StringPiece::const_iterator v_end = v_begin;
+          while (v_end < c - 1 && *v_end != ',') {
+            ++v_end;
+          }
+          uint16 v;
+          if (!ParsePositiveInteger16(v_begin, v_end, &v)) {
+            return false;
+          }
+          version.push_back(v);
+          v_begin = v_end + 1;
+          if (v_begin == c - 1) {
+            // List ends in comma.
+            return false;
+          }
+        }
       }
     }
     altsvc_vector->push_back(AlternativeService(protocol_id, host, port,
-                                                version, max_age, probability));
+                                                max_age, probability, version));
     for (; c != value.end() && (*c == ' ' || *c == '\t' || *c == ','); ++c) {
     }
   }
@@ -217,14 +246,22 @@ std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       value.push_back(c);
     }
     base::StringAppendF(&value, ":%d\"", altsvc.port);
-    if (altsvc.version != 0) {
-      base::StringAppendF(&value, "; v=%d", altsvc.version);
-    }
     if (altsvc.max_age != 86400) {
       base::StringAppendF(&value, "; ma=%d", altsvc.max_age);
     }
     if (altsvc.probability != 1.0) {
       base::StringAppendF(&value, "; p=\"%.2f\"", altsvc.probability);
+    }
+    if (!altsvc.version.empty()) {
+      value.append("; v=\"");
+      for (VersionVector::const_iterator it = altsvc.version.begin();
+           it != altsvc.version.end(); ++it) {
+        if (it != altsvc.version.begin()) {
+          value.append(",");
+        }
+        base::StringAppendF(&value, "%d", *it);
+      }
+      value.append("\"");
     }
   }
   return value;

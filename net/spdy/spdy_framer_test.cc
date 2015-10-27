@@ -3501,20 +3501,21 @@ TEST_P(SpdyFramerTest, CreateAltSvc) {
   const char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, ALTSVC));
   const unsigned char kFrameData[] = {
-      0x00, 0x00, 0x51, kType, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x06, 'o',
+      0x00, 0x00, 0x53, kType, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x06, 'o',
       'r',  'i',  'g',  'i',   'n',  'p',  'i',  'd',  '1',  '=',  '"',  'h',
       'o',  's',  't',  ':',   '4',  '4',  '3',  '"',  ';',  ' ',  'm',  'a',
       '=',  '5',  ',',  'p',   '%',  '2',  '2',  '%',  '3',  'D',  'i',  '%',
       '3',  'A',  'd',  '=',   '"',  'h',  '_',  '\\', '\\', 'o',  '\\', '"',
-      's',  't',  ':',  '1',   '2',  '3',  '"',  ';',  ' ',  'v',  '=',  '2',
-      '4',  ';',  ' ',  'm',   'a',  '=',  '4',  '2',  ';',  ' ',  'p',  '=',
-      '"',  '0',  '.',  '2',   '0',  '"'};
+      's',  't',  ':',  '1',   '2',  '3',  '"',  ';',  ' ',  'm',  'a',  '=',
+      '4',  '2',  ';',  ' ',   'p',  '=',  '"',  '0',  '.',  '2',  '0',  '"',
+      ';',  ' ',  'v',  '=',   '"',  '2',  '4',  '"'};
   SpdyAltSvcIR altsvc_ir(3);
   altsvc_ir.set_origin("origin");
-  altsvc_ir.add_altsvc(
-      SpdyAltSvcWireFormat::AlternativeService("pid1", "host", 443, 0, 5, 1.0));
   altsvc_ir.add_altsvc(SpdyAltSvcWireFormat::AlternativeService(
-      "p\"=i:d", "h_\\o\"st", 123, 24, 42, 0.2));
+      "pid1", "host", 443, 5, 1.0, SpdyAltSvcWireFormat::VersionVector{}));
+  altsvc_ir.add_altsvc(SpdyAltSvcWireFormat::AlternativeService(
+      "p\"=i:d", "h_\\o\"st", 123, 42, 0.2,
+      SpdyAltSvcWireFormat::VersionVector{24}));
   scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(altsvc_ir));
   CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
 }
@@ -5772,10 +5773,11 @@ TEST_P(SpdyFramerTest, OnAltSvc) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  SpdyAltSvcWireFormat::AlternativeService altsvc1("pid1", "host", 443, 0, 5,
-                                                   1.0);
-  SpdyAltSvcWireFormat::AlternativeService altsvc2("p\"=i:d", "h_\\o\"st", 123,
-                                                   24, 42, 0.2);
+  SpdyAltSvcWireFormat::AlternativeService altsvc1(
+      "pid1", "host", 443, 5, 1.0, SpdyAltSvcWireFormat::VersionVector());
+  SpdyAltSvcWireFormat::AlternativeService altsvc2(
+      "p\"=i:d", "h_\\o\"st", 123, 42, 0.2,
+      SpdyAltSvcWireFormat::VersionVector{24});
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   altsvc_vector.push_back(altsvc1);
   altsvc_vector.push_back(altsvc2);
@@ -5805,10 +5807,11 @@ TEST_P(SpdyFramerTest, OnAltSvcNoOrigin) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  SpdyAltSvcWireFormat::AlternativeService altsvc1("pid1", "host", 443, 0, 5,
-                                                   1.0);
-  SpdyAltSvcWireFormat::AlternativeService altsvc2("p\"=i:d", "h_\\o\"st", 123,
-                                                   24, 42, 0.2);
+  SpdyAltSvcWireFormat::AlternativeService altsvc1(
+      "pid1", "host", 443, 5, 1.0, SpdyAltSvcWireFormat::VersionVector());
+  SpdyAltSvcWireFormat::AlternativeService altsvc2(
+      "p\"=i:d", "h_\\o\"st", 123, 42, 0.2,
+      SpdyAltSvcWireFormat::VersionVector{24});
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   altsvc_vector.push_back(altsvc1);
   altsvc_vector.push_back(altsvc2);
@@ -5838,10 +5841,10 @@ TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
 
   SpdyAltSvcIR altsvc_ir(1);
   altsvc_ir.set_origin("o1");
-  altsvc_ir.add_altsvc(
-      SpdyAltSvcWireFormat::AlternativeService("pid1", "host", 443, 0, 5, 1.0));
-  altsvc_ir.add_altsvc(
-      SpdyAltSvcWireFormat::AlternativeService("", "h1", 443, 0, 10, 1.0));
+  altsvc_ir.add_altsvc(SpdyAltSvcWireFormat::AlternativeService(
+      "pid1", "host", 443, 5, 1.0, SpdyAltSvcWireFormat::VersionVector()));
+  altsvc_ir.add_altsvc(SpdyAltSvcWireFormat::AlternativeService(
+      "", "h1", 443, 10, 1.0, SpdyAltSvcWireFormat::VersionVector()));
   scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(altsvc_ir));
   framer.ProcessInput(frame->data(), frame->size());
 
@@ -5861,7 +5864,8 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  SpdyAltSvcWireFormat::AlternativeService altsvc("pid", "h1", 443, 0, 10, 1.0);
+  SpdyAltSvcWireFormat::AlternativeService altsvc(
+      "pid", "h1", 443, 10, 1.0, SpdyAltSvcWireFormat::VersionVector());
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   altsvc_vector.push_back(altsvc);
   EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece("o1"), altsvc_vector));
@@ -5885,10 +5889,11 @@ TEST_P(SpdyFramerTest, ReadChunkedAltSvcFrame) {
 
   SpdyFramer framer(spdy_version_);
   SpdyAltSvcIR altsvc_ir(1);
-  SpdyAltSvcWireFormat::AlternativeService altsvc1("pid1", "host", 443, 0, 5,
-                                                   1.0);
-  SpdyAltSvcWireFormat::AlternativeService altsvc2("p\"=i:d", "h_\\o\"st", 123,
-                                                   24, 42, 0.2);
+  SpdyAltSvcWireFormat::AlternativeService altsvc1(
+      "pid1", "host", 443, 5, 1.0, SpdyAltSvcWireFormat::VersionVector());
+  SpdyAltSvcWireFormat::AlternativeService altsvc2(
+      "p\"=i:d", "h_\\o\"st", 123, 42, 0.2,
+      SpdyAltSvcWireFormat::VersionVector{24});
   altsvc_ir.add_altsvc(altsvc1);
   altsvc_ir.add_altsvc(altsvc2);
 
