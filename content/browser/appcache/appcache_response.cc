@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/pickle.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -130,11 +129,6 @@ void AppCacheResponseIO::WriteRaw(int index, int offset,
 }
 
 void AppCacheResponseIO::OnRawIOComplete(int result) {
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 AppCacheResponseIO::OnRawIOComplete"));
-
   DCHECK_NE(net::ERR_IO_PENDING, result);
   OnIOComplete(result);
 }
