@@ -243,6 +243,10 @@ scoped_ptr<WindowSurface> Window::RequestSurface() {
       new WindowSurface(surface.PassInterface(), client_request.Pass()));
 }
 
+void Window::ClearSharedProperty(const std::string& name) {
+  SetSharedPropertyInternal(name, nullptr);
+}
+
 bool Window::HasSharedProperty(const std::string& name) const {
   return properties_.count(name) > 0;
 }

@@ -6,8 +6,10 @@
 
 #include "components/mus/example/wm/container.h"
 #include "components/mus/example/wm/window_manager_application.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 
 WindowManagerImpl::WindowManagerImpl(
@@ -41,26 +43,19 @@ void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   state_->IncrementWindowCount();
 }
 
-void WindowManagerImpl::CenterWindow(
+void WindowManagerImpl::SetPreferredSize(
     mus::Id window_id,
     mojo::SizePtr size,
     const WindowManagerErrorCodeCallback& callback) {
-  auto it = std::find(windows_.begin(), windows_.end(), window_id);
-  if (it == windows_.end()) {
+  if (windows_.count(window_id) == 0) {
     callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
     return;
   }
 
-  mus::Window* container =
-      state_->GetWindowForContainer(Container::USER_WINDOWS);
-  mojo::Rect rect;
-  rect.x = (container->bounds().width - size->width) / 2;
-  rect.y = (container->bounds().height - size->height) / 2;
-  rect.width = size->width;
-  rect.height = size->height;
-  mus::Window* window = state_->root()->GetChildById(window_id);
-  DCHECK(window->parent() == container);
-  window->SetBounds(rect);
+  mus::Window* window = state_->GetWindowById(window_id);
+  window->SetSharedProperty<mojo::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, *size);
+
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 
@@ -68,14 +63,28 @@ void WindowManagerImpl::SetBounds(
     mus::Id window_id,
     mojo::RectPtr bounds,
     const WindowManagerErrorCodeCallback& callback) {
-  auto it = std::find(windows_.begin(), windows_.end(), window_id);
-  if (it == windows_.end()) {
+  if (windows_.count(window_id) == 0) {
     callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
     return;
   }
 
   mus::Window* window = state_->root()->GetChildById(window_id);
   window->SetBounds(*bounds);
+  callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
+}
+
+void WindowManagerImpl::SetShowState(
+    mus::Id window_id,
+    mus::mojom::ShowState show_state,
+    const WindowManagerErrorCodeCallback& callback){
+  if (windows_.count(window_id) == 0) {
+    callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_ERROR_ACCESS_DENIED);
+    return;
+  }
+
+  mus::Window* window = state_->GetWindowById(window_id);
+  window->SetSharedProperty<int32_t>(
+      mus::mojom::WindowManager::kShowState_Property, show_state);
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 

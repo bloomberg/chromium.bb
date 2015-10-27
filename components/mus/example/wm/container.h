@@ -15,7 +15,7 @@ enum class Container {
   USER_PRESENTATION_WINDOWS,
   USER_LAUNCHER,
   LOGIN_WINDOWS,
-  LOGIN_APP,
+  LOGIN_APP,    // TODO(beng): what about dialog boxes login opens?
   LOGIN_LAUNCHER,
   SYSTEM_MODAL_WINDOWS,
   KEYBOARD,

@@ -12,6 +12,14 @@ enum WindowManagerErrorCode {
   ERROR_ACCESS_DENIED
 };
 
+enum ShowState {
+  RESTORED,
+  MINIMIZED,
+  MAXIMIZED,
+  IMMERSIVE,
+  PRESENTATION
+};
+
 enum Rotation {
   VALUE_0,
   VALUE_90,
@@ -33,14 +41,24 @@ struct Display {
 // created by calls to OpenWindow() from the *same connection* to the window
 // manager. The callback indicates success or failure.
 interface WindowManager {
+  // The window bounds as set by user input. Type: mojo::Rect.
+  const string kUserSetBounds_Property = "prop:user-set-bounds";
+  // The window's preferred size as defined by its content. Type: mojo::Size.
+  const string kPreferredSize_Property = "prop:preferred-size";
+  // The window's show state. Type: ShowState.
+  const string kShowState_Property = "prop:show-state";
+
   OpenWindow(WindowTreeClient client);
 
-  // Resizes the corresponding window to |size| and centers it in the current
-  // context.
-  CenterWindow(uint32 window_id, mojo.Size size) =>
+  // Updates the window's preferred size and triggers a relayout of the window
+  // within its container.
+  SetPreferredSize(uint32 window_id, mojo.Size size) =>
       (WindowManagerErrorCode result);
 
   SetBounds(uint32 window_id, mojo.Rect bounds) =>
+      (WindowManagerErrorCode result);
+
+  SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
 
   GetDisplays() => (array<Display> displays);

@@ -173,6 +173,7 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   mus::mojom::WindowManager* window_manager_;
+  mus::mojom::ShowState show_state_before_fullscreen_;
 
   // Aura configuration.
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;

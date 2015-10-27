@@ -75,8 +75,12 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       shell_(shell),
       native_widget_delegate_(delegate),
       window_manager_(nullptr),
+      show_state_before_fullscreen_(mus::mojom::SHOW_STATE_RESTORED),
       content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMus, private:
 
 void NativeWidgetMus::UpdateClientAreaInWindowManager() {
   NonClientView* non_client_view =
@@ -205,9 +209,9 @@ void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
   // TODO(beng): clear user-placed property and set preferred size property.
   if (!window_manager_)
     return;
-  window_manager_->CenterWindow(window_tree_host_->mus_window()->id(),
-                                mojo::Size::From(size),
-                                base::Bind(&WindowManagerCallback));
+  window_manager_->SetPreferredSize(window_tree_host_->mus_window()->id(),
+                                    mojo::Size::From(size),
+                                    base::Bind(&WindowManagerCallback));
 }
 
 void NativeWidgetMus::GetWindowPlacement(
@@ -341,34 +345,36 @@ void NativeWidgetMus::SetVisibleOnAllWorkspaces(bool always_visible) {
 }
 
 void NativeWidgetMus::Maximize() {
-  NOTIMPLEMENTED();
+  window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_MAXIMIZED);
 }
 
 void NativeWidgetMus::Minimize() {
-  NOTIMPLEMENTED();
+  window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_MINIMIZED);
 }
 
 bool NativeWidgetMus::IsMaximized() const {
-  NOTIMPLEMENTED();
-  return false;
+  return window_tree_host_->show_state() == mus::mojom::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetMus::IsMinimized() const {
-  NOTIMPLEMENTED();
-  return false;
+  return window_tree_host_->show_state() == mus::mojom::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetMus::Restore() {
-  NOTIMPLEMENTED();
+  window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_RESTORED);
 }
 
 void NativeWidgetMus::SetFullscreen(bool fullscreen) {
-  NOTIMPLEMENTED();
+  if (fullscreen) {
+    show_state_before_fullscreen_ = window_tree_host_->show_state();
+    window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_PRESENTATION);
+  } else {
+    window_tree_host_->SetShowState(show_state_before_fullscreen_);
+  }
 }
 
 bool NativeWidgetMus::IsFullscreen() const {
-  NOTIMPLEMENTED();
-  return false;
+  return window_tree_host_->show_state() == mus::mojom::SHOW_STATE_PRESENTATION;
 }
 
 void NativeWidgetMus::SetOpacity(unsigned char opacity) {

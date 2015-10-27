@@ -28,6 +28,10 @@ class WindowManagerConnection : public ViewsDelegate,
 
   mus::Window* CreateWindow();
 
+  mus::mojom::WindowManager* window_manager() {
+    return window_manager_.get();
+  }
+
  private:
   WindowManagerConnection(mus::mojom::WindowManagerPtr window_manager,
                           mojo::ApplicationImpl* app);

@@ -18,6 +18,8 @@ mojo_native_application("example_wm") {
   sources = [
     "container.h",
     "main.cc",
+    "window_layout.cc",
+    "window_layout.h",
     "window_manager_application.cc",
     "window_manager_application.h",
     "window_manager_impl.cc",

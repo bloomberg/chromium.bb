@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -15,6 +16,7 @@
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 
 enum class Container;
+class WindowLayout;
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
@@ -30,6 +32,7 @@ class WindowManagerApplication
   void IncrementWindowCount() { ++window_count_; }
 
   mus::Window* GetWindowForContainer(Container container);
+  mus::Window* GetWindowById(mus::Id id);
 
  private:
   // ApplicationDelegate:
@@ -55,6 +58,8 @@ class WindowManagerApplication
 
   mus::mojom::WindowTreeHostPtr host_;
   ScopedVector<mojo::InterfaceRequest<mus::mojom::WindowManager>> requests_;
+
+  scoped_ptr<WindowLayout> layout_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };

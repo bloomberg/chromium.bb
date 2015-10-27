@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,6 +34,9 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   ~WindowTreeHostMojo() override;
 
   mus::Window* mus_window() { return mus_window_; }
+
+  mus::mojom::ShowState show_state() const { return show_state_; }
+  void SetShowState(mus::mojom::ShowState show_state);
 
   ui::EventDispatchDetails SendEventToProcessor(ui::Event* event) {
     return ui::EventSource::SendEventToProcessor(event);
@@ -61,8 +65,15 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
                             mus::Window* lost_focus) override;
   void OnWindowInputEvent(mus::Window* view,
                           const mojo::EventPtr& event) override;
+  void OnWindowSharedPropertyChanged(
+      mus::Window* window,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) override;
 
   mus::Window* mus_window_;
+
+  mus::mojom::ShowState show_state_;
 
   scoped_ptr<InputMethodMUS> input_method_;
 

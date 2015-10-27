@@ -28,12 +28,16 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
  private:
   // mus::mojom::WindowManager:
   void OpenWindow(mus::mojom::WindowTreeClientPtr client) override;
-  void CenterWindow(mus::Id window_id,
-                    mojo::SizePtr size,
-                    const WindowManagerErrorCodeCallback& callback) override;
+  void SetPreferredSize(
+      mus::Id window_id,
+      mojo::SizePtr size,
+      const WindowManagerErrorCodeCallback& callback) override;
   void SetBounds(mus::Id window_id,
                  mojo::RectPtr bounds,
                  const WindowManagerErrorCodeCallback& callback) override;
+  void SetShowState(mus::Id window_id,
+                    mus::mojom::ShowState show_state,
+                    const WindowManagerErrorCodeCallback& callback) override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
 
   // mus::WindowObserver:

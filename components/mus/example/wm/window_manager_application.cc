@@ -5,6 +5,7 @@
 #include "components/mus/example/wm/window_manager_application.h"
 
 #include "components/mus/example/wm/container.h"
+#include "components/mus/example/wm/window_layout.h"
 #include "components/mus/example/wm/window_manager_impl.h"
 #include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window.h"
@@ -23,6 +24,10 @@ mus::Window* WindowManagerApplication::GetWindowForContainer(
   return root_->GetChildById(window_id);
 }
 
+mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
+  return root_->GetChildById(id);
+}
+
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   mus::CreateSingleWindowTreeHost(app, this, &host_);
 }
@@ -36,6 +41,8 @@ bool WindowManagerApplication::ConfigureIncomingConnection(
 void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_ = root;
   CreateContainers();
+  layout_.reset(
+      new WindowLayout(GetWindowForContainer(Container::USER_WINDOWS)));
 
   host_->EnableWindowDraggingForChildren(
       GetWindowForContainer(Container::USER_WINDOWS)->id());

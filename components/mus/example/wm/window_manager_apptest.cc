@@ -43,7 +43,7 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAppTest);
 };
 
-TEST_F(WindowManagerAppTest, CenterWindow) {
+TEST_F(WindowManagerAppTest, SetPreferredSize) {
   // TODO(beng): right now this only verifies that requests from other
   //             connections are blocked. We need to be able to reliably
   //             configure the size of the window manager's display before we
@@ -56,7 +56,7 @@ TEST_F(WindowManagerAppTest, CenterWindow) {
   mus::Window* window_from_connection2 = OpenWindow(connection2.get());
 
   bool succeeded = false;
-  connection1->CenterWindow(
+  connection1->SetPreferredSize(
       window_from_connection1->id(), mojo::Size::New(),
       [&succeeded](mus::mojom::WindowManagerErrorCode result) {
         succeeded = result == mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS;
@@ -65,7 +65,7 @@ TEST_F(WindowManagerAppTest, CenterWindow) {
   EXPECT_TRUE(succeeded);
 
   succeeded = false;
-  connection1->CenterWindow(
+  connection1->SetPreferredSize(
       window_from_connection2->id(), mojo::Size::New(),
       [&succeeded](mus::mojom::WindowManagerErrorCode result) {
         succeeded = result == mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS;

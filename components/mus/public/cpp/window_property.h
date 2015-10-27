@@ -49,10 +49,6 @@ void Window::SetSharedProperty(const std::string& name, const T& data) {
   SetSharedPropertyInternal(name, &bytes);
 }
 
-void Window::ClearSharedProperty(const std::string& name) {
-  SetSharedPropertyInternal(name, nullptr);
-}
-
 template <typename T>
 T Window::GetSharedProperty(const std::string& name) const {
   DCHECK(HasSharedProperty(name));

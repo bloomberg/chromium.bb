@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/window_tree_host_mus.h"
 
+#include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -18,6 +20,11 @@
 #include "ui/views/mus/window_manager_connection.h"
 
 namespace views {
+namespace {
+
+void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
@@ -48,6 +55,12 @@ WindowTreeHostMojo::~WindowTreeHostMojo() {
   mus_window_->RemoveObserver(this);
   DestroyCompositor();
   DestroyDispatcher();
+}
+
+void WindowTreeHostMojo::SetShowState(mus::mojom::ShowState show_state) {
+  show_state_ = show_state;
+  WindowManagerConnection::Get()->window_manager()->SetShowState(
+      mus_window_->id(), show_state_, base::Bind(&WindowManagerCallback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,7 +117,7 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, ViewObserver implementation:
+// WindowTreeHostMojo, WindowObserver implementation:
 
 void WindowTreeHostMojo::OnWindowBoundsChanged(mus::Window* window,
                                                const mojo::Rect& old_bounds,
@@ -136,6 +149,18 @@ void WindowTreeHostMojo::OnWindowInputEvent(mus::Window* view,
         static_cast<ui::KeyEvent*>(ui_event.get()));
   } else {
     SendEventToProcessor(ui_event.get());
+  }
+}
+
+void WindowTreeHostMojo::OnWindowSharedPropertyChanged(
+    mus::Window* window,
+    const std::string& name,
+    const std::vector<uint8_t>* old_data,
+    const std::vector<uint8_t>* new_data) {
+  if (name == mus::mojom::WindowManager::kShowState_Property) {
+    show_state_ = static_cast<mus::mojom::ShowState>(
+        window->GetSharedProperty<int32_t>(
+            mus::mojom::WindowManager::kShowState_Property));
   }
 }
 

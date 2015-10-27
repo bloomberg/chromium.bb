@@ -138,8 +138,8 @@ void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
 void NativeWidgetViewManager::CenterWindow(const gfx::Size& size) {
   if (!window_manager_)
     return;
-  window_manager_->CenterWindow(window_->id(), mojo::Size::From(size),
-                                base::Bind(&WindowManagerCallback));
+  window_manager_->SetPreferredSize(window_->id(), mojo::Size::From(size),
+                                    base::Bind(&WindowManagerCallback));
 }
 
 void NativeWidgetViewManager::SetBounds(const gfx::Rect& bounds) {
