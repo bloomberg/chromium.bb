@@ -15,17 +15,17 @@ layer at (0,0) size 800x600
             text run at (209,0) width 355: "STIX glyphs not rendered on this stackoverflow answer"
         LayoutText {#text} at (564,0) size 4x19
           text run at (564,0) width 4: "."
-      LayoutBlockFlow {P} at (0,36) size 784x37
-        LayoutText {#text} at (0,13) size 91x19
-          text run at (0,13) width 91: "A black circle: "
-        LayoutInline {SPAN} at (0,0) size 25x36
-          LayoutText {#text} at (91,0) size 25x36
-            text run at (91,0) width 25: "\x{26AB}"
+      LayoutBlockFlow {P} at (0,36) size 784x38
+        LayoutText {#text} at (0,14) size 91x19
+          text run at (0,14) width 91: "A black circle: "
+        LayoutInline {SPAN} at (0,0) size 24x36
+          LayoutText {#text} at (91,1) size 24x36
+            text run at (91,1) width 24: "\x{26AB}"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,89) size 784x37
-        LayoutText {#text} at (0,14) size 129x19
-          text run at (0,14) width 129: "Another black circle: "
-        LayoutInline {SPAN} at (0,0) size 25x36
-          LayoutText {#text} at (129,0) size 25x36
-            text run at (129,0) width 25: "\x{26AB}"
+      LayoutBlockFlow {P} at (0,90) size 784x38
+        LayoutText {#text} at (0,15) size 129x19
+          text run at (0,15) width 129: "Another black circle: "
+        LayoutInline {SPAN} at (0,0) size 24x36
+          LayoutText {#text} at (129,1) size 24x36
+            text run at (129,1) width 24: "\x{26AB}"
         LayoutText {#text} at (0,0) size 0x0
