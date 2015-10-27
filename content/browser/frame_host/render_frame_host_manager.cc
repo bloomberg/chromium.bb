@@ -1244,10 +1244,6 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (IsRendererDebugURL(new_effective_url))
     return false;
 
-  // about:blank should be safe to load in any BrowsingInstance.
-  if (new_effective_url == GURL(url::kAboutBlankURL))
-    return false;
-
   // For security, we should transition between processes when one is a Web UI
   // page and one isn't, or if the WebUI types differ.
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(

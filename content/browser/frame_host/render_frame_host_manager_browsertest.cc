@@ -1664,7 +1664,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell()->web_contents()->GetSiteInstance());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-  EXPECT_EQ(orig_site_instance, shell()->web_contents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, shell()->web_contents()->GetSiteInstance());
 
   GURL regular_page_url(embedded_test_server()->GetURL("/title2.html"));
   EXPECT_TRUE(NavigateToURL(shell(), regular_page_url));
