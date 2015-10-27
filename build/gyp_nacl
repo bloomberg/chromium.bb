@@ -15,15 +15,16 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 GCLIENT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 GYP_DIR = os.path.join(GCLIENT_ROOT, 'tools', 'gyp')
 sys.path.insert(0, os.path.join(GYP_DIR, 'pylib'))
+sys.path.insert(0, os.path.join(GCLIENT_ROOT, 'build'))
 
+import gyp_environment
 import gyp
 
 def main():
   print 'Updating projects from gyp files...'
   os.chdir(GCLIENT_ROOT)
 
-  if not os.environ.get('GYP_GENERATORS'):
-    os.environ['GYP_GENERATORS'] = 'ninja'
+  gyp_environment.SetEnvironment()
 
   args = sys.argv[1:]
 
