@@ -464,17 +464,6 @@ name=IntentionalCrash
 *!content::*::MaybeHandleDebugURL
 
 HANDLE LEAK
-name=http://crbug.com/371348
-system call NtCreateSection
-KERNELBASE.dll!CreateFileMappingW
-*!base::SharedMemory::Create
-*!base::SharedMemory::CreateAnonymous
-*!content::ChildThreadImpl::AllocateSharedMemory
-...
-*!content::ChildSharedBitmapManager::AllocateSharedBitmap
-*!cc::ResourceProvider::CreateBitmap
-
-HANDLE LEAK
 name=http://crbug.com/371357
 system call NtCreateEvent
 KERNELBASE.dll!CreateEventExW
@@ -668,9 +657,8 @@ name=http://crbug.com/441785
 system call NtCreateSection
 *!CreateFileMappingW
 *!base::SharedMemory::Create
-*!base::SharedMemory::CreateAnonymous
-*!content::ChildThread::AllocateSharedMemory
-*!content::ChildSharedBitmapManager::AllocateSharedMemoryBitmap
+*!content::ChildThreadImpl::AllocateSharedMemory
+...
 *!content::ChildSharedBitmapManager::AllocateSharedBitmap
 *!cc::ResourceProvider::CreateBitmap
 *!cc::ResourceProvider::Create*Resource
