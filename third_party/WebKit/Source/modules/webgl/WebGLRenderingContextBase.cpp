@@ -927,13 +927,6 @@ bool isSRGBFormat(GLenum internalformat)
     }
 }
 
-bool canUseTexImage2DCanvasByGPU(GLenum internalformat, GLenum type)
-{
-    if (isFloatType(type) || isIntegerFormat(internalformat) || isSRGBFormat(internalformat))
-        return false;
-    return true;
-}
-
 } // namespace anonymous
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
@@ -4354,8 +4347,15 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     texImage2DImpl(target, level, internalformat, format, type, imageForRender.get(), WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
-void WebGLRenderingContextBase::texImage2DCanvasByGPU(TexImageFunctionType functionType, WebGLTexture* texture, GLenum target,
-    GLint level, GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, HTMLCanvasElement* canvas)
+bool WebGLRenderingContextBase::canUseTexImageCanvasByGPU(GLenum internalformat, GLenum type)
+{
+    if (isFloatType(type) || isIntegerFormat(internalformat) || isSRGBFormat(internalformat))
+        return false;
+    return true;
+}
+
+void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionType, WebGLTexture* texture, GLenum target,
+    GLint level, GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement* canvas)
 {
     ScopedTexture2DRestorer restorer(this);
 
@@ -4364,11 +4364,10 @@ void WebGLRenderingContextBase::texImage2DCanvasByGPU(TexImageFunctionType funct
     GLenum targetInternalformat = internalformat;
     GLint targetLevel = level;
     bool possibleDirectCopy = false;
-    if (functionType == NotTexSubImage2D) {
+    if (functionType == TexImage2DByGPU) {
         possibleDirectCopy = Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level);
-    } else if (functionType == TexSubImage2D) {
-        possibleDirectCopy = false;
     }
+
     // if direct copy is not possible, create a temporary texture and then copy from canvas to temporary texture to target texture.
     if (!possibleDirectCopy) {
         targetLevel = 0;
@@ -4404,10 +4403,12 @@ void WebGLRenderingContextBase::texImage2DCanvasByGPU(TexImageFunctionType funct
         webContext()->bindFramebuffer(GL_FRAMEBUFFER, tmpFBO);
         webContext()->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, targetTexture, 0);
         webContext()->bindTexture(texture->getTarget(), texture->object());
-        if (functionType == NotTexSubImage2D) {
+        if (functionType == TexImage2DByGPU) {
             webContext()->copyTexImage2D(target, level, internalformat, 0, 0, canvas->width(), canvas->height(), 0);
-        } else if (functionType == TexSubImage2D) {
+        } else if (functionType == TexSubImage2DByGPU) {
             webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, 0, 0, canvas->width(), canvas->height());
+        } else if (functionType == TexSubImage3DByGPU) {
+            webContext()->copyTexSubImage3D(target, level, xoffset, yoffset, zoffset, 0, 0, canvas->width(), canvas->height());
         }
         webContext()->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
         restoreCurrentFramebuffer();
@@ -4425,16 +4426,16 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     ASSERT(texture);
 
-    // texImage2DCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
+    // texImageCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
     // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImage2DCanvasByGPU(internalformat, type)) {
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
         // 2D canvas has only FrontBuffer.
         texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
         return;
     }
 
-    texImage2DCanvasByGPU(NotTexSubImage2D, texture, target, level, internalformat, type, 0, 0, canvas);
+    texImageCanvasByGPU(TexImage2DByGPU, texture, target, level, internalformat, type, 0, 0, 0, canvas);
     texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), 1, type);
 }
 
@@ -4683,16 +4684,16 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     ASSERT(texture);
 
     GLenum internalformat = texture->getInternalFormat(target, level);
-    // texImage2DCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
+    // texImageCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
     // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImage2DCanvasByGPU(internalformat, type)) {
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
         // 2D canvas has only FrontBuffer.
         texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
         return;
     }
 
-    texImage2DCanvasByGPU(TexSubImage2D, texture, target, level, GL_RGBA, type, xoffset, yoffset, canvas);
+    texImageCanvasByGPU(TexSubImage2DByGPU, texture, target, level, GL_RGBA, type, xoffset, yoffset, 0, canvas);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,

@@ -790,7 +790,11 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     if (isContextLost() || !validateHTMLCanvasElement("texSubImage3D", canvas, exceptionState))
         return;
 
-    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated()) {
+    WebGLTexture* texture = validateTextureBinding("texSubImage3D", target, false);
+    ASSERT(texture);
+    GLenum internalformat = texture->getInternalFormat(target, level);
+
+    if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
         ASSERT(!canvas->renderingContext() || canvas->renderingContext()->is2d());
         // 2D canvas has only FrontBuffer.
         texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
@@ -798,8 +802,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
         return;
     }
 
-    // FIXME: Can we do an accelerated copy in this case?
-    notImplemented();
+    texImageCanvasByGPU(TexSubImage3DByGPU, texture, target, level, GL_RGBA, type, xoffset, yoffset, zoffset, canvas);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)

@@ -828,11 +828,17 @@ protected:
 
     enum TexImageFunctionType {
         NotTexSubImage2D,
-        TexSubImage2D,
+        TexSubImage2D
+    };
+    enum TexImageByGPUType {
+        TexImage2DByGPU,
+        TexSubImage2DByGPU,
+        TexSubImage3DByGPU
     };
     // Copy from the canvas element directly to the texture via the GPU, without a read-back to system memory.
-    void texImage2DCanvasByGPU(TexImageFunctionType, WebGLTexture*, GLenum target, GLint level,
-        GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, HTMLCanvasElement*);
+    void texImageCanvasByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level,
+        GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
+    bool canUseTexImageCanvasByGPU(GLenum internalformat, GLenum type);
 
     void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
