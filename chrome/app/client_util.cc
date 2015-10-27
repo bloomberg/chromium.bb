@@ -41,7 +41,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/crash/content/app/breakpad_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
-#include "components/metrics/client_info.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/win/src/sandbox.h"
