@@ -115,13 +115,6 @@ std::vector<uint32_t> GetPageNumbersFromPrintPageNumberRange(
 
 PP_Instance g_last_instance_id;
 
-struct PDFFontSubstitution {
-  const char* pdf_name;
-  const char* face;
-  bool bold;
-  bool italic;
-};
-
 PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
   static_assert(PP_BROWSERFONT_TRUSTED_WEIGHT_100 == 0,
                 "PP_BrowserFont_Trusted_Weight min");
@@ -147,7 +140,33 @@ void EnumFonts(struct _FPDF_SYSFONTINFO* sysfontinfo, void* mapper) {
   }
 }
 
-const PDFFontSubstitution PDFFontSubstitutions[] = {
+void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
+              int charset, int pitch_family, const char* face, int* exact) {
+  // Do not attempt to map fonts if pepper is not initialized (for privet local
+  // printing).
+  // TODO(noamsml): Real font substitution (http://crbug.com/391978)
+  if (!pp::Module::Get())
+    return NULL;
+
+  pp::BrowserFontDescription description;
+
+  // Pretend the system does not have the Symbol font to force a fallback to
+  // the built in Symbol font in CFX_FontMapper::FindSubstFont().
+  if (strcmp(face, "Symbol") == 0)
+    return NULL;
+
+  if (pitch_family & FXFONT_FF_FIXEDPITCH) {
+    description.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE);
+  } else if (pitch_family & FXFONT_FF_ROMAN) {
+    description.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_SERIF);
+  }
+
+  static const struct {
+    const char* pdf_name;
+    const char* face;
+    bool bold;
+    bool italic;
+  } kPdfFontSubstitutions[] = {
     {"Courier", "Courier New", false, false},
     {"Courier-Bold", "Courier New", true, false},
     {"Courier-BoldOblique", "Courier New", true, true},
@@ -185,41 +204,20 @@ const PDFFontSubstitution PDFFontSubstitutions[] = {
      "MS Mincho", false, false},
 };
 
-void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
-              int charset, int pitch_family, const char* face, int* exact) {
-  // Do not attempt to map fonts if pepper is not initialized (for privet local
-  // printing).
-  // TODO(noamsml): Real font substitution (http://crbug.com/391978)
-  if (!pp::Module::Get())
-    return NULL;
-
-  pp::BrowserFontDescription description;
-
-  // Pretend the system does not have the Symbol font to force a fallback to
-  // the built in Symbol font in CFX_FontMapper::FindSubstFont().
-  if (strcmp(face, "Symbol") == 0)
-    return NULL;
-
-  if (pitch_family & FXFONT_FF_FIXEDPITCH) {
-    description.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE);
-  } else if (pitch_family & FXFONT_FF_ROMAN) {
-    description.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_SERIF);
-  }
-
   // Map from the standard PDF fonts to TrueType font names.
   size_t i;
-  for (i = 0; i < arraysize(PDFFontSubstitutions); ++i) {
-    if (strcmp(face, PDFFontSubstitutions[i].pdf_name) == 0) {
-      description.set_face(PDFFontSubstitutions[i].face);
-      if (PDFFontSubstitutions[i].bold)
+  for (i = 0; i < arraysize(kPdfFontSubstitutions); ++i) {
+    if (strcmp(face, kPdfFontSubstitutions[i].pdf_name) == 0) {
+      description.set_face(kPdfFontSubstitutions[i].face);
+      if (kPdfFontSubstitutions[i].bold)
         description.set_weight(PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD);
-      if (PDFFontSubstitutions[i].italic)
+      if (kPdfFontSubstitutions[i].italic)
         description.set_italic(true);
       break;
     }
   }
 
-  if (i == arraysize(PDFFontSubstitutions)) {
+  if (i == arraysize(kPdfFontSubstitutions)) {
     // Convert to UTF-8 before calling set_face().
     std::string face_utf8;
     if (base::IsStringUTF8(face)) {
@@ -297,7 +295,7 @@ void Unsupported_Handler(UNSUPPORT_INFO*, int type) {
   g_engine_for_unsupported->UnsupportedFeature(type);
 }
 
-UNSUPPORT_INFO g_unsuppored_info = {
+UNSUPPORT_INFO g_unsupported_info = {
   1,
   Unsupported_Handler
 };
@@ -328,16 +326,16 @@ void SetPageSizeAndContentRect(bool rotated,
 // Calculate the scale factor between |content_rect| and a page of size
 // |src_width| x |src_height|.
 //
-// |scale_to_fit| is true, if we need to calculate the scale factor.
 // |content_rect| specifies the printable area of the destination page, with
 // origin at left-bottom. Values are in points.
 // |src_width| specifies the source page width in points.
 // |src_height| specifies the source page height in points.
 // |rotated| True if source page is rotated 90 degree or 270 degree.
-double CalculateScaleFactor(bool scale_to_fit,
-                            const pp::Rect& content_rect,
-                            double src_width, double src_height, bool rotated) {
-  if (!scale_to_fit || src_width == 0 || src_height == 0)
+double CalculateScaleFactor(const pp::Rect& content_rect,
+                            double src_width,
+                            double src_height,
+                            bool rotated) {
+  if (src_width == 0 || src_height == 0)
     return 1.0;
 
   double actual_source_page_width = rotated ? src_height : src_width;
@@ -371,43 +369,52 @@ void SetDefaultClipBox(bool rotated, ClipBox* clip_box) {
   clip_box->top = rotated ? kPaperWidth : kPaperHeight;
 }
 
-// Compute source clip box boundaries based on the crop box / media box of
-// source page and scale factor.
-//
-// |page| Handle to the source page. Returned by FPDF_LoadPage function.
-// |scale_factor| specifies the scale factor that should be applied to source
-// clip box boundaries.
-// |rotated| True if source page is rotated 90 degree or 270 degree.
-// |clip_box| out param to hold the computed source clip box values.
-void CalculateClipBoxBoundary(FPDF_PAGE page, double scale_factor, bool rotated,
-                              ClipBox* clip_box) {
-  ClipBox media_box;
-  if (!FPDFPage_GetMediaBox(page, &media_box.left, &media_box.bottom,
-                            &media_box.right, &media_box.top)) {
-    SetDefaultClipBox(rotated, &media_box);
+// Set the media box and/or crop box as needed. If both boxes are there, then
+// nothing needs to be done. If one box is missing, then fill it with the value
+// from the other box. If both boxes are missing, then they both get the default
+// value from SetDefaultClipBox(), based on |rotated|.
+void CalculateMediaBoxAndCropBox(bool rotated,
+                                 bool has_media_box,
+                                 bool has_crop_box,
+                                 ClipBox* media_box,
+                                 ClipBox* crop_box) {
+  if (!has_media_box && !has_crop_box) {
+    SetDefaultClipBox(rotated, crop_box);
+    SetDefaultClipBox(rotated, media_box);
+  } else if (has_crop_box && !has_media_box) {
+    *media_box = *crop_box;
+  } else if (has_media_box && !has_crop_box) {
+    *crop_box = *media_box;
   }
+}
 
-  ClipBox crop_box;
-  if (!FPDFPage_GetCropBox(page, &crop_box.left, &crop_box.bottom,
-                          &crop_box.right, &crop_box.top)) {
-    SetDefaultClipBox(rotated, &crop_box);
-  }
+// Compute source clip box boundaries based on the crop box / media box of
+// source page.
+//
+// |media_box| The PDF's media box.
+// |crop_box| The PDF's crop box.
+ClipBox CalculateClipBoxBoundary(const ClipBox& media_box,
+                                 const ClipBox& crop_box) {
+  ClipBox clip_box;
 
   // Clip |media_box| to the size of |crop_box|, but ignore |crop_box| if it is
   // bigger than |media_box|.
-  clip_box->left =
+  clip_box.left =
       (crop_box.left < media_box.left) ? media_box.left : crop_box.left;
-  clip_box->right =
+  clip_box.right =
       (crop_box.right > media_box.right) ? media_box.right : crop_box.right;
-  clip_box->top = (crop_box.top > media_box.top) ? media_box.top : crop_box.top;
-  clip_box->bottom =
+  clip_box.top = (crop_box.top > media_box.top) ? media_box.top : crop_box.top;
+  clip_box.bottom =
       (crop_box.bottom < media_box.bottom) ? media_box.bottom : crop_box.bottom;
+  return clip_box;
+}
 
-  // Finally, scale |clip_box|.
-  clip_box->left *= scale_factor;
-  clip_box->right *= scale_factor;
-  clip_box->bottom *= scale_factor;
-  clip_box->top *= scale_factor;
+// Scale |box| by |scale_factor|.
+void ScaleClipBox(double scale_factor, ClipBox* box) {
+  box->left *= scale_factor;
+  box->right *= scale_factor;
+  box->bottom *= scale_factor;
+  box->top *= scale_factor;
 }
 
 // Calculate the clip box translation offset for a page that does need to be
@@ -612,7 +619,7 @@ bool InitializeSDK() {
   FPDF_SetSystemFontInfo(&g_font_info);
 #endif
 
-  FSDK_SetUnSpObjProcessHandler(&g_unsuppored_info);
+  FSDK_SetUnSpObjProcessHandler(&g_unsupported_info);
 
   return true;
 }
@@ -3412,13 +3419,27 @@ void PDFiumEngine::TransformPDFPageForPrinting(
   const int actual_page_height =
       rotated ? page_size.width() : page_size.height();
 
-  const double scale_factor = CalculateScaleFactor(fit_to_page, content_rect,
-                                                   src_page_width,
-                                                   src_page_height, rotated);
+  const double scale_factor = fit_to_page ?
+      CalculateScaleFactor(
+          content_rect, src_page_width, src_page_height, rotated) : 1.0;
 
   // Calculate positions for the clip box.
-  ClipBox source_clip_box;
-  CalculateClipBoxBoundary(page, scale_factor, rotated, &source_clip_box);
+  ClipBox media_box;
+  ClipBox crop_box;
+  bool has_media_box = !!FPDFPage_GetMediaBox(page,
+                                              &media_box.left,
+                                              &media_box.bottom,
+                                              &media_box.right,
+                                              &media_box.top);
+  bool has_crop_box = !!FPDFPage_GetCropBox(page,
+                                            &crop_box.left,
+                                            &crop_box.bottom,
+                                            &crop_box.right,
+                                            &crop_box.top);
+  CalculateMediaBoxAndCropBox(
+      rotated, has_media_box, has_crop_box, &media_box, &crop_box);
+  ClipBox source_clip_box = CalculateClipBoxBoundary(media_box, crop_box);
+  ScaleClipBox(scale_factor, &source_clip_box);
 
   // Calculate the translation offset values.
   double offset_x = 0;
