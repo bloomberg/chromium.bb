@@ -78,7 +78,7 @@ LayoutThemeDefault::~LayoutThemeDefault()
 {
 }
 
-bool LayoutThemeDefault::supportsFocusRing(const ComputedStyle& style) const
+bool LayoutThemeDefault::themeDrawsFocusRing(const ComputedStyle& style) const
 {
     if (useMockTheme()) {
         // Don't use focus rings for buttons when mocking controls.

@@ -44,7 +44,7 @@ public:
 
     Color systemColor(CSSValueID) const override;
 
-    bool supportsFocusRing(const ComputedStyle&) const override;
+    bool themeDrawsFocusRing(const ComputedStyle&) const override;
 
     // List Box selection color
     virtual Color activeListBoxSelectionBackgroundColor() const;

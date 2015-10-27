@@ -421,7 +421,7 @@ void LayoutTheme::addVisualOverflow(const LayoutObject& object, IntRect& borderB
 
 bool LayoutTheme::shouldDrawDefaultFocusRing(const LayoutObject& layoutObject) const
 {
-    if (supportsFocusRing(layoutObject.styleRef()))
+    if (themeDrawsFocusRing(layoutObject.styleRef()))
         return false;
     Node* node = layoutObject.node();
     if (!node)

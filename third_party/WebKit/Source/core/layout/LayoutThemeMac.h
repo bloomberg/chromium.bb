@@ -177,7 +177,7 @@ protected:
 private:
     String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
     String extraDefaultStyleSheet() override;
-    bool supportsFocusRing(const ComputedStyle&) const override;
+    bool themeDrawsFocusRing(const ComputedStyle&) const override;
 
     ThemePainter& painter() override { return m_painter; }
 

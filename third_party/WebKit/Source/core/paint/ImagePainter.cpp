@@ -50,7 +50,7 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo, const L
         return;
 
     // Even if the theme handles focus ring drawing for entire elements, it won't do it for
-    // an area within an image, so we don't call LayoutTheme::supportsFocusRing here.
+    // an area within an image, so we don't call LayoutTheme::themeDrawsFocusRing here.
 
     Path path = areaElement.computePath(&m_layoutImage);
     if (path.isEmpty())
