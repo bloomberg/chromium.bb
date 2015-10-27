@@ -73,7 +73,7 @@ class PDFExtensionTest : public ExtensionApiTest,
   }
 
   bool PdfIsExpectedToFailLoad(const std::string& pdf_file) {
-    const char* kFailingPdfs[] = {
+    const char* const kFailingPdfs[] = {
         "pdf_private/cfuzz5.pdf",
         "pdf_private/cfuzz6.pdf",
         "pdf_private/crash-11-14-44.pdf",
@@ -410,6 +410,44 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
   // Invalid link URLs should be changed to "about:blank" when filtered.
   EXPECT_EQ(unfiltered_valid_link_url, valid_link_url);
   EXPECT_EQ(GURL("about:blank"), invalid_link_url);
+}
+
+// This test ensures that titles are set properly for PDFs without /Title.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithNoTitle) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), guest_contents->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+}
+
+// This test ensures that titles are set properly for PDFs with /Title.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithTitle) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-title.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+  EXPECT_EQ(base::ASCIIToUTF16("PDF title test"), guest_contents->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("PDF title test"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+}
+
+// This test ensures that titles are set properly for embedded PDFs with /Title.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithEmbeddedPdf) {
+  std::string url =
+      embedded_test_server()->GetURL("/pdf/test-title.pdf").spec();
+  std::string data_url =
+      "data:text/html,"
+      "<html><head><title>TabTitleWithEmbeddedPdf</title></head><body>"
+      "<embed type=\"application/pdf\" src=\"" +
+      url +
+      "\"></body></html>";
+  ui_test_utils::NavigateToURL(browser(), GURL(data_url));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
+  EXPECT_EQ(base::ASCIIToUTF16("TabTitleWithEmbeddedPdf"),
+            web_contents->GetTitle());
 }
 
 class MaterialPDFExtensionTest : public PDFExtensionTest {

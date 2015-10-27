@@ -8,6 +8,7 @@
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -160,6 +161,24 @@ WebContents* MimeHandlerViewGuest::OpenURLFromTab(
     const content::OpenURLParams& params) {
   return embedder_web_contents()->GetDelegate()->OpenURLFromTab(
       embedder_web_contents(), params);
+}
+
+void MimeHandlerViewGuest::NavigationStateChanged(
+    WebContents* source,
+    content::InvalidateTypes changed_flags) {
+  if (!(changed_flags & content::INVALIDATE_TYPE_TITLE))
+    return;
+
+  if (!is_full_page_plugin())
+    return;
+
+  content::NavigationEntry* last_committed_entry =
+      embedder_web_contents()->GetController().GetLastCommittedEntry();
+  if (last_committed_entry) {
+    last_committed_entry->SetTitle(source->GetTitle());
+    embedder_web_contents()->GetDelegate()->NavigationStateChanged(
+        embedder_web_contents(), changed_flags);
+  }
 }
 
 bool MimeHandlerViewGuest::HandleContextMenu(
