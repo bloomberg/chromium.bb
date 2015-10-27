@@ -566,8 +566,8 @@ class ProxyResolverFactoryMojoTest : public testing::Test,
   scoped_ptr<ProxyResolverFactory> proxy_resolver_factory_mojo_;
 
   MockMojoProxyResolver mock_proxy_resolver_;
-  scoped_ptr<ProxyResolver> proxy_resolver_mojo_;
   TestClosure on_delete_callback_;
+  scoped_ptr<ProxyResolver> proxy_resolver_mojo_;
 };
 
 TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver) {

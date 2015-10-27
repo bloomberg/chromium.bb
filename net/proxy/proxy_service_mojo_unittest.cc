@@ -147,8 +147,8 @@ class ProxyServiceMojoTest : public testing::Test,
   LoggingMockHostResolver mock_host_resolver_;
   MockProxyScriptFetcher* fetcher_;  // Owned by |proxy_service_|.
   TestNetLog net_log_;
-  scoped_ptr<ProxyService> proxy_service_;
   TestClosure on_delete_closure_;
+  scoped_ptr<ProxyService> proxy_service_;
 };
 
 TEST_F(ProxyServiceMojoTest, Basic) {
