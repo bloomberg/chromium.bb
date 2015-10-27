@@ -528,6 +528,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       should_exclude_from_uma_(
           ServiceWorkerMetrics::ShouldExcludeURLFromHistogram(scope_)),
       weak_factory_(this) {
+  DCHECK_NE(kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);
   context_->AddLiveVersion(this);

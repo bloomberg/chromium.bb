@@ -147,7 +147,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
           weak_factory_.GetWeakPtr(), document_url, callback))) {
     if (state_ != INITIALIZING) {
       CompleteFindNow(scoped_refptr<ServiceWorkerRegistration>(),
-                      SERVICE_WORKER_ERROR_FAILED, callback);
+                      SERVICE_WORKER_ERROR_ABORT, callback);
     }
     TRACE_EVENT_INSTANT1(
         "ServiceWorker",
@@ -208,7 +208,7 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
           weak_factory_.GetWeakPtr(), scope, callback))) {
     if (state_ != INITIALIZING) {
       CompleteFindSoon(FROM_HERE, scoped_refptr<ServiceWorkerRegistration>(),
-                       SERVICE_WORKER_ERROR_FAILED, callback);
+                       SERVICE_WORKER_ERROR_ABORT, callback);
     }
     return;
   }
@@ -261,7 +261,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
           weak_factory_.GetWeakPtr(), registration_id, origin, callback))) {
     if (state_ != INITIALIZING) {
       CompleteFindNow(scoped_refptr<ServiceWorkerRegistration>(),
-                      SERVICE_WORKER_ERROR_FAILED, callback);
+                      SERVICE_WORKER_ERROR_ABORT, callback);
     }
     return;
   }
@@ -305,7 +305,7 @@ void ServiceWorkerStorage::FindRegistrationForIdOnly(
           base::Bind(&ServiceWorkerStorage::FindRegistrationForIdOnly,
                      weak_factory_.GetWeakPtr(), registration_id, callback))) {
     if (state_ != INITIALIZING) {
-      CompleteFindNow(nullptr, SERVICE_WORKER_ERROR_FAILED, callback);
+      CompleteFindNow(nullptr, SERVICE_WORKER_ERROR_ABORT, callback);
     }
     return;
   }
@@ -395,7 +395,7 @@ void ServiceWorkerStorage::StoreRegistration(
 
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -448,7 +448,7 @@ void ServiceWorkerStorage::UpdateToActiveState(
 
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -488,7 +488,7 @@ void ServiceWorkerStorage::DeleteRegistration(
     const StatusCallback& callback) {
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -576,7 +576,7 @@ void ServiceWorkerStorage::StoreUserData(
     const StatusCallback& callback) {
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -603,7 +603,7 @@ void ServiceWorkerStorage::GetUserData(
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
     RunSoon(FROM_HERE,
-            base::Bind(callback, std::string(), SERVICE_WORKER_ERROR_FAILED));
+            base::Bind(callback, std::string(), SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -631,7 +631,7 @@ void ServiceWorkerStorage::ClearUserData(
     const StatusCallback& callback) {
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -661,7 +661,7 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
     if (state_ != INITIALIZING) {
       RunSoon(FROM_HERE,
               base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
-                         SERVICE_WORKER_ERROR_FAILED));
+                         SERVICE_WORKER_ERROR_ABORT));
     }
     return;
   }

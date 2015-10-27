@@ -184,9 +184,17 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // Deletes the storage and starts over.
   void DeleteAndStartOver(const StatusCallback& callback);
 
-  // Returns new IDs which are guaranteed to be unique in the storage.
+  // Returns a new registration id which is guaranteed to be unique in the
+  // storage. Returns kInvalidServiceWorkerRegistrationId if the storage is
+  // disabled.
   int64 NewRegistrationId();
+
+  // Returns a new version id which is guaranteed to be unique in the storage.
+  // Returns kInvalidServiceWorkerVersionId if the storage is disabled.
   int64 NewVersionId();
+
+  // Returns a new resource id which is guaranteed to be unique in the storage.
+  // Returns kInvalidServiceWorkerResourceId if the storage is disabled.
   int64 NewResourceId();
 
   // Intended for use only by ServiceWorkerRegisterJob and

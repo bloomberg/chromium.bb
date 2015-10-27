@@ -678,14 +678,11 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   context()->ScheduleDeleteAndStartOver();
 
   // The storage is disabled while the recovery process is running, so the
-  // operation should be failed.
+  // operation should be aborted.
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_FAILED,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::Bind(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_ABORT,
+                 false /* expect_waiting */, true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 
   // The context started over and the storage was re-initialized, so the
