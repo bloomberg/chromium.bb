@@ -1547,8 +1547,6 @@ crbug.com/525903 inspector/sources/debugger-ui/watch-expressions-preserve-expans
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 
-crbug.com/538525 [ Lion ] virtual/threaded/animations/multiple-same-animations-asan-crash.html [ Crash ]
-
 crbug.com/538526 [ Win7 Win10 ] virtual/spv2/paint/invalidation/spv2/fixed-img-src-change-after-scroll.html [ Failure ]
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
