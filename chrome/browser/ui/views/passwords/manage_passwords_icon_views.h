@@ -29,20 +29,19 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
   void OnExecuting(BubbleIconView::ExecuteSource source) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  views::BubbleDelegateView* GetBubble() const override;
+  gfx::VectorIconId GetVectorIcon() const override;
 
   // views::View:
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
-  // BubbleIconView:
-  views::BubbleDelegateView* GetBubble() const override;
-
  private:
   friend class ManagePasswordsIconViewTest;
 
-  void UpdateVisibleUI();
+  // Updates the UI to match |state_|.
+  void UpdateUiForState();
 
   password_manager::ui::State state_;
-  bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViews);
 };

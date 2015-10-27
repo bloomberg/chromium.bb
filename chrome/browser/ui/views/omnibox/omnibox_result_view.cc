@@ -576,11 +576,9 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
     gfx::VectorIconId icon_id = model_->IsStarredMatch(match_) ?
         gfx::VectorIconId::OMNIBOX_STAR :
         AutocompleteMatch::TypeToVectorIcon(match_.type);
-    // The color is a dimmed version of text, chosen to match
-    // kChromeIconGrey when the text is black.
     return gfx::CreateVectorIcon(
-        icon_id, 16, SkColorSetA(GetColor(GetState(), TEXT),
-                                 0xFF - SkColorGetR(gfx::kChromeIconGrey)));
+        icon_id, 16,
+        color_utils::DeriveDefaultIconColor(GetColor(GetState(), TEXT)));
   }
 
   int icon = model_->IsStarredMatch(match_) ?

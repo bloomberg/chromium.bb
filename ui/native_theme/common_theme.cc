@@ -45,8 +45,10 @@ const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
 const SkColor kBlueButtonPressedColor = SK_ColorWHITE;
 const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
 const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
+const SkColor kCallToActionColor = gfx::kGoogleBlue500;
+const SkColor kCallToActionColorInvert = gfx::kGoogleBlue300;
 // Material spinner/throbber:
-const SkColor kThrobberSpinningColor = gfx::kGoogleBlue;
+const SkColor kThrobberSpinningColor = gfx::kGoogleBlue500;
 const SkColor kThrobberWaitingColor = SkColorSetRGB(0xA6, 0xA6, 0xA6);
 const SkColor kThrobberLightColor = SkColorSetRGB(0xF4, 0xF8, 0xFD);
 
@@ -148,6 +150,9 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     case NativeTheme::kColorId_BlueButtonShadowColor:
       *color = kBlueButtonShadowColor;
       break;
+    case NativeTheme::kColorId_CallToActionColor:
+      *color = kCallToActionColor;
+      break;
     // Material spinner/throbber
     case NativeTheme::kColorId_ThrobberSpinningColor:
       *color = kThrobberSpinningColor;
@@ -166,6 +171,9 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
     switch (color_id) {
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
         *color = kMenuInvertedSchemeHighlightBackgroundColor;
+        break;
+      case NativeTheme::kColorId_CallToActionColor:
+        *color = kCallToActionColorInvert;
         break;
       default:
         *color = color_utils::InvertColor(*color);

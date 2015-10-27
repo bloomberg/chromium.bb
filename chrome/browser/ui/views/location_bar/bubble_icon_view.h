@@ -11,6 +11,10 @@
 
 class CommandUpdater;
 
+namespace gfx {
+enum class VectorIconId;
+}
+
 namespace views {
 class BubbleDelegateView;
 }
@@ -40,6 +44,9 @@ class BubbleIconView : public views::ImageView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -51,12 +58,26 @@ class BubbleIconView : public views::ImageView {
   // Returns the bubble instance for the icon.
   virtual views::BubbleDelegateView* GetBubble() const = 0;
 
+  // Gets the given vector icon in the correct color and size based on |active|
+  // and whether Chrome's in material design mode.
+  virtual gfx::VectorIconId GetVectorIcon() const = 0;
+
+  // Sets the image using a PNG from the resource bundle. Returns true if an
+  // image was set, or false if the icon should use a vector asset. This only
+  // exists for non-MD mode. TODO(estade): remove it.
+  virtual bool SetRasterIcon();
+
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
-  // Gets the given vector icon in the correct color and size based on |active|
-  // and whether Chrome's in material design mode.
-  static gfx::ImageSkia GetVectorIcon(gfx::VectorIconId id, bool active);
+  // Updates the icon after some state has changed.
+  void UpdateIcon();
+
+  // Sets the active state of the icon. An active icon will be displayed in a
+  // "call to action" color.
+  void SetActiveInternal(bool active);
+
+  bool active() const { return active_; }
 
  private:
   // The CommandUpdater for the Browser object that owns the location bar.
@@ -64,6 +85,11 @@ class BubbleIconView : public views::ImageView {
 
   // The command ID executed when the user clicks this icon.
   const int command_id_;
+
+  // The active state. The precise definition of "active" is unique to each
+  // subclass, but generally indicates that the associated feature is acting on
+  // the web page.
+  bool active_;
 
   // This is used to check if the bookmark bubble was showing during the mouse
   // pressed event. If this is true then the mouse released event is ignored to

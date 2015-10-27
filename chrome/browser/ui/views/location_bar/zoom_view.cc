@@ -17,7 +17,8 @@
 
 ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
     : BubbleIconView(nullptr, 0),
-      location_bar_delegate_(location_bar_delegate) {
+      location_bar_delegate_(location_bar_delegate),
+      image_id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
   Update(NULL);
 }
 
@@ -36,13 +37,13 @@ void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
       IDS_TOOLTIP_ZOOM, zoom_controller->GetZoomPercent()));
 
   // The icon is hidden when the zoom level is default.
-  gfx::VectorIconId image_id =
-      zoom_controller->GetZoomRelativeToDefault() ==
-              ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
-          ? gfx::VectorIconId::ZOOM_MINUS
-          : gfx::VectorIconId::ZOOM_PLUS;
+  image_id_ = zoom_controller->GetZoomRelativeToDefault() ==
+                      ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
+                  ? gfx::VectorIconId::ZOOM_MINUS
+                  : gfx::VectorIconId::ZOOM_PLUS;
+  if (GetNativeTheme())
+    UpdateIcon();
 
-  SetImage(GetVectorIcon(image_id, false));
   SetVisible(true);
 }
 
@@ -57,4 +58,8 @@ void ZoomView::GetAccessibleState(ui::AXViewState* state) {
 
 views::BubbleDelegateView* ZoomView::GetBubble() const {
   return ZoomBubbleView::GetZoomBubble();
+}
+
+gfx::VectorIconId ZoomView::GetVectorIcon() const {
+  return image_id_;
 }

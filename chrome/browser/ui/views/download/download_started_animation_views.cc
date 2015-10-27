@@ -62,7 +62,7 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
     : gfx::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL) {
   gfx::ImageSkia download_image = gfx::CreateVectorIcon(
-      gfx::VectorIconId::FILE_DOWNLOAD_SHELF, 72, gfx::kGoogleBlue);
+      gfx::VectorIconId::FILE_DOWNLOAD_SHELF, 72, gfx::kGoogleBlue500);
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.

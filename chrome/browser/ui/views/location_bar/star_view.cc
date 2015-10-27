@@ -17,34 +17,20 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 
 StarView::StarView(CommandUpdater* command_updater, Browser* browser)
     : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE), browser_(browser) {
   set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
-  // Compensate for the difference between the material icon grid and the
-  // Chrome icon grid.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    SetBorder(views::Border::CreateEmptyBorder(0, -1, 0, -1));
 }
 
 StarView::~StarView() {}
 
 void StarView::SetToggled(bool on) {
+  BubbleIconView::SetActiveInternal(on);
   SetTooltipText(l10n_util::GetStringUTF16(
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetImage(gfx::CreateVectorIcon(
-        on ? gfx::VectorIconId::STAR : gfx::VectorIconId::STAR_BORDER, 18,
-        on ? gfx::kGoogleBlue : gfx::kChromeIconGrey));
-  } else {
-    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        on ? IDR_STAR_LIT : IDR_STAR));
-  }
 }
 
 void StarView::OnExecuting(
@@ -77,4 +63,18 @@ void StarView::ExecuteCommand(ExecuteSource source) {
 
 views::BubbleDelegateView* StarView::GetBubble() const {
   return BookmarkBubbleView::bookmark_bubble();
+}
+
+bool StarView::SetRasterIcon() {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return false;
+
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      active() ? IDR_STAR_LIT : IDR_STAR));
+  return true;
+}
+
+gfx::VectorIconId StarView::GetVectorIcon() const {
+  return active() ? gfx::VectorIconId::LOCATION_BAR_STAR_ACTIVE
+                  : gfx::VectorIconId::LOCATION_BAR_STAR;
 }

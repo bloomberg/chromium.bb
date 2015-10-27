@@ -108,6 +108,10 @@ GFX_EXPORT SkColor GetSysSkColor(int which);
 // light-on-dark color scheme.
 GFX_EXPORT bool IsInvertedColorScheme();
 
+// Derives a color for icons on a UI surface based on the text color on the same
+// surface.
+GFX_EXPORT SkColor DeriveDefaultIconColor(SkColor text_color);
+
 }  // namespace color_utils
 
 #endif  // UI_GFX_COLOR_UTILS_H_

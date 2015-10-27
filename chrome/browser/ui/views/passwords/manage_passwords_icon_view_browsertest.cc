@@ -31,7 +31,7 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   }
 
   password_manager::ui::State ViewState() { return GetView()->state_; }
-  bool ViewIsActive() { return GetView()->active_; }
+  bool ViewIsActive() { return GetView()->active(); }
 
   ManagePasswordsIconViews* GetView() {
     return static_cast<ManagePasswordsIconViews*>(view());

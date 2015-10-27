@@ -32,10 +32,13 @@ class ZoomView : public BubbleIconView {
   void OnExecuting(BubbleIconView::ExecuteSource source) override;
   void GetAccessibleState(ui::AXViewState* state) override;
   views::BubbleDelegateView* GetBubble() const override;
+  gfx::VectorIconId GetVectorIcon() const override;
 
  private:
   // The delegate used to get the currently visible WebContents.
   LocationBarView::Delegate* location_bar_delegate_;
+
+  gfx::VectorIconId image_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };

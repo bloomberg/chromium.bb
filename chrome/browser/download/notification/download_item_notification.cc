@@ -517,7 +517,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
 #endif
       } else {
         SetNotificationVectorIcon(gfx::VectorIconId::FILE_DOWNLOAD,
-                                  gfx::kGoogleBlue);
+                                  gfx::kGoogleBlue500);
       }
       break;
 

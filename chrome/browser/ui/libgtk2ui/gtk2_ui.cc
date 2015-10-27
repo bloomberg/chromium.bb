@@ -1010,19 +1010,18 @@ void Gtk2UI::LoadGtkValues() {
 }
 
 SkColor Gtk2UI::BuildFrameColors() {
+  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
   SkColor frame_color =
-      NativeThemeGtk2::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_WindowBackground);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
   SkColor temp_color;
   SetThemeTint(ThemeProperties::TINT_BACKGROUND_TAB, frame_color);
 
-
 #if GTK_MAJOR_VERSION == 2
   color_utils::HSL kDefaultFrameShift = { -1, -1, 0.4 };
-  GtkStyle* style = gtk_rc_get_style(NativeThemeGtk2::instance()->GetWindow());
+  GtkStyle* style = gtk_rc_get_style(theme->GetWindow());
 
   frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
-  NativeThemeGtk2::instance()->GetChromeStyleColor("frame-color", &frame_color);
+  theme->GetChromeStyleColor("frame-color", &frame_color);
 
   temp_color = frame_color;
   colors_[ThemeProperties::COLOR_FRAME] = temp_color;
@@ -1031,24 +1030,21 @@ SkColor Gtk2UI::BuildFrameColors() {
   temp_color = color_utils::HSLShift(
       GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]),
       kDefaultFrameShift);
-  NativeThemeGtk2::instance()->GetChromeStyleColor("inactive-frame-color",
-                                                   &temp_color);
+  theme->GetChromeStyleColor("inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
   SetThemeTint(ThemeProperties::TINT_FRAME_INACTIVE, temp_color);
 
   temp_color = color_utils::HSLShift(
       frame_color,
       GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO));
-  NativeThemeGtk2::instance()->GetChromeStyleColor("incognito-frame-color",
-                                                   &temp_color);
+  theme->GetChromeStyleColor("incognito-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
   SetThemeTint(ThemeProperties::TINT_FRAME_INCOGNITO, temp_color);
 
   temp_color = color_utils::HSLShift(
       frame_color,
       GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE));
-  NativeThemeGtk2::instance()->GetChromeStyleColor(
-      "incognito-inactive-frame-color", &temp_color);
+  theme->GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
   SetThemeTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE, temp_color);
 #else

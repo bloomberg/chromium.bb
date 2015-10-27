@@ -19,6 +19,7 @@
 #include "skia/ext/skia_utils_win.h"
 #endif
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_palette.h"
 
 namespace color_utils {
 
@@ -325,5 +326,12 @@ bool IsInvertedColorScheme() {
   return false;
 }
 #endif  // !defined(OS_WIN)
+
+SkColor DeriveDefaultIconColor(SkColor text_color) {
+  // For black text, this comes out to gfx::kChromeIconGrey.
+  SkColor color = BlendTowardOppositeLuminance(
+      text_color, SkColorGetR(gfx::kChromeIconGrey));
+  return color;
+}
 
 }  // namespace color_utils

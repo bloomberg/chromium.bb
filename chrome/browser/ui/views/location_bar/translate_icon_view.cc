@@ -19,14 +19,13 @@ TranslateIconView::TranslateIconView(CommandUpdater* command_updater)
     : BubbleIconView(command_updater, IDC_TRANSLATE_PAGE) {
   set_id(VIEW_ID_TRANSLATE_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE));
-  SetToggled(false);
 }
 
 TranslateIconView::~TranslateIconView() {
 }
 
 void TranslateIconView::SetToggled(bool on) {
-  SetImage(GetVectorIcon(gfx::VectorIconId::TRANSLATE, on));
+  SetActiveInternal(on);
 }
 
 void TranslateIconView::OnExecuting(
@@ -35,4 +34,8 @@ void TranslateIconView::OnExecuting(
 
 views::BubbleDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();
+}
+
+gfx::VectorIconId TranslateIconView::GetVectorIcon() const {
+  return gfx::VectorIconId::TRANSLATE;
 }

@@ -9,12 +9,15 @@
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
     : command_updater_(command_updater),
       command_id_(command_id),
+      active_(false),
       suppress_mouse_released_action_(false) {
   SetAccessibilityFocusable(true);
 }
@@ -72,6 +75,17 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+void BubbleIconView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  ImageView::ViewHierarchyChanged(details);
+  if (details.is_add && GetNativeTheme())
+    UpdateIcon();
+}
+
+void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  UpdateIcon();
+}
+
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     ExecuteCommand(EXECUTE_SOURCE_GESTURE);
@@ -85,17 +99,34 @@ void BubbleIconView::ExecuteCommand(ExecuteSource source) {
     command_updater_->ExecuteCommand(command_id_);
 }
 
+bool BubbleIconView::SetRasterIcon() {
+  return false;
+}
+
 void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
 }
 
-// static
-gfx::ImageSkia BubbleIconView::GetVectorIcon(gfx::VectorIconId id,
-                                             bool active) {
+void BubbleIconView::UpdateIcon() {
+  if (SetRasterIcon())
+    return;
+
   const int icon_size =
       ui::MaterialDesignController::IsModeMaterial() ? 16 : 18;
-  SkColor icon_color = active ? gfx::kGoogleBlue : gfx::kChromeIconGrey;
-  return gfx::CreateVectorIcon(id, icon_size, icon_color);
+  const ui::NativeTheme* theme = GetNativeTheme();
+  SkColor icon_color =
+      active_
+          ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
+          : color_utils::DeriveDefaultIconColor(theme->GetSystemColor(
+                ui::NativeTheme::kColorId_TextfieldDefaultColor));
+  SetImage(gfx::CreateVectorIcon(GetVectorIcon(), icon_size, icon_color));
+}
+
+void BubbleIconView::SetActiveInternal(bool active) {
+  if (active_ == active)
+    return;
+  active_ = active;
+  UpdateIcon();
 }
