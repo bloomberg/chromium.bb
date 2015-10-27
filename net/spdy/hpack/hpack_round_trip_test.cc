@@ -44,7 +44,7 @@ class HpackRoundTripTest : public ::testing::Test {
                                                           encoded.size());
     success &= decoder_.HandleControlFrameHeadersComplete(1, nullptr);
 
-    EXPECT_TRUE(CompareSpdyHeaderBlocks(header_set, decoder_.decoded_block()));
+    EXPECT_EQ(header_set, decoder_.decoded_block());
     return success;
   }
 

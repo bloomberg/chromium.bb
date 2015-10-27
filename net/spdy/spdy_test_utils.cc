@@ -130,11 +130,6 @@ void SetFrameLength(SpdyFrame* frame,
   }
 }
 
-bool CompareSpdyHeaderBlocks(const SpdyHeaderBlock& a,
-                             const SpdyHeaderBlock& b) {
-  return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin());
-}
-
 std::string a2b_hex(const char* hex_data) {
   std::vector<uint8> output;
   std::string result;

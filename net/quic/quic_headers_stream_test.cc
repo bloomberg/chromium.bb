@@ -205,7 +205,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     SpdyHeaderBlock headers;
     EXPECT_TRUE(framer_.ParseHeaderBlockInBuffer(
         saved_header_data_.data(), saved_header_data_.length(), &headers));
-    EXPECT_TRUE(CompareSpdyHeaderBlocks(headers_, headers));
+    EXPECT_EQ(headers_, headers);
     saved_header_data_.clear();
   }
 
