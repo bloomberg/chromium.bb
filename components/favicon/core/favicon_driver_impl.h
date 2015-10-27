@@ -89,12 +89,10 @@ class FaviconDriverImpl : public FaviconDriver {
   history::HistoryService* history_service_;
   bookmarks::BookmarkModel* bookmark_model_;
 
-  // FaviconHandlers used to download the different kind of favicons. Both
-  // |touch_icon_handler_| and |large_icon_handler_| may be null depending
-  // on the platform or variations.
+  // FaviconHandlers used to download the different kind of favicons.
+  // |touch_icon_handler_| may be null depending on the platform and variations.
   scoped_ptr<FaviconHandler> favicon_handler_;
   scoped_ptr<FaviconHandler> touch_icon_handler_;
-  scoped_ptr<FaviconHandler> large_icon_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconDriverImpl);
 };

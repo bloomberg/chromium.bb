@@ -50,12 +50,8 @@ FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
   favicon_handler_.reset(new FaviconHandler(
       favicon_service_, this, kEnableTouchIcon ? FaviconHandler::LARGEST_FAVICON
                                                : FaviconHandler::FAVICON));
-  if (kEnableTouchIcon) {
+  if (kEnableTouchIcon || IsIconNTPEnabled()) {
     touch_icon_handler_.reset(new FaviconHandler(
-        favicon_service_, this, FaviconHandler::LARGEST_TOUCH));
-  }
-  if (IsIconNTPEnabled()) {
-    large_icon_handler_.reset(new FaviconHandler(
         favicon_service_, this, FaviconHandler::LARGEST_TOUCH));
   }
 }
@@ -67,8 +63,6 @@ void FaviconDriverImpl::FetchFavicon(const GURL& url) {
   favicon_handler_->FetchFavicon(url);
   if (touch_icon_handler_.get())
     touch_icon_handler_->FetchFavicon(url);
-  if (large_icon_handler_.get())
-    large_icon_handler_->FetchFavicon(url);
 }
 
 void FaviconDriverImpl::DidDownloadFavicon(
@@ -87,10 +81,6 @@ void FaviconDriverImpl::DidDownloadFavicon(
                                          original_bitmap_sizes);
   if (touch_icon_handler_.get()) {
     touch_icon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
-                                              original_bitmap_sizes);
-  }
-  if (large_icon_handler_.get()) {
-    large_icon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
                                               original_bitmap_sizes);
   }
 }
@@ -131,8 +121,6 @@ bool FaviconDriverImpl::HasPendingTasksForTest() {
     return true;
   if (touch_icon_handler_ && touch_icon_handler_->HasPendingTasksForTest())
     return true;
-  if (large_icon_handler_ && large_icon_handler_->HasPendingTasksForTest())
-    return true;
   return false;
 }
 
@@ -156,8 +144,6 @@ void FaviconDriverImpl::OnUpdateFaviconURL(
   favicon_handler_->OnUpdateFaviconURL(page_url, candidates);
   if (touch_icon_handler_.get())
     touch_icon_handler_->OnUpdateFaviconURL(page_url, candidates);
-  if (large_icon_handler_.get())
-    large_icon_handler_->OnUpdateFaviconURL(page_url, candidates);
 }
 
 }  // namespace favicon
