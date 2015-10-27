@@ -659,6 +659,9 @@
       'suggestions/suggestions_service_unittest.cc',
       'suggestions/suggestions_store_unittest.cc',
     ],
+    'sync_bookmarks_unittest_sources': [
+      'sync_bookmarks/bookmark_data_type_controller_unittest.cc',
+    ],
     'sync_driver_unittest_sources': [
       'sync_driver/about_sync_util_unittest.cc',
       'sync_driver/backup_rollback_controller_unittest.cc',
@@ -885,6 +888,7 @@
         '<@(signin_unittest_sources)',
         '<@(ssl_config_unittest_sources)',
         '<@(suggestions_unittest_sources)',
+        '<@(sync_bookmarks_unittest_sources)',
         '<@(sync_driver_unittest_sources)',
         '<@(sync_sessions_unittest_sources)',
         '<@(syncable_prefs_unittest_sources)',
@@ -1008,6 +1012,7 @@
         'components.gyp:signin_core_browser_test_support',
         'components.gyp:ssl_config',
         'components.gyp:suggestions',
+        'components.gyp:sync_bookmarks',
         'components.gyp:sync_driver_test_support',
         'components.gyp:sync_sessions',
         'components.gyp:sync_sessions_test_support',

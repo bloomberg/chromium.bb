@@ -391,6 +391,7 @@ test("components_unittests") {
       "//components/search_provider_logos:unit_tests",
       "//components/signin/core/browser:unit_tests",
       "//components/ssl_config:unit_tests",
+      "//components/sync_bookmarks:unit_tests",
       "//components/sync_driver:unit_tests",
       "//components/sync_sessions:unit_tests",
       "//components/translate/core/browser:unit_tests",

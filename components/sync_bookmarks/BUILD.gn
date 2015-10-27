@@ -25,3 +25,25 @@ source_set("sync_bookmarks") {
     "//ui/gfx",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "bookmark_data_type_controller_unittest.cc",
+  ]
+
+  deps = [
+    ":sync_bookmarks",
+    "//base",
+    "//base:prefs_test_support",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
+    "//components/history/core/browser",
+    "//components/sync_driver",
+    "//components/sync_driver:test_support",
+    "//sync",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
