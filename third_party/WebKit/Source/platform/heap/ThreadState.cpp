@@ -90,9 +90,6 @@ RecursiveMutex& ThreadState::threadAttachMutex()
 ThreadState::ThreadState()
     : m_thread(currentThread())
     , m_persistentRegion(adoptPtr(new PersistentRegion()))
-#if OS(WIN) && COMPILER(MSVC)
-    , m_threadStackSize(0)
-#endif
     , m_startOfStack(reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart()))
     , m_endOfStack(reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart()))
     , m_safePointScopeMarker(nullptr)
@@ -164,28 +161,6 @@ void ThreadState::shutdown()
 
     // Thread-local storage shouldn't be disposed, so we don't call ~ThreadSpecific().
 }
-
-#if OS(WIN) && COMPILER(MSVC)
-size_t ThreadState::threadStackSize()
-{
-    if (m_threadStackSize)
-        return m_threadStackSize;
-
-    // Notice that we cannot use the TIB's StackLimit for the stack end, as it
-    // tracks the end of the committed range. We're after the end of the reserved
-    // stack area (most of which will be uncommitted, most times.)
-    MEMORY_BASIC_INFORMATION stackInfo;
-    memset(&stackInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
-    size_t resultSize = VirtualQuery(&stackInfo, &stackInfo, sizeof(MEMORY_BASIC_INFORMATION));
-    ASSERT_UNUSED(resultSize, resultSize >= sizeof(MEMORY_BASIC_INFORMATION));
-    Address stackEnd = reinterpret_cast<Address>(stackInfo.AllocationBase);
-
-    Address stackStart = reinterpret_cast<Address>(StackFrameDepth::getStackStart());
-    RELEASE_ASSERT(stackStart && stackStart > stackEnd);
-    m_threadStackSize = static_cast<size_t>(stackStart - stackEnd);
-    return m_threadStackSize;
-}
-#endif
 
 void ThreadState::attachMainThread()
 {

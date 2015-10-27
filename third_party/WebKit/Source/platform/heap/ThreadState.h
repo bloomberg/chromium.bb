@@ -576,10 +576,6 @@ public:
     void allocationPointAdjusted(int heapIndex);
     void promptlyFreed(size_t gcInfoIndex);
 
-#if OS(WIN) && COMPILER(MSVC)
-    size_t threadStackSize();
-#endif
-
 private:
     enum SnapshotType {
         HeapSnapshot,
@@ -687,12 +683,8 @@ private:
     ThreadIdentifier m_thread;
     OwnPtr<PersistentRegion> m_persistentRegion;
     BlinkGC::StackState m_stackState;
-#if OS(WIN) && COMPILER(MSVC)
-    size_t m_threadStackSize;
-#endif
     intptr_t* m_startOfStack;
     intptr_t* m_endOfStack;
-
     void* m_safePointScopeMarker;
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
