@@ -75665,6 +75665,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillServerExperiments">
+  <obsolete>
+    Deprecated as of at least 2013. Current autofill experiments rely on Finch
+    rather than a custom experimentation setup.
+  </obsolete>
   <suffix name="ar06" label="Acceptance ratio: 0.6"/>
   <suffix name="ar1" label="Acceptance ratio: 1.0"/>
   <suffix name="ar2" label="Acceptance ratio: 2.0"/>
