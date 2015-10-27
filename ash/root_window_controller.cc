@@ -39,7 +39,6 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/root_window_layout_manager.h"
-#include "ash/wm/screen_dimmer.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_background_controller.h"
@@ -367,7 +366,6 @@ void RootWindowController::Shutdown() {
 
   CloseChildWindows();
   GetRootWindowSettings(root_window)->controller = NULL;
-  screen_dimmer_.reset();
   workspace_controller_.reset();
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
@@ -515,11 +513,12 @@ void RootWindowController::CloseChildWindows() {
 
   // Explicitly destroy top level windows. We do this as during part of
   // destruction such windows may query the RootWindow for state.
-  std::queue<aura::Window*> non_toplevel_windows;
-  non_toplevel_windows.push(root_window);
-  while (!non_toplevel_windows.empty()) {
-    aura::Window* non_toplevel_window = non_toplevel_windows.front();
-    non_toplevel_windows.pop();
+  aura::WindowTracker non_toplevel_windows;
+  non_toplevel_windows.Add(root_window);
+  while (!non_toplevel_windows.windows().empty()) {
+    const aura::Window* non_toplevel_window =
+        *non_toplevel_windows.windows().begin();
+    non_toplevel_windows.Remove(const_cast<aura::Window*>(non_toplevel_window));
     aura::WindowTracker toplevel_windows;
     for (size_t i = 0; i < non_toplevel_window->children().size(); ++i) {
       aura::Window* child = non_toplevel_window->children()[i];
@@ -528,7 +527,7 @@ void RootWindowController::CloseChildWindows() {
       if (child->delegate())
         toplevel_windows.Add(child);
       else
-        non_toplevel_windows.push(child);
+        non_toplevel_windows.Add(child);
     }
     while (!toplevel_windows.windows().empty())
       delete *toplevel_windows.windows().begin();
@@ -694,7 +693,6 @@ RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
       touch_hud_projection_(NULL) {
   aura::Window* root_window = GetRootWindow();
   GetRootWindowSettings(root_window)->controller = this;
-  screen_dimmer_.reset(new ScreenDimmer(root_window));
 
   stacking_controller_.reset(new StackingController);
   aura::client::SetWindowTreeClient(root_window, stacking_controller_.get());

@@ -18,9 +18,14 @@ namespace {
 DEFINE_WINDOW_PROPERTY_KEY(
     bool, kChildWindowVisibilityChangesAnimatedKey, false);
 
+// A window with this property set will animate upon its visibility changes.
+DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowVisibilityChangesAnimatedKey, false);
+
 bool ShouldAnimateWindow(aura::Window* window) {
-  return window->parent() && window->parent()->GetProperty(
-      kChildWindowVisibilityChangesAnimatedKey);
+  return (window->parent() &&
+          window->parent()->GetProperty(
+              kChildWindowVisibilityChangesAnimatedKey)) ||
+         window->GetProperty(kWindowVisibilityChangesAnimatedKey);
 }
 
 }  // namespace
@@ -81,9 +86,12 @@ SuspendChildWindowVisibilityAnimations::
     window_->ClearProperty(kChildWindowVisibilityChangesAnimatedKey);
 }
 
+void SetWindowVisibilityChangesAnimated(aura::Window* window) {
+  window->SetProperty(kWindowVisibilityChangesAnimatedKey, true);
+}
+
 void SetChildWindowVisibilityChangesAnimated(aura::Window* window) {
   window->SetProperty(kChildWindowVisibilityChangesAnimatedKey, true);
 }
 
 }  // namespace wm
-

@@ -6,6 +6,7 @@
 #define ASH_WM_SCREEN_DIMMER_H_
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,50 +17,52 @@ class Layer;
 }
 
 namespace ash {
+class DimWindow;
 
 // ScreenDimmer displays a partially-opaque layer above everything
-// else in the root window to darken the display.  It shouldn't be used
-// for long-term brightness adjustments due to performance
+// else in the given container window to darken the display.  It shouldn't be
+// used for long-term brightness adjustments due to performance
 // considerations -- it's only intended for cases where we want to
 // briefly dim the screen (e.g. to indicate to the user that we're
 // about to suspend a machine that lacks an internal backlight that
 // can be adjusted).
-class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
+class ASH_EXPORT ScreenDimmer : ShellObserver {
  public:
-  class TestApi {
-   public:
-    explicit TestApi(ScreenDimmer* dimmer) : dimmer_(dimmer) {}
+  // Creates a screen dimmer for the containers given by |container_id|.
+  // It's owned by the container in the primary root window and will be
+  // destroyed when the container is destroyed.
+  static ScreenDimmer* GetForContainer(int container_id);
 
-    ui::Layer* layer() { return dimmer_->dimming_layer_.get(); }
+  // Creates a dimmer a root window level. This is used for suspend animation.
+  static ScreenDimmer* GetForRoot();
 
-   private:
-    ScreenDimmer* dimmer_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
-  explicit ScreenDimmer(aura::Window* root_window);
   ~ScreenDimmer() override;
 
-  // Dim or undim the root window.
+  // Dim or undim the layers.
   void SetDimming(bool should_dim);
 
-  // aura::WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* root_window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+  bool is_dimming() const { return is_dimming_; }
+
+  // Find a ScreenDimmer in the container, or nullptr if it does not exist.
+  static ScreenDimmer* FindForTest(int container_id);
 
  private:
-  friend class TestApi;
+  static aura::Window* FindContainer(int container_id);
 
-  aura::Window* root_window_;
+  explicit ScreenDimmer(int container_id);
 
-  // Partially-opaque layer that's stacked above all of the root window's
-  // children and used to dim the screen.  NULL until the first time we dim.
-  scoped_ptr<ui::Layer> dimming_layer_;
+  // ShellObserver:
+  void OnRootWindowAdded(aura::Window* root_window) override;
+
+  // Update the dimming state. This will also create a new DimWindow
+  // if necessary. (Used when a new display is connected)
+  void Update(bool should_dim);
+
+  int container_id_;
+  float target_opacity_;
 
   // Are we currently dimming the screen?
-  bool currently_dimming_;
+  bool is_dimming_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };
