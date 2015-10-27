@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.test.util.NetworkChangeNotifierTestUtil;
 
 /**
  * Tests that NetworkChangeNotifier is initialized.

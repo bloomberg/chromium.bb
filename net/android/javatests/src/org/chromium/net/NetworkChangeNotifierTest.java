@@ -25,6 +25,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.ConnectivityManagerDelegate;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.NetworkState;
+import org.chromium.net.test.util.NetworkChangeNotifierTestUtil;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.Callable;
