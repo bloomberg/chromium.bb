@@ -132,6 +132,7 @@ public:
     double timeStamp(ScriptState*) const;
     double platformTimeStamp() const { return m_platformTimeStamp; }
     void setPlatformTimeStamp(double platformTimeStamp) { m_platformTimeStamp = platformTimeStamp; }
+    DOMTimeStamp createTime() const { return m_createTime; }
 
     void stopPropagation() { m_propagationStopped = true; }
     void stopImmediatePropagation() { m_immediatePropagationStopped = true; }

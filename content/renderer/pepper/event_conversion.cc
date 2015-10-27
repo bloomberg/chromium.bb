@@ -15,12 +15,15 @@
 #include "content/common/input/web_touch_event_traits.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+using ppapi::EventTimeToPPTimeTicks;
 using ppapi::InputEventData;
+using ppapi::PPTimeTicksToEventTime;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
@@ -121,7 +124,7 @@ PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
 InputEventData GetEventWithCommonFieldsAndType(const WebInputEvent& web_event) {
   InputEventData result;
   result.event_type = ConvertEventTypes(web_event.type);
-  result.event_time_stamp = web_event.timeStampSeconds;
+  result.event_time_stamp = EventTimeToPPTimeTicks(web_event.timeStampSeconds);
   return result;
 }
 
@@ -346,7 +349,7 @@ WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
       NOTREACHED();
   }
   WebTouchEventTraits::ResetType(
-      type, event.event_time_stamp, web_event);
+      type, PPTimeTicksToEventTime(event.event_time_stamp), web_event);
   web_event->touchesLength = 0;
 
   // First add all changed touches, then add only the remaining unset
@@ -378,7 +381,7 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
     default:
       NOTREACHED();
   }
-  key_event->timeStampSeconds = event.event_time_stamp;
+  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.event_time_stamp);
   key_event->modifiers = event.event_modifiers;
   key_event->windowsKeyCode = event.key_code;
   key_event->setKeyIdentifierFromWindowsKeyCode();
@@ -388,7 +391,7 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
 WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
   WebKeyboardEvent* key_event = new WebKeyboardEvent();
   key_event->type = WebInputEvent::Char;
-  key_event->timeStampSeconds = event.event_time_stamp;
+  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.event_time_stamp);
   key_event->modifiers = event.event_modifiers;
 
   // Make sure to not read beyond the buffer in case some bad code doesn't
@@ -427,7 +430,8 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
     default:
       NOTREACHED();
   }
-  mouse_event->timeStampSeconds = event.event_time_stamp;
+  mouse_event->timeStampSeconds =
+      PPTimeTicksToEventTime(event.event_time_stamp);
   mouse_event->modifiers = event.event_modifiers;
   mouse_event->button = static_cast<WebMouseEvent::Button>(event.mouse_button);
   if (mouse_event->type == WebInputEvent::MouseMove) {
@@ -449,7 +453,8 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
 WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
   WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent();
   mouse_wheel_event->type = WebInputEvent::MouseWheel;
-  mouse_wheel_event->timeStampSeconds = event.event_time_stamp;
+  mouse_wheel_event->timeStampSeconds =
+      PPTimeTicksToEventTime(event.event_time_stamp);
   mouse_wheel_event->modifiers = event.event_modifiers;
   mouse_wheel_event->deltaX = event.wheel_delta.x;
   mouse_wheel_event->deltaY = event.wheel_delta.y;

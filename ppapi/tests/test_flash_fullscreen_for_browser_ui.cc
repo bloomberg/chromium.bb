@@ -89,7 +89,7 @@ void TestFlashFullscreenForBrowserUI::SimulateUserGesture() {
   pp::MouseInputEvent input_event(
       instance_,
       PP_INPUTEVENT_TYPE_MOUSEDOWN,
-      NowInTimeTicks(),  // time_stamp
+      0,  // time_stamp
       0,  // modifiers
       PP_INPUTEVENT_MOUSEBUTTON_LEFT,
       plugin_center,

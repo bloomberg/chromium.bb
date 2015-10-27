@@ -1120,7 +1120,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       // event. This allows out-of-process plugins to respond to the user
       // gesture after processing has finished here.
       if (WebUserGestureIndicator::isProcessingUserGesture()) {
-        pending_user_gesture_ = event.timeStampSeconds;
+        pending_user_gesture_ =
+            ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
         pending_user_gesture_token_ =
             WebUserGestureIndicator::currentUserGestureToken();
         pending_user_gesture_token_.setOutOfProcess();
