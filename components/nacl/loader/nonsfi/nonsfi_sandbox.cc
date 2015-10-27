@@ -174,8 +174,23 @@ bool IsGracefullyDenied(int sysno) {
     case __NR_getuid:
     // tcmalloc calls madvise in TCMalloc_SystemRelease.
     case __NR_madvise:
+    // EPERM instead of SIGSYS as glibc tries to open files in /proc.
+    // openat via opendir via get_nprocs_conf and open via get_nprocs.
+    // TODO(hamaji): Remove this when we switch to newlib.
+    case __NR_open:
+    case __NR_openat:
     // For RunSandboxSanityChecks().
     case __NR_ptrace:
+    // glibc uses this for its pthread implementation. If we return
+    // EPERM for this, glibc will stop using this.
+    // TODO(hamaji): newlib does not use this. Make this SIGTRAP once
+    // we have switched to newlib.
+    case __NR_set_robust_list:
+    // This is obsolete in ARM EABI, but x86 glibc indirectly calls
+    // this in sysconf.
+#if defined(__i386__) || defined(__x86_64__)
+    case __NR_time:
+#endif
       return true;
 
     default:
@@ -292,6 +307,15 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
 
     case __NR_tgkill:
       return RestrictTgkill(policy_pid_);
+
+    case __NR_brk:
+      // The behavior of brk on Linux is different from other system
+      // calls. It does not return errno but the current break on
+      // failure. glibc thinks brk failed if the return value of brk
+      // is less than the requested address (i.e., brk(addr) < addr).
+      // So, glibc thinks brk succeeded if we return -EPERM and we
+      // need to return zero instead.
+      return Error(0);
 
     default:
       if (IsGracefullyDenied(sysno))
