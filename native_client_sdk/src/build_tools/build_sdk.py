@@ -465,15 +465,7 @@ def GypNinjaInstall(pepperdir, toolchains):
 
 
 def GypNinjaBuild_NaCl(rel_out_dir):
-  # TODO(binji): gyp_nacl doesn't build properly on Windows anymore; it only
-  # can use VS2010, not VS2013 which is now required by the Chromium repo. NaCl
-  # needs to be updated to perform the same logic as Chromium in detecting VS,
-  # which can now exist in the depot_tools directory.
-  # See https://code.google.com/p/nativeclient/issues/detail?id=4022
-  #
-  # For now, let's use gyp_chromium to build these components.
-#  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
-  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
+  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
   nacl_core_sdk_gyp = os.path.join(NACL_DIR, 'build', 'nacl_core_sdk.gyp')
   all_gyp = os.path.join(NACL_DIR, 'build', 'all.gyp')
 
