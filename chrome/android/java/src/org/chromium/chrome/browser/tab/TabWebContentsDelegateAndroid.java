@@ -65,7 +65,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     private static final String TAG = "WebContentsDelegate";
 
     private final Tab mTab;
-    private final ChromeActivity mActivity;
+    protected final ChromeActivity mActivity;
 
     private FindResultListener mFindResultListener;
 

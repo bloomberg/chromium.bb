@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUma;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -121,7 +122,13 @@ public class DocumentTab extends Tab {
                     ? WarmupManager.getInstance().takePrerenderedWebContents()
                     : WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
         }
-        initialize(webContents, tabContentManager, initiallyHidden);
+        initialize(webContents, tabContentManager, new TabDelegateFactory() {
+            @Override
+            public TabWebContentsDelegateAndroid createWebContentsDelegate(
+                    Tab tab, ChromeActivity activity) {
+                return new DocumentTabWebContentsDelegateAndroid(DocumentTab.this, mActivity);
+            }
+        }, initiallyHidden);
         if (unfreeze) mDidRestoreState = unfreezeContents();
 
         getView().requestFocus();
@@ -156,11 +163,6 @@ public class DocumentTab extends Tab {
         protected TabModel getTabModel() {
             return ChromeApplication.getDocumentTabModelSelector().getModel(isIncognito());
         }
-    }
-
-    @Override
-    protected TabWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new DocumentTabWebContentsDelegateAndroid(this, mActivity);
     }
 
     /**

@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
@@ -514,6 +513,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             }
         }
     };
+
+    private TabDelegateFactory mDelegateFactory;
 
     /**
      * Creates an instance of a {@link Tab}.
@@ -1252,19 +1253,21 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                          created.
      * @param tabContentManager A {@link TabContentManager} instance or {@code null} if the web
      *                          content will be managed/displayed manually.
+     * @param delegateFactory   The {@link TabDelegateFactory} to be used for delegate creation.
      * @param initiallyHidden   Only used if {@code webContents} is {@code null}.  Determines
      *                          whether or not the newly created {@link WebContents} will be hidden
      *                          or not.
      */
     public final void initialize(WebContents webContents, TabContentManager tabContentManager,
-            boolean initiallyHidden) {
+            TabDelegateFactory delegateFactory, boolean initiallyHidden) {
         try {
             TraceEvent.begin("Tab.initialize");
 
+            mDelegateFactory = delegateFactory;
             initializeNative();
 
             if (AppBannerManager.isEnabled()) {
-                mAppBannerManager = createAppBannerManager();
+                mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
                 if (mAppBannerManager != null) addObserver(mAppBannerManager);
             }
 
@@ -1303,10 +1306,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return {@link AppBannerManager} to be used for this tab. May be null.
+     * @return The delegate factory for testing purposes only.
      */
-    protected AppBannerManager createAppBannerManager() {
-        return new AppBannerManager(this, mActivity);
+    @VisibleForTesting
+    public TabDelegateFactory getDelegateFactoryForTest() {
+        return mDelegateFactory;
     }
 
     /**
@@ -1520,7 +1524,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-            mWebContentsDelegate = createWebContentsDelegate();
+            mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this, mActivity);
             mWebContentsObserver =
                     new TabWebContentsObserver(mContentViewCore.getWebContents(), this);
 
@@ -1531,7 +1535,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert mNativeTabAndroid != 0;
             nativeInitWebContents(
                     mNativeTabAndroid, mIncognito, mContentViewCore, mWebContentsDelegate,
-                    new TabContextMenuPopulator(createContextMenuPopulator(), this));
+                    new TabContextMenuPopulator(
+                            mDelegateFactory.createContextMenuPopulator(this, mActivity), this));
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
@@ -1559,7 +1564,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     mActivity.getTabModelSelector(), this);
             cvc.setDownloadDelegate(mDownloadDelegate);
 
-            setInterceptNavigationDelegate(createInterceptNavigationDelegate());
+            setInterceptNavigationDelegate(mDelegateFactory
+                    .createInterceptNavigationDelegate(this, mActivity));
 
             if (mGestureStateListener == null) {
                 mGestureStateListener = createGestureStateListener();
@@ -2058,28 +2064,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * A helper method to allow subclasses to build their own delegate.
-     * @return An instance of a {@link TabWebContentsDelegateAndroid}.
-     */
-    protected TabWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TabWebContentsDelegateAndroid(this, mActivity);
-    }
-
-    /**
      * A helper method to allow subclasses to handle the Instant support
      * disabled event.
      */
     @CalledByNative
     private void onWebContentsInstantSupportDisabled() {
         for (TabObserver observer : mObservers) observer.onWebContentsInstantSupportDisabled();
-    }
-
-    /**
-     * A helper method to allow subclasses to build their own menu populator.
-     * @return An instance of a {@link ContextMenuPopulator}.
-     */
-    protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(this, mActivity));
     }
 
     /**
@@ -2646,15 +2636,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     @VisibleForTesting
     public AuthenticatorNavigationInterceptor getAuthenticatorHelper() {
         return getInterceptNavigationDelegate().getAuthenticatorNavigationInterceptor();
-    }
-
-    /**
-     * Factory method for {@link InterceptNavigationDelegateImpl}. Meant to be overridden by
-     * subclasses.
-     * @return A new instance of {@link InterceptNavigationDelegateImpl}.
-     */
-    protected InterceptNavigationDelegateImpl createInterceptNavigationDelegate() {
-        return new InterceptNavigationDelegateImpl(mActivity, this);
     }
 
     /**
