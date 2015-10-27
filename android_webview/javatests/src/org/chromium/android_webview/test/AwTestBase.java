@@ -94,7 +94,6 @@ public class AwTestBase
     public <R> R runTestOnUiThreadAndGetResult(Callable<R> callable)
             throws Exception {
         FutureTask<R> task = new FutureTask<R>(callable);
-        getInstrumentation().waitForIdleSync();
         getInstrumentation().runOnMainSync(task);
         return task.get();
     }

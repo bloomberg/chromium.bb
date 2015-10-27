@@ -25,7 +25,7 @@ public class VideoSurfaceViewUtils {
      * MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED is the maximum time we expect
      * the Android system needs to setup a video hole surface.
      */
-    private static final long MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED = scaleTimeout(100);
+    private static final long MAX_WAIT_FOR_HOLE_PUNCHING_SURFACE_ATTACHED = scaleTimeout(1000);
 
     /**
      * Asserts that the given ViewGroup contains exactly one ContentVideoView.
