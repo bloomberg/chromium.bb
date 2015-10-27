@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/cdm_adapter.h"
+#include "media/cdm/ppapi/ppapi_cdm_adapter.h"
 
 #include "media/base/limits.h"
 #include "media/cdm/ppapi/cdm_file_io_impl.h"
 #include "media/cdm/ppapi/cdm_logging.h"
-#include "media/cdm/ppapi/supported_cdm_versions.h"
+#include "media/cdm/supported_cdm_versions.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/cpp/private/uma_private.h"
 
@@ -25,9 +25,9 @@ const uint32_t kSizeKBMax = 512 * 1024;  // 512MB
 const uint32_t kSizeKBBuckets = 100;
 
 #if !defined(NDEBUG)
-  #define DLOG_TO_CONSOLE(message) LogToConsole(message);
+#define DLOG_TO_CONSOLE(message) LogToConsole(message);
 #else
-  #define DLOG_TO_CONSOLE(message) (void)(message);
+#define DLOG_TO_CONSOLE(message) (void)(message);
 #endif
 
 bool IsMainThread() {
@@ -53,11 +53,10 @@ void CallOnMain(pp::CompletionCallback cb) {
 
 // Configures a cdm::InputBuffer. |subsamples| must exist as long as
 // |input_buffer| is in use.
-void ConfigureInputBuffer(
-    const pp::Buffer_Dev& encrypted_buffer,
-    const PP_EncryptedBlockInfo& encrypted_block_info,
-    std::vector<cdm::SubsampleEntry>* subsamples,
-    cdm::InputBuffer* input_buffer) {
+void ConfigureInputBuffer(const pp::Buffer_Dev& encrypted_buffer,
+                          const PP_EncryptedBlockInfo& encrypted_block_info,
+                          std::vector<cdm::SubsampleEntry>* subsamples,
+                          cdm::InputBuffer* input_buffer) {
   PP_DCHECK(subsamples);
   PP_DCHECK(!encrypted_buffer.is_null());
 
@@ -68,22 +67,22 @@ void ConfigureInputBuffer(
   PP_DCHECK(encrypted_block_info.key_id_size <=
             arraysize(encrypted_block_info.key_id));
   input_buffer->key_id_size = encrypted_block_info.key_id_size;
-  input_buffer->key_id = input_buffer->key_id_size > 0 ?
-      encrypted_block_info.key_id : NULL;
+  input_buffer->key_id =
+      input_buffer->key_id_size > 0 ? encrypted_block_info.key_id : NULL;
 
   PP_DCHECK(encrypted_block_info.iv_size <= arraysize(encrypted_block_info.iv));
   input_buffer->iv_size = encrypted_block_info.iv_size;
-  input_buffer->iv = encrypted_block_info.iv_size > 0 ?
-      encrypted_block_info.iv : NULL;
+  input_buffer->iv =
+      encrypted_block_info.iv_size > 0 ? encrypted_block_info.iv : NULL;
 
   input_buffer->num_subsamples = encrypted_block_info.num_subsamples;
   if (encrypted_block_info.num_subsamples > 0) {
     subsamples->reserve(encrypted_block_info.num_subsamples);
 
     for (uint32_t i = 0; i < encrypted_block_info.num_subsamples; ++i) {
-      subsamples->push_back(cdm::SubsampleEntry(
-          encrypted_block_info.subsamples[i].clear_bytes,
-          encrypted_block_info.subsamples[i].cipher_bytes));
+      subsamples->push_back(
+          cdm::SubsampleEntry(encrypted_block_info.subsamples[i].clear_bytes,
+                              encrypted_block_info.subsamples[i].cipher_bytes));
     }
 
     input_buffer->subsamples = &(*subsamples)[0];
@@ -406,13 +405,13 @@ void CdmAdapter::SetServerCertificate(uint32_t promise_id,
   if (!server_certificate_ptr ||
       server_certificate_size < media::limits::kMinCertificateLength ||
       server_certificate_size > media::limits::kMaxCertificateLength) {
-    RejectPromise(
-        promise_id, cdm::kInvalidAccessError, 0, "Incorrect certificate.");
+    RejectPromise(promise_id, cdm::kInvalidAccessError, 0,
+                  "Incorrect certificate.");
     return;
   }
 
-  cdm_->SetServerCertificate(
-      promise_id, server_certificate_ptr, server_certificate_size);
+  cdm_->SetServerCertificate(promise_id, server_certificate_ptr,
+                             server_certificate_size);
 }
 
 void CdmAdapter::CreateSessionAndGenerateRequest(uint32_t promise_id,
@@ -480,11 +479,9 @@ void CdmAdapter::Decrypt(pp::Buffer_Dev encrypted_buffer,
                decrypted_block->DecryptedBuffer()->Size()));
   }
 
-  CallOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::DeliverBlock,
-      status,
-      decrypted_block,
-      encrypted_block_info.tracking_info));
+  CallOnMain(callback_factory_.NewCallback(&CdmAdapter::DeliverBlock, status,
+                                           decrypted_block,
+                                           encrypted_block_info.tracking_info));
 }
 
 void CdmAdapter::InitializeAudioDecoder(
@@ -513,10 +510,8 @@ void CdmAdapter::InitializeAudioDecoder(
   }
 
   CallOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::DecoderInitializeDone,
-      PP_DECRYPTORSTREAMTYPE_AUDIO,
-      decoder_config.request_id,
-      status == cdm::kSuccess));
+      &CdmAdapter::DecoderInitializeDone, PP_DECRYPTORSTREAMTYPE_AUDIO,
+      decoder_config.request_id, status == cdm::kSuccess));
 }
 
 void CdmAdapter::InitializeVideoDecoder(
@@ -548,10 +543,8 @@ void CdmAdapter::InitializeVideoDecoder(
   }
 
   CallOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::DecoderInitializeDone,
-      PP_DECRYPTORSTREAMTYPE_VIDEO,
-      decoder_config.request_id,
-      status == cdm::kSuccess));
+      &CdmAdapter::DecoderInitializeDone, PP_DECRYPTORSTREAMTYPE_VIDEO,
+      decoder_config.request_id, status == cdm::kSuccess));
 }
 
 void CdmAdapter::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
@@ -562,10 +555,8 @@ void CdmAdapter::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
         PpDecryptorStreamTypeToCdmStreamType(decoder_type));
   }
 
-  CallOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::DecoderDeinitializeDone,
-      decoder_type,
-      request_id));
+  CallOnMain(callback_factory_.NewCallback(&CdmAdapter::DecoderDeinitializeDone,
+                                           decoder_type, request_id));
 }
 
 void CdmAdapter::ResetDecoder(PP_DecryptorStreamType decoder_type,
@@ -575,8 +566,7 @@ void CdmAdapter::ResetDecoder(PP_DecryptorStreamType decoder_type,
     cdm_->ResetDecoder(PpDecryptorStreamTypeToCdmStreamType(decoder_type));
 
   CallOnMain(callback_factory_.NewCallback(&CdmAdapter::DecoderResetDone,
-                                           decoder_type,
-                                           request_id));
+                                           decoder_type, request_id));
 }
 
 void CdmAdapter::DecryptAndDecode(
@@ -590,9 +580,7 @@ void CdmAdapter::DecryptAndDecode(
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
   if (cdm_ && !encrypted_buffer.is_null()) {
-    ConfigureInputBuffer(encrypted_buffer,
-                         encrypted_block_info,
-                         &subsamples,
+    ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,
                          &input_buffer);
   }
 
@@ -604,9 +592,7 @@ void CdmAdapter::DecryptAndDecode(
       if (cdm_)
         status = cdm_->DecryptAndDecodeFrame(input_buffer, video_frame.get());
       CallOnMain(callback_factory_.NewCallback(
-          &CdmAdapter::DeliverFrame,
-          status,
-          video_frame,
+          &CdmAdapter::DeliverFrame, status, video_frame,
           encrypted_block_info.tracking_info));
       return;
     }
@@ -614,13 +600,11 @@ void CdmAdapter::DecryptAndDecode(
     case PP_DECRYPTORSTREAMTYPE_AUDIO: {
       LinkedAudioFrames audio_frames(new AudioFramesImpl());
       if (cdm_) {
-        status = cdm_->DecryptAndDecodeSamples(input_buffer,
-                                               audio_frames.get());
+        status =
+            cdm_->DecryptAndDecodeSamples(input_buffer, audio_frames.get());
       }
       CallOnMain(callback_factory_.NewCallback(
-          &CdmAdapter::DeliverSamples,
-          status,
-          audio_frames,
+          &CdmAdapter::DeliverSamples, status, audio_frames,
           encrypted_block_info.tracking_info));
       return;
     }
@@ -641,8 +625,7 @@ void CdmAdapter::SetTimer(int64_t delay_ms, void* context) {
   // only use CallOnMainThread() here to get delayed-execution behavior.
   pp::Module::Get()->core()->CallOnMainThread(
       delay_ms,
-      callback_factory_.NewCallback(&CdmAdapter::TimerExpired, context),
-      PP_OK);
+      callback_factory_.NewCallback(&CdmAdapter::TimerExpired, context), PP_OK);
 }
 
 void CdmAdapter::TimerExpired(int32_t result, void* context) {
@@ -677,10 +660,8 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
   if (system_code == 0x27) {
     pp::UMAPrivate uma_interface(this);
     uma_interface.HistogramCustomCounts("Media.EME.CdmFileIO.FileSizeKBOnError",
-                                        last_read_file_size_kb_,
-                                        kSizeKBMin,
-                                        kSizeKBMax,
-                                        kSizeKBBuckets);
+                                        last_read_file_size_kb_, kSizeKBMin,
+                                        kSizeKBMax, kSizeKBBuckets);
   }
 
   RejectPromise(promise_id, error, system_code,
@@ -692,8 +673,7 @@ void CdmAdapter::RejectPromise(uint32_t promise_id,
                                uint32_t system_code,
                                const std::string& error_message) {
   PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendPromiseRejectedInternal,
-      promise_id,
+      &CdmAdapter::SendPromiseRejectedInternal, promise_id,
       SessionError(error, system_code, error_message)));
 }
 
@@ -799,10 +779,8 @@ void CdmAdapter::SendPromiseRejectedInternal(int32_t result,
                                              const SessionError& error) {
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::PromiseRejected(
-      promise_id,
-      CdmExceptionTypeToPpCdmExceptionType(error.error),
-      error.system_code,
-      error.error_description);
+      promise_id, CdmExceptionTypeToPpCdmExceptionType(error.error),
+      error.system_code, error.error_description);
 }
 
 void CdmAdapter::SendSessionMessageInternal(int32_t result,
@@ -890,8 +868,7 @@ void CdmAdapter::DecoderInitializeDone(int32_t result,
                                        uint32_t request_id,
                                        bool success) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::DecoderInitializeDone(decoder_type,
-                                                      request_id,
+  pp::ContentDecryptor_Private::DecoderInitializeDone(decoder_type, request_id,
                                                       success);
 }
 
@@ -908,11 +885,10 @@ void CdmAdapter::DecoderResetDone(int32_t result,
   pp::ContentDecryptor_Private::DecoderResetDone(decoder_type, request_id);
 }
 
-void CdmAdapter::DeliverFrame(
-    int32_t result,
-    const cdm::Status& status,
-    const LinkedVideoFrame& video_frame,
-    const PP_DecryptTrackingInfo& tracking_info) {
+void CdmAdapter::DeliverFrame(int32_t result,
+                              const cdm::Status& status,
+                              const LinkedVideoFrame& video_frame,
+                              const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
   PP_DecryptedFrameInfo decrypted_frame_info = {};
   decrypted_frame_info.tracking_info.request_id = tracking_info.request_id;
@@ -992,8 +968,7 @@ void CdmAdapter::DeliverSamples(int32_t result,
 }
 
 bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
-  if (!video_frame.get() ||
-      !video_frame->FrameBuffer() ||
+  if (!video_frame.get() || !video_frame->FrameBuffer() ||
       (video_frame->Format() != cdm::kI420 &&
        video_frame->Format() != cdm::kYv12)) {
     CDM_DLOG() << "Invalid video frame!";
@@ -1003,12 +978,13 @@ bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   PpbBuffer* ppb_buffer = static_cast<PpbBuffer*>(video_frame->FrameBuffer());
 
   for (uint32_t i = 0; i < cdm::VideoFrame::kMaxPlanes; ++i) {
-    int plane_height = (i == cdm::VideoFrame::kYPlane) ?
-        video_frame->Size().height : (video_frame->Size().height + 1) / 2;
+    int plane_height = (i == cdm::VideoFrame::kYPlane)
+                           ? video_frame->Size().height
+                           : (video_frame->Size().height + 1) / 2;
     cdm::VideoFrame::VideoPlane plane =
         static_cast<cdm::VideoFrame::VideoPlane>(i);
     if (ppb_buffer->Size() < video_frame->PlaneOffset(plane) +
-                             plane_height * video_frame->Stride(plane)) {
+                                 plane_height * video_frame->Stride(plane)) {
       return false;
     }
   }
@@ -1027,11 +1003,8 @@ void CdmAdapter::OnFirstFileRead(int32_t file_size_bytes) {
 
   pp::UMAPrivate uma_interface(this);
   uma_interface.HistogramCustomCounts(
-      "Media.EME.CdmFileIO.FileSizeKBOnFirstRead",
-      last_read_file_size_kb_,
-      kSizeKBMin,
-      kSizeKBMax,
-      kSizeKBBuckets);
+      "Media.EME.CdmFileIO.FileSizeKBOnFirstRead", last_read_file_size_kb_,
+      kSizeKBMin, kSizeKBMax, kSizeKBBuckets);
   file_size_uma_reported_ = true;
 }
 
@@ -1062,11 +1035,8 @@ void CdmAdapter::SendPlatformChallenge(const char* service_id,
         new PepperPlatformChallengeResponse());
 
     int32_t result = platform_verification_.ChallengePlatform(
-        pp::Var(service_id_str),
-        challenge_var,
-        &response->signed_data,
-        &response->signed_data_signature,
-        &response->platform_key_certificate,
+        pp::Var(service_id_str), challenge_var, &response->signed_data,
+        &response->signed_data_signature, &response->platform_key_certificate,
         callback_factory_.NewCallback(&CdmAdapter::SendPlatformChallengeDone,
                                       response));
     challenge_var.Unmap();
@@ -1085,8 +1055,8 @@ void CdmAdapter::SendPlatformChallenge(const char* service_id,
 void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
 #if defined(OS_CHROMEOS)
   int32_t result = output_protection_.EnableProtection(
-      desired_protection_mask, callback_factory_.NewCallback(
-          &CdmAdapter::EnableProtectionDone));
+      desired_protection_mask,
+      callback_factory_.NewCallback(&CdmAdapter::EnableProtectionDone));
 
   // Errors are ignored since clients must call QueryOutputProtectionStatus() to
   // inspect the protection status on a regular basis.
@@ -1102,8 +1072,7 @@ void CdmAdapter::QueryOutputProtectionStatus() {
 
   output_link_mask_ = output_protection_mask_ = 0;
   const int32_t result = output_protection_.QueryStatus(
-      &output_link_mask_,
-      &output_protection_mask_,
+      &output_link_mask_, &output_protection_mask_,
       callback_factory_.NewCallback(
           &CdmAdapter::QueryOutputProtectionStatusDone));
   if (result == PP_OK_COMPLETIONPENDING) {
@@ -1124,21 +1093,17 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
   switch (stream_type) {
     case cdm::kStreamTypeAudio:
       PP_DCHECK(deferred_initialize_audio_decoder_);
-      CallOnMain(
-          callback_factory_.NewCallback(&CdmAdapter::DecoderInitializeDone,
-                                        PP_DECRYPTORSTREAMTYPE_AUDIO,
-                                        deferred_audio_decoder_config_id_,
-                                        decoder_status == cdm::kSuccess));
+      CallOnMain(callback_factory_.NewCallback(
+          &CdmAdapter::DecoderInitializeDone, PP_DECRYPTORSTREAMTYPE_AUDIO,
+          deferred_audio_decoder_config_id_, decoder_status == cdm::kSuccess));
       deferred_initialize_audio_decoder_ = false;
       deferred_audio_decoder_config_id_ = 0;
       break;
     case cdm::kStreamTypeVideo:
       PP_DCHECK(deferred_initialize_video_decoder_);
-      CallOnMain(
-          callback_factory_.NewCallback(&CdmAdapter::DecoderInitializeDone,
-                                        PP_DECRYPTORSTREAMTYPE_VIDEO,
-                                        deferred_video_decoder_config_id_,
-                                        decoder_status == cdm::kSuccess));
+      CallOnMain(callback_factory_.NewCallback(
+          &CdmAdapter::DecoderInitializeDone, PP_DECRYPTORSTREAMTYPE_VIDEO,
+          deferred_video_decoder_config_id_, decoder_status == cdm::kSuccess));
       deferred_initialize_video_decoder_ = false;
       deferred_video_decoder_config_id_ = 0;
       break;
@@ -1161,8 +1126,8 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 #if defined(OS_CHROMEOS)
 void CdmAdapter::ReportOutputProtectionUMA(OutputProtectionStatus status) {
   pp::UMAPrivate uma_interface(this);
-  uma_interface.HistogramEnumeration(
-      "Media.EME.OutputProtection", status, OUTPUT_PROTECTION_MAX);
+  uma_interface.HistogramEnumeration("Media.EME.OutputProtection", status,
+                                     OUTPUT_PROTECTION_MAX);
 }
 
 void CdmAdapter::ReportOutputProtectionQuery() {
@@ -1194,8 +1159,7 @@ void CdmAdapter::ReportOutputProtectionQueryResult() {
 
   if (!is_unprotectable_link_connected &&
       is_hdcp_enabled_on_all_protectable_links) {
-    ReportOutputProtectionUMA(
-        OUTPUT_PROTECTION_ALL_EXTERNAL_LINKS_PROTECTED);
+    ReportOutputProtectionUMA(OUTPUT_PROTECTION_ALL_EXTERNAL_LINKS_PROTECTED);
     uma_for_output_protection_positive_result_reported_ = true;
     return;
   }
@@ -1264,8 +1228,7 @@ CdmAdapter::SessionError::SessionError(cdm::Error error,
                                        const std::string& error_description)
     : error(error),
       system_code(system_code),
-      error_description(error_description) {
-}
+      error_description(error_description) {}
 
 CdmAdapter::SessionMessage::SessionMessage(
     const std::string& session_id,
@@ -1276,8 +1239,7 @@ CdmAdapter::SessionMessage::SessionMessage(
     : session_id(session_id),
       message_type(message_type),
       message(message, message + message_size),
-      legacy_destination_url(legacy_destination_url) {
-}
+      legacy_destination_url(legacy_destination_url) {}
 
 void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)
@@ -1325,9 +1287,7 @@ class CdmAdapterModule : public pp::Module {
     // Move this call to other places if this may be a concern in the future.
     INITIALIZE_CDM_MODULE();
   }
-  virtual ~CdmAdapterModule() {
-    DeinitializeCdmModule();
-  }
+  virtual ~CdmAdapterModule() { DeinitializeCdmModule(); }
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
     return new CdmAdapter(instance, this);

@@ -31,7 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "media/cdm/ppapi/supported_cdm_versions.h"
+#include "media/cdm/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR. NOLINT

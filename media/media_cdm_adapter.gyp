@@ -17,23 +17,26 @@
       'targets': [
         {
           # GN version: Use the template cdm_adapter in
-          # //media/cdm/ppapi/cdm_adapter.gni.
+          # //media/cdm/ppapi/ppapi_cdm_adapter.gni.
           'target_name': 'cdmadapter',
           'type': 'none',
           'direct_dependent_settings': {
+            'defines': [
+              'USE_PPAPI_CDM_ADAPTER',
+             ],
             'sources': [
               'cdm/api/content_decryption_module.h',
-              'cdm/ppapi/cdm_adapter.cc',
-              'cdm/ppapi/cdm_adapter.h',
+              'cdm/cdm_wrapper.h',
+              'cdm/ppapi/ppapi_cdm_adapter.cc',
+              'cdm/ppapi/ppapi_cdm_adapter.h',
               'cdm/ppapi/cdm_file_io_impl.cc',
               'cdm/ppapi/cdm_file_io_impl.h',
               'cdm/ppapi/cdm_helpers.cc',
               'cdm/ppapi/cdm_helpers.h',
               'cdm/ppapi/cdm_logging.cc',
               'cdm/ppapi/cdm_logging.h',
-              'cdm/ppapi/cdm_wrapper.h',
               'cdm/ppapi/linked_ptr.h',
-              'cdm/ppapi/supported_cdm_versions.h',
+              'cdm/supported_cdm_versions.h',
             ],
             'conditions': [
               ['os_posix == 1 and OS != "mac"', {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_SUPPORTED_CDM_VERSIONS_H_
-#define MEDIA_CDM_PPAPI_SUPPORTED_CDM_VERSIONS_H_
+#ifndef MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
+#define MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 
 #include "media/cdm/api/content_decryption_module.h"
 
@@ -23,7 +23,7 @@ bool IsSupportedCdmInterfaceVersion(int version) {
   static_assert(cdm::ContentDecryptionModule::kVersion ==
                     cdm::ContentDecryptionModule_8::kVersion,
                 "update the code below");
-  switch(version) {
+  switch (version) {
     // Supported versions in decreasing order.
     case cdm::ContentDecryptionModule_8::kVersion:
     case cdm::ContentDecryptionModule_7::kVersion:
@@ -37,7 +37,7 @@ bool IsSupportedCdmHostVersion(int version) {
   static_assert(cdm::ContentDecryptionModule::Host::kVersion ==
                     cdm::ContentDecryptionModule_8::Host::kVersion,
                 "update the code below");
-  switch(version) {
+  switch (version) {
     // Supported versions in decreasing order.
     case cdm::Host_8::kVersion:
     case cdm::Host_7::kVersion:
@@ -49,4 +49,4 @@ bool IsSupportedCdmHostVersion(int version) {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_SUPPORTED_CDM_VERSIONS_H_
+#endif  // MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_

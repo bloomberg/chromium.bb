@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//chrome/version.gni")  # TODO layering violation!
-import("//media/cdm/ppapi/cdm_adapter.gni")
+import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
 import("//media/media_options.gni")
 
 # The GYP version supports build flags "use_fake_video_decoder" and
@@ -58,7 +58,7 @@ process_version("clearkeycdmadapter_resources") {
   output = "$target_gen_dir/clearkeycdmadapter_version.rc"
 }
 
-cdm_adapter("clearkeycdmadapter") {
+ppapi_cdm_adapter("clearkeycdmadapter") {
   # Check whether the plugin's origin URL is valid.
   defines = [ "CHECK_DOCUMENT_URL" ]
   deps = [

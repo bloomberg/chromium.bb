@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_CDM_ADAPTER_H_
-#define MEDIA_CDM_PPAPI_CDM_ADAPTER_H_
+#ifndef MEDIA_CDM_PPAPI_PPAPI_CDM_ADAPTER_H_
+#define MEDIA_CDM_PPAPI_PPAPI_CDM_ADAPTER_H_
 
 #include <string>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "media/cdm/api/content_decryption_module.h"
+#include "media/cdm/cdm_wrapper.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
-#include "media/cdm/ppapi/cdm_wrapper.h"
 #include "media/cdm/ppapi/linked_ptr.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
@@ -288,4 +288,4 @@ class CdmAdapter : public pp::Instance,
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_CDM_ADAPTER_H_
+#endif  // MEDIA_CDM_PPAPI_PPAPI_CDM_ADAPTER_H_

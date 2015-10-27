@@ -5,7 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//chrome/version.gni")  # TODO layering violation
-import("//media/cdm/ppapi/cdm_adapter.gni")
+import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
 widevine_arch = current_cpu
@@ -122,7 +122,8 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
     output = "$target_gen_dir/widevinecdmadapter_version.rc"
   }
 
-  cdm_adapter("widevinecdmadapter") {
+  ppapi_cdm_adapter("widevinecdmadapter") {
+    defines = []
     deps = [
       ":widevinecdmadapter_resources",
       ":widevinecdm",
