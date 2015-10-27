@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
@@ -448,6 +449,9 @@ public class NewTabPage
         mIsIconMode = isIconNtpEnabled();
         mNewTabPageView.initialize(mNewTabPageManager, isInSingleUrlBarMode(activity),
                 mSearchProviderHasLogo, mIsIconMode);
+
+        RecordHistogram.recordBooleanHistogram(
+                "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
     }
 
     private static MostVisitedSites buildMostVisitedSites(Profile profile) {

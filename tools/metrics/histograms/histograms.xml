@@ -28654,6 +28654,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.MobileIsUserOnline" enum="Boolean">
+  <owner>fserb@chromium.org</owner>
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    Record the network status when a new tab page is opened. True if user is
+    online and false for offline.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.MobilePromo" enum="NewTabPageMobilePromo">
   <obsolete>
     Deprecated on M33 with the change to native NTP.
