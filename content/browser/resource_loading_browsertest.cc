@@ -17,6 +17,7 @@ class ResourceLoadingBrowserTest : public ContentBrowserTest  {
 
 const char kResourceLoadingNonMobilePage[] =
     "files/resource_loading/resource_loading_non_mobile.html";
+
 IN_PROC_BROWSER_TEST_F(ResourceLoadingBrowserTest,
   ResourceLoadingAvoidDoubleDownloads) {
   ASSERT_TRUE(test_server()->Start());
@@ -25,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingBrowserTest,
   int data = -1;
   EXPECT_TRUE(ExecuteScriptAndExtractInt(shell()->web_contents(),
     "getResourceNumber()", &data));
-  EXPECT_EQ(1, data);
+  EXPECT_EQ(2, data);
 }
 
 } // namespace content

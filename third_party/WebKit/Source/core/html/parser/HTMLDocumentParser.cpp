@@ -28,6 +28,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/MediaValuesCached.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
@@ -778,6 +779,10 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(document());
     m_haveBackgroundParser = true;
 
+    // Make sure that a resolver is set up, so that the correct viewport dimensions will be fed to the background parser and preload scanner.
+    if (document()->loader())
+        document()->ensureStyleResolver();
+
     RefPtr<WeakReference<BackgroundHTMLParser>> reference = WeakReference<BackgroundHTMLParser>::createUnbound();
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
 
@@ -792,6 +797,7 @@ void HTMLDocumentParser::startBackgroundParser()
     config->parser = m_weakFactory.createWeakPtr();
     config->xssAuditor = adoptPtr(new XSSAuditor);
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
+
     config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), CachedDocumentParameters::create(document())));
     config->decoder = takeDecoder();
     if (document()->settings()) {
