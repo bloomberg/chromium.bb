@@ -4,8 +4,12 @@
 
 source_set("backend") {
   sources = [
+    "audio_decoder_default.cc",
+    "audio_decoder_default.h",
     "media_pipeline_backend_default.cc",
     "media_pipeline_backend_default.h",
+    "video_decoder_default.cc",
+    "video_decoder_default.h",
   ]
 
   public_deps = [

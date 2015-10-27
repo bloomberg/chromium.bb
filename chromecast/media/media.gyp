@@ -145,8 +145,12 @@
         '../..',
       ],
       'sources': [
+        'cma/backend/audio_decoder_default.cc',
+        'cma/backend/audio_decoder_default.h',
         'cma/backend/media_pipeline_backend_default.cc',
         'cma/backend/media_pipeline_backend_default.h',
+        'cma/backend/video_decoder_default.cc',
+        'cma/backend/video_decoder_default.h',
       ],
     },
     {

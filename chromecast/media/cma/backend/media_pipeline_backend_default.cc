@@ -4,68 +4,12 @@
 
 #include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
 
+#include "chromecast/media/cma/backend/audio_decoder_default.h"
+#include "chromecast/media/cma/backend/video_decoder_default.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 
 namespace chromecast {
 namespace media {
-
-class MediaPipelineBackendDefault::AudioDecoderDefault
-    : public MediaPipelineBackend::AudioDecoder {
- public:
-  AudioDecoderDefault() : delegate_(nullptr) {}
-  ~AudioDecoderDefault() override {}
-
-  void SetDelegate(MediaPipelineBackend::Delegate* delegate) {
-    delegate_ = delegate;
-  }
-
-  // MediaPipelineBackend::AudioDecoder implementation:
-  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
-    if (buffer->end_of_stream())
-      delegate_->OnEndOfStream(this);
-    return MediaPipelineBackend::kBufferSuccess;
-  }
-
-  void GetStatistics(Statistics* statistics) override {}
-
-  bool SetConfig(const AudioConfig& config) override { return true; }
-
-  bool SetVolume(float multiplier) override { return true; }
-
-  RenderingDelay GetRenderingDelay() override { return RenderingDelay(); }
-
- private:
-  MediaPipelineBackend::Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderDefault);
-};
-
-class MediaPipelineBackendDefault::VideoDecoderDefault
-    : public MediaPipelineBackend::VideoDecoder {
- public:
-  VideoDecoderDefault() : delegate_(nullptr) {}
-  ~VideoDecoderDefault() override {}
-
-  void SetDelegate(MediaPipelineBackend::Delegate* delegate) {
-    delegate_ = delegate;
-  }
-
-  // MediaPipelineBackend::VideoDecoder implementation:
-  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
-    if (buffer->end_of_stream())
-      delegate_->OnEndOfStream(this);
-    return MediaPipelineBackend::kBufferSuccess;
-  }
-
-  void GetStatistics(Statistics* statistics) override {}
-
-  bool SetConfig(const VideoConfig& config) override { return true; }
-
- private:
-  MediaPipelineBackend::Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderDefault);
-};
 
 MediaPipelineBackendDefault::MediaPipelineBackendDefault()
     : running_(false), rate_(1.0f) {
@@ -91,9 +35,9 @@ MediaPipelineBackendDefault::CreateVideoDecoder() {
 bool MediaPipelineBackendDefault::Initialize(Delegate* delegate) {
   DCHECK(delegate);
   if (audio_decoder_)
-    audio_decoder_->SetDelegate(delegate);
+    audio_decoder_->Initialize(delegate);
   if (video_decoder_)
-    video_decoder_->SetDelegate(delegate);
+    video_decoder_->Initialize(delegate);
   return true;
 }
 

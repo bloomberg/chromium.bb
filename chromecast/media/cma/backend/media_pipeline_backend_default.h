@@ -12,6 +12,8 @@
 
 namespace chromecast {
 namespace media {
+class AudioDecoderDefault;
+class VideoDecoderDefault;
 
 // Factory that instantiates default (stub) media pipeline device elements.
 class MediaPipelineBackendDefault : public MediaPipelineBackend {
@@ -31,9 +33,6 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   bool SetPlaybackRate(float rate) override;
 
  private:
-  class AudioDecoderDefault;
-  class VideoDecoderDefault;
-
   base::TimeDelta start_pts_;
   base::TimeTicks start_clock_;
   bool running_;

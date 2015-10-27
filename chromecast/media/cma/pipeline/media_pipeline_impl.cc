@@ -313,20 +313,20 @@ void MediaPipelineImpl::Stop() {
 void MediaPipelineImpl::SetPlaybackRate(double rate) {
   CMALOG(kLogControl) << __FUNCTION__ << " rate=" << rate;
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!buffering_controller_ || !buffering_controller_->IsBuffering()) {
-    if (paused_ && rate != 0.0f) {
-      if (rate != target_playback_rate_)
-        media_pipeline_backend_->SetPlaybackRate(rate);
+  target_playback_rate_ = rate;
+  if (buffering_controller_ && buffering_controller_->IsBuffering())
+    return;
+
+  if (rate != 0.0f) {
+    media_pipeline_backend_->SetPlaybackRate(rate);
+    if (paused_) {
       paused_ = false;
       media_pipeline_backend_->Resume();
-    } else if (!paused_ && rate == 0.0f) {
-      paused_ = true;
-      media_pipeline_backend_->Pause();
-    } else {
-      media_pipeline_backend_->SetPlaybackRate(rate);
     }
+  } else if (!paused_) {
+    paused_ = true;
+    media_pipeline_backend_->Pause();
   }
-  target_playback_rate_ = rate;
 }
 
 void MediaPipelineImpl::SetVolume(float volume) {
@@ -366,15 +366,18 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
     client_.buffering_state_cb.Run(buffering_state);
   }
 
-  if (is_buffering) {
-    // Do not consume data in a rebuffering phase.
-    if (!paused_) {
-      paused_ = true;
-      media_pipeline_backend_->Pause();
-    }
-  } else if (paused_) {
-    paused_ = false;
-    media_pipeline_backend_->Resume();
+  if (!is_buffering) {
+    DCHECK(!buffering_controller_->IsBuffering());
+    // Once we finish buffering, we need to honour the desired playback rate
+    // (rather than just resuming). This way, if playback was paused while
+    // buffering, it will remain paused rather than incorrectly resuming.
+    SetPlaybackRate(target_playback_rate_);
+    return;
+  }
+  // Do not consume data in a rebuffering phase.
+  if (!paused_) {
+    paused_ = true;
+    media_pipeline_backend_->Pause();
   }
 }
 
