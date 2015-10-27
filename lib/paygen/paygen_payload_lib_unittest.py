@@ -125,7 +125,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     if not au_generator_uri_override:
       au_generator_uri_override = gspaths.ChromeosReleases.GeneratorUri(
-          payload.tgt_image.channel, payload.tgt_image.board, '6351.0.0')
+          payload.tgt_image.channel, payload.tgt_image.board, '7587.0.0')
 
     return paygen_payload_lib._PaygenPayload(
         payload=payload,
@@ -403,8 +403,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.ReplayAll()
     gen._GenerateUnsignedPayload()
 
-  def testGenPayloadHashes(self):
-    """Test _GenPayloadHash via mox."""
+  def testGenerateHashes(self):
+    """Test _GenerateHashes via mox."""
     gen = self._GetStdGenerator()
 
     # Stub out the required functions.
@@ -412,35 +412,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                              '_RunGeneratorCmd')
 
     # Record the expected function calls.
-    cmd = ['delta_generator',
-           '-in_file=' + gen.payload_file,
-           mox.IsA(str),
-           '-signature_size=256']
+    cmd = ['brillo_update_payload', 'hash',
+           '--unsigned_payload', gen.payload_file,
+           '--payload_hash_file', mox.IsA(str),
+           '--metadata_hash_file', mox.IsA(str),
+           '--signature_size', '256']
     gen._RunGeneratorCmd(cmd)
 
     # Run the test.
     self.mox.ReplayAll()
-    self.assertEqual(gen._GenPayloadHash(), '')
-
-  def testGenMetadataHashes(self):
-    """Test _GenPayloadHash via mox."""
-    gen = self._GetStdGenerator()
-
-    # Stub out the required functions.
-    self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
-                             '_RunGeneratorCmd')
-
-    # Record the expected function calls.
-    cmd = ['delta_generator',
-           '-in_file=' + gen.payload_file,
-           '-out_hash_file=/dev/null',
-           mox.IsA(str),
-           '-signature_size=256']
-    gen._RunGeneratorCmd(cmd)
-
-    # Run the test.
-    self.mox.ReplayAll()
-    self.assertEqual(gen._GenMetadataHash(), '')
+    self.assertEqual(gen._GenerateHashes(), ('', ''))
 
   def testSignHashes(self):
     """Test _SignHashes via mox."""
@@ -563,9 +544,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Set up stubs.
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
-                             '_GenPayloadHash')
-    self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
-                             '_GenMetadataHash')
+                             '_GenerateHashes')
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
                              '_SignHashes')
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
@@ -574,8 +553,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                              '_StoreMetadataSignatures')
 
     # Record expected calls.
-    gen._GenPayloadHash().AndReturn(payload_hash)
-    gen._GenMetadataHash().AndReturn(metadata_hash)
+    gen._GenerateHashes().AndReturn((payload_hash, metadata_hash))
     gen._SignHashes([payload_hash, metadata_hash]).AndReturn(
         (payload_sigs, metadata_sigs))
     gen._InsertPayloadSignatures(payload_sigs)
@@ -760,7 +738,7 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
         cache=self.cache,
         work_dir=self.tempdir,
         au_generator_uri=gspaths.ChromeosReleases.GeneratorUri(
-            payload.tgt_image.channel, payload.tgt_image.board, '6351.0.0'),
+            payload.tgt_image.channel, payload.tgt_image.board, '7587.0.0'),
         sign=sign)
 
     self.assertTrue(os.path.exists(output_uri))

@@ -306,27 +306,29 @@ class _PaygenPayload(object):
     delta_log = self._RunGeneratorCmd(cmd)
     self._StoreDeltaLog(delta_log)
 
-  def _GenPayloadHash(self):
-    """Generate a hash of payload and metadata.
+  def _GenerateHashes(self):
+    """Generate a payload hash and a metadata hash.
 
     Works from an unsigned update payload.
 
     Returns:
-      payload_hash as a string.
+      payload_hash as a string, metadata_hash as a string.
     """
-    logging.info('Calculating payload hashes on %s.', self.payload_file)
+    logging.info('Calculating hashes on %s.', self.payload_file)
 
     # How big will the signatures be.
     signature_sizes = [str(size) for size in self.PAYLOAD_SIGNATURE_SIZES_BYTES]
 
-    with tempfile.NamedTemporaryFile('rb') as payload_hash_file:
-      cmd = ['delta_generator',
-             '-in_file=' + self.payload_file,
-             '-out_hash_file=' + payload_hash_file.name,
-             '-signature_size=' + ':'.join(signature_sizes)]
+    with tempfile.NamedTemporaryFile('rb') as payload_hash_file, \
+         tempfile.NamedTemporaryFile('rb') as metadata_hash_file:
+      cmd = ['brillo_update_payload', 'hash',
+             '--unsigned_payload', self.payload_file,
+             '--payload_hash_file', payload_hash_file.name,
+             '--metadata_hash_file', metadata_hash_file.name,
+             '--signature_size', ':'.join(signature_sizes)]
 
       self._RunGeneratorCmd(cmd)
-      return payload_hash_file.read()
+      return payload_hash_file.read(), metadata_hash_file.read()
 
   def _MetadataSize(self, payload_file):
     """Discover the metadata size.
@@ -345,30 +347,6 @@ class _PaygenPayload(object):
       payload = self._update_payload.Payload(payload_fd)
       payload.Init()
       return payload.data_offset
-
-  def _GenMetadataHash(self):
-    """Generate a hash of payload and metadata.
-
-    Works from an unsigned update payload.
-
-    Returns:
-      metadata_hash as a string.
-    """
-    logging.info('Calculating payload hashes on %s.', self.payload_file)
-
-    # How big will the signatures be.
-    signature_sizes = [str(size) for size in self.PAYLOAD_SIGNATURE_SIZES_BYTES]
-
-    # The out_metadata_hash_file flag requires out_hash_file flag to be set.
-    with tempfile.NamedTemporaryFile('rb') as metadata_hash_file:
-      cmd = ['delta_generator',
-             '-in_file=' + self.payload_file,
-             '-out_hash_file=/dev/null',
-             '-out_metadata_hash_file=' + metadata_hash_file.name,
-             '-signature_size=' + ':'.join(signature_sizes)]
-
-      self._RunGeneratorCmd(cmd)
-      return metadata_hash_file.read()
 
   def _GenerateSignerResultsError(self, format_str, *args):
     """Helper for reporting errors with signer results."""
@@ -540,9 +518,7 @@ class _PaygenPayload(object):
       List of payload signatures, List of metadata signatures.
     """
     # Create hashes to sign.
-    # TODO(senj): Calculate the two hashes in one shot.
-    payload_hash = self._GenPayloadHash()
-    metadata_hash = self._GenMetadataHash()
+    payload_hash, metadata_hash = self._GenerateHashes()
 
     # Sign them.
     # pylint: disable=unpacking-non-sequence
