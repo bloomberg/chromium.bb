@@ -400,11 +400,6 @@ Error SocketNode::RecvHelper(const HandleAttr& attr,
                              int flags,
                              PP_Resource* addr,
                              int* out_len) {
-  if (TestStreamFlags(SSF_RECV_ENDOFSTREAM)) {
-    *out_len = 0;
-    return 0;
-  }
-
   int ms = read_timeout_;
   if ((flags & MSG_DONTWAIT) || !attr.IsBlocking())
     ms = 0;

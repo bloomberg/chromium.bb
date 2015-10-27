@@ -219,7 +219,7 @@ TEST_F(SocketTestUDP, Bind) {
   EXPECT_EQ(EINVAL, Bind(sock2_, LOCAL_HOST, PORT1));
 }
 
-TEST_F(SocketTestUDP, SendRcv) {
+TEST_F(SocketTestUDP, SendRecv) {
   char outbuf[256];
   char inbuf[512];
 
@@ -252,7 +252,7 @@ TEST_F(SocketTestUDP, SendRcv) {
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
-TEST_F(SocketTestUDP, SendRcvUnbound) {
+TEST_F(SocketTestUDP, SendRecvUnbound) {
   char outbuf[256];
   char inbuf[512];
 
@@ -841,6 +841,11 @@ TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
 
   // Close the new socket
   ASSERT_EQ(0, ki_close(new_sock));
+
+  // Sleep for 10 milliseconds. This is designed to allow the shutdown
+  // event to make its way to the client socket beofre the recv below().
+  // TODO(sbc): Find a way to test this that doesn't rely on arbitrary sleep.
+  usleep(100 * 1000);
 
   // Recv remainder
   int bytes_remaining = strlen(send_buf) - 10;
