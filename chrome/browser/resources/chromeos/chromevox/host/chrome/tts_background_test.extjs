@@ -41,3 +41,33 @@ SYNC_TEST_F('CvoxTtsBackgroundTest', 'Preprocess', function() {
   assertEquals('new line', preprocess('\n'));
   assertEquals('return', preprocess('\r'));
 });
+
+SYNC_TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {
+  var tts = new cvox.TtsBackground(false);
+  var voices = [
+    {lang: 'zh-CN', voiceName: 'Chinese'},
+    {lang: 'zh-TW', voiceName: 'Chinese (Taiwan)'},
+    {lang: 'en-US', voiceName: 'U.S. English'}
+  ];
+
+  chrome.tts.getVoices = function(callback) {
+    callback(voices);
+  };
+  
+  assertTrue(!tts.currentVoice);
+  
+  tts.updateVoice_('');
+  assertEquals('U.S. English', tts.currentVoice);
+
+  voices[2].lang = 'en';
+  tts.updateVoice_('');
+  assertEquals('U.S. English', tts.currentVoice);
+
+  voices[2].lang = 'fr-FR';
+  voices[2].voiceName = 'French';
+  tts.updateVoice_('');
+  assertEquals('Chinese', tts.currentVoice);
+
+  tts.updateVoice_('French');
+  assertEquals('French', tts.currentVoice);
+});

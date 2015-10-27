@@ -696,36 +696,21 @@ cvox.TtsBackground.prototype.clearTimeout_ = function() {
  * @private
  */
 cvox.TtsBackground.prototype.updateVoice_ = function(voiceName) {
-  chrome.tts.getVoices(
-      goog.bind(function(voices) {
-        for (var i = 0, v; v = voices[i]; i++) {
-          if (v['voiceName'] == voiceName) {
-            this.currentVoice = v['voiceName'];
-            this.startSpeakingNextItemInQueue_();
-            return;
-          }
-        }
+  chrome.tts.getVoices(goog.bind(function(voices) {
+    var currentLocale = chrome.i18n.getMessage('@@ui_locale').replace('_', '-');
 
-        var currentLocale =
-            chrome.i18n.getMessage('@@ui_locale').replace('_', '-');
-        voices.sort(function(v1, v2) {
-          if (v1['remote'] && !v2['remote']) {
-            return 1;
-          }
-          if (!v1['remote'] && v2['remote']) {
-            return -1;
-          }
-          if (v1['lang'] == currentLocale && v2['lang'] != currentLocale) {
-            return -1;
-          }
-          if (v1['lang'] != currentLocale && v2['lang'] == currentLocale) {
-            return 1;
-          }
-          return 0;
-        });
-        if (voices[0]) {
-          this.currentVoice = voices[0].voiceName;
-          this.startSpeakingNextItemInQueue_();
-        }
-      }, this));
+    // TODO(dtseng): Prefer voices having the default property once we switch to
+    // web speech. See crbug.com/544139.
+
+    var newVoice = voices.find(
+            function(v) { return v.voiceName == voiceName; }) ||
+        voices.find(function(v) { return v.lang === currentLocale; }) ||
+        voices.find(function(v) { return currentLocale.startsWith(v.lang); }) ||
+        voices[0];
+
+    if (newVoice) {
+      this.currentVoice = newVoice.voiceName;
+      this.startSpeakingNextItemInQueue_();
+    }
+  }, this));
 };

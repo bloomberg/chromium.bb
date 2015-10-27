@@ -447,6 +447,15 @@ cvox.ChromeVoxBackground.prototype.onIntroduceChromeVox = function() {
 };
 
 
+/**
+ * Gets the voice currently used by ChromeVox when calling tts.
+ * @return {string}
+ */
+cvox.ChromeVoxBackground.prototype.getCurrentVoice = function() {
+  return this.backgroundTts_.currentVoice;
+};
+
+
 // Create the background page object and export a function window['speak']
 // so that other background pages can access it. Also export the prefs object
 // for access by the options page.
@@ -461,6 +470,9 @@ cvox.ChromeVoxBackground.prototype.onIntroduceChromeVox = function() {
   // Export the braille translator manager for access by the options page.
   window['braille_translator_manager'] =
       background.backgroundBraille_.getTranslatorManager();
+
+  window['getCurrentVoice'] =
+      background.getCurrentVoice.bind(background);
 
   // Export injection for ChromeVox Next.
   cvox.ChromeVox.injectChromeVoxIntoTabs =

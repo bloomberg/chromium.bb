@@ -350,27 +350,26 @@ cvox.OptionsPage.populateVoicesSelect = function() {
   var select = $('voices');
 
   function setVoiceList() {
-    chrome.storage.local.get('voiceName', function(items) {
-      var selectedVoiceName = items.voiceName;
-      chrome.tts.getVoices(function(voices) {
-        select.innerHTML = '';
-        // TODO(plundblad): voiceName can actually be omitted in the TTS
-        // engine.  We should generate a name in that case.
-        voices.forEach(function(voice) {
-          voice.voiceName = voice.voiceName || '';
-        });
-        voices.sort(function(a, b) {
-          return a.voiceName.localeCompare(b.voiceName);
-        });
-        voices.forEach(function(voice) {
-          var option = document.createElement('option');
-          option.voiceName = voice.voiceName;
-          option.innerText = option.voiceName;
-          if (selectedVoiceName === voice.voiceName) {
-            option.setAttribute('selected', '');
-          }
-          select.add(option);
-        });
+    var selectedVoiceName =
+        chrome.extension.getBackgroundPage()['getCurrentVoice']();
+    chrome.tts.getVoices(function(voices) {
+      select.innerHTML = '';
+      // TODO(plundblad): voiceName can actually be omitted in the TTS engine.
+      // We should generate a name in that case.
+      voices.forEach(function(voice) {
+        voice.voiceName = voice.voiceName || '';
+      });
+      voices.sort(function(a, b) {
+        return a.voiceName.localeCompare(b.voiceName);
+      });
+      voices.forEach(function(voice) {
+        var option = document.createElement('option');
+        option.voiceName = voice.voiceName;
+        option.innerText = option.voiceName;
+        if (selectedVoiceName === voice.voiceName) {
+          option.setAttribute('selected', '');
+        }
+        select.add(option);
       });
     });
   }
