@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -44,6 +45,7 @@ public final class WarmupManager {
     private boolean mPrerenderIsAllowed;
     private WebContents mPrerenderedWebContents;
     private boolean mPrerendered;
+    private int mToolbarContainerId;
     private ViewGroup mMainView;
     private ExternalPrerenderHandler mExternalPrerenderHandler;
 
@@ -136,22 +138,21 @@ public final class WarmupManager {
     /**
      * Inflates and constructs the view hierarchy that the app will use.
      * @param baseContext The base context to use for creating the ContextWrapper.
-     * @param themeId Id of the main theme to use in the inflated views.
-     * @param layoutId Id of the layout to inflate.
-     * @param toolbarContainerStubId Id of the ViewStub to be replaced with the
-     *        toolbar container. May be 0 if there is no toolbar.
-     * @param toolbarContainerId Id of the toolbar container. May be 0 if there is no toolbar.
+     * @param toolbarContainerId Id of the toolbar container.
      */
-    public void initializeViewHierarchy(Context baseContext, int themeId, int layoutId,
-            int toolbarContainerStubId, int toolbarContainerId) {
+    public void initializeViewHierarchy(Context baseContext, int toolbarContainerId) {
         TraceEvent.begin("WarmupManager.initializeViewHierarchy");
         try {
             ThreadUtils.assertOnUiThread();
-            ContextThemeWrapper context = new ContextThemeWrapper(baseContext, themeId);
+            if (mMainView != null && mToolbarContainerId == toolbarContainerId) return;
+            ContextThemeWrapper context =
+                    new ContextThemeWrapper(baseContext, ChromeActivity.getThemeId());
             FrameLayout contentHolder = new FrameLayout(context);
-            mMainView = (ViewGroup) LayoutInflater.from(context).inflate(layoutId, contentHolder);
-            if (toolbarContainerId != 0) {
-                ViewStub stub = (ViewStub) mMainView.findViewById(toolbarContainerStubId);
+            mMainView = (ViewGroup) LayoutInflater.from(context).inflate(
+                    R.layout.main, contentHolder);
+            mToolbarContainerId = toolbarContainerId;
+            if (toolbarContainerId != ChromeActivity.NO_CONTROL_CONTAINER) {
+                ViewStub stub = (ViewStub) mMainView.findViewById(R.id.control_container_stub);
                 stub.setLayoutResource(toolbarContainerId);
                 stub.inflate();
             }
@@ -166,7 +167,8 @@ public final class WarmupManager {
      */
     public void transferViewHierarchyTo(ViewGroup contentView) {
         ThreadUtils.assertOnUiThread();
-        ViewGroup viewHierarchy = takeMainView();
+        ViewGroup viewHierarchy = mMainView;
+        mMainView = null;
         if (viewHierarchy == null) return;
         while (viewHierarchy.getChildCount() > 0) {
             View currentChild = viewHierarchy.getChildAt(0);
@@ -199,20 +201,14 @@ public final class WarmupManager {
     }
 
     /**
-     * @return Whether the view hierarchy has been prebuilt.
+     * @return Whether the view hierarchy has been prebuilt with a given toolbar ID. If there is no
+     * match, clears the inflated view.
      */
-    public boolean hasBuiltViewHierarchy() {
+    public boolean hasBuiltOrClearViewHierarchyWithToolbar(int toolbarContainerId) {
         ThreadUtils.assertOnUiThread();
-        return mMainView != null;
-    }
-
-    /**
-     * @return The prebuilt view hierarchy and clears the reference WarmupManager owns.
-     */
-    private ViewGroup takeMainView() {
-        ViewGroup mainView = mMainView;
-        mMainView = null;
-        return mainView;
+        boolean match = mMainView != null && mToolbarContainerId == toolbarContainerId;
+        if (!match) mMainView = null;
+        return match;
     }
 
     /**

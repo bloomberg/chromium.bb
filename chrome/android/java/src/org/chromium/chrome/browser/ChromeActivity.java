@@ -159,7 +159,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * No control container to inflate during initialization.
      */
-    private static final int NO_CONTROL_CONTAINER = -1;
+    static final int NO_CONTROL_CONTAINER = -1;
 
     /** Prevents race conditions when deleting snapshot database. */
     private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
@@ -317,8 +317,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         enableHardwareAcceleration();
         setLowEndTheme();
-
-        if (WarmupManager.getInstance().hasBuiltViewHierarchy()) {
+        int controlContainerLayoutId = getControlContainerLayoutId();
+        WarmupManager warmupManager = WarmupManager.getInstance();
+        if (warmupManager.hasBuiltOrClearViewHierarchyWithToolbar(controlContainerLayoutId)) {
             View placeHolderView = new View(this);
             setContentView(placeHolderView);
             ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
@@ -326,10 +327,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             contentParent.removeView(placeHolderView);
         } else {
             setContentView(R.layout.main);
-            if (getControlContainerLayoutId() != NO_CONTROL_CONTAINER) {
+            if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
                 ViewStub toolbarContainerStub =
                         ((ViewStub) findViewById(R.id.control_container_stub));
-                toolbarContainerStub.setLayoutResource(getControlContainerLayoutId());
+                toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
                 toolbarContainerStub.inflate();
             }
         }
@@ -1586,10 +1587,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
     }
 
+    /** @return the theme ID to use. */
+    public static int getThemeId() {
+        boolean useLowEndTheme =
+                SysUtils.isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+        return (useLowEndTheme ? R.style.MainTheme_LowEnd : R.style.MainTheme);
+    }
+
     private void setLowEndTheme() {
-        if (SysUtils.isLowEndDevice()
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setTheme(R.style.MainTheme_LowEnd);
-        }
+        if (getThemeId() == R.style.MainTheme_LowEnd) setTheme(R.style.MainTheme_LowEnd);
     }
 }

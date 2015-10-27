@@ -158,7 +158,6 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 ChromeBrowserInitializer.initNetworkChangeNotifier(context);
                 WarmupManager.getInstance().initializeViewHierarchy(app.getApplicationContext(),
-                        R.style.MainTheme, R.layout.main, R.id.control_container_stub,
                         R.layout.custom_tabs_control_container);
             }
         });

@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 
+import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.app.PendingIntent;
@@ -31,11 +33,14 @@ import android.widget.ImageButton;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -562,6 +567,52 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     public void testMayLaunchUrlWithoutWarmupNoPrerendering() {
         mayLaunchUrlWithoutWarmup(true);
+    }
+
+    /**
+     * Tests that launching a regular Chrome tab after warmup() gives the right layout.
+     *
+     * About the restrictions and switches: No FRE and no document mode to get a
+     * ChromeTabbedActivity, and no tablets to have the tab switcher button.
+     *
+     * Non-regression test for crbug.com/547121.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_PHONE)
+    @CommandLineFlags.Add({
+            ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_DOCUMENT_MODE})
+    public void testWarmupAndLaunchRegularChrome() {
+        warmUpAndWait();
+        Intent intent =
+                new Intent(getInstrumentation().getTargetContext(), ChromeLauncherActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Instrumentation.ActivityMonitor monitor =
+                getInstrumentation().addMonitor(ChromeTabbedActivity.class.getName(), null, false);
+        Activity activity = getInstrumentation().startActivitySync(intent);
+        assertNotNull("Main activity did not start", activity);
+        ChromeTabbedActivity tabbedActivity =
+                (ChromeTabbedActivity) monitor.waitForActivityWithTimeout(
+                        ACTIVITY_START_TIMEOUT_MS);
+        assertNotNull("ChromeTabbedActivity did not start", tabbedActivity);
+        assertNotNull("Should have a tab switcher button.",
+                tabbedActivity.findViewById(R.id.tab_switcher_button));
+    }
+
+    /**
+     * Tests that launching a Custom Tab after warmup() gives the right layout.
+     *
+     * Non-regression test for crbug.com/547121.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_PHONE)
+    @CommandLineFlags.Add({
+            ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_DOCUMENT_MODE})
+    public void testWarmupAndLaunchRightToolbarLayout() {
+        warmUpAndWait();
+        startActivityCompletely(createMinimalCustomTabIntent());
+        assertNull("Should not have a tab switcher button.",
+                mActivity.findViewById(R.id.tab_switcher_button));
     }
 
     private void mayLaunchUrlWithoutWarmup(boolean noPrerendering) {
