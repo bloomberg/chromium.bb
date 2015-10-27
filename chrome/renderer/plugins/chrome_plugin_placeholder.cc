@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -16,6 +17,7 @@
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -358,15 +360,24 @@ blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
 
 gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return gin::Wrappable<ChromePluginPlaceholder>::GetObjectTemplateBuilder(
-             isolate)
-      .SetMethod<void (ChromePluginPlaceholder::*)()>(
-           "hide", &ChromePluginPlaceholder::HideCallback)
-      .SetMethod<void (ChromePluginPlaceholder::*)()>(
-           "load", &ChromePluginPlaceholder::LoadCallback)
-      .SetMethod<void (ChromePluginPlaceholder::*)()>(
-           "didFinishLoading",
-           &ChromePluginPlaceholder::DidFinishLoadingCallback)
-      .SetMethod("openAboutPlugins",
-                 &ChromePluginPlaceholder::OpenAboutPluginsCallback);
+  gin::ObjectTemplateBuilder builder =
+      gin::Wrappable<ChromePluginPlaceholder>::GetObjectTemplateBuilder(isolate)
+          .SetMethod<void (ChromePluginPlaceholder::*)()>(
+              "hide", &ChromePluginPlaceholder::HideCallback)
+          .SetMethod<void (ChromePluginPlaceholder::*)()>(
+              "load", &ChromePluginPlaceholder::LoadCallback)
+          .SetMethod<void (ChromePluginPlaceholder::*)()>(
+              "didFinishLoading",
+              &ChromePluginPlaceholder::DidFinishLoadingCallback)
+          .SetMethod("openAboutPlugins",
+                     &ChromePluginPlaceholder::OpenAboutPluginsCallback);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePluginPlaceholderTesting)) {
+    builder.SetMethod<void (ChromePluginPlaceholder::*)()>(
+        "didFinishIconRepositionForTesting",
+        &ChromePluginPlaceholder::DidFinishIconRepositionForTestingCallback);
+  }
+
+  return builder;
 }

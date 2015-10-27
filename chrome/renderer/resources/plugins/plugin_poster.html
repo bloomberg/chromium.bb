@@ -91,6 +91,13 @@
       container.style.marginTop = marginTop;
       container.style.width = width;
       container.style.height = height;
+
+      if (plugin.didFinishIconRepositionForTesting) {
+        // Defer until reflow complete.
+        window.setTimeout(function() {
+          plugin.didFinishIconRepositionForTesting();
+        });
+      }
     };
   </script>
 </body>

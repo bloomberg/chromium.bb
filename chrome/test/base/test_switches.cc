@@ -14,4 +14,9 @@ const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 const char kAshBrowserTests[] = "ash-browsertests";
 #endif
 
+#if defined(ENABLE_PLUGINS)
+// Makes browser pixel tests overwrite the reference if it does not match.
+const char kRebaselinePixelTests[] = "rebaseline-pixel-tests";
+#endif
+
 }  // namespace switches

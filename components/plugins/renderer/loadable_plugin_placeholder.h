@@ -72,6 +72,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   // Javascript callbacks:
   void LoadCallback();
   void DidFinishLoadingCallback();
+  void DidFinishIconRepositionForTestingCallback();
 
  private:
   // WebViewPlugin::Delegate methods:
