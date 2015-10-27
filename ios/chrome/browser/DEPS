@@ -47,6 +47,7 @@ include_rules = [
   "+components/signin/ios/browser",
   "+components/suggestions",
   "+components/sync_driver",
+  "+components/sync_sessions",
   "+components/syncable_prefs",
   "+components/translate/core",
   "+components/translate/ios",
