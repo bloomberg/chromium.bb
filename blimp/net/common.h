@@ -8,7 +8,6 @@
 #include <string>
 
 #include "blimp/net/blimp_net_export.h"
-#include "net/base/net_errors.h"
 
 namespace blimp {
 
