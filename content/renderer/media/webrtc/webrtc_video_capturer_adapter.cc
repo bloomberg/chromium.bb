@@ -77,7 +77,11 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
 
     // Return |frame_| directly if it is texture backed, because there is no
     // cropping support for texture yet. See http://crbug/503653.
-    if (frame_->HasTextures()) {
+    // Return |frame_| directly if it is GpuMemoryBuffer backed, as we want to
+    // keep the frame on native buffers.
+    if (frame_->HasTextures() ||
+        frame_->storage_type() ==
+            media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
       return new cricket::WebRtcVideoFrame(
           new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame_),
           captured_frame_.elapsed_time, timestamp_ns);
@@ -216,10 +220,8 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("video", "WebRtcVideoCapturerAdapter::OnFrameCaptured");
-  if (!((frame->IsMappable() &&
-         (frame->format() == media::PIXEL_FORMAT_I420 ||
-          frame->format() == media::PIXEL_FORMAT_YV12)) ||
-        frame->HasTextures())) {
+  if (!(frame->IsMappable() && (frame->format() == media::PIXEL_FORMAT_I420 ||
+                                frame->format() == media::PIXEL_FORMAT_YV12))) {
     // Since connecting sources and sinks do not check the format, we need to
     // just ignore formats that we can not handle.
     NOTREACHED();
