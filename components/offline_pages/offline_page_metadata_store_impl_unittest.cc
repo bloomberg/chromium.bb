@@ -41,7 +41,7 @@ class OfflinePageMetadataStoreImplTest : public testing::Test {
   scoped_ptr<OfflinePageMetadataStoreImpl> BuildStore();
   void PumpLoop();
 
-  void LoadCallback(bool success,
+  void LoadCallback(OfflinePageMetadataStore::LoadStatus load_status,
                     const std::vector<OfflinePageItem>& offline_pages);
   void UpdateCallback(CalledCallback called_callback, bool success);
 
@@ -66,26 +66,27 @@ OfflinePageMetadataStoreImplTest::~OfflinePageMetadataStoreImplTest() {
 }
 
 void OfflinePageMetadataStoreImplTest::PumpLoop() {
-  run_loop_.reset(new base::RunLoop());
-  run_loop_->Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 scoped_ptr<OfflinePageMetadataStoreImpl>
 OfflinePageMetadataStoreImplTest::BuildStore() {
-  scoped_ptr<ProtoDatabaseImpl<offline_pages::OfflinePageEntry>> db(
-      new ProtoDatabaseImpl<offline_pages::OfflinePageEntry>(
-          message_loop_.task_runner()));
-  return scoped_ptr<OfflinePageMetadataStoreImpl>(
-      new OfflinePageMetadataStoreImpl(db.Pass(), temp_directory_.path()));
+  scoped_ptr<OfflinePageMetadataStoreImpl> store(
+      new OfflinePageMetadataStoreImpl(message_loop_.task_runner(),
+                                       temp_directory_.path()));
+  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
+                         base::Unretained(this)));
+  PumpLoop();
+  return store.Pass();
 }
 
 void OfflinePageMetadataStoreImplTest::LoadCallback(
-    bool status,
+    OfflinePageMetadataStore::LoadStatus load_status,
     const std::vector<OfflinePageItem>& offline_pages) {
   last_called_callback_ = LOAD;
-  last_status_ = status ? STATUS_TRUE : STATUS_FALSE;
+  last_status_ = load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED ?
+      STATUS_TRUE : STATUS_FALSE;
   offline_pages_.swap(const_cast<std::vector<OfflinePageItem>&>(offline_pages));
-  run_loop_->Quit();
 }
 
 void OfflinePageMetadataStoreImplTest::UpdateCallback(
@@ -93,7 +94,6 @@ void OfflinePageMetadataStoreImplTest::UpdateCallback(
     bool status) {
   last_called_callback_ = called_callback;
   last_status_ = status ? STATUS_TRUE : STATUS_FALSE;
-  run_loop_->Quit();
 }
 
 void OfflinePageMetadataStoreImplTest::ClearResults() {
@@ -106,50 +106,14 @@ void OfflinePageMetadataStoreImplTest::ClearResults() {
 // it.
 TEST_F(OfflinePageMetadataStoreImplTest, LoadEmptyStore) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
-  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
-                         base::Unretained(this)));
-  PumpLoop();
-
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(0U, offline_pages_.size());
 }
 
-// Adds metadata of an offline page into a store and then loads from the
-// store to make sure the metadata is preserved.
-TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageThenLoad) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
-
-  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
-                               base::FilePath(kFilePath), kFileSize);
-  store->AddOrUpdateOfflinePage(
-      offline_page,
-      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
-                 base::Unretained(this), ADD));
-  PumpLoop();
-  EXPECT_EQ(ADD, last_called_callback_);
-  EXPECT_EQ(STATUS_TRUE, last_status_);
-
-  ClearResults();
-  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
-                         base::Unretained(this)));
-  PumpLoop();
-
-  EXPECT_EQ(LOAD, last_called_callback_);
-  EXPECT_EQ(STATUS_TRUE, last_status_);
-  EXPECT_EQ(1U, offline_pages_.size());
-  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
-  EXPECT_EQ(offline_page.version, offline_pages_[0].version);
-  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
-  EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
-  EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
-  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
-}
-
 // Adds metadata of an offline page into a store and then opens the store
 // again to make sure that stored metadata survives store restarts.
-TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageRestartLoad) {
+TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
@@ -162,12 +126,11 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageRestartLoad) {
   EXPECT_EQ(ADD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
-  // Reset the store first to ensure file lock is removed.
+  ClearResults();
+
+  // Close the store first to ensure file lock is removed.
   store.reset();
   store = BuildStore().Pass();
-  ClearResults();
-  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
-                         base::Unretained(this)));
   PumpLoop();
 
   EXPECT_EQ(LOAD, last_called_callback_);
@@ -188,56 +151,51 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageRestartLoad) {
 TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
+  // Add an offline page.
   OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), ADD));
+  PumpLoop();
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  ClearResults();
+
+  // Load the store.
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
                          base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(1U, offline_pages_.size());
+
+  // Remove the offline page.
   std::vector<int64> ids_to_remove;
   ids_to_remove.push_back(offline_page.bookmark_id);
   store->RemoveOfflinePages(
       ids_to_remove,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), REMOVE));
-  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
-                         base::Unretained(this)));
-  store.reset();
-  store = BuildStore().Pass();
-  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
-                         base::Unretained(this)));
-  // Add offline page is exectued:
-  PumpLoop();
-  EXPECT_EQ(ADD, last_called_callback_);
-  EXPECT_EQ(STATUS_TRUE, last_status_);
-
-  // Load is exectued:
-  ClearResults();
-  PumpLoop();
-
-  EXPECT_EQ(LOAD, last_called_callback_);
-  EXPECT_EQ(STATUS_TRUE, last_status_);
-  EXPECT_EQ(1U, offline_pages_.size());
-
-  // Remove offline page is exectued:
-  ClearResults();
   PumpLoop();
   EXPECT_EQ(REMOVE, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
-  // Load is exectued:
   ClearResults();
-  PumpLoop();
 
+  // Load the store.
+  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
+                         base::Unretained(this)));
+  PumpLoop();
   EXPECT_EQ(LOAD, last_called_callback_);
-  EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(0U, offline_pages_.size());
 
-  // Checking the value after reseting the store.
   ClearResults();
-  PumpLoop();
+
+  // Close and reload the store.
+  store.reset();
+  store = BuildStore().Pass();
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(0U, offline_pages_.size());
@@ -247,6 +205,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
 TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
+  // Add an offline page.
   OfflinePageItem offline_page_1(GURL(kTestURL), kTestBookmarkId,
                                  base::FilePath(kFilePath), kFileSize);
   base::FilePath file_path_2 =
@@ -262,6 +221,8 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
   ClearResults();
+
+  // Add anther offline page.
   store->AddOrUpdateOfflinePage(
       offline_page_2,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
@@ -271,6 +232,8 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
   ClearResults();
+
+  // Load the store.
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
                          base::Unretained(this)));
   PumpLoop();
@@ -279,6 +242,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(2U, offline_pages_.size());
 
+  // Remove the offline page.
   std::vector<int64> ids_to_remove;
   ids_to_remove.push_back(offline_page_1.bookmark_id);
   store->RemoveOfflinePages(
@@ -290,6 +254,8 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
   ClearResults();
+
+  // Close and reload the store.
   store.reset();
   store = BuildStore().Pass();
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,

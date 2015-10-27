@@ -7,13 +7,14 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 
 namespace base {
-class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace offline_pages {
@@ -29,7 +30,7 @@ class OfflinePageEntry;
 class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
  public:
   OfflinePageMetadataStoreImpl(
-      scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>> database,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const base::FilePath& database_dir);
   ~OfflinePageMetadataStoreImpl() override;
 
@@ -39,10 +40,16 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
                               const UpdateCallback& callback) override;
   void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
                           const UpdateCallback& callback) override;
+  void Reset(const ResetCallback& callback) override;
 
  private:
-  // Callback for when initialization of the |database_| is done.
-  void OnInitDone(bool success);
+  void LoadContinuation(const LoadCallback& callback, bool success);
+  void LoadDone(const LoadCallback& callback,
+                bool success,
+                scoped_ptr<std::vector<OfflinePageEntry>> entries);
+  void NotifyLoadResult(const LoadCallback& callback,
+                        LoadStatus status,
+                        const std::vector<OfflinePageItem>& result);
 
   // Implements the update.
   void UpdateEntries(
@@ -50,11 +57,13 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
           entries_to_save,
       scoped_ptr<std::vector<std::string>> keys_to_remove,
       const UpdateCallback& callback);
+  void UpdateDone(const OfflinePageMetadataStore::UpdateCallback& callback,
+                  bool success);
 
-  // Resets the database. This is to be used when one of the operations fails
-  // with no good explanation.
-  void ResetDB();
+  void ResetDone(const ResetCallback& callback, bool success);
 
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  base::FilePath database_dir_;
   scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>> database_;
 
   base::WeakPtrFactory<OfflinePageMetadataStoreImpl> weak_ptr_factory_;

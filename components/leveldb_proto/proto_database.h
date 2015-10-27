@@ -27,6 +27,7 @@ class ProtoDatabase {
   using UpdateCallback = base::Callback<void(bool success)>;
   using LoadCallback =
       base::Callback<void(bool success, scoped_ptr<std::vector<T>>)>;
+  using DestroyCallback = base::Callback<void(bool success)>;
 
   // A list of key-value (string, T) tuples.
   using KeyEntryVector = std::vector<std::pair<std::string, T>>;
@@ -50,6 +51,9 @@ class ProtoDatabase {
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
   virtual void LoadEntries(const LoadCallback& callback) = 0;
+
+  // Asynchronously destroys the database.
+  virtual void Destroy(const DestroyCallback& callback) = 0;
 };
 
 }  // namespace leveldb_proto

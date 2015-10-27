@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/leveldb_proto/proto_database_impl.h"
 #include "components/offline_pages/offline_page_metadata_store_impl.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"
@@ -43,15 +42,10 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
-
-  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<OfflinePageEntry>> database(
-      new leveldb_proto::ProtoDatabaseImpl<OfflinePageEntry>(
-          background_task_runner));
-
   base::FilePath store_path;
   CHECK(PathService::Get(chrome::DIR_OFFLINE_PAGE_METADATA, &store_path));
   scoped_ptr<OfflinePageMetadataStoreImpl> metadata_store(
-      new OfflinePageMetadataStoreImpl(database.Pass(), store_path));
+      new OfflinePageMetadataStoreImpl(background_task_runner, store_path));
 
   return new OfflinePageModel(metadata_store.Pass(), background_task_runner);
 }

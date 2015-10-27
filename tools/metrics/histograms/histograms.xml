@@ -29389,6 +29389,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.ClearAllStatus" enum="OfflinePagesClearAllStatus">
+  <owner>jianli@chromium.org</owner>
+  <summary>Status code of wiping out the offline page data.</summary>
+</histogram>
+
 <histogram name="OfflinePages.DeletePage.FreeSpaceMB" units="MB">
   <owner>jianli@chromium.org</owner>
   <summary>
@@ -29411,7 +29416,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of removing an offline copy for a page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.LoadStatus" enum="OfflinePagesLoadStatus">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Status code of loading from the offline pages metadata store.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.LoadSuccess" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 10/2015, and replaced by OfflinePages.LoadStatus.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Whether an attempt to load the offline pages metadata store was successful.
@@ -67466,12 +67481,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Too few URLs, didn't flip tiles 1 and 4"/>
 </enum>
 
+<enum name="OfflinePagesClearAllStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Store reset failed"/>
+  <int value="2" label="Store reload failed"/>
+</enum>
+
 <enum name="OfflinePagesDeletePageResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Cancelled"/>
   <int value="2" label="Store failure"/>
   <int value="3" label="Device failure"/>
   <int value="4" label="Not found"/>
+</enum>
+
+<enum name="OfflinePagesLoadStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Store init failed"/>
+  <int value="2" label="Store load failed"/>
+  <int value="3" label="Data parsing failed"/>
 </enum>
 
 <enum name="OfflinePagesSavePageResult" type="int">

@@ -20,6 +20,7 @@
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
+#include "components/offline_pages/offline_page_metadata_store.h"
 
 class GURL;
 namespace base {
@@ -167,7 +168,8 @@ class OfflinePageModel : public KeyedService,
   void DeletePagesByBookmarkId(const std::vector<int64>& bookmark_ids,
                                const DeletePageCallback& callback);
 
-  void UndeletePage(int64 bookmark_id, const DeletePageCallback& callback);
+  // Wipes out all the data by deleting all saved files and clearing the store.
+  void ClearAll(const base::Closure& callback);
 
   // Gets all available offline pages. Requires that the model is loaded.
   const std::vector<OfflinePageItem> GetAllPages() const;
@@ -212,7 +214,7 @@ class OfflinePageModel : public KeyedService,
                            const std::set<GURL>& removed_urls) override;
 
   // Callback for loading pages from the offline page metadata store.
-  void OnLoadDone(bool success,
+  void OnLoadDone(OfflinePageMetadataStore::LoadStatus load_status,
                   const std::vector<OfflinePageItem>& offline_pages);
 
   // Steps for saving a page offline.
@@ -262,6 +264,17 @@ class OfflinePageModel : public KeyedService,
   void OnRemoveOfflinePagesMissingArchiveFileDone(
       const std::vector<int64>& bookmark_ids,
       OfflinePageModel::DeletePageResult result);
+
+  // Steps for clearing all.
+  void OnRemoveAllFilesDoneForClearAll(const base::Closure& callback,
+                                       DeletePageResult result);
+  void OnResetStoreDoneForClearAll(const base::Closure& callback, bool success);
+  void OnReloadStoreDoneForClearAll(
+      const base::Closure& callback,
+      OfflinePageMetadataStore::LoadStatus load_status,
+      const std::vector<OfflinePageItem>& offline_pages);
+
+  void CacheLoadedData(const std::vector<OfflinePageItem>& offline_pages);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;

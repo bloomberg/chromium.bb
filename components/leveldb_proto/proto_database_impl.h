@@ -49,6 +49,8 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
+  void Destroy(
+      const typename ProtoDatabase<T>::DestroyCallback& callback) override;
 
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(
@@ -63,6 +65,7 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_ptr<LevelDB> db_;
+  base::FilePath database_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoDatabaseImpl);
 };
@@ -89,12 +92,25 @@ void RunLoadCallback(const typename ProtoDatabase<T>::LoadCallback& callback,
   callback.Run(*success, entries.Pass());
 }
 
+template <typename T>
+void RunDestroyCallback(
+    const typename ProtoDatabase<T>::DestroyCallback& callback,
+    const bool* success) {
+  callback.Run(*success);
+}
+
 void InitFromTaskRunner(LevelDB* database, const base::FilePath& database_dir,
                         bool* success) {
   DCHECK(success);
 
   // TODO(cjhopman): Histogram for database size.
   *success = database->Init(database_dir);
+}
+
+void DestroyFromTaskRunner(const base::FilePath& database_dir, bool* success) {
+  CHECK(success);
+
+  *success = LevelDB::Destroy(database_dir);
 }
 
 template <typename T>
@@ -158,8 +174,22 @@ void ProtoDatabaseImpl<T>::Init(
     const base::FilePath& database_dir,
     const typename ProtoDatabase<T>::InitCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  database_dir_ = database_dir;
   InitWithDatabase(make_scoped_ptr(new LevelDB(client_name)), database_dir,
                    callback);
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::Destroy(
+    const typename ProtoDatabase<T>::DestroyCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(db_);
+  DCHECK(!database_dir_.empty());
+  db_.reset();
+  bool* success = new bool(false);
+  task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(DestroyFromTaskRunner, database_dir_, success),
+      base::Bind(RunDestroyCallback<T>, callback, base::Owned(success)));
 }
 
 template <typename T>

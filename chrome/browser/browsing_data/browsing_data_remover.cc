@@ -77,8 +77,11 @@
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
+#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "components/precache/content/precache_manager.h"
 #endif
 
@@ -788,6 +791,14 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         base::Bind(&BrowsingDataRemover::OnClearedWebappData,
                    base::Unretained(this)));
   }
+
+  if ((remove_mask & REMOVE_OFFLINE_PAGE_DATA) &&
+      offline_pages::IsOfflinePagesEnabled()) {
+    waiting_for_clear_offline_page_data_ = true;
+    offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)->
+        ClearAll(base::Bind(&BrowsingDataRemover::OnClearedOfflinePageData,
+                 base::Unretained(this)));
+  }
 #endif
 
   // Record the combined deletion of cookies and cache.
@@ -871,6 +882,7 @@ bool BrowsingDataRemover::AllDone() {
 #if defined(OS_ANDROID)
          !waiting_for_clear_precache_history_ &&
          !waiting_for_clear_webapp_data_ &&
+         !waiting_for_clear_offline_page_data_ &&
 #endif
 #if defined(ENABLE_WEBRTC)
          !waiting_for_clear_webrtc_logs_ &&
@@ -1167,6 +1179,12 @@ void BrowsingDataRemover::OnClearedPrecacheHistory() {
 void BrowsingDataRemover::OnClearedWebappData() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_webapp_data_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OnClearedOfflinePageData() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_offline_page_data_ = false;
   NotifyAndDeleteIfDone();
 }
 #endif

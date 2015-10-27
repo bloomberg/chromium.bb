@@ -18,7 +18,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_metadata_store.h"
 #include "url/gurl.h"
 
 using ArchiverResult = offline_pages::OfflinePageArchiver::ArchiverResult;
@@ -27,6 +26,17 @@ using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
 namespace offline_pages {
 
 namespace {
+
+// This enum is used in an UMA histogram. Hence the entries here shouldn't
+// be deleted or re-ordered and new ones should be added to the end.
+enum ClearAllStatus {
+  CLEAR_ALL_SUCCEEDED,
+  STORE_RESET_FAILED,
+  STORE_RELOAD_FAILED,
+
+  // NOTE: always keep this entry at the end.
+  CLEAR_ALL_STATUS_COUNT
+};
 
 // Threshold for how old offline copy of a page should be before we offer to
 // delete it to free up space.
@@ -217,6 +227,19 @@ void OfflinePageModel::DeletePagesByBookmarkId(
                  bookmark_ids,
                  callback,
                  base::Owned(success)));
+}
+
+void OfflinePageModel::ClearAll(const base::Closure& callback) {
+  DCHECK(is_loaded_);
+
+  std::vector<int64> bookmark_ids;
+  for (const auto& id_page_pair : offline_pages_)
+    bookmark_ids.push_back(id_page_pair.first);
+  DeletePagesByBookmarkId(
+      bookmark_ids,
+      base::Bind(&OfflinePageModel::OnRemoveAllFilesDoneForClearAll,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 const std::vector<OfflinePageItem> OfflinePageModel::GetAllPages() const {
@@ -437,15 +460,15 @@ void OfflinePageModel::BookmarkNodeRemoved(
 }
 
 void OfflinePageModel::OnLoadDone(
-    bool success,
+    OfflinePageMetadataStore::LoadStatus load_status,
     const std::vector<OfflinePageItem>& offline_pages) {
   DCHECK(!is_loaded_);
   is_loaded_ = true;
 
-  if (success) {
-    for (const auto& offline_page : offline_pages)
-      offline_pages_[offline_page.bookmark_id] = offline_page;
-  }
+  // TODO(jianli): rebuild the store upon failure.
+
+  if (load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED)
+    CacheLoadedData(offline_pages);
 
   // Run all the delayed tasks.
   for (const auto& delayed_task : delayed_tasks_)
@@ -552,6 +575,49 @@ void OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone(
   for (int64 bookmark_id : bookmark_ids) {
     FOR_EACH_OBSERVER(Observer, observers_, OfflinePageDeleted(bookmark_id));
   }
+}
+
+void OfflinePageModel::OnRemoveAllFilesDoneForClearAll(
+    const base::Closure& callback,
+    DeletePageResult result) {
+  store_->Reset(base::Bind(&OfflinePageModel::OnResetStoreDoneForClearAll,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           callback));
+}
+
+void OfflinePageModel::OnResetStoreDoneForClearAll(
+    const base::Closure& callback, bool success) {
+  DCHECK(success);
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearAllStatus",
+                            STORE_RESET_FAILED,
+                            CLEAR_ALL_STATUS_COUNT);
+
+  offline_pages_.clear();
+  store_->Load(base::Bind(&OfflinePageModel::OnReloadStoreDoneForClearAll,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          callback));
+}
+
+void OfflinePageModel::OnReloadStoreDoneForClearAll(
+    const base::Closure& callback,
+    OfflinePageMetadataStore::LoadStatus load_status,
+    const std::vector<OfflinePageItem>& offline_pages) {
+  DCHECK_EQ(OfflinePageMetadataStore::LOAD_SUCCEEDED, load_status);
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.ClearAllStatus",
+      load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED ?
+          CLEAR_ALL_SUCCEEDED : STORE_RELOAD_FAILED,
+      CLEAR_ALL_STATUS_COUNT);
+
+  CacheLoadedData(offline_pages);
+  callback.Run();
+}
+
+void OfflinePageModel::CacheLoadedData(
+    const std::vector<OfflinePageItem>& offline_pages) {
+  offline_pages_.clear();
+  for (const auto& offline_page : offline_pages)
+    offline_pages_[offline_page.bookmark_id] = offline_page;
 }
 
 }  // namespace offline_pages

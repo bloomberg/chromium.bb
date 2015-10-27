@@ -25,6 +25,13 @@
 
 namespace leveldb_proto {
 
+// static
+bool LevelDB::Destroy(const base::FilePath& database_dir) {
+  const leveldb::Status s =
+      leveldb::DestroyDB(database_dir.AsUTF8Unsafe(), leveldb::Options());
+  return s.ok();
+}
+
 LevelDB::LevelDB(const char* client_name) : open_histogram_(nullptr) {
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
   // not a constant.

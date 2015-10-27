@@ -22,9 +22,22 @@ struct OfflinePageItem;
 // issue multiple asynchronous operations in parallel.
 class OfflinePageMetadataStore {
  public:
-  typedef base::Callback<void(bool, const std::vector<OfflinePageItem>&)>
+  // This enum is used in an UMA histogram. Hence the entries here shouldn't
+  // be deleted or re-ordered and new ones should be added to the end.
+  enum LoadStatus {
+    LOAD_SUCCEEDED,
+    STORE_INIT_FAILED,
+    STORE_LOAD_FAILED,
+    DATA_PARSING_FAILED,
+
+    // NOTE: always keep this entry at the end.
+    LOAD_STATUS_COUNT
+  };
+
+  typedef base::Callback<void(LoadStatus, const std::vector<OfflinePageItem>&)>
       LoadCallback;
   typedef base::Callback<void(bool)> UpdateCallback;
+  typedef base::Callback<void(bool)> ResetCallback;
 
   OfflinePageMetadataStore();
   virtual ~OfflinePageMetadataStore();
@@ -41,6 +54,9 @@ class OfflinePageMetadataStore {
   // Result of the update is passed in callback.
   virtual void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
                                   const UpdateCallback& callback) = 0;
+
+  // Resets the store.
+  virtual void Reset(const ResetCallback& callback) = 0;
 };
 
 }  // namespace offline_pages

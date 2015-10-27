@@ -44,6 +44,8 @@ class LevelDB {
                     const std::vector<std::string>& keys_to_remove);
   virtual bool Load(std::vector<std::string>* entries);
 
+  static bool Destroy(const base::FilePath& database_dir);
+
  private:
   DFAKE_MUTEX(thread_checker_);
 

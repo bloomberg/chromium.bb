@@ -84,6 +84,7 @@ class BrowsingDataRemover
     REMOVE_CACHE_STORAGE = 1 << 18,
 #if defined(OS_ANDROID)
     REMOVE_WEBAPP_DATA = 1 << 19,
+    REMOVE_OFFLINE_PAGE_DATA = 1 << 20,
 #endif
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
@@ -104,6 +105,7 @@ class BrowsingDataRemover
                        REMOVE_SITE_USAGE_DATA |
 #if defined(OS_ANDROID)
                        REMOVE_WEBAPP_DATA |
+                       REMOVE_OFFLINE_PAGE_DATA |
 #endif
                        REMOVE_WEBRTC_IDENTITY,
 
@@ -396,6 +398,9 @@ class BrowsingDataRemover
 
   // Callback on UI thread when the webapp data has been cleared.
   void OnClearedWebappData();
+
+  // Callback on UI thread when the offline page data has been cleared.
+  void OnClearedOfflinePageData();
 #endif
 
   void OnClearedDomainReliabilityMonitor();
@@ -457,6 +462,7 @@ class BrowsingDataRemover
 #if defined(OS_ANDROID)
   bool waiting_for_clear_precache_history_ = false;
   bool waiting_for_clear_webapp_data_ = false;
+  bool waiting_for_clear_offline_page_data_ = false;
 #endif
   bool waiting_for_clear_storage_partition_data_ = false;
 #if defined(ENABLE_WEBRTC)

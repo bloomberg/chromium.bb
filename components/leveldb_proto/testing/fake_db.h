@@ -37,6 +37,8 @@ class FakeDB : public ProtoDatabase<T> {
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
+  void Destroy(
+      const typename ProtoDatabase<T>::DestroyCallback& callback) override;
 
   base::FilePath& GetDirectory();
 
@@ -100,6 +102,11 @@ void FakeDB<T>::LoadEntries(
 
   load_callback_ =
       base::Bind(RunLoadCallback, callback, base::Passed(&entries));
+}
+
+template <typename T>
+void FakeDB<T>::Destroy(
+    const typename ProtoDatabase<T>::DestroyCallback& callback) {
 }
 
 template <typename T>
