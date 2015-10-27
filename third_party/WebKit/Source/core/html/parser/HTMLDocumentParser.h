@@ -60,10 +60,10 @@ class DocumentFragment;
 class Element;
 class HTMLDocument;
 class HTMLParserScheduler;
+class HTMLResourcePreloader;
 class HTMLScriptRunner;
 class HTMLTreeBuilder;
-class HTMLResourcePreloader;
-
+class ParsedChunkQueue;
 class PumpSession;
 
 class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
@@ -103,7 +103,7 @@ public:
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
         bool startingScript;
     };
-    void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
+    void notifyPendingParsedChunks();
     void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
 
     void appendBytes(const char* bytes, size_t length) override;
@@ -202,6 +202,7 @@ private:
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
     OwnPtrWillBeMember<HTMLResourcePreloader> m_preloader;
     PreloadRequestStream m_queuedPreloads;
+    OwnPtr<ParsedChunkQueue> m_parsedChunkQueue;
 
     bool m_shouldUseThreading;
     bool m_endWasDelayed;

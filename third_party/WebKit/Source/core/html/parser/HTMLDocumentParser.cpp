@@ -149,6 +149,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
     , m_preloader(HTMLResourcePreloader::create(document))
+    , m_parsedChunkQueue(ParsedChunkQueue::create())
     , m_shouldUseThreading(syncPolicy == AllowAsynchronousParsing)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
@@ -355,9 +356,13 @@ bool HTMLDocumentParser::canTakeNextToken()
     return true;
 }
 
-void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> chunk)
+void HTMLDocumentParser::notifyPendingParsedChunks()
 {
-    TRACE_EVENT0("blink", "HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser");
+    TRACE_EVENT0("blink", "HTMLDocumentParser::notifyPendingParsedChunks");
+    ASSERT(m_parsedChunkQueue);
+
+    Vector<OwnPtr<ParsedChunk>> pendingChunks;
+    m_parsedChunkQueue->takeAll(pendingChunks);
 
     if (!isParsing())
         return;
@@ -366,17 +371,21 @@ void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<Pa
     // We suspend preload until HTMLHTMLElement is inserted and
     // ApplicationCache is initialized.
     if (!document()->documentElement()) {
-        for (auto& request : chunk->preloads)
-            m_queuedPreloads.append(request.release());
+        for (auto& chunk : pendingChunks) {
+            for (auto& request : chunk->preloads)
+                m_queuedPreloads.append(request.release());
+        }
     } else {
         // We can safely assume that there are no queued preloads request after
         // the document element is available, as we empty the queue immediately
         // after the document element is created in pumpPendingSpeculations().
         ASSERT(m_queuedPreloads.isEmpty());
-        m_preloader->takeAndPreload(chunk->preloads);
+        for (auto& chunk : pendingChunks)
+            m_preloader->takeAndPreload(chunk->preloads);
     }
 
-    m_speculations.append(chunk);
+    for (auto& chunk : pendingChunks)
+        m_speculations.append(chunk.release());
 
     if (!isWaitingForScripts() && !isScheduledForResume()) {
         if (m_tasksWereSuspended)
@@ -794,6 +803,7 @@ void HTMLDocumentParser::startBackgroundParser()
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
     config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), CachedDocumentParameters::create(document())));
     config->decoder = takeDecoder();
+    config->parsedChunkQueue = m_parsedChunkQueue.get();
     if (document()->settings()) {
         if (document()->settings()->backgroundHtmlParserOutstandingTokenLimit())
             config->outstandingTokenLimit = document()->settings()->backgroundHtmlParserOutstandingTokenLimit();

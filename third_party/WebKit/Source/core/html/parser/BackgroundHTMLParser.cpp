@@ -107,6 +107,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_preloadScanner(config->preloadScanner.release())
     , m_decoder(config->decoder.release())
     , m_loadingTaskRunner(loadingTaskRunner)
+    , m_parsedChunkQueue(config->parsedChunkQueue)
     , m_startingScript(false)
 {
     ASSERT(m_outstandingTokenLimit > 0);
@@ -177,6 +178,7 @@ void BackgroundHTMLParser::resumeFrom(PassOwnPtr<Checkpoint> checkpoint)
     m_input.rewindTo(checkpoint->inputCheckpoint, checkpoint->unparsedInput);
     m_preloadScanner->rewindTo(checkpoint->preloadScannerCheckpoint);
     m_startingScript = false;
+    m_parsedChunkQueue->clear();
     pumpTokenizer();
 }
 
@@ -291,9 +293,12 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunk->startingScript = m_startingScript;
     m_startingScript = false;
 
-    m_loadingTaskRunner->postTask(
-        BLINK_FROM_HERE,
-        new Task(threadSafeBind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, AllowCrossThreadAccess(m_parser), chunk.release())));
+    bool isEmpty = m_parsedChunkQueue->enqueue(chunk.release());
+    if (isEmpty) {
+        m_loadingTaskRunner->postTask(
+            BLINK_FROM_HERE,
+            new Task(threadSafeBind(&HTMLDocumentParser::notifyPendingParsedChunks, AllowCrossThreadAccess(m_parser))));
+    }
 
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
 }
