@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.services;
 
 import android.content.Context;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
-import org.chromium.sync.signin.AccountManagerDelegate.Callback;
 
 /**
  * A helper for Android EDU and child account checks.
@@ -63,9 +63,9 @@ public abstract class AndroidEduAndChildAccountHelper
         checkDone();
     }
 
-    // AccountManagerDelegate.Callback<Boolean>:
+    // Callback<Boolean>:
     @Override
-    public void gotResult(Boolean hasChildAccount) {
+    public void onResult(Boolean hasChildAccount) {
         Log.d(TAG, "onChildAccountChecked");
         mHasChildAccount = hasChildAccount;
         checkDone();

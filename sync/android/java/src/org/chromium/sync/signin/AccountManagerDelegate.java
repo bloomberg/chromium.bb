@@ -28,7 +28,8 @@ public interface AccountManagerDelegate {
     @Deprecated
     Account[] getAccountsByType(String type);
 
-    void getAccountsByType(String type, Callback<Account[]> callback);
+    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
+    void getAccountsByType(String type, org.chromium.base.Callback<Account[]> callback);
 
     AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType,
             boolean notifyAuthFailure, AccountManagerCallback<Bundle> callback, Handler handler);
@@ -37,5 +38,7 @@ public interface AccountManagerDelegate {
 
     AuthenticatorDescription[] getAuthenticatorTypes();
 
-    void hasFeatures(Account account, String[] features, Callback<Boolean> callback);
+    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
+    void hasFeatures(
+            Account account, String[] features, org.chromium.base.Callback<Boolean> callback);
 }

@@ -136,9 +136,10 @@ public class MockAccountManager implements AccountManagerDelegate {
         }
     }
 
+    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
     @Override
     public void getAccountsByType(
-            final String type, final AccountManagerDelegate.Callback<Account[]> callback) {
+            final String type, final org.chromium.base.Callback<Account[]> callback) {
         new AsyncTask<Void, Void, Account[]>() {
             @Override
             protected Account[] doInBackground(Void... params) {
@@ -147,7 +148,7 @@ public class MockAccountManager implements AccountManagerDelegate {
 
             @Override
             protected void onPostExecute(Account[] accounts) {
-                callback.gotResult(accounts);
+                callback.onResult(accounts);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -280,9 +281,10 @@ public class MockAccountManager implements AccountManagerDelegate {
         return new AuthenticatorDescription[] { googleAuthenticator };
     }
 
+    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
     @Override
     public void hasFeatures(Account account, final String[] features,
-            final AccountManagerDelegate.Callback<Boolean> callback) {
+            final org.chromium.base.Callback<Boolean> callback) {
         final AccountHolder accountHolder = getAccountHolder(account);
         accountHolder.addFeaturesCallback(new Runnable() {
             @Override
@@ -295,7 +297,7 @@ public class MockAccountManager implements AccountManagerDelegate {
                         hasAllFeatures = false;
                     }
                 }
-                callback.gotResult(hasAllFeatures);
+                callback.onResult(hasAllFeatures);
             }
         });
     }

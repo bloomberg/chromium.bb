@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.NetworkChangeNotifier;
@@ -165,7 +166,10 @@ public class AccountManagerHelper {
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
 
-    public void getGoogleAccounts(AccountManagerDelegate.Callback<Account[]> callback) {
+    /**
+     * Retrieves all Google accounts on the device asynchronously.
+     */
+    public void getGoogleAccounts(Callback<Account[]> callback) {
         mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE, callback);
     }
 
@@ -373,8 +377,7 @@ public class AccountManagerHelper {
         }
     }
 
-    public void checkChildAccount(
-            Account account, AccountManagerDelegate.Callback<Boolean> callback) {
+    public void checkChildAccount(Account account, Callback<Boolean> callback) {
         String[] features = {FEATURE_IS_CHILD_ACCOUNT_KEY};
         mAccountManager.hasFeatures(account, features, callback);
     }

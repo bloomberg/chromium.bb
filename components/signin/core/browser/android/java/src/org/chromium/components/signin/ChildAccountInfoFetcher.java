@@ -8,8 +8,8 @@ import android.accounts.Account;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.sync.signin.AccountManagerDelegate.Callback;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
@@ -32,7 +32,7 @@ public final class ChildAccountInfoFetcher {
         Account account = helper.createAccountFromName(accountName);
         helper.checkChildAccount(account, new Callback<Boolean>() {
             @Override
-            public void gotResult(Boolean isChildAccount) {
+            public void onResult(Boolean isChildAccount) {
                 nativeSetIsChildAccount(nativeAccountFetcherService, accountId, isChildAccount);
             }
         });

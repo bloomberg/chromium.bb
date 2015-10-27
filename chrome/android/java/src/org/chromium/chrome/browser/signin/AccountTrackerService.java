@@ -8,12 +8,12 @@ import android.accounts.Account;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.sync.signin.AccountManagerDelegate.Callback;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
@@ -103,7 +103,7 @@ public class AccountTrackerService {
         }
         AccountManagerHelper.get(mContext).getGoogleAccounts(new Callback<Account[]>() {
             @Override
-            public void gotResult(final Account[] accounts) {
+            public void onResult(final Account[] accounts) {
                 new AsyncTask<Void, Void, String[][]>() {
                     @Override
                     public String[][] doInBackground(Void... params) {

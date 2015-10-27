@@ -53,8 +53,10 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return accounts;
     }
 
+    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
     @Override
-    public void getAccountsByType(final String type, final Callback<Account[]> callback) {
+    public void getAccountsByType(
+            final String type, final org.chromium.base.Callback<Account[]> callback) {
         new AsyncTask<Void, Void, Account[]>() {
             @Override
             protected Account[] doInBackground(Void... params) {
@@ -63,7 +65,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
             @Override
             protected void onPostExecute(Account[] accounts) {
-                callback.gotResult(accounts);
+                callback.onResult(accounts);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -92,9 +94,23 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return mAccountManager.getAuthenticatorTypes();
     }
 
+    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
     @Override
     public void hasFeatures(Account account, String[] features,
-            final AccountManagerDelegate.Callback<Boolean> callback) {
+            final org.chromium.base.Callback<Boolean> callback) {
+        hasFeatures(account, features, new Callback<Boolean>() {
+            @Override
+            public void gotResult(Boolean result) {
+                callback.onResult(result);
+            }
+        });
+    }
+
+    /**
+     * TODO(maxbogue): Remove once downstream override is removed.
+     */
+    @Deprecated
+    public void hasFeatures(Account account, String[] features, final Callback<Boolean> callback) {
         if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override

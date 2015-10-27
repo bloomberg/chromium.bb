@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.childaccounts;
 import android.accounts.Account;
 import android.content.Context;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
-import org.chromium.sync.signin.AccountManagerDelegate.Callback;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
@@ -35,15 +35,15 @@ public class ChildAccountService {
     public static void checkHasChildAccount(Context context, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
         if (!nativeIsChildAccountDetectionEnabled()) {
-            callback.gotResult(false);
+            callback.onResult(false);
             return;
         }
         final AccountManagerHelper helper = AccountManagerHelper.get(context);
         helper.getGoogleAccounts(new Callback<Account[]>() {
             @Override
-            public void gotResult(Account[] accounts) {
+            public void onResult(Account[] accounts) {
                 if (accounts.length != 1) {
-                    callback.gotResult(false);
+                    callback.onResult(false);
                 } else {
                     helper.checkChildAccount(accounts[0], callback);
                 }
