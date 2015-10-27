@@ -35,8 +35,10 @@ bool InstallCairoSurfacePixels(SkBitmap* dst,
     return false;
   }
   SkImageInfo info
-      = SkImageInfo::MakeN32Premul(cairo_image_surface_get_width(surface),
-                                   cairo_image_surface_get_height(surface));
+      = SkImageInfo::MakeN32(cairo_image_surface_get_width(surface),
+                             cairo_image_surface_get_height(surface),
+                             is_opaque ? kOpaque_SkAlphaType
+                                       : kPremul_SkAlphaType);
   return dst->installPixels(info,
                             cairo_image_surface_get_data(surface),
                             cairo_image_surface_get_stride(surface),
