@@ -16,7 +16,6 @@
 #include "content/browser/media/android/media_session_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_player_messages_enums_android.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
@@ -32,7 +31,9 @@ struct MediaPlayerHostMsg_Initialize_Params;
 
 namespace content {
 class BrowserDemuxerAndroid;
-class ContentViewCoreImpl;
+#if !defined(USE_AURA)
+class ContentViewCore;
+#endif
 class ExternalVideoSurfaceContainer;
 class RenderFrameHost;
 class WebContents;
@@ -64,7 +65,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Returns a new instance using the registered factory if available.
   static BrowserMediaPlayerManager* Create(RenderFrameHost* rfh);
 
+#if !defined(USE_AURA)
   ContentViewCore* GetContentViewCore() const;
+#endif
 
   ~BrowserMediaPlayerManager() override;
 
