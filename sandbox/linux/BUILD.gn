@@ -6,6 +6,10 @@ import("//build/config/features.gni")
 import("//build/config/nacl/config.gni")
 import("//testing/test.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 declare_args() {
   compile_suid_client = is_linux
 
@@ -197,10 +201,14 @@ group("sandbox_linux_unittests_run") {
   ]
 }
 
-# The main sandboxing test target.
-test("sandbox_linux_unittests") {
+# The main sandboxing test target. "sandbox_linux_unittests" cannot use the
+# test() template because the test is run as an executable not as an APK on
+# Android.
+executable("sandbox_linux_unittests") {
+  testonly = true
   deps = [
     ":sandbox_linux_unittests_sources",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -445,24 +453,27 @@ if (compile_suid_client || is_nacl_nonsfi) {
 }
 
 if (is_android) {
-  # TODO(GYP) enable this. Needs an android_strip wrapper python script.
-  #action("sandbox_linux_unittests_stripped") {
-  #  script = "android_stip.py"
-  #
-  #  in_file = "$root_out_dir/sandbox_linux_unittests"
-  #
-  #  out_file = "$root_out_dir/sandbox_linux_unittests_stripped"
-  #  outputs = [ out_file ]
-  #
-  #  args = [
-  #    rebase_path(in_file, root_build_dir),
-  #    "-o", rebase_path(out_file, root_build_dir),
-  #  ]
-  #
-  #  deps = [
-  #    ":sandbox_linux_unittests",
-  #  ]
-  #}
+  create_native_executable_dist("sandbox_linux_unittests_deps") {
+    testonly = true
+    dist_dir = "$root_out_dir/sandbox_linux_unittests_deps"
+    binary = "$root_out_dir/sandbox_linux_unittests"
+    include_main_binary = false
+    deps = [
+      ":sandbox_linux_unittests",
+    ]
+
+    if (is_component_build) {
+      deps += [ "//build/android:cpplib_stripped" ]
+    }
+  }
+
+  test_runner_script("sandbox_linux_unittests__test_runner_script") {
+    test_name = "sandbox_linux_unittests"
+    test_type = "gtest"
+    test_suite = "sandbox_linux_unittests"
+    isolate_file = "//sandbox/sandbox_linux_unittests.isolate"
+  }
+
   # TODO(GYP) convert this.
   #      {
   #      'target_name': 'sandbox_linux_jni_unittests_apk',

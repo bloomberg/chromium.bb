@@ -1905,6 +1905,7 @@ template("android_aidl") {
 #   dist_dir: Directory for the exe and libraries. Everything in this directory
 #     will be deleted before copying in the exe and libraries.
 #   binary: Path to (stripped) executable.
+#   include_main_binary: Whether |binary| should be copied to |dist_dir|.
 #
 # Example
 #   create_native_executable_dist("foo_dist") {
@@ -1958,17 +1959,22 @@ template("create_native_executable_dist") {
     visibility = [ ":$template_name" ]
 
     clear_dir = true
+
     inputs = [
-      binary,
       libraries_list,
     ]
+    if (defined(invoker.include_main_binary) && invoker.include_main_binary) {
+      inputs += [ binary ]
+    }
+
     dest = dist_dir
-    rebased_binaries_list = rebase_path([ binary ], root_build_dir)
+
     rebased_libraries_list = rebase_path(libraries_list, root_build_dir)
-    args = [
-      "--files=$rebased_binaries_list",
-      "--files=@FileArg($rebased_libraries_list:lib_paths)",
-    ]
+    args = [ "--files=@FileArg($rebased_libraries_list:lib_paths)" ]
+    if (defined(invoker.include_main_binary) && invoker.include_main_binary) {
+      rebased_binaries_list = rebase_path([ binary ], root_build_dir)
+      args += [ "--files=$rebased_binaries_list" ]
+    }
 
     deps = [
       ":$find_deps_target_name",
