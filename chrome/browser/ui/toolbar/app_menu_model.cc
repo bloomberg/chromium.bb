@@ -71,6 +71,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
@@ -289,26 +290,18 @@ void ToolsMenuModel::Build(Browser* browser) {
 #endif
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
-#if defined(OS_MACOSX)
-    int string_id = IDS_ADD_TO_APPLICATIONS;
-#elif defined(OS_WIN)
-    int string_id = IDS_ADD_TO_TASKBAR;
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
-      // This is currently non-functional on Win10 and above so change it to be
-      // a link to the generic "create shortcuts" dialog which will allow for
-      // a desktop shortcut.
-      AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
-      string_id = 0;  // Avoids AddItemWithStringId below.
-    }
-#else
     int string_id = IDS_ADD_TO_DESKTOP;
+#if defined(OS_MACOSX)
+    string_id = IDS_ADD_TO_APPLICATIONS;
+#elif defined(OS_WIN)
+    if (base::win::CanPinShortcutToTaskbar())
+      string_id = IDS_ADD_TO_TASKBAR;
 #endif
 #if defined(USE_ASH)
     if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
       string_id = IDS_ADD_TO_SHELF;
-#endif
-    if (string_id)
-      AddItemWithStringId(IDC_CREATE_HOSTED_APP, string_id);
+#endif  // defined(USE_ASH)
+    AddItemWithStringId(IDC_CREATE_HOSTED_APP, string_id);
   } else if (show_create_shortcuts) {
     AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 
 #include <cctype>
+#include <string>
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,6 +63,10 @@
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_switches.h"
 #endif
+
+#if defined(OS_WIN)
+#include "base/win/shortcut.h"
+#endif  // defined(OS_WIN)
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -693,6 +698,10 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX)
     creation_locations.on_desktop = true;
+#elif defined(OS_WIN)
+    // Create the shortcut on the desktop if it's not possible to pin to the
+    // taskbar.
+    creation_locations.on_desktop = !base::win::CanPinShortcutToTaskbar();
 #else
     creation_locations.on_desktop = false;
 #endif
@@ -706,7 +715,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     ChromeLauncherController::instance()->PinAppWithID(extension->id());
 #endif
   }
-#endif
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_MACOSX)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

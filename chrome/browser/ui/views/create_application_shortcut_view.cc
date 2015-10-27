@@ -51,6 +51,10 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "base/win/shortcut.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 
 const int kIconPreviewSizePixels = 32;
@@ -284,7 +288,7 @@ void CreateApplicationShortcutView::InitControls(DialogLayout dialog_layout) {
 
   // Win10 actively prevents creating shortcuts on the taskbar so we eliminate
   // that option from the dialog.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+  if (base::win::CanPinShortcutToTaskbar()) {
     quick_launch_check_box_ = AddCheckbox(
         (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
           l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX) :

@@ -27,6 +27,10 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "base/win/shortcut.h"
+#endif  // defined(OS_WIN)
+
 using views::ColumnSet;
 using views::GridLayout;
 
@@ -255,19 +259,19 @@ void BookmarkAppBubbleView::UpdateAddButtonState() {
 }
 
 int BookmarkAppBubbleView::TitleStringId() {
+  int string_id = IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
 #if defined(OS_WIN)
-    int string_id = IDS_ADD_TO_TASKBAR_BUBBLE_TITLE;
-#else
-    int string_id = IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
-#endif
+  if (base::win::CanPinShortcutToTaskbar())
+    string_id = IDS_ADD_TO_TASKBAR_BUBBLE_TITLE;
+#endif  // defined(OS_WIN)
 #if defined(USE_ASH)
-    if (chrome::GetHostDesktopTypeForNativeWindow(
-            anchor_widget()->GetNativeWindow()) ==
-        chrome::HOST_DESKTOP_TYPE_ASH) {
-      string_id = IDS_ADD_TO_SHELF_BUBBLE_TITLE;
-    }
+  if (chrome::GetHostDesktopTypeForNativeWindow(
+          anchor_widget()->GetNativeWindow()) ==
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    string_id = IDS_ADD_TO_SHELF_BUBBLE_TITLE;
+  }
 #endif
-    return string_id;
+  return string_id;
 }
 
 base::string16 BookmarkAppBubbleView::GetTrimmedTitle() {
