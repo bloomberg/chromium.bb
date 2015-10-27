@@ -1,0 +1,63 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+var animation;
+
+function startAnimation()
+{
+    animation = node.animate([{ width: "100px" }, { width: "200px" }], 2000);
+}
+
+function getWidth()
+{
+    return node.offsetWidth;
+}
+
+function rafWidth(resolve, reject)
+{
+    function frameCallback()
+    {
+        resolve(node.offsetWidth);
+    }
+
+    requestAnimationFrame(frameCallback);
+}
+
+window.debugTest = true;
+function test()
+{
+    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
+    InspectorTest.sendCommand("Animation.enable", {});
+    InspectorTest.evaluateInPage("startAnimation()", function() {});
+
+    function onStarted(response)
+    {
+        InspectorTest.log("Animation started");
+        InspectorTest.evaluateInPage("logPaused()");
+        InspectorTest.sendCommand("Animation.setPaused", { animations: [ response.params.animation.id ], paused: true }, animPaused);
+    }
+
+    function animPaused()
+    {
+        InspectorTest.evaluateInPage("getWidth()", saveWidth);
+    }
+
+    function saveWidth(nodeWidth)
+    {
+        var width = nodeWidth;
+        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(function(result) {
+            InspectorTest.log(result === width);
+            InspectorTest.completeTest();
+        });
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    Tests that the animation is correctly paused.
+    <div id="node" style="background-color: red; height: 100px"></div>
+</body>
+</html>

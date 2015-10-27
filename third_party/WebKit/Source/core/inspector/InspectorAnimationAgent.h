@@ -41,6 +41,7 @@ public:
     void getPlaybackRate(ErrorString*, double* playbackRate) override;
     void setPlaybackRate(ErrorString*, double playbackRate) override;
     void getCurrentTime(ErrorString*, const String& animationId, double* currentTime) override;
+    void setPaused(ErrorString*, const RefPtr<JSONArray>& animationIds, bool paused) override;
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
     void seekAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds, double currentTime) override;
     void resolveAnimation(ErrorString*, const String& animationId, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;

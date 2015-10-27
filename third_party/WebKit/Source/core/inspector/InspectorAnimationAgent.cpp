@@ -201,9 +201,40 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 void InspectorAnimationAgent::getCurrentTime(ErrorString* errorString, const String& id, double* currentTime)
 {
     Animation* animation = assertAnimation(errorString, id);
+    if (!animation)
+        return;
     if (m_idToAnimationClone.get(id))
         animation = m_idToAnimationClone.get(id);
-    *currentTime = animation->timeline()->currentTime() - animation->startTime();
+
+    if (animation->paused()) {
+        *currentTime = animation->currentTime();
+    } else {
+        // Use startTime where possible since currentTime is limited.
+        *currentTime = animation->timeline()->currentTime() - animation->startTime();
+    }
+}
+
+void InspectorAnimationAgent::setPaused(ErrorString* errorString, const RefPtr<JSONArray>& animationIds, bool paused)
+{
+    for (const auto& id : *animationIds) {
+        String animationId;
+        if (!(id->asString(&animationId))) {
+            *errorString = "Invalid argument type";
+            return;
+        }
+        Animation* animation = assertAnimation(errorString, animationId);
+        if (!animation)
+            return;
+        Animation* clone = animationClone(animation);
+        if (paused && !clone->paused()) {
+            // Ensure we restore a current time if the animation is limited.
+            double currentTime = animation->timeline()->currentTime() - animation->startTime();
+            clone->pause();
+            animation->setCurrentTime(currentTime);
+        } else if (!paused && clone->paused()) {
+            clone->unpause();
+        }
+    }
 }
 
 Animation* InspectorAnimationAgent::animationClone(Animation* animation)
@@ -212,9 +243,20 @@ Animation* InspectorAnimationAgent::animationClone(Animation* animation)
     if (!m_idToAnimationClone.get(id)) {
         KeyframeEffect* oldEffect = toKeyframeEffect(animation->effect());
         KeyframeEffect* newEffect = KeyframeEffect::create(oldEffect->target(), oldEffect->model(), oldEffect->specifiedTiming());
+        m_isCloning = true;
         Animation* clone = Animation::create(newEffect, animation->timeline());
+        m_isCloning = false;
         m_idToAnimationClone.set(id, clone);
         m_idToAnimation.set(String::number(clone->sequenceNumber()), clone);
+        clone->play();
+        clone->setStartTime(animation->startTime());
+
+        // TODO(samli): This shouldn't be necessary. The clone should override completely, but isn't, perhaps becaues the keyframe model is shared.
+        if (!animation->limited()) {
+            TrackExceptionState exceptionState;
+            animation->finish(exceptionState);
+            ASSERT(!exceptionState.hadException());
+        }
     }
     return m_idToAnimationClone.get(id);
 }
@@ -230,10 +272,9 @@ void InspectorAnimationAgent::seekAnimations(ErrorString* errorString, const Ref
         Animation* animation = assertAnimation(errorString, animationId);
         if (!animation)
             return;
-        m_isCloning = true;
         Animation* clone = animationClone(animation);
-        m_isCloning = false;
-        clone->play();
+        if (!clone->paused())
+            clone->play();
         clone->setCurrentTime(currentTime);
     }
 }
