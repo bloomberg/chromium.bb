@@ -63664,6 +63664,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="NO_DESTINATION">
     The brokerable attachment did not have a destination process.
   </int>
+  <int value="3" label="ERROR_MAKE_INTERMEDIATE">
+    Error making an intermediate Mach port.
+  </int>
+  <int value="4" label="ERROR_PARSE_DUPLICATE_MACH_PORT_MESSAGE">
+    Error parsing DuplicateMachPort message.
+  </int>
+  <int value="5" label="ERROR_TASK_FOR_PID">
+    Couldn't get a task port for the process with a given pid.
+  </int>
+  <int value="6" label="ERROR_MAKE_RECEIVE_PORT">
+    Couldn't make a port with receive rights in the destination process.
+  </int>
+  <int value="7" label="ERROR_SET_ATTRIBUTES">
+    Couldn't change the attributes of a Mach port.
+  </int>
+  <int value="8" label="ERROR_EXTRACT_RIGHT">Couldn't extract a right.</int>
+  <int value="9" label="ERROR_SEND_MACH_PORT">
+    Couldn't send a Mach port in a call to mach_msg().
+  </int>
+  <int value="10" label="ERROR_DECREASE_REF">
+    Couldn't decrease the ref count on a Mach port.
+  </int>
 </enum>
 
 <enum name="IPCAttachmentBrokerUnprivilegedBrokerAttachmentError" type="int">

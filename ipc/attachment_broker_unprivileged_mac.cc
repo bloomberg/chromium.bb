@@ -85,7 +85,7 @@ void AttachmentBrokerUnprivilegedMac::OnMachPortHasBeenDuplicated(
     const IPC::internal::MachPortAttachmentMac::WireFormat& wire_format) {
   // The IPC message was intended for a different process. Ignore it.
   if (wire_format.destination_process != base::Process::Current().Pid()) {
-    // TODO(erikchen): UMA metric.
+    LogError(WRONG_DESTINATION);
     return;
   }
 

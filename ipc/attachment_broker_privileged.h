@@ -61,6 +61,22 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
     DESTINATION_NOT_FOUND = 1,
     // The brokerable attachment did not have a destination process.
     NO_DESTINATION = 2,
+    // Error making an intermediate Mach port.
+    ERROR_MAKE_INTERMEDIATE = 3,
+    // Error parsing DuplicateMachPort message.
+    ERROR_PARSE_DUPLICATE_MACH_PORT_MESSAGE = 4,
+    // Couldn't get a task port for the process with a given pid.
+    ERROR_TASK_FOR_PID = 5,
+    // Couldn't make a port with receive rights in the destination process.
+    ERROR_MAKE_RECEIVE_PORT = 6,
+    // Couldn't change the attributes of a Mach port.
+    ERROR_SET_ATTRIBUTES = 7,
+    // Couldn't extract a right.
+    ERROR_EXTRACT_RIGHT = 8,
+    // Couldn't send a Mach port in a call to mach_msg().
+    ERROR_SEND_MACH_PORT = 9,
+    // Couldn't decrease the ref count on a Mach port.
+    ERROR_DECREASE_REF = 10,
     ERROR_MAX
   };
 

@@ -80,7 +80,7 @@ bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
           base::mac::ScopedMachSendRight(wire_format.mach_port));
       mach_port_attachment->reset_mach_port_ownership();
       if (intermediate_port == MACH_PORT_NULL) {
-        // TODO(erikchen): UMA metric.
+        LogError(ERROR_MAKE_INTERMEDIATE);
         return false;
       }
 
@@ -110,7 +110,7 @@ void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
     const IPC::Message& message) {
   AttachmentBrokerMsg_DuplicateMachPort::Param param;
   if (!AttachmentBrokerMsg_DuplicateMachPort::Read(&message, &param)) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_PARSE_DUPLICATE_MACH_PORT_MESSAGE);
     return;
   }
   IPC::internal::MachPortAttachmentMac::WireFormat wire_format =
@@ -178,7 +178,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
   DCHECK_NE(pid, base::GetCurrentProcId());
   mach_port_t task_port = port_provider_->TaskForPid(pid);
   if (task_port == MACH_PORT_NULL) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_TASK_FOR_PID);
     return MACH_PORT_NULL;
   }
   return CreateIntermediateMachPort(
@@ -196,7 +196,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
   kern_return_t kr =
       mach_port_allocate(task_port, MACH_PORT_RIGHT_RECEIVE, &endpoint);
   if (kr != KERN_SUCCESS) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_MAKE_RECEIVE_PORT);
     return MACH_PORT_NULL;
   }
 
@@ -207,7 +207,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
                                 reinterpret_cast<mach_port_info_t>(&limits),
                                 MACH_PORT_LIMITS_INFO_COUNT);
   if (kr != KERN_SUCCESS) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_SET_ATTRIBUTES);
     mach_port_deallocate(task_port, endpoint);
     return MACH_PORT_NULL;
   }
@@ -219,7 +219,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
       mach_port_extract_right(task_port, endpoint, MACH_MSG_TYPE_MAKE_SEND_ONCE,
                               &send_once_right, &send_right_type);
   if (kr != KERN_SUCCESS) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_EXTRACT_RIGHT);
     mach_port_deallocate(task_port, endpoint);
     return MACH_PORT_NULL;
   }
@@ -230,7 +230,7 @@ mach_port_name_t AttachmentBrokerPrivilegedMac::CreateIntermediateMachPort(
   kr = SendMachPort(
       send_once_right, port_to_insert.get(), MACH_MSG_TYPE_COPY_SEND);
   if (kr != KERN_SUCCESS) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_SEND_MACH_PORT);
     mach_port_deallocate(task_port, endpoint);
     return MACH_PORT_NULL;
   }
@@ -272,7 +272,7 @@ base::mac::ScopedMachSendRight AttachmentBrokerPrivilegedMac::ExtractNamedRight(
   // Decrement the reference count of the send right from the source process.
   kr = mach_port_mod_refs(task_port, named_right, MACH_PORT_RIGHT_SEND, -1);
   if (kr != KERN_SUCCESS) {
-    // TODO(erikchen): UMA metric.
+    LogError(ERROR_DECREASE_REF);
     // Failure does not actually affect attachment brokering, so there's no need
     // to return |MACH_PORT_NULL|.
   }
