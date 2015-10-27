@@ -98,6 +98,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         mTab.loadUrl(loadUrlParams);
     }
 
+    @Override
+    public void onSearchByImageInNewTab() {
+        mTab.triggerSearchByImage();
+    }
+
     /**
      * Checks if spdy proxy is enabled for input url.
      * @param url Input url to check for spdy setting.

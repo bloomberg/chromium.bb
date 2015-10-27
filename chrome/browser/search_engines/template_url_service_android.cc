@@ -90,6 +90,16 @@ jboolean TemplateUrlServiceAndroid::IsSearchProviderManaged(JNIEnv* env,
   return template_url_service_->is_default_search_managed();
 }
 
+jboolean TemplateUrlServiceAndroid::IsSearchByImageAvailable(JNIEnv* env,
+                                                             jobject obj) {
+  const TemplateURL* default_search_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  return default_search_provider &&
+      !default_search_provider->image_url().empty() &&
+      default_search_provider->image_url_ref().IsValid(
+          template_url_service_->search_terms_data());
+}
+
 jboolean TemplateUrlServiceAndroid::IsDefaultSearchEngineGoogle(JNIEnv* env,
                                                                 jobject obj) {
   TemplateURL* default_search_provider =

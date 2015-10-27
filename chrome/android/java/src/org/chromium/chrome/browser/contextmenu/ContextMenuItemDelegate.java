@@ -75,9 +75,14 @@ public interface ContextMenuItemDelegate {
     /**
      * Called when the {@code text} should be saved to the clipboard.
      * @param text The text to save to the clipboard.
-     * @param type The type of data in {@code text}.
+     * @param clipboardType The type of data in {@code text}.
      */
     void onSaveToClipboard(String text, int clipboardType);
+
+    /**
+     * Called when a search by image should be performed in a new tab.
+     */
+    void onSearchByImageInNewTab();
 
    /**
     * @return page url.

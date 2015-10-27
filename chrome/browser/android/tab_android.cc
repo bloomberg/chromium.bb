@@ -95,6 +95,14 @@ using content::WebContents;
 using navigation_interception::InterceptNavigationDelegate;
 using navigation_interception::NavigationParams;
 
+namespace {
+
+const int kImageSearchThumbnailMinSize = 300 * 300;
+const int kImageSearchThumbnailMaxWidth = 600;
+const int kImageSearchThumbnailMaxHeight = 600;
+
+}  // namespace
+
 TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
   if (!core_tab_helper)
@@ -750,6 +758,17 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env, jobject obj) {
       web_contents()->GetFocusedFrame();
   render_frame_host->Send(new ChromeViewMsg_RequestReloadImageForContextNode(
       render_frame_host->GetRoutingID()));
+}
+
+void TabAndroid::SearchByImageInNewTabAsync(JNIEnv* env, jobject obj) {
+  content::RenderFrameHost* render_frame_host =
+        web_contents()->GetMainFrame();
+  render_frame_host->Send(
+      new ChromeViewMsg_RequestThumbnailForContextNode(
+          render_frame_host->GetRoutingID(),
+          kImageSearchThumbnailMinSize,
+          gfx::Size(kImageSearchThumbnailMaxWidth,
+                    kImageSearchThumbnailMaxHeight)));
 }
 
 jlong TabAndroid::GetBookmarkId(JNIEnv* env,
