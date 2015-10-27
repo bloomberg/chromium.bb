@@ -162,8 +162,11 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameNative(
     DCHECK(source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
     SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-        gl, video_frame, source_texture, GL_RGBA, GL_UNSIGNED_BYTE, true,
-        false);
+        gl, video_frame,
+        SkCanvasVideoRenderer::CopyFrameSingleTextureParams(
+            SkCanvasVideoRenderer::CopyFrameSingleTextureParams::FullCopy,
+            GL_TEXTURE_2D, source_texture, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 0,
+            true, false));
   } else {
     gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
     source_texture = gl->CreateAndConsumeTextureCHROMIUM(
@@ -539,11 +542,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     gpu::gles2::GLES2Interface* gl,
     VideoFrame* video_frame,
-    unsigned int texture,
-    unsigned int internal_format,
-    unsigned int type,
-    bool premultiply_alpha,
-    bool flip_y) {
+    const CopyFrameSingleTextureParams& params) {
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
   DCHECK_EQ(1u, VideoFrame::NumPlanes(video_frame->format()));
@@ -564,9 +563,20 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // value down to get the expected result.
   // "flip_y == true" means to reverse the video orientation while
   // "flip_y == false" means to keep the intrinsic orientation.
-  gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture,
-                          internal_format, type, flip_y, premultiply_alpha,
-                          false);
+  if (params.copy_type == CopyFrameSingleTextureParams::FullCopy) {
+    DCHECK(!params.xoffset && !params.yoffset);
+    gl->CopyTextureCHROMIUM(params.target, source_texture, params.texture,
+                            params.internal_format, params.type, params.flip_y,
+                            params.premultiply_alpha, false);
+  } else {
+    DCHECK_EQ(static_cast<unsigned int>(GL_FALSE), params.internal_format);
+    DCHECK_EQ(static_cast<unsigned int>(GL_FALSE), params.type);
+    gl->CopySubTextureCHROMIUM(params.target, source_texture, params.texture,
+                               params.xoffset, params.yoffset, 0, 0,
+                               video_frame->natural_size().width(),
+                               video_frame->natural_size().height(),
+                               params.flip_y, params.premultiply_alpha, false);
+  }
 
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();
@@ -580,5 +590,27 @@ void SkCanvasVideoRenderer::ResetCache() {
   last_image_ = nullptr;
   last_timestamp_ = kNoTimestamp();
 }
+
+SkCanvasVideoRenderer::CopyFrameSingleTextureParams::
+    CopyFrameSingleTextureParams(CopyType copy_type,
+                                 unsigned target,
+                                 unsigned texture,
+                                 unsigned internal_format,
+                                 unsigned type,
+                                 int level,
+                                 int xoffset,
+                                 int yoffset,
+                                 bool premultiply_alpha,
+                                 bool flip_y)
+    : copy_type(copy_type),
+      target(target),
+      texture(texture),
+      internal_format(internal_format),
+      type(type),
+      level(level),
+      xoffset(xoffset),
+      yoffset(yoffset),
+      premultiply_alpha(premultiply_alpha),
+      flip_y(flip_y) {}
 
 }  // namespace media

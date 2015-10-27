@@ -164,17 +164,32 @@ public:
 
     virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) = 0;
 
-    // TODO(dshwang): remove non-|target| version. crbug.com/349871
-    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }
-
     // Do a GPU-GPU textures copy. If the copy is impossible or fails, it returns false.
-    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned target,
-        unsigned texture, unsigned internalFormat, unsigned type, int level,
-        bool premultiplyAlpha, bool flipY) { return false; }
-    // Copy sub video frame texture to |texture|. If the copy is impossible or fails, it returns false.
-    virtual bool copyVideoSubTextureToPlatformTexture(WebGraphicsContext3D*, unsigned target,
-        unsigned texture, int level, int xoffset, int yoffset, bool premultiplyAlpha,
-        bool flipY) { return false; }
+    // Copy the video frame texture to full texture or sub texture depending on |copyType|.
+    // If FullCopy, |xoffset| and |yoffset| must be 0.
+    // If SubCopy, |internalFormat| and |type| must be GL_FALSE.
+    struct CopyVideoTextureParams {
+        enum CopyType { FullCopy, SubCopy };
+        CopyVideoTextureParams(CopyType copyType, unsigned target,
+            unsigned texture, unsigned internalFormat, unsigned type, int level,
+            int xoffset, int yoffset, bool premultiplyAlpha, bool flipY)
+            : copyType(copyType), target(target), texture(texture)
+            , internalFormat(internalFormat) , type(type), level(level)
+            , xoffset(xoffset), yoffset(yoffset)
+            , premultiplyAlpha(premultiplyAlpha), flipY(flipY)
+        { }
+        CopyType copyType;
+        unsigned target;
+        unsigned texture;
+        unsigned internalFormat;
+        unsigned type;
+        int level;
+        int xoffset;
+        int yoffset;
+        bool premultiplyAlpha;
+        bool flipY;
+    };
+    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, const CopyVideoTextureParams&) = 0;
 
     virtual WebAudioSourceProvider* audioSourceProvider() { return nullptr; }
 
