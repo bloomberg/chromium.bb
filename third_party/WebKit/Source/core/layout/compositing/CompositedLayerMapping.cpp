@@ -49,6 +49,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
 #include "core/paint/ScrollableAreaPainter.h"
@@ -2275,8 +2276,9 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, interestRect);
     } else if (graphicsLayer == layerForScrollCorner()) {
         IntPoint scrollCornerAndResizerLocation = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().location();
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, -scrollCornerAndResizerLocation, interestRect);
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, -scrollCornerAndResizerLocation, interestRect);
+        CullRect cullRect(enclosingIntRect(interestRect));
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, -scrollCornerAndResizerLocation, cullRect);
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, -scrollCornerAndResizerLocation, cullRect);
     }
     InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, &context, LayoutRect(interestRect));
 #if ENABLE(ASSERT)

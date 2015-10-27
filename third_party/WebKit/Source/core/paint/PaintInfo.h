@@ -51,7 +51,9 @@ class PaintInvalidationState;
 
 class CORE_EXPORT CullRect {
 public:
-    CullRect(const IntRect& rect) : m_rect(rect) { }
+    explicit CullRect(const IntRect& rect) : m_rect(rect) { }
+    CullRect(const CullRect&, const IntPoint& offset);
+
     bool intersectsCullRect(const AffineTransform&, const FloatRect& boundingBox) const;
     void updateCullRect(const AffineTransform& localToParentTransform);
     bool intersectsCullRect(const IntRect&) const;
@@ -63,10 +65,8 @@ private:
     IntRect m_rect;
 
     // TODO(chrishtr): temporary while we implement CullRect everywhere.
-    friend class BlockPainter;
     friend class ReplicaPainter;
     friend class GridPainter;
-    friend class InlineTextBoxPainter;
     friend class PartPainter;
     friend class ScrollableAreaPainter;
     friend class SVGPaintContext;

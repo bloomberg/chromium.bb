@@ -74,7 +74,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
 {
     PaintPhase phase = paintInfo.phase;
     if (m_layoutBlock.hasOverflowClip() && m_layoutBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_layoutBlock) && !paintInfo.paintRootBackgroundOnly()) {
-        ScrollableAreaPainter(*m_layoutBlock.layer()->scrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.cullRect().m_rect, false /* paintingOverlayControls */);
+        ScrollableAreaPainter(*m_layoutBlock.layer()->scrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.cullRect(), false /* paintingOverlayControls */);
     }
 }
 

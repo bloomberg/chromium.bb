@@ -24,6 +24,12 @@ bool PaintInfo::shouldPaintWithinRoot(const LayoutObject* layoutObject) const
     return !paintingRoot || paintingRoot == layoutObject;
 }
 
+CullRect::CullRect(const CullRect& cullRect, const IntPoint& offset)
+{
+    m_rect = cullRect.m_rect;
+    m_rect.moveBy(offset);
+}
+
 bool CullRect::intersectsCullRect(const IntRect& boundingBox) const
 {
     return boundingBox.intersects(m_rect);

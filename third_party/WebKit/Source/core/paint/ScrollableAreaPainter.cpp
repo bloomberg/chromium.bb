@@ -18,7 +18,7 @@
 
 namespace blink {
 
-void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
+void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const CullRect& cullRect)
 {
     if (scrollableArea().box().style()->resize() == RESIZE_NONE)
         return;
@@ -29,7 +29,7 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
     absRect.moveBy(paintOffset);
 
     if (scrollableArea().resizer()) {
-        if (!absRect.intersects(damageRect))
+        if (!cullRect.intersectsCullRect(absRect))
             return;
         ScrollbarPainter::paintIntoRect(*scrollableArea().resizer(), context, paintOffset, LayoutRect(absRect));
         return;
@@ -98,6 +98,8 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
     IntRect localDamageRect = cullRect.m_rect;
     localDamageRect.moveBy(-adjustedPaintOffset);
 
+    CullRect adjustedCullRect(cullRect, -adjustedPaintOffset);
+
     // Overlay scrollbars paint in a second pass through the layer tree so that they will paint
     // on top of everything else. If this is the normal painting pass, paintingOverlayControls
     // will be false, and we should just tell the root layer that there are overlay scrollbars
@@ -109,7 +111,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
         // It's not necessary to do the second pass if the scrollbars paint into layers.
         if ((scrollableArea().horizontalScrollbar() && scrollableArea().layerForHorizontalScrollbar()) || (scrollableArea().verticalScrollbar() && scrollableArea().layerForVerticalScrollbar()))
             return;
-        if (!overflowControlsIntersectRect(localDamageRect))
+        if (!overflowControlsIntersectRect(adjustedCullRect))
             return;
 
         LayoutView* layoutView = scrollableArea().box().view();
@@ -142,33 +144,32 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
 
     // We fill our scroll corner with white if we have a scrollbar that doesn't run all the way up to the
     // edge of the box.
-    paintScrollCorner(context, adjustedPaintOffset, cullRect.m_rect);
+    paintScrollCorner(context, adjustedPaintOffset, cullRect);
 
     // Paint our resizer last, since it sits on top of the scroll corner.
-    paintResizer(context, adjustedPaintOffset, cullRect.m_rect);
+    paintResizer(context, adjustedPaintOffset, cullRect);
 }
 
-bool ScrollableAreaPainter::overflowControlsIntersectRect(const IntRect& localRect) const
+bool ScrollableAreaPainter::overflowControlsIntersectRect(const CullRect& cullRect) const
 {
     const IntRect borderBox = scrollableArea().box().pixelSnappedBorderBoxRect();
 
-    if (scrollableArea().rectForHorizontalScrollbar(borderBox).intersects(localRect))
+    if (cullRect.intersectsCullRect(scrollableArea().rectForHorizontalScrollbar(borderBox)))
         return true;
 
-    if (scrollableArea().rectForVerticalScrollbar(borderBox).intersects(localRect))
+    if (cullRect.intersectsCullRect(scrollableArea().rectForVerticalScrollbar(borderBox)))
         return true;
 
-    if (scrollableArea().scrollCornerRect().intersects(localRect))
+    if (cullRect.intersectsCullRect(scrollableArea().scrollCornerRect()))
         return true;
 
-    if (scrollableArea().resizerCornerRect(borderBox, ResizerForPointer).intersects(localRect))
+    if (cullRect.intersectsCullRect(scrollableArea().resizerCornerRect(borderBox, ResizerForPointer)))
         return true;
 
     return false;
 }
 
-
-void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
+void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const CullRect& adjustedCullRect)
 {
     IntRect absRect = scrollableArea().scrollCornerRect();
     if (absRect.isEmpty())
@@ -176,7 +177,7 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     absRect.moveBy(paintOffset);
 
     if (scrollableArea().scrollCorner()) {
-        if (!absRect.intersects(damageRect))
+        if (!adjustedCullRect.intersectsCullRect(absRect))
             return;
         ScrollbarPainter::paintIntoRect(*scrollableArea().scrollCorner(), context, paintOffset, LayoutRect(absRect));
         return;
