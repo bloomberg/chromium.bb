@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace invalidation {
 
 class InvalidationService;
@@ -25,6 +29,10 @@ class ProfileInvalidationProvider : public KeyedService {
 
   // KeyedService:
   void Shutdown() override;
+
+  // Register prefs to be used by per-Profile instances of this class which
+  // store invalidation state in Profile prefs.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   scoped_ptr<InvalidationService> invalidation_service_;

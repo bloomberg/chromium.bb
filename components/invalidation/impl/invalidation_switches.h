@@ -8,6 +8,7 @@
 namespace invalidation {
 namespace switches {
 
+extern const char kInvalidationUseGCMChannel[];
 extern const char kSyncNotificationHostPort[];
 extern const char kSyncAllowInsecureXmppConnection[];
 

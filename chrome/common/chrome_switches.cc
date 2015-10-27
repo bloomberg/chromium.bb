@@ -677,10 +677,6 @@ const char kInstantProcess[]                = "instant-process";
 // The URL for the interests API.
 const char kInterestsURL[]                  = "interests-url";
 
-// Invalidation service should use GCM network channel even if experiment is not
-// enabled.
-const char kInvalidationUseGCMChannel[]     = "invalidation-use-gcm-channel";
-
 // Enables site isolation for all chrome-extension:// urls.
 const char kIsolateExtensions[] = "isolate-extensions";
 

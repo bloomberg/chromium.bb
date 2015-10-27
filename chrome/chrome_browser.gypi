@@ -1106,8 +1106,6 @@
       'browser/importer/in_process_importer_bridge.h',
       'browser/importer/profile_writer.cc',
       'browser/importer/profile_writer.h',
-      'browser/invalidation/ticl_profile_settings_provider.cc',
-      'browser/invalidation/ticl_profile_settings_provider.h',
       'browser/lifetime/browser_close_manager.cc',
       'browser/lifetime/browser_close_manager.h',
       'browser/media_galleries/fileapi/av_scanning_file_validator.cc',

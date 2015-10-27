@@ -306,6 +306,7 @@
       'invalidation/impl/sync_invalidation_listener_unittest.cc',
       'invalidation/impl/sync_system_resources_unittest.cc',
       'invalidation/impl/ticl_invalidation_service_unittest.cc',
+      'invalidation/impl/ticl_profile_settings_provider_unittest.cc',
       'invalidation/impl/unacked_invalidation_set_unittest.cc',
     ],
     'json_schema_unittest_sources': [

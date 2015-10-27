@@ -1500,11 +1500,6 @@ const char kDevToolsPreferences[] = "devtools.preferences";
 const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
 #endif
 
-// Boolean indicating that TiclInvalidationService should use GCM channel.
-// False or lack of settings means XMPPPushClient channel.
-const char kInvalidationServiceUseGCMChannel[] =
-    "invalidation_service.use_gcm_channel";
-
 // Local hash of authentication password, used for off-line authentication
 // when on-line authentication is not available.
 const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
