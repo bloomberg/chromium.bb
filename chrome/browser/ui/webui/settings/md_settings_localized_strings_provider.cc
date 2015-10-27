@@ -304,6 +304,18 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "restart",
       IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON);
+  html_source->AddLocalizedString(
+      "editDictionaryPageTitle",
+      IDS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_TITLE);
+  html_source->AddLocalizedString(
+      "addDictionaryWordLabel",
+      IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD);
+  html_source->AddLocalizedString(
+      "addDictionaryWordButton",
+      IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_BUTTON);
+  html_source->AddLocalizedString(
+      "customDictionaryWords",
+      IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS);
 }
 
 #if defined(OS_CHROMEOS)

@@ -167,6 +167,15 @@ Polymer({
       subpage: ['language-detail'],
       subpageTitles: ['manageLanguagesPageTitle'],
     },
+<if expr="not is_macosx">
+    {
+      url: '/editDictionary',
+      page: 'advanced',
+      section: 'languages',
+      subpage: ['edit-dictionary'],
+      subpageTitles: ['editDictionaryPageTitle'],
+    },
+</if>
   ],
 
   /**

@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html"> <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+
+<dom-module id="settings-edit-dictionary-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="edit_dictionary_page.css">
+  <template>
+    <div id="addWordRow">
+      <iron-a11y-keys id="keys" keys="enter esc"
+          on-keys-pressed="onKeysPress_"></iron-a11y-keys>
+      <paper-input id="newWord" no-label-float
+          i18n-values="label:addDictionaryWordLabel"></paper-input>
+      <paper-button on-tap="onAddWordTap_"
+          i18n-content="addDictionaryWordButton"></paper-button>
+    </div>
+    <h2 i18n-content="customDictionaryWords"></h2>
+    <iron-list id="list" items="{{words_}}">
+      <template>
+        <paper-item>
+          <div class="word">[[item]]</div>
+          <paper-icon-button icon="clear" on-tap="onRemoveWordTap_">
+          </paper-icon-button>
+        </paper-item>
+      </template>
+    </iron-list>
+  </template>
+  <script src="edit_dictionary_page.js"></script>
+</dom-module>

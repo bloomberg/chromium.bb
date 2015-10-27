@@ -226,7 +226,9 @@
                  allowexternalscript="true" />
       <structure name="IDR_SETTINGS_LANGUAGES_PAGE_JS"
                  file="languages_page/languages_page.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_PAGE_CSS"
                  file="languages_page/manage_languages_page.css"
                  type="chrome_html" />
@@ -247,6 +249,17 @@
       <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_JS"
                  file="languages_page/language_detail_page.js"
                  type="chrome_html" />
+      <if expr="not is_macosx">
+        <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_CSS"
+                   file="languages_page/edit_dictionary_page.css"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_HTML"
+                   file="languages_page/edit_dictionary_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_JS"
+                   file="languages_page/edit_dictionary_page.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_PREFS_HTML"
                  file="prefs/prefs.html"
                  type="chrome_html" />
@@ -290,7 +303,9 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_JS"
                  file="settings_page/settings_router.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_CSS"
                  file="site_settings_page/site_settings_page.css"
                  type="chrome_html" />

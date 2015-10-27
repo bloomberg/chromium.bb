@@ -78,10 +78,7 @@ Polymer({
    */
   onManageLanguagesTap_: function() {
     this.$.pages.setSubpageChain(['manage-languages']);
-    // HACK(michaelpg): This is necessary to show the list when navigating to
-    // the sub-page. Remove when PolymerElements/neon-animation#60 is fixed.
-    /** @type {{_render: function()}} */(this.$.manageLanguagesPage.$.list)
-        ._render();
+    this.forceRenderList_('settings-manage-languages-page');
   },
 
   /**
@@ -93,6 +90,17 @@ Polymer({
     this.$.languageSelector.select(e.model.item);
     this.$.pages.setSubpageChain(['language-detail']);
   },
+
+<if expr="not is_macosx">
+  /**
+   * Opens the Custom Dictionary page.
+   * @private
+   */
+  onEditDictionaryTap_: function() {
+    this.$.pages.setSubpageChain(['edit-dictionary']);
+    this.forceRenderList_('settings-edit-dictionary-page');
+  },
+</if>
 
   /**
    * @param {string} languageCode The language code identifying a language.
@@ -114,6 +122,16 @@ Polymer({
   isCurrentInputMethod_: function(id, currentId) {
     assert(cr.isChromeOS);
     return id == currentId;
+  },
+
+  /**
+   * HACK(michaelpg): This is necessary to show the list when navigating to
+   * the sub-page. Remove this function when PolymerElements/neon-animation#60
+   * is fixed.
+   * @param {string} tagName Name of the element containing the <iron-list>.
+   */
+  forceRenderList_: function(tagName) {
+    this.$$(tagName).$$('iron-list').fire('iron-resize');
   },
 });
 })();
