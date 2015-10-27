@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/variations/active_field_trials.h"
+#include "components/version_ui/version_handler_helper.h"
 #include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -84,34 +85,8 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
                      base::Owned(profile_path_buffer)));
 
   // Respond with the variations info immediately.
-  std::vector<std::string> variations;
-#if !defined(NDEBUG)
-  base::FieldTrial::ActiveGroups active_groups;
-  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-
-  const unsigned char kNonBreakingHyphenUTF8[] = { 0xE2, 0x80, 0x91, '\0' };
-  const std::string kNonBreakingHyphenUTF8String(
-      reinterpret_cast<const char*>(kNonBreakingHyphenUTF8));
-  for (size_t i = 0; i < active_groups.size(); ++i) {
-    std::string line = active_groups[i].trial_name + ":" +
-                       active_groups[i].group_name;
-    base::ReplaceChars(line, "-", kNonBreakingHyphenUTF8String, &line);
-    variations.push_back(line);
-  }
-#else
-  // In release mode, display the hashes only.
-  variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
-#endif
-
-  base::ListValue variations_list;
-  for (std::vector<std::string>::const_iterator it = variations.begin();
-      it != variations.end(); ++it) {
-    variations_list.Append(new base::StringValue(*it));
-  }
-
-  // In release mode, this will return an empty list to clear the section.
   web_ui()->CallJavascriptFunction(version_ui::kReturnVariationInfo,
-                                   variations_list);
+                                   *version_ui::GetVariationsList());
 }
 
 void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,

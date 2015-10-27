@@ -4,7 +4,14 @@
 
 source_set("version_ui") {
   sources = [
+    "version_handler_helper.cc",
+    "version_handler_helper.h",
     "version_ui_constants.cc",
     "version_ui_constants.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/variations",
   ]
 }

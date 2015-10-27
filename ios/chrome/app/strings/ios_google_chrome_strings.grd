@@ -130,8 +130,17 @@ all other OS specific variables will be false.
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
+        Google Chrome
+      </message>
       <message name="IDS_IOS_SHORT_PRODUCT_NAME" desc="The Chrome application short name">
         Chrome
+      </message>
+      <message name="IDS_IOS_ABOUT_VERSION_COMPANY_NAME" desc="Company name on the about pages">
+        Google Inc.
+      </message>
+      <message name="IDS_IOS_ABOUT_VERSION_COPYRIGHT" desc="Copyright information on the about pages">
+        Copyright <ph name="YEAR">$1</ph> Google Inc. All rights reserved.
       </message>
       <message name="IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance. Title case. [Length: 20em] [iOS only]">
         Copied to Chrome

@@ -55,6 +55,7 @@ include_rules = [
   "+components/upload_list",
   "+components/variations",
   "+components/version_info",
+  "+components/version_ui",
   "+components/web_resource",
   "+components/webdata_services",
   "+components/webp_transcode",

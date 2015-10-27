@@ -130,6 +130,11 @@ all other OS specific variables will be false.
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+
+      <message name="IDS_IOS_PLATFORM_LABEL" desc="Label for Platform. [Length: unlimited] [iOS only]">
+        Platform
+      </message>
+
       <message name="IDS_IOS_AUTOFILL_ACCNAME_SUGGESTIONS_AVAILABLE" desc="The description of the event provided when an accessibility notification is posted upon showing form suggestions. [Length: unlimited] [iOS only]">
         Suggestions available
       </message>

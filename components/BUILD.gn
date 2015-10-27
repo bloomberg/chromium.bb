@@ -37,6 +37,7 @@ group("all_components") {
     "//components/pref_registry",
     "//components/omnibox/browser",
     "//components/infobars/core",
+    "//components/version_ui",
   ]
 
   if (!is_ios) {

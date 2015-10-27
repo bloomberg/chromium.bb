@@ -11,8 +11,14 @@
       'include_dirs': [
         '..',
       ],
+      'dependencies': [
+        'variations',
+        '../base/base.gyp:base',
+      ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'version_ui/version_handler_helper.cc',
+        'version_ui/version_handler_helper.h',
         'version_ui/version_ui_constants.cc',
         'version_ui/version_ui_constants.h',
       ],
