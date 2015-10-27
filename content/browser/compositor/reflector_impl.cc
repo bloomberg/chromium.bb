@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/owned_mailbox.h"
-//#include "content/common/gpu/client/gl_helper.h"
 #include "ui/compositor/layer.h"
 
 namespace content {

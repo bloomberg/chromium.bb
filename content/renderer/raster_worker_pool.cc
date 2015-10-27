@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "raster_worker_pool.h"
+#include "content/renderer/raster_worker_pool.h"
 
 #include "base/strings/stringprintf.h"
 
