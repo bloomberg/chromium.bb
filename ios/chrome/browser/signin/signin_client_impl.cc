@@ -19,12 +19,12 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/public/provider/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -78,9 +78,9 @@ std::string SigninClientImpl::GetSigninScopedDeviceId() {
 }
 
 void SigninClientImpl::OnSignedOut() {
-  ios::BrowserStateInfoCache* cache = GetApplicationContext()
-                                          ->GetChromeBrowserStateManager()
-                                          ->GetBrowserStateInfoCache();
+  BrowserStateInfoCache* cache = GetApplicationContext()
+                                     ->GetChromeBrowserStateManager()
+                                     ->GetBrowserStateInfoCache();
   size_t index = cache->GetIndexOfBrowserStateWithPath(
       browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
 
@@ -89,10 +89,8 @@ void SigninClientImpl::OnSignedOut() {
   if (index == std::string::npos)
     return;
 
-  cache->SetLocalAuthCredentialsOfBrowserStateAtIndex(index, std::string());
   cache->SetAuthInfoOfBrowserStateAtIndex(index, std::string(),
                                           base::string16());
-  cache->SetBrowserStateSigninRequiredAtIndex(index, false);
 }
 
 net::URLRequestContextGetter* SigninClientImpl::GetURLRequestContext() {
@@ -151,7 +149,7 @@ void SigninClientImpl::OnSignedIn(const std::string& account_id,
                                   const std::string& password) {
   ios::ChromeBrowserStateManager* browser_state_manager =
       GetApplicationContext()->GetChromeBrowserStateManager();
-  ios::BrowserStateInfoCache* cache =
+  BrowserStateInfoCache* cache =
       browser_state_manager->GetBrowserStateInfoCache();
   size_t index = cache->GetIndexOfBrowserStateWithPath(
       browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
@@ -162,9 +160,9 @@ void SigninClientImpl::OnSignedIn(const std::string& account_id,
 }
 
 void SigninClientImpl::OnErrorChanged() {
-  ios::BrowserStateInfoCache* cache = GetApplicationContext()
-                                          ->GetChromeBrowserStateManager()
-                                          ->GetBrowserStateInfoCache();
+  BrowserStateInfoCache* cache = GetApplicationContext()
+                                     ->GetChromeBrowserStateManager()
+                                     ->GetBrowserStateInfoCache();
   size_t index = cache->GetIndexOfBrowserStateWithPath(
       browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
   if (index == std::string::npos)
@@ -176,19 +174,6 @@ void SigninClientImpl::OnErrorChanged() {
 
 void SigninClientImpl::OnGetTokenInfoResponse(
     scoped_ptr<base::DictionaryValue> token_info) {
-  if (!token_info->HasKey("error")) {
-    std::string handle;
-    if (token_info->GetString("token_handle", &handle)) {
-      ios::BrowserStateInfoCache* cache = GetApplicationContext()
-                                              ->GetChromeBrowserStateManager()
-                                              ->GetBrowserStateInfoCache();
-      size_t index = cache->GetIndexOfBrowserStateWithPath(
-          browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
-      cache->SetPasswordChangeDetectionTokenAtIndex(index, handle);
-    } else {
-      NOTREACHED();
-    }
-  }
   oauth_request_.reset();
 }
 

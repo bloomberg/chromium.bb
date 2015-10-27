@@ -14,9 +14,10 @@ namespace base {
 class FilePath;
 }
 
+class BrowserStateInfoCache;
+
 namespace ios {
 
-class BrowserStateInfoCache;
 class ChromeBrowserState;
 
 // Provides methods that allow for various ways of creating non-incognito

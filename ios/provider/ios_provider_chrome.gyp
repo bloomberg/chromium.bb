@@ -10,9 +10,6 @@
       'target_name': 'ios_provider_chrome_browser',
       'type': 'static_library',
       'sources': [
-        '../public/provider/chrome/browser/browser_state/browser_state_info_cache.cc',
-        '../public/provider/chrome/browser/browser_state/browser_state_info_cache.h',
-        '../public/provider/chrome/browser/browser_state/browser_state_info_cache_observer.h',
         '../public/provider/chrome/browser/browser_state/chrome_browser_state.cc',
         '../public/provider/chrome/browser/browser_state/chrome_browser_state.h',
         '../public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h',

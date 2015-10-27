@@ -13,6 +13,7 @@ namespace prefs {
 // preference.
 
 const char kAcceptLanguages[] = "intl.accept_languages";
+const char kBrowserStateInfoCache[] = "profile.info_cache";
 const char kBrowserStateLastUsed[] = "profile.last_used";
 const char kBrowserStatesLastActive[] = "profile.last_active_profiles";
 const char kBrowserStatesNumCreated[] = "profile.profiles_created";
