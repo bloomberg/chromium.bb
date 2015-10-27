@@ -51,6 +51,7 @@
 #include "core/loader/HistoryItem.h"
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
+#include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 #include "modules/device_light/DeviceLightController.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
@@ -776,9 +777,10 @@ PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
         return nullptr;
 
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
+    WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
     return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url,
         client, &encryptedMedia,
-        encryptedMedia.contentDecryptionModule()));
+        encryptedMedia.contentDecryptionModule(), sinkId));
 }
 
 PassOwnPtr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()

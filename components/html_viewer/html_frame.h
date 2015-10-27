@@ -160,7 +160,8 @@ class HTMLFrame : public blink::WebFrameClient,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      blink::WebContentDecryptionModule* initial_cdm);
+      blink::WebContentDecryptionModule* initial_cdm,
+      const blink::WebString& sink_id);
   virtual blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,

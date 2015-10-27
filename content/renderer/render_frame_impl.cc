@@ -2132,7 +2132,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     const blink::WebURL& url,
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
-    WebContentDecryptionModule* initial_cdm) {
+    WebContentDecryptionModule* initial_cdm,
+    const blink::WebString& sink_id) {
 #if defined(VIDEO_HOLE)
   if (!contains_media_player_) {
     render_view_->RegisterVideoHoleFrame(this);
@@ -2143,7 +2144,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   blink::WebMediaStream web_stream(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (!web_stream.isNull())
-    return CreateWebMediaPlayerForMediaStream(client);
+    return CreateWebMediaPlayerForMediaStream(client, sink_id,
+                                              frame->securityOrigin());
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
@@ -2152,7 +2154,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   media::WebMediaPlayerParams::Context3DCB context_3d_cb;
 #else
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink =
-      render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_);
+      render_thread->GetAudioRendererMixerManager()->CreateInput(
+          routing_id_, sink_id.utf8(), frame->securityOrigin());
   media::WebMediaPlayerParams::Context3DCB context_3d_cb =
       base::Bind(&GetSharedMainThreadContext3D);
 #endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
@@ -4882,7 +4885,9 @@ void RenderFrameImpl::InitializeUserMediaClient() {
 }
 
 WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
-    WebMediaPlayerClient* client) {
+    WebMediaPlayerClient* client,
+    const WebString& sink_id,
+    const WebSecurityOrigin& security_origin) {
 #if defined(ENABLE_WEBRTC)
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
   const bool found_neon =
@@ -4900,7 +4905,8 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
       frame_, client, weak_factory_.GetWeakPtr(), new RenderMediaLog(),
       CreateRendererFactory(), compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),
-      render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories());
+      render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
+      sink_id, security_origin);
 #else
   return NULL;
 #endif  // defined(ENABLE_WEBRTC)

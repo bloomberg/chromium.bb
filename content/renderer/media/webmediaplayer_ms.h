@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_H_
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -12,13 +14,15 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/renderers/skcanvas_video_renderer.h"
-
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "url/origin.h"
 
 namespace blink {
 class WebFrame;
 class WebGraphicsContext3D;
 class WebMediaPlayerClient;
+class WebSecurityOrigin;
+class WebString;
 }
 
 namespace media {
@@ -69,7 +73,9 @@ class WebMediaPlayerMS
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      media::GpuVideoAcceleratorFactories* gpu_factories);
+      media::GpuVideoAcceleratorFactories* gpu_factories,
+      const blink::WebString& sink_id,
+      const blink::WebSecurityOrigin& security_origin);
 
   ~WebMediaPlayerMS() override;
 
@@ -189,6 +195,9 @@ class WebMediaPlayerMS
   scoped_ptr<WebMediaPlayerMSCompositor> compositor_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+
+  const std::string initial_audio_output_device_id_;
+  const url::Origin initial_security_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

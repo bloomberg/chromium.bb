@@ -44,7 +44,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    media::GpuVideoAcceleratorFactories* gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories,
+    const blink::WebString& sink_id,
+    const blink::WebSecurityOrigin& security_origin)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
@@ -58,7 +60,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       media_task_runner_(media_task_runner),
       worker_task_runner_(worker_task_runner),
       gpu_factories_(gpu_factories),
-      compositor_task_runner_(compositor_task_runner) {
+      compositor_task_runner_(compositor_task_runner),
+      initial_audio_output_device_id_(sink_id.utf8()),
+      initial_security_origin_(security_origin) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(client);
   media_log_->AddEvent(
@@ -114,7 +118,8 @@ void WebMediaPlayerMS::load(LoadType load_type,
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
-      url, frame->GetRoutingID(), std::string(), url::Origin());
+      url, frame->GetRoutingID(), initial_audio_output_device_id_,
+      initial_security_origin_);
 
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);

@@ -394,7 +394,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      blink::WebContentDecryptionModule* initial_cdm) override;
+      blink::WebContentDecryptionModule* initial_cdm,
+      const blink::WebString& sink_id) override;
   blink::WebMediaSession* createMediaSession() override;
   blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebLocalFrame* frame,
@@ -812,7 +813,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void InitializeUserMediaClient();
 
   blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
-      blink::WebMediaPlayerClient* client);
+      blink::WebMediaPlayerClient* client,
+      const blink::WebString& sink_id,
+      const blink::WebSecurityOrigin& security_origin);
 
   // Creates a factory object used for creating audio and video renderers.
   scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
