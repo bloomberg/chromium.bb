@@ -13,6 +13,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_split.h"
@@ -724,6 +725,9 @@ void TraceLog::SetDisabledWhileLocked() {
   UpdateCategoryGroupEnabledFlags();
   AddMetadataEventsWhileLocked();
 
+  // Remove metadata events so they will not get added to a subsequent trace.
+  metadata_events_.clear();
+
   dispatching_to_observer_list_ = true;
   std::vector<EnabledStateObserver*> observer_list =
       enabled_state_observer_list_;
@@ -1332,6 +1336,27 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   return handle;
 }
 
+void TraceLog::AddMetadataEvent(
+    const char* name,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    unsigned int flags) {
+  scoped_ptr<TraceEvent> trace_event(new TraceEvent);
+  trace_event->Initialize(
+      0,  // thread_id
+      TraceTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
+      &g_category_group_enabled[g_category_metadata], name,
+      trace_event_internal::kNoId,  // id
+      trace_event_internal::kNoId,  // context_id
+      trace_event_internal::kNoId,  // bind_id
+      num_args, arg_names, arg_types, arg_values, convertable_values, flags);
+  AutoLock lock(lock_);
+  metadata_events_.push_back(trace_event.Pass());
+}
+
 // May be called when a COMPELETE event ends and the unfinished event has been
 // recycled (phase == TRACE_EVENT_PHASE_END and trace_event == NULL).
 std::string TraceLog::EventToConsoleMessage(unsigned char phase,
@@ -1458,6 +1483,10 @@ uint64 TraceLog::MangleEventId(uint64 id) {
 
 void TraceLog::AddMetadataEventsWhileLocked() {
   lock_.AssertAcquired();
+
+  // Copy metadata added by |AddMetadataEvent| into the trace log.
+  for (TraceEvent* event : metadata_events_)
+    AddEventToThreadSharedChunkWhileLocked(nullptr, false)->CopyFrom(*event);
 
 #if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
   InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),

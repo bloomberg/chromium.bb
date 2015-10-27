@@ -5,7 +5,14 @@
 #ifndef BASE_TRACE_EVENT_TRACE_LOG_H_
 #define BASE_TRACE_EVENT_TRACE_LOG_H_
 
+#include <string>
+#include <vector>
+
+#include "base/atomicops.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -225,6 +232,16 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
 
+  // Adds a metadata event that will be written when the trace log is flushed.
+  void AddMetadataEvent(
+      const char* name,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      unsigned int flags);
+
   void UpdateTraceEventDuration(const unsigned char* category_group_enabled,
                                 const char* name,
                                 TraceEventHandle handle);
@@ -403,6 +420,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   Mode mode_;
   int num_traces_recorded_;
   scoped_ptr<TraceBuffer> logged_events_;
+  ScopedVector<TraceEvent> metadata_events_;
   subtle::AtomicWord /* EventCallback */ event_callback_;
   bool dispatching_to_observer_list_;
   std::vector<EnabledStateObserver*> enabled_state_observer_list_;

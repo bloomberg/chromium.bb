@@ -1089,6 +1089,63 @@ TEST_F(TraceEventTestFixture, TestTraceFlush) {
   }
 }
 
+TEST_F(TraceEventTestFixture, AddMetadataEvent) {
+  int num_calls = 0;
+
+  class Convertable : public ConvertableToTraceFormat {
+   public:
+    Convertable(int* num_calls) : num_calls_(num_calls) {}
+    void AppendAsTraceFormat(std::string* out) const override {
+      (*num_calls_)++;
+      out->append("\"metadata_value\"");
+    }
+
+   private:
+    ~Convertable() override {}
+    int* num_calls_;
+  };
+
+  scoped_refptr<ConvertableToTraceFormat> convertable =
+      new Convertable(&num_calls);
+
+  BeginTrace();
+  TRACE_EVENT_API_ADD_METADATA_EVENT("metadata_event_name", "metadata_arg_name",
+                                     convertable);
+
+  // |AppendAsTraceFormat| should only be called on flush, not when the event
+  // is added.
+  ASSERT_EQ(0, num_calls);
+  EndTraceAndFlush();
+  ASSERT_EQ(1, num_calls);
+  EXPECT_TRUE(FindNamePhaseKeyValue("metadata_event_name", "M",
+                                    "metadata_arg_name", "metadata_value"));
+
+  // The metadata event should only be adde to the current trace. In this new
+  // trace, the event should not appear.
+  BeginTrace();
+  EndTraceAndFlush();
+  ASSERT_EQ(1, num_calls);
+
+  // Flushing should cause |AppendAsTraceFormat| to be called, but if the buffer
+  // is left intact, it the flush at the end of the trace should still call it;
+  // the metadata event should not be removed.
+  TraceLog::GetInstance()->SetEnabled(
+      TraceConfig(kRecordAllCategoryFilter,
+                  "record-until-full,enable-sampling"),
+      TraceLog::MONITORING_MODE);
+  TRACE_EVENT_API_ADD_METADATA_EVENT("metadata_event_name", "metadata_arg_name",
+                                     convertable);
+  FlushMonitoring();
+  ASSERT_EQ(2, num_calls);
+
+  // Flushing the trace at this point will case |AppendAsTraceFormat| to be
+  // called twice: once for the event that was added by the monitoring flush,
+  // and once for the end trace flush; the metadata event will be duplicated.
+  // This is consistent with the other metadata events.
+  EndTraceAndFlush();
+  ASSERT_EQ(4, num_calls);
+}
+
 // Test that categories work.
 TEST_F(TraceEventTestFixture, Categories) {
   // Test that categories that are used can be retrieved whether trace was

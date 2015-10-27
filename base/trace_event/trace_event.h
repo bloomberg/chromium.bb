@@ -154,6 +154,15 @@
 #define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION \
     base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDuration
 
+// Adds a metadata event to the trace log. The |AppendValueAsTraceFormat| method
+// on the convertable value will be called at flush time.
+// TRACE_EVENT_API_ADD_METADATA_EVENT(
+//   const char* event_name,
+//   const char* arg_name,
+//   scoped_refptr<ConvertableToTraceFormat> arg_value)
+#define TRACE_EVENT_API_ADD_METADATA_EVENT \
+    trace_event_internal::AddMetadataEvent
+
 // Defines atomic operations used internally by the tracing system.
 #define TRACE_EVENT_API_ATOMIC_WORD base::subtle::AtomicWord
 #define TRACE_EVENT_API_ATOMIC_LOAD(var) base::subtle::NoBarrier_Load(&(var))
@@ -738,6 +747,22 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
                                                flags, bind_id,
                                                arg1_name, arg1_val,
                                                arg2_name, arg2_val);
+}
+
+static inline void AddMetadataEvent(
+    const char* event_name,
+    const char* arg_name,
+    scoped_refptr<base::trace_event::ConvertableToTraceFormat> arg_value) {
+  const char* arg_names[1] = {arg_name};
+  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+      convertable_values[1] = {arg_value};
+  unsigned char arg_types[1] = {TRACE_VALUE_TYPE_CONVERTABLE};
+  base::trace_event::TraceLog::GetInstance()->AddMetadataEvent(
+      event_name,
+      1,  // num_args
+      arg_names, arg_types,
+      nullptr,  // arg_values
+      convertable_values, TRACE_EVENT_FLAG_NONE);
 }
 
 // Used by TRACE_EVENTx macros. Do not use directly.
