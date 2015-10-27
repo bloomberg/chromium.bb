@@ -750,7 +750,7 @@ void Animation::setCompositorPending(bool effectChanged)
 #endif
 
     if (!m_compositorState || m_compositorState->effectChanged
-        || !playing() || m_compositorState->playbackRate != m_playbackRate
+        || m_compositorState->playbackRate != m_playbackRate
         || m_compositorState->startTime != m_startTime) {
         m_compositorPending = true;
         timeline()->document()->compositorPendingAnimations().add(this);
