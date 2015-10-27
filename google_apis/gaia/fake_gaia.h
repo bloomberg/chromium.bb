@@ -140,6 +140,9 @@ class FakeGaia {
     return refresh_token_to_device_id_map_;
   }
 
+  // Returns an email that is filled into the the Email field (if any).
+  const std::string& prefilled_email() { return prefilled_email_; }
+
  protected:
   // HTTP handler for /MergeSession.
   virtual void HandleMergeSession(
@@ -232,6 +235,7 @@ class FakeGaia {
   SamlAccountIdpMap saml_account_idp_map_;
   bool issue_oauth_code_cookie_;
   RefreshTokenToDeviceIdMap refresh_token_to_device_id_map_;
+  std::string prefilled_email_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGaia);
 };

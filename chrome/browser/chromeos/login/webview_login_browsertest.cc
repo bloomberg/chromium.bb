@@ -104,4 +104,11 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   JsExpect(frame_url + ".search('flow=nosignup') != -1");
 }
 
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, EmailPrefill) {
+  WaitForGaiaPageLoad();
+  JS().ExecuteAsync("Oobe.showSigninUI('user@example.com')");
+  WaitForGaiaPageReload();
+  EXPECT_EQ(fake_gaia_->prefilled_email(), "user@example.com");
+}
+
 }  // namespace chromeos

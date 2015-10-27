@@ -68,7 +68,6 @@ cr.define('cr.login', function() {
     'gaiaUrl',       // Gaia url to use.
     'gaiaPath',      // Gaia path to use without a leading slash.
     'hl',            // Language code for the user interface.
-    'email',         // Pre-fill the email field in Gaia UI.
     'service',       // Name of Gaia service.
     'continueUrl',   // Continue url to use.
     'frameUrl',      // Initial frame URL to use. If empty defaults to
@@ -90,6 +89,24 @@ cr.define('cr.login', function() {
     'releaseChannel',      // Installation channel.
     'endpointGen',         // Current endpoint generation.
     'gapsCookie',          // GAPS cookie
+
+    // The email fields allow for the following possibilities:
+    //
+    // 1/ If 'email' is not supplied, then the email text field is blank and the
+    // user must type an email to proceed.
+    //
+    // 2/ If 'email' is supplied, and 'readOnlyEmail' is truthy, then the email
+    // is hardcoded and the user cannot change it.  The user is asked for
+    // password.  This is useful for re-auth scenarios, where chrome needs the
+    // user to authenticate for a specific account and only that account.
+    //
+    // 3/ If 'email' is supplied, and 'readOnlyEmail' is falsy, gaia will
+    // prefill the email text field using the given email address, but the user
+    // can still change it and then proceed.  This is used on desktop when the
+    // user disconnects their profile then reconnects, to encourage them to use
+    // the same account.
+    'email',
+    'readOnlyEmail',
   ];
 
   /**
@@ -277,20 +294,6 @@ cr.define('cr.login', function() {
     if (data.gaiaId)
       url = appendParam(url, 'user_id', data.gaiaId);
     if (data.email) {
-      // The email fields allow for the following possibilities:
-      //
-      // 1/ If neither Email nor email_hint is supplied, then the email text
-      // field is blank and the user must type an email to proceed.
-      //
-      // 2/ If Email is supplied, then the email is hardcoded and the user
-      // cannot change it.  The user is asked for password.  This is useful for
-      // re-auth scenarios, where chrome needs the user to authenticate for a
-      // specific account and only that  account.
-      //
-      // 3/ If email_hint is supplied, gaia will prefill the email text field
-      // using the given email address, but the user can still change it and
-      // then proceed.  This is used on desktop when the user disconnects their
-      // profile then reconnects, to encourage them to use the same account.
       if (data.readOnlyEmail) {
         url = appendParam(url, 'Email', data.email);
       } else {
