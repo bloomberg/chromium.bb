@@ -579,7 +579,7 @@ _waterfall_config_map = {
         'refresh-packages',
 
         # LLVM
-        'amd64-generic-llvm',
+        'toolchain-llvm',
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
@@ -1260,9 +1260,9 @@ def GetConfig():
 
   site_config.AddConfig(
       llvm,
-      'amd64-generic-llvm',
+      'toolchain-llvm',
       incremental,
-      boards=['amd64-generic'],
+      boards=['amd64-generic', 'daisy'],
       chroot_replace=True,
       description='Build with LLVM',
       trybot_list=True,

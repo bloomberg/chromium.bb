@@ -1189,17 +1189,6 @@
         ],
         "vm_tests": []
     },
-    "amd64-generic-llvm": {
-        "_template": "llvm",
-        "active_waterfall": "chromiumos",
-        "boards": [
-            "amd64-generic"
-        ],
-        "build_type": "binary",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-        "trybot_list": true,
-        "uprev": false
-    },
     "amd64-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
         "boards": [
@@ -20038,6 +20027,18 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "toolchain-llvm": {
+        "_template": "llvm",
+        "active_waterfall": "chromiumos",
+        "boards": [
+            "amd64-generic",
+            "daisy"
+        ],
+        "build_type": "binary",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "trybot_list": true,
+        "uprev": false
     },
     "toolchain-minor": {
         "archive_build_debug": true,
