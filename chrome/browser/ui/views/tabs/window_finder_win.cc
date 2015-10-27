@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include <shobjidl.h>
+
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/window.h"
@@ -149,29 +151,6 @@ class TopMostFinder : public BaseWindowFinder {
 };
 
 // LocalProcessWindowFinder ---------------------------------------------------
-
-// Copied from ShObjIdl.h in 10.0.10240.0 SDK. This can be removed once we
-// update to the newer SDK.
-#if NTDDI_VERSION < 0x0A000000
-class DECLSPEC_UUID("aa509086-5ca9-4c25-8f95-589d3c07b48a")
-    VirtualDesktopManager;
-
-MIDL_INTERFACE("a5cd92ff-29be-454c-8d04-d82879fb3f1b")
-IVirtualDesktopManager : public IUnknown {
- public:
-  virtual HRESULT STDMETHODCALLTYPE IsWindowOnCurrentVirtualDesktop(
-      /* [in] */ __RPC__in HWND topLevelWindow,
-      /* [out] */ __RPC__out BOOL * onCurrentDesktop) = 0;
-
-  virtual HRESULT STDMETHODCALLTYPE GetWindowDesktopId(
-      /* [in] */ __RPC__in HWND topLevelWindow,
-      /* [out] */ __RPC__out GUID * desktopId) = 0;
-
-  virtual HRESULT STDMETHODCALLTYPE MoveWindowToDesktop(
-      /* [in] */ __RPC__in HWND topLevelWindow,
-      /* [in] */ __RPC__in REFGUID desktopId) = 0;
-};
-#endif  // NTDDI_VERSION < 0x0A000000
 
 // Helper class to determine if a particular point contains a window from our
 // process.
