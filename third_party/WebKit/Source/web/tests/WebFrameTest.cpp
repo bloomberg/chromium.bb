@@ -7617,6 +7617,28 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
     popupView->close();
 }
 
+TEST_F(WebFrameTest, SwapWithOpenerCycle)
+{
+    // First, create a remote main frame with itself as the opener.
+    FrameTestHelpers::TestWebViewClient viewClient;
+    WebView* view = WebView::create(&viewClient);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
+    view->setMainFrame(remoteFrame);
+    remoteFrame->setOpener(remoteFrame);
+
+    // Now swap in a local frame. It shouldn't crash.
+    FrameTestHelpers::TestWebFrameClient localClient;
+    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &localClient);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    remoteFrame->swap(localFrame);
+
+    // And the opener cycle should still be preserved.
+    EXPECT_EQ(localFrame, localFrame->opener());
+
+    view->close();
+}
+
 class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit CommitTypeWebFrameClient()

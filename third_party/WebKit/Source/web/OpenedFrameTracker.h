@@ -27,8 +27,9 @@ public:
     void add(WebFrame*);
     void remove(WebFrame*);
 
-    // Updates the opener for all tracked frames.
-    void updateOpener(WebFrame*);
+    // Helper used when swapping a frame into the frame tree: this updates the
+    // opener for opened frames to point to the new frame being swapped in.
+    void transferTo(WebFrame*);
 
     void traceFrames(Visitor*);
     void traceFrames(InlinedGlobalMarkingVisitor);

@@ -707,8 +707,6 @@ protected:
     void setParent(WebFrame*);
 
 private:
-    friend class OpenedFrameTracker;
-
 #if BLINK_IMPLEMENTATION
 #if ENABLE(OILPAN)
     static void traceFrame(Visitor*, WebFrame*);

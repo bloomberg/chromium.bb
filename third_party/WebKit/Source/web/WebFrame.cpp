@@ -74,14 +74,10 @@ bool WebFrame::swap(WebFrame* frame)
     }
 
     if (m_opener) {
-        m_opener->m_openedFrameTracker->remove(this);
-        m_opener->m_openedFrameTracker->add(frame);
-        swap(m_opener, frame->m_opener);
+        frame->setOpener(m_opener);
+        setOpener(nullptr);
     }
-    if (!m_openedFrameTracker->isEmpty()) {
-        m_openedFrameTracker->updateOpener(frame);
-        frame->m_openedFrameTracker.reset(m_openedFrameTracker.release());
-    }
+    m_openedFrameTracker->transferTo(frame);
 
     FrameHost* host = oldFrame->host();
     AtomicString name = oldFrame->tree().name();
