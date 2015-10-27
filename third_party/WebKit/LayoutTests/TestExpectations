@@ -1055,17 +1055,6 @@ crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Fail
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ Failure ]
 
-crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-match.html [ Pass Failure ]
-crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-put.html [ Pass Failure Timeout ]
-crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-storage-match.html [ Pass Failure Timeout ]
-crbug.com/508984 [ Win ] http/tests/cachestorage/worker/cache-match.html [ Failure Slow ]
-crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-storage-match.html [ Pass Failure Timeout ]
-crbug.com/510002 [ XP ] http/tests/cachestorage/worker/cache-storage-keys.html [ Pass Failure Timeout ]
-crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Failure Timeout ]
-crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure Timeout ]
-crbug.com/510002 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout ]
-
-
 # Yosemite-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
