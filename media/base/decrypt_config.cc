@@ -5,6 +5,7 @@
 #include "media/base/decrypt_config.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace media {
 
@@ -35,6 +36,19 @@ bool DecryptConfig::Matches(const DecryptConfig& config) const {
   }
 
   return true;
+}
+
+std::ostream& DecryptConfig::Print(std::ostream& os) const {
+  os << "key_id:'" << base::HexEncode(key_id_.data(), key_id_.size()) << "'"
+     << " iv:'" << base::HexEncode(iv_.data(), iv_.size()) << "'";
+
+  os << " subsamples:[";
+  for (const SubsampleEntry& entry : subsamples_) {
+    os << "(clear:" << entry.clear_bytes << ", cypher:" << entry.cypher_bytes
+       << ")";
+  }
+  os << "]";
+  return os;
 }
 
 }  // namespace media

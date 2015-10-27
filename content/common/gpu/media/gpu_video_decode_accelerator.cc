@@ -433,13 +433,11 @@ GpuVideoDecodeAccelerator::GetSupportedProfiles() {
 // Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is
 // true, otherwise on the main thread.
 void GpuVideoDecodeAccelerator::OnDecode(
-    base::SharedMemoryHandle handle,
-    int32 id,
-    uint32 size,
-    base::TimeDelta presentation_timestamp) {
+    const AcceleratedVideoDecoderMsg_Decode_Params& params) {
   DCHECK(video_decode_accelerator_.get());
-  if (id < 0) {
-    DLOG(ERROR) << "BitstreamBuffer id " << id << " out of range";
+  if (params.bitstream_buffer_id < 0) {
+    DLOG(ERROR) << "BitstreamBuffer id " << params.bitstream_buffer_id
+                << " out of range";
     if (child_task_runner_->BelongsToCurrentThread()) {
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
     } else {
@@ -451,8 +449,16 @@ void GpuVideoDecodeAccelerator::OnDecode(
     }
     return;
   }
-  video_decode_accelerator_->Decode(
-      media::BitstreamBuffer(id, handle, size, presentation_timestamp));
+
+  media::BitstreamBuffer bitstream_buffer(params.bitstream_buffer_id,
+                                          params.buffer_handle, params.size,
+                                          params.presentation_timestamp);
+  if (!params.key_id.empty()) {
+    bitstream_buffer.SetDecryptConfig(
+        media::DecryptConfig(params.key_id, params.iv, params.subsamples));
+  }
+
+  video_decode_accelerator_->Decode(bitstream_buffer);
 }
 
 void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(

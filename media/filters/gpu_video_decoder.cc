@@ -211,6 +211,8 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(pending_reset_cb_.is_null());
 
+  DVLOG(3) << __FUNCTION__ << " " << buffer->AsHumanReadableString();
+
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError || !vda_) {
@@ -252,6 +254,10 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_,
                                    shm_buffer->shm->handle(), size,
                                    buffer->timestamp());
+
+  if (buffer->decrypt_config())
+    bitstream_buffer.SetDecryptConfig(*buffer->decrypt_config());
+
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   DCHECK(!ContainsKey(bitstream_buffers_in_decoder_, bitstream_buffer.id()));

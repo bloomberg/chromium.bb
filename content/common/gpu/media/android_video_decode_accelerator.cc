@@ -190,6 +190,7 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
       bitstream_buffer.presentation_timestamp();
   DCHECK(presentation_timestamp != media::kNoTimestamp())
       << "Bitstream buffers must have valid presentation timestamps";
+
   // There may already be a bitstream buffer with this timestamp, e.g., VP9 alt
   // ref frames, but it's OK to overwrite it because we only expect a single
   // output frame to have that timestamp. AVDA clients only use the bitstream
@@ -198,9 +199,26 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
   // result in them finding the right timestamp.
   bitstream_buffers_in_decoder_[presentation_timestamp] = bitstream_buffer.id();
 
-  status = media_codec_->QueueInputBuffer(
-      input_buf_index, static_cast<const uint8*>(shm->memory()),
-      bitstream_buffer.size(), presentation_timestamp);
+  const uint8_t* memory = static_cast<const uint8_t*>(shm->memory());
+  const std::string& key_id = bitstream_buffer.key_id();
+  const std::string& iv = bitstream_buffer.iv();
+  const std::vector<media::SubsampleEntry>& subsamples =
+      bitstream_buffer.subsamples();
+
+  if (key_id.empty() || iv.empty()) {
+    status = media_codec_->QueueInputBuffer(input_buf_index, memory,
+                                            bitstream_buffer.size(),
+                                            presentation_timestamp);
+  } else {
+    status = media_codec_->QueueSecureInputBuffer(
+        input_buf_index, memory, bitstream_buffer.size(), key_id, iv,
+        subsamples, presentation_timestamp);
+  }
+
+  DVLOG(2) << __FUNCTION__
+           << ": QueueInputBuffer: pts:" << presentation_timestamp
+           << " status:" << status;
+
   RETURN_ON_FAILURE(this, status == media::MEDIA_CODEC_OK,
                     "Failed to QueueInputBuffer: " << status, PLATFORM_FAILURE);
 
@@ -245,6 +263,11 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     TRACE_EVENT_END2("media", "AVDA::DequeueOutputBuffer", "status", status,
                      "presentation_timestamp (ms)",
                      presentation_timestamp.InMilliseconds());
+
+    DVLOG(3) << "AVDA::DequeueOutputBuffer: pts:" << presentation_timestamp
+             << " buf_index:" << buf_index << " offset:" << offset
+             << " size:" << size << " eos:" << eos;
+
     switch (status) {
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
       case media::MEDIA_CODEC_ERROR:
@@ -287,21 +310,26 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     }
   } while (buf_index < 0);
 
-  if (eos) {
+  // Normally we assume that the decoder makes at most one output frame for each
+  // distinct input timestamp. A VP9 alt ref frame is a case where an input
+  // buffer, with a possibly unique timestamp, will not result in a
+  // corresponding output frame.
+
+  // However MediaCodecBridge uses timestamp correction and provides
+  // non-decreasing timestamp sequence, which might result in timestamp
+  // duplicates. Discard the frame if we cannot get corresponding buffer id.
+
+  // Get the bitstream buffer id from the timestamp.
+  auto it = eos ? bitstream_buffers_in_decoder_.end()
+                : bitstream_buffers_in_decoder_.find(presentation_timestamp);
+
+  if (it == bitstream_buffers_in_decoder_.end()) {
     media_codec_->ReleaseOutputBuffer(buf_index, false);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
                    weak_this_factory_.GetWeakPtr()));
   } else {
-    // Get the bitstream buffer id from the timestamp.
-    auto it = bitstream_buffers_in_decoder_.find(presentation_timestamp);
-    // Require the decoder to output at most one frame for each distinct input
-    // buffer timestamp. A VP9 alt ref frame is a case where an input buffer,
-    // with a possibly unique timestamp, will not result in a corresponding
-    // output frame.
-    CHECK(it != bitstream_buffers_in_decoder_.end())
-        << "Unexpected output frame timestamp";
     const int32 bitstream_buffer_id = it->second;
     bitstream_buffers_in_decoder_.erase(bitstream_buffers_in_decoder_.begin(),
                                         ++it);

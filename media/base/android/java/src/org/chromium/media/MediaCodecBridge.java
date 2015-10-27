@@ -32,7 +32,7 @@ import java.util.Map;
  */
 @JNINamespace("media")
 class MediaCodecBridge {
-    private static final String TAG = "cr.media";
+    private static final String TAG = "cr_media";
 
     // Error code for MediaCodecBridge. Keep this value in sync with
     // MediaCodecStatus in media_codec_bridge.h.
@@ -538,7 +538,7 @@ class MediaCodecBridge {
             Log.e(TAG, "MediaCodec.CryptoException with error code " + e.getErrorCode());
             return MEDIA_CODEC_ERROR;
         } catch (IllegalStateException e) {
-            Log.e(TAG, "Failed to queue secure input buffer", e);
+            Log.e(TAG, "Failed to queue secure input buffer, IllegalStateException " + e);
             return MEDIA_CODEC_ERROR;
         }
         return MEDIA_CODEC_OK;

@@ -117,9 +117,16 @@ void GpuVideoDecodeAcceleratorHost::Decode(
     return;
   }
 
-  Send(new AcceleratedVideoDecoderMsg_Decode(
-      decoder_route_id_, handle, bitstream_buffer.id(), bitstream_buffer.size(),
-      bitstream_buffer.presentation_timestamp()));
+  AcceleratedVideoDecoderMsg_Decode_Params params;
+  params.bitstream_buffer_id = bitstream_buffer.id();
+  params.buffer_handle = handle;
+  params.size = bitstream_buffer.size();
+  params.presentation_timestamp = bitstream_buffer.presentation_timestamp();
+  params.key_id = bitstream_buffer.key_id();
+  params.iv = bitstream_buffer.iv();
+  params.subsamples = bitstream_buffer.subsamples();
+
+  Send(new AcceleratedVideoDecoderMsg_Decode(decoder_route_id_, params));
 }
 
 void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(

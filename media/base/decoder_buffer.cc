@@ -99,6 +99,10 @@ std::string DecoderBuffer::AsHumanReadableString() {
     << " encrypted: " << (decrypt_config_ != NULL)
     << " discard_padding (ms): (" << discard_padding_.first.InMilliseconds()
     << ", " << discard_padding_.second.InMilliseconds() << ")";
+
+  if (decrypt_config_)
+    s << " decrypt:" << (*decrypt_config_);
+
   return s.str();
 }
 

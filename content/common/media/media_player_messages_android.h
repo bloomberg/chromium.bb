@@ -58,11 +58,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::AccessUnit)
   IPC_STRUCT_TRAITS_MEMBER(is_key_frame)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
-  IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
-  IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
-IPC_STRUCT_TRAITS_END()
-
 IPC_ENUM_TRAITS_MAX_VALUE(MediaPlayerHostMsg_Initialize_Type,
                           MEDIA_PLAYER_TYPE_LAST)
 

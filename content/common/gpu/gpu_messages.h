@@ -28,6 +28,7 @@
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/video_types.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
@@ -146,6 +147,16 @@ IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
   IPC_STRUCT_MEMBER(uint32, input_buffer_size)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, output_video_frame_handle)
   IPC_STRUCT_MEMBER(uint32, output_buffer_size)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(AcceleratedVideoDecoderMsg_Decode_Params)
+  IPC_STRUCT_MEMBER(int32, bitstream_buffer_id)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, buffer_handle)
+  IPC_STRUCT_MEMBER(uint32, size)
+  IPC_STRUCT_MEMBER(base::TimeDelta, presentation_timestamp)
+  IPC_STRUCT_MEMBER(std::string, key_id)
+  IPC_STRUCT_MEMBER(std::string, iv)
+  IPC_STRUCT_MEMBER(std::vector<media::SubsampleEntry>, subsamples)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params)
@@ -274,6 +285,11 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
   IPC_STRUCT_TRAITS_MEMBER(handle)
   IPC_STRUCT_TRAITS_MEMBER(transport_type)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
+  IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
 IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
@@ -667,11 +683,8 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
 // These messages are sent from Renderer process to GPU process.
 
 // Send input buffer for decoding.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
-                    base::SharedMemoryHandle, /* input_buffer_handle */
-                    int32, /* bitstream_buffer_id */
-                    uint32, /* size */
-                    base::TimeDelta) /* presentation_timestamp */
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Decode,
+                    AcceleratedVideoDecoderMsg_Decode_Params)
 
 // Sent from Renderer process to the GPU process to give the texture IDs for
 // the textures the decoder will use for output.

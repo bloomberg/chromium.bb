@@ -345,6 +345,23 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
     int index,
     const uint8* data,
     size_t data_size,
+    const std::string& key_id,
+    const std::string& iv,
+    const std::vector<SubsampleEntry>& subsamples,
+    const base::TimeDelta& presentation_time) {
+  return QueueSecureInputBuffer(
+      index, data, data_size, reinterpret_cast<const uint8_t*>(key_id.data()),
+      key_id.size(), reinterpret_cast<const uint8_t*>(iv.data()), iv.size(),
+      subsamples.empty() ? nullptr : &subsamples[0], subsamples.size(),
+      presentation_time);
+}
+
+// TODO(timav): Combine this and above methods together keeping only the first
+// interface after we switch to Spitzer pipeline.
+MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
+    int index,
+    const uint8* data,
+    size_t data_size,
     const uint8* key_id,
     int key_id_size,
     const uint8* iv,

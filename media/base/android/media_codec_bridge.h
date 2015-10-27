@@ -129,6 +129,19 @@ class MEDIA_EXPORT MediaCodecBridge {
       int index,
       const uint8* data,
       size_t data_size,
+      const std::string& key_id,
+      const std::string& iv,
+      const std::vector<SubsampleEntry>& subsamples,
+      const base::TimeDelta& presentation_time);
+
+  // Same QueueSecureInputBuffer overriden for the use with MediaSourcePlayer
+  // and MediaCodecPlayer.
+  // TODO(timav): remove this method and keep only the one above after we
+  // switch to the Spitzer pipeline.
+  MediaCodecStatus QueueSecureInputBuffer(
+      int index,
+      const uint8* data,
+      size_t data_size,
       const uint8* key_id,
       int key_id_size,
       const uint8* iv,

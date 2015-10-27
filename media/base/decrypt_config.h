@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_DECRYPT_CONFIG_H_
 #define MEDIA_BASE_DECRYPT_CONFIG_H_
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -56,6 +57,9 @@ class MEDIA_EXPORT DecryptConfig {
   // Returns true if all fields in |config| match this config.
   bool Matches(const DecryptConfig& config) const;
 
+  // Prints to std::ostream.
+  std::ostream& Print(std::ostream& os) const;
+
  private:
   const std::string key_id_;
 
@@ -70,5 +74,10 @@ class MEDIA_EXPORT DecryptConfig {
 };
 
 }  // namespace media
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const media::DecryptConfig& obj) {
+  return obj.Print(os);
+}
 
 #endif  // MEDIA_BASE_DECRYPT_CONFIG_H_
