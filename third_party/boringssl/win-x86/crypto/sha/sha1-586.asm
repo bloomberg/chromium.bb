@@ -35,8 +35,6 @@ L$000pic_point:
 	mov	ecx,DWORD [8+esi]
 	test	eax,16777216
 	jz	NEAR L$001x86
-	test	ecx,536870912
-	jnz	NEAR L$shaext_shortcut
 	jmp	NEAR L$ssse3_shortcut
 align	16
 L$001x86:
@@ -1405,7 +1403,7 @@ L$002loop:
 	pop	ebp
 	ret
 align	16
-__sha1_block_data_order_shaext:
+__sha1_block_data_order_ssse3:
 	push	ebp
 	push	ebx
 	push	esi
@@ -1414,174 +1412,6 @@ __sha1_block_data_order_shaext:
 L$003pic_point:
 	pop	ebp
 	lea	ebp,[(L$K_XX_XX-L$003pic_point)+ebp]
-L$shaext_shortcut:
-	mov	edi,DWORD [20+esp]
-	mov	ebx,esp
-	mov	esi,DWORD [24+esp]
-	mov	ecx,DWORD [28+esp]
-	sub	esp,32
-	movdqu	xmm0,[edi]
-	movd	xmm1,DWORD [16+edi]
-	and	esp,-32
-	movdqa	xmm3,[80+ebp]
-	movdqu	xmm4,[esi]
-	pshufd	xmm0,xmm0,27
-	movdqu	xmm5,[16+esi]
-	pshufd	xmm1,xmm1,27
-	movdqu	xmm6,[32+esi]
-db	102,15,56,0,227
-	movdqu	xmm7,[48+esi]
-db	102,15,56,0,235
-db	102,15,56,0,243
-db	102,15,56,0,251
-	jmp	NEAR L$004loop_shaext
-align	16
-L$004loop_shaext:
-	dec	ecx
-	lea	eax,[64+esi]
-	movdqa	[esp],xmm1
-	paddd	xmm1,xmm4
-	cmovne	esi,eax
-	movdqa	[16+esp],xmm0
-db	15,56,201,229
-	movdqa	xmm2,xmm0
-db	15,58,204,193,0
-db	15,56,200,213
-	pxor	xmm4,xmm6
-db	15,56,201,238
-db	15,56,202,231
-	movdqa	xmm1,xmm0
-db	15,58,204,194,0
-db	15,56,200,206
-	pxor	xmm5,xmm7
-db	15,56,202,236
-db	15,56,201,247
-	movdqa	xmm2,xmm0
-db	15,58,204,193,0
-db	15,56,200,215
-	pxor	xmm6,xmm4
-db	15,56,201,252
-db	15,56,202,245
-	movdqa	xmm1,xmm0
-db	15,58,204,194,0
-db	15,56,200,204
-	pxor	xmm7,xmm5
-db	15,56,202,254
-db	15,56,201,229
-	movdqa	xmm2,xmm0
-db	15,58,204,193,0
-db	15,56,200,213
-	pxor	xmm4,xmm6
-db	15,56,201,238
-db	15,56,202,231
-	movdqa	xmm1,xmm0
-db	15,58,204,194,1
-db	15,56,200,206
-	pxor	xmm5,xmm7
-db	15,56,202,236
-db	15,56,201,247
-	movdqa	xmm2,xmm0
-db	15,58,204,193,1
-db	15,56,200,215
-	pxor	xmm6,xmm4
-db	15,56,201,252
-db	15,56,202,245
-	movdqa	xmm1,xmm0
-db	15,58,204,194,1
-db	15,56,200,204
-	pxor	xmm7,xmm5
-db	15,56,202,254
-db	15,56,201,229
-	movdqa	xmm2,xmm0
-db	15,58,204,193,1
-db	15,56,200,213
-	pxor	xmm4,xmm6
-db	15,56,201,238
-db	15,56,202,231
-	movdqa	xmm1,xmm0
-db	15,58,204,194,1
-db	15,56,200,206
-	pxor	xmm5,xmm7
-db	15,56,202,236
-db	15,56,201,247
-	movdqa	xmm2,xmm0
-db	15,58,204,193,2
-db	15,56,200,215
-	pxor	xmm6,xmm4
-db	15,56,201,252
-db	15,56,202,245
-	movdqa	xmm1,xmm0
-db	15,58,204,194,2
-db	15,56,200,204
-	pxor	xmm7,xmm5
-db	15,56,202,254
-db	15,56,201,229
-	movdqa	xmm2,xmm0
-db	15,58,204,193,2
-db	15,56,200,213
-	pxor	xmm4,xmm6
-db	15,56,201,238
-db	15,56,202,231
-	movdqa	xmm1,xmm0
-db	15,58,204,194,2
-db	15,56,200,206
-	pxor	xmm5,xmm7
-db	15,56,202,236
-db	15,56,201,247
-	movdqa	xmm2,xmm0
-db	15,58,204,193,2
-db	15,56,200,215
-	pxor	xmm6,xmm4
-db	15,56,201,252
-db	15,56,202,245
-	movdqa	xmm1,xmm0
-db	15,58,204,194,3
-db	15,56,200,204
-	pxor	xmm7,xmm5
-db	15,56,202,254
-	movdqu	xmm4,[esi]
-	movdqa	xmm2,xmm0
-db	15,58,204,193,3
-db	15,56,200,213
-	movdqu	xmm5,[16+esi]
-db	102,15,56,0,227
-	movdqa	xmm1,xmm0
-db	15,58,204,194,3
-db	15,56,200,206
-	movdqu	xmm6,[32+esi]
-db	102,15,56,0,235
-	movdqa	xmm2,xmm0
-db	15,58,204,193,3
-db	15,56,200,215
-	movdqu	xmm7,[48+esi]
-db	102,15,56,0,243
-	movdqa	xmm1,xmm0
-db	15,58,204,194,3
-	movdqa	xmm2,[esp]
-db	102,15,56,0,251
-db	15,56,200,202
-	paddd	xmm0,[16+esp]
-	jnz	NEAR L$004loop_shaext
-	pshufd	xmm0,xmm0,27
-	pshufd	xmm1,xmm1,27
-	movdqu	[edi],xmm0
-	movd	DWORD [16+edi],xmm1
-	mov	esp,ebx
-	pop	edi
-	pop	esi
-	pop	ebx
-	pop	ebp
-	ret
-align	16
-__sha1_block_data_order_ssse3:
-	push	ebp
-	push	ebx
-	push	esi
-	push	edi
-	call	L$005pic_point
-L$005pic_point:
-	pop	ebp
-	lea	ebp,[(L$K_XX_XX-L$005pic_point)+ebp]
 L$ssse3_shortcut:
 	movdqa	xmm7,[ebp]
 	movdqa	xmm0,[16+ebp]
@@ -1634,9 +1464,9 @@ db	102,15,56,0,222
 	xor	ebp,edx
 	pshufd	xmm4,xmm0,238
 	and	esi,ebp
-	jmp	NEAR L$006loop
+	jmp	NEAR L$004loop
 align	16
-L$006loop:
+L$004loop:
 	ror	ebx,2
 	xor	esi,edx
 	mov	ebp,eax
@@ -2539,7 +2369,7 @@ L$006loop:
 	add	ecx,edx
 	mov	ebp,DWORD [196+esp]
 	cmp	ebp,DWORD [200+esp]
-	je	NEAR L$007done
+	je	NEAR L$005done
 	movdqa	xmm7,[160+esp]
 	movdqa	xmm6,[176+esp]
 	movdqu	xmm0,[ebp]
@@ -2674,9 +2504,9 @@ db	102,15,56,0,222
 	pshufd	xmm4,xmm0,238
 	and	esi,ebx
 	mov	ebx,ebp
-	jmp	NEAR L$006loop
+	jmp	NEAR L$004loop
 align	16
-L$007done:
+L$005done:
 	add	ebx,DWORD [16+esp]
 	xor	esi,edi
 	mov	ebp,ecx

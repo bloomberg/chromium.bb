@@ -36,17 +36,15 @@ L000pic_point:
 	jz	L003no_xmm
 	andl	$1073741824,%ecx
 	andl	$268435968,%ebx
-	testl	$536870912,%edx
-	jnz	L004shaext
 	orl	%ebx,%ecx
 	andl	$1342177280,%ecx
 	cmpl	$1342177280,%ecx
 	testl	$512,%ebx
-	jnz	L005SSSE3
+	jnz	L004SSSE3
 L003no_xmm:
 	subl	%edi,%eax
 	cmpl	$256,%eax
-	jae	L006unrolled
+	jae	L005unrolled
 	jmp	L002loop
 .align	4,0x90
 L002loop:
@@ -118,7 +116,7 @@ L002loop:
 	movl	%ecx,28(%esp)
 	movl	%edi,32(%esp)
 .align	4,0x90
-L00700_15:
+L00600_15:
 	movl	%edx,%ecx
 	movl	24(%esp),%esi
 	rorl	$14,%ecx
@@ -156,11 +154,11 @@ L00700_15:
 	addl	$4,%ebp
 	addl	%ebx,%eax
 	cmpl	$3248222580,%esi
-	jne	L00700_15
+	jne	L00600_15
 	movl	156(%esp),%ecx
-	jmp	L00816_63
+	jmp	L00716_63
 .align	4,0x90
-L00816_63:
+L00716_63:
 	movl	%ecx,%ebx
 	movl	104(%esp),%esi
 	rorl	$11,%ecx
@@ -215,7 +213,7 @@ L00816_63:
 	addl	$4,%ebp
 	addl	%ebx,%eax
 	cmpl	$3329325298,%esi
-	jne	L00816_63
+	jne	L00716_63
 	movl	356(%esp),%esi
 	movl	8(%esp),%ebx
 	movl	16(%esp),%ecx
@@ -259,7 +257,7 @@ L001K256:
 .byte	112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103
 .byte	62,0
 .align	4,0x90
-L006unrolled:
+L005unrolled:
 	leal	-96(%esp),%esp
 	movl	(%esi),%eax
 	movl	4(%esi),%ebp
@@ -276,9 +274,9 @@ L006unrolled:
 	movl	%ebx,20(%esp)
 	movl	%ecx,24(%esp)
 	movl	%esi,28(%esp)
-	jmp	L009grand_loop
+	jmp	L008grand_loop
 .align	4,0x90
-L009grand_loop:
+L008grand_loop:
 	movl	(%edi),%ebx
 	movl	4(%edi),%ecx
 	bswap	%ebx
@@ -3158,7 +3156,7 @@ L009grand_loop:
 	movl	%ebx,24(%esp)
 	movl	%ecx,28(%esp)
 	cmpl	104(%esp),%edi
-	jb	L009grand_loop
+	jb	L008grand_loop
 	movl	108(%esp),%esp
 	popl	%edi
 	popl	%esi
@@ -3166,205 +3164,7 @@ L009grand_loop:
 	popl	%ebp
 	ret
 .align	5,0x90
-L004shaext:
-	subl	$32,%esp
-	movdqu	(%esi),%xmm1
-	leal	128(%ebp),%ebp
-	movdqu	16(%esi),%xmm2
-	movdqa	128(%ebp),%xmm7
-	pshufd	$27,%xmm1,%xmm0
-	pshufd	$177,%xmm1,%xmm1
-	pshufd	$27,%xmm2,%xmm2
-.byte	102,15,58,15,202,8
-	punpcklqdq	%xmm0,%xmm2
-	jmp	L010loop_shaext
-.align	4,0x90
-L010loop_shaext:
-	movdqu	(%edi),%xmm3
-	movdqu	16(%edi),%xmm4
-	movdqu	32(%edi),%xmm5
-.byte	102,15,56,0,223
-	movdqu	48(%edi),%xmm6
-	movdqa	%xmm2,16(%esp)
-	movdqa	-128(%ebp),%xmm0
-	paddd	%xmm3,%xmm0
-.byte	102,15,56,0,231
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	nop
-	movdqa	%xmm1,(%esp)
-.byte	15,56,203,202
-	movdqa	-112(%ebp),%xmm0
-	paddd	%xmm4,%xmm0
-.byte	102,15,56,0,239
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	leal	64(%edi),%edi
-.byte	15,56,204,220
-.byte	15,56,203,202
-	movdqa	-96(%ebp),%xmm0
-	paddd	%xmm5,%xmm0
-.byte	102,15,56,0,247
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm6,%xmm7
-.byte	102,15,58,15,253,4
-	nop
-	paddd	%xmm7,%xmm3
-.byte	15,56,204,229
-.byte	15,56,203,202
-	movdqa	-80(%ebp),%xmm0
-	paddd	%xmm6,%xmm0
-.byte	15,56,205,222
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm3,%xmm7
-.byte	102,15,58,15,254,4
-	nop
-	paddd	%xmm7,%xmm4
-.byte	15,56,204,238
-.byte	15,56,203,202
-	movdqa	-64(%ebp),%xmm0
-	paddd	%xmm3,%xmm0
-.byte	15,56,205,227
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm4,%xmm7
-.byte	102,15,58,15,251,4
-	nop
-	paddd	%xmm7,%xmm5
-.byte	15,56,204,243
-.byte	15,56,203,202
-	movdqa	-48(%ebp),%xmm0
-	paddd	%xmm4,%xmm0
-.byte	15,56,205,236
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm5,%xmm7
-.byte	102,15,58,15,252,4
-	nop
-	paddd	%xmm7,%xmm6
-.byte	15,56,204,220
-.byte	15,56,203,202
-	movdqa	-32(%ebp),%xmm0
-	paddd	%xmm5,%xmm0
-.byte	15,56,205,245
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm6,%xmm7
-.byte	102,15,58,15,253,4
-	nop
-	paddd	%xmm7,%xmm3
-.byte	15,56,204,229
-.byte	15,56,203,202
-	movdqa	-16(%ebp),%xmm0
-	paddd	%xmm6,%xmm0
-.byte	15,56,205,222
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm3,%xmm7
-.byte	102,15,58,15,254,4
-	nop
-	paddd	%xmm7,%xmm4
-.byte	15,56,204,238
-.byte	15,56,203,202
-	movdqa	(%ebp),%xmm0
-	paddd	%xmm3,%xmm0
-.byte	15,56,205,227
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm4,%xmm7
-.byte	102,15,58,15,251,4
-	nop
-	paddd	%xmm7,%xmm5
-.byte	15,56,204,243
-.byte	15,56,203,202
-	movdqa	16(%ebp),%xmm0
-	paddd	%xmm4,%xmm0
-.byte	15,56,205,236
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm5,%xmm7
-.byte	102,15,58,15,252,4
-	nop
-	paddd	%xmm7,%xmm6
-.byte	15,56,204,220
-.byte	15,56,203,202
-	movdqa	32(%ebp),%xmm0
-	paddd	%xmm5,%xmm0
-.byte	15,56,205,245
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm6,%xmm7
-.byte	102,15,58,15,253,4
-	nop
-	paddd	%xmm7,%xmm3
-.byte	15,56,204,229
-.byte	15,56,203,202
-	movdqa	48(%ebp),%xmm0
-	paddd	%xmm6,%xmm0
-.byte	15,56,205,222
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm3,%xmm7
-.byte	102,15,58,15,254,4
-	nop
-	paddd	%xmm7,%xmm4
-.byte	15,56,204,238
-.byte	15,56,203,202
-	movdqa	64(%ebp),%xmm0
-	paddd	%xmm3,%xmm0
-.byte	15,56,205,227
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm4,%xmm7
-.byte	102,15,58,15,251,4
-	nop
-	paddd	%xmm7,%xmm5
-.byte	15,56,204,243
-.byte	15,56,203,202
-	movdqa	80(%ebp),%xmm0
-	paddd	%xmm4,%xmm0
-.byte	15,56,205,236
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	movdqa	%xmm5,%xmm7
-.byte	102,15,58,15,252,4
-.byte	15,56,203,202
-	paddd	%xmm7,%xmm6
-	movdqa	96(%ebp),%xmm0
-	paddd	%xmm5,%xmm0
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-.byte	15,56,205,245
-	movdqa	128(%ebp),%xmm7
-.byte	15,56,203,202
-	movdqa	112(%ebp),%xmm0
-	paddd	%xmm6,%xmm0
-	nop
-.byte	15,56,203,209
-	pshufd	$14,%xmm0,%xmm0
-	cmpl	%edi,%eax
-	nop
-.byte	15,56,203,202
-	paddd	16(%esp),%xmm2
-	paddd	(%esp),%xmm1
-	jnz	L010loop_shaext
-	pshufd	$177,%xmm2,%xmm2
-	pshufd	$27,%xmm1,%xmm7
-	pshufd	$177,%xmm1,%xmm1
-	punpckhqdq	%xmm2,%xmm1
-.byte	102,15,58,15,215,8
-	movl	44(%esp),%esp
-	movdqu	%xmm1,(%esi)
-	movdqu	%xmm2,16(%esi)
-	popl	%edi
-	popl	%esi
-	popl	%ebx
-	popl	%ebp
-	ret
-.align	5,0x90
-L005SSSE3:
+L004SSSE3:
 	leal	-96(%esp),%esp
 	movl	(%esi),%eax
 	movl	4(%esi),%ebx
@@ -3383,9 +3183,9 @@ L005SSSE3:
 	movl	%ecx,24(%esp)
 	movl	%esi,28(%esp)
 	movdqa	256(%ebp),%xmm7
-	jmp	L011grand_ssse3
+	jmp	L009grand_ssse3
 .align	4,0x90
-L011grand_ssse3:
+L009grand_ssse3:
 	movdqu	(%edi),%xmm0
 	movdqu	16(%edi),%xmm1
 	movdqu	32(%edi),%xmm2
@@ -3408,9 +3208,9 @@ L011grand_ssse3:
 	paddd	%xmm3,%xmm7
 	movdqa	%xmm6,64(%esp)
 	movdqa	%xmm7,80(%esp)
-	jmp	L012ssse3_00_47
+	jmp	L010ssse3_00_47
 .align	4,0x90
-L012ssse3_00_47:
+L010ssse3_00_47:
 	addl	$64,%ebp
 	movl	%edx,%ecx
 	movdqa	%xmm1,%xmm4
@@ -4053,7 +3853,7 @@ L012ssse3_00_47:
 	addl	%ecx,%eax
 	movdqa	%xmm6,80(%esp)
 	cmpl	$66051,64(%ebp)
-	jne	L012ssse3_00_47
+	jne	L010ssse3_00_47
 	movl	%edx,%ecx
 	rorl	$14,%edx
 	movl	20(%esp),%esi
@@ -4567,7 +4367,7 @@ L012ssse3_00_47:
 	movdqa	64(%ebp),%xmm7
 	subl	$192,%ebp
 	cmpl	104(%esp),%edi
-	jb	L011grand_ssse3
+	jb	L009grand_ssse3
 	movl	108(%esp),%esp
 	popl	%edi
 	popl	%esi

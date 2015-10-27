@@ -23,8 +23,6 @@ sha1_block_data_order:
 	movl	8(%esi),%ecx
 	testl	$16777216,%eax
 	jz	.L001x86
-	testl	$536870912,%ecx
-	jnz	.Lshaext_shortcut
 	jmp	.Lssse3_shortcut
 .align	16
 .L001x86:
@@ -1393,177 +1391,6 @@ sha1_block_data_order:
 	popl	%ebp
 	ret
 .size	sha1_block_data_order,.-.L_sha1_block_data_order_begin
-.hidden	_sha1_block_data_order_shaext
-.type	_sha1_block_data_order_shaext,@function
-.align	16
-_sha1_block_data_order_shaext:
-	pushl	%ebp
-	pushl	%ebx
-	pushl	%esi
-	pushl	%edi
-	call	.L003pic_point
-.L003pic_point:
-	popl	%ebp
-	leal	.LK_XX_XX-.L003pic_point(%ebp),%ebp
-.Lshaext_shortcut:
-	movl	20(%esp),%edi
-	movl	%esp,%ebx
-	movl	24(%esp),%esi
-	movl	28(%esp),%ecx
-	subl	$32,%esp
-	movdqu	(%edi),%xmm0
-	movd	16(%edi),%xmm1
-	andl	$-32,%esp
-	movdqa	80(%ebp),%xmm3
-	movdqu	(%esi),%xmm4
-	pshufd	$27,%xmm0,%xmm0
-	movdqu	16(%esi),%xmm5
-	pshufd	$27,%xmm1,%xmm1
-	movdqu	32(%esi),%xmm6
-.byte	102,15,56,0,227
-	movdqu	48(%esi),%xmm7
-.byte	102,15,56,0,235
-.byte	102,15,56,0,243
-.byte	102,15,56,0,251
-	jmp	.L004loop_shaext
-.align	16
-.L004loop_shaext:
-	decl	%ecx
-	leal	64(%esi),%eax
-	movdqa	%xmm1,(%esp)
-	paddd	%xmm4,%xmm1
-	cmovnel	%eax,%esi
-	movdqa	%xmm0,16(%esp)
-.byte	15,56,201,229
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,0
-.byte	15,56,200,213
-	pxor	%xmm6,%xmm4
-.byte	15,56,201,238
-.byte	15,56,202,231
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,0
-.byte	15,56,200,206
-	pxor	%xmm7,%xmm5
-.byte	15,56,202,236
-.byte	15,56,201,247
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,0
-.byte	15,56,200,215
-	pxor	%xmm4,%xmm6
-.byte	15,56,201,252
-.byte	15,56,202,245
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,0
-.byte	15,56,200,204
-	pxor	%xmm5,%xmm7
-.byte	15,56,202,254
-.byte	15,56,201,229
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,0
-.byte	15,56,200,213
-	pxor	%xmm6,%xmm4
-.byte	15,56,201,238
-.byte	15,56,202,231
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,1
-.byte	15,56,200,206
-	pxor	%xmm7,%xmm5
-.byte	15,56,202,236
-.byte	15,56,201,247
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,1
-.byte	15,56,200,215
-	pxor	%xmm4,%xmm6
-.byte	15,56,201,252
-.byte	15,56,202,245
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,1
-.byte	15,56,200,204
-	pxor	%xmm5,%xmm7
-.byte	15,56,202,254
-.byte	15,56,201,229
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,1
-.byte	15,56,200,213
-	pxor	%xmm6,%xmm4
-.byte	15,56,201,238
-.byte	15,56,202,231
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,1
-.byte	15,56,200,206
-	pxor	%xmm7,%xmm5
-.byte	15,56,202,236
-.byte	15,56,201,247
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,2
-.byte	15,56,200,215
-	pxor	%xmm4,%xmm6
-.byte	15,56,201,252
-.byte	15,56,202,245
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,2
-.byte	15,56,200,204
-	pxor	%xmm5,%xmm7
-.byte	15,56,202,254
-.byte	15,56,201,229
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,2
-.byte	15,56,200,213
-	pxor	%xmm6,%xmm4
-.byte	15,56,201,238
-.byte	15,56,202,231
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,2
-.byte	15,56,200,206
-	pxor	%xmm7,%xmm5
-.byte	15,56,202,236
-.byte	15,56,201,247
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,2
-.byte	15,56,200,215
-	pxor	%xmm4,%xmm6
-.byte	15,56,201,252
-.byte	15,56,202,245
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,3
-.byte	15,56,200,204
-	pxor	%xmm5,%xmm7
-.byte	15,56,202,254
-	movdqu	(%esi),%xmm4
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,3
-.byte	15,56,200,213
-	movdqu	16(%esi),%xmm5
-.byte	102,15,56,0,227
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,3
-.byte	15,56,200,206
-	movdqu	32(%esi),%xmm6
-.byte	102,15,56,0,235
-	movdqa	%xmm0,%xmm2
-.byte	15,58,204,193,3
-.byte	15,56,200,215
-	movdqu	48(%esi),%xmm7
-.byte	102,15,56,0,243
-	movdqa	%xmm0,%xmm1
-.byte	15,58,204,194,3
-	movdqa	(%esp),%xmm2
-.byte	102,15,56,0,251
-.byte	15,56,200,202
-	paddd	16(%esp),%xmm0
-	jnz	.L004loop_shaext
-	pshufd	$27,%xmm0,%xmm0
-	pshufd	$27,%xmm1,%xmm1
-	movdqu	%xmm0,(%edi)
-	movd	%xmm1,16(%edi)
-	movl	%ebx,%esp
-	popl	%edi
-	popl	%esi
-	popl	%ebx
-	popl	%ebp
-	ret
-.size	_sha1_block_data_order_shaext,.-_sha1_block_data_order_shaext
 .hidden	_sha1_block_data_order_ssse3
 .type	_sha1_block_data_order_ssse3,@function
 .align	16
@@ -1572,10 +1399,10 @@ _sha1_block_data_order_ssse3:
 	pushl	%ebx
 	pushl	%esi
 	pushl	%edi
-	call	.L005pic_point
-.L005pic_point:
+	call	.L003pic_point
+.L003pic_point:
 	popl	%ebp
-	leal	.LK_XX_XX-.L005pic_point(%ebp),%ebp
+	leal	.LK_XX_XX-.L003pic_point(%ebp),%ebp
 .Lssse3_shortcut:
 	movdqa	(%ebp),%xmm7
 	movdqa	16(%ebp),%xmm0
@@ -1628,9 +1455,9 @@ _sha1_block_data_order_ssse3:
 	xorl	%edx,%ebp
 	pshufd	$238,%xmm0,%xmm4
 	andl	%ebp,%esi
-	jmp	.L006loop
+	jmp	.L004loop
 .align	16
-.L006loop:
+.L004loop:
 	rorl	$2,%ebx
 	xorl	%edx,%esi
 	movl	%eax,%ebp
@@ -2533,7 +2360,7 @@ _sha1_block_data_order_ssse3:
 	addl	%edx,%ecx
 	movl	196(%esp),%ebp
 	cmpl	200(%esp),%ebp
-	je	.L007done
+	je	.L005done
 	movdqa	160(%esp),%xmm7
 	movdqa	176(%esp),%xmm6
 	movdqu	(%ebp),%xmm0
@@ -2668,9 +2495,9 @@ _sha1_block_data_order_ssse3:
 	pshufd	$238,%xmm0,%xmm4
 	andl	%ebx,%esi
 	movl	%ebp,%ebx
-	jmp	.L006loop
+	jmp	.L004loop
 .align	16
-.L007done:
+.L005done:
 	addl	16(%esp),%ebx
 	xorl	%edi,%esi
 	movl	%ecx,%ebp
