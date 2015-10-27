@@ -17,6 +17,8 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -428,6 +430,23 @@ public abstract class CronetEngine {
     @Deprecated
     public abstract UrlRequest createRequest(
             String url, UrlRequestListener listener, Executor executor, int priority);
+
+    /**
+     * Creates a {@link BidirectionalStream} object. {@code callback} methods will
+     * be invoked on {@code executor}. {@code executor} must not run
+     * tasks on the current thread to prevent blocking networking operations
+     * and causing exceptions during shutdown.
+     *
+     * @param url the URL for the stream
+     * @param callback the object whose methods get invoked upon different events
+     * @param executor the {@link Executor} on which all callbacks will be called
+     * @param httpMethod the HTTP method to use for the stream
+     * @param requestHeaders the list of request headers
+     * @return a new stream.
+     */
+    abstract BidirectionalStream createBidirectionalStream(String url,
+            BidirectionalStream.Callback callback, Executor executor, String httpMethod,
+            List<Map.Entry<String, String>> requestHeaders);
 
     /**
      * @return {@code true} if the engine is enabled.

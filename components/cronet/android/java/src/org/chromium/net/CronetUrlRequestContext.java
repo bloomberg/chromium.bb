@@ -24,6 +24,8 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -114,6 +116,12 @@ class CronetUrlRequestContext extends CronetEngine {
             return new CronetUrlRequest(this, mUrlRequestContextAdapter, url,
                     priority, listener, executor);
         }
+    }
+
+    @Override
+    BidirectionalStream createBidirectionalStream(String url, BidirectionalStream.Callback callback,
+            Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

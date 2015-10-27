@@ -24,9 +24,56 @@ public final class UrlResponseInfo {
     private final boolean mWasCached;
     private final String mNegotiatedProtocol;
     private final String mProxyServer;
-    private final List<Map.Entry<String, String>> mAllHeadersList;
     private final AtomicLong mReceivedBytesCount;
-    private Map<String, List<String>> mResponseHeaders;
+    private final HeaderBlock mHeaders;
+
+    /**
+     * Unmodifiable container of response headers or trailers.
+     */
+    public static final class HeaderBlock {
+        private final List<Map.Entry<String, String>> mAllHeadersList;
+        private Map<String, List<String>> mHeadersMap;
+
+        HeaderBlock(List<Map.Entry<String, String>> allHeadersList) {
+            mAllHeadersList = allHeadersList;
+        }
+
+        /**
+         * Returns an unmodifiable list of the response header field and value pairs.
+         * The headers are in the same order they are received over the wire.
+         *
+         * @return an unmodifiable list of response header field and value pairs
+         */
+        public List<Map.Entry<String, String>> getAsList() {
+            return mAllHeadersList;
+        }
+
+        /**
+         * Returns an unmodifiable map from response-header field names to lists of values.
+         * Each list of values for a single header field is in the same order they
+         * were received over the wire.
+         *
+         * @return an unmodifiable map from response-header field names to lists of values
+         */
+        public Map<String, List<String>> getAsMap() {
+            // This is potentially racy...but races will only result in wasted resource.
+            if (mHeadersMap != null) {
+                return mHeadersMap;
+            }
+            Map<String, List<String>> map =
+                    new TreeMap<String, List<String>>(String.CASE_INSENSITIVE_ORDER);
+            for (Map.Entry<String, String> entry : mAllHeadersList) {
+                List<String> values = new ArrayList<String>();
+                if (map.containsKey(entry.getKey())) {
+                    values.addAll(map.get(entry.getKey()));
+                }
+                values.add(entry.getValue());
+                map.put(entry.getKey(), Collections.unmodifiableList(values));
+            }
+            mHeadersMap = Collections.unmodifiableMap(map);
+            return mHeadersMap;
+        }
+    }
 
     UrlResponseInfo(List<String> urlChain, int httpStatusCode, String httpStatusText,
             List<Map.Entry<String, String>> allHeadersList, boolean wasCached,
@@ -34,7 +81,7 @@ public final class UrlResponseInfo {
         mResponseInfoUrlChain = Collections.unmodifiableList(urlChain);
         mHttpStatusCode = httpStatusCode;
         mHttpStatusText = httpStatusText;
-        mAllHeadersList = Collections.unmodifiableList(allHeadersList);
+        mHeaders = new HeaderBlock(Collections.unmodifiableList(allHeadersList));
         mWasCached = wasCached;
         mNegotiatedProtocol = negotiatedProtocol;
         mProxyServer = proxyServer;
@@ -83,7 +130,7 @@ public final class UrlResponseInfo {
      * @return an unmodifiable list of response header field and value pairs.
      */
     public List<Map.Entry<String, String>> getAllHeadersAsList() {
-        return mAllHeadersList;
+        return mHeaders.getAsList();
     }
 
     /**
@@ -93,21 +140,7 @@ public final class UrlResponseInfo {
      * @return an unmodifiable map of the response-header fields and values.
      */
     public Map<String, List<String>> getAllHeaders() {
-        if (mResponseHeaders != null) {
-            return mResponseHeaders;
-        }
-        Map<String, List<String>> map =
-                new TreeMap<String, List<String>>(String.CASE_INSENSITIVE_ORDER);
-        for (Map.Entry<String, String> entry : mAllHeadersList) {
-            List<String> values = new ArrayList<String>();
-            if (map.containsKey(entry.getKey())) {
-                values.addAll(map.get(entry.getKey()));
-            }
-            values.add(entry.getValue());
-            map.put(entry.getKey(), Collections.unmodifiableList(values));
-        }
-        mResponseHeaders = Collections.unmodifiableMap(map);
-        return mResponseHeaders;
+        return mHeaders.getAsMap();
     }
 
     /**
