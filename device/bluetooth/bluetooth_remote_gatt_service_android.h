@@ -28,19 +28,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
  public:
   // Create a BluetoothRemoteGattServiceAndroid instance and associated Java
   // ChromeBluetoothRemoteGattService using the provided
-  // |bluetooth_remote_gatt_service_wrapper|.
+  // |bluetooth_gatt_service_wrapper|.
   //
   // The ChromeBluetoothRemoteGattService instance will hold a Java reference
-  // to |bluetooth_remote_gatt_service_wrapper|.
-  //
-  // TODO(scheib): Return a scoped_ptr<>, but then device will need to handle
-  // this correctly. http://crbug.com/506416
-  static BluetoothRemoteGattServiceAndroid* Create(
+  // to |bluetooth_gatt_service_wrapper|.
+  static scoped_ptr<BluetoothRemoteGattServiceAndroid> Create(
       BluetoothAdapterAndroid* adapter,
       BluetoothDeviceAndroid* device,
-      jobject bluetooth_remote_gatt_service_wrapper,  // Java Type:
-      // BluetoothRemoteGattServiceWrapper
+      jobject /* BluetoothRemoteGattServiceWrapper */
+      bluetooth_gatt_service_wrapper,
       const std::string& instanceId);
+
+  ~BluetoothRemoteGattServiceAndroid() override;
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
@@ -78,12 +77,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
       bluetooth_gatt_characteristic_wrapper);
 
  private:
-  friend class BluetoothDeviceAndroid;
-
   BluetoothRemoteGattServiceAndroid(BluetoothAdapterAndroid* adapter,
                                     BluetoothDeviceAndroid* device,
                                     const std::string& instanceId);
-  ~BluetoothRemoteGattServiceAndroid() override;
 
   // Populates |characteristics_| from Java objects if necessary.
   void EnsureCharacteristicsCreated() const;
