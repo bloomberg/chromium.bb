@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_CAPABILITY_NAMeS_H_
-#define REMOTING_PROTOCOL_CAPABILITY_NAMeS_H_
+#ifndef REMOTING_PROTOCOL_CAPABILITY_NAMES_H_
+#define REMOTING_PROTOCOL_CAPABILITY_NAMES_H_
 
 namespace remoting {
 namespace protocol {
@@ -17,4 +17,4 @@ const char kRateLimitResizeRequests[] = "rateLimitResizeRequests";
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CAPABILITY_NAMeS_H_
+#endif  // REMOTING_PROTOCOL_CAPABILITY_NAMES_H_
