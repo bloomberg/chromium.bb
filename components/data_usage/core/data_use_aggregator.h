@@ -10,16 +10,17 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "components/data_usage/core/data_use.h"
 
 namespace net {
 class URLRequest;
 }
 
 namespace data_usage {
+struct DataUse;
 
 // Class that collects and aggregates network usage, reporting the usage to
 // observers. Should only be used on the IO thread.
@@ -28,8 +29,10 @@ class DataUseAggregator {
   class Observer {
    public:
     virtual ~Observer() {}
-    // TODO(sclittle): Consider performing some pre-aggregation on the data use.
-    virtual void OnDataUse(const std::vector<DataUse>& data_use_sequence) = 0;
+    // Each of the elements of |data_use_sequence| are guaranteed to be
+    // non-NULL.
+    virtual void OnDataUse(
+        const std::vector<const DataUse*>& data_use_sequence) = 0;
   };
 
   DataUseAggregator();
@@ -61,7 +64,7 @@ class DataUseAggregator {
   base::ObserverList<Observer> observer_list_;
 
   // Buffer of unreported data use.
-  std::vector<DataUse> buffered_data_use_;
+  ScopedVector<DataUse> buffered_data_use_;
 
   // The total amount of off-the-record data usage that has happened since the
   // last time the buffer was flushed.

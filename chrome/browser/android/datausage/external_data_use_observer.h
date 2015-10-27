@@ -18,8 +18,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
-#include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+
+class GURL;
+
+namespace data_usage {
+struct DataUse;
+}
 
 namespace re2 {
 class RE2;
@@ -115,8 +120,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   static const size_t kMaxBufferSize = 100;
 
   // data_usage::DataUseAggregator::Observer implementation:
-  void OnDataUse(
-      const std::vector<data_usage::DataUse>& data_use_sequence) override;
+  void OnDataUse(const std::vector<const data_usage::DataUse*>&
+                     data_use_sequence) override;
 
   // Called by |FetchMatchingRulesCallback| on IO thread when new matching rules
   // have been fetched.

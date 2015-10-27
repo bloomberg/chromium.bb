@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/message_loop/message_loop.h"
+#include "components/data_usage/core/data_use.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalDataUseObserver_jni.h"
 #include "third_party/re2/re2/re2.h"
@@ -123,7 +124,7 @@ void ExternalDataUseObserver::OnReportDataUseDoneOnIOThread(bool success) {
 }
 
 void ExternalDataUseObserver::OnDataUse(
-    const std::vector<data_usage::DataUse>& data_use_sequence) {
+    const std::vector<const data_usage::DataUse*>& data_use_sequence) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!j_external_data_use_observer_.is_null());
 
@@ -134,12 +135,12 @@ void ExternalDataUseObserver::OnDataUse(
   }
 
   std::string label;
-  for (const auto& data_use : data_use_sequence) {
-    if (!Matches(data_use.url, &label))
+  for (const data_usage::DataUse* data_use : data_use_sequence) {
+    if (!Matches(data_use->url, &label))
       continue;
 
-    int64_t bytes_downloaded = data_use.rx_bytes;
-    int64_t bytes_uploaded = data_use.tx_bytes;
+    int64_t bytes_downloaded = data_use->rx_bytes;
+    int64_t bytes_uploaded = data_use->tx_bytes;
     buffered_data_reports_.push_back(
         DataReport(label, bytes_downloaded, bytes_uploaded));
 

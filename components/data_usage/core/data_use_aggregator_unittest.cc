@@ -129,11 +129,11 @@ class TestObserver : public DataUseAggregator::Observer {
 
   ~TestObserver() override { data_use_aggregator_->RemoveObserver(this); }
 
-  void OnDataUse(const std::vector<DataUse>& data_use_sequence) override {
+  void OnDataUse(
+      const std::vector<const DataUse*>& data_use_sequence) override {
     ++on_data_use_called_count_;
-    observed_data_use_.insert(observed_data_use_.end(),
-                              data_use_sequence.begin(),
-                              data_use_sequence.end());
+    for (const DataUse* data_use : data_use_sequence)
+      observed_data_use_.push_back(*data_use);
   }
 
   const std::vector<DataUse>& observed_data_use() const {

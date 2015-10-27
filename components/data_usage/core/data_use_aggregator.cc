@@ -5,8 +5,11 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
+#include "components/data_usage/core/data_use.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
@@ -36,20 +39,20 @@ void DataUseAggregator::ReportDataUse(const net::URLRequest& request,
                                       int64_t rx_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DataUse data_use(request.url(), request.request_time(),
-                   request.first_party_for_cookies(), tab_id,
-                   net::NetworkChangeNotifier::GetConnectionType(), tx_bytes,
-                   rx_bytes);
+  scoped_ptr<DataUse> data_use(new DataUse(
+      request.url(), request.request_time(), request.first_party_for_cookies(),
+      tab_id, net::NetworkChangeNotifier::GetConnectionType(), tx_bytes,
+      rx_bytes));
 
   // As an optimization, attempt to combine the newly reported data use with the
   // most recent buffered data use, if the annotations on the data use are the
   // same.
   if (!buffered_data_use_.empty() &&
-      buffered_data_use_.back().CanCombineWith(data_use)) {
-    buffered_data_use_.back().tx_bytes += tx_bytes;
-    buffered_data_use_.back().rx_bytes += rx_bytes;
+      buffered_data_use_.back()->CanCombineWith(*data_use)) {
+    buffered_data_use_.back()->tx_bytes += tx_bytes;
+    buffered_data_use_.back()->rx_bytes += rx_bytes;
   } else {
-    buffered_data_use_.push_back(data_use);
+    buffered_data_use_.push_back(data_use.Pass());
   }
 
   if (!is_flush_pending_) {
@@ -79,7 +82,14 @@ void DataUseAggregator::FlushBufferedDataUse() {
 
   // TODO(sclittle): Amortize data use on supported platforms before notifying
   // observers.
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(buffered_data_use_));
+
+  // Pass Observers a sequence of const DataUse pointers instead of using the
+  // buffer directly in order to prevent Observers from modifying the DataUse
+  // objects.
+  std::vector<const DataUse*> const_sequence(buffered_data_use_.begin(),
+                                             buffered_data_use_.end());
+  DCHECK(!ContainsValue(const_sequence, nullptr));
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(const_sequence));
 
   buffered_data_use_.clear();
   off_the_record_tx_bytes_since_last_flush_ = 0;

@@ -238,12 +238,12 @@ TEST(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
   EXPECT_FALSE(external_data_use_observer->submit_data_report_pending_);
   EXPECT_FALSE(external_data_use_observer->matching_rules_fetch_pending_);
 
-  std::vector<data_usage::DataUse> data_use_sequence;
+  std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_use(
       GURL("http://www.google.com/#q=abc"), base::Time::Now(), GURL(), 0,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 0, 0);
-  data_use_sequence.push_back(data_use);
-  data_use_sequence.push_back(data_use);
+  data_use_sequence.push_back(&data_use);
+  data_use_sequence.push_back(&data_use);
   external_data_use_observer->OnDataUse(data_use_sequence);
 
   EXPECT_EQ(1U, external_data_use_observer->buffered_data_reports_.size());
@@ -253,7 +253,7 @@ TEST(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
 
   data_use_sequence.clear();
   for (size_t i = 0; i < max_buffer_size; ++i)
-    data_use_sequence.push_back(data_use);
+    data_use_sequence.push_back(&data_use);
 
   external_data_use_observer->OnDataUse(data_use_sequence);
   EXPECT_EQ(max_buffer_size,
@@ -293,12 +293,12 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
   EXPECT_FALSE(external_data_use_observer->matching_rules_fetch_pending_);
 
   // Check |label_foo| matching rule.
-  std::vector<data_usage::DataUse> data_use_sequence;
+  std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_foo(
       GURL("http://www.foo.com/#q=abc"), base::Time::Now(), GURL(), 0,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 0, 0);
-  data_use_sequence.push_back(data_foo);
-  data_use_sequence.push_back(data_foo);
+  data_use_sequence.push_back(&data_foo);
+  data_use_sequence.push_back(&data_foo);
   external_data_use_observer->OnDataUse(data_use_sequence);
 
   EXPECT_EQ(1U, external_data_use_observer->buffered_data_reports_.size());
@@ -316,7 +316,7 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
   data_usage::DataUse data_bar(
       GURL("http://www.bar.com/#q=abc"), base::Time::Now(), GURL(), 0,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 0, 0);
-  data_use_sequence.push_back(data_bar);
+  data_use_sequence.push_back(&data_bar);
   external_data_use_observer->OnDataUse(data_use_sequence);
   for (const auto& data_report :
        external_data_use_observer->buffered_data_reports_) {
