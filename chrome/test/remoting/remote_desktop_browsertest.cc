@@ -22,6 +22,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -126,13 +127,12 @@ void RemoteDesktopBrowserTest::InstallChromotingAppUnpacked() {
       extensions::UnpackedInstaller::Create(extension_service());
   installer->set_prompt_for_plugins(false);
 
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-      content::NotificationService::AllSources());
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
 
   installer->Load(webapp_unpacked_);
 
-  observer.Wait();
+  observer.WaitForExtensionLoaded();
 }
 
 void RemoteDesktopBrowserTest::UninstallChromotingApp() {
