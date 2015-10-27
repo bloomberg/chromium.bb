@@ -194,8 +194,8 @@ public:
 
     const LayoutPoint& topLeft() const { return m_topLeft; }
 
-    LayoutUnit width() const { return isHorizontal() ? logicalWidth() : hasVirtualLogicalHeight() ? virtualLogicalHeight() : logicalHeight(); }
-    LayoutUnit height() const { return isHorizontal() ? hasVirtualLogicalHeight() ? virtualLogicalHeight() : logicalHeight() : logicalWidth(); }
+    LayoutUnit width() const { return isHorizontal() ? logicalWidth() : logicalHeight(); }
+    LayoutUnit height() const { return isHorizontal() ? logicalHeight() : logicalWidth(); }
     LayoutSize size() const { return LayoutSize(width(), height()); }
     LayoutUnit right() const { return left() + width(); }
     LayoutUnit bottom() const { return top() + height(); }
