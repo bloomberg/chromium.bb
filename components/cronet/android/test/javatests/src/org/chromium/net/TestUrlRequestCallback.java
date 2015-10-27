@@ -19,11 +19,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Listener that tracks information from different callbacks and and has a
+ * Callback that tracks information from different callbacks and and has a
  * method to block thread until the request completes on another thread.
  * Allows to cancel, block request or throw an exception from an arbitrary step.
  */
-class TestUrlRequestListener extends UrlRequestListener {
+class TestUrlRequestCallback extends UrlRequest.Callback {
     public ArrayList<UrlResponseInfo> mRedirectResponseInfoList = new ArrayList<UrlResponseInfo>();
     public ArrayList<String> mRedirectUrlList = new ArrayList<String>();
     public UrlResponseInfo mResponseInfo;
@@ -60,8 +60,8 @@ class TestUrlRequestListener extends UrlRequestListener {
     private final ConditionVariable mStepBlock = new ConditionVariable();
 
     // Executor Service for Cronet callbacks.
-    private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor(
-            new ExecutorThreadFactory());
+    private final ExecutorService mExecutorService =
+            Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
     private Thread mExecutorThread;
 
     // position() of ByteBuffer prior to readNew() call.
@@ -80,7 +80,7 @@ class TestUrlRequestListener extends UrlRequestListener {
         ON_RESPONSE_STARTED,
         ON_READ_COMPLETED,
         ON_SUCCEEDED
-    };
+    }
 
     public enum FailureType {
         NONE,
@@ -90,7 +90,7 @@ class TestUrlRequestListener extends UrlRequestListener {
         // the cancellation task.
         CANCEL_ASYNC_WITHOUT_PAUSE,
         THROW_SYNC
-    };
+    }
 
     public void setAutoAdvance(boolean autoAdvance) {
         mAutoAdvance = autoAdvance;
@@ -119,12 +119,12 @@ class TestUrlRequestListener extends UrlRequestListener {
     }
 
     @Override
-    public void onReceivedRedirect(
+    public void onRedirectReceived(
             UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
-                   || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
+                || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_RECEIVED_REDIRECT;
@@ -142,7 +142,7 @@ class TestUrlRequestListener extends UrlRequestListener {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
-                   || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
+                || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_RESPONSE_STARTED;
@@ -158,7 +158,7 @@ class TestUrlRequestListener extends UrlRequestListener {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
-                   || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+                || mResponseStep == ResponseStep.ON_READ_COMPLETED);
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_READ_COMPLETED;
@@ -194,7 +194,7 @@ class TestUrlRequestListener extends UrlRequestListener {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
-                   || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+                || mResponseStep == ResponseStep.ON_READ_COMPLETED);
         assertFalse(mOnErrorCalled);
         assertFalse(mOnCanceledCalled);
         assertNull(mError);
@@ -286,4 +286,3 @@ class TestUrlRequestListener extends UrlRequestListener {
         return mFailureType != FailureType.CANCEL_ASYNC_WITHOUT_PAUSE;
     }
 }
-

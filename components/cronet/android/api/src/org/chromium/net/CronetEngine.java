@@ -399,18 +399,18 @@ public abstract class CronetEngine {
      * tasks on the current thread to prevent blocking networking operations
      * and causing exceptions during shutdown. Request is given medium priority,
      * see {@link UrlRequest#REQUEST_PRIORITY_MEDIUM}. To specify other
-     * priorities see {@link #createRequest(String, UrlRequestListener,
+     * priorities see {@link #createRequest(String, UrlRequest.Callback,
      * Executor, int priority)}.
      *
      * @param url {@link URL} for the request.
-     * @param listener callback class that gets called on different events.
-     * @param executor {@link Executor} on which all callbacks will be called.
+     * @param callback callback object that gets invoked on different events.
+     * @param executor {@link Executor} on which all callbacks will be invoked.
      * @return new request.
      * @deprecated Use {@link Builder#build}.
      */
     @Deprecated
     public abstract UrlRequest createRequest(
-            String url, UrlRequestListener listener, Executor executor);
+            String url, UrlRequest.Callback callback, Executor executor);
 
     /**
      * Creates a {@link UrlRequest} object. All callbacks will
@@ -419,8 +419,8 @@ public abstract class CronetEngine {
      * and causing exceptions during shutdown.
      *
      * @param url {@link URL} for the request.
-     * @param listener callback class that gets called on different events.
-     * @param executor {@link Executor} on which all callbacks will be called.
+     * @param callback callback object that gets invoked on different events.
+     * @param executor {@link Executor} on which all callbacks will be invoked.
      * @param priority priority of the request which should be one of the
      *         {@link UrlRequest#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
      *         values.
@@ -429,7 +429,7 @@ public abstract class CronetEngine {
      */
     @Deprecated
     public abstract UrlRequest createRequest(
-            String url, UrlRequestListener listener, Executor executor, int priority);
+            String url, UrlRequest.Callback callback, Executor executor, int priority);
 
     /**
      * Creates a {@link BidirectionalStream} object. {@code callback} methods will

@@ -338,7 +338,7 @@ public class CronetPerfTestActivity extends Activity {
                     }
                 };
                 final UrlRequest.Builder builder = new UrlRequest.Builder(mUrl.toString(),
-                        new Listener(buffer, completionCallback), mWorkQueueExecutor,
+                        new Callback(buffer, completionCallback), mWorkQueueExecutor,
                         mCronetEngine);
                 if (mDirection == Direction.UP) {
                     builder.setUploadDataProvider(new Uploader(buffer), mWorkQueueExecutor);
@@ -380,11 +380,11 @@ public class CronetPerfTestActivity extends Activity {
                 }
             }
 
-            private class Listener extends UrlRequestListener {
+            private class Callback extends UrlRequest.Callback {
                 private final ByteBuffer mBuffer;
                 private final Runnable mCompletionCallback;
 
-                Listener(ByteBuffer buffer, Runnable completionCallback) {
+                Callback(ByteBuffer buffer, Runnable completionCallback) {
                     mBuffer = buffer;
                     mCompletionCallback = completionCallback;
                 }
@@ -396,7 +396,7 @@ public class CronetPerfTestActivity extends Activity {
                 }
 
                 @Override
-                public void onReceivedRedirect(
+                public void onRedirectReceived(
                         UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
                     request.followRedirect();
                 }

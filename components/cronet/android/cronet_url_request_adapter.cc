@@ -249,7 +249,7 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
   DCHECK(request->status().is_success());
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  cronet::Java_CronetUrlRequest_onReceivedRedirect(
+  cronet::Java_CronetUrlRequest_onRedirectReceived(
       env, owner_.obj(),
       ConvertUTF8ToJavaString(env, redirect_info.new_url.spec()).obj(),
       redirect_info.status_code, GetResponseHeaders(env).obj(),

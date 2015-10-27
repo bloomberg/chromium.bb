@@ -6,7 +6,7 @@ package org.chromium.net;
 
 /**
  * Callback interface.
- * @deprecated Use {@link UrlRequestListener} instead.
+ * @deprecated Use {@link UrlRequest.Callback} instead.
  */
 @Deprecated
 public interface HttpUrlRequestListener {

@@ -8,12 +8,12 @@ API as well as support for the [java.net.HttpURLConnection] API.
 This document gives a brief introduction to using these two Java APIs.
 
 ### Basics
-First you will need to extend `UrlRequestListener` to handle
+First you will need to extend `UrlRequest.Callback` to handle
 events during the lifetime of a request. For example:
 
-    class MyListener extends UrlRequestListener {
+    class MyCallback extends UrlRequest.Callback {
         @Override
-        public void onReceivedRedirect(UrlRequest request,
+        public void onRedirectReceived(UrlRequest request,
                 UrlResponseInfo responseInfo, String newLocationUrl) {
             if (followRedirect) {
                 // Let's tell Cronet to follow the redirect!
@@ -60,7 +60,7 @@ events during the lifetime of a request. For example:
         public void onFailed(UrlRequest request,
                 UrlResponseInfo responseInfo, UrlRequestException error) {
              // Request has failed. responseInfo might be null.
-             Log.e("MyListener", "Request failed. " + error.getMessage());
+             Log.e("MyCallback", "Request failed. " + error.getMessage());
              // Maybe handle error here. Typical errors include hostname
              // not resolved, connection to server refused, etc.
         }
@@ -71,28 +71,28 @@ Make a request like this:
     CronetEngine.Builder engineBuilder = new CronetEngine.Builder(getContext());
     CronetEngine engine = engineBuilder.build();
     Executor executor = Executors.newSingleThreadExecutor();
-    MyListener listener = new MyListener();
+    MyCallback callback = new MyCallback();
     UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
-            "https://www.example.com", listener, executor, engine);
+            "https://www.example.com", callback, executor, engine);
     UrlRequest request = requestBuilder.build();
     request.start();
 
-In the above example, `MyListener` extends `UrlRequestListener`. The request
+In the above example, `MyCallback` extends `UrlRequest.Callback`. The request
 is started asynchronously. When the response is ready (fully or partially), and
-in the event of failures or redirects, `listener`'s methods will be invoked on
+in the event of failures or redirects, `callback`'s methods will be invoked on
 `executor`'s thread to inform the client of the request state and/or response
 information.
 
 ### Downloading Data
 When Cronet fetches response headers from the server or gets them from the
-cache, `UrlRequestListener.onResponseStarted` will be invoked. To read the
+cache, `UrlRequest.Callback.onResponseStarted` will be invoked. To read the
 response body, the client should call `UrlRequest.read` and supply a
 [ByteBuffer] for Cronet to fill. Once a portion or all of
-the response body is read, `UrlRequestListener.onReadCompleted` will be invoked.
+the response body is read, `UrlRequest.Callback.onReadCompleted` will be invoked.
 The client may then read and consume the data within `byteBuffer`.
 Once the client is ready to consume more data, the client should call
 `UrlRequest.read` again. The process continues until
-`UrlRequestListener.onSucceeded` or `UrlRequestListener.onFailed` is invoked,
+`UrlRequest.Callback.onSucceeded` or `UrlRequest.Callback.onFailed` is invoked,
 which signals the completion of the request.
 
 ### Uploading Data

@@ -69,7 +69,7 @@ public class ContextInitTest extends CronetTestBase {
     }
 
     class RequestThread extends Thread {
-        public TestHttpUrlRequestListener mListener;
+        public TestHttpUrlRequestListener mCallback;
 
         final CronetTestFramework mTestFramework;
         final String mUrl;
@@ -82,8 +82,8 @@ public class ContextInitTest extends CronetTestBase {
         @Override
         public void run() {
             HttpUrlRequestFactory factory = mTestFramework.initRequestFactory();
-            mListener = makeRequest(factory, mUrl);
-            mListener.blockForComplete();
+            mCallback = makeRequest(factory, mUrl);
+            mCallback.blockForComplete();
         }
     }
 
@@ -99,8 +99,8 @@ public class ContextInitTest extends CronetTestBase {
         thread2.start();
         thread1.join();
         thread2.join();
-        assertEquals(200, thread1.mListener.mHttpStatusCode);
-        assertEquals(404, thread2.mListener.mHttpStatusCode);
+        assertEquals(200, thread1.mCallback.mHttpStatusCode);
+        assertEquals(404, thread2.mCallback.mHttpStatusCode);
     }
 
     @SmallTest
@@ -115,8 +115,8 @@ public class ContextInitTest extends CronetTestBase {
         thread1.join();
         thread2.start();
         thread2.join();
-        assertEquals(200, thread1.mListener.mHttpStatusCode);
-        assertEquals(404, thread2.mListener.mHttpStatusCode);
+        assertEquals(200, thread1.mCallback.mHttpStatusCode);
+        assertEquals(404, thread2.mCallback.mHttpStatusCode);
     }
 
     // Helper function to make a request.

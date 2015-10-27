@@ -99,22 +99,21 @@ class CronetUrlRequestContext extends CronetEngine {
     }
 
     @Override
-    public UrlRequest createRequest(String url, UrlRequestListener listener,
-                                    Executor executor) {
+    public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor) {
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetUrlRequest(this, mUrlRequestContextAdapter, url,
-                    UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM, listener, executor);
+                    UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM, callback, executor);
         }
     }
 
     @Override
-    public UrlRequest createRequest(String url, UrlRequestListener listener,
-                                    Executor executor, int priority) {
+    public UrlRequest createRequest(
+            String url, UrlRequest.Callback callback, Executor executor, int priority) {
         synchronized (mLock) {
             checkHaveAdapter();
-            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url,
-                    priority, listener, executor);
+            return new CronetUrlRequest(
+                    this, mUrlRequestContextAdapter, url, priority, callback, executor);
         }
     }
 

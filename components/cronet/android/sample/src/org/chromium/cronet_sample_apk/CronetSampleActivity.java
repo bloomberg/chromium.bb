@@ -20,7 +20,6 @@ import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestException;
-import org.chromium.net.UrlRequestListener;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -45,14 +44,14 @@ public class CronetSampleActivity extends Activity {
     private TextView mResultText;
     private TextView mReceiveDataText;
 
-    class SimpleUrlRequestListener extends UrlRequestListener {
+    class SimpleUrlRequestCallback extends UrlRequest.Callback {
         private ByteArrayOutputStream mBytesReceived = new ByteArrayOutputStream();
         private WritableByteChannel mReceiveChannel = Channels.newChannel(mBytesReceived);
 
         @Override
-        public void onReceivedRedirect(
+        public void onRedirectReceived(
                 UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
-            Log.i(TAG, "****** onReceivedRedirect ******");
+            Log.i(TAG, "****** onRedirectReceived ******");
             request.followRedirect();
         }
 
@@ -212,8 +211,8 @@ public class CronetSampleActivity extends Activity {
         mLoading = false;
 
         Executor executor = Executors.newSingleThreadExecutor();
-        UrlRequestListener listener = new SimpleUrlRequestListener();
-        UrlRequest.Builder builder = new UrlRequest.Builder(url, listener, executor, mCronetEngine);
+        UrlRequest.Callback callback = new SimpleUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(url, callback, executor, mCronetEngine);
         applyPostDataToUrlRequestBuilder(builder, executor, postData);
         builder.build().start();
     }

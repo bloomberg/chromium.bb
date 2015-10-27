@@ -8,7 +8,7 @@ import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.TestUrlRequestListener.ResponseStep;
+import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.UrlRequest.Status;
 import org.chromium.net.UrlRequest.StatusListener;
 
@@ -53,10 +53,10 @@ public class GetStatusTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testSimpleGet() throws Exception {
         String url = NativeTestServer.getEchoMethodURL();
-        TestUrlRequestListener listener = new TestUrlRequestListener();
-        listener.setAutoAdvance(false);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        callback.setAutoAdvance(false);
         UrlRequest.Builder builder = new UrlRequest.Builder(
-                url, listener, listener.getExecutor(), mTestFramework.mCronetEngine);
+                url, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
         UrlRequest urlRequest = builder.build();
         // Calling before request is started should give Status.INVALID,
         // since the native adapter is not created.
@@ -76,9 +76,9 @@ public class GetStatusTest extends CronetTestBase {
         assertTrue(statusListener1.mStatus >= Status.IDLE);
         assertTrue(statusListener1.mStatus <= Status.READING_RESPONSE);
 
-        listener.waitForNextStep();
-        assertEquals(ResponseStep.ON_RESPONSE_STARTED, listener.mResponseStep);
-        listener.startNextRead(urlRequest);
+        callback.waitForNextStep();
+        assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);
+        callback.startNextRead(urlRequest);
 
         // Should receive a valid status.
         TestStatusListener statusListener2 = new TestStatusListener();
@@ -88,11 +88,11 @@ public class GetStatusTest extends CronetTestBase {
         assertTrue(statusListener1.mStatus >= Status.IDLE);
         assertTrue(statusListener1.mStatus <= Status.READING_RESPONSE);
 
-        listener.waitForNextStep();
-        assertEquals(ResponseStep.ON_READ_COMPLETED, listener.mResponseStep);
+        callback.waitForNextStep();
+        assertEquals(ResponseStep.ON_READ_COMPLETED, callback.mResponseStep);
 
-        listener.startNextRead(urlRequest);
-        listener.blockForDone();
+        callback.startNextRead(urlRequest);
+        callback.blockForDone();
 
         // Calling after request done should give Status.INVALID, since
         // the native adapter is destroyed.
@@ -102,8 +102,8 @@ public class GetStatusTest extends CronetTestBase {
         assertTrue(statusListener3.mOnStatusCalled);
         assertEquals(Status.INVALID, statusListener3.mStatus);
 
-        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
-        assertEquals("GET", listener.mResponseAsString);
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("GET", callback.mResponseAsString);
     }
 
     @SmallTest

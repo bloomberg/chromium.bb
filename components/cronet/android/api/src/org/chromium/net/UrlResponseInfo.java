@@ -13,9 +13,10 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Contains basic information about a response. Included in {@link UrlRequestListener} callbacks.
- * Each {@link UrlRequestListener#onReceivedRedirect UrlRequestListener.onReceivedRedirect()}
- * callback gets a different copy of UrlResponseInfo describing a particular redirect response.
+ * Contains basic information about a response. Included in {@link UrlRequest.Callback} callbacks.
+ * Each {@link UrlRequest.Callback#onRedirectReceived UrlRequest.Callback.onRedirectReceived()}
+ * callback gets a different copy of {@code UrlResponseInfo} describing a particular redirect
+ * response.
  */
 public final class UrlResponseInfo {
     private final List<String> mResponseInfoUrlChain;
@@ -181,8 +182,9 @@ public final class UrlResponseInfo {
      * (for example GZIP and SDCH) and includes headers and data from all redirects.
      *
      * This value may change (even for one {@link UrlResponseInfo} instance) as the request
-     * progresses until completion, when {@link UrlRequestListener#onSuccess},
-     * {@link UrlRequestListener#onFailure}, or {@link UrlRequestListener#onCanceled} is called.
+     * progresses until completion, when {@link UrlRequest.Callback#onSucceeded onSucceeded()},
+     * {@link UrlRequest.Callback#onFailed onFailed()}, or
+     * {@link UrlRequest.Callback#onCanceled onCanceled()} is called.
      */
     public long getReceivedBytesCount() {
         return mReceivedBytesCount.get();

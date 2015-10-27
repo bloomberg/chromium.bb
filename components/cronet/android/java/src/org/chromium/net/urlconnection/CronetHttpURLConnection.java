@@ -10,7 +10,6 @@ import org.chromium.base.Log;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestException;
-import org.chromium.net.UrlRequestListener;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.FileNotFoundException;
@@ -253,7 +252,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             return;
         }
         final UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
-                getURL().toString(), new CronetUrlRequestListener(), mMessageLoop, mCronetEngine);
+                getURL().toString(), new CronetUrlRequestCallback(), mMessageLoop, mCronetEngine);
         if (doOutput) {
             if (mOutputStream != null) {
                 requestBuilder.setUploadDataProvider(
@@ -417,9 +416,8 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         return -1;
     }
 
-    private class CronetUrlRequestListener extends UrlRequestListener {
-        public CronetUrlRequestListener() {
-        }
+    private class CronetUrlRequestCallback extends UrlRequest.Callback {
+        public CronetUrlRequestCallback() {}
 
         @Override
         public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
@@ -436,7 +434,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         }
 
         @Override
-        public void onReceivedRedirect(
+        public void onRedirectReceived(
                 UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
             mOnRedirectCalled = true;
             if (instanceFollowRedirects) {

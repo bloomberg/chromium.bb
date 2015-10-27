@@ -28,9 +28,9 @@ public interface UrlRequest {
         final CronetEngine mCronetEngine;
         // URL to request.
         final String mUrl;
-        // Listener to receive progress callbacks.
-        final UrlRequestListener mListener;
-        // Executor to call listener on.
+        // Callback to receive progress callbacks.
+        final Callback mCallback;
+        // Executor to invoke callback on.
         final Executor mExecutor;
         // HTTP method (e.g. GET, POST etc).
         String mMethod;
@@ -48,23 +48,23 @@ public interface UrlRequest {
 
         /**
          * Creates a builder for {@link UrlRequest} objects. All callbacks for
-         * generated {@link UrlRequest} objects will be called on
+         * generated {@link UrlRequest} objects will be invoked on
          * {@code executor}'s thread. {@code executor} must not run tasks on the
          * current thread to prevent blocking networking operations and causing
          * exceptions during shutdown.
          *
          * @param url {@link java.net.URL} for the generated requests.
-         * @param listener callback class that gets called on different events.
-         * @param executor {@link Executor} on which all callbacks will be called.
+         * @param callback callback object that gets invoked on different events.
+         * @param executor {@link Executor} on which all callbacks will be invoked.
          * @param cronetEngine {@link CronetEngine} used to execute this request.
          */
-        public Builder(String url, UrlRequestListener listener, Executor executor,
-                CronetEngine cronetEngine) {
+        public Builder(
+                String url, Callback callback, Executor executor, CronetEngine cronetEngine) {
             if (url == null) {
                 throw new NullPointerException("URL is required.");
             }
-            if (listener == null) {
-                throw new NullPointerException("Listener is required.");
+            if (callback == null) {
+                throw new NullPointerException("Callback is required.");
             }
             if (executor == null) {
                 throw new NullPointerException("Executor is required.");
@@ -73,7 +73,7 @@ public interface UrlRequest {
                 throw new NullPointerException("CronetEngine is required.");
             }
             mUrl = url;
-            mListener = listener;
+            mCallback = callback;
             mExecutor = executor;
             mCronetEngine = cronetEngine;
         }
@@ -164,7 +164,7 @@ public interface UrlRequest {
          * Content-Type header is not set.
          *
          * @param uploadDataProvider responsible for providing the upload data.
-         * @param executor All {@code uploadDataProvider} methods will be called
+         * @param executor All {@code uploadDataProvider} methods will be invoked
          *     using this {@code Executor}. May optionally be the same
          *     {@code Executor} the request itself is using.
          * @return the builder to facilitate chaining.
@@ -195,7 +195,7 @@ public interface UrlRequest {
          */
         public UrlRequest build() {
             final UrlRequest request =
-                    mCronetEngine.createRequest(mUrl, mListener, mExecutor, mPriority);
+                    mCronetEngine.createRequest(mUrl, mCallback, mExecutor, mPriority);
             if (mMethod != null) {
                 request.setHttpMethod(mMethod);
             }
@@ -213,6 +213,106 @@ public interface UrlRequest {
     }
 
     /**
+     * Users of Cronet extend this class to receive callbacks indicating the
+     * progress of a {@link UrlRequest} being processed. An instance of this class
+     * is passed in to {@link UrlRequest.Builder#UrlRequest.Builder UrlRequest.Builder()}
+     * when constructing the {@code UrlRequest}.
+     * <p>
+     * Note:  All methods will be invoked on the thread of the
+     * {@link java.util.concurrent.Executor} used during construction of the
+     * {@code UrlRequest}.
+     */
+    public abstract class Callback {
+        /**
+         * Invoked whenever a redirect is encountered. This will only be invoked
+         * between the call to {@link UrlRequest#start} and
+         * {@link Callback#onResponseStarted Callback.onResponseStarted()}.
+         * The body of the redirect response, if it has one, will be ignored.
+         *
+         * The redirect will not be followed until the URLRequest's
+         * {@link UrlRequest#followRedirect} method is called, either
+         * synchronously or asynchronously.
+         *
+         * @param request Request being redirected.
+         * @param info Response information.
+         * @param newLocationUrl Location where request is redirected.
+         */
+        public abstract void onRedirectReceived(
+                UrlRequest request, UrlResponseInfo info, String newLocationUrl);
+
+        /**
+         * Invoked when the final set of headers, after all redirects, is received.
+         * Will only be invoked once for each request.
+         *
+         * With the exception of {@link Callback#onCanceled onCanceled()},
+         * no other {@link Callback} method will be invoked for the request,
+         * including {@link Callback#onSucceeded onSucceeded()} and {@link
+         * Callback#onFailed onFailed()}, until {@link UrlRequest#read
+         * UrlRequest.read()} is called to attempt to start reading the response
+         * body.
+         *
+         * @param request Request that started to get response.
+         * @param info Response information.
+         */
+        public abstract void onResponseStarted(UrlRequest request, UrlResponseInfo info);
+
+        /**
+         * Invoked whenever part of the response body has been read. Only part of
+         * the buffer may be populated, even if the entire response body has not yet
+         * been consumed.
+         *
+         * With the exception of {@link Callback#onCanceled onCanceled()},
+         * no other {@link Callback} method will be invoked for the request,
+         * including {@link Callback#onSucceeded onSucceeded()} and {@link
+         * Callback#onFailed onFailed()}, until {@link
+         * UrlRequest#read UrlRequest.read()} is called to attempt to continue
+         * reading the response body.
+         *
+         * @param request Request that received data.
+         * @param info Response information.
+         * @param byteBuffer The buffer that was passed in to
+         *         {@link UrlRequest#read UrlRequest.read()}, now containing the
+         *         received data. The buffer's position is updated to the end of
+         *         the received data. The buffer's limit is not changed.
+         */
+        public abstract void onReadCompleted(
+                UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer);
+
+        /**
+         * Invoked when request is completed successfully. Once invoked, no other
+         * {@link Callback} methods will be invoked.
+         *
+         * @param request Request that succeeded.
+         * @param info Response information.
+         */
+        public abstract void onSucceeded(UrlRequest request, UrlResponseInfo info);
+
+        /**
+         * Invoked if request failed for any reason after {@link UrlRequest#start}.
+         * Once invoked, no other {@link Callback} methods will be invoked.
+         * {@code error} provides information about the failure.
+         *
+         * @param request Request that failed.
+         * @param info Response information. May be {@code null} if no response was
+         *         received.
+         * @param error information about error.
+         */
+        public abstract void onFailed(
+                UrlRequest request, UrlResponseInfo info, UrlRequestException error);
+
+        /**
+         * Invoked if request was canceled via {@link UrlRequest#cancel}. Once
+         * invoked, no other {@link Callback} methods will be invoked.
+         * Default implementation takes no action.
+         *
+         * @param request Request that was canceled.
+         * @param info Response information. May be {@code null} if no response was
+         *         received.
+         */
+        public void onCanceled(UrlRequest request, UrlResponseInfo info) {}
+    }
+
+    /**
      * Request status values returned by {@link #getStatus}.
      */
     public static class Status {
@@ -225,7 +325,7 @@ public interface UrlRequest {
          * This state corresponds to a resource load that has either not yet begun
          * or is idle waiting for the consumer to do something to move things along
          * (e.g. when the consumer of a {@link UrlRequest} has not called
-         * {@link #read} yet).
+         * {@link UrlRequest#read read()} yet).
          */
         public static final int IDLE = 0;
         /**
@@ -314,7 +414,7 @@ public interface UrlRequest {
          * the period after the response headers have been received and before all
          * of the response body has been downloaded. (NOTE: This state only applies
          * for an {@link UrlRequest} while there is an outstanding
-         * {@link UrlRequest#read} operation.)
+         * {@link UrlRequest#read read()} operation.)
          */
         public static final int READING_RESPONSE = 14;
 
@@ -386,7 +486,7 @@ public interface UrlRequest {
      */
     public abstract class StatusListener {
         /**
-         * Called on {@link UrlRequest}'s {@link Executor}'s thread when request
+         * Invoked on {@link UrlRequest}'s {@link Executor}'s thread when request
          * status is obtained.
          * @param status integer representing the status of the request. It is
          *         one of the values defined in {@link Status}.
@@ -422,7 +522,7 @@ public interface UrlRequest {
      * header is not set.
      *
      * @param uploadDataProvider responsible for providing the upload data.
-     * @param executor All {@code uploadDataProvider} methods will be called
+     * @param executor All {@code uploadDataProvider} methods will be invoked
      *     using this {@code Executor}. May optionally be the same
      *     {@code Executor} the request itself is using.
      * @deprecated Use {@link Builder#setUploadDataProvider}.
@@ -431,34 +531,34 @@ public interface UrlRequest {
     public void setUploadDataProvider(UploadDataProvider uploadDataProvider, Executor executor);
 
     /**
-     * Starts the request, all callbacks go to listener. May only be called
+     * Starts the request, all callbacks go to {@link Callback}. May only be called
      * once. May not be called if {@link #cancel} has been called.
      */
     public void start();
 
     /**
      * Follows a pending redirect. Must only be called at most once for each
-     * invocation of {@link UrlRequestListener#onReceivedRedirect
-     * UrlRequestListener.onReceivedRedirect()}.
+     * invocation of {@link Callback#onRedirectReceived
+     * Callback.onRedirectReceived()}.
      */
     public void followRedirect();
 
     /**
      * Attempts to read part of the response body into the provided buffer.
      * Must only be called at most once in response to each invocation of the
-     * {@link UrlRequestListener#onResponseStarted onResponseStarted} and {@link
-     * UrlRequestListener#onReadCompleted onReadCompleted} methods of the {@link
-     * UrlRequestListener}. Each call will result in an asynchronous call to
-     * either the {@link UrlRequestListener UrlRequestListener's}
-     * {@link UrlRequestListener#onReadCompleted onReadCompleted} method if data
-     * is read, its {@link UrlRequestListener#onSucceeded onSucceeded} method if
-     * there's no more data to read, or its {@link UrlRequestListener#onFailed
+     * {@link Callback#onResponseStarted onResponseStarted} and {@link
+     * Callback#onReadCompleted onReadCompleted} methods of the {@link
+     * Callback}. Each call will result in an asynchronous call to
+     * either the {@link Callback Callback's}
+     * {@link Callback#onReadCompleted onReadCompleted} method if data
+     * is read, its {@link Callback#onSucceeded onSucceeded} method if
+     * there's no more data to read, or its {@link Callback#onFailed
      * onFailed} method if there's an error.
      *
      * @param buffer {@link ByteBuffer} to write response body to. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
      *     position, limit, or data between its position and capacity until the
-     *     request calls back into the {@link URLRequestListener}.
+     *     request calls back into the {@link Callback}.
      * @deprecated Use readNew() instead though note that it updates the
      *     buffer's position not limit.
      */
@@ -468,33 +568,33 @@ public interface UrlRequest {
     /**
      * Attempts to read part of the response body into the provided buffer.
      * Must only be called at most once in response to each invocation of the
-     * {@link UrlRequestListener#onResponseStarted onResponseStarted} and {@link
-     * UrlRequestListener#onReadCompleted onReadCompleted} methods of the {@link
-     * UrlRequestListener}. Each call will result in an asynchronous call to
-     * either the {@link UrlRequestListener UrlRequestListener's}
-     * {@link UrlRequestListener#onReadCompleted onReadCompleted} method if data
-     * is read, its {@link UrlRequestListener#onSucceeded onSucceeded} method if
-     * there's no more data to read, or its {@link UrlRequestListener#onFailed
+     * {@link Callback#onResponseStarted onResponseStarted} and {@link
+     * Callback#onReadCompleted onReadCompleted} methods of the {@link
+     * Callback}. Each call will result in an asynchronous call to
+     * either the {@link Callback Callback's}
+     * {@link Callback#onReadCompleted onReadCompleted} method if data
+     * is read, its {@link Callback#onSucceeded onSucceeded} method if
+     * there's no more data to read, or its {@link Callback#onFailed
      * onFailed} method if there's an error.
      *
      * @param buffer {@link ByteBuffer} to write response body to. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
      *     position, limit, or data between its position and limit until the
-     *     request calls back into the {@link URLRequestListener}.
+     *     request calls back into the {@link Callback}.
      */
     // TODO(pauljensen): Rename to read() once original read() is removed.
     public void readNew(ByteBuffer buffer);
 
     /**
      * Cancels the request. Can be called at any time.
-     * {@link UrlRequestListener#onCanceled} will be invoked when cancellation
-     * is complete and no further listener methods will be invoked. If the
+     * {@link Callback#onCanceled} will be invoked when cancellation
+     * is complete and no further callback methods will be invoked. If the
      * request has completed or has not started, calling {@code cancel()} has no
      * effect and {@code onCanceled} will not be invoked. If the
      * {@link Executor} passed in during {@code UrlRequest} construction runs
      * tasks on a single thread, and {@code cancel()} is called on that thread,
-     * no listener methods (besides {@code onCanceled()}) will be invoked after
-     * {@code cancel()} is called. Otherwise, at most one listener method may be
+     * no callback methods (besides {@code onCanceled()}) will be invoked after
+     * {@code cancel()} is called. Otherwise, at most one callback method may be
      * invoked after {@code cancel()} has completed.
      */
     public void cancel();
@@ -519,8 +619,8 @@ public interface UrlRequest {
 
     /**
      * Queries the status of the request.
-     * @param listener a {@link StatusListener} that will be called back with
-     *         the request's current status. {@code listener} will be called
+     * @param listener a {@link StatusListener} that will be invoked with
+     *         the request's current status. {@code listener} will be invoked
      *         back on the {@link Executor} passed in when the request was
      *         created.
      */

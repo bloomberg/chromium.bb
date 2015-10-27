@@ -85,24 +85,24 @@ public class QuicTest extends CronetTestBase {
         NativeTestServer.registerHostResolverProc(urlRequestContextAdapter, false);
 
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
-        TestUrlRequestListener listener = new TestUrlRequestListener();
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
 
         // Although the native stack races QUIC and SPDY for the first request,
         // since there is no http server running on the corresponding TCP port,
         // QUIC will always succeed with a 200 (see
         // net::HttpStreamFactoryImpl::Request::OnStreamFailed).
         UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
-                quicURL, listener, listener.getExecutor(), mTestFramework.mCronetEngine);
+                quicURL, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
         requestBuilder.build().start();
-        listener.blockForDone();
+        callback.blockForDone();
 
-        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         String expectedContent = "This is a simple text file served by QUIC.\n";
-        assertEquals(expectedContent, listener.mResponseAsString);
-        assertEquals("quic/1+spdy/3", listener.mResponseInfo.getNegotiatedProtocol());
+        assertEquals(expectedContent, callback.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
         // The total received bytes should be larger than the content length, to account for
         // headers.
-        assertTrue(listener.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
+        assertTrue(callback.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
 
         // This test takes a long time, since the update will only be scheduled
         // after kUpdatePrefsDelayMs in http_server_properties_manager.cc.
@@ -131,17 +131,17 @@ public class QuicTest extends CronetTestBase {
         long newUrlRequestContextAdapter =
                 ((CronetUrlRequestContext) newEngine).getUrlRequestContextAdapter();
         NativeTestServer.registerHostResolverProc(newUrlRequestContextAdapter, false);
-        TestUrlRequestListener listener2 = new TestUrlRequestListener();
+        TestUrlRequestCallback callback2 = new TestUrlRequestCallback();
         requestBuilder =
-                new UrlRequest.Builder(quicURL, listener2, listener2.getExecutor(), newEngine);
+                new UrlRequest.Builder(quicURL, callback2, callback2.getExecutor(), newEngine);
         requestBuilder.build().start();
-        listener2.blockForDone();
-        assertEquals(200, listener2.mResponseInfo.getHttpStatusCode());
-        assertEquals(expectedContent, listener2.mResponseAsString);
-        assertEquals("quic/1+spdy/3", listener2.mResponseInfo.getNegotiatedProtocol());
+        callback2.blockForDone();
+        assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
+        assertEquals(expectedContent, callback2.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback2.mResponseInfo.getNegotiatedProtocol());
         // The total received bytes should be larger than the content length, to account for
         // headers.
-        assertTrue(listener2.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
+        assertTrue(callback2.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
     }
 
     // Returns whether a file contains a particular string.

@@ -134,20 +134,20 @@ public class SdchTest extends CronetTestBase {
                 new DictionaryAddedObserver(targetUrl, contextAdapter, false /** Legacy Api */);
 
         // Make a request to /sdch which advertises the dictionary.
-        TestUrlRequestListener listener1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
+        TestUrlRequestCallback callback1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
                 NativeTestServer.getSdchURL() + "/sdch/index?q=LeQxM80O");
-        assertEquals(200, listener1.mResponseInfo.getHttpStatusCode());
-        assertEquals("This is an index page.\n", listener1.mResponseAsString);
+        assertEquals(200, callback1.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is an index page.\n", callback1.mResponseAsString);
         assertEquals(Arrays.asList("/sdch/dict/LeQxM80O"),
-                listener1.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
+                callback1.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
 
         observer.waitForDictionaryAdded();
 
         // Make a request to fetch encoded response at /sdch/test.
-        TestUrlRequestListener listener2 =
+        TestUrlRequestCallback callback2 =
                 startAndWaitForComplete(mTestFramework.mCronetEngine, targetUrl);
-        assertEquals(200, listener2.mResponseInfo.getHttpStatusCode());
-        assertEquals("The quick brown fox jumps over the lazy dog.\n", listener2.mResponseAsString);
+        assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
+        assertEquals("The quick brown fox jumps over the lazy dog.\n", callback2.mResponseAsString);
 
         // Wait for a bit until SimpleCache finished closing entries before
         // calling shutdown on the CronetEngine.
@@ -171,9 +171,9 @@ public class SdchTest extends CronetTestBase {
         newObserver.waitForDictionaryAdded();
 
         // Make a request to fetch encoded response at /sdch/test.
-        TestUrlRequestListener listener3 = startAndWaitForComplete(newContext, targetUrl);
-        assertEquals(200, listener3.mResponseInfo.getHttpStatusCode());
-        assertEquals("The quick brown fox jumps over the lazy dog.\n", listener3.mResponseAsString);
+        TestUrlRequestCallback callback3 = startAndWaitForComplete(newContext, targetUrl);
+        assertEquals(200, callback3.mResponseInfo.getHttpStatusCode());
+        assertEquals("The quick brown fox jumps over the lazy dog.\n", callback3.mResponseAsString);
     }
 
     @SmallTest
@@ -182,11 +182,11 @@ public class SdchTest extends CronetTestBase {
         setUp(Sdch.DISABLED, Api.ASYNC);
         // Make a request to /sdch.
         // Since Sdch is not enabled, no dictionary should be advertised.
-        TestUrlRequestListener listener = startAndWaitForComplete(mTestFramework.mCronetEngine,
+        TestUrlRequestCallback callback = startAndWaitForComplete(mTestFramework.mCronetEngine,
                 NativeTestServer.getSdchURL() + "/sdch/index?q=LeQxM80O");
-        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
-        assertEquals("This is an index page.\n", listener.mResponseAsString);
-        assertEquals(null, listener.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is an index page.\n", callback.mResponseAsString);
+        assertEquals(null, callback.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
     }
 
     @SmallTest
@@ -195,18 +195,18 @@ public class SdchTest extends CronetTestBase {
         setUp(Sdch.ENABLED, Api.ASYNC);
         // Make a request to /sdch/index which advertises a bad dictionary that
         // does not exist.
-        TestUrlRequestListener listener1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
+        TestUrlRequestCallback callback1 = startAndWaitForComplete(mTestFramework.mCronetEngine,
                 NativeTestServer.getSdchURL() + "/sdch/index?q=NotFound");
-        assertEquals(200, listener1.mResponseInfo.getHttpStatusCode());
-        assertEquals("This is an index page.\n", listener1.mResponseAsString);
+        assertEquals(200, callback1.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is an index page.\n", callback1.mResponseAsString);
         assertEquals(Arrays.asList("/sdch/dict/NotFound"),
-                listener1.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
+                callback1.mResponseInfo.getAllHeaders().get("Get-Dictionary"));
 
         // Make a request to fetch /sdch/test, and make sure Sdch encoding is not used.
-        TestUrlRequestListener listener2 = startAndWaitForComplete(
+        TestUrlRequestCallback callback2 = startAndWaitForComplete(
                 mTestFramework.mCronetEngine, NativeTestServer.getSdchURL() + "/sdch/test");
-        assertEquals(200, listener2.mResponseInfo.getHttpStatusCode());
-        assertEquals("Sdch is not used.\n", listener2.mResponseAsString);
+        assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
+        assertEquals("Sdch is not used.\n", callback2.mResponseAsString);
     }
 
     private static class DictionaryAddedObserver extends SdchObserver {
@@ -248,14 +248,14 @@ public class SdchTest extends CronetTestBase {
         return listener;
     }
 
-    private TestUrlRequestListener startAndWaitForComplete(CronetEngine cronetEngine, String url)
+    private TestUrlRequestCallback startAndWaitForComplete(CronetEngine cronetEngine, String url)
             throws Exception {
-        TestUrlRequestListener listener = new TestUrlRequestListener();
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder =
-                new UrlRequest.Builder(url, listener, listener.getExecutor(), cronetEngine);
+                new UrlRequest.Builder(url, callback, callback.getExecutor(), cronetEngine);
         builder.build().start();
-        listener.blockForDone();
-        return listener;
+        callback.blockForDone();
+        return callback;
     }
 
     // Returns whether a file contains a particular string.

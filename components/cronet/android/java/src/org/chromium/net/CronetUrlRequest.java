@@ -61,12 +61,12 @@ final class CronetUrlRequest implements UrlRequest {
     /*
      * URL chain contains the URL currently being requested, and
      * all URLs previously requested. New URLs are added before
-     * mListener.onReceivedRedirect is called.
+     * mCallback.onRedirectReceived is called.
      */
     private final List<String> mUrlChain = new ArrayList<String>();
     private long mReceivedBytesCountFromRedirects;
 
-    private final UrlRequestListener mListener;
+    private final UrlRequest.Callback mCallback;
     private final String mInitialUrl;
     private final int mPriority;
     private String mInitialMethod;
@@ -77,7 +77,7 @@ final class CronetUrlRequest implements UrlRequest {
     private UrlResponseInfo mResponseInfo;
 
     /*
-     * Listener callback is repeatedly called when each read is completed, so it
+     * Listener callback is repeatedly invoked when each read is completed, so it
      * is cached as a member variable.
      */
     private OnReadCompletedRunnable mOnReadCompletedTask;
@@ -102,28 +102,23 @@ final class CronetUrlRequest implements UrlRequest {
                     mWaitingOnRead = true;
                 }
                 // Null out mByteBuffer, out of paranoia. Has to be done before
-                // mListener call, to avoid any race when there are multiple
+                // mCallback call, to avoid any race when there are multiple
                 // executor threads.
                 ByteBuffer buffer = mByteBuffer;
                 mByteBuffer = null;
-                mListener.onReadCompleted(CronetUrlRequest.this,
-                        mResponseInfo, buffer);
+                mCallback.onReadCompleted(CronetUrlRequest.this, mResponseInfo, buffer);
             } catch (Exception e) {
                 onListenerException(e);
             }
         }
     }
 
-    CronetUrlRequest(CronetUrlRequestContext requestContext,
-            long urlRequestContextAdapter,
-            String url,
-            int priority,
-            UrlRequestListener listener,
-            Executor executor) {
+    CronetUrlRequest(CronetUrlRequestContext requestContext, long urlRequestContextAdapter,
+            String url, int priority, UrlRequest.Callback callback, Executor executor) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
-        if (listener == null) {
+        if (callback == null) {
             throw new NullPointerException("Listener is required");
         }
         if (executor == null) {
@@ -134,7 +129,7 @@ final class CronetUrlRequest implements UrlRequest {
         mInitialUrl = url;
         mUrlChain.add(url);
         mPriority = convertRequestPriority(priority);
-        mListener = listener;
+        mCallback = callback;
         mExecutor = executor;
     }
 
@@ -444,7 +439,7 @@ final class CronetUrlRequest implements UrlRequest {
             destroyRequestAdapter(false);
         }
         try {
-            mListener.onFailed(this, mResponseInfo, requestError);
+            mCallback.onFailed(this, mResponseInfo, requestError);
         } catch (Exception failException) {
             Log.e(CronetUrlRequestContext.LOG_TAG,
                     "Exception notifying of failed request", failException);
@@ -474,9 +469,7 @@ final class CronetUrlRequest implements UrlRequest {
                     destroyRequestAdapter(false);
                 }
                 try {
-                    mListener.onFailed(CronetUrlRequest.this,
-                                       mResponseInfo,
-                                       exception);
+                    mCallback.onFailed(CronetUrlRequest.this, mResponseInfo, exception);
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG,
                             "Exception in onError method", e);
@@ -505,7 +498,7 @@ final class CronetUrlRequest implements UrlRequest {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onReceivedRedirect(final String newLocation, int httpStatusCode, String[] headers,
+    private void onRedirectReceived(final String newLocation, int httpStatusCode, String[] headers,
             long receivedBytesCount) {
         final UrlResponseInfo responseInfo =
                 prepareResponseInfoOnNetworkThread(httpStatusCode, headers);
@@ -525,8 +518,7 @@ final class CronetUrlRequest implements UrlRequest {
                 }
 
                 try {
-                    mListener.onReceivedRedirect(CronetUrlRequest.this,
-                            responseInfo, newLocation);
+                    mCallback.onRedirectReceived(CronetUrlRequest.this, responseInfo, newLocation);
                 } catch (Exception e) {
                     onListenerException(e);
                 }
@@ -553,8 +545,7 @@ final class CronetUrlRequest implements UrlRequest {
                 }
 
                 try {
-                    mListener.onResponseStarted(CronetUrlRequest.this,
-                                                mResponseInfo);
+                    mCallback.onResponseStarted(CronetUrlRequest.this, mResponseInfo);
                 } catch (Exception e) {
                     onListenerException(e);
                 }
@@ -621,7 +612,7 @@ final class CronetUrlRequest implements UrlRequest {
                     destroyRequestAdapter(false);
                 }
                 try {
-                    mListener.onSucceeded(CronetUrlRequest.this, mResponseInfo);
+                    mCallback.onSucceeded(CronetUrlRequest.this, mResponseInfo);
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG,
                             "Exception in onComplete method", e);
@@ -660,7 +651,7 @@ final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             public void run() {
                 try {
-                    mListener.onCanceled(CronetUrlRequest.this, mResponseInfo);
+                    mCallback.onCanceled(CronetUrlRequest.this, mResponseInfo);
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", e);
                 }
