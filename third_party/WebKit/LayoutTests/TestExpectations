@@ -1553,7 +1553,8 @@ crbug.com/538526 [ Win7 Win10 ] virtual/spv2/paint/invalidation/spv2/fixed-img-s
 
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
 crbug.com/527743 [ Win10 ] virtual/syncpaint/paint/masks/table-cell-masks.html [ Skip ]
-
+crbug.com/379377 fast/forms/basic-selects.html [ NeedsRebaseline ]
+crbug.com/379377 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow Pass Failure ]

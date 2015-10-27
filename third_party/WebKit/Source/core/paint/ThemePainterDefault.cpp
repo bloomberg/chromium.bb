@@ -264,7 +264,6 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
         extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
         extraParams.menuList.arrowSize = rect.height() - spacingBottom - spacingTop;
     } else {
-        // TODO(tkent): arrowSize should be zoom-aware. crbug.com/432795.
         const int arrowSize = 6;
         const int arrowPadding = 7;
         extraParams.menuList.arrowX = (box.styleRef().direction() == RTL)
@@ -272,8 +271,7 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
             : right - (arrowSize + arrowPadding) * box.styleRef().effectiveZoom();
         extraParams.menuList.arrowSize = arrowSize * box.styleRef().effectiveZoom();
     }
-    // TODO(tkent): crbug.com/379377: Specifiy text color.
-    extraParams.menuList.arrowColor = Color::black;
+    extraParams.menuList.arrowColor = box.resolveColor(CSSPropertyColor).rgb();
 }
 
 bool ThemePainterDefault::paintSliderTrack(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
