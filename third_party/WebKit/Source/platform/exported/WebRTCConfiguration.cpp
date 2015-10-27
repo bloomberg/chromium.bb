@@ -71,33 +71,6 @@ WebString WebRTCICEServer::credential() const
     return m_private->credential();
 }
 
-WebRTCICEServerArray::WebRTCICEServerArray(RTCIceServerArray* iceServers)
-    : m_private(iceServers)
-{
-}
-
-void WebRTCICEServerArray::assign(const WebRTCICEServerArray& other)
-{
-    m_private = other.m_private;
-}
-
-void WebRTCICEServerArray::reset()
-{
-    m_private.reset();
-}
-
-size_t WebRTCICEServerArray::numberOfServers() const
-{
-    ASSERT(!isNull());
-    return m_private->numberOfServers();
-}
-
-WebRTCICEServer WebRTCICEServerArray::server(size_t index) const
-{
-    ASSERT(!isNull());
-    return WebRTCICEServer(m_private->server(index));
-}
-
 WebRTCConfiguration::WebRTCConfiguration(RTCConfiguration* configuration)
     : m_private(configuration)
 {
@@ -111,6 +84,18 @@ void WebRTCConfiguration::assign(const WebRTCConfiguration& other)
 void WebRTCConfiguration::reset()
 {
     m_private.reset();
+}
+
+size_t WebRTCConfiguration::numberOfServers() const
+{
+    ASSERT(!isNull());
+    return m_private->numberOfServers();
+}
+
+WebRTCICEServer WebRTCConfiguration::server(size_t index) const
+{
+    ASSERT(!isNull());
+    return WebRTCICEServer(m_private->server(index));
 }
 
 WebRTCIceTransports WebRTCConfiguration::iceTransports() const
@@ -157,12 +142,6 @@ WebRTCRtcpMuxPolicy WebRTCConfiguration::rtcpMuxPolicy() const
         ASSERT_NOT_REACHED();
     }
     return WebRTCRtcpMuxPolicyNegotiate;
-}
-
-WebRTCICEServerArray WebRTCConfiguration::iceServers() const
-{
-    ASSERT(!isNull());
-    return WebRTCICEServerArray(m_private->iceServers());
 }
 
 size_t WebRTCConfiguration::numberOfCertificates() const

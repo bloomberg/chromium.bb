@@ -66,23 +66,6 @@ private:
     String m_credential;
 };
 
-class RTCIceServerArray final : public GarbageCollectedFinalized<RTCIceServerArray> {
-public:
-    static RTCIceServerArray* create()
-    {
-        return new RTCIceServerArray();
-    }
-
-    void appendServer(RTCIceServer* server) { m_servers.append(server); }
-    size_t numberOfServers() { return m_servers.size(); }
-    RTCIceServer* server(size_t index) { return m_servers[index].get(); }
-
-    DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
-
-private:
-    HeapVector<Member<RTCIceServer>> m_servers;
-};
-
 enum RTCIceTransports {
     RTCIceTransportsNone,
     RTCIceTransportsRelay,
@@ -103,6 +86,9 @@ enum RTCRtcpMuxPolicy {
 class PLATFORM_EXPORT RTCConfiguration final : public GarbageCollectedFinalized<RTCConfiguration> {
 public:
     static RTCConfiguration* create() { return new RTCConfiguration(); }
+    void appendServer(RTCIceServer* server) { m_servers.append(server); }
+    size_t numberOfServers() { return m_servers.size(); }
+    RTCIceServer* server(size_t index) { return m_servers[index].get(); }
 
     void setIceTransports(RTCIceTransports iceTransports) { m_iceTransports = iceTransports; }
     RTCIceTransports iceTransports() { return m_iceTransports; }
@@ -110,24 +96,21 @@ public:
     RTCBundlePolicy bundlePolicy() { return m_bundlePolicy; }
     void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) { m_rtcpMuxPolicy = rtcpMuxPolicy; }
     RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
-    void setIceServers(RTCIceServerArray* iceServers) { m_iceServers = iceServers; }
-    RTCIceServerArray* iceServers() { return m_iceServers.get(); }
+
     // Takes ownership of |certificate|.
     void appendCertificate(WebRTCCertificate* certificate) { m_certificates.append(adoptPtr(certificate)); }
     size_t numberOfCertificates() const { return m_certificates.size(); }
     WebRTCCertificate* certificate(size_t index) const { return m_certificates[index].get(); }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_iceServers); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
 
 private:
-    RTCConfiguration()
-        : m_iceTransports(RTCIceTransportsAll)
-        , m_bundlePolicy(RTCBundlePolicyBalanced)
-        , m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate)
-    {
-    }
+    RTCConfiguration() :
+        m_iceTransports(RTCIceTransportsAll),
+        m_bundlePolicy(RTCBundlePolicyBalanced),
+        m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate) { }
 
-    Member<RTCIceServerArray> m_iceServers;
+    HeapVector<Member<RTCIceServer>> m_servers;
     RTCIceTransports m_iceTransports;
     RTCBundlePolicy m_bundlePolicy;
     RTCRtcpMuxPolicy m_rtcpMuxPolicy;

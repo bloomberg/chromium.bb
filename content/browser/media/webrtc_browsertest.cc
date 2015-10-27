@@ -17,19 +17,16 @@
 
 namespace content {
 
+#define MAYBE_WebRtcBrowserPermissionDeniedTest \
+    DISABLED_WebRtcBrowserPermissionDeniedTest
+#define MAYBE_WebRtcBrowserMultipleRoutesDisabledTest \
+    DISABLED_WebRtcBrowserMultipleRoutesDisabledTest
+
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
-#define MAYBE_WebRtcBrowserPermissionDeniedTest \
-  DISABLED_WebRtcBrowserPermissionDeniedTest
-#define MAYBE_WebRtcBrowserMultipleRoutesDisabledTest \
-  DISABLED_WebRtcBrowserMultipleRoutesDisabledTest
 #else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
-#define MAYBE_WebRtcBrowserPermissionDeniedTest \
-  WebRtcBrowserPermissionDeniedTest
-#define MAYBE_WebRtcBrowserMultipleRoutesDisabledTest \
-  WebRtcBrowserMultipleRoutesDisabledTest
 #endif
 
 // This class tests the scenario when permission to access mic or camera is

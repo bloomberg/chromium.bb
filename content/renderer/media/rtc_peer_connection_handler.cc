@@ -186,31 +186,20 @@ void GetSdpAndTypeFromSessionDescription(
 void GetNativeRtcConfiguration(
     const blink::WebRTCConfiguration& blink_config,
     webrtc::PeerConnectionInterface::RTCConfiguration* webrtc_config) {
-  DCHECK_EQ(webrtc_config->enable_localhost_ice_candidate, false);
-
-  // When we don't have WebRTCConfiguration, treat it as a special case where we
-  // should generate local host candidate. This will only be honored if
-  // enable_multiple_routes is disabled.
-  if (blink_config.isNull()) {
-    webrtc_config->enable_localhost_ice_candidate = true;
+  DCHECK(webrtc_config);
+  if (blink_config.isNull())
     return;
-  }
 
-  if (blink_config.iceServers().isNull()) {
-    // Same as when iceServers is undefined or unspecified.
-    webrtc_config->enable_localhost_ice_candidate = true;
-  } else {
-    for (size_t i = 0; i < blink_config.iceServers().numberOfServers(); ++i) {
-      webrtc::PeerConnectionInterface::IceServer server;
-      const blink::WebRTCICEServer& webkit_server =
-          blink_config.iceServers().server(i);
-      server.username =
-          base::UTF16ToUTF8(base::StringPiece16(webkit_server.username()));
-      server.password =
-          base::UTF16ToUTF8(base::StringPiece16(webkit_server.credential()));
-      server.uri = webkit_server.uri().spec();
-      webrtc_config->servers.push_back(server);
-    }
+  for (size_t i = 0; i < blink_config.numberOfServers(); ++i) {
+    webrtc::PeerConnectionInterface::IceServer server;
+    const blink::WebRTCICEServer& webkit_server =
+        blink_config.server(i);
+    server.username =
+        base::UTF16ToUTF8(base::StringPiece16(webkit_server.username()));
+    server.password =
+        base::UTF16ToUTF8(base::StringPiece16(webkit_server.credential()));
+    server.uri = webkit_server.uri().spec();
+    webrtc_config->servers.push_back(server);
   }
 
   switch (blink_config.iceTransports()) {

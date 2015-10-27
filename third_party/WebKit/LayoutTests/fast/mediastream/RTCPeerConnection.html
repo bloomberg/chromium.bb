@@ -21,10 +21,8 @@ shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', cr
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}, null);");
-shouldNotThrow("new webkitRTCPeerConnection({iceServers:undefined}, null);");
-shouldNotThrow("new webkitRTCPeerConnection({}, null);");
-shouldThrow("new webkitRTCPeerConnection({iceServers:null}, null);");
 
+shouldThrow("new webkitRTCPeerConnection({fooServers:[]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:true}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[1, 2, 3]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]}, null);");
@@ -62,10 +60,10 @@ shouldThrow("new webkitRTCPeerConnection(null, {valid_but_unsupported_1:1});");
 shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}});");
 
 // Construct with certificates.
-shouldNotThrow("new webkitRTCPeerConnection({certificates:null}, null);");
-shouldNotThrow("new webkitRTCPeerConnection({certificates:[]}, null);");
-shouldThrow("new webkitRTCPeerConnection({certificates:[null]}, null);");
-shouldThrow("new webkitRTCPeerConnection({certificates:[1337]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:null}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[]}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[null]}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], certificates:[1337]}, null);");
 // Global certificate variables so that the "should..." methods can evaluate them.
 var certRSA = null;
 var certECDSA = null;
@@ -74,7 +72,7 @@ function testCertificates1RSA()
     webkitRTCPeerConnection.generateCertificate({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: 65537 })
         .then(function(certificate) {
                   certRSA = certificate;
-                  shouldNotThrow('new webkitRTCPeerConnection({certificates:[certRSA]}, null);');
+                  shouldNotThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certRSA]}, null);');
                   testCertificates2ECDSA();
               },
               function() {
@@ -87,7 +85,7 @@ function testCertificates2ECDSA()
     webkitRTCPeerConnection.generateCertificate({ name: "ECDSA", namedCurve: "P-256" })
         .then(function(certificate) {
                   certECDSA = certificate;
-                  shouldNotThrow('new webkitRTCPeerConnection({certificates:[certECDSA]}, null);');
+                  shouldNotThrow('new webkitRTCPeerConnection({iceServers:[], certificates:[certECDSA]}, null);');
                   finishJSTest();
               },
               function() {
