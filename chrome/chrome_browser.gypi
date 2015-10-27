@@ -2560,6 +2560,10 @@
       'browser/safe_browsing/sandboxed_zip_analyzer.h',
       'browser/safe_browsing/two_phase_uploader.cc',
       'browser/safe_browsing/two_phase_uploader.h',
+      'browser/safe_browsing/unverified_download_field_trial.cc',
+      'browser/safe_browsing/unverified_download_field_trial.h',
+      'browser/safe_browsing/unverified_download_policy.cc',
+      'browser/safe_browsing/unverified_download_policy.h',
     ],
     'chrome_browser_search_engines_sources': [
       'browser/search_engines/chrome_template_url_service_client.cc',

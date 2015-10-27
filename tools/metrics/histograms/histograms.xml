@@ -38434,6 +38434,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.UnverifiedDownloads.Allowed"
+    enum="SBClientDownloadExtensions">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    File types that were allowed to be downloaded without verifying their
+    content nor their source URLs with Safe Browsing.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.UnverifiedDownloads.Blocked"
+    enum="SBClientDownloadExtensions">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    File types that were blocked from downloaded without verifying their content
+    nor their source URLs with Safe Browsing.
+  </summary>
+</histogram>
+
 <histogram name="SB.BloomFilter" units="milliseconds">
   <obsolete>
     Has not been generated for years (7/8/14).

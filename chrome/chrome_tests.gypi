@@ -611,6 +611,7 @@
       'test/data/webui/webui_resource_browsertest.cc',
       'test/gpu/webgl_infobar_browsertest.cc',
       'test/ppapi/ppapi_browsertest.cc',
+      'test/ppapi/ppapi_filechooser_browsertest.cc',
     ],
     'chrome_browser_tests_ash_sources': [
       'browser/ui/ash/accelerator_commands_browsertest.cc',

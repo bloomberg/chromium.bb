@@ -57,6 +57,13 @@ const char kDisablePluginPowerSaver[] = "disable-plugin-power-saver";
 const char kEnablePluginPowerSaver[] = "enable-plugin-power-saver";
 #endif
 
+#if defined(FULL_SAFE_BROWSING)
+const char kAllowUncheckedDangerousDownloads[] =
+    "allow-unchecked-dangerous-downloads";
+const char kDisallowUncheckedDangerousDownloads[] =
+    "disallow-unchecked-dangerous-downloads";
+#endif
+
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 

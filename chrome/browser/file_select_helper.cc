@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
+#include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -39,6 +40,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "content/public/browser/site_instance.h"
+#endif
+
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/unverified_download_policy.h"
 #endif
 
 using content::BrowserThread;
@@ -402,6 +407,13 @@ void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
                                       const FileChooserParams& params) {
   DCHECK(!render_view_host_);
   DCHECK(!web_contents_);
+  DCHECK(params.default_file_name.empty() ||
+         params.mode == FileChooserParams::Save)
+      << "The default_file_name parameter should only be specified for Save "
+         "file choosers";
+  DCHECK(params.default_file_name == params.default_file_name.BaseName())
+      << "The default_file_name parameter should not contain path separators";
+
   render_view_host_ = render_view_host;
   web_contents_ = web_contents;
   notification_registrar_.RemoveAll();
@@ -441,6 +453,18 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     return;
   }
 
+  base::FilePath default_file_path = profile_->last_selected_directory().Append(
+      GetSanitizedFileName(params.default_file_name));
+
+#if defined(FULL_SAFE_BROWSING)
+  if (params.mode == FileChooserParams::Save &&
+      !params.default_file_name.empty() &&
+      !safe_browsing::IsUnverifiedDownloadAllowed(default_file_path)) {
+    NotifyRenderViewHostAndEnd(std::vector<ui::SelectedFileInfo>());
+    return;
+  }
+#endif
+
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents_));
   if (!select_file_dialog_.get())
@@ -466,10 +490,6 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       NOTREACHED();
   }
 
-  base::FilePath default_file_name = params.default_file_name.IsAbsolute() ?
-      params.default_file_name :
-      profile_->last_selected_directory().Append(params.default_file_name);
-
   gfx::NativeWindow owning_window = platform_util::GetTopLevel(
       render_view_host_->GetWidget()->GetView()->GetNativeView());
 
@@ -480,10 +500,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
 #endif
 
   select_file_dialog_->SelectFile(
-      dialog_type_,
-      params.title,
-      default_file_name,
-      select_file_types_.get(),
+      dialog_type_, params.title, default_file_path, select_file_types_.get(),
       select_file_types_.get() && !select_file_types_->extensions.empty()
           ? 1
           : 0,  // 1-based index of default extension to show.
@@ -571,4 +588,14 @@ bool FileSelectHelper::IsAcceptTypeValid(const std::string& accept_type) {
     return false;
   }
   return true;
+}
+
+// static
+base::FilePath FileSelectHelper::GetSanitizedFileName(
+    const base::FilePath& suggested_filename) {
+  if (suggested_filename.empty())
+    return base::FilePath();
+  return net::GenerateFileName(
+      GURL(), std::string(), std::string(), suggested_filename.AsUTF8Unsafe(),
+      std::string(), l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 }

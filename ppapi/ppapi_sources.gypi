@@ -534,6 +534,8 @@
       'tests/test_char_set.h',
       'tests/test_crypto.cc',
       'tests/test_crypto.h',
+      'tests/test_file_chooser.cc',
+      'tests/test_file_chooser.h',
       'tests/test_flash.cc',
       'tests/test_flash.h',
       'tests/test_flash_clipboard.cc',

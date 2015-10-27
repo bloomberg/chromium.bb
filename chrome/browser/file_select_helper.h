@@ -51,6 +51,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<FileSelectHelper>,
   friend class base::RefCountedThreadSafe<FileSelectHelper>;
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, IsAcceptTypeValid);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, ZipPackage);
+  FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetSanitizedFileName);
   explicit FileSelectHelper(Profile* profile);
   ~FileSelectHelper() override;
 
@@ -176,6 +177,22 @@ class FileSelectHelper : public base::RefCountedThreadSafe<FileSelectHelper>,
   // Check the accept type is valid. It is expected to be all lower case with
   // no whitespace.
   static bool IsAcceptTypeValid(const std::string& accept_type);
+
+  // Get a sanitized filename suitable for use as a default filename. The
+  // suggested filename coming over the IPC may contain invalid characters or
+  // may result in a filename that's reserved on the current platform.
+  //
+  // If |suggested_path| is empty, the return value is also empty.
+  //
+  // If |suggested_path| is non-empty, but can't be safely converted to UTF-8,
+  // or is entirely lost during the sanitization process (e.g. because it
+  // consists entirely of invalid characters), it's replaced with a default
+  // filename.
+  //
+  // Otherwise, returns |suggested_path| with any invalid characters will be
+  // replaced with a suitable replacement character.
+  static base::FilePath GetSanitizedFileName(
+      const base::FilePath& suggested_path);
 
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;
