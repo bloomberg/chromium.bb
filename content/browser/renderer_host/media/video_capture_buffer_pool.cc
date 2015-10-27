@@ -248,6 +248,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::ShareToProcess2(
        shared_memory.ShareToProcess(process_handle, &new_handle->handle);
        DCHECK(base::SharedMemory::IsHandleValid(new_handle->handle));
        new_handle->type = gfx::SHARED_MEMORY_BUFFER;
+       new_handle->offset = current_gmb_handle.offset;
        return true;
      }
      case gfx::IO_SURFACE_BUFFER:

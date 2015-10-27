@@ -38,6 +38,7 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;
   base::SharedMemoryHandle handle;
+  uint32_t offset;
 #if defined(USE_OZONE)
   NativePixmapHandle native_pixmap_handle;
 #endif

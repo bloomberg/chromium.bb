@@ -22,9 +22,11 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const DestructionCallback& callback,
-    scoped_ptr<base::SharedMemory> shared_memory)
+    scoped_ptr<base::SharedMemory> shared_memory,
+    size_t offset)
     : GpuMemoryBufferImpl(id, size, format, callback),
-      shared_memory_(shared_memory.Pass()) {
+      shared_memory_(shared_memory.Pass()),
+      offset_(offset) {
   DCHECK(IsSizeValidForFormat(size, format));
 }
 
@@ -46,7 +48,7 @@ GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
     return nullptr;
 
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
-      id, size, format, callback, shared_memory.Pass()));
+      id, size, format, callback, shared_memory.Pass(), 0));
 }
 
 // static
@@ -67,6 +69,7 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.id = id;
+  handle.offset = 0;
   shared_memory.GiveToProcess(child_process, &handle.handle);
   return handle;
 }
@@ -82,14 +85,10 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return nullptr;
 
-  size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(handle.handle, false));
-  if (!shared_memory->Map(buffer_size))
-    base::TerminateBecauseOutOfMemory(buffer_size);
-
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
-      handle.id, size, format, callback, shared_memory.Pass()));
+      handle.id, size, format, callback,
+      make_scoped_ptr(new base::SharedMemory(handle.handle, false)),
+      handle.offset));
 }
 
 // static
@@ -162,12 +161,24 @@ base::Closure GpuMemoryBufferImplSharedMemory::AllocateForTesting(
       gfx::BufferSizeForBufferFormat(size, format));
   DCHECK(rv);
   handle->type = gfx::SHARED_MEMORY_BUFFER;
+  handle->offset = 0;
   handle->handle = base::SharedMemory::DuplicateHandle(shared_memory.handle());
   return base::Bind(&Noop);
 }
 
 bool GpuMemoryBufferImplSharedMemory::Map() {
   DCHECK(!mapped_);
+
+  // Map the buffer first time Map() is called then keep it mapped for the
+  // lifetime of the buffer. This avoids mapping the buffer unless necessary.
+  if (!shared_memory_->memory()) {
+    size_t buffer_size = gfx::BufferSizeForBufferFormat(size_, format_);
+    // Note: offset_ != 0 is not common use-case. To keep it simple we
+    // map offset + buffer_size here but this can be avoided using MapAt().
+    size_t map_size = offset_ + buffer_size;
+    if (!shared_memory_->Map(map_size))
+      base::TerminateBecauseOutOfMemory(map_size);
+  }
   mapped_ = true;
   return true;
 }
@@ -175,7 +186,7 @@ bool GpuMemoryBufferImplSharedMemory::Map() {
 void* GpuMemoryBufferImplSharedMemory::memory(size_t plane) {
   DCHECK(mapped_);
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-  return reinterpret_cast<uint8_t*>(shared_memory_->memory()) +
+  return reinterpret_cast<uint8_t*>(shared_memory_->memory()) + offset_ +
          gfx::BufferOffsetForBufferFormat(size_, format_, plane);
 }
 
@@ -193,6 +204,7 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.id = id_;
+  handle.offset = offset_;
   handle.handle = shared_memory_->handle();
   return handle;
 }

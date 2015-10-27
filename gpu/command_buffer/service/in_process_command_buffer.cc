@@ -98,6 +98,7 @@ gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuThread(
       gfx::GpuMemoryBufferHandle handle;
       handle.type = gfx::SHARED_MEMORY_BUFFER;
       handle.handle = ShareToGpuThread(source_handle.handle);
+      handle.offset = source_handle.offset;
       *requires_sync_point = false;
       return handle;
     }
@@ -713,7 +714,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     case gfx::SHARED_MEMORY_BUFFER: {
       scoped_refptr<gfx::GLImageSharedMemory> image(
           new gfx::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format)) {
+      if (!image->Initialize(handle.handle, handle.id, format, handle.offset)) {
         LOG(ERROR) << "Failed to initialize image.";
         return;
       }

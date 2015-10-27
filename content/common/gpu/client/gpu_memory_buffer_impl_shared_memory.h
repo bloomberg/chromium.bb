@@ -58,9 +58,11 @@ class CONTENT_EXPORT GpuMemoryBufferImplSharedMemory
                                   const gfx::Size& size,
                                   gfx::BufferFormat format,
                                   const DestructionCallback& callback,
-                                  scoped_ptr<base::SharedMemory> shared_memory);
+                                  scoped_ptr<base::SharedMemory> shared_memory,
+                                  size_t offset);
 
   scoped_ptr<base::SharedMemory> shared_memory_;
+  size_t offset_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplSharedMemory);
 };

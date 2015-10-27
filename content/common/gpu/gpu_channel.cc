@@ -1042,15 +1042,15 @@ scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     case gfx::SHARED_MEMORY_BUFFER: {
       scoped_refptr<gfx::GLImageSharedMemory> image(
           new gfx::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format))
-        return scoped_refptr<gfx::GLImage>();
+      if (!image->Initialize(handle.handle, handle.id, format, handle.offset))
+        return nullptr;
 
       return image;
     }
     default: {
       GpuChannelManager* manager = gpu_channel_manager();
       if (!manager->gpu_memory_buffer_factory())
-        return scoped_refptr<gfx::GLImage>();
+        return nullptr;
 
       return manager->gpu_memory_buffer_factory()
           ->AsImageFactory()

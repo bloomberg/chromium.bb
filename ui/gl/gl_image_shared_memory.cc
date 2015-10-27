@@ -8,6 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
+#include "base/sys_info.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -25,7 +26,8 @@ GLImageSharedMemory::~GLImageSharedMemory() {
 
 bool GLImageSharedMemory::Initialize(const base::SharedMemoryHandle& handle,
                                      GenericSharedMemoryId shared_memory_id,
-                                     BufferFormat format) {
+                                     BufferFormat format,
+                                     size_t offset) {
   size_t size_in_bytes;
   if (!BufferSizeForBufferFormatChecked(GetSize(), format, &size_in_bytes))
     return false;
@@ -43,15 +45,28 @@ bool GLImageSharedMemory::Initialize(const base::SharedMemoryHandle& handle,
     return false;
   }
 
+  // Minimize the amount of adress space we use but make sure offset is a
+  // multiple of page size as required by MapAt().
+  size_t memory_offset = offset % base::SysInfo::VMAllocationGranularity();
+  size_t map_offset = base::SysInfo::VMAllocationGranularity() *
+                      (offset / base::SysInfo::VMAllocationGranularity());
+
+  base::CheckedNumeric<size_t> checked_size_to_map_in_bytes = size_in_bytes;
+  checked_size_to_map_in_bytes += memory_offset;
+  if (!checked_size_to_map_in_bytes.IsValid())
+    return false;
+
   scoped_ptr<base::SharedMemory> duped_shared_memory(
       new base::SharedMemory(duped_shared_memory_handle, true));
-  if (!duped_shared_memory->Map(size_in_bytes)) {
+  if (!duped_shared_memory->MapAt(static_cast<off_t>(map_offset),
+                                  checked_size_to_map_in_bytes.ValueOrDie())) {
     DVLOG(0) << "Failed to map shared memory.";
     return false;
   }
 
   if (!GLImageMemory::Initialize(
-          static_cast<unsigned char*>(duped_shared_memory->memory()), format)) {
+          static_cast<uint8_t*>(duped_shared_memory->memory()) + memory_offset,
+          format)) {
     return false;
   }
 

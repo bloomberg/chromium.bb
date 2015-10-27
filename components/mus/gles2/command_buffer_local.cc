@@ -141,7 +141,7 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       internalformat));
   if (!image->Initialize(base::SharedMemory::DuplicateHandle(handle.handle),
-                         handle.id, gpu_memory_buffer->GetFormat())) {
+                         handle.id, gpu_memory_buffer->GetFormat(), 0)) {
     return -1;
   }
 
