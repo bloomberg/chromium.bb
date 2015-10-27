@@ -93,13 +93,8 @@ class MockSyncBackend {
   void Connect(syncer::ModelType type,
                scoped_ptr<syncer_v2::ActivationContext> activation_context) {
     enabled_types_.Put(type);
-    // Post OnConnect on model thread.
-    activation_context->type_task_runner->PostTask(
-        FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessor::OnConnect,
-                              activation_context->type_processor,
-                              base::Passed(scoped_ptr<syncer_v2::CommitQueue>(
-                                               new NullCommitQueue())
-                                               .Pass())));
+    activation_context->type_processor->OnConnect(
+        make_scoped_ptr(new NullCommitQueue()));
   }
 
   void Disconnect(syncer::ModelType type) {

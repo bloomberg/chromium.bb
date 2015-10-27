@@ -9,10 +9,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer_v2 {
-class ModelTypeProcessor;
 
 // The state passed from ModelTypeProcessor to Sync thread during DataType
 // activation.
@@ -22,13 +22,14 @@ struct SYNC_EXPORT_PRIVATE ActivationContext {
 
   // Initial DataTypeState at the moment of activation.
   DataTypeState data_type_state;
+
   // Pending updates from the previous session.
   // TODO(stanisc): crbug.com/529498: should remove pending updates.
   UpdateResponseDataList saved_pending_updates;
-  // Task runner for the data type.
-  scoped_refptr<base::SequencedTaskRunner> type_task_runner;
-  // ModelTypeProcessor for the data type.
-  base::WeakPtr<ModelTypeProcessor> type_processor;
+
+  // The ModelTypeProcessor for the worker. Note that this is owned because
+  // it is generally a proxy object to the real processor.
+  scoped_ptr<ModelTypeProcessor> type_processor;
 };
 
 }  // namespace syncer_v2

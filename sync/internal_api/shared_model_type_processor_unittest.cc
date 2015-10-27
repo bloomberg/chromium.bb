@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -128,6 +129,10 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
   void StartDone(syncer::SyncError error,
                  scoped_ptr<ActivationContext> context);
 
+  // This sets ThreadTaskRunnerHandle on the current thread, which the type
+  // processor will pick up as the sync task runner.
+  base::MessageLoop sync_loop_;
+
   // The current mock queue which might be owned by either |mock_queue_ptr_| or
   // |type_processor_|.
   MockCommitQueue* mock_queue_;
@@ -135,8 +140,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
   scoped_ptr<SharedModelTypeProcessor> type_processor_;
 
   DataTypeState data_type_state_;
-  // This sets ThreadTaskRunnerHandle on the current thread.
-  base::MessageLoop message_loop_;
 };
 
 SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
@@ -192,6 +195,8 @@ void SharedModelTypeProcessorTest::StartDone(
   // an unsafe pointer to it.  This is why we can only connect once.
   DCHECK(mock_queue_ptr_);
   context->type_processor->OnConnect(mock_queue_ptr_.Pass());
+  // The context's type processor is a proxy; run the task it posted.
+  sync_loop_.RunUntilIdle();
 }
 
 void SharedModelTypeProcessorTest::WriteItem(const std::string& tag,

@@ -20,61 +20,6 @@ namespace syncer {
 
 namespace {
 
-class ModelTypeProcessorProxy : public syncer_v2::ModelTypeProcessor {
- public:
-  ModelTypeProcessorProxy(
-      const base::WeakPtr<syncer_v2::ModelTypeProcessor>& processor,
-      const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
-  ~ModelTypeProcessorProxy() override;
-
-  void OnConnect(scoped_ptr<syncer_v2::CommitQueue> worker) override;
-  void OnCommitCompleted(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::UpdateResponseDataList& response_list,
-      const syncer_v2::UpdateResponseDataList& pending_updates) override;
-
- private:
-  base::WeakPtr<syncer_v2::ModelTypeProcessor> processor_;
-  scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
-};
-
-ModelTypeProcessorProxy::ModelTypeProcessorProxy(
-    const base::WeakPtr<syncer_v2::ModelTypeProcessor>& processor,
-    const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner)
-    : processor_(processor), processor_task_runner_(processor_task_runner) {}
-
-ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {
-}
-
-void ModelTypeProcessorProxy::OnConnect(
-    scoped_ptr<syncer_v2::CommitQueue> worker) {
-  processor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessor::OnConnect,
-                            processor_, base::Passed(worker.Pass())));
-}
-
-void ModelTypeProcessorProxy::OnCommitCompleted(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::CommitResponseDataList& response_list) {
-  processor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeProcessor::OnCommitCompleted,
-                 processor_, type_state, response_list));
-}
-
-void ModelTypeProcessorProxy::OnUpdateReceived(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::UpdateResponseDataList& response_list,
-    const syncer_v2::UpdateResponseDataList& pending_updates) {
-  processor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeProcessor::OnUpdateReceived,
-                 processor_, type_state, response_list, pending_updates));
-}
-
 class CommitQueueProxy : public syncer_v2::CommitQueue {
  public:
   CommitQueueProxy(const base::WeakPtr<syncer_v2::ModelTypeWorker>& worker,
@@ -191,9 +136,9 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   // Initialize Worker -> Processor communication channel.
-  scoped_ptr<syncer_v2::ModelTypeProcessor> processor_proxy(
-      new ModelTypeProcessorProxy(activation_context->type_processor,
-                                  activation_context->type_task_runner));
+  syncer_v2::ModelTypeProcessor* type_processor =
+      activation_context->type_processor.get();
+
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
@@ -201,16 +146,14 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   scoped_ptr<syncer_v2::ModelTypeWorker> worker(new syncer_v2::ModelTypeWorker(
       type, activation_context->data_type_state,
       activation_context->saved_pending_updates, cryptographer_copy.Pass(),
-      nudge_handler_, processor_proxy.Pass()));
+      nudge_handler_, activation_context->type_processor.Pass()));
 
   // Initialize Processor -> Worker communication channel.
   scoped_ptr<syncer_v2::CommitQueue> commit_queue_proxy(new CommitQueueProxy(
       worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
                                base::ThreadTaskRunnerHandle::Get())));
-  activation_context->type_task_runner->PostTask(
-      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessor::OnConnect,
-                            activation_context->type_processor,
-                            base::Passed(&commit_queue_proxy)));
+
+  type_processor->OnConnect(commit_queue_proxy.Pass());
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());

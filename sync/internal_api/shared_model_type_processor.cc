@@ -14,6 +14,59 @@
 
 namespace syncer_v2 {
 
+namespace {
+
+class ModelTypeProcessorProxy : public ModelTypeProcessor {
+ public:
+  ModelTypeProcessorProxy(
+      const base::WeakPtr<ModelTypeProcessor>& processor,
+      const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
+  ~ModelTypeProcessorProxy() override;
+
+  void OnConnect(scoped_ptr<CommitQueue> worker) override;
+  void OnCommitCompleted(const DataTypeState& type_state,
+                         const CommitResponseDataList& response_list) override;
+  void OnUpdateReceived(const DataTypeState& type_state,
+                        const UpdateResponseDataList& response_list,
+                        const UpdateResponseDataList& pending_updates) override;
+
+ private:
+  base::WeakPtr<ModelTypeProcessor> processor_;
+  scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
+};
+
+ModelTypeProcessorProxy::ModelTypeProcessorProxy(
+    const base::WeakPtr<ModelTypeProcessor>& processor,
+    const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner)
+    : processor_(processor), processor_task_runner_(processor_task_runner) {}
+
+ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {}
+
+void ModelTypeProcessorProxy::OnConnect(scoped_ptr<CommitQueue> worker) {
+  processor_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ModelTypeProcessor::OnConnect, processor_,
+                            base::Passed(worker.Pass())));
+}
+
+void ModelTypeProcessorProxy::OnCommitCompleted(
+    const DataTypeState& type_state,
+    const CommitResponseDataList& response_list) {
+  processor_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ModelTypeProcessor::OnCommitCompleted, processor_,
+                            type_state, response_list));
+}
+
+void ModelTypeProcessorProxy::OnUpdateReceived(
+    const DataTypeState& type_state,
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
+  processor_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ModelTypeProcessor::OnUpdateReceived, processor_,
+                            type_state, response_list, pending_updates));
+}
+
+}  // namespace
+
 SharedModelTypeProcessor::SharedModelTypeProcessor(
     syncer::ModelType type,
     base::WeakPtr<ModelTypeStore> store)
@@ -40,8 +93,9 @@ void SharedModelTypeProcessor::Start(StartCallback callback) {
       make_scoped_ptr(new ActivationContext);
   activation_context->data_type_state = data_type_state_;
   activation_context->saved_pending_updates = GetPendingUpdates();
-  activation_context->type_task_runner = base::ThreadTaskRunnerHandle::Get();
-  activation_context->type_processor = weak_ptr_factory_for_sync_.GetWeakPtr();
+  activation_context->type_processor = make_scoped_ptr(
+      new ModelTypeProcessorProxy(weak_ptr_factory_for_sync_.GetWeakPtr(),
+                                  base::ThreadTaskRunnerHandle::Get()));
 
   callback.Run(syncer::SyncError(), activation_context.Pass());
 }

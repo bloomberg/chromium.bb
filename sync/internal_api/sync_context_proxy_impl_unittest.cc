@@ -53,10 +53,15 @@ class SyncContextProxyImplTest : public ::testing::Test {
     context_proxy_->ConnectTypeToSync(syncer::THEMES, context.Pass());
   }
 
+  scoped_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
+    return make_scoped_ptr(new SharedModelTypeProcessor(
+        syncer::THEMES, base::WeakPtr<ModelTypeStore>()));
+  }
+
  private:
   base::MessageLoop loop_;
-  scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> type_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> type_task_runner_;
 
   std::vector<scoped_refptr<syncer::ModelSafeWorker>> workers_;
   syncer::TestDirectorySetterUpper dir_maker_;
@@ -68,32 +73,29 @@ class SyncContextProxyImplTest : public ::testing::Test {
 
 // Try to connect a type to a SyncContext that has already shut down.
 TEST_F(SyncContextProxyImplTest, FailToConnect1) {
-  SharedModelTypeProcessor processor(syncer::THEMES,
-                                     base::WeakPtr<ModelTypeStore>());
+  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   DisableSync();
-  Start(&processor);
+  Start(processor.get());
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
-  EXPECT_FALSE(processor.IsConnected());
+  EXPECT_FALSE(processor->IsConnected());
 }
 
 // Try to connect a type to a SyncContext as it shuts down.
 TEST_F(SyncContextProxyImplTest, FailToConnect2) {
-  SharedModelTypeProcessor processor(syncer::THEMES,
-                                     base::WeakPtr<ModelTypeStore>());
-  Start(&processor);
+  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
+  Start(processor.get());
   DisableSync();
 
   base::RunLoop run_loop_;
   run_loop_.RunUntilIdle();
-  EXPECT_FALSE(processor.IsConnected());
+  EXPECT_FALSE(processor->IsConnected());
 }
 
 // Tests the case where the type's sync proxy shuts down first.
 TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
-  scoped_ptr<SharedModelTypeProcessor> processor(new SharedModelTypeProcessor(
-      syncer::THEMES, base::WeakPtr<ModelTypeStore>()));
+  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   Start(processor.get());
 
   base::RunLoop run_loop_;
@@ -105,8 +107,7 @@ TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
 
 // Tests the case where the sync thread shuts down first.
 TEST_F(SyncContextProxyImplTest, SyncDisconnectsFirst) {
-  scoped_ptr<SharedModelTypeProcessor> processor(new SharedModelTypeProcessor(
-      syncer::THEMES, base::WeakPtr<ModelTypeStore>()));
+  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
   Start(processor.get());
 
   base::RunLoop run_loop_;
