@@ -1211,13 +1211,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 setUrlToPageUrl();
             }
         }
-        int id = getSecurityIconResource(securityLevel, !shouldEmphasizeHttpsScheme());
+
         // ImageView#setImageResource is no-op if given resource is the current one.
-        if (id == 0) {
-            mSecurityButton.setImageDrawable(null);
-        } else {
-            mSecurityButton.setImageResource(id);
-        }
+        mSecurityButton.setImageResource(
+                getSecurityIconResource(securityLevel, !shouldEmphasizeHttpsScheme()));
 
         if (mSecurityIconType == securityLevel) return;
         mSecurityIconType = securityLevel;
@@ -1287,7 +1284,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mNavigationButton.setImageResource(R.drawable.ic_omnibox_magnifier);
                 break;
             case EMPTY:
-                mNavigationButton.setImageDrawable(null);
+                mNavigationButton.setImageResource(0);
                 break;
             default:
                 assert false;

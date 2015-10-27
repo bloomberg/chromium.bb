@@ -367,14 +367,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (securityLevel == ConnectionSecurityLevel.NONE) {
             mAnimDelegate.hideSecurityButton();
         } else {
-            int id = LocationBarLayout.getSecurityIconResource(
-                    securityLevel, !shouldEmphasizeHttpsScheme());
             // ImageView#setImageResource is no-op if given resource is the current one.
-            if (id == 0) {
-                mSecurityButton.setImageDrawable(null);
-            } else {
-                mSecurityButton.setImageResource(id);
-            }
+            mSecurityButton.setImageResource(LocationBarLayout.getSecurityIconResource(
+                    securityLevel, !shouldEmphasizeHttpsScheme()));
             mAnimDelegate.showSecurityButton();
         }
         mUrlBar.emphasizeUrl();
