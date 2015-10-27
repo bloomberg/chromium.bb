@@ -361,7 +361,7 @@ SyncData DeviceInfoSyncService::CreateLocalData(
 }
 
 DeviceInfo* DeviceInfoSyncService::CreateDeviceInfo(
-    const syncer::SyncData sync_data) {
+    const syncer::SyncData& sync_data) {
   const sync_pb::DeviceInfoSpecifics& specifics =
       sync_data.GetSpecifics().device_info();
 

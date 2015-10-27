@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "components/sync_driver/device_info_tracker.h"
 #include "sync/api/sync_change_processor.h"
@@ -60,7 +62,7 @@ class DeviceInfoSyncService : public syncer::SyncableService,
       const sync_pb::EntitySpecifics& entity);
 
   // Allocate new DeviceInfo from SyncData.
-  static DeviceInfo* CreateDeviceInfo(const syncer::SyncData sync_data);
+  static DeviceInfo* CreateDeviceInfo(const syncer::SyncData& sync_data);
   // Store SyncData in the cache.
   void StoreSyncData(const std::string& client_id,
                      const syncer::SyncData& sync_data);

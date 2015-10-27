@@ -46,6 +46,12 @@ void LocalDeviceInfoProviderMock::Initialize(
   // Ignored for the mock provider.
 }
 
+void LocalDeviceInfoProviderMock::Initialize(
+    scoped_ptr<DeviceInfo> local_device_info) {
+  local_device_info_.swap(local_device_info);
+  SetInitialized(true);
+}
+
 scoped_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderMock::RegisterOnInitializedCallback(
     const base::Closure& callback) {

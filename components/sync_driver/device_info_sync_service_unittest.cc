@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
@@ -151,7 +150,6 @@ class DeviceInfoSyncServiceTest : public testing::Test,
 
  protected:
   int num_device_info_changed_callbacks_;
-  base::MessageLoopForUI message_loop_;
   scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
   scoped_ptr<DeviceInfoSyncService> sync_service_;
   scoped_ptr<TestChangeProcessor> sync_processor_;

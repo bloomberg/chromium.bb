@@ -35,6 +35,7 @@ class LocalDeviceInfoProviderMock
   scoped_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
 
+  void Initialize(scoped_ptr<DeviceInfo> local_device_info);
   void SetInitialized(bool is_initialized);
 
  private:
