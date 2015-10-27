@@ -1853,6 +1853,9 @@ should be able to be added at any place in this file.
     User added the &quot;bookmark shortcut&quot; widget, which is an icon to
     open a single bookmark in Chrome, to their homescreen on Android.
   </description>
+  <obsolete>
+    Deprecated as of 10/2015. The widget was removed from Chrome.
+  </obsolete>
 </action>
 
 <action name="Bookmarks_Search">

@@ -50,8 +50,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     private static final String LAST_USED_BOOKMARK_FOLDER_ID = "last_used_folder_id";
 
     private static final int PAGE_MODE_NORMAL = 0;
-    private static final int PAGE_MODE_SELECT_BOOKMARK = 1;
-    private static final int PAGE_MODE_DOCUMENT = 2;
+    private static final int PAGE_MODE_DOCUMENT = 1;
 
     private final Profile mProfile;
     private BookmarksBridge mBookmarksBridge;
@@ -100,18 +99,6 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
             TabModelSelector tabModelSelector) {
         return new BookmarksPage(context, tab.getProfile(), tab, tabModelSelector, null,
                 PAGE_MODE_NORMAL);
-    }
-
-    /**
-     * Creates a BookmarksPage to be shown in the ShortcutActivity.
-     * @param context The view context for showing the page.
-     * @param profile The profile from which to load bookmarks.
-     * @param listener The BookmarkSelectedListener to notify when the user clicks a bookmark.
-     * @return The new BookmarksPage object.
-     */
-    public static BookmarksPage buildPageInSelectBookmarkMode(Context context,
-            Profile profile, BookmarkSelectedListener listener) {
-        return new BookmarksPage(context, profile, null, null, listener, PAGE_MODE_SELECT_BOOKMARK);
     }
 
     /**
@@ -314,9 +301,6 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
             case PAGE_MODE_NORMAL:
                 manager = buildManager(tab, tabModelSelector);
                 break;
-            case PAGE_MODE_SELECT_BOOKMARK:
-                manager = buildManagerForSelectBookmarkMode(listener);
-                break;
             case PAGE_MODE_DOCUMENT:
                 manager = buildManagerForDocumentMode(tab, tabModelSelector, listener);
                 break;
@@ -390,72 +374,6 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     private BookmarksPageManager buildManagerForDocumentMode(
             Tab tab, TabModelSelector tabModelSelector, BookmarkSelectedListener listener) {
         return new DocumentModeManager(tab, tabModelSelector, listener);
-    }
-
-    private BookmarksPageManager buildManagerForSelectBookmarkMode(
-            final BookmarkSelectedListener listener) {
-        return new BookmarksPageManager() {
-            @Override
-            public boolean isDestroyed() {
-                return mIsDestroyed;
-            }
-
-            @Override
-            public boolean isIncognito() {
-                return false;
-            }
-
-            @Override
-            public boolean shouldShowOpenInNewTab() {
-                return false;
-            }
-
-            @Override
-            public boolean shouldShowOpenInNewIncognitoTab() {
-                return false;
-            }
-
-            @Override
-            public boolean isContextMenuEnabled() {
-                return false;
-            }
-
-            @Override
-            public void open(BookmarkItemView item) {
-                if (item.isFolder()) {
-                    updateBookmarksPageContents(item.getBookmarkId(), false);
-                } else {
-                    listener.onBookmarkSelected(item.getUrl(), item.getTitle(), item.getFavicon());
-                }
-            }
-
-            @Override
-            public void openInNewTab(BookmarkItemView item) {
-            }
-
-            @Override
-            public void openInNewIncognitoTab(BookmarkItemView item) {
-            }
-
-            @Override
-            public void openFolder(BookmarkFolderHierarchyItem item) {
-                updateBookmarksPageContents(item.getFolderId(), false);
-            }
-
-            @Override
-            public void delete(BookmarkItemView item) {
-            }
-
-            @Override
-            public void edit(BookmarkItemView item) {
-            }
-
-            @Override
-            public void getFaviconImageForUrl(
-                    String url, int size, FaviconImageCallback faviconCallback) {
-                BookmarksPage.this.getFaviconImageForUrl(url, size, faviconCallback);
-            }
-        };
     }
 
     private void getFaviconImageForUrl(String url, int size, FaviconImageCallback faviconCallback) {

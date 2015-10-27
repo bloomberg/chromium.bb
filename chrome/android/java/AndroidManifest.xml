@@ -469,19 +469,6 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
-        <activity android:name="org.chromium.chrome.browser.bookmark.ShortcutActivity"
-            android:enabled="{{ 'true' if channel in ['stable', 'default'] else 'false' }}"
-            android:label="@string/bookmark_shortcut_name"
-            android:icon="@mipmap/bookmark_shortcut_icon"
-            android:theme="@style/ThemeWithActionBar"
-            android:hardwareAccelerated="true">
-
-            <intent-filter>
-                <action android:name="android.intent.action.CREATE_SHORTCUT" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <receiver android:name="com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider"
             android:label="@string/bookmarks">
             <intent-filter>

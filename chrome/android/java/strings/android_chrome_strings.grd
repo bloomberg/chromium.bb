@@ -2015,14 +2015,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Bookmark no longer exists. Please refresh.
       </message>
 
-      <!-- Choose bookmark activity -->
-      <message name="IDS_BOOKMARK_SHORTCUT_NAME" desc="Name of the bookmark shortcut. [CHAR-LIMIT=32]">
-        Bookmark
-      </message>
-      <message name="IDS_BOOKMARK_SHORTCUT_CHOOSE_BOOKMARK" desc="Title shown in the bookmark shortcut UI to choose a bookmark. [CHAR-LIMIT=32]">
-        Choose a bookmark
-      </message>
-
       <!-- Voice search -->
       <message name="IDS_VOICE_SEARCH_ERROR" desc="Toast when the voice search activity couldn't be started. [CHAR-LIMIT=40]">
         No enabled voice search available
