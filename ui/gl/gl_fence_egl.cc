@@ -44,8 +44,7 @@ void GLFenceEGL::ClientWait() {
   EGLint flags = 0;
   EGLTimeKHR time = EGL_FOREVER_KHR;
   EGLint result = eglClientWaitSyncKHR(display_, sync_, flags, time);
-  DCHECK_IMPLIES(!g_ignore_egl_sync_failures,
-                 EGL_TIMEOUT_EXPIRED_KHR != result);
+  DCHECK(g_ignore_egl_sync_failures || EGL_TIMEOUT_EXPIRED_KHR != result);
   if (result == EGL_FALSE) {
     LOG(ERROR) << "Failed to wait for EGLSync. error:"
                << ui::GetLastEGLErrorString();

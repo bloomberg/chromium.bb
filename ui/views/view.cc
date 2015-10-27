@@ -742,7 +742,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
   if (!layer()) {
     // If the View has a layer() then it is a paint root. Otherwise, we need to
     // add the offset from the parent into the total offset from the paint root.
-    DCHECK_IMPLIES(!parent(), bounds().origin() == gfx::Point());
+    DCHECK(parent() || bounds().origin() == gfx::Point());
     offset_to_parent = GetMirroredPosition().OffsetFromOrigin();
   }
   ui::PaintContext context(parent_context, offset_to_parent);

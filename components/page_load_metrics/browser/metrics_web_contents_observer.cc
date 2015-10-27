@@ -49,9 +49,8 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   DCHECK(!timing.navigation_start.is_null());
 
   // If we have a DOM content loaded event, we should have a response start.
-  DCHECK_IMPLIES(
-      !timing.dom_content_loaded_event_start.is_zero(),
-      timing.response_start <= timing.dom_content_loaded_event_start);
+  DCHECK(timing.dom_content_loaded_event_start.is_zero() ||
+         timing.response_start <= timing.dom_content_loaded_event_start);
 
   // If we have a load event, we should have both a response start and a DCL.
   // TODO(csharrison) crbug.com/536203 shows that sometimes we can get a load

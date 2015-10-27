@@ -122,7 +122,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     ScopedVector<autofill::PasswordForm> federated_credentials,
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
-  DCHECK_IMPLIES(local_credentials.empty(), !federated_credentials.empty());
+  DCHECK(!local_credentials.empty() || !federated_credentials.empty());
   passwords_data_.OnRequestCredentials(local_credentials.Pass(),
                                        federated_credentials.Pass(),
                                        origin);

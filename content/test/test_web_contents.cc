@@ -226,9 +226,9 @@ void TestWebContents::CommitPendingNavigation() {
   TestRenderFrameHost* rfh = GetPendingMainFrame();
   if (!rfh)
     rfh = old_rfh;
-  CHECK_IMPLIES(browser_side_navigation, rfh->is_loading());
-  CHECK_IMPLIES(browser_side_navigation,
-                !rfh->frame_tree_node()->navigation_request());
+  CHECK(!browser_side_navigation || rfh->is_loading());
+  CHECK(!browser_side_navigation ||
+        !rfh->frame_tree_node()->navigation_request());
 
   int page_id = entry->GetPageID();
   if (page_id == -1) {

@@ -125,7 +125,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
 
     // Steal from the recycled tree.
     scoped_ptr<LayerImpl> old_pending_root = pending_tree->DetachLayerTree();
-    DCHECK_IMPLIES(old_pending_root, old_pending_root->id() == id_);
+    DCHECK(!old_pending_root || old_pending_root->id() == id_);
 
     scoped_ptr<FakePictureLayerImpl> pending_layer;
     if (old_pending_root) {
