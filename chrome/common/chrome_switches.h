@@ -98,7 +98,6 @@ extern const char kDisableQuicPortSelection[];
 extern const char kDisableSdchPersistence[];
 extern const char kDisableSessionCrashedBubble[];
 extern const char kDisableSiteEngagementService[];
-extern const char kDisableSuggestionsService[];
 extern const char kDisableSync[];
 extern const char kDisableSyncTypes[];
 extern const char kDisableWebNotificationCustomLayouts[];
