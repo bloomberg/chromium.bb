@@ -17,6 +17,7 @@
 namespace blink {
 
 class Blob;
+class BlobData;
 class ExceptionState;
 
 class MODULES_EXPORT MediaRecorder final
@@ -93,6 +94,8 @@ private:
     bool m_ignoreMutedMedia;
 
     State m_state;
+
+    OwnPtr<BlobData> m_blobData;
 
     OwnPtr<WebMediaRecorderHandler> m_recorderHandler;
 

@@ -86,14 +86,7 @@ String MediaRecorder::state() const
 
 void MediaRecorder::start(ExceptionState& exceptionState)
 {
-    if (m_state != State::Inactive) {
-        exceptionState.throwDOMException(InvalidStateError, "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
-        return;
-    }
-    m_state = State::Recording;
-
-    m_recorderHandler->start();
-    scheduleDispatchEvent(Event::create(EventTypeNames::start));
+    start(0 /* timeSlice */, exceptionState);
 }
 
 void MediaRecorder::start(int timeSlice, ExceptionState& exceptionState)
@@ -155,8 +148,7 @@ void MediaRecorder::requestData(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
         return;
     }
-
-    createBlobEvent(nullptr);
+    writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */);
 }
 
 String MediaRecorder::canRecordMimeType(const String& mimeType)
@@ -203,22 +195,28 @@ void MediaRecorder::stop()
     m_stopped = true;
     m_stream.clear();
     m_recorderHandler.clear();
-
-    scheduleDispatchEvent(Event::create(EventTypeNames::stop));
 }
 
 void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
 {
-    if (!lastInSlice && m_stopped) {
+    if (m_stopped && !lastInSlice) {
         m_stopped = false;
         scheduleDispatchEvent(Event::create(EventTypeNames::start));
     }
 
     // TODO(mcasas): Act as |m_ignoredMutedMedia| instructs if |m_stream| track(s) is in muted() state.
-    // TODO(mcasas): Use |lastInSlice| to indicate to JS that recording is done.
-    OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendBytes(data, length);
-    createBlobEvent(Blob::create(BlobDataHandle::create(blobData.release(), length)));
+
+    if (!m_blobData)
+        m_blobData = BlobData::create();
+    if (data)
+        m_blobData->appendBytes(data, length);
+
+    if (!lastInSlice)
+        return;
+
+    // Cache |m_blobData->length()| before release()ng it.
+    const long long blobDataLength = m_blobData->length();
+    createBlobEvent(Blob::create(BlobDataHandle::create(m_blobData.release(), blobDataLength)));
 }
 
 void MediaRecorder::failOutOfMemory(const WebString& message)
@@ -261,8 +259,7 @@ void MediaRecorder::stopRecording()
 
     m_recorderHandler->stop();
 
-    createBlobEvent(nullptr);
-
+    writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */);
     scheduleDispatchEvent(Event::create(EventTypeNames::stop));
 }
 

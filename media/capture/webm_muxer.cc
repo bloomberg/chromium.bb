@@ -103,8 +103,8 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
 mkvmuxer::int32 WebmMuxer::Write(const void* buf, mkvmuxer::uint32 len) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buf);
-  write_data_callback_.Run(base::StringPiece(reinterpret_cast<const char*>(buf),
-                                            len));
+  write_data_callback_.Run(
+      base::StringPiece(reinterpret_cast<const char*>(buf), len));
   position_ += len;
   return 0;
 }

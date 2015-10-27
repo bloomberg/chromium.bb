@@ -142,9 +142,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
     const size_t encoded_data_size = GetParam().first_encoded_frame_size;
-    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), false))
+    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, encoded_data_size, false))
+    EXPECT_CALL(*this, writeData(_, encoded_data_size, _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -158,9 +158,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
     const size_t encoded_data_size = GetParam().second_encoded_frame_size;
-    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), false))
+    EXPECT_CALL(*this, writeData(_, Lt(encoded_data_size), _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, encoded_data_size, false))
+    EXPECT_CALL(*this, writeData(_, encoded_data_size, _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 

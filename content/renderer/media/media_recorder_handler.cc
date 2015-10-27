@@ -15,10 +15,16 @@
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
+using base::TimeDelta;
+using base::TimeTicks;
+
 namespace content {
 
 MediaRecorderHandler::MediaRecorderHandler()
-    : recording_(false), client_(nullptr), weak_factory_(this) {
+    : use_vp9_(false),
+      recording_(false),
+      client_(nullptr),
+      weak_factory_(this) {
   DVLOG(3) << __FUNCTION__;
 }
 
@@ -69,6 +75,10 @@ bool MediaRecorderHandler::start(int timeslice) {
   DCHECK(!recording_);
   DCHECK(!media_stream_.isNull());
   DCHECK(!webm_muxer_);
+  DCHECK(timeslice_.is_zero());
+
+  timeslice_ = TimeDelta::FromMilliseconds(timeslice);
+  slice_origin_timestamp_ = TimeTicks::Now();
 
   webm_muxer_.reset(
       new media::WebmMuxer(use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,
@@ -110,6 +120,7 @@ void MediaRecorderHandler::stop() {
   DCHECK(recording_);
 
   recording_ = false;
+  timeslice_ = TimeDelta::FromMilliseconds(0);
   video_recorders_.clear();
   webm_muxer_.reset();
 }
@@ -133,23 +144,35 @@ void MediaRecorderHandler::resume() {
 void MediaRecorderHandler::OnEncodedVideo(
     const scoped_refptr<media::VideoFrame>& video_frame,
     scoped_ptr<std::string> encoded_data,
-    base::TimeTicks timestamp,
+    TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  if (webm_muxer_) {
-    webm_muxer_->OnEncodedVideo(video_frame, encoded_data.Pass(), timestamp,
-                                is_key_frame);
-  }
+  if (!webm_muxer_)
+    return;
+  webm_muxer_->OnEncodedVideo(video_frame, encoded_data.Pass(), timestamp,
+                              is_key_frame);
 }
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  client_->writeData(data.data(), data.length(), false  /* lastInSlice */);
+
+  // Non-buffered mode does not need to check timestamps.
+  if (timeslice_.is_zero()) {
+    client_->writeData(data.data(), data.length(), true  /* lastInSlice */);
+    return;
+  }
+
+  const TimeTicks now = TimeTicks::Now();
+  const bool last_in_slice = now > slice_origin_timestamp_ + timeslice_;
+  DVLOG_IF(1, last_in_slice) << "Slice finished @ " << now;
+  if (last_in_slice)
+    slice_origin_timestamp_ = now;
+  client_->writeData(data.data(), data.length(), last_in_slice);
 }
 
 void MediaRecorderHandler::OnVideoFrameForTesting(
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& timestamp) {
+    const TimeTicks& timestamp) {
   for (auto* recorder : video_recorders_)
     recorder->OnVideoFrameForTesting(frame, timestamp);
 }
