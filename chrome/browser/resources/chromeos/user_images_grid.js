@@ -235,9 +235,19 @@ cr.define('options', function() {
       if (this.cameraVideo_)
         this.cameraVideo_.src = '';
       if (this.cameraStream_)
-        this.cameraStream_.stop();
+        this.stopVideoTracks_(this.cameraStream_);
       // Cancel any pending getUserMedia() checks.
       this.cameraStartInProgress_ = false;
+    },
+
+    /**
+     * Stops all video tracks associated with a MediaStream object.
+     * @param {MediaStream} stream
+     */
+    stopVideoTracks_: function(stream) {
+      var tracks = stream.getVideoTracks();
+      for (var t of tracks)
+        t.stop();
     },
 
     /**
@@ -253,7 +263,7 @@ cr.define('options', function() {
         this.cameraVideo_.src = URL.createObjectURL(stream);
         this.cameraStream_ = stream;
       } else {
-        stream.stop();
+        this.stopVideoTracks_(stream);
       }
       this.cameraStartInProgress_ = false;
     },
