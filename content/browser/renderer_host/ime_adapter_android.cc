@@ -281,7 +281,7 @@ RenderWidgetHostImpl* ImeAdapterAndroid::GetRenderWidgetHostImpl() {
   DCHECK(rwhva_);
   RenderWidgetHost* rwh = rwhva_->GetRenderWidgetHost();
   if (!rwh)
-    return NULL;
+    return nullptr;
 
   return RenderWidgetHostImpl::From(rwh);
 }
@@ -289,14 +289,14 @@ RenderWidgetHostImpl* ImeAdapterAndroid::GetRenderWidgetHostImpl() {
 RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
   RenderWidgetHostImpl* rwh = GetRenderWidgetHostImpl();
   if (!rwh)
-    return NULL;
-  if (!rwh->IsRenderView())
-    return NULL;
+    return nullptr;
   RenderViewHost* rvh = RenderViewHost::From(rwh);
+  if (!rvh)
+    return nullptr;
   FrameTreeNode* focused_frame =
       rvh->GetDelegate()->GetFrameTree()->GetFocusedFrame();
   if (!focused_frame)
-    return NULL;
+    return nullptr;
 
   return focused_frame->current_frame_host();
 }
@@ -304,9 +304,7 @@ RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
 WebContents* ImeAdapterAndroid::GetWebContents() {
   RenderWidgetHostImpl* rwh = GetRenderWidgetHostImpl();
   if (!rwh)
-    return NULL;
-  if (!rwh->IsRenderView())
-    return NULL;
+    return nullptr;
   return WebContents::FromRenderViewHost(RenderViewHost::From(rwh));
 }
 

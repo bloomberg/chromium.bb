@@ -99,15 +99,12 @@ content::RenderViewHost* VirtualKeyboardBrowserTest::GetKeyboardRenderViewHost(
   scoped_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
-    if (widget->IsRenderView()) {
-      content::RenderViewHost* view = content::RenderViewHost::From(widget);
-      if (url == view->GetSiteInstance()->GetSiteURL()) {
-        content::WebContents* wc =
-            content::WebContents::FromRenderViewHost(view);
-        // Waits for virtual keyboard to load.
-        EXPECT_TRUE(content::WaitForLoadStop(wc));
-        return view;
-      }
+    content::RenderViewHost* view = content::RenderViewHost::From(widget);
+    if (view && url == view->GetSiteInstance()->GetSiteURL()) {
+      content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
+      // Waits for virtual keyboard to load.
+      EXPECT_TRUE(content::WaitForLoadStop(wc));
+      return view;
     }
   }
   LOG(ERROR) << "Extension not found:" << url;

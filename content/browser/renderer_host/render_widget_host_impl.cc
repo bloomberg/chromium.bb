@@ -173,6 +173,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
     : view_(NULL),
       renderer_initialized_(false),
       delegate_(delegate),
+      owner_delegate_(nullptr),
       process_(process),
       routing_id_(routing_id),
       is_loading_(false),
@@ -225,10 +226,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   touch_emulator_.reset();
 
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      IsRenderView() ? RenderViewHost::From(this) : NULL);
-  if (BrowserPluginGuest::IsGuest(rvh) ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
     hang_monitor_timeout_.reset(new TimeoutMonitor(
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
@@ -273,39 +271,34 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
 
 // static
 scoped_ptr<RenderWidgetHostIterator> RenderWidgetHost::GetRenderWidgetHosts() {
-  RenderWidgetHostIteratorImpl* hosts = new RenderWidgetHostIteratorImpl();
-  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
-  for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
-       it != widgets->end();
-       ++it) {
-    RenderWidgetHost* widget = it->second;
+  scoped_ptr<RenderWidgetHostIteratorImpl> hosts(
+      new RenderWidgetHostIteratorImpl());
+  for (auto& it : g_routing_id_widget_map.Get()) {
+    RenderWidgetHost* widget = it.second;
 
-    if (!widget->IsRenderView()) {
+    RenderViewHost* rvh = RenderViewHost::From(widget);
+    if (!rvh) {
       hosts->Add(widget);
       continue;
     }
 
-    // Add only active RenderViewHosts.
-    RenderViewHost* rvh = RenderViewHost::From(widget);
+    // For RenderViewHosts, add only active ones.
     if (static_cast<RenderViewHostImpl*>(rvh)->is_active())
       hosts->Add(widget);
   }
 
-  return scoped_ptr<RenderWidgetHostIterator>(hosts);
+  return hosts.Pass();
 }
 
 // static
 scoped_ptr<RenderWidgetHostIterator>
 RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
-  RenderWidgetHostIteratorImpl* hosts = new RenderWidgetHostIteratorImpl();
-  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
-  for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
-       it != widgets->end();
-       ++it) {
-    hosts->Add(it->second);
-  }
+  scoped_ptr<RenderWidgetHostIteratorImpl> hosts(
+      new RenderWidgetHostIteratorImpl());
+  for (auto& it : g_routing_id_widget_map.Get())
+    hosts->Add(it.second);
 
-  return scoped_ptr<RenderWidgetHostIterator>(hosts);
+  return hosts.Pass();
 }
 
 // static
@@ -433,10 +426,6 @@ void RenderWidgetHostImpl::Shutdown() {
 
 bool RenderWidgetHostImpl::IsLoading() const {
   return is_loading_;
-}
-
-bool RenderWidgetHostImpl::IsRenderView() const {
-  return false;
 }
 
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
@@ -708,7 +697,7 @@ void RenderWidgetHostImpl::Focus() {
 
   // Also send page-level focus state to other SiteInstances involved in
   // rendering the current FrameTree.
-  if (IsRenderView() && delegate_)
+  if (RenderViewHost::From(this) && delegate_)
     delegate_->ReplicatePageFocus(true);
 }
 
@@ -728,7 +717,7 @@ void RenderWidgetHostImpl::Blur() {
 
   // Also send page-level focus state to other SiteInstances involved in
   // rendering the current FrameTree.
-  if (IsRenderView() && delegate_)
+  if (RenderViewHost::From(this) && delegate_)
     delegate_->ReplicatePageFocus(false);
 }
 

@@ -188,15 +188,21 @@ RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
                                                int render_view_id) {
   RenderWidgetHost* widget =
       RenderWidgetHost::FromID(render_process_id, render_view_id);
-  if (!widget || !widget->IsRenderView())
-    return NULL;
-  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
+  if (!widget)
+    return nullptr;
+  return From(widget);
 }
 
 // static
 RenderViewHostImpl* RenderViewHostImpl::From(RenderWidgetHost* rwh) {
-  DCHECK(rwh->IsRenderView());
-  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(rwh));
+  DCHECK(rwh);
+  RenderWidgetHostOwnerDelegate* owner_delegate =
+      RenderWidgetHostImpl::From(rwh)->owner_delegate();
+  if (!owner_delegate)
+    return nullptr;
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(owner_delegate);
+  DCHECK_EQ(rwh, rvh->GetWidget());
+  return rvh;
 }
 
 RenderViewHostImpl::RenderViewHostImpl(
@@ -233,6 +239,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
+
+  GetWidget()->set_owner_delegate(this);
 
   GetProcess()->AddObserver(this);
   GetProcess()->EnableSendQueue();
@@ -1009,10 +1017,6 @@ void RenderViewHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   }
 
   RenderWidgetHostImpl::WasShown(latency_info);
-}
-
-bool RenderViewHostImpl::IsRenderView() const {
-  return true;
 }
 
 void RenderViewHostImpl::CreateNewWindow(

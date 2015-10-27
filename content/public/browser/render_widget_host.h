@@ -211,9 +211,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if the renderer is loading, false if not.
   virtual bool IsLoading() const = 0;
 
-  // Returns true if this is a RenderViewHost, false if not.
-  virtual bool IsRenderView() const = 0;
-
   // Called to notify the RenderWidget that the resize rect has changed without
   // the size of the RenderWidget itself changing.
   virtual void ResizeRectChanged(const gfx::Rect& new_rect) = 0;

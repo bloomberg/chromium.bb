@@ -74,10 +74,11 @@ class SpellCheckObserver : public content::WebContentsObserver {
   self = [super init];
   if (self) {
     renderWidgetHost_ = renderWidgetHost;
-    if (renderWidgetHost_->IsRenderView()) {
+    RenderViewHost* rvh = RenderViewHost::From(renderWidgetHost_);
+    if (rvh) {
       spellingObserver_.reset(
           new ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver(
-              RenderViewHost::From(renderWidgetHost_), self));
+              rvh, self));
     }
 
     historySwiper_.reset([[HistorySwiper alloc] initWithDelegate:self]);
@@ -137,10 +138,13 @@ class SpellCheckObserver : public content::WebContentsObserver {
 // HistorySwiperDelegate methods
 
 - (BOOL)shouldAllowHistorySwiping {
-  if (!renderWidgetHost_ || !renderWidgetHost_->IsRenderView())
+  if (!renderWidgetHost_)
     return NO;
-  content::WebContents* webContents = content::WebContents::FromRenderViewHost(
-      RenderViewHost::From(renderWidgetHost_));
+  RenderViewHost* renderViewHost = RenderViewHost::From(renderWidgetHost_);
+  if (!renderViewHost)
+    return NO;
+  content::WebContents* webContents =
+      content::WebContents::FromRenderViewHost(renderViewHost);
   if (webContents && DevToolsWindow::IsDevToolsWindow(webContents)) {
     return NO;
   }
@@ -160,7 +164,7 @@ class SpellCheckObserver : public content::WebContentsObserver {
   // this is sub-optimal.
   // TODO(suzhe): Plumb the "can*" methods up from WebCore.
   if (action == @selector(checkSpelling:)) {
-    *valid = renderWidgetHost_->IsRenderView();
+    *valid = RenderViewHost::From(renderWidgetHost_) != nullptr;
     return YES;
   }
 

@@ -240,12 +240,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole
       // process be considered a diagnostics process.
-      if (!widget->IsRenderView())
+      RenderViewHost* host = RenderViewHost::From(widget);
+      if (!host)
         continue;
 
       process.process_type = content::PROCESS_TYPE_RENDERER;
       bool is_extension = false;
-      RenderViewHost* host = RenderViewHost::From(widget);
 #if defined(ENABLE_EXTENSIONS)
       content::BrowserContext* context =
           render_process_host->GetBrowserContext();

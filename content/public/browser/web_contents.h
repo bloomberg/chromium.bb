@@ -163,10 +163,9 @@ class WebContents : public PageNavigator,
       const CreateParams& params,
       const SessionStorageNamespaceMap& session_storage_namespace_map);
 
-  // Returns a WebContents that wraps the RenderViewHost, or nullptr if the
+  // Returns the WebContents that owns the RenderViewHost, or nullptr if the
   // render view host's delegate isn't a WebContents.
-  CONTENT_EXPORT static WebContents* FromRenderViewHost(
-      const RenderViewHost* rvh);
+  CONTENT_EXPORT static WebContents* FromRenderViewHost(RenderViewHost* rvh);
 
   CONTENT_EXPORT static WebContents* FromRenderFrameHost(RenderFrameHost* rfh);
 

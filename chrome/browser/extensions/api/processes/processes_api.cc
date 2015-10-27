@@ -119,8 +119,6 @@ base::ListValue* GetTabsForProcess(int process_id) {
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     if (widget->GetProcess()->GetID() != process_id)
       continue;
-    if (!widget->IsRenderView())
-      continue;
 
     content::RenderViewHost* host = content::RenderViewHost::From(widget);
     content::WebContents* contents =

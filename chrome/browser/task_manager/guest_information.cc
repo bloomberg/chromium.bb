@@ -108,12 +108,10 @@ void GuestInformation::GetAll(const NewWebContentsCallback& callback) {
   scoped_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
-    if (widget->IsRenderView()) {
-      content::RenderViewHost* rvh = content::RenderViewHost::From(widget);
-      WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-      if (web_contents && GuestViewBase::IsGuest(web_contents))
-        callback.Run(web_contents);
-    }
+    content::RenderViewHost* rvh = content::RenderViewHost::From(widget);
+    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+    if (web_contents && GuestViewBase::IsGuest(web_contents))
+      callback.Run(web_contents);
   }
 }
 

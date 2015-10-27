@@ -765,13 +765,13 @@ void RenderWidgetHostViewAura::SetKeyboardFocus() {
 }
 
 RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {
-  if (!host_->IsRenderView())
-    return NULL;
   RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (!rvh)
+    return nullptr;
   FrameTreeNode* focused_frame =
       rvh->GetDelegate()->GetFrameTree()->GetFocusedFrame();
   if (!focused_frame)
-    return NULL;
+    return nullptr;
 
   return focused_frame->current_frame_host();
 }
@@ -1403,13 +1403,14 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
 void RenderWidgetHostViewAura::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
-  RenderViewHostDelegate* delegate = NULL;
-  if (host_->IsRenderView())
-    delegate = RenderViewHost::From(host_)->GetDelegate();
-  // Suppress the link disambiguation popup if the virtual keyboard is currently
-  // requested, as it doesn't interact well with the keyboard.
-  if (delegate && delegate->IsVirtualKeyboardRequested())
-    return;
+  RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (rvh) {
+    RenderViewHostDelegate* delegate = rvh->GetDelegate();
+    // Suppress the link disambiguation popup if the virtual keyboard is
+    // currently requested, as it doesn't interact well with the keyboard.
+    if (delegate && delegate->IsVirtualKeyboardRequested())
+      return;
+  }
 
   // |target_rect| is provided in pixels, not DIPs. So we convert it to DIPs
   // by scaling it by the inverse of the device scale factor.
@@ -1443,15 +1444,18 @@ void RenderWidgetHostViewAura::DisambiguationPopupRendered(
 
   // Use RenderViewHostDelegate to get to the WebContentsViewAura, which will
   // actually show the disambiguation popup.
-  RenderViewHostDelegate* delegate = NULL;
-  if (host_->IsRenderView())
-    delegate = RenderViewHost::From(host_)->GetDelegate();
-  RenderViewHostDelegateView* delegate_view = NULL;
-  if (delegate) {
-    delegate_view = delegate->GetDelegateView();
-    if (delegate->IsVirtualKeyboardRequested())
-      return;
-  }
+  RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (!rvh)
+    return;
+
+  RenderViewHostDelegate* delegate = rvh->GetDelegate();
+  if (!delegate)
+    return;
+
+  if (delegate->IsVirtualKeyboardRequested())
+    return;
+
+  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
   if (delegate_view) {
     delegate_view->ShowDisambiguationPopup(
         disambiguation_target_rect_,
@@ -1464,12 +1468,15 @@ void RenderWidgetHostViewAura::DisambiguationPopupRendered(
 }
 
 void RenderWidgetHostViewAura::HideDisambiguationPopup() {
-  RenderViewHostDelegate* delegate = NULL;
-  if (host_->IsRenderView())
-    delegate = RenderViewHost::From(host_)->GetDelegate();
-  RenderViewHostDelegateView* delegate_view = NULL;
-  if (delegate)
-    delegate_view = delegate->GetDelegateView();
+  RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (!rvh)
+    return;
+
+  RenderViewHostDelegate* delegate = rvh->GetDelegate();
+  if (!delegate)
+    return;
+
+  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
   if (delegate_view)
     delegate_view->HideDisambiguationPopup();
 }

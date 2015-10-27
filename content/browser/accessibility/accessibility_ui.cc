@@ -105,14 +105,13 @@ bool HandleRequestCallback(BrowserContext* current_context,
     // Ignore processes that don't have a connection, such as crashed tabs.
     if (!widget->GetProcess()->HasConnection())
       continue;
-    if (!widget->IsRenderView())
-        continue;
-    RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
-    BrowserContext* context = rwhi->GetProcess()->GetBrowserContext();
+    RenderViewHost* rvh = RenderViewHost::From(widget);
+    if (!rvh)
+      continue;
+    BrowserContext* context = rvh->GetProcess()->GetBrowserContext();
     if (context != current_context)
       continue;
 
-    RenderViewHost* rvh = RenderViewHost::From(widget);
     rvh_list->Append(BuildTargetDescriptor(rvh));
   }
 

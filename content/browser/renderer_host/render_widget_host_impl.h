@@ -71,6 +71,7 @@ class BrowserAccessibilityManager;
 class InputRouter;
 class MockRenderWidgetHost;
 class RenderWidgetHostDelegate;
+class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
@@ -99,12 +100,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Returns all RenderWidgetHosts including swapped out ones for
   // internal use. The public interface
-  // RendgerWidgetHost::GetRenderWidgetHosts only returns active ones.
+  // RenderWidgetHost::GetRenderWidgetHosts only returns active ones.
   static scoped_ptr<RenderWidgetHostIterator> GetAllRenderWidgetHosts();
 
-  // Use RenderWidgetHostImpl::From(rwh) to downcast a
-  // RenderWidgetHost to a RenderWidgetHostImpl.  Internally, this
-  // uses RenderWidgetHost::AsRenderWidgetHostImpl().
+  // Use RenderWidgetHostImpl::From(rwh) to downcast a RenderWidgetHost to a
+  // RenderWidgetHostImpl.
   static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
 
   void set_hung_renderer_delay(const base::TimeDelta& delay) {
@@ -121,6 +121,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   base::TimeDelta new_content_rendering_delay() {
     return new_content_rendering_delay_;
   }
+
+  void set_owner_delegate(RenderWidgetHostOwnerDelegate* owner_delegate) {
+    owner_delegate_ = owner_delegate;
+  }
+
+  RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
+
   // RenderWidgetHost implementation.
   void UpdateTextDirection(blink::WebTextDirection direction) override;
   void NotifyTextDirection() override;
@@ -143,7 +150,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   int GetRoutingID() const override;
   RenderWidgetHostViewBase* GetView() const override;
   bool IsLoading() const override;
-  bool IsRenderView() const override;
   void ResizeRectChanged(const gfx::Rect& new_rect) override;
   void RestartHangMonitorTimeout() override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
@@ -682,6 +688,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.
   RenderWidgetHostDelegate* delegate_;
+
+  // The delegate of the owner of this object.
+  RenderWidgetHostOwnerDelegate* owner_delegate_;
 
   // Created during construction and guaranteed never to be NULL, but its
   // channel may be NULL if the renderer crashed, so one must always check that.

@@ -353,7 +353,7 @@ class WebViewInteractiveTest
           content::RenderWidgetHost::GetRenderWidgetHosts());
       size_t num_widgets = 0;
       while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
-        if (widget->IsRenderView())
+        if (content::RenderViewHost::From(widget))
           continue;
         ++num_widgets;
         last_render_widget_host_ = widget;

@@ -1461,9 +1461,6 @@ gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
 }
 
 WebContents* RenderWidgetHostViewMac::GetWebContents() {
-  if (!render_widget_host_->IsRenderView())
-    return NULL;
-
   return WebContents::FromRenderViewHost(
       RenderViewHost::From(render_widget_host_));
 }
@@ -2749,15 +2746,15 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 
   SEL action = [item action];
+  BOOL is_render_view =
+      RenderViewHost::From(renderWidgetHostView_->render_widget_host_) !=
+      nullptr;
 
-  if (action == @selector(stopSpeaking:)) {
-    return renderWidgetHostView_->render_widget_host_->IsRenderView() &&
-           renderWidgetHostView_->IsSpeaking();
-  }
-  if (action == @selector(startSpeaking:)) {
-    return renderWidgetHostView_->render_widget_host_->IsRenderView() &&
-           renderWidgetHostView_->SupportsSpeech();
-  }
+  if (action == @selector(stopSpeaking:))
+    return is_render_view && renderWidgetHostView_->IsSpeaking();
+
+  if (action == @selector(startSpeaking:))
+    return is_render_view && renderWidgetHostView_->SupportsSpeech();
 
   // For now, these actions are always enabled for render view,
   // this is sub-optimal.
@@ -2769,7 +2766,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       action == @selector(copyToFindPboard:) ||
       action == @selector(paste:) ||
       action == @selector(pasteAndMatchStyle:)) {
-    return renderWidgetHostView_->render_widget_host_->IsRenderView();
+    return is_render_view;
   }
 
   return editCommand_helper_->IsMenuItemEnabled(action, self);

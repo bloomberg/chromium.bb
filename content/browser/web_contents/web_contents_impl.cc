@@ -279,15 +279,16 @@ void WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(
   }
 }
 
-WebContents* WebContents::FromRenderViewHost(const RenderViewHost* rvh) {
+WebContents* WebContents::FromRenderViewHost(RenderViewHost* rvh) {
+  if (!rvh)
+    return nullptr;
   return rvh->GetDelegate()->GetAsWebContents();
 }
 
 WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
-  RenderFrameHostImpl* rfh_impl = static_cast<RenderFrameHostImpl*>(rfh);
-  if (!rfh_impl)
-    return NULL;
-  return rfh_impl->delegate()->GetAsWebContents();
+  if (!rfh)
+    return nullptr;
+  return static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
 }
 
 // WebContentsImpl::DestructionObserver ----------------------------------------
@@ -546,21 +547,18 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetAllWebContents() {
   std::vector<WebContentsImpl*> result;
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHostImpl::GetRenderWidgetHosts());
-  std::set<WebContentsImpl*> web_contents_set;
   while (RenderWidgetHost* rwh = widgets->GetNextHost()) {
-    if (!rwh->IsRenderView())
-      continue;
     RenderViewHost* rvh = RenderViewHost::From(rwh);
     if (!rvh)
       continue;
     WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
     if (!web_contents)
       continue;
-    WebContentsImpl* wci = static_cast<WebContentsImpl*>(web_contents);
-    if (web_contents_set.find(wci) == web_contents_set.end()) {
-      web_contents_set.insert(wci);
-      result.push_back(wci);
-    }
+    if (web_contents->GetRenderViewHost() != rvh)
+      continue;
+    // Because a WebContents can only have one current RVH at a time, there will
+    // be no duplicate WebContents here.
+    result.push_back(static_cast<WebContentsImpl*>(web_contents));
   }
   return result;
 }

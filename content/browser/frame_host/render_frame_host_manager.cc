@@ -2313,10 +2313,9 @@ void RenderFrameHostManager::ShutdownProxiesIfLastActiveFrameInSiteInstance(
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHostImpl::GetAllRenderWidgetHosts());
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    if (!widget->IsRenderView())
+    RenderViewHost* rvh = RenderViewHost::From(widget);
+    if (!rvh)
       continue;
-    RenderViewHostImpl* rvh =
-        static_cast<RenderViewHostImpl*>(RenderViewHost::From(widget));
     if (site_instance_id == rvh->GetSiteInstance()->GetId()) {
       // This deletes all RenderFrameHosts using the |rvh|, which then causes
       // |rvh| to Shutdown.

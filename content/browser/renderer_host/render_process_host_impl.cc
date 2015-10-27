@@ -2526,14 +2526,14 @@ void RenderProcessHostImpl::OnGpuSwitched() {
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHostImpl::GetAllRenderWidgetHosts());
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    if (!widget->IsRenderView())
+    RenderViewHost* rvh = RenderViewHost::From(widget);
+    if (!rvh)
       continue;
 
     // Skip widgets in other processes.
-    if (widget->GetProcess()->GetID() != GetID())
+    if (rvh->GetProcess()->GetID() != GetID())
       continue;
 
-    RenderViewHost* rvh = RenderViewHost::From(widget);
     rvh->OnWebkitPreferencesChanged();
   }
 }

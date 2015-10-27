@@ -1354,9 +1354,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.location_bar_content_translation,
       is_mobile_optimized);
 #if defined(VIDEO_HOLE)
-  if (host_ && host_->IsRenderView()) {
-    RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-        RenderViewHost::From(host_));
+  if (host_) {
+    RenderViewHostImpl* rvhi = RenderViewHostImpl::From(host_);
     WebContentsImpl* web_contents_impl =
         static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvhi));
     if (web_contents_impl)

@@ -54,10 +54,10 @@ WebContents* FindFirstDevToolsContents() {
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     if (!widget->GetProcess()->HasConnection())
       continue;
-    if (!widget->IsRenderView())
+    RenderViewHost* view_host = RenderViewHost::From(widget);
+    if (!view_host)
       continue;
-    RenderViewHost* host = RenderViewHost::From(widget);
-    WebContents* contents = WebContents::FromRenderViewHost(host);
+    WebContents* contents = WebContents::FromRenderViewHost(view_host);
     GURL url = contents->GetURL();
     if (url.SchemeIs(content::kChromeDevToolsScheme))
       return contents;

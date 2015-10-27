@@ -153,7 +153,7 @@ AwContents* AwContents::FromWebContents(WebContents* web_contents) {
 
 // static
 AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
-  const content::RenderViewHost* rvh =
+  content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
   if (!rvh) return NULL;
   content::WebContents* web_contents =

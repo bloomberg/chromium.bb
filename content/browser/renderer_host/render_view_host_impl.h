@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
@@ -49,8 +50,8 @@ class AXTree;
 
 namespace content {
 
-class MediaWebContentsObserver;
 class ChildProcessSecurityPolicyImpl;
+class MediaWebContentsObserver;
 class PageState;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
@@ -95,6 +96,7 @@ struct FrameReplicationState;
 // http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                                           RenderWidgetHostImpl,
+                                          public RenderWidgetHostOwnerDelegate,
                                           public RenderProcessHostObserver {
  public:
   // Convenience function, just like RenderViewHost::FromID.
@@ -280,7 +282,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void Shutdown() override;
   void WasHidden() override;
   void WasShown(const ui::LatencyInfo& latency_info) override;
-  bool IsRenderView() const override;
   bool OnMessageReceived(const IPC::Message& msg) override;
   void GotFocus() override;
   void LostCapture() override;

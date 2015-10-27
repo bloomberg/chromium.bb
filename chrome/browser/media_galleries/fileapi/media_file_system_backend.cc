@@ -60,7 +60,7 @@ namespace {
 const char kMediaGalleryMountPrefix[] = "media_galleries-";
 
 void OnPreferencesInit(
-    const content::RenderViewHost* rvh,
+    content::RenderViewHost* rvh,
     const extensions::Extension* extension,
     MediaGalleryPrefId pref_id,
     const base::Callback<void(base::File::Error result)>& callback) {

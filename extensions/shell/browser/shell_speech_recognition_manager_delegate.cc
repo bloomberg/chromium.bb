@@ -105,7 +105,7 @@ void ShellSpeechRecognitionManagerDelegate::CheckRenderViewType(
     int render_process_id,
     int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const content::RenderViewHost* render_view_host =
+  content::RenderViewHost* render_view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
   bool allowed = false;
   bool check_permission = false;
