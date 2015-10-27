@@ -28,7 +28,9 @@ MemoryPurgeController::MemoryPurgeController()
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MemoryPurgeController);
+MemoryPurgeController::~MemoryPurgeController()
+{
+}
 
 void MemoryPurgeController::pageBecameActive()
 {

@@ -42,13 +42,13 @@ public:
 // for reducing memory consumption and notifies its clients.
 // Since we want to control memory per tab, MemoryPurgeController is owned by
 // Page.
-class PLATFORM_EXPORT MemoryPurgeController final : public NoBaseWillBeGarbageCollected<MemoryPurgeController> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MemoryPurgeController);
+class PLATFORM_EXPORT MemoryPurgeController final : public NoBaseWillBeGarbageCollectedFinalized<MemoryPurgeController> {
 public:
     static PassOwnPtrWillBeRawPtr<MemoryPurgeController> create()
     {
         return adoptPtrWillBeNoop(new MemoryPurgeController);
     }
+    ~MemoryPurgeController();
 
     void registerClient(MemoryPurgeClient* client)
     {
