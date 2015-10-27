@@ -338,8 +338,15 @@ bool PlatformNotificationServiceImpl::GetDisplayedPersistentNotifications(
   if (!profile || profile->AsTestingProfile())
     return false;  // Tests will not have a message center.
 
+  // There may not be a notification ui manager when another feature erroneously
+  // instantiates a storage partition when the browser process is shutting down.
+  // TODO(peter): Remove in favor of a DCHECK when crbug.com/546745 is fixed.
+  NotificationUIManager* ui_manager = GetNotificationUIManager();
+  if (!ui_manager)
+    return false;
+
   // TODO(peter): Filter for persistent notifications only.
-  *displayed_notifications = GetNotificationUIManager()->GetAllIdsByProfile(
+  *displayed_notifications = ui_manager->GetAllIdsByProfile(
       NotificationUIManager::GetProfileID(profile));
 
   return true;
