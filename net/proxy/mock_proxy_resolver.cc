@@ -21,26 +21,23 @@ MockAsyncProxyResolver::Request::Request(MockAsyncProxyResolver* resolver,
 }
 
 void MockAsyncProxyResolver::Request::CompleteNow(int rv) {
-      CompletionCallback callback = callback_;
+  CompletionCallback callback = callback_;
 
-      // May delete |this|.
-      resolver_->RemovePendingRequest(this);
+  // May delete |this|.
+  resolver_->RemovePendingRequest(this);
 
-      callback.Run(rv);
-    }
+  callback.Run(rv);
+}
 
-    MockAsyncProxyResolver::Request::~Request() {
-    }
+MockAsyncProxyResolver::Request::~Request() {}
 
-    MockAsyncProxyResolver::~MockAsyncProxyResolver() {
-    }
+MockAsyncProxyResolver::~MockAsyncProxyResolver() {}
 
-    int MockAsyncProxyResolver::GetProxyForURL(
-        const GURL& url,
-        ProxyInfo* results,
-        const CompletionCallback& callback,
-        RequestHandle* request_handle,
-        const BoundNetLog& /*net_log*/) {
+int MockAsyncProxyResolver::GetProxyForURL(const GURL& url,
+                                           ProxyInfo* results,
+                                           const CompletionCallback& callback,
+                                           RequestHandle* request_handle,
+                                           const BoundNetLog& /*net_log*/) {
   scoped_refptr<Request> request = new Request(this, url, results, callback);
   pending_requests_.push_back(request);
 

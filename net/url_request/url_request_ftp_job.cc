@@ -45,8 +45,7 @@ URLRequestFtpJob::URLRequestFtpJob(
 }
 
 URLRequestFtpJob::~URLRequestFtpJob() {
-  if (pac_request_)
-    proxy_service_->CancelPacRequest(pac_request_);
+  Kill();
 }
 
 bool URLRequestFtpJob::IsSafeRedirect(const GURL& location) {
@@ -119,6 +118,10 @@ void URLRequestFtpJob::Start() {
 }
 
 void URLRequestFtpJob::Kill() {
+  if (pac_request_) {
+    proxy_service_->CancelPacRequest(pac_request_);
+    pac_request_ = nullptr;
+  }
   if (ftp_transaction_)
     ftp_transaction_.reset();
   if (http_transaction_)
@@ -285,6 +288,8 @@ void URLRequestFtpJob::RestartTransactionWithAuth() {
 }
 
 LoadState URLRequestFtpJob::GetLoadState() const {
+  if (pac_request_)
+    return proxy_service_->GetLoadState(pac_request_);
   if (proxy_info_.is_direct()) {
     return ftp_transaction_ ?
         ftp_transaction_->GetLoadState() : LOAD_STATE_IDLE;

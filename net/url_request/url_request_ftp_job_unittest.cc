@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_states.h"
 #include "net/base/request_priority.h"
 #include "net/ftp/ftp_auth_cache.h"
 #include "net/http/http_transaction_test_util.h"
@@ -32,15 +33,26 @@ namespace {
 
 class MockProxyResolverFactory : public ProxyResolverFactory {
  public:
-  MockProxyResolverFactory() : ProxyResolverFactory(false) {}
+  MockProxyResolverFactory()
+      : ProxyResolverFactory(false), resolver_(nullptr) {}
+
   int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
       scoped_ptr<ProxyResolver>* resolver,
       const CompletionCallback& callback,
       scoped_ptr<Request>* request) override {
-    resolver->reset(new MockAsyncProxyResolver());
+    EXPECT_FALSE(resolver_);
+    scoped_ptr<MockAsyncProxyResolver> owned_resolver(
+        new MockAsyncProxyResolver());
+    resolver_ = owned_resolver.get();
+    *resolver = owned_resolver.Pass();
     return OK;
   }
+
+  MockAsyncProxyResolver* resolver() { return resolver_; }
+
+ private:
+  MockAsyncProxyResolver* resolver_;
 };
 
 }  // namespace
@@ -296,21 +308,65 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
   EXPECT_EQ("test.html", request_delegate.data_received());
 }
 
-// Regression test for http://crbug.com/237526 .
+// Regression test for http://crbug.com/237526.
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
+  scoped_ptr<MockProxyResolverFactory> owned_resolver_factory(
+      new MockProxyResolverFactory());
+  MockProxyResolverFactory* resolver_factory = owned_resolver_factory.get();
+
   // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
   request_context()->set_proxy_service(make_scoped_ptr(new ProxyService(
       make_scoped_ptr(new ProxyConfigServiceFixed(
           ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")))),
-      make_scoped_ptr(new MockProxyResolverFactory), NULL)));
+      owned_resolver_factory.Pass(), nullptr)));
 
   TestDelegate request_delegate;
   scoped_ptr<URLRequest> url_request(request_context()->CreateRequest(
       GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
 
-  // Now |url_request| will be deleted before its completion,
-  // resulting in it being orphaned. It should not crash.
+  // Verify PAC request is in progress.
+  EXPECT_EQ(net::LoadState::LOAD_STATE_RESOLVING_PROXY_FOR_URL,
+            url_request->GetLoadState().state);
+  EXPECT_EQ(1u, resolver_factory->resolver()->pending_requests().size());
+  EXPECT_EQ(0u, resolver_factory->resolver()->cancelled_requests().size());
+
+  // Destroying the request should cancel the PAC request.
+  url_request.reset();
+  EXPECT_EQ(0u, resolver_factory->resolver()->pending_requests().size());
+  EXPECT_EQ(1u, resolver_factory->resolver()->cancelled_requests().size());
+}
+
+// Make sure PAC requests are cancelled on request cancellation.  Requests can
+// hang around a bit without being deleted in the cancellation case, so the
+// above test is not sufficient.
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestCancelRequest) {
+  scoped_ptr<MockProxyResolverFactory> owned_resolver_factory(
+      new MockProxyResolverFactory());
+  MockProxyResolverFactory* resolver_factory = owned_resolver_factory.get();
+
+  // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
+  request_context()->set_proxy_service(make_scoped_ptr(new ProxyService(
+      make_scoped_ptr(new ProxyConfigServiceFixed(
+          ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")))),
+      owned_resolver_factory.Pass(), nullptr)));
+
+  TestDelegate request_delegate;
+  scoped_ptr<URLRequest> url_request(request_context()->CreateRequest(
+      GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
+
+  // Verify PAC request is in progress.
+  url_request->Start();
+  EXPECT_EQ(net::LoadState::LOAD_STATE_RESOLVING_PROXY_FOR_URL,
+            url_request->GetLoadState().state);
+  EXPECT_EQ(1u, resolver_factory->resolver()->pending_requests().size());
+  EXPECT_EQ(0u, resolver_factory->resolver()->cancelled_requests().size());
+
+  // Cancelling the request should cancel the PAC request.
+  url_request->Cancel();
+  EXPECT_EQ(net::LoadState::LOAD_STATE_IDLE, url_request->GetLoadState().state);
+  EXPECT_EQ(0u, resolver_factory->resolver()->pending_requests().size());
+  EXPECT_EQ(1u, resolver_factory->resolver()->cancelled_requests().size());
 }
 
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {
