@@ -324,6 +324,16 @@ void LocalFrame::detach(FrameDetachType type)
     RELEASE_ASSERT(m_supplementStatus != SupplementStatus::Clearing);
     RELEASE_ASSERT(m_supplementStatus == SupplementStatus::Uncleared);
     m_supplementStatus = SupplementStatus::Clearing;
+
+    // TODO(haraken): Temporary code to debug https://crbug.com/531291.
+    // Check that m_supplements doesn't duplicate OwnPtrs.
+    HashSet<void*> supplementPointers;
+    for (auto& it : m_supplements) {
+        void* pointer = reinterpret_cast<void*>(it.value.get());
+        RELEASE_ASSERT(!supplementPointers.contains(pointer));
+        supplementPointers.add(pointer);
+    }
+
     m_supplements.clear();
     m_supplementStatus = SupplementStatus::Cleared;
     WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
