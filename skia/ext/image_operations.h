@@ -70,11 +70,6 @@ class SK_API ImageOperations {
     // a 2-cycle Lanczos.
     RESIZE_HAMMING1,
 
-    // 2-cycle Lanczos filter. This is tall in the middle, goes negative on
-    // each side, then returns to zero. Does not provide as good a frequency
-    // response as a 3-cycle Lanczos but is roughly 30% faster.
-    RESIZE_LANCZOS2,
-
     // 3-cycle Lanczos filter. This is tall in the middle, goes negative on
     // each side, then oscillates 2 more times. It gives nice sharp edges.
     RESIZE_LANCZOS3,

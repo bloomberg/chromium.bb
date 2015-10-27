@@ -41,7 +41,6 @@ const StringMethodPair resize_methods[] = {
   ADD_METHOD(BEST),
   ADD_METHOD(BOX),
   ADD_METHOD(HAMMING1),
-  ADD_METHOD(LANCZOS2),
   ADD_METHOD(LANCZOS3),
 };
 

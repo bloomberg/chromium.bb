@@ -123,35 +123,6 @@ void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
   }
 }
 
-// Draws a horizontal and vertical grid into the w x h bitmap passed in.
-// Each line in the grid is drawn with a width of "grid_width" pixels,
-// and those lines repeat every "grid_pitch" pixels. The top left pixel (0, 0)
-// is considered to be part of a grid line.
-// The pixels that fall on a line are colored with "grid_color", while those
-// outside of the lines are colored in "background_color".
-// Note that grid_with can be greather than or equal to grid_pitch, in which
-// case the resulting bitmap will be a solid color "grid_color".
-void DrawGridToBitmap(int w, int h,
-                      SkColor background_color, SkColor grid_color,
-                      int grid_pitch, int grid_width,
-                      SkBitmap* bmp) {
-  ASSERT_GT(grid_pitch, 0);
-  ASSERT_GT(grid_width, 0);
-  ASSERT_NE(background_color, grid_color);
-
-  bmp->allocN32Pixels(w, h);
-
-  for (int y = 0; y < h; ++y) {
-    bool y_on_grid = ((y % grid_pitch) < grid_width);
-
-    for (int x = 0; x < w; ++x) {
-      bool on_grid = (y_on_grid || ((x % grid_pitch) < grid_width));
-
-      *bmp->getAddr32(x, y) = (on_grid ? grid_color : background_color);
-    }
-  }
-}
-
 // Draws a checkerboard pattern into the w x h bitmap passed in.
 // Each rectangle is rect_w in width, rect_h in height.
 // The colors alternate between color1 and color2, color1 being used
@@ -473,10 +444,6 @@ TEST(ImageOperations, ResampleToSameHamming1) {
   CheckResampleToSame(skia::ImageOperations::RESIZE_HAMMING1);
 }
 
-TEST(ImageOperations, ResampleToSameLanczos2) {
-  CheckResampleToSame(skia::ImageOperations::RESIZE_LANCZOS2);
-}
-
 TEST(ImageOperations, ResampleToSameLanczos3) {
   CheckResampleToSame(skia::ImageOperations::RESIZE_LANCZOS3);
 }
@@ -501,7 +468,6 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
     { skia::ImageOperations::RESIZE_BEST,     "BEST",     0.0f },
     { skia::ImageOperations::RESIZE_BOX,      "BOX",      0.0f },
     { skia::ImageOperations::RESIZE_HAMMING1, "HAMMING1", 0.0f },
-    { skia::ImageOperations::RESIZE_LANCZOS2, "LANCZOS2", 0.0f },
     { skia::ImageOperations::RESIZE_LANCZOS3, "LANCZOS3", 0.0f },
   };
 
@@ -536,89 +502,6 @@ TEST(ImageOperations, ResizeShouldAverageColors) {
   }
 }
 
-
-// Check that Lanczos2 and Lanczos3 thumbnails produce similar results
-TEST(ImageOperations, CompareLanczosMethods) {
-  const int src_w = 640, src_h = 480, src_grid_pitch = 8, src_grid_width = 4;
-
-  const int dest_w = src_w / 4;
-  const int dest_h = src_h / 4;
-
-  // 5.0f is the maximum distance we see in this test given the current
-  // parameters. The value is very ad-hoc and the parameters of the scaling
-  // were picked to produce a small value. So this test is very much about
-  // revealing egregious regression rather than doing a good job at checking
-  // the math behind the filters.
-  // TODO(evannier): because of the half pixel error mentioned inside
-  // image_operations.cc, this distance is much larger than it should be.
-  // This should read:
-  // const float max_color_distance = 5.0f;
-  const float max_color_distance = 12.1f;
-
-  // Make our source bitmap.
-  SkColor grid_color = SK_ColorRED, background_color = SK_ColorBLUE;
-  SkBitmap src;
-  DrawGridToBitmap(src_w, src_h,
-                   background_color, grid_color,
-                   src_grid_pitch, src_grid_width,
-                   &src);
-
-  // Resize the src using both methods.
-  SkBitmap dest_l2 = skia::ImageOperations::Resize(
-      src,
-      skia::ImageOperations::RESIZE_LANCZOS2,
-      dest_w, dest_h);
-  ASSERT_EQ(dest_w, dest_l2.width());
-  ASSERT_EQ(dest_h, dest_l2.height());
-
-  SkBitmap dest_l3 = skia::ImageOperations::Resize(
-      src,
-      skia::ImageOperations::RESIZE_LANCZOS3,
-      dest_w, dest_h);
-  ASSERT_EQ(dest_w, dest_l3.width());
-  ASSERT_EQ(dest_h, dest_l3.height());
-
-  // Compare the pixels produced by both methods.
-  float max_observed_distance = 0.0f;
-  bool all_pixels_ok = true;
-
-  SkAutoLockPixels l2_lock(dest_l2);
-  SkAutoLockPixels l3_lock(dest_l3);
-  for (int y = 0; y < dest_h; ++y) {
-    for (int x = 0; x < dest_w; ++x) {
-      const SkColor color_lanczos2 = *dest_l2.getAddr32(x, y);
-      const SkColor color_lanczos3 = *dest_l3.getAddr32(x, y);
-
-      float distance = ColorsEuclidianDistance(color_lanczos2, color_lanczos3);
-
-      EXPECT_LE(distance, max_color_distance)
-          << "pixel tested: (" << x << ", " << y
-          << std::hex << std::showbase
-          << "), lanczos2 hex: " << color_lanczos2
-          << ", lanczos3 hex: " << color_lanczos3
-          << std::setprecision(2)
-          << ", distance: " << distance;
-
-      if (distance > max_color_distance) {
-        all_pixels_ok = false;
-      }
-      if (distance > max_observed_distance) {
-        max_observed_distance = distance;
-      }
-    }
-  }
-
-  if (!all_pixels_ok) {
-    ADD_FAILURE() << "Maximum observed color distance: "
-                  << max_observed_distance;
-
-#if DEBUG_BITMAP_GENERATION
-    SaveBitmapToPNG(src, "/tmp/CompareLanczosMethods_source.png");
-    SaveBitmapToPNG(dest_l2, "/tmp/CompareLanczosMethods_lanczos2.png");
-    SaveBitmapToPNG(dest_l3, "/tmp/CompareLanczosMethods_lanczos3.png");
-#endif  // #if DEBUG_BITMAP_GENERATION
-  }
-}
 
 #ifndef M_PI
 // No M_PI in math.h on windows? No problem.

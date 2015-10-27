@@ -113,10 +113,6 @@ class ResizeFilter {
         // The Hamming filter takes as much space in the source image in
         // each direction as the size of the window = 1 for Hamming1.
         return 1.0f;
-      case ImageOperations::RESIZE_LANCZOS2:
-        // The Lanczos filter takes as much space in the source image in
-        // each direction as the size of the window = 2 for Lanczos2.
-        return 2.0f;
       case ImageOperations::RESIZE_LANCZOS3:
         // The Lanczos filter takes as much space in the source image in
         // each direction as the size of the window = 3 for Lanczos3.
@@ -149,8 +145,6 @@ class ResizeFilter {
         return EvalBox(pos);
       case ImageOperations::RESIZE_HAMMING1:
         return EvalHamming(1, pos);
-      case ImageOperations::RESIZE_LANCZOS2:
-        return EvalLanczos(2, pos);
       case ImageOperations::RESIZE_LANCZOS3:
         return EvalLanczos(3, pos);
       default:
