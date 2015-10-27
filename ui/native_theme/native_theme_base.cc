@@ -770,7 +770,7 @@ void NativeThemeBase::PaintMenuList(
   }
 
   SkPaint paint;
-  paint.setColor(SK_ColorBLACK);
+  paint.setColor(menu_list.arrow_color);
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
 

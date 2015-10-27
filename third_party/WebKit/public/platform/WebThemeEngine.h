@@ -111,6 +111,7 @@ public:
         int arrowX;
         int arrowY;
         int arrowSize;
+        WebColor arrowColor;
         WebColor backgroundColor;
         bool fillContentArea;
     };

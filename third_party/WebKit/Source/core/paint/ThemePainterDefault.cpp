@@ -272,6 +272,8 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
             : right - (arrowSize + arrowPadding) * box.styleRef().effectiveZoom();
         extraParams.menuList.arrowSize = arrowSize * box.styleRef().effectiveZoom();
     }
+    // TODO(tkent): crbug.com/379377: Specifiy text color.
+    extraParams.menuList.arrowColor = Color::black;
 }
 
 bool ThemePainterDefault::paintSliderTrack(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
