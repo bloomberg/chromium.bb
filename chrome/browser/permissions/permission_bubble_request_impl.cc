@@ -37,7 +37,7 @@ PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
 }
 
 gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
@@ -56,14 +56,14 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
       NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
   }
-#else  // !defined(TOOLKIT_VIEWS)
+#else  // !defined(OS_MACOSX)
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 #endif
 }
 
 int PermissionBubbleRequestImpl::GetIconId() const {
   int icon_id = IDR_INFOBAR_WARNING;
-#if !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       icon_id = IDR_INFOBAR_GEOLOCATION;
