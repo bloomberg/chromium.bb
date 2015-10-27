@@ -19,10 +19,6 @@ class ChromeProxyClientVersion(ChromeProxyBenchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.client_version.synthetic'
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return False
-
 
 class ChromeProxyClientType(ChromeProxyBenchmark):
   tag = 'client_type'
@@ -110,10 +106,6 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.safebrowsing_on.safebrowsing'
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return False
-
 
 @benchmark.Enabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
 # Safebrowsing is switched off for Android Webview and all desktop platforms.
@@ -125,10 +117,6 @@ class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.safebrowsing_off.safebrowsing'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return False
 
 
 class ChromeProxyHTTPFallbackProbeURL(ChromeProxyBenchmark):
@@ -202,10 +190,6 @@ class ChromeProxyVideoDirect(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.direct'
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
 
 @benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoProxied(benchmark.Benchmark):
@@ -216,10 +200,6 @@ class ChromeProxyVideoProxied(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.video.proxied'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
 
 
 @benchmark.Enabled(*DESKTOP_PLATFORMS)
@@ -238,11 +218,6 @@ class ChromeProxyVideoCompare(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.compare'
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
-
 @benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoFrames(benchmark.Benchmark):
   """Check for video frames similar to original video."""
@@ -254,11 +229,6 @@ class ChromeProxyVideoFrames(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.video.frames'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
 
 @benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoAudio(benchmark.Benchmark):
@@ -272,6 +242,3 @@ class ChromeProxyVideoAudio(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.audio'
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True

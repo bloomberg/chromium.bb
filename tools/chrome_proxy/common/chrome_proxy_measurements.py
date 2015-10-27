@@ -59,8 +59,9 @@ class ChromeProxyValidation(page_test.PageTest):
   # Value of the extra via header. |None| if no extra via header is expected.
   extra_via_header = None
 
-  def __init__(self, metrics=None):
-    super(ChromeProxyValidation, self).__init__()
+  def __init__(self, restart_after_each_page=False, metrics=None):
+    super(ChromeProxyValidation, self).__init__(
+        needs_browser_restart_after_each_page=restart_after_each_page)
     self._metrics = metrics
     self._page = None
 
