@@ -1,0 +1,107 @@
+Verifies the effect of pointer event prevent-default on following pointer & mouse events.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+--- test with preventDefault on none ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+--- test with preventDefault on pointerdown ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+--- test with preventDefault on pointerup ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+--- test with preventDefault on pointerenter ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+--- test with preventDefault on pointerleave ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+--- test with preventDefault on pointerover ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+--- test with preventDefault on pointerout ---
+- start with mouse outside target -
+- move into target & click -
+1. target received mouseover
+2. target received mouseenter
+3. target received mousedown
+4. target received mouseup
+- drag & release within target -
+5. target received mousedown
+6. target received mouseup
+- move outside target again -
+7. target received mouseout
+8. target received mouseleave
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,19 @@
+Verifies that pointerup/down are fired correctly for correponding mouse events.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+green received mousedown
+lightgreen received mousedown
+green received mouseup
+lightgreen received mouseup
+green received mousedown
+lightgreen received mousedown
+lightgreen received mouseup
+lightgreen received mousedown
+green received mouseup
+lightgreen received mouseup
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

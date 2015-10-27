@@ -283,7 +283,7 @@ private:
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
 
     // Returns true when the sent PE has defaultPrevented or defaultHandled set.
-    bool dispatchPointerEventForMouseEvent(Node* target, const AtomicString& eventType, const PlatformMouseEvent&, Node* relatedTarget);
+    bool dispatchPointerEventForMouseEvent(Node* target, const AtomicString& eventType, const PlatformMouseEvent&, Node* relatedTarget = nullptr);
 
     // Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another.
     void sendMouseEventsForNodeTransition(Node*, Node*, const PlatformMouseEvent&);
@@ -331,6 +331,8 @@ private:
     AutoscrollController* autoscrollController() const;
     bool panScrollInProgress() const;
     void setLastKnownMousePosition(const PlatformMouseEvent&);
+
+    void conditionallyEnableMouseEventForPointerTypeMouse(const PlatformMouseEvent&);
 
     bool shouldTopControlsConsumeScroll(FloatSize) const;
 
@@ -413,6 +415,11 @@ private:
     bool m_touchPressed;
 
     PointerIdManager m_pointerIdManager;
+
+    // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
+    // See "PREVENT MOUSE EVENT flag" in the spec:
+    //   https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
+    bool m_preventMouseEventForPointerTypeMouse;
 
     // This is set upon sending a pointercancel for touch, prevents PE dispatches for touches until
     // all touch-points become inactive.

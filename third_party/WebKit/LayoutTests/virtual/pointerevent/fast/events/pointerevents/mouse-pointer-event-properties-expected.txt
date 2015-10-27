@@ -3,6 +3,7 @@ Verifies that pointer event parameters are correct when fired for mouse events.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+--- move mouse into target ---
 Received pointerover
 Received mouseover
 PASS lastPointerEvent is non-null.
@@ -28,17 +29,6 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 0
-PASS lastPointerEvent.getModifierState('Control'); is false
-PASS lastPointerEvent.getModifierState('Shift'); is false
-PASS lastPointerEvent.getModifierState('Meta'); is false
-PASS lastPointerEvent.getModifierState('Alt'); is false
-PASS lastPointerEvent.getModifierState('AltGraph'); is false
-PASS lastPointerEvent.getModifierState('OS'); is false
-PASS lastPointerEvent.getModifierState('Fn'); is false
-PASS lastPointerEvent.getModifierState('CapsLock'); is false
-PASS lastPointerEvent.getModifierState('ScrollLock'); is false
-PASS lastPointerEvent.getModifierState('NumLock'); is false
-PASS lastPointerEvent.getModifierState('Symbol'); is false
 Received pointerenter
 Received mouseenter
 PASS lastPointerEvent is non-null.
@@ -64,7 +54,165 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 0
-PASS lastPointerEvent.getModifierState('Control'); is false
+
+--- click each button ---
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.buttons is 1
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.buttons is 0
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 1
+PASS lastPointerEvent.buttons is 4
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 1
+PASS lastPointerEvent.buttons is 0
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 2
+PASS lastPointerEvent.buttons is 2
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 2
+PASS lastPointerEvent.buttons is 0
+
+--- click with each modifier ---
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is true
 PASS lastPointerEvent.getModifierState('Shift'); is false
 PASS lastPointerEvent.getModifierState('Meta'); is false
 PASS lastPointerEvent.getModifierState('Alt'); is false
@@ -75,6 +223,323 @@ PASS lastPointerEvent.getModifierState('CapsLock'); is false
 PASS lastPointerEvent.getModifierState('ScrollLock'); is false
 PASS lastPointerEvent.getModifierState('NumLock'); is false
 PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is true
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is true
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is true
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is true
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is true
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is true
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is true
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is true
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is true
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is true
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is true
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is true
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is true
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is true
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is true
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is true
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is true
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is true
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is true
+PASS lastPointerEvent.getModifierState('Symbol'); is false
+Received pointerdown
+Received mousedown
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerdown"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is true
+Received pointerup
+Received mouseup
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointerup"
+PASS lastPointerEvent.getModifierState('Control'); is false
+PASS lastPointerEvent.getModifierState('Shift'); is false
+PASS lastPointerEvent.getModifierState('Meta'); is false
+PASS lastPointerEvent.getModifierState('Alt'); is false
+PASS lastPointerEvent.getModifierState('AltGraph'); is false
+PASS lastPointerEvent.getModifierState('OS'); is false
+PASS lastPointerEvent.getModifierState('Fn'); is false
+PASS lastPointerEvent.getModifierState('CapsLock'); is false
+PASS lastPointerEvent.getModifierState('ScrollLock'); is false
+PASS lastPointerEvent.getModifierState('NumLock'); is false
+PASS lastPointerEvent.getModifierState('Symbol'); is true
+
+--- move mouse out of target ---
 Received pointerout
 Received mouseout
 PASS lastPointerEvent is non-null.
@@ -100,17 +565,6 @@ PASS lastPointerEvent.x is 13
 PASS lastPointerEvent.y is 21
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 0
-PASS lastPointerEvent.getModifierState('Control'); is false
-PASS lastPointerEvent.getModifierState('Shift'); is false
-PASS lastPointerEvent.getModifierState('Meta'); is false
-PASS lastPointerEvent.getModifierState('Alt'); is false
-PASS lastPointerEvent.getModifierState('AltGraph'); is false
-PASS lastPointerEvent.getModifierState('OS'); is false
-PASS lastPointerEvent.getModifierState('Fn'); is false
-PASS lastPointerEvent.getModifierState('CapsLock'); is false
-PASS lastPointerEvent.getModifierState('ScrollLock'); is false
-PASS lastPointerEvent.getModifierState('NumLock'); is false
-PASS lastPointerEvent.getModifierState('Symbol'); is false
 Received pointerleave
 Received mouseleave
 PASS lastPointerEvent is non-null.
@@ -136,17 +590,6 @@ PASS lastPointerEvent.x is 13
 PASS lastPointerEvent.y is 21
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 0
-PASS lastPointerEvent.getModifierState('Control'); is false
-PASS lastPointerEvent.getModifierState('Shift'); is false
-PASS lastPointerEvent.getModifierState('Meta'); is false
-PASS lastPointerEvent.getModifierState('Alt'); is false
-PASS lastPointerEvent.getModifierState('AltGraph'); is false
-PASS lastPointerEvent.getModifierState('OS'); is false
-PASS lastPointerEvent.getModifierState('Fn'); is false
-PASS lastPointerEvent.getModifierState('CapsLock'); is false
-PASS lastPointerEvent.getModifierState('ScrollLock'); is false
-PASS lastPointerEvent.getModifierState('NumLock'); is false
-PASS lastPointerEvent.getModifierState('Symbol'); is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

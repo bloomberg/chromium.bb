@@ -237,6 +237,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_mousePositionIsUnknown(true)
     , m_mouseDownTimestamp(0)
     , m_touchPressed(false)
+    , m_preventMouseEventForPointerTypeMouse(false)
     , m_inPointerCanceledState(false)
     , m_scrollGestureHandlingNode(nullptr)
     , m_lastGestureScrollOverWidget(false)
@@ -315,6 +316,7 @@ void EventHandler::clear()
     m_scrollbarHandlingScrollGesture = nullptr;
     m_touchPressed = false;
     m_pointerIdManager.clear();
+    m_preventMouseEventForPointerTypeMouse = false;
     m_inPointerCanceledState = false;
     m_mouseDownMayStartDrag = false;
     m_lastShowPressTimestamp = 0;
@@ -969,7 +971,14 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     m_frame->selection().setCaretBlinkingSuspended(true);
 
-    bool swallowEvent = !dispatchMouseEvent(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
+    bool swallowEvent = dispatchPointerEventForMouseEvent(mev.innerNode(), EventTypeNames::pointerdown, mouseEvent);
+
+    if (swallowEvent) {
+        m_preventMouseEventForPointerTypeMouse = true;
+    }
+    if (!m_preventMouseEventForPointerTypeMouse)
+        swallowEvent = swallowEvent || !dispatchMouseEvent(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
+
     // m_selectionInitiationState is initialized after dispatching mousedown
     // event in order not to keep the selection by DOM APIs Because we can't
     // give the user the chance to handle the selection by user action like
@@ -1047,6 +1056,8 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
+    conditionallyEnableMouseEventForPointerTypeMouse(event);
+
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     HitTestResult hoveredNode = HitTestResult();
@@ -1073,6 +1084,8 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
+
+    conditionallyEnableMouseEventForPointerTypeMouse(event);
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event, 0, false, true);
@@ -1253,7 +1266,14 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     if (subframe && passMouseReleaseEventToSubframe(mev, subframe))
         return true;
 
-    bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mouseEvent);
+    bool swallowPointerUpEvent = dispatchPointerEventForMouseEvent(mev.innerNode(), EventTypeNames::pointerup, mouseEvent);
+    bool swallowMouseUpEvent = false;
+    if (!m_preventMouseEventForPointerTypeMouse) {
+        swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mouseEvent);
+    } else {
+        // TODO(crbug/545647): This state should reset with pointercancel too.
+        m_preventMouseEventForPointerTypeMouse = false;
+    }
 
     bool contextMenuEvent = mouseEvent.button() == RightButton;
 #if OS(MACOSX)
@@ -1288,12 +1308,12 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     }
 
     bool swallowMouseReleaseEvent = false;
-    if (!swallowMouseUpEvent)
+    if (!swallowPointerUpEvent && !swallowMouseUpEvent)
         swallowMouseReleaseEvent = handleMouseReleaseEvent(mev);
 
     invalidateClick();
 
-    return swallowMouseUpEvent || swallowClickEvent || swallowMouseReleaseEvent;
+    return swallowPointerUpEvent || swallowMouseUpEvent || swallowClickEvent || swallowMouseReleaseEvent;
 }
 
 bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTarget, const PlatformMouseEvent& event, DataTransfer* dataTransfer)
@@ -3959,6 +3979,12 @@ void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
     m_mousePositionIsUnknown = false;
     m_lastKnownMousePosition = event.position();
     m_lastKnownMouseGlobalPosition = event.globalPosition();
+}
+
+void EventHandler::conditionallyEnableMouseEventForPointerTypeMouse(const PlatformMouseEvent& event)
+{
+    if (event.button() == NoButton)
+        m_preventMouseEventForPointerTypeMouse = false;
 }
 
 bool EventHandler::passMousePressEventToSubframe(MouseEventWithHitTestResults& mev, LocalFrame* subframe)

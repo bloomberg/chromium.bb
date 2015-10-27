@@ -49,6 +49,36 @@ namespace test_runner {
 
 namespace {
 
+WebMouseEvent::Button GetButtonTypeFromButtonNumber(int button_code) {
+  switch (button_code) {
+    case -1:
+      return WebMouseEvent::ButtonNone;
+    case 0:
+      return WebMouseEvent::ButtonLeft;
+    case 1:
+      return WebMouseEvent::ButtonMiddle;
+    case 2:
+      return WebMouseEvent::ButtonRight;
+  }
+  NOTREACHED();
+  return WebMouseEvent::ButtonNone;
+}
+
+int GetWebMouseEventModifierForButton(WebMouseEvent::Button button) {
+  switch (button) {
+    case WebMouseEvent::ButtonNone:
+      return 0;
+    case WebMouseEvent::ButtonLeft:
+      return WebMouseEvent::LeftButtonDown;
+    case WebMouseEvent::ButtonMiddle:
+      return WebMouseEvent::MiddleButtonDown;
+    case WebMouseEvent::ButtonRight:
+      return WebMouseEvent::RightButtonDown;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 void InitMouseEvent(WebInputEvent::Type t,
                     WebMouseEvent::Button b,
                     const WebPoint& pos,
@@ -58,7 +88,7 @@ void InitMouseEvent(WebInputEvent::Type t,
                     WebMouseEvent* e) {
   e->type = t;
   e->button = b;
-  e->modifiers = modifiers;
+  e->modifiers = modifiers | GetWebMouseEventModifierForButton(b);
   e->x = pos.x;
   e->y = pos.y;
   e->globalX = pos.x;
@@ -262,14 +292,6 @@ std::vector<std::string> MakeMenuItemStringsFor(
 // How much we should scroll per event - the value here is chosen to match the
 // WebKit impl and layout test results.
 const float kScrollbarPixelsPerTick = 40.0f;
-
-WebMouseEvent::Button GetButtonTypeFromButtonNumber(int button_code) {
-  if (!button_code)
-    return WebMouseEvent::ButtonLeft;
-  if (button_code == 2)
-    return WebMouseEvent::ButtonRight;
-  return WebMouseEvent::ButtonMiddle;
-}
 
 class MouseDownTask : public WebMethodTask<EventSender> {
  public:
