@@ -162,7 +162,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   bool is_telemetry_navigation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking) &&
-      (transition & ui::PAGE_TRANSITION_TYPED);
+      (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED));
 
   if (!(transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
       !is_telemetry_navigation)
