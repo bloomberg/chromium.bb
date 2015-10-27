@@ -25,6 +25,7 @@ namespace blink {
 
 inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, FrameOwner* owner)
     : Frame(client, host, owner)
+    , m_view(nullptr)
     , m_securityContext(RemoteSecurityContext::create())
     , m_domWindow(RemoteDOMWindow::create(*this))
     , m_windowProxyManager(WindowProxyManager::create(*this))
@@ -147,28 +148,17 @@ void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)
 
 void RemoteFrame::createView()
 {
-    setView(nullptr);
-    if (!tree().parent() || !tree().parent()->isLocalFrame()) {
-        // FIXME: This is not the right place to clear the previous frame's
-        // widget. We do it here because the LocalFrame cleanup after a swap is
-        // still work in progress.
-        if (ownerLayoutObject()) {
-            HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
-            ASSERT(owner);
-            owner->setWidget(nullptr);
-        }
-
+    // If the RemoteFrame does not have a LocalFrame parent, there's no need to
+    // create a widget for it.
+    if (!deprecatedLocalOwner())
         return;
-    }
 
-    RefPtrWillBeRawPtr<RemoteFrameView> view = RemoteFrameView::create(this);
-    setView(view);
+    ASSERT(!deprecatedLocalOwner()->ownedWidget());
 
-    if (ownerLayoutObject()) {
-        HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
-        ASSERT(owner);
-        owner->setWidget(view);
-    }
+    setView(RemoteFrameView::create(this));
+
+    if (ownerLayoutObject())
+        deprecatedLocalOwner()->setWidget(m_view);
 }
 
 RemoteFrameClient* RemoteFrame::remoteFrameClient() const
