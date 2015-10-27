@@ -74,9 +74,8 @@ public:
     }
     void removeTrailingExpansion()
     {
-        if (!m_totalOpportunities)
+        if (!m_totalOpportunities || !m_runsWithExpansions.last())
             return;
-        ASSERT(m_runsWithExpansions.last());
         m_runsWithExpansions.last()--;
         m_totalOpportunities--;
     }
