@@ -325,7 +325,7 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
 }
 
 .tree-row:not([selected]) [volume-type-icon='provided'],
-cr-menu-item.providers-menu-item .menu-icon {
+#add-new-services-menu cr-menu-item .icon.start {
   /* Apply the rgb(90, 90, 90) mask. */
   -webkit-filter: contrast(0) brightness(0.7143);
 }
