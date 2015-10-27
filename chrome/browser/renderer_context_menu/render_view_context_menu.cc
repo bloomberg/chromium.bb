@@ -110,9 +110,11 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/text_elider.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -388,9 +390,21 @@ bool g_custom_id_ranges_initialized = false;
 void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
   int width = icon.Width();
   int height = icon.Height();
+
+  // Profile avatars are supposed to be displayed with a circular mask, so apply
+  // one.
+  gfx::Path circular_mask;
+  gfx::Canvas canvas(icon.Size(), 1.0f, true);
+  circular_mask.addCircle(SkIntToScalar(width) / 2, SkIntToScalar(height) / 2,
+                          SkIntToScalar(std::min(width, height)) / 2);
+  canvas.ClipPath(circular_mask, true);
+  canvas.DrawImageInt(*icon.ToImageSkia(), 0, 0);
+
   gfx::CalculateFaviconTargetSize(&width, &height);
-  menu->SetIcon(menu->GetItemCount() - 1,
-                profiles::GetSizedAvatarIcon(icon, true, width, height));
+  gfx::Image sized_icon = profiles::GetSizedAvatarIcon(
+      gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep())), true, width,
+      height);
+  menu->SetIcon(menu->GetItemCount() - 1, sized_icon);
 }
 
 void OnProfileCreated(chrome::HostDesktopType desktop_type,
