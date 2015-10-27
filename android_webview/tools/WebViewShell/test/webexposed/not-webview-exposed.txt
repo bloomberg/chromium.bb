@@ -1,21 +1,21 @@
 # speech not enabled crbug.com/487255
-interface SpeechSynthesisEvent # speech not enabled
-interface SpeechSynthesisUtterance
+interface SpeechSynthesisEvent : Event # speech not enabled
+interface SpeechSynthesisUtterance : EventTarget
 interface webkitSpeechGrammar
 interface webkitSpeechGrammarList
-interface webkitSpeechRecognition
-interface webkitSpeechRecognitionError
-interface webkitSpeechRecognitionEvent
+interface webkitSpeechRecognition : EventTarget
+interface webkitSpeechRecognitionError : Event
+interface webkitSpeechRecognitionEvent : Event
 
 # permissions api not enabled in webview crbug.com/490120
-interface PermissionStatus
+interface PermissionStatus : EventTarget
 interface Permissions
 
 # notifications api not enabled in webview crbug.com/434712
-interface Notification
+interface Notification : EventTarget
 
 # not yet supported in webview.
-interface SharedWorker
+interface SharedWorker : EventTarget
 
 # push API not supported in webview
 interface PushManager
@@ -23,11 +23,12 @@ interface PushSubscription
 
 # presentation api not supported in webview crbug.com/521319
 interface Presentation
-interface PresentationAvailability
-interface PresentationConnection
-interface PresentationConnectionAvailableEvent
-interface PresentationRequest
+interface PresentationAvailability : EventTarget
+interface PresentationConnection : EventTarget
+interface PresentationConnectionAvailableEvent : Event
+interface PresentationRequest : EventTarget
 
 # TODO(timvolodine): check screen orientation lock api
 # TODO(timvolodine): check notifications in service workers
 # TODO(timvolodine): add File System API
+
