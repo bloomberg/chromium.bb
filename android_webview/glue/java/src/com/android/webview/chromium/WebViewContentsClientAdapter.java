@@ -275,6 +275,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private static class WebResourceErrorImpl extends WebResourceError {
         private final AwWebResourceError mError;
 

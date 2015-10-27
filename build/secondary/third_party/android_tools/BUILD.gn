@@ -33,6 +33,7 @@ android_resources("android_support_design_resources") {
   resource_dirs = [ "$android_sdk_root/extras/android/support/design/res" ]
   deps = [
     ":android_support_v7_appcompat_resources",
+    ":android_support_v7_recyclerview_resources",
   ]
   custom_package = "android.support.design"
 }

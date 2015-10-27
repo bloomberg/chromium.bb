@@ -250,7 +250,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         // Set the title and arrow icons for the header.
         allowedGroup.setGroupTitle(resourceId, numAllowed);
         TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
-                mAllowListExpanded ? R.drawable.ic_expand : R.drawable.ic_collapse);
+                mAllowListExpanded ? R.drawable.ic_expanded : R.drawable.ic_collapsed);
         allowedGroup.setExpanded(mAllowListExpanded);
         allowedGroup.setIcon(icon);
     }
@@ -267,7 +267,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         // Set the title and arrow icons for the header.
         blockedGroup.setGroupTitle(R.string.website_settings_blocked_group_heading, numBlocked);
         TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
-                mBlockListExpanded ? R.drawable.ic_expand : R.drawable.ic_collapse);
+                mBlockListExpanded ? R.drawable.ic_expanded : R.drawable.ic_collapsed);
         blockedGroup.setExpanded(mBlockListExpanded);
         blockedGroup.setIcon(icon);
     }

@@ -4,6 +4,8 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Handler;
 import android.webkit.WebMessage;
 import android.webkit.WebMessagePort;
@@ -14,6 +16,7 @@ import org.chromium.android_webview.AwMessagePort;
  * This class is used to convert a WebMessagePort to a MessagePort in chromium
  * world.
  */
+@TargetApi(Build.VERSION_CODES.M)
 public class WebMessagePortAdapter extends WebMessagePort {
 
     private AwMessagePort mPort;

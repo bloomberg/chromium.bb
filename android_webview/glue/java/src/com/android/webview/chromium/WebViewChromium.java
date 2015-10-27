@@ -1376,6 +1376,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public void postMessageToMainFrame(final WebMessage message, final Uri targetOrigin) {
         if (checkNeedsPost()) {
             mRunQueue.addTask(new Runnable() {
@@ -1544,6 +1545,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         return mAwContents.getAccessibilityNodeProvider();
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onProvideVirtualStructure(final ViewStructure structure) {
         mFactory.startYourEngines(false);
@@ -1574,6 +1576,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     // When creating the Assist structure, the left and top are relative to the parent node, and
     // scroll offsets are not needed.
+    @TargetApi(Build.VERSION_CODES.M)
     private void createAssistStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
             int parentX, int parentY) {
         viewNode.setClassName(node.className);
