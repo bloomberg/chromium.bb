@@ -17,9 +17,11 @@ class TimingFunction;
 
 class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:
+  enum class DurationBehavior { DELTA_BASED, CONSTANT };
   static scoped_ptr<ScrollOffsetAnimationCurve> Create(
       const gfx::ScrollOffset& target_value,
-      scoped_ptr<TimingFunction> timing_function);
+      scoped_ptr<TimingFunction> timing_function,
+      DurationBehavior = DurationBehavior::DELTA_BASED);
 
   ~ScrollOffsetAnimationCurve() override;
 
@@ -35,7 +37,8 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
 
  private:
   ScrollOffsetAnimationCurve(const gfx::ScrollOffset& target_value,
-                             scoped_ptr <TimingFunction> timing_function);
+                             scoped_ptr<TimingFunction> timing_function,
+                             DurationBehavior);
 
   gfx::ScrollOffset initial_value_;
   gfx::ScrollOffset target_value_;
@@ -45,6 +48,7 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   base::TimeDelta last_retarget_;
 
   scoped_ptr<TimingFunction> timing_function_;
+  DurationBehavior duration_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimationCurve);
 };

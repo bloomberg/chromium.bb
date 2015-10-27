@@ -3453,8 +3453,9 @@ void LayerTreeHostImpl::ScrollAnimationCreate(
         layer_impl->id(), target_offset, current_offset);
 
   scoped_ptr<ScrollOffsetAnimationCurve> curve =
-      ScrollOffsetAnimationCurve::Create(target_offset,
-                                         EaseInOutTimingFunction::Create());
+      ScrollOffsetAnimationCurve::Create(
+          target_offset, EaseInOutTimingFunction::Create(),
+          ScrollOffsetAnimationCurve::DurationBehavior::CONSTANT);
   curve->SetInitialValue(current_offset);
 
   scoped_ptr<Animation> animation = Animation::Create(
