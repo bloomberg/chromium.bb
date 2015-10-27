@@ -202,6 +202,7 @@
       'public/browser/page_navigator.cc',
       'public/browser/page_navigator.h',
       'public/browser/pepper_flash_settings_helper.h',
+      'public/browser/permission_manager.h',
       'public/browser/permission_type.h',
       'public/browser/platform_notification_context.h',
       'public/browser/platform_notification_service.h',
