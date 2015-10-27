@@ -19,6 +19,7 @@
 namespace content {
 
 class NavigatorDelegate;
+class ServiceWorkerNavigationHandle;
 struct NavigationRequestInfo;
 
 // This class keeps track of a single navigation. It is created upon receipt of
@@ -102,6 +103,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool is_transferring() const { return is_transferring_; }
   void set_is_transferring(bool is_transferring) {
     is_transferring_ = is_transferring;
+  }
+
+  // PlzNavigate
+  ServiceWorkerNavigationHandle* service_worker_handle() const {
+    return service_worker_handle_.get();
   }
 
   typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
@@ -193,6 +199,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;
+
+  // PlzNavigate
+  // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
+  // corresponding ServiceWorkerNetworkProvider is created in the renderer.
+  scoped_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

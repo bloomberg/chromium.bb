@@ -23,6 +23,7 @@ class NavigationResourceHandler;
 class ResourceContext;
 class ResourceHandler;
 class ResourceRequestBody;
+class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
 struct ResourceResponse;
 
@@ -40,6 +41,7 @@ class NavigationURLLoaderImplCore {
 
   // Starts the request.
   void Start(ResourceContext* resource_context,
+             ServiceWorkerNavigationHandleCore* service_worker_handle_core,
              scoped_ptr<NavigationRequestInfo> request_info);
 
   // Follows the current pending redirect.

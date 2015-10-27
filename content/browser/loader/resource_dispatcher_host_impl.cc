@@ -1969,7 +1969,8 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
     const NavigationRequestInfo& info,
-    NavigationURLLoaderImplCore* loader) {
+    NavigationURLLoaderImplCore* loader,
+    ServiceWorkerNavigationHandleCore* service_worker_handle_core) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2034,10 +2035,11 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   new_request->SetLoadFlags(load_flags);
 
+  storage::BlobStorageContext* blob_context = GetBlobStorageContext(
+      GetChromeBlobStorageContextForResourceContext(resource_context));
+
   // Resolve elements from request_body and prepare upload data.
   if (info.request_body.get()) {
-    storage::BlobStorageContext* blob_context = GetBlobStorageContext(
-        GetChromeBlobStorageContextForResourceContext(resource_context));
     AttachRequestBodyBlobDataHandles(
         info.request_body.get(),
         blob_context);
@@ -2094,15 +2096,19 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   if (new_request->url().SchemeIs(url::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
-    ChromeBlobStorageContext* blob_context =
-        GetChromeBlobStorageContextForResourceContext(resource_context);
     storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
         new_request.get(),
-        blob_context->context()->GetBlobDataFromPublicURL(new_request->url()));
+        blob_context->GetBlobDataFromPublicURL(new_request->url()));
   }
 
-  // TODO(davidben): Attach ServiceWorkerRequestHandler.
-  // TODO(michaeln): Help out with this and that.
+  RequestContextFrameType frame_type =
+      info.is_main_frame ? REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL
+                         : REQUEST_CONTEXT_FRAME_TYPE_NESTED;
+  ServiceWorkerRequestHandler::InitializeForNavigation(
+      new_request.get(), service_worker_handle_core, blob_context,
+      info.begin_params.skip_service_worker, resource_type,
+      info.begin_params.request_context_type, frame_type, info.request_body);
+
   // TODO(davidben): Attach AppCacheInterceptor.
 
   scoped_ptr<ResourceHandler> handler(new NavigationResourceHandler(

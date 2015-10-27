@@ -15,6 +15,7 @@ namespace content {
 class BrowserContext;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
+class ServiceWorkerNavigationHandle;
 struct CommonNavigationParams;
 struct NavigationRequestInfo;
 
@@ -35,6 +36,7 @@ class CONTENT_EXPORT NavigationURLLoader {
   static scoped_ptr<NavigationURLLoader> Create(
       BrowserContext* browser_context,
       scoped_ptr<NavigationRequestInfo> request_info,
+      ServiceWorkerNavigationHandle* service_worker_handle,
       NavigationURLLoaderDelegate* delegate);
 
   // For testing purposes; sets the factory for use in testing.

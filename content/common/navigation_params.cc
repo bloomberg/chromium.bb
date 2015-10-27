@@ -126,6 +126,7 @@ RequestNavigationParams::RequestNavigationParams()
       current_history_list_offset(-1),
       current_history_list_length(0),
       should_clear_history_list(false),
+      should_create_service_worker(false),
       service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
 
 RequestNavigationParams::RequestNavigationParams(
@@ -159,6 +160,7 @@ RequestNavigationParams::RequestNavigationParams(
       current_history_list_offset(current_history_list_offset),
       current_history_list_length(current_history_list_length),
       should_clear_history_list(should_clear_history_list),
+      should_create_service_worker(false),
       service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
 
 RequestNavigationParams::~RequestNavigationParams() {

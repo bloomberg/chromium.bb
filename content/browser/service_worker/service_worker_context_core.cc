@@ -517,6 +517,33 @@ ServiceWorkerVersion* ServiceWorkerContextCore::GetLiveVersion(
   return (it != live_versions_.end()) ? it->second : NULL;
 }
 
+// PlzNavigate
+void ServiceWorkerContextCore::AddNavigationHandleCore(
+    int service_worker_provider_id,
+    ServiceWorkerNavigationHandleCore* handle) {
+  auto result = navigation_handle_cores_map_.insert(
+      std::pair<int, ServiceWorkerNavigationHandleCore*>(
+          service_worker_provider_id, handle));
+  DCHECK(result.second)
+      << "Inserting a duplicate ServiceWorkerNavigationHandleCore";
+}
+
+// PlzNavigate
+void ServiceWorkerContextCore::RemoveNavigationHandleCore(
+    int service_worker_provider_id) {
+  navigation_handle_cores_map_.erase(service_worker_provider_id);
+}
+
+// PlzNavigate
+ServiceWorkerNavigationHandleCore*
+ServiceWorkerContextCore::GetNavigationHandleCore(
+    int service_worker_provider_id) {
+  auto result = navigation_handle_cores_map_.find(service_worker_provider_id);
+  if (result == navigation_handle_cores_map_.end())
+    return nullptr;
+  return result->second;
+}
+
 void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
   // TODO(horo): If we will see crashes here, we have to find the root cause of
   // the version ID conflict. Otherwise change CHECK to DCHECK.

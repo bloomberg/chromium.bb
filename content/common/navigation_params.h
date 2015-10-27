@@ -285,10 +285,14 @@ struct CONTENT_EXPORT RequestNavigationParams {
   bool should_clear_history_list;
 
   // PlzNavigate
-  // The ServiceWorkerProviderHost ID used for navigations.
-  // Set to kInvalidServiceWorkerProviderId for sandboxed frames and sync loads.
-  // This parameter is not used in the current navigation architecture, where it
-  // will always be equal to kInvalidServiceWorkerProviderId.
+  // Whether a ServiceWorkerProviderHost should be created for the window.
+  bool should_create_service_worker;
+
+  // PlzNavigate
+  // The ServiceWorkerProviderHost ID used for navigations, if it was already
+  // created by the browser. Set to kInvalidServiceWorkerProviderId otherwise.
+  // This parameter is not used in the current navigation architecture, where
+  // it will always be equal to kInvalidServiceWorkerProviderId.
   int service_worker_provider_id;
 };
 

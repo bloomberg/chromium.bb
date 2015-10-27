@@ -27,6 +27,7 @@ class TestNavigationURLLoaderFactory : public NavigationURLLoaderFactory {
   scoped_ptr<NavigationURLLoader> CreateLoader(
       BrowserContext* browser_context,
       scoped_ptr<NavigationRequestInfo> request_info,
+      ServiceWorkerNavigationHandle* service_worker_handle,
       NavigationURLLoaderDelegate* delegate) override;
 
  private:

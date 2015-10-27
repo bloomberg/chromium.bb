@@ -52,6 +52,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   using GetRegistrationForReadyCallback =
       base::Callback<void(ServiceWorkerRegistration* reigstration)>;
 
+  // PlzNavigate
+  // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
+  // ServiceWorkerNetworkProvider will later be created in the renderer, should
+  // the navigation succeed.
+  static scoped_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
+      base::WeakPtr<ServiceWorkerContextCore> context);
+
   // When this provider host is for a Service Worker context, |route_id| is
   // MSG_ROUTING_NONE. When this provider host is for a Document,
   // |route_id| is the frame ID of the Document. When this provider host is for
@@ -202,6 +209,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return dispatcher_host_;
   }
 
+  // PlzNavigate
+  // Completes initialization of provider hosts used for navigation requests.
+  void CompleteNavigationInitialized(
+      int process_id,
+      int frame_routing_id,
+      ServiceWorkerDispatcherHost* dispatcher_host);
+
   // Sends event messages to the renderer. Events for the worker are queued up
   // until the worker thread id is known via SetReadyToSendMessagesToWorker().
   void SendUpdateFoundMessage(
@@ -288,6 +302,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   bool IsReadyToSendMessages() const;
   void Send(IPC::Message* message) const;
+
+  // Finalizes cross-site transfers and navigation-initalized hosts.
+  void FinalizeInitialization(int process_id,
+                              int frame_routing_id,
+                              ServiceWorkerDispatcherHost* dispatcher_host);
 
   std::string client_uuid_;
   int render_process_id_;

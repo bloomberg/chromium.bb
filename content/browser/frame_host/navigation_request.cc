@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/public/browser/navigation_controller.h"
@@ -19,6 +20,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
@@ -252,6 +254,17 @@ void NavigationRequest::OnResponseStarted(
     scoped_ptr<StreamHandle> body) {
   DCHECK(state_ == STARTED);
   state_ = RESPONSE_STARTED;
+
+  // Update the service worker params of the request params.
+  request_params_.should_create_service_worker =
+      (frame_tree_node_->current_replication_state().sandbox_flags &
+       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
+  if (navigation_handle_->service_worker_handle()) {
+    request_params_.service_worker_provider_id =
+        navigation_handle_->service_worker_handle()
+            ->service_worker_provider_host_id();
+  }
+
   frame_tree_node_->navigator()->CommitNavigation(frame_tree_node_,
                                                   response.get(), body.Pass());
 }
@@ -282,7 +295,7 @@ void NavigationRequest::OnStartChecksComplete(
 
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      info_.Pass(), this);
+      info_.Pass(), navigation_handle_->service_worker_handle(), this);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(

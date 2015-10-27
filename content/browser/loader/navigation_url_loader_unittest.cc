@@ -188,7 +188,7 @@ class NavigationURLLoaderTest : public testing::Test {
                                   -1, scoped_refptr<ResourceRequestBody>()));
 
     return NavigationURLLoader::Create(browser_context_.get(),
-                                       request_info.Pass(), delegate);
+                                       request_info.Pass(), nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

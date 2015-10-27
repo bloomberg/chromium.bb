@@ -2648,20 +2648,18 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
   // exists).
-  if (!ServiceWorkerNetworkProvider::FromDocumentState(
-          DocumentState::FromDataSource(datasource))) {
-    ServiceWorkerProviderType provider_type =
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW;
-    if ((frame->effectiveSandboxFlags() & blink::WebSandboxFlags::Origin) ==
-        blink::WebSandboxFlags::Origin) {
-      provider_type = SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME;
-    }
-    scoped_ptr<ServiceWorkerNetworkProvider> network_provider(
-        new ServiceWorkerNetworkProvider(routing_id_, provider_type));
-    ServiceWorkerNetworkProvider::AttachToDocumentState(
-        DocumentState::FromDataSource(datasource),
-        network_provider.Pass());
-  }
+  if (ServiceWorkerNetworkProvider::FromDocumentState(
+          DocumentState::FromDataSource(datasource)))
+    return;
+
+  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
+      DocumentState::FromDataSource(datasource)->navigation_state());
+
+  ServiceWorkerNetworkProvider::AttachToDocumentState(
+      DocumentState::FromDataSource(datasource),
+      ServiceWorkerNetworkProvider::CreateForNavigation(
+          routing_id_, navigation_state->request_params(),
+          frame->effectiveSandboxFlags(), content_initiated));
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
@@ -3420,12 +3418,14 @@ void RenderFrameImpl::willSendRequest(
       ServiceWorkerNetworkProvider* provider =
           ServiceWorkerNetworkProvider::FromDocumentState(
               DocumentState::FromDataSource(frame->provisionalDataSource()));
+      DCHECK(provider);
       provider_id = provider->provider_id();
     }
   } else if (frame->dataSource()) {
     ServiceWorkerNetworkProvider* provider =
         ServiceWorkerNetworkProvider::FromDocumentState(
             DocumentState::FromDataSource(frame->dataSource()));
+    DCHECK(provider);
     provider_id = provider->provider_id();
     // Explicitly set the SkipServiceWorker flag here if the renderer process
     // hasn't received SetControllerServiceWorker message.

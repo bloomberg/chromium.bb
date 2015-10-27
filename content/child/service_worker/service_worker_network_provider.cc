@@ -5,9 +5,13 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/command_line.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
+#include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -44,10 +48,66 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
       datasource_userdata->GetUserData(&kUserDataKey));
 }
 
+// static
+scoped_ptr<ServiceWorkerNetworkProvider>
+ServiceWorkerNetworkProvider::CreateForNavigation(
+    int route_id,
+    const RequestNavigationParams& request_params,
+    blink::WebSandboxFlags sandbox_flags,
+    bool content_initiated) {
+  bool browser_side_navigation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation);
+  bool should_create_provider_for_window = false;
+  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
+  scoped_ptr<ServiceWorkerNetworkProvider> network_provider;
+
+  // Determine if a ServiceWorkerNetworkProvider should be created and properly
+  // initialized for the navigation. A default ServiceWorkerNetworkProvider
+  // will always be created since it is expected in a certain number of places,
+  // however it will have an invalid id.
+  // PlzNavigate: |service_worker_provider_id| can be sent by the browser, if
+  // it already created the SeviceWorkerProviderHost.
+  if (browser_side_navigation && !content_initiated) {
+    should_create_provider_for_window =
+        request_params.should_create_service_worker;
+    service_worker_provider_id = request_params.service_worker_provider_id;
+    DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+               service_worker_provider_id) ||
+           service_worker_provider_id == kInvalidServiceWorkerProviderId);
+  } else {
+    should_create_provider_for_window =
+        (sandbox_flags & blink::WebSandboxFlags::Origin) !=
+        blink::WebSandboxFlags::Origin;
+  }
+
+  // Now create the ServiceWorkerNetworkProvider (with invalid id if needed).
+  if (should_create_provider_for_window) {
+    if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
+      network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
+          new ServiceWorkerNetworkProvider(route_id,
+                                           SERVICE_WORKER_PROVIDER_FOR_WINDOW));
+    } else {
+      CHECK(browser_side_navigation);
+      DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+          service_worker_provider_id));
+      network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
+          new ServiceWorkerNetworkProvider(route_id,
+                                           SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                           service_worker_provider_id));
+    }
+  } else {
+    network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
+        new ServiceWorkerNetworkProvider());
+  }
+  return network_provider.Pass();
+}
+
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int route_id,
-    ServiceWorkerProviderType provider_type)
-    : provider_id_(GenerateProviderIdForType(provider_type)) {
+    ServiceWorkerProviderType provider_type,
+    int browser_provider_id)
+    : provider_id_(browser_provider_id) {
   if (provider_id_ == kInvalidServiceWorkerProviderId)
     return;
   context_ = new ServiceWorkerProviderContext(provider_id_, provider_type);
@@ -56,6 +116,16 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
       provider_id_, route_id, provider_type));
 }
+
+ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
+    int route_id,
+    ServiceWorkerProviderType provider_type)
+    : ServiceWorkerNetworkProvider(route_id,
+                                   provider_type,
+                                   GenerateProviderIdForType(provider_type)) {}
+
+ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
+    : provider_id_(kInvalidServiceWorkerProviderId) {}
 
 ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
   if (provider_id_ == kInvalidServiceWorkerProviderId)

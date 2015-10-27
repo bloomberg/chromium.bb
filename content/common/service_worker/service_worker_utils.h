@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
@@ -38,6 +39,12 @@ class ServiceWorkerUtils {
   static bool ContainsDisallowedCharacter(const GURL& scope,
                                           const GURL& script_url,
                                           std::string* error_message);
+
+  // PlzNavigate
+  // Returns true if the |provider_id| was assigned by the browser process.
+  static bool IsBrowserAssignedProviderId(int provider_id) {
+    return provider_id < kInvalidServiceWorkerProviderId;
+  }
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

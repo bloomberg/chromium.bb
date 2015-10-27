@@ -19,6 +19,7 @@ struct RedirectInfo;
 namespace content {
 
 class NavigationURLLoaderImplCore;
+class ServiceWorkerNavigationHandle;
 class StreamHandle;
 struct ResourceResponse;
 
@@ -27,6 +28,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   NavigationURLLoaderImpl(BrowserContext* browser_context,
                           scoped_ptr<NavigationRequestInfo> request_info,
+                          ServiceWorkerNavigationHandle* service_worker_handle,
                           NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderImpl() override;
 

@@ -42,7 +42,6 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const bool parent_is_main_frame;
 
   const int frame_tree_node_id;
-  int service_worker_provider_id;
 
   scoped_refptr<ResourceRequestBody> request_body;
 };

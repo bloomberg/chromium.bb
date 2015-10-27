@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_handle.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -23,6 +25,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_util.h"
@@ -733,10 +736,36 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
                                     bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
     return;
   }
-  scoped_ptr<ServiceWorkerProviderHost> provider_host(
-      new ServiceWorkerProviderHost(render_process_id_, route_id, provider_id,
-                                    provider_type, GetContext()->AsWeakPtr(),
-                                    this));
+
+  scoped_ptr<ServiceWorkerProviderHost> provider_host;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
+      ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
+    // PlzNavigate
+    // Retrieve the provider host previously created for navigation requests.
+    ServiceWorkerNavigationHandleCore* navigation_handle_core =
+        GetContext()->GetNavigationHandleCore(provider_id);
+    if (navigation_handle_core != nullptr)
+      provider_host = navigation_handle_core->RetrievePreCreatedHost();
+    if (provider_host == nullptr) {
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
+      return;
+    }
+    DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, provider_type);
+    provider_host->CompleteNavigationInitialized(render_process_id_, route_id,
+                                                 this);
+  } else {
+    if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
+      return;
+    }
+    provider_host =
+        scoped_ptr<ServiceWorkerProviderHost>(new ServiceWorkerProviderHost(
+            render_process_id_, route_id, provider_id, provider_type,
+            GetContext()->AsWeakPtr(), this));
+  }
   GetContext()->AddProviderHost(provider_host.Pass());
 }
 

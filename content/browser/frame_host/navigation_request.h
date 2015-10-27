@@ -171,9 +171,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // redirects.
   // Note: |common_params_| and |begin_params_| are not const as they can be
   // modified during redirects.
+  // Note: |request_params_| is not const because service_worker_provider_id
+  // and should_create_service_worker will be set in OnResponseStarted.
   CommonNavigationParams common_params_;
   BeginNavigationParams begin_params_;
-  const RequestNavigationParams request_params_;
+  RequestNavigationParams request_params_;
   const bool browser_initiated_;
 
   NavigationState state_;

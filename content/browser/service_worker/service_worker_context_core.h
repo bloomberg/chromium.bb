@@ -42,6 +42,7 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerDatabaseTaskManager;
 class ServiceWorkerHandle;
 class ServiceWorkerJobCoordinator;
+class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerStorage;
@@ -223,6 +224,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     return live_versions_;
   }
 
+  // PlzNavigate
+  // Methods to manage the map keeping track of all
+  // ServiceWorkerNavigationHandleCores registered for ongoing navigations.
+  void AddNavigationHandleCore(int service_worker_provider_id,
+                               ServiceWorkerNavigationHandleCore* handle);
+  void RemoveNavigationHandleCore(int service_worker_provider_id);
+  ServiceWorkerNavigationHandleCore* GetNavigationHandleCore(
+      int service_worker_provider_id);
+
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
@@ -298,6 +308,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   std::map<int64, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
+
+  // PlzNavigate
+  // Map of ServiceWorkerNavigationHandleCores used for navigation requests.
+  std::map<int, ServiceWorkerNavigationHandleCore*>
+      navigation_handle_cores_map_;
+
   int next_handle_id_;
   int next_registration_handle_id_;
   // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().

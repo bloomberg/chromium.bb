@@ -312,6 +312,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
   IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
   IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
+  IPC_STRUCT_TRAITS_MEMBER(should_create_service_worker)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_provider_id)
 IPC_STRUCT_TRAITS_END()
 

@@ -21,7 +21,6 @@ NavigationRequestInfo::NavigationRequestInfo(
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
       frame_tree_node_id(frame_tree_node_id),
-      service_worker_provider_id(kInvalidServiceWorkerProviderId),
       request_body(request_body) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
