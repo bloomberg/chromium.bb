@@ -33,7 +33,6 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
-#include "core/html/parser/ParsedChunkQueue.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "wtf/PassOwnPtr.h"
@@ -58,7 +57,6 @@ public:
         OwnPtr<XSSAuditor> xssAuditor;
         OwnPtr<TokenPreloadScanner> preloadScanner;
         OwnPtr<TextResourceDecoder> decoder;
-        ParsedChunkQueue* parsedChunkQueue;
         // outstandingTokenLimit must be greater than or equal to
         // pendingTokenLimit
         size_t outstandingTokenLimit;
@@ -121,7 +119,6 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
     DocumentEncodingData m_lastSeenEncodingData;
     OwnPtr<WebTaskRunner> m_loadingTaskRunner;
-    ParsedChunkQueue* m_parsedChunkQueue;
 
     bool m_startingScript;
 };

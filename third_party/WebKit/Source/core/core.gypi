@@ -3025,8 +3025,6 @@
             'html/parser/HTMLViewSourceParser.h',
             'html/parser/InputStreamPreprocessor.h',
             'html/parser/NestingLevelIncrementer.h',
-            'html/parser/ParsedChunkQueue.cpp',
-            'html/parser/ParsedChunkQueue.h',
             'html/parser/PreloadRequest.cpp',
             'html/parser/ResourcePreloader.cpp',
             'html/parser/TextDocumentParser.cpp',
