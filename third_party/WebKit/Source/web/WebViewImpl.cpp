@@ -3852,9 +3852,15 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
 
 void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage)
 {
-    if (isNewNavigation && !isNavigationWithinPage) {
-        pageScaleConstraintsSet().setNeedsReset(true);
-        m_pageImportanceSignals.onCommitLoad();
+    if (!isNavigationWithinPage) {
+        m_shouldDispatchFirstVisuallyNonEmptyLayout = true;
+        m_shouldDispatchFirstLayoutAfterFinishedParsing = true;
+        m_shouldDispatchFirstLayoutAfterFinishedLoading = true;
+
+        if (isNewNavigation) {
+            pageScaleConstraintsSet().setNeedsReset(true);
+            m_pageImportanceSignals.onCommitLoad();
+        }
     }
 
     // Give the visual viewport's scroll layer its initial size.
@@ -4138,9 +4144,6 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // attempt to paint too early in the next page load.
         m_layerTreeView->setDeferCommits(true);
         m_layerTreeView->clearRootLayer();
-        m_shouldDispatchFirstVisuallyNonEmptyLayout = true;
-        m_shouldDispatchFirstLayoutAfterFinishedParsing = true;
-        m_shouldDispatchFirstLayoutAfterFinishedLoading = true;
         visualViewport.clearLayersForTreeView(m_layerTreeView);
     }
 }
