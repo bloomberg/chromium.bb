@@ -27,7 +27,7 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute DOMString target;
     // FIXME: ping should be a DOMSettableTokenList.
     [Reflect] attribute DOMString ping;
-    // FIXME: download, rel, relList, hreflang and type are missing.
+    // FIXME: download, rel, relList are missing
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLAreaElement-partial
