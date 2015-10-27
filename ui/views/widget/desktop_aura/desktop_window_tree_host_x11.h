@@ -347,6 +347,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // the frame when |xwindow_| gains focus or handles a mouse button event.
   bool urgency_hint_set_;
 
+  bool activatable_;
+
   base::CancelableCallback<void()> delayed_resize_task_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;

@@ -172,6 +172,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       window_parent_(NULL),
       custom_window_shape_(false),
       urgency_hint_set_(false),
+      activatable_(true),
       close_widget_factory_(this) {
 }
 
@@ -277,6 +278,7 @@ void DesktopWindowTreeHostX11::CleanUpWindowList(
 void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
   content_window_ = content_window;
+  activatable_ = (params.activatable == Widget::InitParams::ACTIVATABLE_YES);
 
   // TODO(erg): Check whether we *should* be building a WindowTreeHost here, or
   // whether we should be proxying requests to another DRWHL.
@@ -400,9 +402,6 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
     MapWindow(show_state);
 
   switch (show_state) {
-    case ui::SHOW_STATE_NORMAL:
-      Activate();
-      break;
     case ui::SHOW_STATE_MAXIMIZED:
       Maximize();
       break;
@@ -414,6 +413,14 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
       break;
     default:
       break;
+  }
+
+  // Makes the window activated by default if the state is not INACTIVE or
+  // MINIMIZED.
+  if (show_state != ui::SHOW_STATE_INACTIVE &&
+      show_state != ui::SHOW_STATE_MINIMIZED &&
+      activatable_) {
+    Activate();
   }
 
   native_widget_delegate_->AsWidget()->SetInitialFocus(show_state);

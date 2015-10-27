@@ -258,7 +258,7 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   scoped_ptr<Textfield> textfield(new Textfield);
   textfield->SetBounds(0, 0, 200, 20);
   widget->GetRootView()->AddChildView(textfield.get());
-  widget->Show();
+  widget->ShowInactive();
   textfield->RequestFocus();
 
   EXPECT_FALSE(widget->IsActive());
