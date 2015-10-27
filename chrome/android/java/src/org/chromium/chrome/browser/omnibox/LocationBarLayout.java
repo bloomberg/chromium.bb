@@ -448,9 +448,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
             // It's important to use the page transition from the suggestion or we might end
             // up saving generated URLs as typed URLs, which would then pollute the subsequent
-            // omnibox results.
-            loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestionMatch.getTransition(),
-                    suggestionMatchPosition, suggestionMatch.getType());
+            // omnibox results. There is one special case where the suggestion text was pasted,
+            // where we want the transition type to be LINK.
+            int transition = suggestionMatch.getType() == OmniboxSuggestion.Type.URL_WHAT_YOU_TYPED
+                    && mUrlBar.isPastedText() ? PageTransition.LINK
+                            : suggestionMatch.getTransition();
+
+            loadUrlFromOmniboxMatch(suggestionMatchUrl, transition, suggestionMatchPosition,
+                    suggestionMatch.getType());
         }
     }
 

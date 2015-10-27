@@ -122,6 +122,8 @@ public class UrlBar extends VerticallyFixedEditText {
     private boolean mInBatchEditMode;
     private boolean mSelectionChangedInBatchMode;
 
+    private boolean mIsPastedText;
+
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
      * E.g. If the user is typing a URL, then erases it and starts typing a query in Arabic,
@@ -608,6 +610,7 @@ public class UrlBar extends VerticallyFixedEditText {
 
                 Selection.setSelection(getText(), max);
                 getText().replace(min, max, pasteString);
+                mIsPastedText = true;
                 return true;
             }
         }
@@ -754,6 +757,12 @@ public class UrlBar extends VerticallyFixedEditText {
         int hostStart = urlString.indexOf(host);
         int hostEnd = hostStart + host.length();
         setSelection(hostEnd);
+    }
+
+    @Override
+    protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+        super.onTextChanged(text, start, lengthBefore, lengthAfter);
+        mIsPastedText = false;
     }
 
     @Override
@@ -997,6 +1006,13 @@ public class UrlBar extends VerticallyFixedEditText {
      */
     public void deEmphasizeUrl() {
         OmniboxUrlEmphasizer.deEmphasizeUrl(getText());
+    }
+
+    /**
+     * @return Whether the current UrlBar input has been pasted from the clipboard.
+     */
+    public boolean isPastedText() {
+        return mIsPastedText;
     }
 
     /**
