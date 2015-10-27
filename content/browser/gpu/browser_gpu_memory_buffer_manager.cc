@@ -504,22 +504,55 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
     CreateGpuMemoryBufferFromHandleRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Early out if service side allocation is not supported.
-  if (!IsNativeGpuMemoryBufferConfiguration(request->format, request->usage)) {
-    request->event.Signal();
+  gfx::GpuMemoryBufferId new_id = content::GetNextGenericSharedMemoryId();
+
+  // Use service side allocation for native types.
+  if (request->handle.type != gfx::SHARED_MEMORY_BUFFER) {
+    // Early out if service side allocation is not supported.
+    if (request->handle.type != GpuMemoryBufferFactory::GetNativeType() ||
+        !IsNativeGpuMemoryBufferConfiguration(request->format,
+                                              request->usage)) {
+      request->event.Signal();
+      return;
+    }
+    // Note: Unretained is safe as this is only used for synchronous allocation
+    // from a non-IO thread.
+    CreateGpuMemoryBufferOnIO(
+        base::Bind(&HostCreateGpuMemoryBufferFromHandle, request->handle),
+        new_id, request->size, request->format, request->usage,
+        request->client_id, false,
+        base::Bind(
+            &BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO,
+            base::Unretained(this), base::Unretained(request)));
     return;
   }
 
-  gfx::GpuMemoryBufferId new_id = content::GetNextGenericSharedMemoryId();
+  DCHECK(GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
+      << static_cast<int>(request->usage);
 
-  // Note: Unretained is safe as this is only used for synchronous allocation
-  // from a non-IO thread.
-  CreateGpuMemoryBufferOnIO(
-      base::Bind(&HostCreateGpuMemoryBufferFromHandle, request->handle), new_id,
-      request->size, request->format, request->usage, request->client_id, false,
+  BufferMap& buffers = clients_[request->client_id];
+
+  // Allocate shared memory buffer.
+  auto insert_result = buffers.insert(std::make_pair(
+      new_id, BufferInfo(request->size, gfx::SHARED_MEMORY_BUFFER,
+                         request->format, request->usage, 0)));
+  DCHECK(insert_result.second);
+
+  gfx::GpuMemoryBufferHandle handle;
+  handle.id = new_id;
+  handle.handle = request->handle.handle;
+  handle.offset = request->handle.offset;
+
+  // Note: Unretained is safe as IO thread is stopped before manager is
+  // destroyed.
+  request->result = GpuMemoryBufferImplSharedMemory::CreateFromHandle(
+      handle, request->size, request->format, request->usage,
       base::Bind(
-          &BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO,
-          base::Unretained(this), base::Unretained(request)));
+          &GpuMemoryBufferDeleted,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
+                     base::Unretained(this), new_id, request->client_id)));
+  request->event.Signal();
 }
 
 void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(

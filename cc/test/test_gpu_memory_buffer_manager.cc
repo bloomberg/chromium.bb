@@ -16,16 +16,19 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(const gfx::Size& size,
                       gfx::BufferFormat format,
-                      scoped_ptr<base::SharedMemory> shared_memory)
+                      scoped_ptr<base::SharedMemory> shared_memory,
+                      size_t offset)
       : size_(size),
         format_(format),
         shared_memory_(shared_memory.Pass()),
+        offset_(offset),
         mapped_(false) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
     DCHECK(!mapped_);
-    if (!shared_memory_->Map(gfx::BufferSizeForBufferFormat(size_, format_)))
+    if (!shared_memory_->Map(offset_ +
+                             gfx::BufferSizeForBufferFormat(size_, format_)))
       return false;
     mapped_ = true;
     return true;
@@ -33,7 +36,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   void* memory(size_t plane) override {
     DCHECK(mapped_);
     DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-    return reinterpret_cast<uint8_t*>(shared_memory_->memory()) +
+    return reinterpret_cast<uint8_t*>(shared_memory_->memory()) + offset_ +
            gfx::BufferOffsetForBufferFormat(size_, format_, plane);
   }
   void Unmap() override {
@@ -56,7 +59,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     gfx::GpuMemoryBufferHandle handle;
     handle.type = gfx::SHARED_MEMORY_BUFFER;
     handle.handle = shared_memory_->handle();
-    handle.offset = 0;
+    handle.offset = base::checked_cast<uint32_t>(offset_);
     return handle;
   }
   ClientBuffer AsClientBuffer() override {
@@ -67,6 +70,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   const gfx::Size size_;
   gfx::BufferFormat format_;
   scoped_ptr<base::SharedMemory> shared_memory_;
+  size_t offset_;
   bool mapped_;
 };
 
@@ -87,7 +91,7 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   if (!shared_memory->CreateAnonymous(buffer_size))
     return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
-      new GpuMemoryBufferImpl(size, format, shared_memory.Pass()));
+      new GpuMemoryBufferImpl(size, format, shared_memory.Pass(), 0));
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
@@ -95,8 +99,13 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  NOTREACHED();
-  return nullptr;
+  if (handle.type != gfx::SHARED_MEMORY_BUFFER)
+    return nullptr;
+
+  return make_scoped_ptr<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
+      size, format,
+      make_scoped_ptr(new base::SharedMemory(handle.handle, false)),
+      handle.offset));
 }
 
 gfx::GpuMemoryBuffer*
