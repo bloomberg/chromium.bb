@@ -21,6 +21,8 @@ import android.widget.TextView;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 
+import java.util.ArrayList;
+
 /**
  * Instrumentation unit tests for CustomNotificationBuilder.
  */
@@ -31,13 +33,8 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
     public void testSetAll() {
         Context context = getInstrumentation().getTargetContext();
 
-        Intent contentIntent = new Intent("contentIntent");
-        PendingIntent pendingContentIntent = PendingIntent.getBroadcast(
-                context, 0 /* requestCode */, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Intent deleteIntent = new Intent("deleteIntent");
-        PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(
-                context, 1 /* requestCode */, deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent = createIntent(context, "Content");
+        PendingIntent deleteIntent = createIntent(context, "Delete");
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
@@ -51,8 +48,12 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
                                             .setTicker(new SpannableStringBuilder("ticker"))
                                             .setDefaults(Notification.DEFAULT_ALL)
                                             .setVibrate(new long[] {100L})
-                                            .setContentIntent(pendingContentIntent)
-                                            .setDeleteIntent(pendingDeleteIntent)
+                                            .setContentIntent(contentIntent)
+                                            .setDeleteIntent(deleteIntent)
+                                            .addAction(0 /* iconId */, "button",
+                                                    createIntent(context, "ActionButtonOne"))
+                                            .addAction(0 /* iconId */, "button",
+                                                    createIntent(context, "ActionButtonTwo"))
                                             .build();
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
@@ -67,9 +68,54 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
         assertEquals(1, notification.vibrate.length);
         assertEquals(100L, notification.vibrate[0]);
-        assertEquals(pendingContentIntent, notification.contentIntent);
-        assertEquals(pendingDeleteIntent, notification.deleteIntent);
-        // TODO(mvanouwerkerk): Add coverage for action buttons.
+        assertSame(contentIntent, notification.contentIntent);
+        assertSame(deleteIntent, notification.deleteIntent);
+
+        ArrayList<View> buttons = new ArrayList<>();
+        bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
+        assertEquals(2, buttons.size());
+        assertEquals(View.VISIBLE, bigView.findViewById(R.id.button_divider).getVisibility());
+        assertEquals(View.VISIBLE, bigView.findViewById(R.id.buttons).getVisibility());
+    }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testZeroActionButtons() {
+        Context context = getInstrumentation().getTargetContext();
+        Notification notification = new CustomNotificationBuilder(context).build();
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+        ArrayList<View> buttons = new ArrayList<>();
+        bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
+
+        // When there are no buttons the container and divider must not be shown.
+        assertTrue(buttons.isEmpty());
+        assertEquals(View.GONE, bigView.findViewById(R.id.button_divider).getVisibility());
+        assertEquals(View.GONE, bigView.findViewById(R.id.buttons).getVisibility());
+    }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testMaxActionButtons() {
+        Context context = getInstrumentation().getTargetContext();
+        NotificationBuilder builder = new CustomNotificationBuilder(context)
+                                              .addAction(0 /* iconId */, "button",
+                                                      createIntent(context, "ActionButtonOne"))
+                                              .addAction(0 /* iconId */, "button",
+                                                      createIntent(context, "ActionButtonTwo"))
+                                              .addAction(0 /* iconId */, "button",
+                                                      createIntent(context, "ActionButtonThree"));
+        try {
+            builder.addAction(0 /* iconId */, "button", createIntent(context, "ActionButtonFour"));
+            fail("This statement should not be reached as the previous statement should throw.");
+        } catch (IllegalStateException e) {
+            assertEquals("Cannot add more than 3 actions.", e.getMessage());
+        }
+        Notification notification = builder.build();
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+        ArrayList<View> buttons = new ArrayList<>();
+        bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
+
+        assertEquals("There is a maximum of 3 buttons", 3, buttons.size());
     }
 
     /**
@@ -92,5 +138,11 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
             }
         }
         return result;
+    }
+
+    private PendingIntent createIntent(Context context, String action) {
+        Intent intent = new Intent("CustomNotificationBuilderTest." + action);
+        return PendingIntent.getBroadcast(
+                context, 0 /* requestCode */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

@@ -5,12 +5,12 @@
 
 <!--
   Web notification custom layout.
-   _______________________________________________________
-   |        |                                            |
-   |  Icon  |  Title text                        1:23 pm |
-   |        |  Body text                                 |
-   |        |  https://www.example.com/                  |
-   |________|____________________________________________|
+  _______________________________________________________
+  |        |                                            |
+  |  Icon  |  Title text                        1:23 pm |
+  |        |  Body text                                 |
+  |        |  https://www.example.com/                  |
+  |________|____________________________________________|
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

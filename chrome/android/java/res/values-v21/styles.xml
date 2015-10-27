@@ -71,7 +71,13 @@
     <style name="WebNotificationTime"
         parent="@android:style/TextAppearance.Material.Notification.Time"/>
     <style name="WebNotificationDivider">
+        <!-- From the non-public Drawable notification_template_divider -->
         <item name="android:background">#29000000</item>
+    </style>
+    <style name="WebNotificationButton"
+        parent="@android:style/Widget.DeviceDefault.Light.Button.Borderless.Small">
+        <!-- From the non-public Color secondary_text_default_material_light -->
+        <item name="android:textColor">#8a000000</item>
     </style>
 
     <style name="IncognitoTheme" parent="MainTheme">

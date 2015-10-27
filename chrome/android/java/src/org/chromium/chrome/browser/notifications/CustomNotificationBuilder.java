@@ -9,19 +9,27 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Action;
 import android.text.format.DateFormat;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.chrome.R;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
  */
 public class CustomNotificationBuilder implements NotificationBuilder {
+    // Permits the usual 2 buttons plus 1 for settings.
+    private static final int MAX_ACTION_BUTTONS = 3;
+
     private final Context mContext;
+
     private String mTitle;
     private String mBody;
     private String mOrigin;
@@ -30,7 +38,8 @@ public class CustomNotificationBuilder implements NotificationBuilder {
     private int mSmallIconId;
     private PendingIntent mContentIntent;
     private PendingIntent mDeleteIntent;
-    private int mDefaults;
+    private List<Action> mActions = new ArrayList<>(MAX_ACTION_BUTTONS);
+    private int mDefaults = Notification.DEFAULT_ALL;
     private long[] mVibratePattern;
 
     public CustomNotificationBuilder(Context context) {
@@ -51,6 +60,19 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             view.setTextViewText(R.id.body, mBody);
             view.setTextViewText(R.id.origin, mOrigin);
             view.setImageViewBitmap(R.id.icon, mLargeIcon);
+        }
+
+        if (!mActions.isEmpty()) {
+            bigView.setViewVisibility(R.id.button_divider, View.VISIBLE);
+            bigView.setViewVisibility(R.id.buttons, View.VISIBLE);
+            for (Action action : mActions) {
+                RemoteViews button = new RemoteViews(
+                        mContext.getPackageName(), R.layout.web_notification_button);
+                button.setTextViewCompoundDrawablesRelative(R.id.button, action.getIcon(), 0, 0, 0);
+                button.setTextViewText(R.id.button, action.getTitle());
+                button.setOnClickPendingIntent(R.id.button, action.getActionIntent());
+                bigView.addView(R.id.buttons, button);
+            }
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
@@ -117,7 +139,11 @@ public class CustomNotificationBuilder implements NotificationBuilder {
 
     @Override
     public NotificationBuilder addAction(int iconId, CharSequence title, PendingIntent intent) {
-        // TODO(mvanouwerkerk): Implement as part of issue 541617.
+        if (mActions.size() == MAX_ACTION_BUTTONS) {
+            throw new IllegalStateException(
+                    "Cannot add more than " + MAX_ACTION_BUTTONS + " actions.");
+        }
+        mActions.add(new Action(iconId, title, intent));
         return this;
     }
 

@@ -290,6 +290,8 @@
     <style name="WebNotificationDivider">
         <item name="android:background">?android:dividerHorizontal</item>
     </style>
+    <style name="WebNotificationButton"
+        parent="@android:style/Widget.DeviceDefault.Button.Borderless.Small"/>
 
     <!-- First Run and Bookmark/recent-tabs dialogs -->
     <style name="DialogWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge" >

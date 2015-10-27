@@ -5,16 +5,19 @@
 
 <!--
   Web notification custom layout, big state.
-   _______________________________________________________
-   |        |                                            |
-   |  Icon  |  Title text                        1:23 pm |
-   |        |                                            |
-   |        |  Body text which may run to multiple lines |
-   |________|  if there is a lot of it.                  |
-   |           __________________________________________|
-   |                                                     |
-   |           https://www.example.com/                  |
-   |_____________________________________________________|
+  _______________________________________________________
+  |        |                                            |
+  |  Icon  |  Title text                        1:23 pm |
+  |        |                                            |
+  |        |  Body text which may run to multiple lines |
+  |________|  if there is a lot of it.                  |
+  |           __________________________________________|
+  |                                                     |
+  |           Button       Button       Settings        |
+  |           __________________________________________|
+  |                                                     |
+  |           https://www.example.com/                  |
+  |_____________________________________________________|
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -42,59 +45,88 @@
 
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/icon_frame"
-        android:layout_toStartOf="@id/time"
-        android:layout_alignParentTop="true"
-        android:singleLine="true"
-        android:ellipsize="end"
-        style="@style/WebNotificationTitle"/>
-
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:singleLine="true"
-        style="@style/WebNotificationTime"/>
-
-    <TextView
-        android:id="@+id/body"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/icon_frame"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/title"
-        android:layout_marginBottom="8dp"
-        android:maxLines="8"
-        android:ellipsize="end"
-        style="@style/WebNotificationBody"/>
-
-    <ImageView
-        android:id="@+id/divider"
+    <!--
+      This LinearLayout handles dynamically changing the visibility of the buttons related views.
+      The apparent alternative of setting layout params from Java on a RelativeLayout does not work
+      with RemoteViews. The alternative of using a separate template when there are buttons was
+      rejected to avoid code duplication.
+    -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_toEndOf="@id/icon_frame"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/body"
-        android:layout_marginBottom="8dp"
-        style="@style/WebNotificationDivider"
-        android:contentDescription="@null"/>
-
-    <TextView
-        android:id="@+id/origin"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/icon_frame"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/divider"
-        android:layout_marginBottom="10dp"
-        android:singleLine="true"
-        android:ellipsize="end"
-        style="@style/WebNotificationOrigin"/>
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/title"
+                style="@style/WebNotificationTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/time"
+                android:layout_alignParentTop="true"
+                android:singleLine="true"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/time"
+                style="@style/WebNotificationTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:singleLine="true"/>
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/body"
+            style="@style/WebNotificationBody"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:maxLines="8"
+            android:ellipsize="end"/>
+
+        <ImageView
+            android:id="@+id/button_divider"
+            style="@style/WebNotificationDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="8dp"
+            android:contentDescription="@null"
+            android:visibility="gone"/>
+
+        <LinearLayout
+            android:id="@+id/buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"        
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/footer_divider"
+            style="@style/WebNotificationDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="8dp"
+            android:contentDescription="@null"/>
+
+        <TextView
+            android:id="@+id/origin"
+            style="@style/WebNotificationOrigin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:singleLine="true"
+            android:ellipsize="end"/>
+
+    </LinearLayout>
 
 </RelativeLayout>
