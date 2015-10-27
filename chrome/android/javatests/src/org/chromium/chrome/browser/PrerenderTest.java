@@ -48,15 +48,11 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
 
     /**
      * We are using Autocomplete Action Predictor to decide whether or not to prerender.
-     *
-     * Without any training data the default action should be no-prerender.
-     *
-     * DISABLED: crbug.com/547941
+    /* Without any training data the default action should be no-prerender.
      */
     @LargeTest
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"TabContents"})
-    @DisabledTest
     public void testNoPrerender() throws InterruptedException {
         String testUrl = TestHttpServerClient.getUrl(
                 "chrome/test/data/android/prerender/google.html");
