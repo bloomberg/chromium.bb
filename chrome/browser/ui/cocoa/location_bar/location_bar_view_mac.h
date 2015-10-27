@@ -266,6 +266,9 @@ class LocationBarViewMac : public LocationBar,
   // Used to change the visibility of the star decoration.
   BooleanPrefMember edit_bookmarks_enabled_;
 
+  // Indicates whether or not the location bar is currently visible.
+  bool location_bar_visible_;
+
   // Used to schedule a task for the first run info bubble.
   base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;
 

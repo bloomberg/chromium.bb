@@ -327,7 +327,8 @@ using content::WebContents;
     toolbarController_.reset([[ToolbarController alloc]
         initWithCommands:browser->command_controller()->command_updater()
                  profile:browser->profile()
-                 browser:browser]);
+                 browser:browser
+          resizeDelegate:self]);
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
 

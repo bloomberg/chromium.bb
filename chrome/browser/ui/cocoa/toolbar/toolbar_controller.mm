@@ -70,8 +70,15 @@ using content::WebContents;
 
 namespace {
 
+// Duration of the toolbar animation.
+const NSTimeInterval kToolBarAnimationDuration = 0.12;
+
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeightNormal = 35.0;
+
+// Height of the location bar. Used for animating the toolbar in and out when
+// the location bar is displayed stand-alone for bookmark apps.
+const CGFloat kLocationBarHeight = 29.0;
 
 // The padding above the toolbar elements. This is calculated from the values
 // in Toolbar.xib: the height of the toolbar (35) minus the height of the child
@@ -128,8 +135,9 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(const std::string&)prefName;
-- (BackgroundGradientView*)backgroundGradientView;
+- (ToolbarView*)toolbarView;
 - (void)toolbarFrameChanged;
+- (void)showLocationBarOnly;
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
 - (void)maintainMinimumLocationBarWidth;
 - (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
@@ -209,9 +217,9 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
                browser:(Browser*)browser
-          nibFileNamed:(NSString*)nibName {
-  DCHECK(commands && profile && [nibName length]);
-  if ((self = [super initWithNibName:nibName
+        resizeDelegate:(id<ViewResizer>)resizeDelegate {
+  DCHECK(commands && profile);
+  if ((self = [super initWithNibName:@"Toolbar"
                               bundle:base::mac::FrameworkBundle()])) {
     commands_ = commands;
     profile_ = profile;
@@ -231,17 +239,9 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     // NOTE: Don't remove the command observers. ToolbarController is
     // autoreleased at about the same time as the CommandUpdater (owned by the
     // Browser), so |commands_| may not be valid any more.
-  }
-  return self;
-}
 
-- (id)initWithCommands:(CommandUpdater*)commands
-               profile:(Profile*)profile
-               browser:(Browser*)browser {
-  if ((self = [self initWithCommands:commands
-                             profile:profile
-                             browser:browser
-                        nibFileNamed:@"Toolbar"])) {
+    [[self toolbarView] setResizeDelegate:resizeDelegate];
+
     // Start global error services now so we badge the menu correctly.
     SyncGlobalErrorFactory::GetForProfile(profile);
   }
@@ -349,15 +349,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
                 modelType:BACK_FORWARD_MENU_TYPE_FORWARD
                    button:forwardButton_]);
 
-  // For a popup window, the toolbar is really just a location bar
-  // (see override for [ToolbarController view], below).  When going
-  // fullscreen, we remove the toolbar controller's view from the view
-  // hierarchy.  Calling [locationBar_ removeFromSuperview] when going
-  // fullscreen causes it to get released, making us unhappy
-  // (http://crbug.com/18551).  We avoid the problem by incrementing
-  // the retain count of the location bar; use of the scoped object
-  // helps us remember to release it.
-  locationBarRetainer_.reset([locationBar_ retain]);
   trackingArea_.reset(
       [[CrTrackingArea alloc] initWithRect:NSZeroRect // Ignored
                                    options:NSTrackingMouseMoved |
@@ -395,6 +386,11 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 }
 
 - (void)browserWillBeDestroyed {
+  // Clear resize delegate so it doesn't get called during stopAnimation, and
+  // stop any in-flight animation.
+  [[self toolbarView] setResizeDelegate:nil];
+  [[self toolbarView] stopAnimation];
+
   // Pass this call onto other reference counted objects.
   [backMenuController_ browserWillBeDestroyed];
   [forwardMenuController_ browserWillBeDestroyed];
@@ -587,21 +583,18 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   // Decide whether to hide/show based on whether there's a location bar.
   [[self view] setHidden:!hasLocationBar_];
 
-  // Make location bar not editable when in a pop-up.
+  // Make location bar not editable when in a pop-up or an app window.
   locationBarView_->SetEditable(toolbar);
+
+  // If necessary, resize the location bar and hide the toolbar icons to display
+  // the toolbar with only the location bar inside it.
+  if (!hasToolbar_ && hasLocationBar_)
+    [self showLocationBarOnly];
 }
 
-- (NSView*)view {
-  if (hasToolbar_)
-    return [super view];
-  return locationBar_;
-}
-
-// (Private) Returns the backdrop to the toolbar.
-- (BackgroundGradientView*)backgroundGradientView {
-  // We really do mean |[super view]|; see our override of |-view|.
-  DCHECK([[super view] isKindOfClass:[BackgroundGradientView class]]);
-  return (BackgroundGradientView*)[super view];
+// (Private) Returns the backdrop to the toolbar as a ToolbarView.
+- (ToolbarView*)toolbarView{
+  return base::mac::ObjCCastStrict<ToolbarView>([self view]);
 }
 
 - (id)customFieldEditorForObject:(id)obj {
@@ -726,6 +719,19 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
 }
 
+- (void)updateVisibility:(BOOL)visible withAnimation:(BOOL)animate {
+  CGFloat newHeight = visible ? kLocationBarHeight : 0;
+
+  // Perform the animation, which will cause the BrowserWindowController to
+  // resize this view in the browser layout as required.
+  if (animate) {
+    [[self toolbarView] animateToNewHeight:newHeight
+                                  duration:kToolBarAnimationDuration];
+  } else {
+    [[self toolbarView] setHeight:newHeight];
+  }
+}
+
 - (void)adjustBrowserActionsContainerForNewWindow:
     (NSNotification*)notification {
   [self toolbarFrameChanged];
@@ -829,6 +835,32 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   }
 }
 
+// Hide the back, forward, reload, home, and wrench buttons of the toolbar.
+// This allows the location bar to occupy the entire width. There is no way to
+// undo this operation, and once it is called, no other programmatic changes
+// to the toolbar or location bar width should be made. This message is
+// invalid if the toolbar is shown or the location bar is hidden.
+- (void)showLocationBarOnly {
+  // -showLocationBarOnly is only ever called once, shortly after
+  // initialization, so the regular buttons should all be visible.
+  DCHECK(!hasToolbar_ && hasLocationBar_);
+  DCHECK(![backButton_ isHidden]);
+
+  // Ensure the location bar fills the toolbar.
+  NSRect toolbarFrame = [[self view] frame];
+  toolbarFrame.size.height = kLocationBarHeight;
+  [[self view] setFrame:toolbarFrame];
+
+  [locationBar_ setFrame:NSMakeRect(0, 0, NSWidth([[self view] frame]),
+                                    kLocationBarHeight)];
+
+  [backButton_ setHidden:YES];
+  [forwardButton_ setHidden:YES];
+  [reloadButton_ setHidden:YES];
+  [wrenchButton_ setHidden:YES];
+  [homeButton_ setHidden:YES];
+}
+
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
   // Ensure that the location bar is in its proper place.
   NSRect locationFrame = [locationBar_ frame];
@@ -871,17 +903,10 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {
-  BackgroundGradientView* view = [self backgroundGradientView];
-  [view setShowsDivider:(opacity > 0 ? YES : NO)];
-
-  // We may not have a toolbar view (e.g., popup windows only have a location
-  // bar).
-  if ([view isKindOfClass:[ToolbarView class]]) {
-    ToolbarView* toolbarView = (ToolbarView*)view;
-    [toolbarView setDividerOpacity:opacity];
-  }
-
-  [view setNeedsDisplay:YES];
+  ToolbarView* toolbarView = [self toolbarView];
+  [toolbarView setShowsDivider:(opacity > 0 ? YES : NO)];
+  [toolbarView setDividerOpacity:opacity];
+  [toolbarView setNeedsDisplay:YES];
 }
 
 - (BrowserActionsController*)browserActionsController {

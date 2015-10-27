@@ -29,6 +29,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
@@ -46,6 +47,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -104,6 +106,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       manage_passwords_decoration_(
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
+      location_bar_visible_(true),
       weak_ptr_factory_(this) {
   for (ContentSettingsType type :
        ContentSettingBubbleModel::GetSupportedBubbleTypes()) {
@@ -200,7 +203,14 @@ void LocationBarViewMac::UpdateBookmarkStarVisibility() {
 
 void LocationBarViewMac::UpdateLocationBarVisibility(bool visible,
                                                      bool animate) {
-  // Not implemented on Mac.
+  // Track the target location bar visibility to avoid redundant transitions
+  // being initiated when one is already in progress.
+  if (visible != location_bar_visible_) {
+    [[[BrowserWindowController browserWindowControllerForView:field_]
+        toolbarController] updateVisibility:visible
+                              withAnimation:animate];
+    location_bar_visible_ = visible;
+  }
 }
 
 bool LocationBarViewMac::ShowPageActionPopup(

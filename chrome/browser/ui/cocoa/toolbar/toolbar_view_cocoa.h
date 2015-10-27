@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/ui/cocoa/background_gradient_view.h"
+#import "chrome/browser/ui/cocoa/animatable_view.h"
 
 // A view that handles any special rendering of the toolbar bar.  At
 // this time it only draws a gradient.  Future changes (e.g. themes)
 // may require new functionality here.
 
-@interface ToolbarView : BackgroundGradientView {
+@interface ToolbarView : AnimatableView {
  @private
   // The opacity of the divider line (at the bottom of the toolbar); used when
   // the detached bookmark bar is morphing to the normal bar and vice versa.

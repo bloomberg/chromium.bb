@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +70,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
 
   // Indexes that match the ordering returned by the private ToolbarController
   // |-toolbarViews| method.
-  enum {
+  enum SubviewIndex {
     kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex,
     kWrenchIndex, kLocationIndex, kBrowserActionContainerViewIndex
   };
@@ -77,6 +78,8 @@ class ToolbarControllerTest : public CocoaProfileTest {
   void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
+
+    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
 
     CommandUpdater* updater =
         browser()->command_controller()->command_updater();
@@ -87,7 +90,8 @@ class ToolbarControllerTest : public CocoaProfileTest {
     bar_.reset([[TestToolbarController alloc]
         initWithCommands:browser()->command_controller()->command_updater()
                  profile:profile()
-                 browser:browser()]);
+                 browser:browser()
+          resizeDelegate:resizeDelegate_.get()]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [test_window() contentView];
     [parent addSubview:[bar_ view]];
@@ -111,6 +115,11 @@ class ToolbarControllerTest : public CocoaProfileTest {
               [[views objectAtIndex:kHomeIndex] isEnabled] ? true : false);
   }
 
+  NSView* GetSubviewAt(SubviewIndex index) {
+    return [[bar_ toolbarViews] objectAtIndex:index];
+  }
+
+  base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
   base::scoped_nsobject<TestToolbarController> bar_;
 };
 
@@ -127,7 +136,7 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   NSView* view = [bar_ view];
 
   [bar_ setHasToolbar:NO hasLocationBar:YES];
-  EXPECT_NE(view, [bar_ view]);
+  EXPECT_EQ(view, [bar_ view]);
 
   // Simulate a popup going fullscreen and back by performing the reparenting
   // that happens during fullscreen transitions
@@ -135,11 +144,99 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   [view removeFromSuperview];
   [superview addSubview:view];
 
-  [bar_ setHasToolbar:YES hasLocationBar:YES];
   EXPECT_EQ(view, [bar_ view]);
+}
 
-  // Leave it off to make sure that's fine
+// Test updateVisibility with location bar only; this method is used by bookmark
+// apps, and should never be called when the toolbar is enabled. Ensure that the
+// buttons remain in the correct state.
+TEST_F(ToolbarControllerTest, UpdateVisibility) {
+  NSView* view = [bar_ view];
+
+  // Test the escapable states first.
+  [bar_ setHasToolbar:YES hasLocationBar:YES];
+  EXPECT_GT([[bar_ view] frame].size.height, 0);
+  EXPECT_GT([[bar_ view] frame].size.height,
+            [GetSubviewAt(kLocationIndex) frame].size.height);
+  EXPECT_GT([[bar_ view] frame].size.width,
+            [GetSubviewAt(kLocationIndex) frame].size.width);
+  EXPECT_FALSE([view isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kLocationIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kBackIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kForwardIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kReloadIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
+
+  // For NO/NO, only the top level toolbar view is hidden.
+  [bar_ setHasToolbar:NO hasLocationBar:NO];
+  EXPECT_TRUE([view isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kLocationIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kBackIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kForwardIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kReloadIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
+
+  // Now test the inescapable state.
   [bar_ setHasToolbar:NO hasLocationBar:YES];
+  EXPECT_GT([[bar_ view] frame].size.height, 0);
+  EXPECT_EQ([[bar_ view] frame].size.height,
+            [GetSubviewAt(kLocationIndex) frame].size.height);
+  EXPECT_EQ([[bar_ view] frame].size.width,
+            [GetSubviewAt(kLocationIndex) frame].size.width);
+  EXPECT_FALSE([view isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kLocationIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBackIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kForwardIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kReloadIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
+
+  // Maintain visible state.
+  [bar_ updateVisibility:YES withAnimation:NO];
+  EXPECT_GT([[bar_ view] frame].size.height, 0);
+  EXPECT_EQ([[bar_ view] frame].size.height,
+            [GetSubviewAt(kLocationIndex) frame].size.height);
+  EXPECT_EQ([[bar_ view] frame].size.width,
+            [GetSubviewAt(kLocationIndex) frame].size.width);
+  EXPECT_FALSE([view isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kLocationIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBackIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kForwardIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kReloadIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
+
+  // Hide the toolbar and ensure it has height 0.
+  [bar_ updateVisibility:NO withAnimation:NO];
+  EXPECT_FALSE([view isHidden]);
+  EXPECT_EQ(0, [resizeDelegate_ height]);
+  EXPECT_EQ(0, [[bar_ view] frame].size.height);
+
+  // Try to show the home button.
+  [bar_ showOptionalHomeButton];
+
+  // Re-show the bar. Buttons should remain hidden, including the home button.
+  [bar_ updateVisibility:YES withAnimation:NO];
+  EXPECT_GT([resizeDelegate_ height], 0);
+  EXPECT_GT([[bar_ view] frame].size.height, 0);
+  EXPECT_EQ([[bar_ view] frame].size.height,
+            [GetSubviewAt(kLocationIndex) frame].size.height);
+  EXPECT_EQ([[bar_ view] frame].size.width,
+            [GetSubviewAt(kLocationIndex) frame].size.width);
+  EXPECT_FALSE([view isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kLocationIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBackIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kForwardIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kReloadIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kWrenchIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
+  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 }
 
 // Make sure it works in the completely undecorated case.
@@ -147,7 +244,6 @@ TEST_F(ToolbarControllerTest, NoLocationBar) {
   NSView* view = [bar_ view];
 
   [bar_ setHasToolbar:NO hasLocationBar:NO];
-  EXPECT_NE(view, [bar_ view]);
   EXPECT_TRUE([[bar_ view] isHidden]);
 
   // Simulate a popup going fullscreen and back by performing the reparenting
