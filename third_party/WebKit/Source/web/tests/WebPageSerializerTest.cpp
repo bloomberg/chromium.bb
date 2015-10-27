@@ -194,6 +194,29 @@ TEST_F(WebPageSerializerTest, URLAttributeValues)
     EXPECT_EQ(expectedHTML, serializerClient.toString());
 }
 
+TEST_F(WebPageSerializerTest, EncodingAndNormalization)
+{
+    WebURL topFrameURL = toKURL("http://www.test.com");
+    registerMockedURLLoad(topFrameURL.spec(), WebString::fromUTF8("encoding_normalization.html"));
+
+    loadURLInTopFrame(topFrameURL);
+
+    SimpleWebPageSerializerClient serializerClient;
+    WebVector<WebURL> links(&topFrameURL, 1);
+    WebVector<WebString> localPaths(&"local", 1);
+    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), &serializerClient, links, localPaths, "");
+
+    const char* expectedHTML =
+        "<!DOCTYPE html>\n"
+        "<!-- saved from url=(0020)http://www.test.com/ -->\n"
+        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=EUC-KR\"><meta charset=\"euc-kr\">\n"
+        "<title>Ensure NFC normalization is not performed by page serializer</title>\n"
+        "</head><body>\n"
+        "\xe4\xc5\xd1\xe2\n"
+        "\n</body></html>";
+    EXPECT_EQ(expectedHTML, serializerClient.toString());
+}
+
 TEST_F(WebPageSerializerTest, fromUrlWithMinusMinus)
 {
     WebURL topFrameURL = toKURL("http://www.test.com?--x--");

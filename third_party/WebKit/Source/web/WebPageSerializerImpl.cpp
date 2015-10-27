@@ -279,7 +279,7 @@ void WebPageSerializerImpl::encodeAndFlushBuffer(
     String content = m_dataBuffer.toString();
     m_dataBuffer.clear();
 
-    CString encodedContent = param->textEncoding.normalizeAndEncode(content, WTF::EntitiesForUnencodables);
+    CString encodedContent = param->textEncoding.encode(content, WTF::EntitiesForUnencodables);
 
     // Send result to the client.
     m_client->didSerializeDataForFrame(param->url,
