@@ -526,9 +526,14 @@ bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
 }
 
 bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
+  Browser* browser = browser_view()->browser();
+  // For non tabbed trusted source windows, e.g. Settings, use the packaged
+  // app style frame.
+  if (!browser->is_type_tabbed() && browser->is_trusted_source())
+    return true;
   // Use the packaged app style for apps that aren't using the newer WebApp
   // style.
-  return browser_view()->browser()->is_app() && !UseWebAppHeaderStyle();
+  return browser->is_app() && !UseWebAppHeaderStyle();
 }
 
 bool BrowserNonClientFrameViewAsh::UseWebAppHeaderStyle() const {

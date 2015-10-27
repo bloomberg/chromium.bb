@@ -62,7 +62,7 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
 
     Browser::CreateParams params(profile, host_desktop_type);
     params = Browser::CreateParams::CreateForApp("_crx_abc",
-                                                 true /* trusted_source */,
+                                                 false /* trusted_source */,
                                                  gfx::Rect(),
                                                  profile,
                                                  host_desktop_type);
