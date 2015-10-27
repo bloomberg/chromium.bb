@@ -71,9 +71,9 @@ public class RecentTabsGroupView extends RelativeLayout {
         // Create drawable for expand/collapse arrow.
         LevelListDrawable collapseIcon = new LevelListDrawable();
         collapseIcon.addLevel(DRAWABLE_LEVEL_COLLAPSED, DRAWABLE_LEVEL_COLLAPSED,
-                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_expand));
+                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_expanded));
         TintedDrawable collapse =
-                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_collapse);
+                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_collapsed);
         collapse.setTint(
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.blue_mode_tint));
         collapseIcon.addLevel(DRAWABLE_LEVEL_EXPANDED, DRAWABLE_LEVEL_EXPANDED, collapse);
