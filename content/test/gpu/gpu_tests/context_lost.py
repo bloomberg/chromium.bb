@@ -54,8 +54,7 @@ class ContextLostValidator(gpu_test_base.ValidatorBase):
     # Strictly speaking this test doesn't yet need a browser restart
     # after each run, but if more tests are added which crash the GPU
     # process, then it will.
-    super(ContextLostValidator, self).__init__(
-      needs_browser_restart_after_each_page=True)
+    super(ContextLostValidator, self).__init__()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
@@ -332,6 +331,10 @@ class ContextLost(gpu_test_base.TestBase):
   @classmethod
   def Name(cls):
     return 'context_lost'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
 
   def _CreateExpectations(self):
     return context_lost_expectations.ContextLostExpectations()

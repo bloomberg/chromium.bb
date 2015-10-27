@@ -20,8 +20,7 @@ test_harness_script = r"""
 
 class GpuProcessValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
-    super(GpuProcessValidator, self).__init__(
-        needs_browser_restart_after_each_page=True)
+    super(GpuProcessValidator, self).__init__()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
@@ -42,6 +41,10 @@ class GpuProcess(gpu_test_base.TestBase):
   @classmethod
   def Name(cls):
     return 'gpu_process'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
 
   def _CreateExpectations(self):
     return expectations.GpuProcessExpectations()

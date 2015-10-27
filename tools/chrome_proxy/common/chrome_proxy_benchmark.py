@@ -8,6 +8,10 @@ from telemetry import benchmark
 
 class ChromeProxyBenchmark(benchmark.Benchmark):
   @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+  @classmethod
   def AddCommandLineArgs(cls, parser):
     parser.add_option(
         '--extra-chrome-proxy-via-header',
@@ -18,4 +22,3 @@ class ChromeProxyBenchmark(benchmark.Benchmark):
   def ProcessCommandLineArgs(cls, parser, args):
     if args.extra_header:
       measurements.ChromeProxyValidation.extra_via_header = args.extra_header
-

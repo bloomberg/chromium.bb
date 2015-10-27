@@ -42,12 +42,8 @@ class TestBase(benchmark_module.Benchmark):
 # Provides a single subclass of PageTest in case it's useful in the
 # future.
 class ValidatorBase(page_test.PageTest):
-  def __init__(self,
-               needs_browser_restart_after_each_page=False,
-               clear_cache_before_each_run=False):
+  def __init__(self, clear_cache_before_each_run=False):
     super(ValidatorBase, self).__init__(
-      needs_browser_restart_after_each_page=\
-        needs_browser_restart_after_each_page,
       clear_cache_before_each_run=clear_cache_before_each_run)
 
   def ValidateAndMeasurePage(self, page, tab, result):
