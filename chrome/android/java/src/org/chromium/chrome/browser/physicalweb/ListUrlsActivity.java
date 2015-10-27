@@ -15,6 +15,7 @@ import android.widget.ListView;
 import org.chromium.chrome.R;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * This activity displays a list of nearby URLs as stored in the {@link UrlManager}.
@@ -23,6 +24,7 @@ import java.util.Collection;
 public class ListUrlsActivity extends ListActivity {
     private static final String TAG = "PhysicalWeb";
     private ArrayAdapter<PwsResult> mAdapter;
+    private PwsClient mPwsClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,8 @@ public class ListUrlsActivity extends ListActivity {
 
         mAdapter = new NearbyUrlsAdapter(this);
         setListAdapter(mAdapter);
+
+        mPwsClient = new PwsClient();
     }
 
     @Override
@@ -38,10 +42,20 @@ public class ListUrlsActivity extends ListActivity {
         super.onResume();
         mAdapter.clear();
         Collection<String> urls = UrlManager.getInstance(this).getUrls();
-        for (String url : urls) {
-            PwsResult pwsResult = new PwsResult(url, url, "", "");
-            mAdapter.add(pwsResult);
-        }
+        mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
+            @Override
+            public void onPwsResults(Collection<PwsResult> pwsResults) {
+                // filter out duplicate site URLs
+                Collection<String> siteUrls = new HashSet<>();
+                for (PwsResult pwsResult : pwsResults) {
+                    String siteUrl = pwsResult.siteUrl;
+                    if (siteUrl != null && !siteUrls.contains(siteUrl)) {
+                        siteUrls.add(siteUrl);
+                        mAdapter.add(pwsResult);
+                    }
+                }
+            }
+        });
     }
 
     /**

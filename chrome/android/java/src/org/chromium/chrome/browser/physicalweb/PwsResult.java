@@ -22,6 +22,11 @@ class PwsResult {
     public final String siteUrl;
 
     /**
+     * The URL for the destination's favicon.
+     */
+    public final String iconUrl;
+
+    /**
      * The title of the web page.
      */
     public final String title;
@@ -35,9 +40,10 @@ class PwsResult {
      * Construct a PwsResult.
      * @param requestUrl The URL that was sent in the request to the PWS.
      */
-    PwsResult(String requestUrl, String siteUrl, String title, String description) {
+    PwsResult(String requestUrl, String siteUrl, String iconUrl, String title, String description) {
         this.requestUrl = requestUrl;
         this.siteUrl = siteUrl;
+        this.iconUrl = iconUrl;
         this.title = title;
         this.description = description;
     }

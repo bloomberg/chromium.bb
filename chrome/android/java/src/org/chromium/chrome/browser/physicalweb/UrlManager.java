@@ -16,6 +16,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ public class UrlManager {
     private static UrlManager sInstance = null;
     private final Context mContext;
     private final NotificationManagerCompat mNotificationManager;
+    private final PwsClient mPwsClient;
 
     /**
      * Construct the UrlManager.
@@ -39,6 +41,7 @@ public class UrlManager {
     public UrlManager(Context context) {
         mContext = context;
         mNotificationManager = NotificationManagerCompat.from(context);
+        mPwsClient = new PwsClient();
     }
 
     /**
@@ -114,16 +117,33 @@ public class UrlManager {
     }
 
     private void updateNotification(Set<String> urls) {
-        if (urls.isEmpty()) {
-            mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
-            return;
-        }
+        mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
+            @Override
+            public void onPwsResults(Collection<PwsResult> pwsResults) {
+                // filter out duplicate site URLs
+                Set<String> siteUrls = new HashSet<>();
+                for (PwsResult pwsResult : pwsResults) {
+                    String siteUrl = pwsResult.siteUrl;
+                    if (siteUrl != null && !siteUrls.contains(siteUrl)) {
+                        siteUrls.add(siteUrl);
+                    }
+                }
 
+                if (siteUrls.isEmpty()) {
+                    mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
+                } else {
+                    String displayUrl = siteUrls.iterator().next();
+                    createNotification(displayUrl, siteUrls.size());
+                }
+            }
+        });
+    }
+
+    private void createNotification(String displayUrl, int urlCount) {
         // Get values to display.
-        String displayUrl = urls.iterator().next();
         Resources resources = mContext.getResources();
         String title = resources.getQuantityString(R.plurals.physical_web_notification_title,
-                                                   urls.size(), urls.size());
+                                                   urlCount, urlCount);
         PendingIntent pendingIntent = createListUrlsIntent();
 
         // Create the notification.

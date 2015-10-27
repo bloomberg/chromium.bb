@@ -66,10 +66,12 @@ class PwsClient {
         for (int i = 0; i < metadata.length(); i++) {
             try {
                 JSONObject obj = metadata.getJSONObject(i);
-                pwsResults.add(new PwsResult(obj.getString("id"),
-                                             obj.getString("url"),
-                                             obj.getString("description"),
-                                             obj.getString("title")));
+                String requestUrl = obj.getString("id");
+                String siteUrl = obj.getString("url");
+                String iconUrl = obj.optString("icon", null);
+                String title = obj.optString("title", "");
+                String description = obj.optString("description", "");
+                pwsResults.add(new PwsResult(requestUrl, siteUrl, iconUrl, title, description));
             } catch (JSONException e) {
                 Log.e(TAG, "PWS returned invalid metadata", e);
                 continue;
