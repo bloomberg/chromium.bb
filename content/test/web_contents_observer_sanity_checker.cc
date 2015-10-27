@@ -157,16 +157,16 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   CHECK(NavigationIsOngoing(navigation_handle));
 
-  CHECK(!(navigation_handle->HasCommitted() &&
-          !navigation_handle->IsErrorPage()) ||
-        navigation_handle->GetNetErrorCode() == net::OK);
-  CHECK(!(navigation_handle->HasCommitted() &&
-          navigation_handle->IsErrorPage()) ||
-        navigation_handle->GetNetErrorCode() != net::OK);
+  CHECK_IMPLIES(
+      navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage(),
+      navigation_handle->GetNetErrorCode() == net::OK);
+  CHECK_IMPLIES(
+      navigation_handle->HasCommitted() && navigation_handle->IsErrorPage(),
+      navigation_handle->GetNetErrorCode() != net::OK);
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
-  CHECK(!navigation_handle->HasCommitted() ||
-        navigation_handle->GetRenderFrameHost() != nullptr);
+  CHECK_IMPLIES(navigation_handle->HasCommitted(),
+                navigation_handle->GetRenderFrameHost() != nullptr);
 
   ongoing_navigations_.erase(navigation_handle);
 }

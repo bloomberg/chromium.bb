@@ -477,8 +477,8 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 }
 
 void LayerTreeHostImpl::SetNeedsAnimateInput() {
-  DCHECK(!IsCurrentlyScrollingInnerViewport() ||
-         !settings_.ignore_root_layer_flings);
+  DCHECK_IMPLIES(IsCurrentlyScrollingInnerViewport(),
+                 !settings_.ignore_root_layer_flings);
   SetNeedsAnimate();
 }
 
@@ -1019,7 +1019,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   // destroyed.
   // TODO(weiliangc): Test copy request w/ output surface recreation. Would
   // trigger this DCHECK.
-  DCHECK(!have_copy_request || draw_result == DRAW_SUCCESS);
+  DCHECK_IMPLIES(have_copy_request, draw_result == DRAW_SUCCESS);
 
   return draw_result;
 }

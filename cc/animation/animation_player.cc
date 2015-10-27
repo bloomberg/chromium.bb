@@ -119,8 +119,9 @@ void AnimationPlayer::UnbindElementAnimations() {
 }
 
 void AnimationPlayer::AddAnimation(scoped_ptr<Animation> animation) {
-  DCHECK(animation->target_property() != Animation::SCROLL_OFFSET ||
-         (animation_host_ && animation_host_->SupportsScrollAnimations()));
+  DCHECK_IMPLIES(
+      animation->target_property() == Animation::SCROLL_OFFSET,
+      animation_host_ && animation_host_->SupportsScrollAnimations());
 
   if (element_animations_) {
     element_animations_->layer_animation_controller()->AddAnimation(

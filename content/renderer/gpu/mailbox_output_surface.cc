@@ -200,9 +200,9 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(!surface_size_.IsEmpty());
   DCHECK(surface_size_ == current_backing_.size);
   DCHECK(frame->gl_frame_data->size == current_backing_.size);
-  DCHECK(!current_backing_.mailbox.IsZero() ||
-         context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
-             GL_NO_ERROR);
+  DCHECK_IMPLIES(current_backing_.mailbox.IsZero(),
+                 context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
+                     GL_NO_ERROR);
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
   context_provider_->ContextGL()->Flush();

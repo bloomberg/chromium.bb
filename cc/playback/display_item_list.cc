@@ -203,7 +203,7 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   if (use_cached_picture_ && retain_individual_display_items_)
     return 0;
 
-  DCHECK(!use_cached_picture_ || picture_);
+  DCHECK_IMPLIES(use_cached_picture_, picture_);
 
   size_t memory_usage = sizeof(*this);
 
@@ -273,7 +273,7 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
   DCHECK(image_map_.empty());
-  DCHECK(!use_cached_picture_ || picture_);
+  DCHECK_IMPLIES(use_cached_picture_, picture_);
   if (use_cached_picture_ && !picture_->willPlayBackBitmaps())
     return;
 

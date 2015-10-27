@@ -870,7 +870,8 @@ void ShaderProgram::Setup(const GLchar* vertex_shader_text,
   // The only reason fetching these attribute locations should fail is
   // if the context was spontaneously lost (i.e., because the GPU
   // process crashed, perhaps deliberately for testing).
-  DCHECK(Initialized() || gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
+  DCHECK_IMPLIES(!Initialized(),
+                 gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
 }
 
 void ShaderProgram::UseProgram(const gfx::Size& src_size,

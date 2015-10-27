@@ -450,10 +450,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // the WebURLLoader are the ones created by CommitNavigation. Several browser
   // tests load HTML directly through a data url which will be handled by the
   // block above.
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableBrowserSideNavigation) ||
-         stream_override_.get() ||
-         request.frameType() == WebURLRequest::FrameTypeNone);
+  DCHECK_IMPLIES(base::CommandLine::ForCurrentProcess()->HasSwitch(
+                     switches::kEnableBrowserSideNavigation),
+                 stream_override_.get() ||
+                     request.frameType() == WebURLRequest::FrameTypeNone);
 
   GURL referrer_url(
       request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());

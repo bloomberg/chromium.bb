@@ -258,8 +258,8 @@ bool GLImageMemory::Initialize(const unsigned char* memory,
 
   DCHECK(memory);
   DCHECK(!memory_);
-  DCHECK(!IsCompressedFormat(format) || size_.width() % 4 == 0);
-  DCHECK(!IsCompressedFormat(format) || size_.height() % 4 == 0);
+  DCHECK_IMPLIES(IsCompressedFormat(format), size_.width() % 4 == 0);
+  DCHECK_IMPLIES(IsCompressedFormat(format), size_.height() % 4 == 0);
   memory_ = memory;
   format_ = format;
   return true;

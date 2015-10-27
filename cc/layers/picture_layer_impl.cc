@@ -100,8 +100,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   LayerImpl::PushPropertiesTo(base_layer);
 
   // Twin relationships should never change once established.
-  DCHECK(!twin_layer_ || twin_layer_ == layer_impl);
-  DCHECK(!twin_layer_ || layer_impl->twin_layer_ == this);
+  DCHECK_IMPLIES(twin_layer_, twin_layer_ == layer_impl);
+  DCHECK_IMPLIES(twin_layer_, layer_impl->twin_layer_ == this);
   // The twin relationship does not need to exist before the first
   // PushPropertiesTo from pending to active layer since before that the active
   // layer can not have a pile or tilings, it has only been created and inserted
@@ -112,7 +112,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
 
   // Solid color layers have no tilings.
-  DCHECK(!raster_source_->IsSolidColor() || tilings_->num_tilings() == 0);
+  DCHECK_IMPLIES(raster_source_->IsSolidColor(), tilings_->num_tilings() == 0);
   // The pending tree should only have a high res (and possibly low res) tiling.
   DCHECK_LE(tilings_->num_tilings(),
             layer_tree_impl()->create_low_res_tiling() ? 2u : 1u);
@@ -123,8 +123,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   DCHECK(invalidation_.IsEmpty());
 
   // After syncing a solid color layer, the active layer has no tilings.
-  DCHECK(!raster_source_->IsSolidColor() ||
-         layer_impl->tilings_->num_tilings() == 0);
+  DCHECK_IMPLIES(raster_source_->IsSolidColor(),
+                 layer_impl->tilings_->num_tilings() == 0);
 
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;
@@ -144,8 +144,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
-  DCHECK(raster_source_->GetSize().IsEmpty() ||
-         bounds() == raster_source_->GetSize())
+  DCHECK_IMPLIES(!raster_source_->GetSize().IsEmpty(),
+                 bounds() == raster_source_->GetSize())
       << " bounds " << bounds().ToString() << " pile "
       << raster_source_->GetSize().ToString();
 
@@ -529,8 +529,8 @@ void PictureLayerImpl::UpdateRasterSource(
     const PictureLayerTilingSet* pending_set) {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
-  DCHECK(raster_source->GetSize().IsEmpty() ||
-         bounds() == raster_source->GetSize())
+  DCHECK_IMPLIES(!raster_source->GetSize().IsEmpty(),
+                 bounds() == raster_source->GetSize())
       << " bounds " << bounds().ToString() << " pile "
       << raster_source->GetSize().ToString();
 
@@ -545,8 +545,9 @@ void PictureLayerImpl::UpdateRasterSource(
   invalidation_.Swap(new_invalidation);
 
   bool can_have_tilings = CanHaveTilings();
-  DCHECK(!pending_set ||
-         can_have_tilings == GetPendingOrActiveTwinLayer()->CanHaveTilings());
+  DCHECK_IMPLIES(
+      pending_set,
+      can_have_tilings == GetPendingOrActiveTwinLayer()->CanHaveTilings());
 
   // Need to call UpdateTiles again if CanHaveTilings changed.
   if (could_have_tilings != can_have_tilings)
@@ -778,8 +779,8 @@ void PictureLayerImpl::GetContentsResourceId(ResourceId* resource_id,
                                              gfx::Size* resource_size) const {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
-  DCHECK(raster_source_->GetSize().IsEmpty() ||
-         bounds() == raster_source_->GetSize())
+  DCHECK_IMPLIES(!raster_source_->GetSize().IsEmpty(),
+                 bounds() == raster_source_->GetSize())
       << " bounds " << bounds().ToString() << " pile "
       << raster_source_->GetSize().ToString();
   gfx::Rect content_rect(bounds());
@@ -919,7 +920,7 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 
   PictureLayerTiling* low_res =
       tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
-  DCHECK(!low_res || low_res->resolution() != HIGH_RESOLUTION);
+  DCHECK_IMPLIES(low_res, low_res->resolution() != HIGH_RESOLUTION);
 
   // Only create new low res tilings when the transform is static.  This
   // prevents wastefully creating a paired low res tiling for every new high

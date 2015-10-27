@@ -176,8 +176,8 @@ DiscardableSharedMemoryHeap::Split(Span* span, size_t blocks) {
 
   scoped_ptr<Span> leftover(new Span(
       span->shared_memory_, span->start_ + blocks, span->length_ - blocks));
-  DCHECK(leftover->length_ == 1 ||
-         spans_.find(leftover->start_) == spans_.end());
+  DCHECK_IMPLIES(leftover->length_ > 1,
+                 spans_.find(leftover->start_) == spans_.end());
   RegisterSpan(leftover.get());
   spans_[span->start_ + blocks - 1] = span;
   span->length_ = blocks;
@@ -281,7 +281,7 @@ DiscardableSharedMemoryHeap::Carve(Span* span, size_t blocks) {
     scoped_ptr<Span> leftover(
         new Span(serving->shared_memory_, serving->start_ + blocks, extra));
     leftover->set_is_locked(false);
-    DCHECK(extra == 1 || spans_.find(leftover->start_) == spans_.end());
+    DCHECK_IMPLIES(extra > 1, spans_.find(leftover->start_) == spans_.end());
     RegisterSpan(leftover.get());
 
     // No need to coalesce as the previous span of |leftover| was just split

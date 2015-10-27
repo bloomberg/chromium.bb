@@ -415,8 +415,8 @@ void UpdateAccumulatedSurfaceState(
          current_target->render_surface()->draw_transform();
 
     // If we have unclipped descendants, the draw transform is a translation.
-    DCHECK(!current_target->num_unclipped_descendants() ||
-           current_draw_transform.IsIdentityOrTranslation());
+    DCHECK_IMPLIES(current_target->num_unclipped_descendants(),
+                   current_draw_transform.IsIdentityOrTranslation());
 
     target_rect =
         MathUtil::MapEnclosingClippedRect(current_draw_transform, target_rect);

@@ -436,8 +436,8 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
 
   // If |has_external_stencil_test| we can't discard or clear. Make sure we
   // don't need to.
-  DCHECK(!has_external_stencil_test ||
-         !frame->current_render_pass->has_transparent_background);
+  DCHECK_IMPLIES(has_external_stencil_test,
+                 !frame->current_render_pass->has_transparent_background);
 
   SurfaceInitializationMode mode;
   if (should_clear_surface && render_pass_is_clipped) {

@@ -176,8 +176,8 @@ void TopControlsManager::ResetAnimations() {
 
 void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   DCHECK_NE(NO_ANIMATION, direction);
-  DCHECK(direction != HIDING_CONTROLS || TopControlsShownRatio() > 0.f);
-  DCHECK(direction != SHOWING_CONTROLS || TopControlsShownRatio() < 1.f);
+  DCHECK_IMPLIES(direction == HIDING_CONTROLS, TopControlsShownRatio() > 0.f);
+  DCHECK_IMPLIES(direction == SHOWING_CONTROLS, TopControlsShownRatio() < 1.f);
 
   if (top_controls_animation_ && animation_direction_ == direction)
     return;

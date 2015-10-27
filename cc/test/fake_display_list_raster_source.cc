@@ -82,8 +82,8 @@ scoped_refptr<FakeDisplayListRasterSource>
 FakeDisplayListRasterSource::CreatePartiallyFilled(
     const gfx::Size& size,
     const gfx::Rect& recorded_viewport) {
-  DCHECK(recorded_viewport.IsEmpty() ||
-         gfx::Rect(size).Contains(recorded_viewport));
+  DCHECK_IMPLIES(!recorded_viewport.IsEmpty(),
+                 gfx::Rect(size).Contains(recorded_viewport));
   auto recording_source = FakeDisplayListRecordingSource::CreateRecordingSource(
       recorded_viewport, size);
 

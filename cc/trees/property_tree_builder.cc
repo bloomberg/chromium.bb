@@ -236,7 +236,7 @@ bool AddTransformNodeIfNeeded(
                        is_page_scale_layer;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
-  DCHECK(is_root || transform_parent);
+  DCHECK_IMPLIES(!is_root, transform_parent);
 
   int parent_index = kRootPropertyTreeNodeId;
   if (transform_parent)

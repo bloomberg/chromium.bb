@@ -602,8 +602,8 @@ NavigationEntryImpl::TreeNode* NavigationEntryImpl::FindFrameEntry(
     work_queue.pop();
     if (node->MatchesFrame(frame_tree_node)) {
       // Only the root TreeNode should have a FTN ID of -1.
-      DCHECK(node->frame_entry->frame_tree_node_id() != -1 ||
-             node == root_node());
+      DCHECK_IMPLIES(node->frame_entry->frame_tree_node_id() == -1,
+                     node == root_node());
       return node;
     }
     // Enqueue any children and keep looking.

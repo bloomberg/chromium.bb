@@ -57,8 +57,8 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
   // If update called, then recording source size must match bounds pushed to
   // impl layer.
-  DCHECK(update_source_frame_number_ != source_frame_number ||
-         impl_bounds == recording_source_bounds)
+  DCHECK_IMPLIES(update_source_frame_number_ == source_frame_number,
+                 impl_bounds == recording_source_bounds)
       << " bounds " << impl_bounds.ToString() << " recording source "
       << recording_source_bounds.ToString();
 

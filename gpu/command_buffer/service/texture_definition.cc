@@ -334,7 +334,7 @@ TextureDefinition::TextureDefinition(
       usage_(texture->usage()),
       immutable_(texture->IsImmutable()),
       defined_(texture->IsDefined()) {
-  DCHECK(!image_buffer_.get() || defined_);
+  DCHECK_IMPLIES(image_buffer_.get(), defined_);
   if (!image_buffer_.get() && defined_) {
     image_buffer_ = NativeImageBuffer::Create(texture->service_id());
     DCHECK(image_buffer_.get());

@@ -206,9 +206,9 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   // and OnMemoryDump() at the same time).
   // Otherwise, it is not possible to guarantee that its unregistration is
   // race-free. If you hit this DCHECK, your MDP has a bug.
-  DCHECK(!subtle::NoBarrier_Load(&memory_tracing_enabled_) ||
-         (mdp_iter->task_runner &&
-          mdp_iter->task_runner->BelongsToCurrentThread()))
+  DCHECK_IMPLIES(
+      subtle::NoBarrier_Load(&memory_tracing_enabled_),
+      mdp_iter->task_runner && mdp_iter->task_runner->BelongsToCurrentThread())
       << "The MemoryDumpProvider attempted to unregister itself in a racy way. "
       << "Please file a crbug.";
 

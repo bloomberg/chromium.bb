@@ -2073,7 +2073,7 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
   bool is_live = GetProcess()->HasConnection() && render_frame_created_;
 
   // Sanity check: the RenderView should always be live if the RenderFrame is.
-  DCHECK(!is_live || render_view_host_->IsRenderViewLive());
+  DCHECK_IMPLIES(is_live, render_view_host_->IsRenderViewLive());
 
   return is_live;
 }

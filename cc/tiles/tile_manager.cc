@@ -521,8 +521,8 @@ void TileManager::AssignGpuMemoryToTiles(
 
     tile->scheduled_priority_ = schedule_priority++;
 
-    DCHECK(tile->draw_info().mode() == TileDrawInfo::OOM_MODE ||
-           !tile->draw_info().IsReadyToDraw());
+    DCHECK_IMPLIES(tile->draw_info().mode() != TileDrawInfo::OOM_MODE,
+                   !tile->draw_info().IsReadyToDraw());
 
     // If the tile already has a raster_task, then the memory used by it is
     // already accounted for in memory_usage. Otherwise, we'll have to acquire
@@ -795,8 +795,8 @@ bool TileManager::AreRequiredTilesReadyToDraw(
       client_->BuildRasterQueue(global_state_.tree_priority, type));
   for (; !all_queue->IsEmpty(); all_queue->Pop()) {
     Tile* tile = all_queue->Top().tile();
-    DCHECK(!tile->required_for_activation() ||
-           tile->draw_info().IsReadyToDraw());
+    DCHECK_IMPLIES(tile->required_for_activation(),
+                   tile->draw_info().IsReadyToDraw());
   }
 #endif
   return true;

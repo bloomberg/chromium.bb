@@ -493,7 +493,8 @@ bool SchedulerStateMachine::ShouldCommit() const {
 
   // If we only have an active tree, it is incorrect to replace it
   // before we've drawn it.
-  DCHECK(!settings_.commit_to_active_tree || !active_tree_needs_first_draw_);
+  DCHECK_IMPLIES(settings_.commit_to_active_tree,
+                 !active_tree_needs_first_draw_);
 
   return true;
 }

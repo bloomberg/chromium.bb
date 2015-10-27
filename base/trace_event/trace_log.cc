@@ -879,7 +879,7 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
     flush_task_runner_ = ThreadTaskRunnerHandle::IsSet()
                              ? ThreadTaskRunnerHandle::Get()
                              : nullptr;
-    DCHECK(!thread_message_loops_.size() || flush_task_runner_);
+    DCHECK_IMPLIES(thread_message_loops_.size(), flush_task_runner_);
     flush_output_callback_ = cb;
 
     if (thread_shared_chunk_) {

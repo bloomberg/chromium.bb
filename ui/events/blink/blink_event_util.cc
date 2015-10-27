@@ -123,7 +123,7 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
   float minor_radius = event.GetTouchMinor(pointer_index) / 2.f;
 
   DCHECK_LE(minor_radius, major_radius);
-  DCHECK(!major_radius || minor_radius);
+  DCHECK_IMPLIES(major_radius, minor_radius);
 
   float orientation_deg = event.GetOrientation(pointer_index) * 180.f / M_PI;
   DCHECK_GE(major_radius, 0);

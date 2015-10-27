@@ -248,7 +248,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 void NavigationHandleImpl::DidCommitNavigation(
     bool same_page,
     RenderFrameHostImpl* render_frame_host) {
-  CHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
+  CHECK_IMPLIES(render_frame_host_, render_frame_host_ == render_frame_host);
   is_same_page_ = same_page;
   render_frame_host_ = render_frame_host;
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
@@ -257,8 +257,8 @@ void NavigationHandleImpl::DidCommitNavigation(
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CheckWillStartRequest() {
   DCHECK(state_ == WILL_SEND_REQUEST || state_ == DEFERRING_START);
-  DCHECK(state_ != WILL_SEND_REQUEST || next_index_ == 0);
-  DCHECK(state_ != DEFERRING_START || next_index_ != 0);
+  DCHECK_IMPLIES(state_ == WILL_SEND_REQUEST, next_index_ == 0);
+  DCHECK_IMPLIES(state_ == DEFERRING_START, next_index_ != 0);
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
     NavigationThrottle::ThrottleCheckResult result =
         throttles_[i]->WillStartRequest();
@@ -286,8 +286,8 @@ NavigationHandleImpl::CheckWillStartRequest() {
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CheckWillRedirectRequest() {
   DCHECK(state_ == WILL_REDIRECT_REQUEST || state_ == DEFERRING_REDIRECT);
-  DCHECK(state_ != WILL_REDIRECT_REQUEST || next_index_ == 0);
-  DCHECK(state_ != DEFERRING_REDIRECT || next_index_ != 0);
+  DCHECK_IMPLIES(state_ == WILL_REDIRECT_REQUEST, next_index_ == 0);
+  DCHECK_IMPLIES(state_ == DEFERRING_REDIRECT, next_index_ != 0);
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
     NavigationThrottle::ThrottleCheckResult result =
         throttles_[i]->WillRedirectRequest();

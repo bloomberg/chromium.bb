@@ -195,7 +195,7 @@ void TouchSelectionMenuRunnerViews::Menu::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TouchSelectionMenuRunnerViews::Menu::WindowClosing() {
-  DCHECK(!owner_ || owner_->menu_ == this);
+  DCHECK_IMPLIES(owner_, owner_->menu_ == this);
   BubbleDelegateView::WindowClosing();
   if (owner_)
     owner_->menu_ = nullptr;

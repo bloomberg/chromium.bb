@@ -644,7 +644,7 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.sandbox_flags);
   }
   render_frame->SetWebFrame(web_frame);
-  CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->parent());
+  CHECK_IMPLIES(parent_routing_id == MSG_ROUTING_NONE, !web_frame->parent());
 
   WebFrame* opener = ResolveOpener(opener_routing_id, nullptr);
   web_frame->setOpener(opener);
@@ -1256,7 +1256,8 @@ void RenderFrameImpl::OnSwapOut(
       SiteIsolationPolicy::IsSwappedOutStateForbidden();
 
   // This codepath should only be hit for subframes when in --site-per-process.
-  CHECK(is_main_frame_ || SiteIsolationPolicy::AreCrossProcessFramesPossible());
+  CHECK_IMPLIES(!is_main_frame_,
+                SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
@@ -2676,7 +2677,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.
-  CHECK(ds->request().url() != GURL(kSwappedOutURL) || is_swapped_out_)
+  CHECK_IMPLIES(ds->request().url() == GURL(kSwappedOutURL), is_swapped_out_)
       << "Heard swappedout:// when not swapped out.";
 
   // Update the request time if WebKit has better knowledge of it.
@@ -2842,8 +2843,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // SendUpdateState and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
-    DCHECK(!navigation_state->common_params().should_replace_current_entry ||
-           render_view_->history_list_length_ > 0);
+    DCHECK_IMPLIES(
+        navigation_state->common_params().should_replace_current_entry,
+        render_view_->history_list_length_ > 0);
     if (GetLoadingUrl() != GURL(kSwappedOutURL) &&
         !navigation_state->common_params().should_replace_current_entry) {
       // Advance our offset in session history, applying the length limit.
@@ -5007,12 +5009,12 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {
             GetFetchCredentialsModeForWebURLRequest(*request));
   DCHECK(GetFetchRedirectModeForWebURLRequest(*request) ==
          FetchRedirectMode::MANUAL_MODE);
-  DCHECK(frame_->parent() ||
-         GetRequestContextFrameTypeForWebURLRequest(*request) ==
-             REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
-  DCHECK(!frame_->parent() ||
-         GetRequestContextFrameTypeForWebURLRequest(*request) ==
-             REQUEST_CONTEXT_FRAME_TYPE_NESTED);
+  DCHECK_IMPLIES(!frame_->parent(),
+                 GetRequestContextFrameTypeForWebURLRequest(*request) ==
+                 REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
+  DCHECK_IMPLIES(frame_->parent(),
+                 GetRequestContextFrameTypeForWebURLRequest(*request) ==
+                 REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
   Send(new FrameHostMsg_BeginNavigation(
       routing_id_,

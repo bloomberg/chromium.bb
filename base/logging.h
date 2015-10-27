@@ -571,6 +571,7 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define CHECK_LT(val1, val2) CHECK_OP(LT, < , val1, val2)
 #define CHECK_GE(val1, val2) CHECK_OP(GE, >=, val1, val2)
 #define CHECK_GT(val1, val2) CHECK_OP(GT, > , val1, val2)
+#define CHECK_IMPLIES(val1, val2) CHECK(!(val1) || (val2))
 
 #if defined(NDEBUG)
 #define ENABLE_DLOG 0
@@ -724,6 +725,7 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 #define DCHECK_LT(val1, val2) DCHECK_OP(LT, < , val1, val2)
 #define DCHECK_GE(val1, val2) DCHECK_OP(GE, >=, val1, val2)
 #define DCHECK_GT(val1, val2) DCHECK_OP(GT, > , val1, val2)
+#define DCHECK_IMPLIES(val1, val2) DCHECK(!(val1) || (val2))
 
 #if !DCHECK_IS_ON() && defined(OS_CHROMEOS)
 // Implement logging of NOTREACHED() as a dedicated function to get function

@@ -127,7 +127,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
     content::WebContentsTester* web_contents_tester =
         content::WebContentsTester::For(web_contents());
     web_contents_tester->StartNavigation(url);
-    DCHECK(navigation_type != kSameProcess || !pending_main_rfh());
+    DCHECK_IMPLIES(navigation_type == kSameProcess, !pending_main_rfh());
 
     EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
     content::RenderFrameHost* rfh =
@@ -156,7 +156,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
     content::WebContentsTester* web_contents_tester =
         content::WebContentsTester::For(web_contents());
     web_contents_tester->StartNavigation(url);
-    DCHECK(navigation_type != kSameProcess || !pending_main_rfh());
+    DCHECK_IMPLIES(navigation_type == kSameProcess, !pending_main_rfh());
 
     EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
     content::RenderFrameHost* rfh =
