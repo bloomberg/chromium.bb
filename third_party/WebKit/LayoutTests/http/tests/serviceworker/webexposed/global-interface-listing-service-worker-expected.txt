@@ -23,7 +23,7 @@ interface CacheStorage
     method keys
     method match
     method open
-interface CircularGeofencingRegion
+interface CircularGeofencingRegion : GeofencingRegion
     attribute MAX_RADIUS
     attribute MIN_RADIUS
     getter latitude
@@ -41,12 +41,12 @@ interface Clients
     method constructor
     method matchAll
     method openWindow
-interface CloseEvent
+interface CloseEvent : Event
     getter code
     getter reason
     getter wasClean
     method constructor
-interface CrossOriginServiceWorkerClient
+interface CrossOriginServiceWorkerClient : EventTarget
     getter origin
     getter targetUrl
     method constructor
@@ -61,7 +61,7 @@ interface CryptoKey
     getter type
     getter usages
     method constructor
-interface CustomEvent
+interface CustomEvent : Event
     getter detail
     method constructor
     method initCustomEvent
@@ -157,7 +157,7 @@ interface Event
     method stopPropagation
     setter cancelBubble
     setter returnValue
-interface EventSource
+interface EventSource : EventTarget
     attribute CLOSED
     attribute CONNECTING
     attribute OPEN
@@ -177,21 +177,21 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
-interface ExtendableEvent
+interface ExtendableEvent : Event
     method constructor
     method waitUntil
-interface FetchEvent
+interface FetchEvent : ExtendableEvent
     getter isReload
     getter request
     method constructor
     method respondWith
-interface File
+interface File : Blob
     getter lastModified
     getter lastModifiedDate
     getter name
     getter webkitRelativePath
     method constructor
-interface FileError
+interface FileError : DOMError
     attribute ABORT_ERR
     attribute ENCODING_ERR
     attribute INVALID_MODIFICATION_ERR
@@ -210,7 +210,7 @@ interface FileList
     getter length
     method constructor
     method item
-interface FileReader
+interface FileReader : EventTarget
     attribute DONE
     attribute EMPTY
     attribute LOADING
@@ -253,7 +253,7 @@ interface FormData
     method keys
     method set
     method values
-interface GeofencingEvent
+interface GeofencingEvent : Event
     getter id
     getter region
     method constructor
@@ -280,10 +280,10 @@ interface IDBCursor
     method continuePrimaryKey
     method delete
     method update
-interface IDBCursorWithValue
+interface IDBCursorWithValue : IDBCursor
     getter value
     method constructor
-interface IDBDatabase
+interface IDBDatabase : EventTarget
     getter name
     getter objectStoreNames
     getter onabort
@@ -321,6 +321,10 @@ interface IDBIndex
     method openCursor
     method openKeyCursor
 interface IDBKeyRange
+    static method bound
+    static method lowerBound
+    static method only
+    static method upperBound
     getter lower
     getter lowerOpen
     getter upper
@@ -346,13 +350,13 @@ interface IDBObjectStore
     method openCursor
     method openKeyCursor
     method put
-interface IDBOpenDBRequest
+interface IDBOpenDBRequest : IDBRequest
     getter onblocked
     getter onupgradeneeded
     method constructor
     setter onblocked
     setter onupgradeneeded
-interface IDBRequest
+interface IDBRequest : EventTarget
     getter error
     getter onerror
     getter onsuccess
@@ -363,7 +367,7 @@ interface IDBRequest
     method constructor
     setter onerror
     setter onsuccess
-interface IDBTransaction
+interface IDBTransaction : EventTarget
     getter db
     getter error
     getter mode
@@ -377,7 +381,7 @@ interface IDBTransaction
     setter onabort
     setter oncomplete
     setter onerror
-interface IDBVersionChangeEvent
+interface IDBVersionChangeEvent : Event
     getter dataLoss
     getter dataLossMessage
     getter newVersion
@@ -387,14 +391,14 @@ interface ImageData
     getter height
     getter width
     method constructor
-interface InstallEvent
+interface InstallEvent : ExtendableEvent
     method constructor
     method registerForeignFetchScopes
 interface MessageChannel
     getter port1
     getter port2
     method constructor
-interface MessageEvent
+interface MessageEvent : Event
     getter data
     getter lastEventId
     getter origin
@@ -402,14 +406,14 @@ interface MessageEvent
     getter source
     method constructor
     method initMessageEvent
-interface MessagePort
+interface MessagePort : EventTarget
     getter onmessage
     method close
     method constructor
     method postMessage
     method start
     setter onmessage
-interface NetworkInformation
+interface NetworkInformation : EventTarget
     getter downlinkMax
     getter onchange
     getter ontypechange
@@ -417,7 +421,9 @@ interface NetworkInformation
     method constructor
     setter onchange
     setter ontypechange
-interface Notification
+interface Notification : EventTarget
+    static getter maxActions
+    static getter permission
     getter actions
     getter body
     getter data
@@ -439,7 +445,7 @@ interface Notification
     setter onclose
     setter onerror
     setter onshow
-interface NotificationEvent
+interface NotificationEvent : ExtendableEvent
     getter action
     getter notification
     method constructor
@@ -448,7 +454,7 @@ interface PerformanceObserverEntryList
     method getEntries
     method getEntriesByName
     method getEntriesByType
-interface PeriodicSyncEvent
+interface PeriodicSyncEvent : ExtendableEvent
     getter registration
     method constructor
 interface PeriodicSyncManager
@@ -465,7 +471,7 @@ interface PeriodicSyncRegistration
     getter tag
     method constructor
     method unregister
-interface PermissionStatus
+interface PermissionStatus : EventTarget
     getter onchange
     getter state
     method constructor
@@ -476,11 +482,11 @@ interface Permissions
     method request
     method requestAll
     method revoke
-interface PromiseRejectionEvent
+interface PromiseRejectionEvent : Event
     getter promise
     getter reason
     method constructor
-interface PushEvent
+interface PushEvent : ExtendableEvent
     getter data
     method constructor
 interface PushManager
@@ -525,6 +531,8 @@ interface Request
     method json
     method text
 interface Response
+    static method error
+    static method redirect
     getter body
     getter bodyUsed
     getter headers
@@ -546,7 +554,7 @@ interface ServicePort
     method close
     method constructor
     method postMessage
-interface ServicePortCollection
+interface ServicePortCollection : EventTarget
     getter onclose
     getter onconnect
     getter onmessage
@@ -557,14 +565,14 @@ interface ServicePortCollection
     setter onclose
     setter onconnect
     setter onmessage
-interface ServicePortConnectEvent
+interface ServicePortConnectEvent : ExtendableEvent
     getter origin
     getter targetURL
     method constructor
     method respondWith
-interface ServiceWorkerGlobalScope
+interface ServiceWorkerGlobalScope : WorkerGlobalScope
     method constructor
-interface ServiceWorkerRegistration
+interface ServiceWorkerRegistration : EventTarget
     getter geofencing
     getter onupdatefound
     getter periodicSync
@@ -594,7 +602,7 @@ interface SubtleCrypto
     method unwrapKey
     method verify
     method wrapKey
-interface SyncEvent
+interface SyncEvent : ExtendableEvent
     getter registration
     method constructor
 interface SyncManager
@@ -619,6 +627,8 @@ interface TextEncoder
     method constructor
     method encode
 interface URL
+    static method createObjectURL
+    static method revokeObjectURL
     getter hash
     getter host
     getter hostname
@@ -642,7 +652,7 @@ interface URL
     setter protocol
     setter search
     setter username
-interface WebSocket
+interface WebSocket : EventTarget
     attribute CLOSED
     attribute CLOSING
     attribute CONNECTING
@@ -665,13 +675,13 @@ interface WebSocket
     setter onerror
     setter onmessage
     setter onopen
-interface WindowClient
+interface WindowClient : Client
     getter focused
     getter visibilityState
     method constructor
     method focus
     method navigate
-interface WorkerGlobalScope
+interface WorkerGlobalScope : EventTarget
     attribute PERSISTENT
     attribute TEMPORARY
     getter console
@@ -744,7 +754,7 @@ interface webkitIDBCursor
     method continuePrimaryKey
     method delete
     method update
-interface webkitIDBDatabase
+interface webkitIDBDatabase : EventTarget
     getter name
     getter objectStoreNames
     getter onabort
@@ -782,6 +792,10 @@ interface webkitIDBIndex
     method openCursor
     method openKeyCursor
 interface webkitIDBKeyRange
+    static method bound
+    static method lowerBound
+    static method only
+    static method upperBound
     getter lower
     getter lowerOpen
     getter upper
@@ -807,7 +821,7 @@ interface webkitIDBObjectStore
     method openCursor
     method openKeyCursor
     method put
-interface webkitIDBRequest
+interface webkitIDBRequest : EventTarget
     getter error
     getter onerror
     getter onsuccess
@@ -818,7 +832,7 @@ interface webkitIDBRequest
     method constructor
     setter onerror
     setter onsuccess
-interface webkitIDBTransaction
+interface webkitIDBTransaction : EventTarget
     getter db
     getter error
     getter mode

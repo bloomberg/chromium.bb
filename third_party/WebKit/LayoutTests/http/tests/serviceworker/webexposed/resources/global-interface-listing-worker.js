@@ -73,6 +73,7 @@ function is_web_idl_constructor(property_name) {
 }
 
 function collect_property_info(object, property_name, output) {
+  var keywords = ('prototype' in object) ? 'static ' : '';
   var descriptor = Object.getOwnPropertyDescriptor(object, property_name);
   if ('value' in descriptor) {
     var type;
@@ -81,26 +82,44 @@ function collect_property_info(object, property_name, output) {
     } else {
       type = 'attribute';
     }
-    output.push('    ' + type + ' ' + property_name);
+    output.push('    ' + keywords + type + ' ' + property_name);
   } else {
     if (descriptor.get)
-      output.push('    getter ' + property_name);
+      output.push('    ' + keywords + 'getter ' + property_name);
     if (descriptor.set)
-      output.push('    setter ' + property_name);
+      output.push('    ' + keywords + 'setter ' + property_name);
   }
 }
 
 var interface_names = Object.getOwnPropertyNames(global_object).filter(is_web_idl_constructor);
 interface_names.sort();
 interface_names.forEach(function(interface_name) {
+  var inherits_from = this[interface_name].__proto__.name;
+  if (inherits_from)
+    globals.push('interface ' + interface_name + ' : ' + inherits_from);
+  else
     globals.push('interface ' + interface_name);
+  // List static properties then prototype properties.
+  [this[interface_name], this[interface_name].prototype].forEach(function(object) {
+    if ('prototype' in object) {
+      // Skip properties that aren't static (e.g. consts), or are inherited.
+      var proto_properties = new Set(Object.keys(object.prototype).concat(
+                                     Object.keys(object.__proto__)));
+      var property_names = Object.keys(object).filter(function(name) {
+        // TODO(johnme): Stop filtering out 'toString' once
+        //               https://crbug.com/547773 is fixed.
+        return !proto_properties.has(name) && name !== 'toString';
+      });
+    } else {
+      var property_names = Object.getOwnPropertyNames(object);
+    }
     var property_strings = [];
-    var prototype = this[interface_name].prototype;
-    Object.getOwnPropertyNames(prototype).forEach(function(property_name) {
-      collect_property_info(prototype, property_name, property_strings);
+    property_names.forEach(function(property_name) {
+      collect_property_info(object, property_name, property_strings);
     });
     globals.push.apply(globals, property_strings.sort());
   });
+});
 
 globals.push('global object');
 var property_strings = [];
@@ -113,7 +132,7 @@ member_names.forEach(function(property_name) {
 globals.push.apply(globals, property_strings.sort());
 
 self.addEventListener('message', function(event) {
-    event.ports[0].postMessage({ result: globals });
-  });
+  event.ports[0].postMessage({ result: globals });
+});
 
 })(this); // Run all the code in a local scope.
