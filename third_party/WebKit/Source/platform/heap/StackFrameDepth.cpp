@@ -98,14 +98,7 @@ size_t StackFrameDepth::getUnderestimatedStackSize()
     // size for the main thread on Mavericks(10.9).
     return 0;
 #elif OS(WIN) && COMPILER(MSVC)
-    // On Windows stack limits for the current thread are available in
-    // the thread information block (TIB). Its fields can be accessed through
-    // FS segment register on x86 and GS segment register on x86_64.
-#ifdef _WIN64
-    return __readgsqword(offsetof(NT_TIB64, StackBase)) - __readgsqword(offsetof(NT_TIB64, StackLimit));
-#else
-    return __readfsdword(offsetof(NT_TIB, StackBase)) - __readfsdword(offsetof(NT_TIB, StackLimit));
-#endif
+    return ThreadState::current()->threadStackSize();
 #else
 #error "Stack frame size estimation not supported on this platform."
     return 0;
