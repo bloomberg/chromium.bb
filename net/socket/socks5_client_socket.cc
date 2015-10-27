@@ -347,12 +347,12 @@ int SOCKS5ClientSocket::DoGreetReadComplete(int result) {
   // Got the greet data.
   if (buffer_[0] != kSOCKS5Version) {
     net_log_.AddEvent(NetLog::TYPE_SOCKS_UNEXPECTED_VERSION,
-                      NetLog::IntegerCallback("version", buffer_[0]));
+                      NetLog::IntCallback("version", buffer_[0]));
     return ERR_SOCKS_CONNECTION_FAILED;
   }
   if (buffer_[1] != 0x00) {
     net_log_.AddEvent(NetLog::TYPE_SOCKS_UNEXPECTED_AUTH,
-                      NetLog::IntegerCallback("method", buffer_[1]));
+                      NetLog::IntCallback("method", buffer_[1]));
     return ERR_SOCKS_CONNECTION_FAILED;
   }
 
@@ -455,12 +455,12 @@ int SOCKS5ClientSocket::DoHandshakeReadComplete(int result) {
   if (bytes_received_ == kReadHeaderSize) {
     if (buffer_[0] != kSOCKS5Version || buffer_[2] != kNullByte) {
       net_log_.AddEvent(NetLog::TYPE_SOCKS_UNEXPECTED_VERSION,
-                        NetLog::IntegerCallback("version", buffer_[0]));
+                        NetLog::IntCallback("version", buffer_[0]));
       return ERR_SOCKS_CONNECTION_FAILED;
     }
     if (buffer_[1] != 0x00) {
       net_log_.AddEvent(NetLog::TYPE_SOCKS_SERVER_ERROR,
-                        NetLog::IntegerCallback("error_code", buffer_[1]));
+                        NetLog::IntCallback("error_code", buffer_[1]));
       return ERR_SOCKS_CONNECTION_FAILED;
     }
 
@@ -479,7 +479,7 @@ int SOCKS5ClientSocket::DoHandshakeReadComplete(int result) {
       read_header_size += sizeof(struct in6_addr) - 1;
     else {
       net_log_.AddEvent(NetLog::TYPE_SOCKS_UNKNOWN_ADDRESS_TYPE,
-                        NetLog::IntegerCallback("address_type", buffer_[3]));
+                        NetLog::IntCallback("address_type", buffer_[3]));
       return ERR_SOCKS_CONNECTION_FAILED;
     }
 

@@ -51,7 +51,7 @@ scoped_ptr<base::Value> NetLogBoolCallback(
   return event_params.Pass();
 }
 
-scoped_ptr<base::Value> NetLogIntegerCallback(
+scoped_ptr<base::Value> NetLogIntCallback(
     const char* name,
     int value,
     NetLogCaptureMode /* capture_mode */) {
@@ -347,9 +347,8 @@ NetLog::ParametersCallback NetLog::BoolCallback(const char* name, bool value) {
 }
 
 // static
-NetLog::ParametersCallback NetLog::IntegerCallback(const char* name,
-                                                   int value) {
-  return base::Bind(&NetLogIntegerCallback, name, value);
+NetLog::ParametersCallback NetLog::IntCallback(const char* name, int value) {
+  return base::Bind(&NetLogIntCallback, name, value);
 }
 
 // static
@@ -446,7 +445,7 @@ void BoundNetLog::AddEventWithNetErrorCode(NetLog::EventType event_type,
   if (net_error >= 0) {
     AddEvent(event_type);
   } else {
-    AddEvent(event_type, NetLog::IntegerCallback("net_error", net_error));
+    AddEvent(event_type, NetLog::IntCallback("net_error", net_error));
   }
 }
 
@@ -456,7 +455,7 @@ void BoundNetLog::EndEventWithNetErrorCode(NetLog::EventType event_type,
   if (net_error >= 0) {
     EndEvent(event_type);
   } else {
-    EndEvent(event_type, NetLog::IntegerCallback("net_error", net_error));
+    EndEvent(event_type, NetLog::IntCallback("net_error", net_error));
   }
 }
 

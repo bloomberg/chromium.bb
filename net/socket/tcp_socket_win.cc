@@ -845,7 +845,7 @@ void TCPSocketWin::DoConnectComplete(int result) {
   connect_os_error_ = 0;
   if (result != OK) {
     net_log_.EndEvent(NetLog::TYPE_TCP_CONNECT_ATTEMPT,
-                      NetLog::IntegerCallback("os_error", os_error));
+                      NetLog::IntCallback("os_error", os_error));
   } else {
     net_log_.EndEvent(NetLog::TYPE_TCP_CONNECT_ATTEMPT);
   }

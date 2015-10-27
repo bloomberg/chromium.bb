@@ -319,9 +319,8 @@ void ClientSocketPoolBaseHelper::RequestSockets(
     num_sockets = max_sockets_per_group_;
   }
 
-  request.net_log().BeginEvent(
-      NetLog::TYPE_SOCKET_POOL_CONNECTING_N_SOCKETS,
-      NetLog::IntegerCallback("num_sockets", num_sockets));
+  request.net_log().BeginEvent(NetLog::TYPE_SOCKET_POOL_CONNECTING_N_SOCKETS,
+                               NetLog::IntCallback("num_sockets", num_sockets));
 
   Group* group = GetOrCreateGroup(group_name);
 
@@ -1013,8 +1012,8 @@ void ClientSocketPoolBaseHelper::HandOutSocket(
   if (handle->is_reused()) {
     net_log.AddEvent(
         NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET,
-        NetLog::IntegerCallback(
-            "idle_ms", static_cast<int>(idle_time.InMilliseconds())));
+        NetLog::IntCallback("idle_ms",
+                            static_cast<int>(idle_time.InMilliseconds())));
   }
 
   net_log.AddEvent(

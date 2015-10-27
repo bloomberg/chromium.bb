@@ -2335,11 +2335,10 @@ void SSLClientSocketNSS::Core::PostOrRunCallback(
 }
 
 void SSLClientSocketNSS::Core::AddCertProvidedEvent(int cert_count) {
-  PostOrRunCallback(
-      FROM_HERE,
-      base::Bind(&AddLogEventWithCallback, weak_net_log_,
-                 NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
-                 NetLog::IntegerCallback("cert_count", cert_count)));
+  PostOrRunCallback(FROM_HERE,
+                    base::Bind(&AddLogEventWithCallback, weak_net_log_,
+                               NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
+                               NetLog::IntCallback("cert_count", cert_count)));
 }
 
 void SSLClientSocketNSS::Core::SetChannelIDProvided() {

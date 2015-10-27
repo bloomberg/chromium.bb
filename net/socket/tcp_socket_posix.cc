@@ -539,7 +539,7 @@ int TCPSocketPosix::HandleConnectCompleted(int rv) const {
   // Log the end of this attempt (and any OS error it threw).
   if (rv != OK) {
     net_log_.EndEvent(NetLog::TYPE_TCP_CONNECT_ATTEMPT,
-                      NetLog::IntegerCallback("os_error", errno));
+                      NetLog::IntCallback("os_error", errno));
   } else {
     net_log_.EndEvent(NetLog::TYPE_TCP_CONNECT_ATTEMPT);
   }

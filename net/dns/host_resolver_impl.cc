@@ -675,9 +675,8 @@ class HostResolverImpl::ProcTask
       return;
     }
 
-    net_log_.AddEvent(
-        NetLog::TYPE_HOST_RESOLVER_IMPL_ATTEMPT_STARTED,
-        NetLog::IntegerCallback("attempt_number", attempt_number_));
+    net_log_.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_ATTEMPT_STARTED,
+                      NetLog::IntCallback("attempt_number", attempt_number_));
 
     // If we don't get the results within a given time, RetryIfNotComplete
     // will start a new attempt on a different worker thread if none of our
@@ -777,8 +776,7 @@ class HostResolverImpl::ProcTask
                                     error,
                                     os_error);
     } else {
-      net_log_callback = NetLog::IntegerCallback("attempt_number",
-                                                 attempt_number);
+      net_log_callback = NetLog::IntCallback("attempt_number", attempt_number);
     }
     net_log_.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_ATTEMPT_FINISHED,
                       net_log_callback);

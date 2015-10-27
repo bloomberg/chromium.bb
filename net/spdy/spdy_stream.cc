@@ -729,7 +729,7 @@ void SpdyStream::PossiblyResumeIfSendStalled() {
   if (send_stalled_by_flow_control_ && !session_->IsSendStalled() &&
       send_window_size_ > 0) {
     net_log_.AddEvent(NetLog::TYPE_HTTP2_STREAM_FLOW_CONTROL_UNSTALLED,
-                      NetLog::IntegerCallback("stream_id", stream_id_));
+                      NetLog::IntCallback("stream_id", stream_id_));
     send_stalled_by_flow_control_ = false;
     QueueNextDataFrame();
   }

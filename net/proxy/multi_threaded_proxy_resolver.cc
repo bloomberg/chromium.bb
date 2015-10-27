@@ -305,7 +305,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
 
     net_log_.AddEvent(
         NetLog::TYPE_SUBMITTED_TO_RESOLVER_THREAD,
-        NetLog::IntegerCallback("thread_number", executor()->thread_number()));
+        NetLog::IntCallback("thread_number", executor()->thread_number()));
   }
 
   // Runs on the worker thread.

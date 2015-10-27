@@ -836,7 +836,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
   CloseAllStreams(net_error);
   CloseAllObservers(net_error);
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
-                    NetLog::IntegerCallback("net_error", net_error));
+                    NetLog::IntCallback("net_error", net_error));
 
   if (connection()->connected())
     connection()->CloseConnection(quic_error, false);

@@ -1847,14 +1847,14 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
 
     int cert_count = 1 + sk_X509_num(chain.get());
     net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
-                      NetLog::IntegerCallback("cert_count", cert_count));
+                      NetLog::IntCallback("cert_count", cert_count));
     return 1;
   }
 #endif  // defined(OS_IOS)
 
   // Send no client certificate.
   net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
-                    NetLog::IntegerCallback("cert_count", 0));
+                    NetLog::IntCallback("cert_count", 0));
   return 1;
 }
 

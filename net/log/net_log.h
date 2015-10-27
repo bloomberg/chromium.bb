@@ -268,8 +268,7 @@ class NET_EXPORT NetLog {
   static ParametersCallback BoolCallback(const char* name, bool value);
 
   // Warning: |name| must remain valid for the life of the callback.
-  // TODO(mmenke):  Rename this to be consistent with Int64Callback.
-  static ParametersCallback IntegerCallback(const char* name, int value);
+  static ParametersCallback IntCallback(const char* name, int value);
 
   // Creates a ParametersCallback that encapsulates a single int64.  The
   // callback will return the value as a StringValue, since IntegerValues

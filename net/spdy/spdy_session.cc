@@ -1173,7 +1173,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
       QueueSendStalledStream(*stream);
       net_log().AddEvent(
           NetLog::TYPE_HTTP2_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW,
-          NetLog::IntegerCallback("stream_id", stream_id));
+          NetLog::IntCallback("stream_id", stream_id));
       return scoped_ptr<SpdyBuffer>();
     }
 
@@ -1188,7 +1188,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
       QueueSendStalledStream(*stream);
       net_log().AddEvent(
           NetLog::TYPE_HTTP2_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW,
-          NetLog::IntegerCallback("stream_id", stream_id));
+          NetLog::IntCallback("stream_id", stream_id));
       return scoped_ptr<SpdyBuffer>();
     }
 
@@ -2859,7 +2859,7 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
       if (value > static_cast<uint32>(kint32max)) {
         net_log().AddEvent(
             NetLog::TYPE_HTTP2_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE,
-            NetLog::IntegerCallback("initial_window_size", value));
+            NetLog::IntCallback("initial_window_size", value));
         return;
       }
 
@@ -2870,7 +2870,7 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
       UpdateStreamsSendWindowSize(delta_window_size);
       net_log().AddEvent(
           NetLog::TYPE_HTTP2_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE,
-          NetLog::IntegerCallback("delta_window_size", delta_window_size));
+          NetLog::IntCallback("delta_window_size", delta_window_size));
       break;
     }
   }
