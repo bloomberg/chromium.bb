@@ -709,9 +709,6 @@ cr.define('login', function() {
       this.addEventListener('click', this.handleClickOnPod_.bind(this));
       this.addEventListener('mousedown', this.handlePodMouseDown_.bind(this));
 
-      this.reauthWarningElement.addEventListener('click',
-                                                 this.activate.bind(this));
-
       this.actionBoxAreaElement.addEventListener('mousedown',
                                                  stopEventPropagation);
       this.actionBoxAreaElement.addEventListener('click',
