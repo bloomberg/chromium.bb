@@ -117,7 +117,11 @@ class ShellUtilShortcutTest : public testing::Test {
       case ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH:
         expected_path = fake_user_quick_launch_.path();
         break;
-      case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR:
+      case ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT:
+        expected_path = (properties.level == ShellUtil::CURRENT_USER) ?
+            fake_start_menu_.path() : fake_common_start_menu_.path();
+        break;
+      case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED:
         expected_path = (properties.level == ShellUtil::CURRENT_USER) ?
             fake_start_menu_.path() : fake_common_start_menu_.path();
         expected_path = expected_path.Append(
@@ -233,15 +237,48 @@ TEST_F(ShellUtilShortcutTest, GetShortcutPath) {
   base::string16 start_menu_subfolder =
       dist_->GetStartMenuShortcutSubfolder(
           BrowserDistribution::SUBFOLDER_CHROME);
-  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                             dist_, ShellUtil::CURRENT_USER, &path);
+  ShellUtil::GetShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, ShellUtil::CURRENT_USER, &path);
   EXPECT_EQ(fake_start_menu_.path().Append(start_menu_subfolder),
             path);
 
-  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                             dist_, ShellUtil::SYSTEM_LEVEL, &path);
+  ShellUtil::GetShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, ShellUtil::SYSTEM_LEVEL, &path);
   EXPECT_EQ(fake_common_start_menu_.path().Append(start_menu_subfolder),
             path);
+}
+
+TEST_F(ShellUtilShortcutTest, MoveExistingShortcut) {
+  test_properties_.set_shortcut_name(L"Bobo le shortcut");
+  test_properties_.level = ShellUtil::SYSTEM_LEVEL;
+  base::FilePath old_shortcut_path(GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, test_properties_));
+
+  ASSERT_TRUE(
+    ShellUtil::CreateOrUpdateShortcut(
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+        dist_, test_properties_,
+        ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  ValidateChromeShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, test_properties_);
+  ASSERT_TRUE(base::PathExists(old_shortcut_path.DirName()));
+  ASSERT_TRUE(base::PathExists(old_shortcut_path));
+
+  ASSERT_TRUE(
+    ShellUtil::MoveExistingShortcut(
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+        dist_, test_properties_));
+
+  ValidateChromeShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+      dist_, test_properties_);
+  ASSERT_FALSE(base::PathExists(old_shortcut_path));
+  ASSERT_FALSE(base::PathExists(old_shortcut_path.DirName()));
 }
 
 TEST_F(ShellUtilShortcutTest, CreateChromeExeShortcutWithDefaultProperties) {
@@ -257,12 +294,14 @@ TEST_F(ShellUtilShortcutTest, CreateChromeExeShortcutWithDefaultProperties) {
 TEST_F(ShellUtilShortcutTest, CreateStartMenuShortcutWithAllProperties) {
   test_properties_.set_shortcut_name(L"Bobo le shortcut");
   test_properties_.level = ShellUtil::SYSTEM_LEVEL;
-  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                  dist_, test_properties_,
-                  ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
-  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                         dist_, test_properties_);
+  ASSERT_TRUE(
+    ShellUtil::CreateOrUpdateShortcut(
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+        dist_, test_properties_,
+        ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  ValidateChromeShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, test_properties_);
 }
 
 TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelDesktopShortcut) {
@@ -317,21 +356,24 @@ TEST_F(ShellUtilShortcutTest, UpdateQuickLaunchShortcutArguments) {
 TEST_F(ShellUtilShortcutTest, UpdateAddDualModeToStartMenuShortcut) {
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
   product_->AddDefaultShortcutProperties(chrome_exe_, &properties);
-  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist_,
-                  properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  ASSERT_TRUE(
+      ShellUtil::CreateOrUpdateShortcut(
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist_,
+          properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
   ShellUtil::ShortcutProperties added_properties(ShellUtil::CURRENT_USER);
   added_properties.set_dual_mode(true);
-  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist_,
-                  added_properties, ShellUtil::SHELL_SHORTCUT_UPDATE_EXISTING));
+  ASSERT_TRUE(
+      ShellUtil::CreateOrUpdateShortcut(
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist_,
+          added_properties, ShellUtil::SHELL_SHORTCUT_UPDATE_EXISTING));
 
   ShellUtil::ShortcutProperties expected_properties(properties);
   expected_properties.set_dual_mode(true);
 
-  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                         dist_, expected_properties);
+  ValidateChromeShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, expected_properties);
 }
 
 TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevel) {
@@ -364,11 +406,12 @@ TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevelWithSystemLevelPresent) {
 
 TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevelStartMenu) {
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
+                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
                   dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL));
-  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                         dist_, test_properties_);
+  ValidateChromeShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
+      dist_, test_properties_);
 }
 
 TEST_F(ShellUtilShortcutTest, CreateAlwaysUserWithSystemLevelPresent) {
@@ -700,7 +743,7 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
 
 TEST_F(ShellUtilShortcutTest, CreateMultipleStartMenuShortcutsAndRemoveFolder) {
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
+                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
                   dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
@@ -709,7 +752,7 @@ TEST_F(ShellUtilShortcutTest, CreateMultipleStartMenuShortcutsAndRemoveFolder) {
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
   test_properties_.set_shortcut_name(L"A second shortcut");
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
+                  ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
                   dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
@@ -743,7 +786,7 @@ TEST_F(ShellUtilShortcutTest, CreateMultipleStartMenuShortcutsAndRemoveFolder) {
 
   ASSERT_TRUE(base::PathExists(chrome_shortcut_folder));
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR, dist_,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist_,
       ShellUtil::CURRENT_USER, chrome_exe_));
   ASSERT_FALSE(base::PathExists(chrome_shortcut_folder));
 
