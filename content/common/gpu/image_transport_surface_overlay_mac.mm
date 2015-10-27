@@ -374,6 +374,8 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
         swap->scale_factor, swap->pixel_damage_rect);
     std::sort(swap->overlay_planes.begin(), swap->overlay_planes.end(),
               OverlayPlane::Compare);
+    for (auto& plane : swap->overlay_planes)
+      dip_damage_rect.Subtract(plane->dip_frame_rect);
 
     ScopedCAActionDisabler disabler;
     UpdateRootAndPartialDamagePlanes(swap->root_plane, dip_damage_rect);

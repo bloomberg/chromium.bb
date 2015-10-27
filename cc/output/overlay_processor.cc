@@ -12,14 +12,6 @@
 
 namespace cc {
 
-namespace {
-
-bool SortByZOrder(const OverlayCandidate& a, const OverlayCandidate& b) {
-  return (a.plane_z_order < b.plane_z_order);
-}
-
-}  // namespace
-
 OverlayProcessor::OverlayProcessor(OutputSurface* surface) : surface_(surface) {
 }
 
@@ -35,21 +27,10 @@ OverlayProcessor::~OverlayProcessor() {}
 
 void OverlayProcessor::ProcessForOverlays(ResourceProvider* resource_provider,
                                           RenderPassList* render_passes,
-                                          OverlayCandidateList* candidates,
-                                          gfx::Rect* damage_rect) {
+                                          OverlayCandidateList* candidates) {
   for (auto strategy : strategies_) {
-    if (strategy->Attempt(resource_provider, render_passes, candidates)) {
-      std::sort(candidates->begin(), candidates->end(), SortByZOrder);
-
-      for (const OverlayCandidate& overlay : *candidates) {
-        if (overlay.plane_z_order <= 0 || overlay.needs_blending)
-          continue;
-
-        damage_rect->Subtract(ToEnclosedRect(overlay.display_rect));
-      }
-
+    if (strategy->Attempt(resource_provider, render_passes, candidates))
       return;
-    }
   }
 }
 

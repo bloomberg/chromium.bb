@@ -196,8 +196,6 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
   candidate->format = RGBA_8888;
   candidate->clip_rect = quad->shared_quad_state->clip_rect;
   candidate->is_clipped = quad->shared_quad_state->is_clipped;
-  candidate->needs_blending =
-      quad->shared_quad_state->opacity < 1.0f || quad->needs_blending;
 
   switch (quad->material) {
     case DrawQuad::TEXTURE_CONTENT:

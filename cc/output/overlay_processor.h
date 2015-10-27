@@ -37,8 +37,7 @@ class CC_EXPORT OverlayProcessor {
 
   void ProcessForOverlays(ResourceProvider* resource_provider,
                           RenderPassList* render_passes,
-                          OverlayCandidateList* candidates,
-                          gfx::Rect* damage_rect);
+                          OverlayCandidateList* candidates);
 
  protected:
   StrategyList strategies_;
