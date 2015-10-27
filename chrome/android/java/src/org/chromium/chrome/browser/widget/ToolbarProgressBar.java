@@ -13,12 +13,15 @@ import android.util.AttributeSet;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * Progress bar for use in the Toolbar view.
  */
 public class ToolbarProgressBar extends ClipDrawableProgressBar {
+
+    private static final String ANIMATION_FIELD_TRIAL_NAME = "ProgressBarAnimationAndroid";
 
     /**
      * Interface for progress bar animation interpolation logics.
@@ -101,6 +104,11 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
         String animation = CommandLine.getInstance().getSwitchValue(
                 ChromeSwitches.PROGRESS_BAR_ANIMATION);
+        if (TextUtils.isEmpty(animation)) {
+            animation = VariationsAssociatedData.getVariationParamValue(
+                    ANIMATION_FIELD_TRIAL_NAME, ChromeSwitches.PROGRESS_BAR_ANIMATION);
+        }
+
         if (TextUtils.equals(animation, "smooth")) {
             mAnimationLogic = new ProgressAnimationSmooth();
         } else if (TextUtils.equals(animation, "fast-start")) {
