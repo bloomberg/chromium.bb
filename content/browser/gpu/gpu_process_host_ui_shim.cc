@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MACOSX)
+#include "content/browser/browser_io_surface_manager_mac.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #endif
 
@@ -252,10 +253,29 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     gfx::AcceleratedWidget native_widget =
         content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
             params.surface_id);
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+    CAContextID ca_context_id = 0;
+
+    switch (ui::GetSurfaceHandleType(params.surface_handle)) {
+      case ui::kSurfaceHandleTypeIOSurface: {
+        IOSurfaceID io_surface_id =
+            ui::IOSurfaceIDFromSurfaceHandle(params.surface_handle);
+        io_surface.reset(
+            BrowserIOSurfaceManager::GetInstance()->AcquireIOSurface(
+                gfx::GenericSharedMemoryId(io_surface_id)));
+        break;
+      }
+      case ui::kSurfaceHandleTypeCAContext: {
+        ca_context_id = ui::CAContextIDFromSurfaceHandle(params.surface_handle);
+        break;
+      }
+      default:
+        DLOG(ERROR) << "Unrecognized accelerated frame type.";
+        return;
+    }
     ui::AcceleratedWidgetMacGotAcceleratedFrame(
-        native_widget, params.surface_handle, params.latency_info, params.size,
-        params.scale_factor,
-        params.damage_rect,
+        native_widget, ca_context_id, io_surface, params.latency_info,
+        params.size, params.scale_factor, params.damage_rect,
         base::Bind(&OnSurfaceDisplayedCallback, params.surface_id),
         &ack_params.disable_throttling, &ack_params.renderer_id,
         &ack_params.vsync_timebase, &ack_params.vsync_interval);

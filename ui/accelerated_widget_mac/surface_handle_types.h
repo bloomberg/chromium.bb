@@ -23,9 +23,13 @@ enum SurfaceHandleType {
   kSurfaceHandleTypeCAContext,
 };
 
+ACCELERATED_WIDGET_MAC_EXPORT
 SurfaceHandleType GetSurfaceHandleType(uint64 surface_handle);
 
+ACCELERATED_WIDGET_MAC_EXPORT
 CAContextID CAContextIDFromSurfaceHandle(uint64 surface_handle);
+
+ACCELERATED_WIDGET_MAC_EXPORT
 IOSurfaceID IOSurfaceIDFromSurfaceHandle(uint64 surface_handle);
 
 ACCELERATED_WIDGET_MAC_EXPORT

@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
@@ -135,7 +134,8 @@ void AcceleratedWidgetMac::EndPumpingFrames() {
 }
 
 void AcceleratedWidgetMac::GotAcceleratedFrame(
-    uint64 surface_handle,
+    CAContextID ca_context_id,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const std::vector<ui::LatencyInfo>& latency_info,
     const gfx::Size& pixel_size,
     float scale_factor,
@@ -156,21 +156,10 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
   // Disable the fade-in or fade-out effect if we create or remove layers.
   ScopedCAActionDisabler disabler;
 
-  switch (GetSurfaceHandleType(surface_handle)) {
-    case kSurfaceHandleTypeIOSurface: {
-      IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
-      GotAcceleratedIOSurfaceFrame(io_surface_id, pixel_size, scale_factor);
-      break;
-    }
-    case kSurfaceHandleTypeCAContext: {
-      CAContextID ca_context_id = CAContextIDFromSurfaceHandle(surface_handle);
-      GotAcceleratedCAContextFrame(ca_context_id, pixel_size, scale_factor);
-      break;
-    }
-    default:
-      DLOG(ERROR) << "Unrecognized accelerated frame type.";
-      return;
-  }
+  if (ca_context_id)
+    GotAcceleratedCAContextFrame(ca_context_id, pixel_size, scale_factor);
+  else
+    GotAcceleratedIOSurfaceFrame(io_surface, pixel_size, scale_factor);
 
   AcknowledgeAcceleratedFrame();
 }
@@ -206,12 +195,10 @@ void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
 }
 
 void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
-    IOSurfaceID io_surface_id,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor) {
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      IOSurfaceLookup(io_surface_id));
-  GotIOSurfaceFrame(io_surface, pixel_size, scale_factor, true);
+  GotIOSurfaceFrame(io_surface, pixel_size, scale_factor, false);
 }
 
 void AcceleratedWidgetMac::EnsureLocalLayer() {
@@ -294,19 +281,23 @@ void AcceleratedWidgetMac::AcknowledgeAcceleratedFrame() {
 }
 
 void AcceleratedWidgetMacGotAcceleratedFrame(
-    gfx::AcceleratedWidget widget, uint64 surface_handle,
+    gfx::AcceleratedWidget widget,
+    CAContextID ca_context_id,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const std::vector<ui::LatencyInfo>& latency_info,
     const gfx::Size& pixel_size,
     float scale_factor,
     const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback,
-    bool* disable_throttling, int* renderer_id,
-    base::TimeTicks* vsync_timebase, base::TimeDelta* vsync_interval) {
+    bool* disable_throttling,
+    int* renderer_id,
+    base::TimeTicks* vsync_timebase,
+    base::TimeDelta* vsync_interval) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
   if (accelerated_widget_mac) {
     accelerated_widget_mac->GotAcceleratedFrame(
-        surface_handle, latency_info, pixel_size, scale_factor,
+        ca_context_id, io_surface, latency_info, pixel_size, scale_factor,
         pixel_damage_rect, drawn_callback);
     *disable_throttling =
         accelerated_widget_mac->IsRendererThrottlingDisabled();

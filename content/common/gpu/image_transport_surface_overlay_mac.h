@@ -97,6 +97,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
       const base::TimeTicks& from, double interval_fraction);
 
   scoped_ptr<ImageTransportHelper> helper_;
+  bool use_remote_layer_api_;
   base::scoped_nsobject<CAContext> ca_context_;
   base::scoped_nsobject<CALayer> ca_root_layer_;
 

@@ -86,13 +86,22 @@ gfx::RectF ConvertRectToDIPF(float scale_factor, const gfx::Rect& rect) {
 
 namespace content {
 
+scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
+    GpuChannelManager* manager,
+    GpuCommandBufferStub* stub,
+    gfx::PluginWindowHandle handle) {
+  return new ImageTransportSurfaceOverlayMac(manager, stub, handle);
+}
+
 class ImageTransportSurfaceOverlayMac::OverlayPlane {
  public:
   OverlayPlane(int z_order,
+               int io_surface_id,
                base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                const gfx::RectF& dip_frame_rect,
                const gfx::RectF& contents_rect)
       : z_order(z_order),
+        io_surface_id(io_surface_id),
         io_surface(io_surface),
         dip_frame_rect(dip_frame_rect),
         contents_rect(contents_rect),
@@ -103,6 +112,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
   base::scoped_nsobject<CALayer> ca_layer;
 
   // The IOSurface to set the CALayer's contents to.
+  const int io_surface_id;
   const base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   const gfx::RectF dip_frame_rect;
   const gfx::RectF contents_rect;
@@ -191,8 +201,12 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
-    : scale_factor_(1), gl_renderer_id_(0), vsync_parameters_valid_(false),
-      display_pending_swap_timer_(true, false), weak_factory_(this) {
+    : use_remote_layer_api_(ui::RemoteLayerAPISupported()),
+      scale_factor_(1),
+      gl_renderer_id_(0),
+      vsync_parameters_valid_(false),
+      display_pending_swap_timer_(true, false),
+      weak_factory_(this) {
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
@@ -208,13 +222,15 @@ bool ImageTransportSurfaceOverlayMac::Initialize() {
 
   // Create the CAContext to send this to the GPU process, and the layer for
   // the context.
-  CGSConnectionID connection_id = CGSMainConnectionID();
-  ca_context_.reset(
-      [[CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
-  ca_root_layer_.reset([[CALayer alloc] init]);
-  [ca_root_layer_ setGeometryFlipped:YES];
-  [ca_root_layer_ setOpaque:YES];
-  [ca_context_ setLayer:ca_root_layer_];
+  if (use_remote_layer_api_) {
+    CGSConnectionID connection_id = CGSMainConnectionID();
+    ca_context_.reset([
+        [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
+    ca_root_layer_.reset([[CALayer alloc] init]);
+    [ca_root_layer_ setGeometryFlipped:YES];
+    [ca_root_layer_ setOpaque:YES];
+    [ca_context_ setLayer:ca_root_layer_];
+  }
   return true;
 }
 
@@ -370,8 +386,13 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
 
   // Send acknowledgement to the browser.
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_handle =
-      ui::SurfaceHandleFromCAContextID([ca_context_ contextId]);
+  if (use_remote_layer_api_) {
+    params.surface_handle =
+        ui::SurfaceHandleFromCAContextID([ca_context_ contextId]);
+  } else {
+    params.surface_handle =
+        ui::SurfaceHandleFromIOSurfaceID(current_root_plane_->io_surface_id);
+  }
   params.size = swap->pixel_size;
   params.scale_factor = swap->scale_factor;
   params.latency_info.swap(swap->latency_info);
@@ -419,9 +440,10 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
     return;
   }
 
-  // If the frame's size changed, if we haven't updated the root layer, or if
-  // we have full damage, then use the root layer directly.
-  if (!current_root_plane_.get() ||
+  // If the frame's size changed, if we haven't updated the root layer, if
+  // we have full damage, or if we don't support remote layers, then use the
+  // root layer directly.
+  if (!use_remote_layer_api_ || !current_root_plane_.get() ||
       current_root_plane_->dip_frame_rect != new_root_plane->dip_frame_rect ||
       dip_damage_rect == new_root_plane->dip_frame_rect) {
     plane_for_swap = new_root_plane;
@@ -458,8 +480,8 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
           1. / new_root_plane->dip_frame_rect.height());
 
       plane_for_swap = linked_ptr<OverlayPlane>(new OverlayPlane(
-          0, new_root_plane->io_surface, plane_to_reuse_dip_enlarged_rect,
-          enlarged_contents_rect));
+          0, new_root_plane->io_surface_id, new_root_plane->io_surface,
+          plane_to_reuse_dip_enlarged_rect, enlarged_contents_rect));
 
       plane_for_swap->TakeCALayerFrom(plane_to_reuse.get());
       if (plane_to_reuse != old_partial_damage_planes.back())
@@ -475,7 +497,8 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
     contents_rect.Scale(1. / new_root_plane->dip_frame_rect.width(),
                         1. / new_root_plane->dip_frame_rect.height());
     plane_for_swap = linked_ptr<OverlayPlane>(new OverlayPlane(
-        0, new_root_plane->io_surface, dip_damage_rect, contents_rect));
+        0, new_root_plane->io_surface_id, new_root_plane->io_surface,
+        dip_damage_rect, contents_rect));
   }
 
   // And if we still don't have a layer, use the root layer.
@@ -514,6 +537,12 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
 }
 
 void ImageTransportSurfaceOverlayMac::UpdateCALayerTree() {
+  if (!use_remote_layer_api_) {
+    DCHECK(current_overlay_planes_.empty());
+    DCHECK(current_partial_damage_planes_.empty());
+    return;
+  }
+
   // Allocate new CALayers as needed. Overlay layers are always added to the
   // back of the list.
   CALayer* first_overlay_ca_layer = nil;
@@ -641,11 +670,10 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
   if (transform != gfx::OVERLAY_TRANSFORM_NONE)
     return false;
 
-  linked_ptr<OverlayPlane> plane(
-      new OverlayPlane(z_order,
-                       static_cast<gfx::GLImageIOSurface*>(image)->io_surface(),
-                       ConvertRectToDIPF(scale_factor_, bounds_rect),
-                       crop_rect));
+  linked_ptr<OverlayPlane> plane(new OverlayPlane(
+      z_order, static_cast<gfx::GLImageIOSurface*>(image)->io_surface_id().id,
+      static_cast<gfx::GLImageIOSurface*>(image)->io_surface(),
+      ConvertRectToDIPF(scale_factor_, bounds_rect), crop_rect));
   if (z_order == 0)
     pending_root_plane_ = plane;
   else

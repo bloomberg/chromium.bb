@@ -8,6 +8,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
@@ -16,6 +17,10 @@
 
 namespace cc {
 class ContextProvider;
+}
+
+namespace gfx {
+class GpuMemoryBuffer;
 }
 
 namespace content {
@@ -52,12 +57,16 @@ class CONTENT_EXPORT BufferQueue {
  private:
   friend class BufferQueueTest;
 
-  struct AllocatedSurface {
-    AllocatedSurface() : texture(0), image(0) {}
-    AllocatedSurface(unsigned int texture,
+  struct CONTENT_EXPORT AllocatedSurface {
+    AllocatedSurface();
+    AllocatedSurface(scoped_ptr<gfx::GpuMemoryBuffer> buffer,
+                     unsigned int texture,
                      unsigned int image,
-                     const gfx::Rect& rect)
-        : texture(texture), image(image), damage(rect) {}
+                     const gfx::Rect& rect);
+    ~AllocatedSurface();
+    // TODO(ccameron): Change this to be a scoped_ptr, and change all use of
+    // AllocatedSurface to use scoped_ptr as well.
+    linked_ptr<gfx::GpuMemoryBuffer> buffer;
     unsigned int texture;
     unsigned int image;
     gfx::Rect damage;  // This is the damage for this frame from the previous.

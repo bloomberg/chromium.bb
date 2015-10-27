@@ -218,7 +218,7 @@ BufferQueue::AllocatedSurface BufferQueue::GetNextSurface() {
           size_, gpu::ImageFactory::DefaultBufferFormatForImageFormat(
                      internal_format_),
           surface_id_));
-  if (!buffer) {
+  if (!buffer.get()) {
     gl->DeleteTextures(1, &texture);
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";
     return AllocatedSurface();
@@ -236,7 +236,18 @@ BufferQueue::AllocatedSurface BufferQueue::GetNextSurface() {
   allocated_count_++;
   gl->BindTexture(texture_target_, texture);
   gl->BindTexImage2DCHROMIUM(texture_target_, id);
-  return AllocatedSurface(texture, id, gfx::Rect(size_));
+  return AllocatedSurface(buffer.Pass(), texture, id, gfx::Rect(size_));
 }
+
+BufferQueue::AllocatedSurface::AllocatedSurface() : texture(0), image(0) {}
+
+BufferQueue::AllocatedSurface::AllocatedSurface(
+    scoped_ptr<gfx::GpuMemoryBuffer> buffer,
+    unsigned int texture,
+    unsigned int image,
+    const gfx::Rect& rect)
+    : buffer(buffer.release()), texture(texture), image(image), damage(rect) {}
+
+BufferQueue::AllocatedSurface::~AllocatedSurface() {}
 
 }  // namespace content

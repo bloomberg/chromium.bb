@@ -10,6 +10,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
+#include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -79,13 +80,13 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   void BeginPumpingFrames();
   void EndPumpingFrames();
 
-  void GotAcceleratedFrame(
-      uint64 surface_handle,
-      const std::vector<ui::LatencyInfo>& latency_info,
-      const gfx::Size& pixel_size,
-      float scale_factor,
-      const gfx::Rect& pixel_damage_rect,
-      const base::Closure& drawn_callback);
+  void GotAcceleratedFrame(CAContextID ca_context_id,
+                           base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+                           const std::vector<ui::LatencyInfo>& latency_info,
+                           const gfx::Size& pixel_size,
+                           float scale_factor,
+                           const gfx::Rect& pixel_damage_rect,
+                           const base::Closure& drawn_callback);
 
   void GotIOSurfaceFrame(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                          const gfx::Size& pixel_size,
@@ -97,9 +98,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
                                     const gfx::Size& pixel_size,
                                     float scale_factor);
 
-  void GotAcceleratedIOSurfaceFrame(IOSurfaceID io_surface_id,
-                                    const gfx::Size& pixel_size,
-                                    float scale_factor);
+  void GotAcceleratedIOSurfaceFrame(
+      base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+      const gfx::Size& pixel_size,
+      float scale_factor);
 
   void AcknowledgeAcceleratedFrame();
 
@@ -153,14 +155,18 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
 
 ACCELERATED_WIDGET_MAC_EXPORT
 void AcceleratedWidgetMacGotAcceleratedFrame(
-    gfx::AcceleratedWidget widget, uint64 surface_handle,
+    gfx::AcceleratedWidget widget,
+    CAContextID ca_context_id,
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const std::vector<ui::LatencyInfo>& latency_info,
     const gfx::Size& pixel_size,
     float scale_factor,
     const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback,
-    bool* disable_throttling, int* renderer_id,
-    base::TimeTicks* vsync_timebase, base::TimeDelta* vsync_interval);
+    bool* disable_throttling,
+    int* renderer_id,
+    base::TimeTicks* vsync_timebase,
+    base::TimeDelta* vsync_interval);
 
 ACCELERATED_WIDGET_MAC_EXPORT
 void AcceleratedWidgetMacGotIOSurfaceFrame(

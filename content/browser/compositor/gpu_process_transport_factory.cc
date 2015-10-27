@@ -66,6 +66,7 @@
 #elif defined(OS_MACOSX)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #endif
 
 using cc::ContextProvider;
@@ -176,8 +177,11 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
             widget, overlay_candidates.Pass()));
   }
 #elif defined(OS_MACOSX)
-  return make_scoped_ptr(
-      new BrowserCompositorOverlayCandidateValidatorMac(widget));
+  // Overlays are only supported through the remote layer API.
+  if (ui::RemoteLayerAPISupported()) {
+    return make_scoped_ptr(
+        new BrowserCompositorOverlayCandidateValidatorMac(widget));
+  }
 #endif
   return scoped_ptr<BrowserCompositorOverlayCandidateValidator>();
 }
