@@ -12,6 +12,7 @@ import("//build/config/ios/ios_sdk.gni")
 assert(host_os == "mac")
 
 import("//build/toolchain/goma.gni")
+import("//build/toolchain/toolchain.gni")
 
 if (use_goma) {
   goma_prefix = "$goma_dir/gomacc "
@@ -205,14 +206,16 @@ template("mac_toolchain") {
       ]
     }
 
+    # These two are really entirely generic, but have to be repeated in
+    # each toolchain because GN doesn't allow a template to be used here.
+    # See //build/toolchain/toolchain.gni for details.
     tool("stamp") {
-      command = "touch {{output}}"
-      description = "STAMP {{output}}"
+      command = stamp_command
+      description = stamp_description
     }
-
     tool("copy") {
-      command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
-      description = "COPY {{source}} {{output}}"
+      command = copy_command
+      description = copy_description
     }
 
     toolchain_args() {

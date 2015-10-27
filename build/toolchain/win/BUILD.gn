@@ -13,6 +13,7 @@ declare_args() {
 
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/goma.gni")
+import("//build/toolchain/toolchain.gni")
 
 # Should only be running on Windows.
 assert(is_win)
@@ -214,15 +215,16 @@ template("msvc_toolchain") {
       rspfile_content = "{{inputs_newline}} {{libs}} {{solibs}} {{ldflags}}"
     }
 
+    # These two are really entirely generic, but have to be repeated in
+    # each toolchain because GN doesn't allow a template to be used here.
+    # See //build/toolchain/toolchain.gni for details.
     tool("stamp") {
-      command = "$python_path gyp-win-tool stamp {{output}}"
-      description = "STAMP {{output}}"
+      command = stamp_command
+      description = stamp_description
     }
-
     tool("copy") {
-      command =
-          "$python_path gyp-win-tool recursive-mirror {{source}} {{output}}"
-      description = "COPY {{source}} {{output}}"
+      command = copy_command
+      description = copy_description
     }
 
     # When invoking this toolchain not as the default one, these args will be
