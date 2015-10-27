@@ -10,17 +10,17 @@ namespace device {
 
 // static
 scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>
-BluetoothRemoteGattCharacteristicAndroid::Create() {
+BluetoothRemoteGattCharacteristicAndroid::Create(
+    const std::string& instanceId) {
   return make_scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>(
-      new BluetoothRemoteGattCharacteristicAndroid());
+      new BluetoothRemoteGattCharacteristicAndroid(instanceId));
 }
 
 BluetoothRemoteGattCharacteristicAndroid::
     ~BluetoothRemoteGattCharacteristicAndroid() {}
 
 std::string BluetoothRemoteGattCharacteristicAndroid::GetIdentifier() const {
-  NOTIMPLEMENTED();
-  return "";
+  return instanceId_;
 }
 
 BluetoothUUID BluetoothRemoteGattCharacteristicAndroid::GetUUID() const {
@@ -106,6 +106,7 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
 }
 
 BluetoothRemoteGattCharacteristicAndroid::
-    BluetoothRemoteGattCharacteristicAndroid() {}
+    BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId)
+    : instanceId_(instanceId) {}
 
 }  // namespace device

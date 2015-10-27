@@ -23,11 +23,13 @@ final class ChromeBluetoothRemoteGattService {
 
     private long mNativeBluetoothRemoteGattServiceAndroid;
     final Wrappers.BluetoothGattServiceWrapper mService;
+    final String mInstanceId;
 
     private ChromeBluetoothRemoteGattService(long nativeBluetoothRemoteGattServiceAndroid,
-            Wrappers.BluetoothGattServiceWrapper serviceWrapper) {
+            Wrappers.BluetoothGattServiceWrapper serviceWrapper, String instanceId) {
         mNativeBluetoothRemoteGattServiceAndroid = nativeBluetoothRemoteGattServiceAndroid;
         mService = serviceWrapper;
+        mInstanceId = instanceId;
         Log.v(TAG, "ChromeBluetoothRemoteGattService created.");
     }
 
@@ -47,9 +49,10 @@ final class ChromeBluetoothRemoteGattService {
     // is not handled by jni_generator.py JavaToJni. http://crbug.com/505554
     @CalledByNative
     private static ChromeBluetoothRemoteGattService create(
-            long nativeBluetoothRemoteGattServiceAndroid, Object serviceWrapper) {
+            long nativeBluetoothRemoteGattServiceAndroid, Object serviceWrapper,
+            String instanceId) {
         return new ChromeBluetoothRemoteGattService(nativeBluetoothRemoteGattServiceAndroid,
-                (Wrappers.BluetoothGattServiceWrapper) serviceWrapper);
+                (Wrappers.BluetoothGattServiceWrapper) serviceWrapper, instanceId);
     }
 
     // Implements BluetoothRemoteGattServiceAndroid::GetUUID.
@@ -64,11 +67,10 @@ final class ChromeBluetoothRemoteGattService {
         List<Wrappers.BluetoothGattCharacteristicWrapper> characteristics =
                 mService.getCharacteristics();
         for (Wrappers.BluetoothGattCharacteristicWrapper characteristic : characteristics) {
-            // Create a unique characteristic ID. getInstanceId only differs between characteristic
-            // instances with the same UUID.
-            // TODO(scheib): Make instance IDs unique to the whole adapter. http://crbug.com/546747
-            String characteristicInstanceId =
-                    characteristic.getUuid().toString() + characteristic.getInstanceId();
+            // Create an adapter unique characteristic ID. getInstanceId only differs between
+            // characteristic instances with the same UUID on this service.
+            String characteristicInstanceId = mInstanceId + "/"
+                    + characteristic.getUuid().toString() + "," + characteristic.getInstanceId();
             nativeCreateGattRemoteCharacteristic(mNativeBluetoothRemoteGattServiceAndroid,
                     characteristicInstanceId, characteristic);
         }

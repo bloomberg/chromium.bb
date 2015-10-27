@@ -40,6 +40,7 @@ test("device_unittests") {
     "bluetooth/bluetooth_device_unittest.cc",
     "bluetooth/bluetooth_device_win_unittest.cc",
     "bluetooth/bluetooth_discovery_filter_unittest.cc",
+    "bluetooth/bluetooth_gatt_characteristic_unittest.cc",
     "bluetooth/bluetooth_gatt_chromeos_unittest.cc",
     "bluetooth/bluetooth_gatt_service_unittest.cc",
     "bluetooth/bluetooth_low_energy_win_unittest.cc",
@@ -169,7 +170,10 @@ test("device_unittests") {
     # OSes older than OSX 10.10, the top level CoreBluetooth framework must be
     # weakly linked.
     if (mac_sdk_version == "10.10") {
-      ldflags += [ "-weak_framework", "CoreBluetooth" ]
+      ldflags += [
+        "-weak_framework",
+        "CoreBluetooth",
+      ]
     }
   }
 }

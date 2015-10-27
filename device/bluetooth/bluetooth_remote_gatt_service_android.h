@@ -40,7 +40,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
       BluetoothDeviceAndroid* device,
       jobject bluetooth_remote_gatt_service_wrapper,  // Java Type:
       // BluetoothRemoteGattServiceWrapper
-      std::string instanceId);
+      const std::string& instanceId);
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
@@ -82,7 +82,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
 
   BluetoothRemoteGattServiceAndroid(BluetoothAdapterAndroid* adapter,
                                     BluetoothDeviceAndroid* device,
-                                    std::string instanceId);
+                                    const std::string& instanceId);
   ~BluetoothRemoteGattServiceAndroid() override;
 
   // Populates |characteristics_| from Java objects if necessary.
@@ -99,7 +99,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
   // here since |device_| owns this instance.
   BluetoothDeviceAndroid* device_;
 
-  // Instance ID, cached from Android object.
+  // Adapter unique instance ID.
   std::string instanceId_;
 
   // Map of characteristics, keyed by characteristic identifier.

@@ -24,7 +24,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   // to |bluetooth_remote_gatt_service_wrapper|.
   //
   // TODO(scheib): Actually create the Java object. crbug.com/545682
-  static scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> Create();
+  static scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> Create(
+      const std::string& instanceId);
 
   ~BluetoothRemoteGattCharacteristicAndroid() override;
 
@@ -51,7 +52,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
                                  const ErrorCallback& error_callback) override;
 
  private:
-  BluetoothRemoteGattCharacteristicAndroid();
+  BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId);
+
+  // Adapter unique instance ID.
+  std::string instanceId_;
 
   std::vector<uint8> value_;
 

@@ -117,8 +117,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   // Identifier used to uniquely identify a GATT characteristic object. This is
   // different from the characteristic UUID: while multiple characteristics with
   // the same UUID can exist on a Bluetooth device, the identifier returned from
-  // this method is unique among all characteristics of a device. The contents
-  // of the identifier are platform specific.
+  // this method is unique among all characteristics on the adapter. The
+  // contents of the identifier are platform specific.
   virtual std::string GetIdentifier() const = 0;
 
   // The Bluetooth-specific UUID of the characteristic.

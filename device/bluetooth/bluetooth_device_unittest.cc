@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -426,7 +427,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-TEST_F(BluetoothTest, SimulateGattServicesDiscovered) {
+TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);
@@ -443,11 +444,19 @@ TEST_F(BluetoothTest, SimulateGattServicesDiscovered) {
   services.push_back("00000001-0000-1000-8000-00805f9b34fb");
   SimulateGattServicesDiscovered(device, services);
   EXPECT_EQ(3u, device->GetGattServices().size());
+
+  // Test GetGattService:
+  std::string service_id1 = device->GetGattServices()[0]->GetIdentifier();
+  std::string service_id2 = device->GetGattServices()[1]->GetIdentifier();
+  std::string service_id3 = device->GetGattServices()[2]->GetIdentifier();
+  EXPECT_TRUE(device->GetGattService(service_id1));
+  EXPECT_TRUE(device->GetGattService(service_id2));
+  EXPECT_TRUE(device->GetGattService(service_id3));
 }
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-TEST_F(BluetoothTest, SimulateGattServicesDiscoveryError) {
+TEST_F(BluetoothTest, GetGattServices_DiscoveryError) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = DiscoverLowEnergyDevice(3);

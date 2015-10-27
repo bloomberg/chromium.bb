@@ -159,7 +159,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
   // Identifier used to uniquely identify a GATT service object. This is
   // different from the service UUID: while multiple services with the same UUID
   // can exist on a Bluetooth device, the identifier returned from this method
-  // is unique among all services of a device. The contents of the identifier
+  // is unique among all services on the adapter. The contents of the identifier
   // are platform specific.
   virtual std::string GetIdentifier() const = 0;
 

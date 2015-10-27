@@ -138,7 +138,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
   // Identifier used to uniquely identify a GATT descriptor object. This is
   // different from the descriptor UUID: while multiple descriptors with the
   // same UUID can exist on a Bluetooth device, the identifier returned from
-  // this method is unique among all descriptors of a device. The contents of
+  // this method is unique among all descriptors on the adapter. The contents of
   // the identifier are platform specific.
   virtual std::string GetIdentifier() const = 0;
 
