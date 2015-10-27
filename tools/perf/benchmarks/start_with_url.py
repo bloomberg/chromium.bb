@@ -17,10 +17,6 @@ class _StartWithUrl(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'start_with_url.startup_pages'
 
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
-
   def CreatePageTest(self, options):
     is_cold = (self.tag == 'cold')
     return self.test(cold=is_cold)

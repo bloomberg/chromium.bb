@@ -125,16 +125,12 @@ class SmoothnessKeyMobileSites(_Smoothness):
 
 
 class SmoothnessToughAnimationCases(_Smoothness):
-  test = smoothness.Smoothness
+  test = smoothness.SmoothnessWithRestart
   page_set = page_sets.ToughAnimationCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.tough_animation_cases'
-
-  @classmethod
-  def ShouldTearDownStateAfterEachStoryRun(cls):
-    return True
 
 
 @benchmark.Enabled('android')
