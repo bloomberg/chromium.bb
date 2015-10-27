@@ -23,7 +23,7 @@ function test()
             var bubble = sourceFrame._rowMessageBuckets[line];
             for (var rowMessage of bubble._messages) {
                 var message = rowMessage.message();
-                InspectorTest.addResult(String.sprintf("%d:%d [%s] %s", message.lineNumber(), message.columnNumber(), message.level(), message.messageText()));
+                InspectorTest.addResult(String.sprintf("%d:%d [%s] %s", message.lineNumber(), message.columnNumber(), message.level(), message.text()));
             }
         }
         InspectorTest.completeTest();

@@ -48,8 +48,8 @@ function test()
             {
                 InspectorTest.addResult("Script source was shown.");
                 shownSourceFrame = sourceFrame;
-                InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "addMessageToSource", didAddMessage);
-                InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "clearMessages", clearMessages);
+                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "addMessageToSource", didAddMessage);
+                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "clearMessages", clearMessages);
                 InspectorTest.evaluateInPage("addErrorToConsole()");
             }
 
@@ -57,7 +57,7 @@ function test()
             {
                 if (this !== shownSourceFrame)
                     return;
-                InspectorTest.addResult("Message added to source frame: " + message.messageText());
+                InspectorTest.addResult("Message added to source frame: " + message.text());
                 InspectorTest.consoleModel.requestClearMessages();
             }
 
