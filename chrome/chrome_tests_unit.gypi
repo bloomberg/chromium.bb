@@ -948,7 +948,7 @@
      # Used by Full Safe Browsing (safe_browsing==1) and Mobile Safe
      # Browsing (==2) modes.
     'chrome_unit_tests_shared_safe_browsing_sources': [
-      'browser/safe_browsing/malware_details_unittest.cc',
+      'browser/safe_browsing/threat_details_unittest.cc',
       'browser/safe_browsing/ping_manager_unittest.cc',
       'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
       'browser/safe_browsing/ui_manager_unittest.cc',

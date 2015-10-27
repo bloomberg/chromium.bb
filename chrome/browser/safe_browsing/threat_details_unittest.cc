@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/malware_details.h"
-#include "chrome/browser/safe_browsing/malware_details_history.h"
 #include "chrome/browser/safe_browsing/report.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/threat_details.h"
+#include "chrome/browser/safe_browsing/threat_details_history.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -57,7 +57,6 @@ static const char* kLandingHeaders =
 static const char* kLandingData =
     "<iframe src='http://www.malware.com/with/path'>";
 
-
 using content::BrowserThread;
 using content::WebContents;
 using safe_browsing::ClientMalwareReportRequest;
@@ -66,16 +65,16 @@ namespace {
 
 void WriteHeaders(disk_cache::Entry* entry, const std::string& headers) {
   net::HttpResponseInfo responseinfo;
-  std::string raw_headers = net::HttpUtil::AssembleRawHeaders(
-      headers.c_str(), headers.size());
+  std::string raw_headers =
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size());
   responseinfo.socket_address = net::HostPortPair("1.2.3.4", 80);
   responseinfo.headers = new net::HttpResponseHeaders(raw_headers);
 
   base::Pickle pickle;
   responseinfo.Persist(&pickle, false, false);
 
-  scoped_refptr<net::WrappedIOBuffer> buf(new net::WrappedIOBuffer(
-      reinterpret_cast<const char*>(pickle.data())));
+  scoped_refptr<net::WrappedIOBuffer> buf(
+      new net::WrappedIOBuffer(reinterpret_cast<const char*>(pickle.data())));
   int len = static_cast<int>(pickle.size());
 
   net::TestCompletionCallback cb;
@@ -96,8 +95,10 @@ void WriteData(disk_cache::Entry* entry, const std::string& data) {
   ASSERT_EQ(len, cb.GetResult(rv));
 }
 
-void WriteToEntry(disk_cache::Backend* cache, const std::string& key,
-                  const std::string& headers, const std::string& data) {
+void WriteToEntry(disk_cache::Backend* cache,
+                  const std::string& key,
+                  const std::string& headers,
+                  const std::string& data) {
   net::TestCompletionCallback cb;
   disk_cache::Entry* entry;
   int rv = cache->CreateEntry(key, &entry, cb.callback());
@@ -115,9 +116,10 @@ void WriteToEntry(disk_cache::Backend* cache, const std::string& key,
 void FillCache(net::URLRequestContextGetter* context_getter) {
   net::TestCompletionCallback cb;
   disk_cache::Backend* cache;
-  int rv =
-      context_getter->GetURLRequestContext()->http_transaction_factory()->
-      GetCache()->GetBackend(&cache, cb.callback());
+  int rv = context_getter->GetURLRequestContext()
+               ->http_transaction_factory()
+               ->GetCache()
+               ->GetBackend(&cache, cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 
   WriteToEntry(cache, kMalwareURL, kMalwareHeaders, kMalwareData);
@@ -126,37 +128,36 @@ void FillCache(net::URLRequestContextGetter* context_getter) {
 
 // Lets us provide a MockURLRequestContext with an HTTP Cache we pre-populate.
 // Also exposes the constructor.
-class MalwareDetailsWrap : public MalwareDetails {
+class ThreatDetailsWrap : public ThreatDetails {
  public:
-  MalwareDetailsWrap(
+  ThreatDetailsWrap(
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
       const SafeBrowsingUIManager::UnsafeResource& unsafe_resource,
       net::URLRequestContextGetter* request_context_getter)
-      : MalwareDetails(ui_manager, web_contents, unsafe_resource) {
+      : ThreatDetails(ui_manager, web_contents, unsafe_resource) {
     request_context_getter_ = request_context_getter;
   }
 
  private:
-  ~MalwareDetailsWrap() override {}
+  ~ThreatDetailsWrap() override {}
 };
 
 class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
   base::RunLoop* run_loop_;
   // The safe browsing UI manager does not need a service for this test.
-  MockSafeBrowsingUIManager()
-      : SafeBrowsingUIManager(NULL), run_loop_(NULL) {}
+  MockSafeBrowsingUIManager() : SafeBrowsingUIManager(NULL), run_loop_(NULL) {}
 
-  // When the MalwareDetails is done, this is called.
-  void SendSerializedMalwareDetails(const std::string& serialized) override {
-    DVLOG(1) << "SendSerializedMalwareDetails";
+  // When the ThreatDetails is done, this is called.
+  void SendSerializedThreatDetails(const std::string& serialized) override {
+    DVLOG(1) << "SendSerializedThreatDetails";
     run_loop_->Quit();
     run_loop_ = NULL;
     serialized_ = serialized;
   }
 
-  // Used to synchronize SendSerializedMalwareDetails() with
+  // Used to synchronize SendSerializedThreatDetails() with
   // WaitForSerializedReport(). RunLoop::RunUntilIdle() is not sufficient
   // because the MessageLoop task queue completely drains at some point
   // between the send and the wait.
@@ -165,9 +166,7 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
     run_loop_ = run_loop;
   }
 
-  const std::string& GetSerialized() {
-    return serialized_;
-  }
+  const std::string& GetSerialized() { return serialized_; }
 
  private:
   ~MockSafeBrowsingUIManager() override {}
@@ -178,18 +177,16 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
 
 }  // namespace.
 
-class MalwareDetailsTest : public ChromeRenderViewHostTestHarness {
+class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
  public:
   typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
 
-  MalwareDetailsTest()
-      : ui_manager_(new MockSafeBrowsingUIManager()) {
-  }
+  ThreatDetailsTest() : ui_manager_(new MockSafeBrowsingUIManager()) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    ASSERT_TRUE(profile()->CreateHistoryService(
-        true /* delete_file */, false /* no_db */));
+    ASSERT_TRUE(profile()->CreateHistoryService(true /* delete_file */,
+                                                false /* no_db */));
   }
 
   void TearDown() override {
@@ -203,14 +200,14 @@ class MalwareDetailsTest : public ChromeRenderViewHostTestHarness {
     return lhs->id() < rhs->id();
   }
 
-  std::string WaitForSerializedReport(MalwareDetails* report,
+  std::string WaitForSerializedReport(ThreatDetails* report,
                                       bool did_proceed,
                                       int num_visit) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&MalwareDetails::FinishCollection,
-                                       report, did_proceed, num_visit));
-    // Wait for the callback (SendSerializedMalwareDetails).
-    DVLOG(1) << "Waiting for SendSerializedMalwareDetails";
+                            base::Bind(&ThreatDetails::FinishCollection, report,
+                                       did_proceed, num_visit));
+    // Wait for the callback (SendSerializedThreatDetails).
+    DVLOG(1) << "Waiting for SendSerializedThreatDetails";
     base::RunLoop run_loop;
     ui_manager_->SetRunLoopToQuit(&run_loop);
     run_loop.Run();
@@ -255,7 +252,7 @@ class MalwareDetailsTest : public ChromeRenderViewHostTestHarness {
       resources.push_back(&resource);
     }
     std::sort(resources.begin(), resources.end(),
-              &MalwareDetailsTest::ResourceLessThan);
+              &ThreatDetailsTest::ResourceLessThan);
 
     std::vector<const ClientMalwareReportRequest::Resource*> expected;
     for (int i = 0; i < report_pb.resources_size(); ++i) {
@@ -264,7 +261,7 @@ class MalwareDetailsTest : public ChromeRenderViewHostTestHarness {
       expected.push_back(&resource);
     }
     std::sort(expected.begin(), expected.end(),
-              &MalwareDetailsTest::ResourceLessThan);
+              &ThreatDetailsTest::ResourceLessThan);
 
     for (uint32 i = 0; i < expected.size(); ++i) {
       VerifyResource(resources[i], expected[i]);
@@ -312,22 +309,21 @@ class MalwareDetailsTest : public ChromeRenderViewHostTestHarness {
 
   // Adds a page to history.
   // The redirects is the redirect url chain leading to the url.
-  void AddPageToHistory(const GURL& url,
-                        history::RedirectList* redirects) {
+  void AddPageToHistory(const GURL& url, history::RedirectList* redirects) {
     // The last item of the redirect chain has to be the final url when adding
     // to history backend.
     redirects->push_back(url);
-    history_service()->AddPage(
-        url, base::Time::Now(), reinterpret_cast<history::ContextID>(1), 0,
-        GURL(), *redirects, ui::PAGE_TRANSITION_TYPED,
-        history::SOURCE_BROWSED, false);
+    history_service()->AddPage(url, base::Time::Now(),
+                               reinterpret_cast<history::ContextID>(1), 0,
+                               GURL(), *redirects, ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, false);
   }
 
   scoped_refptr<MockSafeBrowsingUIManager> ui_manager_;
 };
 
 // Tests creating a simple malware report.
-TEST_F(MalwareDetailsTest, MalwareSubResource) {
+TEST_F(ThreatDetailsTest, MalwareSubResource) {
   // Start a load.
   controller().LoadURL(
       GURL(kLandingURL),
@@ -337,8 +333,8 @@ TEST_F(MalwareDetailsTest, MalwareSubResource) {
   UnsafeResource resource;
   InitResource(&resource, true, GURL(kMalwareURL));
 
-  scoped_refptr<MalwareDetailsWrap> report =
-      new MalwareDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
@@ -370,7 +366,7 @@ TEST_F(MalwareDetailsTest, MalwareSubResource) {
 
 // Tests creating a simple malware report where the subresource has a
 // different original_url.
-TEST_F(MalwareDetailsTest, MalwareSubResourceWithOriginalUrl) {
+TEST_F(ThreatDetailsTest, MalwareSubResourceWithOriginalUrl) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
@@ -378,8 +374,8 @@ TEST_F(MalwareDetailsTest, MalwareSubResourceWithOriginalUrl) {
   InitResource(&resource, true, GURL(kMalwareURL));
   resource.original_url = GURL(kOriginalLandingURL);
 
-  scoped_refptr<MalwareDetailsWrap> report = new MalwareDetailsWrap(
-      ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   std::string serialized = WaitForSerializedReport(
       report.get(), false /* did_proceed*/, 1 /* num_visit */);
@@ -413,15 +409,15 @@ TEST_F(MalwareDetailsTest, MalwareSubResourceWithOriginalUrl) {
 }
 
 // Tests creating a malware report with data from the renderer.
-TEST_F(MalwareDetailsTest, MalwareDOMDetails) {
+TEST_F(ThreatDetailsTest, MalwareDOMDetails) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
   InitResource(&resource, true, GURL(kMalwareURL));
 
-  scoped_refptr<MalwareDetailsWrap> report = new MalwareDetailsWrap(
-      ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   // Send a message from the DOM, with 2 nodes, a parent and a child.
   std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
@@ -434,7 +430,7 @@ TEST_F(MalwareDetailsTest, MalwareDOMDetails) {
   parent_node.url = GURL(kDOMParentURL);
   parent_node.children.push_back(GURL(kDOMChildURL));
   params.push_back(parent_node);
-  report->OnReceivedMalwareDOMDetails(params);
+  report->OnReceivedThreatDOMDetails(params);
 
   std::string serialized = WaitForSerializedReport(
       report.get(), false /* did_proceed*/, 0 /* num_visit */);
@@ -472,7 +468,7 @@ TEST_F(MalwareDetailsTest, MalwareDOMDetails) {
 
 // Tests creating a malware report where there are redirect urls to an unsafe
 // resource url
-TEST_F(MalwareDetailsTest, MalwareWithRedirectUrl) {
+TEST_F(ThreatDetailsTest, MalwareWithRedirectUrl) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
@@ -485,8 +481,8 @@ TEST_F(MalwareDetailsTest, MalwareWithRedirectUrl) {
   resource.redirect_urls.push_back(GURL(kSecondRedirectURL));
   resource.redirect_urls.push_back(GURL(kMalwareURL));
 
-  scoped_refptr<MalwareDetailsWrap> report = new MalwareDetailsWrap(
-      ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   std::string serialized = WaitForSerializedReport(
       report.get(), true /* did_proceed*/, 0 /* num_visit */);
@@ -527,16 +523,16 @@ TEST_F(MalwareDetailsTest, MalwareWithRedirectUrl) {
 }
 
 // Tests the interaction with the HTTP cache.
-TEST_F(MalwareDetailsTest, HTTPCache) {
+TEST_F(ThreatDetailsTest, HTTPCache) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
   InitResource(&resource, true, GURL(kMalwareURL));
 
-  scoped_refptr<MalwareDetailsWrap> report = new MalwareDetailsWrap(
-      ui_manager_.get(), web_contents(), resource,
-      profile()->GetRequestContext());
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
+                            profile()->GetRequestContext());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -545,7 +541,7 @@ TEST_F(MalwareDetailsTest, HTTPCache) {
 
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
-  report->OnReceivedMalwareDOMDetails(params);
+  report->OnReceivedThreatDOMDetails(params);
 
   // Let the cache callbacks complete.
   base::RunLoop().RunUntilIdle();
@@ -601,22 +597,22 @@ TEST_F(MalwareDetailsTest, HTTPCache) {
 }
 
 // Tests the interaction with the HTTP cache (where the cache is empty).
-TEST_F(MalwareDetailsTest, HTTPCacheNoEntries) {
+TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
   controller().LoadURL(GURL(kLandingURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 
   UnsafeResource resource;
   InitResource(&resource, true, GURL(kMalwareURL));
 
-  scoped_refptr<MalwareDetailsWrap> report = new MalwareDetailsWrap(
-      ui_manager_.get(), web_contents(), resource,
-      profile()->GetRequestContext());
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource,
+                            profile()->GetRequestContext());
 
   // No call to FillCache
 
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
-  report->OnReceivedMalwareDOMDetails(params);
+  report->OnReceivedThreatDOMDetails(params);
 
   // Let the cache callbacks complete.
   base::RunLoop().RunUntilIdle();
@@ -645,7 +641,7 @@ TEST_F(MalwareDetailsTest, HTTPCacheNoEntries) {
 }
 
 // Test getting redirects from history service.
-TEST_F(MalwareDetailsTest, HistoryServiceUrls) {
+TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   // Add content to history service.
   // There are two redirect urls before reacing malware url:
   // kFirstRedirectURL -> kSecondRedirectURL -> kMalwareURL
@@ -662,12 +658,12 @@ TEST_F(MalwareDetailsTest, HistoryServiceUrls) {
 
   UnsafeResource resource;
   InitResource(&resource, true, GURL(kMalwareURL));
-  scoped_refptr<MalwareDetailsWrap> report = new MalwareDetailsWrap(
-      ui_manager_.get(), web_contents(), resource, NULL);
+  scoped_refptr<ThreatDetailsWrap> report =
+      new ThreatDetailsWrap(ui_manager_.get(), web_contents(), resource, NULL);
 
   // The redirects collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node> params;
-  report->OnReceivedMalwareDOMDetails(params);
+  report->OnReceivedThreatDOMDetails(params);
 
   // Let the redirects callbacks complete.
   base::RunLoop().RunUntilIdle();

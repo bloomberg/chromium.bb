@@ -24,7 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/safe_browsing/malware_details.h"
+#include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,7 +74,7 @@ const char kSocialEngineeringEnabled[] = "Enabled";
 
 // After a malware interstitial where the user opted-in to the report
 // but clicked "proceed anyway", we delay the call to
-// MalwareDetails::FinishCollection() by this much time (in
+// ThreatDetails::FinishCollection() by this much time (in
 // milliseconds).
 const int64 kMalwareDetailsProceedDelayMilliSeconds = 3000;
 
@@ -200,9 +200,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // reports.
   if (unsafe_resources.size() == 1 &&
       unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-      malware_details_.get() == NULL && CanShowMalwareDetailsOption()) {
-    malware_details_ = MalwareDetails::NewMalwareDetails(
-        ui_manager_, web_contents, unsafe_resources[0]);
+      threat_details_.get() == NULL && CanShowMalwareDetailsOption()) {
+    threat_details_ = ThreatDetails::NewThreatDetails(ui_manager_, web_contents,
+                                                      unsafe_resources[0]);
   }
 }
 
@@ -349,9 +349,8 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
 void SafeBrowsingBlockingPage::OnProceed() {
   proceeded_ = true;
   // Send the malware details, if we opted to.
-  FinishMalwareDetails(malware_details_proceed_delay_ms_,
-                       true, /* did_proceed */
-                       metrics_helper()->NumVisits());
+  FinishThreatDetails(malware_details_proceed_delay_ms_, true, /* did_proceed */
+                      metrics_helper()->NumVisits());
 
   NotifySafeBrowsingUIManager(ui_manager_, unsafe_resources_, true);
 
@@ -396,8 +395,8 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   }
 
   // Send the malware details, if we opted to.
-  FinishMalwareDetails(0, false /* did_proceed */,
-                       metrics_helper()->NumVisits());  // No delay
+  FinishThreatDetails(0, false /* did_proceed */,
+                      metrics_helper()->NumVisits());  // No delay
 
   NotifySafeBrowsingUIManager(ui_manager_, unsafe_resources_, false);
 
@@ -426,10 +425,10 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   }
 }
 
-void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms,
-                                                    bool did_proceed,
-                                                    int num_visits) {
-  if (malware_details_.get() == NULL)
+void SafeBrowsingBlockingPage::FinishThreatDetails(int64 delay_ms,
+                                                   bool did_proceed,
+                                                   int num_visits) {
+  if (threat_details_.get() == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
   DCHECK_EQ(interstitial_reason_, SB_REASON_MALWARE);
 
@@ -444,7 +443,7 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms,
   // Finish the malware details collection, send it over.
   BrowserThread::PostDelayedTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MalwareDetails::FinishCollection, malware_details_.get(),
+      base::Bind(&ThreatDetails::FinishCollection, threat_details_.get(),
                  did_proceed, num_visits),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }

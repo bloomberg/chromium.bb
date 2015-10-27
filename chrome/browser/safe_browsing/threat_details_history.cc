@@ -2,26 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Implementation of the MalwareDetailsRedirectsCollector class.
+// Implementation of the ThreatDetailsRedirectsCollector class.
 
-#include "chrome/browser/safe_browsing/malware_details_history.h"
+#include "chrome/browser/safe_browsing/threat_details_history.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/malware_details.h"
+#include "chrome/browser/safe_browsing/threat_details.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
 
-MalwareDetailsRedirectsCollector::MalwareDetailsRedirectsCollector(
+ThreatDetailsRedirectsCollector::ThreatDetailsRedirectsCollector(
     Profile* profile)
-    : profile_(profile),
-      has_started_(false) {
+    : profile_(profile), has_started_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -29,7 +28,7 @@ MalwareDetailsRedirectsCollector::MalwareDetailsRedirectsCollector(
   }
 }
 
-void MalwareDetailsRedirectsCollector::StartHistoryCollection(
+void ThreatDetailsRedirectsCollector::StartHistoryCollection(
     const std::vector<GURL>& urls,
     const base::Closure& callback) {
   DVLOG(1) << "Num of urls to check in history service: " << urls.size();
@@ -43,20 +42,20 @@ void MalwareDetailsRedirectsCollector::StartHistoryCollection(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&MalwareDetailsRedirectsCollector::StartGetRedirects,
-                 this, urls));
+      base::Bind(&ThreatDetailsRedirectsCollector::StartGetRedirects, this,
+                 urls));
 }
 
-bool MalwareDetailsRedirectsCollector::HasStarted() const {
+bool ThreatDetailsRedirectsCollector::HasStarted() const {
   return has_started_;
 }
 
 const std::vector<safe_browsing::RedirectChain>&
-MalwareDetailsRedirectsCollector::GetCollectedUrls() const {
+ThreatDetailsRedirectsCollector::GetCollectedUrls() const {
   return redirects_urls_;
 }
 
-void MalwareDetailsRedirectsCollector::Observe(
+void ThreatDetailsRedirectsCollector::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -66,10 +65,10 @@ void MalwareDetailsRedirectsCollector::Observe(
   profile_ = NULL;
 }
 
-MalwareDetailsRedirectsCollector::~MalwareDetailsRedirectsCollector() {}
+ThreatDetailsRedirectsCollector::~ThreatDetailsRedirectsCollector() {}
 
-void MalwareDetailsRedirectsCollector::StartGetRedirects(
-        const std::vector<GURL>& urls) {
+void ThreatDetailsRedirectsCollector::StartGetRedirects(
+    const std::vector<GURL>& urls) {
   // History access from profile needs to happen in UI thread
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < urls.size(); ++i) {
@@ -79,7 +78,7 @@ void MalwareDetailsRedirectsCollector::StartGetRedirects(
   GetRedirects(*urls_it_);
 }
 
-void MalwareDetailsRedirectsCollector::GetRedirects(const GURL& url) {
+void ThreatDetailsRedirectsCollector::GetRedirects(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!profile_) {
     AllDone();
@@ -94,14 +93,12 @@ void MalwareDetailsRedirectsCollector::GetRedirects(const GURL& url) {
   }
 
   history->QueryRedirectsTo(
-      url,
-      base::Bind(&MalwareDetailsRedirectsCollector::OnGotQueryRedirectsTo,
-                 base::Unretained(this),
-                 url),
+      url, base::Bind(&ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo,
+                      base::Unretained(this), url),
       &request_tracker_);
 }
 
-void MalwareDetailsRedirectsCollector::OnGotQueryRedirectsTo(
+void ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo(
     const GURL& url,
     const history::RedirectList* redirect_list) {
   if (!redirect_list->empty()) {
@@ -122,7 +119,7 @@ void MalwareDetailsRedirectsCollector::OnGotQueryRedirectsTo(
   GetRedirects(*urls_it_);
 }
 
-void MalwareDetailsRedirectsCollector::AllDone() {
+void ThreatDetailsRedirectsCollector::AllDone() {
   DVLOG(1) << "AllDone";
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback_);
   callback_.Reset();

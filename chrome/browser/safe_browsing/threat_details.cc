@@ -4,14 +4,14 @@
 //
 // Implementation of the MalwareDetails class.
 
-#include "chrome/browser/safe_browsing/malware_details.h"
+#include "chrome/browser/safe_browsing/threat_details.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/malware_details_cache.h"
-#include "chrome/browser/safe_browsing/malware_details_history.h"
 #include "chrome/browser/safe_browsing/report.pb.h"
+#include "chrome/browser/safe_browsing/threat_details_cache.h"
+#include "chrome/browser/safe_browsing/threat_details_history.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -29,33 +29,33 @@ using safe_browsing::ClientMalwareReportRequest;
 static const uint32 kMaxDomNodes = 500;
 
 // static
-MalwareDetailsFactory* MalwareDetails::factory_ = NULL;
+ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
 
-// The default MalwareDetailsFactory.  Global, made a singleton so we
+// The default ThreatDetailsFactory.  Global, made a singleton so we
 // don't leak it.
-class MalwareDetailsFactoryImpl : public MalwareDetailsFactory {
+class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
  public:
-  MalwareDetails* CreateMalwareDetails(
+  ThreatDetails* CreateThreatDetails(
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
       const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) override {
-    return new MalwareDetails(ui_manager, web_contents, unsafe_resource);
+    return new ThreatDetails(ui_manager, web_contents, unsafe_resource);
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<MalwareDetailsFactoryImpl>;
+  friend struct base::DefaultLazyInstanceTraits<ThreatDetailsFactoryImpl>;
 
-  MalwareDetailsFactoryImpl() {}
+  ThreatDetailsFactoryImpl() {}
 
-  DISALLOW_COPY_AND_ASSIGN(MalwareDetailsFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(ThreatDetailsFactoryImpl);
 };
 
-static base::LazyInstance<MalwareDetailsFactoryImpl>
+static base::LazyInstance<ThreatDetailsFactoryImpl>
     g_malware_details_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
-// Create a MalwareDetails for the given tab.
+// Create a ThreatDetails for the given tab.
 /* static */
-MalwareDetails* MalwareDetails::NewMalwareDetails(
+ThreatDetails* ThreatDetails::NewThreatDetails(
     SafeBrowsingUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResource& resource) {
@@ -63,40 +63,37 @@ MalwareDetails* MalwareDetails::NewMalwareDetails(
   // before this method is called).
   if (!factory_)
     factory_ = g_malware_details_factory_impl.Pointer();
-  return factory_->CreateMalwareDetails(ui_manager, web_contents, resource);
+  return factory_->CreateThreatDetails(ui_manager, web_contents, resource);
 }
 
-// Create a MalwareDetails for the given tab. Runs in the UI thread.
-MalwareDetails::MalwareDetails(
-    SafeBrowsingUIManager* ui_manager,
-    content::WebContents* web_contents,
-    const UnsafeResource& resource)
+// Create a ThreatDetails for the given tab. Runs in the UI thread.
+ThreatDetails::ThreatDetails(SafeBrowsingUIManager* ui_manager,
+                             content::WebContents* web_contents,
+                             const UnsafeResource& resource)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       request_context_getter_(profile_->GetRequestContext()),
       ui_manager_(ui_manager),
       resource_(resource),
       cache_result_(false),
-      cache_collector_(new MalwareDetailsCacheCollector),
-      redirects_collector_(
-          new MalwareDetailsRedirectsCollector(profile_)) {
+      cache_collector_(new ThreatDetailsCacheCollector),
+      redirects_collector_(new ThreatDetailsRedirectsCollector(profile_)) {
   StartCollection();
 }
 
-MalwareDetails::~MalwareDetails() {
-}
+ThreatDetails::~ThreatDetails() {}
 
-bool MalwareDetails::OnMessageReceived(const IPC::Message& message) {
+bool ThreatDetails::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MalwareDetails, message)
+  IPC_BEGIN_MESSAGE_MAP(ThreatDetails, message)
     IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_MalwareDOMDetails,
-                        OnReceivedMalwareDOMDetails)
+                        OnReceivedThreatDOMDetails)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-bool MalwareDetails::IsReportableUrl(const GURL& url) const {
+bool ThreatDetails::IsReportableUrl(const GURL& url) const {
   // TODO(panayiotis): also skip internal urls.
   return url.SchemeIs("http") || url.SchemeIs("https");
 }
@@ -105,7 +102,7 @@ bool MalwareDetails::IsReportableUrl(const GURL& url) const {
 // updates |resource|. Otherwise, it creates a new message, adds it to
 // resources_ and updates |resource| to point to it.
 //
-ClientMalwareReportRequest::Resource* MalwareDetails::FindOrCreateResource(
+ClientMalwareReportRequest::Resource* ThreatDetails::FindOrCreateResource(
     const GURL& url) {
   safe_browsing::ResourceMap::iterator it = resources_.find(url.spec());
   if (it != resources_.end())
@@ -121,10 +118,10 @@ ClientMalwareReportRequest::Resource* MalwareDetails::FindOrCreateResource(
   return new_resource.get();
 }
 
-void MalwareDetails::AddUrl(const GURL& url,
-                            const GURL& parent,
-                            const std::string& tagname,
-                            const std::vector<GURL>* children) {
+void ThreatDetails::AddUrl(const GURL& url,
+                           const GURL& parent,
+                           const std::string& tagname,
+                           const std::vector<GURL>* children) {
   if (!url.is_valid() || !IsReportableUrl(url))
     return;
 
@@ -150,7 +147,7 @@ void MalwareDetails::AddUrl(const GURL& url,
   }
 }
 
-void MalwareDetails::StartCollection() {
+void ThreatDetails::StartCollection() {
   DVLOG(1) << "Starting to compute malware details.";
   report_.reset(new ClientMalwareReportRequest());
 
@@ -203,22 +200,22 @@ void MalwareDetails::StartCollection() {
     AddUrl(referrer_url, GURL(), std::string(), NULL);
 
   // Get URLs of frames, scripts etc from the DOM.
-  // OnReceivedMalwareDOMDetails will be called when the renderer replies.
+  // OnReceivedThreatDOMDetails will be called when the renderer replies.
   content::RenderViewHost* view = web_contents()->GetRenderViewHost();
   view->Send(new SafeBrowsingMsg_GetMalwareDOMDetails(view->GetRoutingID()));
 }
 
 // When the renderer is done, this is called.
-void MalwareDetails::OnReceivedMalwareDOMDetails(
+void ThreatDetails::OnReceivedThreatDOMDetails(
     const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params) {
   // Schedule this in IO thread, so it doesn't conflict with future users
   // of our data structures (eg GetSerializedReport).
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MalwareDetails::AddDOMDetails, this, params));
+      base::Bind(&ThreatDetails::AddDOMDetails, this, params));
 }
 
-void MalwareDetails::AddDOMDetails(
+void ThreatDetails::AddDOMDetails(
     const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "Nodes from the DOM: " << params.size();
@@ -245,9 +242,9 @@ void MalwareDetails::AddDOMDetails(
 // Called from the SB Service on the IO thread, after the user has
 // closed the tab, or clicked proceed or goback.  Since the user needs
 // to take an action, we expect this to be called after
-// OnReceivedMalwareDOMDetails in most cases. If not, we don't include
+// OnReceivedThreatDOMDetails in most cases. If not, we don't include
 // the DOM data in our report.
-void MalwareDetails::FinishCollection(bool did_proceed, int num_visit) {
+void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   did_proceed_ = did_proceed;
@@ -258,11 +255,10 @@ void MalwareDetails::FinishCollection(bool did_proceed, int num_visit) {
     urls.push_back(GURL(it->first));
   }
   redirects_collector_->StartHistoryCollection(
-      urls,
-      base::Bind(&MalwareDetails::OnRedirectionCollectionReady, this));
+      urls, base::Bind(&ThreatDetails::OnRedirectionCollectionReady, this));
 }
 
-void MalwareDetails::OnRedirectionCollectionReady() {
+void ThreatDetails::OnRedirectionCollectionReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const std::vector<safe_browsing::RedirectChain>& redirects =
       redirects_collector_->GetCollectedUrls();
@@ -272,20 +268,18 @@ void MalwareDetails::OnRedirectionCollectionReady() {
 
   // Call the cache collector
   cache_collector_->StartCacheCollection(
-      request_context_getter_.get(),
-      &resources_,
-      &cache_result_,
-      base::Bind(&MalwareDetails::OnCacheCollectionReady, this));
+      request_context_getter_.get(), &resources_, &cache_result_,
+      base::Bind(&ThreatDetails::OnCacheCollectionReady, this));
 }
 
-void MalwareDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
+void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (size_t i = 0; i < urls.size() - 1; ++i) {
     AddUrl(urls[i], urls[i + 1], std::string(), NULL);
   }
 }
 
-void MalwareDetails::OnCacheCollectionReady() {
+void ThreatDetails::OnCacheCollectionReady() {
   DVLOG(1) << "OnCacheCollectionReady.";
   // Add all the urls in our |resources_| maps to the |report_| protocol buffer.
   for (safe_browsing::ResourceMap::const_iterator it = resources_.begin();
@@ -317,5 +311,5 @@ void MalwareDetails::OnCacheCollectionReady() {
     return;
   }
 
-  ui_manager_->SendSerializedMalwareDetails(serialized);
+  ui_manager_->SendSerializedThreatDetails(serialized);
 }

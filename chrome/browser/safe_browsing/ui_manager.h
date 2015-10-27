@@ -117,9 +117,9 @@ class SafeBrowsingUIManager
   // the current page is 'safe'.
   void LogPauseDelay(base::TimeDelta time);
 
-  // Called on the IO thread by the MalwareDetails with the serialized
+  // Called on the IO thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
-  virtual void SendSerializedMalwareDetails(const std::string& serialized);
+  virtual void SendSerializedThreatDetails(const std::string& serialized);
 
   // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  If |post_data| is

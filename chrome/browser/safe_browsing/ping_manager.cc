@@ -117,10 +117,9 @@ void SafeBrowsingPingManager::ReportSafeBrowsingHit(
   report->Start();
 }
 
-// Sends malware details for users who opt-in.
-void SafeBrowsingPingManager::ReportMalwareDetails(
-    const std::string& report) {
-  GURL report_url = MalwareDetailsUrl();
+// Sends threat details for users who opt-in.
+void SafeBrowsingPingManager::ReportThreatDetails(const std::string& report) {
+  GURL report_url = ThreatDetailsUrl();
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(report_url, net::URLFetcher::POST, this)
           .release();
@@ -192,7 +191,7 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
       is_subresource));
 }
 
-GURL SafeBrowsingPingManager::MalwareDetailsUrl() const {
+GURL SafeBrowsingPingManager::ThreatDetailsUrl() const {
   std::string url = base::StringPrintf(
           "%s/clientreport/malware?client=%s&appver=%s&pver=1.0",
           url_prefix_.c_str(),

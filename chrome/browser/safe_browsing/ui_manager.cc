@@ -15,11 +15,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/metadata.pb.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -284,9 +284,9 @@ void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
   sb_service_->ping_manager()->ReportInvalidCertificateChain(serialized_report);
 }
 
-// If the user had opted-in to send MalwareDetails, this gets called
+// If the user had opted-in to send ThreatDetails, this gets called
 // when the report is ready.
-void SafeBrowsingUIManager::SendSerializedMalwareDetails(
+void SafeBrowsingUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -296,8 +296,8 @@ void SafeBrowsingUIManager::SendSerializedMalwareDetails(
     return;
 
   if (!serialized.empty()) {
-    DVLOG(1) << "Sending serialized malware details.";
-    sb_service_->ping_manager()->ReportMalwareDetails(serialized);
+    DVLOG(1) << "Sending serialized threat details.";
+    sb_service_->ping_manager()->ReportThreatDetails(serialized);
   }
 }
 

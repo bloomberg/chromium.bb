@@ -100,14 +100,16 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
                             false).spec());
 }
 
-TEST_F(SafeBrowsingPingManagerTest, TestMalwareDetailsUrl) {
+TEST_F(SafeBrowsingPingManagerTest, TestThreatDetailsUrl) {
   SafeBrowsingProtocolConfig config;
   config.client_name = kClient;
   config.url_prefix = kUrlPrefix;
   SafeBrowsingPingManager pm(NULL, config);
 
   pm.version_ = kAppVer;
-  EXPECT_EQ("https://prefix.com/foo/clientreport/malware?"
-            "client=unittest&appver=1.0&pver=1.0" + key_param_,
-            pm.MalwareDetailsUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/clientreport/malware?"
+      "client=unittest&appver=1.0&pver=1.0" +
+          key_param_,
+      pm.ThreatDetailsUrl().spec());
 }

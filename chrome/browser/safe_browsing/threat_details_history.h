@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_MALWARE_DETAILS_HISTORY_H_
-#define CHROME_BROWSER_SAFE_BROWSING_MALWARE_DETAILS_HISTORY_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_
+#define CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_
 
 // This class gets redirect chain for urls from the history service.
 
@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -28,13 +29,13 @@ typedef std::vector<GURL> RedirectChain;
 
 class Profile;
 
-class MalwareDetailsRedirectsCollector
+class ThreatDetailsRedirectsCollector
     : public base::RefCountedThreadSafe<
-          MalwareDetailsRedirectsCollector,
+          ThreatDetailsRedirectsCollector,
           content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver {
  public:
-  explicit MalwareDetailsRedirectsCollector(Profile* profile);
+  explicit ThreatDetailsRedirectsCollector(Profile* profile);
 
   // Collects urls' redirects chain information from the history service.
   // We get access to history service via web_contents in UI thread.
@@ -56,9 +57,9 @@ class MalwareDetailsRedirectsCollector
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<MalwareDetailsRedirectsCollector>;
+  friend class base::DeleteHelper<ThreatDetailsRedirectsCollector>;
 
-  ~MalwareDetailsRedirectsCollector() override;
+  ~ThreatDetailsRedirectsCollector() override;
 
   void StartGetRedirects(const std::vector<GURL>& urls);
   void GetRedirects(const GURL& url);
@@ -88,7 +89,7 @@ class MalwareDetailsRedirectsCollector
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(MalwareDetailsRedirectsCollector);
+  DISALLOW_COPY_AND_ASSIGN(ThreatDetailsRedirectsCollector);
 };
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_MALWARE_DETAILS_HISTORY_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_HISTORY_H_

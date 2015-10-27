@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Implementation of the MalwareDetails class.
+// Implementation of the ThreatDetails class.
 
-#include "chrome/browser/safe_browsing/malware_details.h"
+#include "chrome/browser/safe_browsing/threat_details.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/md5.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/safe_browsing/malware_details_cache.h"
 #include "chrome/browser/safe_browsing/report.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -29,10 +29,10 @@ using safe_browsing::ClientMalwareReportRequest;
 // of the whole report and the user's bandwidth.
 static const uint32 kMaxBodySizeBytes = 1024;
 
-MalwareDetailsCacheCollector::MalwareDetailsCacheCollector()
+ThreatDetailsCacheCollector::ThreatDetailsCacheCollector()
     : resources_(NULL), result_(NULL), has_started_(false) {}
 
-void MalwareDetailsCacheCollector::StartCacheCollection(
+void ThreatDetailsCacheCollector::StartCacheCollection(
     net::URLRequestContextGetter* request_context_getter,
     safe_browsing::ResourceMap* resources,
     bool* result,
@@ -51,18 +51,18 @@ void MalwareDetailsCacheCollector::StartCacheCollection(
   // check if we call their callback immediately.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MalwareDetailsCacheCollector::OpenEntry, this));
+      base::Bind(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
-bool MalwareDetailsCacheCollector::HasStarted() {
+bool ThreatDetailsCacheCollector::HasStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return has_started_;
 }
 
-MalwareDetailsCacheCollector::~MalwareDetailsCacheCollector() {}
+ThreatDetailsCacheCollector::~ThreatDetailsCacheCollector() {}
 
 // Fetch a URL and advance to the next one when done.
-void MalwareDetailsCacheCollector::OpenEntry() {
+void ThreatDetailsCacheCollector::OpenEntry() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "OpenEntry";
 
@@ -87,7 +87,7 @@ void MalwareDetailsCacheCollector::OpenEntry() {
   current_fetch_->Start();  // OnURLFetchComplete will be called when done.
 }
 
-ClientMalwareReportRequest::Resource* MalwareDetailsCacheCollector::GetResource(
+ClientMalwareReportRequest::Resource* ThreatDetailsCacheCollector::GetResource(
     const GURL& url) {
   safe_browsing::ResourceMap::iterator it = resources_->find(url.spec());
   if (it != resources_->end()) {
@@ -96,7 +96,7 @@ ClientMalwareReportRequest::Resource* MalwareDetailsCacheCollector::GetResource(
   return NULL;
 }
 
-void MalwareDetailsCacheCollector::OnURLFetchComplete(
+void ThreatDetailsCacheCollector::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DVLOG(1) << "OnUrlFetchComplete";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -134,7 +134,7 @@ void MalwareDetailsCacheCollector::OnURLFetchComplete(
   AdvanceEntry();
 }
 
-void MalwareDetailsCacheCollector::ReadResponse(
+void ThreatDetailsCacheCollector::ReadResponse(
     ClientMalwareReportRequest::Resource* pb_resource,
     const net::URLFetcher* source) {
   DVLOG(1) << "ReadResponse";
@@ -167,7 +167,7 @@ void MalwareDetailsCacheCollector::ReadResponse(
   }
 }
 
-void MalwareDetailsCacheCollector::ReadData(
+void ThreatDetailsCacheCollector::ReadData(
     ClientMalwareReportRequest::Resource* pb_resource,
     const std::string& data) {
   DVLOG(1) << "ReadData";
@@ -181,7 +181,7 @@ void MalwareDetailsCacheCollector::ReadData(
   pb_response->set_bodydigest(base::MD5String(data));
 }
 
-void MalwareDetailsCacheCollector::AdvanceEntry() {
+void ThreatDetailsCacheCollector::AdvanceEntry() {
   DVLOG(1) << "AdvanceEntry";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Advance to the next resource.
@@ -191,10 +191,10 @@ void MalwareDetailsCacheCollector::AdvanceEntry() {
   // Create a task so we don't take over the IO thread for too long.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MalwareDetailsCacheCollector::OpenEntry, this));
+      base::Bind(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
-void MalwareDetailsCacheCollector::AllDone(bool success) {
+void ThreatDetailsCacheCollector::AllDone(bool success) {
   DVLOG(1) << "AllDone";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *result_ = success;

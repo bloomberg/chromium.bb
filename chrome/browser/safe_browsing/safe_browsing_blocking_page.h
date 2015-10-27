@@ -40,7 +40,7 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
-class MalwareDetails;
+class ThreatDetails;
 class SafeBrowsingBlockingPageFactory;
 
 namespace base {
@@ -103,9 +103,9 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
 
-  // After a malware interstitial where the user opted-in to the
+  // After a safe browsing interstitial where the user opted-in to the
   // report but clicked "proceed anyway", we delay the call to
-  // MalwareDetails::FinishCollection() by this much time (in
+  // ThreatDetails::FinishCollection() by this much time (in
   // milliseconds), in order to get data from the blocked resource itself.
   int64 malware_details_proceed_delay_ms_;
 
@@ -119,10 +119,10 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   bool CanShowMalwareDetailsOption();
 
   // Called when the insterstitial is going away. If there is a
-  // pending malware details object, we look at the user's
-  // preferences, and if the option to send malware details is
+  // pending threat details object, we look at the user's
+  // preferences, and if the option to send threat details is
   // enabled, the report is scheduled to be sent on the |ui_manager_|.
-  void FinishMalwareDetails(int64 delay_ms, bool did_proceed, int num_visits);
+  void FinishThreatDetails(int64 delay_ms, bool did_proceed, int num_visits);
 
   // A list of SafeBrowsingUIManager::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
@@ -158,10 +158,10 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // The list of unsafe resources this page is warning about.
   UnsafeResourceList unsafe_resources_;
 
-  // A MalwareDetails object that we start generating when the
+  // A ThreatDetails object that we start generating when the
   // blocking page is shown. The object will be sent when the warning
   // is gone (if the user enables the feature).
-  scoped_refptr<MalwareDetails> malware_details_;
+  scoped_refptr<ThreatDetails> threat_details_;
 
   bool proceeded_;
 

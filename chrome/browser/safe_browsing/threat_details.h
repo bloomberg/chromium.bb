@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_MALWARE_DETAILS_H_
-#define CHROME_BROWSER_SAFE_BROWSING_MALWARE_DETAILS_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_H_
+#define CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_H_
 
-// A class that encapsulates the detailed malware reports sent when
-// users opt-in to do so from the malware warning page.
+// A class that encapsulates the detailed threat reports sent when
+// users opt-in to do so from the safe browsing warning page.
 
-// An instance of this class is generated when a malware warning page
+// An instance of this class is generated when a safe browsing warning page
 // is shown (SafeBrowsingBlockingPage).
 
 #include <string>
@@ -16,6 +16,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -28,33 +29,33 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-class MalwareDetailsCacheCollector;
-class MalwareDetailsRedirectsCollector;
-class MalwareDetailsFactory;
+class ThreatDetailsCacheCollector;
+class ThreatDetailsRedirectsCollector;
+class ThreatDetailsFactory;
 class Profile;
 struct SafeBrowsingHostMsg_MalwareDOMDetails_Node;
 
 namespace safe_browsing {
 // Maps a URL to its Resource.
 typedef base::hash_map<
-  std::string,
-  linked_ptr<safe_browsing::ClientMalwareReportRequest::Resource> > ResourceMap;
+    std::string,
+    linked_ptr<safe_browsing::ClientMalwareReportRequest::Resource>>
+    ResourceMap;
 }
 
-class MalwareDetails : public base::RefCountedThreadSafe<MalwareDetails>,
-                       public content::WebContentsObserver {
+class ThreatDetails : public base::RefCountedThreadSafe<ThreatDetails>,
+                      public content::WebContentsObserver {
  public:
   typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
 
-  // Constructs a new MalwareDetails instance, using the factory.
-  static MalwareDetails* NewMalwareDetails(
-      SafeBrowsingUIManager* ui_manager,
-      content::WebContents* web_contents,
-      const UnsafeResource& resource);
+  // Constructs a new ThreatDetails instance, using the factory.
+  static ThreatDetails* NewThreatDetails(SafeBrowsingUIManager* ui_manager,
+                                         content::WebContents* web_contents,
+                                         const UnsafeResource& resource);
 
   // Makes the passed |factory| the factory used to instanciate
   // SafeBrowsingBlockingPage objects. Useful for tests.
-  static void RegisterFactory(MalwareDetailsFactory* factory) {
+  static void RegisterFactory(ThreatDetailsFactory* factory) {
     factory_ = factory;
   }
 
@@ -74,13 +75,13 @@ class MalwareDetails : public base::RefCountedThreadSafe<MalwareDetails>,
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  friend class MalwareDetailsFactoryImpl;
+  friend class ThreatDetailsFactoryImpl;
 
-  MalwareDetails(SafeBrowsingUIManager* ui_manager,
-                 content::WebContents* web_contents,
-                 const UnsafeResource& resource);
+  ThreatDetails(SafeBrowsingUIManager* ui_manager,
+                content::WebContents* web_contents,
+                const UnsafeResource& resource);
 
-  ~MalwareDetails() override;
+  ~ThreatDetails() override;
 
   // Called on the IO thread with the DOM details.
   virtual void AddDOMDetails(
@@ -95,7 +96,7 @@ class MalwareDetails : public base::RefCountedThreadSafe<MalwareDetails>,
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
  private:
-  friend class base::RefCountedThreadSafe<MalwareDetails>;
+  friend class base::RefCountedThreadSafe<ThreatDetails>;
 
   // Starts the collection of the report.
   void StartCollection();
@@ -117,7 +118,7 @@ class MalwareDetails : public base::RefCountedThreadSafe<MalwareDetails>,
               const std::vector<GURL>* children);
 
   // Message handler.
-  void OnReceivedMalwareDOMDetails(
+  void OnReceivedThreatDOMDetails(
       const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params);
 
   void AddRedirectUrlList(const std::vector<GURL>& urls);
@@ -143,31 +144,31 @@ class MalwareDetails : public base::RefCountedThreadSafe<MalwareDetails>,
   // The factory used to instanciate SafeBrowsingBlockingPage objects.
   // Usefull for tests, so they can provide their own implementation of
   // SafeBrowsingBlockingPage.
-  static MalwareDetailsFactory* factory_;
+  static ThreatDetailsFactory* factory_;
 
   // Used to collect details from the HTTP Cache.
-  scoped_refptr<MalwareDetailsCacheCollector> cache_collector_;
+  scoped_refptr<ThreatDetailsCacheCollector> cache_collector_;
 
   // Used to collect redirect urls from the history service
-  scoped_refptr<MalwareDetailsRedirectsCollector> redirects_collector_;
+  scoped_refptr<ThreatDetailsRedirectsCollector> redirects_collector_;
 
-  FRIEND_TEST_ALL_PREFIXES(MalwareDetailsTest, MalwareDOMDetails);
-  FRIEND_TEST_ALL_PREFIXES(MalwareDetailsTest, HTTPCache);
-  FRIEND_TEST_ALL_PREFIXES(MalwareDetailsTest, HTTPCacheNoEntries);
-  FRIEND_TEST_ALL_PREFIXES(MalwareDetailsTest, HistoryServiceUrls);
+  FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, MalwareDOMDetails);
+  FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HTTPCache);
+  FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HTTPCacheNoEntries);
+  FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HistoryServiceUrls);
 
-  DISALLOW_COPY_AND_ASSIGN(MalwareDetails);
+  DISALLOW_COPY_AND_ASSIGN(ThreatDetails);
 };
 
-// Factory for creating MalwareDetails.  Useful for tests.
-class MalwareDetailsFactory {
+// Factory for creating ThreatDetails.  Useful for tests.
+class ThreatDetailsFactory {
  public:
-  virtual ~MalwareDetailsFactory() { }
+  virtual ~ThreatDetailsFactory() {}
 
-  virtual MalwareDetails* CreateMalwareDetails(
+  virtual ThreatDetails* CreateThreatDetails(
       SafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,
       const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) = 0;
 };
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_MALWARE_DETAILS_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_THREAT_DETAILS_H_

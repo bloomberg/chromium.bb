@@ -52,8 +52,8 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                              bool is_extended_reporting);
 
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
-  // malware reports. |report| is the serialized report.
-  void ReportMalwareDetails(const std::string& report);
+  // threat reports. |report| is the serialized report.
+  void ReportThreatDetails(const std::string& report);
 
   // Users can opt-in on the SSL interstitial to send reports of invalid
   // certificate chains.
@@ -66,8 +66,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
                            TestSafeBrowsingHitUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
-                           TestMalwareDetailsUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest, TestThreatDetailsUrl);
 
   typedef std::set<const net::URLFetcher*> Reports;
 
@@ -84,8 +83,8 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                           bool is_subresource,
                           SBThreatType threat_type,
                           bool is_extended_reporting) const;
-  // Generates URL for reporting malware details for users who opt-in.
-  GURL MalwareDetailsUrl() const;
+  // Generates URL for reporting threat details for users who opt-in.
+  GURL ThreatDetailsUrl() const;
 
   // Current product version sent in each request.
   std::string version_;
@@ -97,7 +96,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // URL prefix where browser reports hits to the safebrowsing list and
-  // sends detaild malware reports for UMA users.
+  // sends detaild threat reports for UMA users.
   std::string url_prefix_;
 
   // Track outstanding SafeBrowsing report fetchers for clean up.
