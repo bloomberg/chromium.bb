@@ -117,6 +117,23 @@ function test()
     }
     root.removeChildren();
     dataGrid.updateInstantlyForTests();
+
+    // The below should not crash either.
+    for (var i = 0; i < 40; ++i) {
+        var xn = new WebInspector.ViewportDataGridNode({id: "x" + i});
+        root.appendChild(xn);
+    }
+    dataGrid.updateInstantlyForTests();
+    dataGrid.setStickToBottom(false);
+    var children = root.children.slice();
+    root.removeChildren();
+    // Assure wheelTarget is anything but null, otherwise it happily bypasses crashing code.
+    dataGrid._wheelTarget = children.peekLast().element;
+    for (var i = 0; i < 40; ++i) {
+        children[i].refresh();
+        root.appendChild(children[i]);
+    }
+    dataGrid.updateInstantlyForTests();
     InspectorTest.completeTest();
 }
 </script>
