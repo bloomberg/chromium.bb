@@ -640,6 +640,9 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
     return;
   }
 
+  // Ensure SkBitmap to make the latest change by external source visible.
+  bitmap_.notifyPixelsChanged();
+
   // Draw the texture based bitmap onto the Canvas. If the canvas is
   // hardware based, this will do a GPU-GPU texture copy.
   // If the canvas is software based, the texture based bitmap will be
@@ -652,6 +655,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
   canvas->drawBitmapRect(bitmap_, dest, &paint);
+  canvas->flush();
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
