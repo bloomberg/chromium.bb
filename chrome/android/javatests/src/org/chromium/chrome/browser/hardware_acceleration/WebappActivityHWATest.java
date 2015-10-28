@@ -13,6 +13,11 @@ import org.chromium.chrome.browser.webapps.WebappActivityTestBase;
  * Tests that WebappActivity is hardware accelerated only high-end devices.
  */
 public class WebappActivityHWATest extends WebappActivityTestBase {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        startWebappActivity();
+    }
 
     @SmallTest
     public void testHardwareAcceleration() throws Exception {

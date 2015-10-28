@@ -24,6 +24,11 @@ import org.chromium.chrome.browser.tab.TabObserver;
  * Tests for splash screens.
  */
 public class WebappSplashScreenTest extends WebappActivityTestBase {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        startWebappActivity();
+    }
 
     private int getHistogramTotalCountFor(String histogram, int buckets) {
         int count = 0;

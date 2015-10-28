@@ -25,6 +25,11 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Tests for splash screens with EXTRA_THEME_COLOR specified in the Intent.
  */
 public class WebappSplashScreenThemeColorTest extends WebappActivityTestBase {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        startWebappActivity();
+    }
 
     @Override
     protected Intent createIntent() {

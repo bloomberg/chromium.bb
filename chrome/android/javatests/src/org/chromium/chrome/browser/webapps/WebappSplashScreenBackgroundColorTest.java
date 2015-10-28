@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.metrics.WebappUma;
  * Tests for splash screens with EXTRA_BACKGROND_COLOR specified in the Intent.
  */
 public class WebappSplashScreenBackgroundColorTest extends WebappActivityTestBase {
-
     @Override
     protected Intent createIntent() {
         Intent intent = super.createIntent();
@@ -30,7 +29,9 @@ public class WebappSplashScreenBackgroundColorTest extends WebappActivityTestBas
 
     @SmallTest
     @Feature({"Webapps"})
-    public void testShowBackgroundColorAndRecordUma() {
+    public void testShowBackgroundColorAndRecordUma() throws Exception {
+        startWebappActivity();
+
         ViewGroup splashScreen = getActivity().getSplashScreenForTests();
         ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 

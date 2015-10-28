@@ -21,6 +21,11 @@ import org.chromium.chrome.browser.metrics.WebappUma;
  * Tests for splash screens with EXTRA_ICON specified in the Intent.
  */
 public class WebappSplashScreenHomescreenIconTest extends WebappActivityTestBase {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        startWebappActivity();
+    }
 
     @Override
     protected Intent createIntent() {

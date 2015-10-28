@@ -35,6 +35,7 @@ public class WebappSplashScreenIconTest extends WebappActivityTestBase {
                 .updateSplashScreenImage(ShortcutHelper.decodeBitmapFromString(TEST_SPLASH_ICON));
 
         super.setUp();
+        startWebappActivity();
     }
 
     @SmallTest

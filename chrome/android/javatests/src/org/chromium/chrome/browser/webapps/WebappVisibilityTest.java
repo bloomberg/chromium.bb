@@ -16,6 +16,12 @@ import org.chromium.content_public.common.ScreenOrientationValues;
  * Tests the logic in top controls visibility delegate in WebappActivity.
  */
 public class WebappVisibilityTest extends WebappActivityTestBase {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        startWebappActivity();
+    }
+
     @MediumTest
     @Feature({"Webapps"})
     public void testShouldShowTopControls() {
