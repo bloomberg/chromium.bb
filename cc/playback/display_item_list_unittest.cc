@@ -9,10 +9,14 @@
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/playback/clip_display_item.h"
+#include "cc/playback/clip_path_display_item.h"
+#include "cc/playback/compositing_display_item.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
+#include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/transform_display_item.h"
+#include "cc/proto/display_item.pb.h"
 #include "cc/test/skia_common.h"
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,12 +25,245 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+
+namespace {
+
+void AppendFirstSerializationTestPicture(scoped_refptr<DisplayItemList> list,
+                                         const gfx::Size& layer_size) {
+  gfx::PointF offset(2.f, 3.f);
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  skia::RefPtr<SkPicture> picture;
+
+  SkPaint red_paint;
+  red_paint.setColor(SK_ColorRED);
+
+  canvas = skia::SharePtr(recorder.beginRecording(SkRect::MakeXYWH(
+      offset.x(), offset.y(), layer_size.width(), layer_size.height())));
+  canvas->translate(offset.x(), offset.y());
+  canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  list->CreateAndAppendItem<DrawingDisplayItem>()->SetNew(picture);
+}
+
+void AppendSecondSerializationTestPicture(scoped_refptr<DisplayItemList> list,
+                                          const gfx::Size& layer_size) {
+  gfx::PointF offset(2.f, 2.f);
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  skia::RefPtr<SkPicture> picture;
+
+  SkPaint blue_paint;
+  blue_paint.setColor(SK_ColorBLUE);
+
+  canvas = skia::SharePtr(recorder.beginRecording(SkRect::MakeXYWH(
+      offset.x(), offset.y(), layer_size.width(), layer_size.height())));
+  canvas->translate(offset.x(), offset.y());
+  canvas->drawRectCoords(3.f, 3.f, 7.f, 7.f, blue_paint);
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  list->CreateAndAppendItem<DrawingDisplayItem>()->SetNew(picture);
+}
+
+void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
+                                          scoped_refptr<DisplayItemList> list) {
+  // Serialize and deserialize the DisplayItemList.
+  proto::DisplayItemList proto;
+  list->ToProtobuf(&proto);
+  scoped_refptr<DisplayItemList> new_list =
+      DisplayItemList::CreateFromProto(proto);
+
+  // Finalize the DisplayItemLists to perform raster.
+  list->Finalize();
+  new_list->Finalize();
+
+  const int pixel_size = 4 * layer_size.GetArea();
+
+  // Get the rendered contents of the old DisplayItemList.
+  scoped_ptr<unsigned char[]> pixels(new unsigned char[pixel_size]);
+  memset(pixels.get(), 0, pixel_size);
+  DrawDisplayList(pixels.get(), gfx::Rect(layer_size), list);
+
+  // Get the rendered contents of the new DisplayItemList.
+  scoped_ptr<unsigned char[]> new_pixels(new unsigned char[pixel_size]);
+  memset(new_pixels.get(), 0, pixel_size);
+  DrawDisplayList(new_pixels.get(), gfx::Rect(layer_size), new_list);
+
+  EXPECT_EQ(0, memcmp(pixels.get(), new_pixels.get(), pixel_size));
+}
+
+}  // namespace
+
+TEST(DisplayItemListTest, SerializeDisplayItemListSettings) {
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = false;
+
+  {
+    proto::DisplayItemListSettings proto;
+    settings.ToProtobuf(&proto);
+    DisplayItemListSettings deserialized(proto);
+    EXPECT_EQ(settings.use_cached_picture, deserialized.use_cached_picture);
+  }
+
+  settings.use_cached_picture = true;
+  {
+    proto::DisplayItemListSettings proto;
+    settings.ToProtobuf(&proto);
+    DisplayItemListSettings deserialized(proto);
+    EXPECT_EQ(settings.use_cached_picture, deserialized.use_cached_picture);
+  }
+}
+
+TEST(DisplayItemListTest, SerializeSingleDrawingItem) {
+  gfx::Size layer_size(10, 10);
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+
+  // Build the DrawingDisplayItem.
+  AppendFirstSerializationTestPicture(list, layer_size);
+
+  ValidateDisplayItemListSerialization(layer_size, list);
+}
+
+TEST(DisplayItemListTest, SerializeClipItem) {
+  gfx::Size layer_size(10, 10);
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+
+  // Build the DrawingDisplayItem.
+  AppendFirstSerializationTestPicture(list, layer_size);
+
+  // Build the ClipDisplayItem.
+  gfx::Rect clip_rect(6, 6, 1, 1);
+  std::vector<SkRRect> rrects;
+  rrects.push_back(SkRRect::MakeOval(SkRect::MakeXYWH(5.f, 5.f, 4.f, 4.f)));
+  auto* item = list->CreateAndAppendItem<ClipDisplayItem>();
+  item->SetNew(clip_rect, rrects);
+
+  // Build the second DrawingDisplayItem.
+  AppendSecondSerializationTestPicture(list, layer_size);
+
+  // Build the EndClipDisplayItem.
+  list->CreateAndAppendItem<EndClipDisplayItem>();
+
+  ValidateDisplayItemListSerialization(layer_size, list);
+}
+
+TEST(DisplayItemListTest, SerializeClipPathItem) {
+  gfx::Size layer_size(10, 10);
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+
+  // Build the DrawingDisplayItem.
+  AppendFirstSerializationTestPicture(list, layer_size);
+
+  // Build the ClipPathDisplayItem.
+  SkPath path;
+  path.addCircle(5.f, 5.f, 2.f, SkPath::Direction::kCW_Direction);
+  auto* item = list->CreateAndAppendItem<ClipPathDisplayItem>();
+  item->SetNew(path, SkRegion::Op::kReplace_Op, false);
+
+  // Build the second DrawingDisplayItem.
+  AppendSecondSerializationTestPicture(list, layer_size);
+
+  // Build the EndClipPathDisplayItem.
+  list->CreateAndAppendItem<EndClipPathDisplayItem>();
+
+  ValidateDisplayItemListSerialization(layer_size, list);
+}
+
+TEST(DisplayItemListTest, SerializeCompositingItem) {
+  gfx::Size layer_size(10, 10);
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+
+  // Build the DrawingDisplayItem.
+  AppendFirstSerializationTestPicture(list, layer_size);
+
+  // Build the CompositingDisplayItem.
+  skia::RefPtr<SkColorFilter> filter = skia::AdoptRef(
+      SkColorFilter::CreateLightingFilter(SK_ColorRED, SK_ColorGREEN));
+  auto* item = list->CreateAndAppendItem<CompositingDisplayItem>();
+  item->SetNew(150, SkXfermode::Mode::kDst_Mode, nullptr, filter);
+
+  // Build the second DrawingDisplayItem.
+  AppendSecondSerializationTestPicture(list, layer_size);
+
+  // Build the EndCompositingDisplayItem.
+  list->CreateAndAppendItem<EndCompositingDisplayItem>();
+
+  ValidateDisplayItemListSerialization(layer_size, list);
+}
+
+TEST(DisplayItemListTest, SerializeFloatClipItem) {
+  gfx::Size layer_size(10, 10);
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+
+  // Build the DrawingDisplayItem.
+  AppendFirstSerializationTestPicture(list, layer_size);
+
+  // Build the FloatClipDisplayItem.
+  gfx::RectF clip_rect(6.f, 6.f, 1.f, 1.f);
+  auto* item2 = list->CreateAndAppendItem<FloatClipDisplayItem>();
+  item2->SetNew(clip_rect);
+
+  // Build the second DrawingDisplayItem.
+  AppendSecondSerializationTestPicture(list, layer_size);
+
+  // Build the EndFloatClipDisplayItem.
+  list->CreateAndAppendItem<EndFloatClipDisplayItem>();
+
+  ValidateDisplayItemListSerialization(layer_size, list);
+}
+
+TEST(DisplayItemListTest, SerializeTransformItem) {
+  gfx::Size layer_size(10, 10);
+
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+
+  // Build the DrawingDisplayItem.
+  AppendFirstSerializationTestPicture(list, layer_size);
+
+  // Build the TransformDisplayItem.
+  gfx::Transform transform;
+  transform.Scale(1.25f, 1.25f);
+  transform.Translate(-1.f, -1.f);
+  auto* item2 = list->CreateAndAppendItem<TransformDisplayItem>();
+  item2->SetNew(transform);
+
+  // Build the second DrawingDisplayItem.
+  AppendSecondSerializationTestPicture(list, layer_size);
+
+  // Build the EndTransformDisplayItem.
+  list->CreateAndAppendItem<EndTransformDisplayItem>();
+
+  ValidateDisplayItemListSerialization(layer_size, list);
+}
 
 TEST(DisplayItemListTest, SingleDrawingItem) {
   gfx::Rect layer_rect(100, 100);

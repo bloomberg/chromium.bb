@@ -14,7 +14,10 @@
 #include "cc/debug/traced_display_item_list.h"
 #include "cc/debug/traced_value.h"
 #include "cc/playback/display_item_list_settings.h"
+#include "cc/playback/display_item_proto_factory.h"
 #include "cc/playback/largest_display_item.h"
+#include "cc/proto/display_item.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
@@ -47,11 +50,29 @@ scoped_refptr<DisplayItemList> DisplayItemList::Create(
       !settings.use_cached_picture || DisplayItemsTracingEnabled()));
 }
 
+scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
+    const proto::DisplayItemList& proto) {
+  gfx::Rect layer_rect = ProtoToRect(proto.layer_rect());
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(ProtoToRect(proto.layer_rect()),
+                              DisplayItemListSettings(proto.settings()));
+
+  for (int i = 0; i < proto.items_size(); i++) {
+    const proto::DisplayItem& item_proto = proto.items(i);
+    DisplayItem* item =
+        DisplayItemProtoFactory::AllocateAndConstruct(list, item_proto);
+    if (item)
+      item->FromProtobuf(item_proto);
+  }
+
+  return list;
+}
+
 DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
                                  const DisplayItemListSettings& settings,
                                  bool retain_individual_display_items)
     : items_(LargestDisplayItemSize(), kDefaultNumDisplayItemsToReserve),
-      use_cached_picture_(settings.use_cached_picture),
+      settings_(settings),
       retain_individual_display_items_(retain_individual_display_items),
       layer_rect_(layer_rect),
       is_suitable_for_gpu_rasterization_(true),
@@ -61,7 +82,7 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
 #if DCHECK_IS_ON()
   needs_process_ = false;
 #endif
-  if (use_cached_picture_) {
+  if (settings_.use_cached_picture) {
     SkRTreeFactory factory;
     recorder_.reset(new SkPictureRecorder());
     canvas_ = skia::SharePtr(recorder_->beginRecording(
@@ -74,12 +95,21 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
 DisplayItemList::~DisplayItemList() {
 }
 
+void DisplayItemList::ToProtobuf(proto::DisplayItemList* proto) {
+  RectToProto(layer_rect_, proto->mutable_layer_rect());
+  settings_.ToProtobuf(proto->mutable_settings());
+
+  DCHECK_EQ(0, proto->items_size());
+  for (auto* item : items_)
+    item->ToProtobuf(proto->add_items());
+}
+
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback,
                              const gfx::Rect& canvas_target_playback_rect,
                              float contents_scale) const {
   DCHECK(ProcessAppendedItemsCalled());
-  if (!use_cached_picture_) {
+  if (!settings_.use_cached_picture) {
     canvas->save();
     canvas->scale(contents_scale, contents_scale);
     for (auto* item : items_)
@@ -122,7 +152,7 @@ void DisplayItemList::ProcessAppendedItems() {
   needs_process_ = false;
 #endif
   for (const DisplayItem* item : items_) {
-    if (use_cached_picture_) {
+    if (settings_.use_cached_picture) {
       // When using a cached picture we will calculate gpu suitability on the
       // entire cached picture instead of the items. This is more permissive
       // since none of the items might individually trigger a veto even though
@@ -165,16 +195,16 @@ void DisplayItemList::RemoveLast() {
   // The last item should not have been handled by ProcessAppendedItems, so we
   // don't need to remove it from approximate_op_count_, etc.
   DCHECK(retain_individual_display_items_);
-  DCHECK(!use_cached_picture_);
+  DCHECK(!settings_.use_cached_picture);
   items_.RemoveLast();
 }
 
 void DisplayItemList::Finalize() {
   ProcessAppendedItems();
 
-  if (use_cached_picture_) {
+  if (settings_.use_cached_picture) {
     // Convert to an SkPicture for faster rasterization.
-    DCHECK(use_cached_picture_);
+    DCHECK(settings_.use_cached_picture);
     DCHECK(!picture_);
     picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
     DCHECK(picture_);
@@ -200,10 +230,10 @@ int DisplayItemList::ApproximateOpCount() const {
 size_t DisplayItemList::ApproximateMemoryUsage() const {
   DCHECK(ProcessAppendedItemsCalled());
   // We double-count in this case. Produce zero to avoid being misleading.
-  if (use_cached_picture_ && retain_individual_display_items_)
+  if (settings_.use_cached_picture && retain_individual_display_items_)
     return 0;
 
-  DCHECK_IMPLIES(use_cached_picture_, picture_);
+  DCHECK_IMPLIES(settings_.use_cached_picture, picture_);
 
   size_t memory_usage = sizeof(*this);
 
@@ -273,8 +303,8 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
   DCHECK(image_map_.empty());
-  DCHECK_IMPLIES(use_cached_picture_, picture_);
-  if (use_cached_picture_ && !picture_->willPlayBackBitmaps())
+  DCHECK_IMPLIES(settings_.use_cached_picture, picture_);
+  if (settings_.use_cached_picture && !picture_->willPlayBackBitmaps())
     return;
 
   // The cached picture is translated by -layer_rect_.origin during record,

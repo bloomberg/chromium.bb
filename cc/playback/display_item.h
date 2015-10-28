@@ -15,6 +15,10 @@ class SkCanvas;
 
 namespace cc {
 
+namespace proto {
+class DisplayItem;
+}
+
 class CC_EXPORT DisplayItem {
  public:
   virtual ~DisplayItem() {}
@@ -27,6 +31,8 @@ class CC_EXPORT DisplayItem {
     external_memory_usage_ = external_memory_usage;
   }
 
+  virtual void ToProtobuf(proto::DisplayItem* proto) const = 0;
+  virtual void FromProtobuf(const proto::DisplayItem& proto) = 0;
   virtual void Raster(SkCanvas* canvas,
                       const gfx::Rect& canvas_target_playback_rect,
                       SkPicture::AbortCallback* callback) const = 0;

@@ -23,6 +23,8 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
 
   void SetNew(skia::RefPtr<SkPicture> picture);
 
+  void ToProtobuf(proto::DisplayItem* proto) const override;
+  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_playback_rect,
               SkPicture::AbortCallback* callback) const override;

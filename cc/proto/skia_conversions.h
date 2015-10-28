@@ -21,6 +21,8 @@ namespace proto {
 class SkRRect;
 }
 
+// TODO(dtrainor): Move these to a class and make them static
+// (crbug.com/548432).
 CC_EXPORT SkRegion::Op SkRegionOpFromProto(proto::SkRegion::Op op);
 CC_EXPORT proto::SkRegion::Op SkRegionOpToProto(SkRegion::Op op);
 

@@ -29,6 +29,8 @@ class SizeF;
 class Transform;
 }
 
+// TODO(dtrainor): Move these to a class and make them static
+// (crbug.com/548432).
 CC_EXPORT void PointToProto(const gfx::Point& point, proto::Point* proto);
 CC_EXPORT gfx::Point ProtoToPoint(const proto::Point& proto);
 

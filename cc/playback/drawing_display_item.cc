@@ -9,9 +9,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/picture_debug_util.h"
+#include "cc/proto/display_item.pb.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/skia_util.h"
 
@@ -28,6 +31,40 @@ void DrawingDisplayItem::SetNew(skia::RefPtr<SkPicture> picture) {
   DisplayItem::SetNew(picture_->suitableForGpuRasterization(NULL),
                       picture_->approximateOpCount(),
                       SkPictureUtils::ApproximateBytesUsed(picture_.get()));
+}
+
+void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+  proto->set_type(proto::DisplayItem::Type_Drawing);
+
+  proto::DrawingDisplayItem* details = proto->mutable_drawing_item();
+
+  // Just use skia's serialize() method for now.
+  if (picture_) {
+    SkDynamicMemoryWStream stream;
+
+    // TODO(dtrainor, nyquist): Add an SkPixelSerializer to not serialize images
+    // more than once (crbug.com/548434).
+    picture_->serialize(&stream, nullptr);
+    if (stream.bytesWritten() > 0) {
+      SkAutoDataUnref data(stream.copyToData());
+      details->set_picture(data->data(), data->size());
+    }
+  }
+}
+
+void DrawingDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
+
+  skia::RefPtr<SkPicture> picture;
+  const proto::DrawingDisplayItem& details = proto.drawing_item();
+  if (details.has_picture()) {
+    SkMemoryStream stream(details.picture().data(), details.picture().size());
+
+    // TODO(dtrainor, nyquist): Add an image decoder.
+    picture = skia::AdoptRef(SkPicture::CreateFromStream(&stream, nullptr));
+  }
+
+  SetNew(picture.Pass());
 }
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,

@@ -354,6 +354,8 @@
         'playback/display_item_list.h',
         'playback/display_item_list_settings.cc',
         'playback/display_item_list_settings.h',
+        'playback/display_item_proto_factory.cc',
+        'playback/display_item_proto_factory.h',
         'playback/display_list_raster_source.cc',
         'playback/display_list_raster_source.h',
         'playback/display_list_recording_source.cc',
@@ -581,6 +583,7 @@
       'target_name': 'cc_proto',
       'type': '<(component)',
       'sources': [
+        'proto/display_item.proto',
         'proto/point.proto',
         'proto/pointf.proto',
         'proto/rect.proto',

@@ -11,10 +11,17 @@
 
 namespace cc {
 
+namespace proto {
+class DisplayItemListSettings;
+}
+
 class CC_EXPORT DisplayItemListSettings {
  public:
   DisplayItemListSettings();
+  explicit DisplayItemListSettings(const proto::DisplayItemListSettings& proto);
   ~DisplayItemListSettings();
+
+  void ToProtobuf(proto::DisplayItemListSettings* proto) const;
 
   // If set, a picture will be cached inside the DisplayItemList.
   bool use_cached_picture;

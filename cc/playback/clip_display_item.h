@@ -25,6 +25,8 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
   void SetNew(gfx::Rect clip_rect,
               const std::vector<SkRRect>& rounded_clip_rects);
 
+  void ToProtobuf(proto::DisplayItem* proto) const override;
+  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
@@ -40,6 +42,8 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
   EndClipDisplayItem();
   ~EndClipDisplayItem() override;
 
+  void ToProtobuf(proto::DisplayItem* proto) const override;
+  void FromProtobuf(const proto::DisplayItem& proto) override;
   void Raster(SkCanvas* canvas,
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;

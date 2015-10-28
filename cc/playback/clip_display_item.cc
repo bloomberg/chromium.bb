@@ -6,8 +6,12 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/proto/display_item.pb.h"
+#include "cc/proto/gfx_conversions.h"
+#include "cc/proto/skia_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/skia_util.h"
 
@@ -29,6 +33,30 @@ void ClipDisplayItem::SetNew(gfx::Rect clip_rect,
 
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
                       external_memory_usage);
+}
+
+void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+  proto->set_type(proto::DisplayItem::Type_Clip);
+
+  proto::ClipDisplayItem* details = proto->mutable_clip_item();
+  RectToProto(clip_rect_, details->mutable_clip_rect());
+  DCHECK_EQ(0, details->rounded_rects_size());
+  for (const auto& rrect : rounded_clip_rects_) {
+    SkRRectToProto(rrect, details->add_rounded_rects());
+  }
+}
+
+void ClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_Clip, proto.type());
+
+  const proto::ClipDisplayItem& details = proto.clip_item();
+  gfx::Rect clip_rect = ProtoToRect(details.clip_rect());
+  std::vector<SkRRect> rounded_clip_rects;
+  rounded_clip_rects.reserve(details.rounded_rects_size());
+  for (int i = 0; i < details.rounded_rects_size(); i++) {
+    rounded_clip_rects.push_back(ProtoToSkRRect(details.rounded_rects(i)));
+  }
+  SetNew(clip_rect, rounded_clip_rects);
 }
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,
@@ -80,6 +108,14 @@ EndClipDisplayItem::EndClipDisplayItem() {
 }
 
 EndClipDisplayItem::~EndClipDisplayItem() {
+}
+
+void EndClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
+  proto->set_type(proto::DisplayItem::Type_EndClip);
+}
+
+void EndClipDisplayItem::FromProtobuf(const proto::DisplayItem& proto) {
+  DCHECK_EQ(proto::DisplayItem::Type_EndClip, proto.type());
 }
 
 void EndClipDisplayItem::Raster(SkCanvas* canvas,

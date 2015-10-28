@@ -13,6 +13,7 @@
 #include "cc/base/list_container.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,7 +23,9 @@ class SkPictureRecorder;
 
 namespace cc {
 
-class DisplayItemListSettings;
+namespace proto {
+class DisplayItemList;
+}
 
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
@@ -35,6 +38,17 @@ class CC_EXPORT DisplayItemList
   static scoped_refptr<DisplayItemList> Create(
       const gfx::Rect& layer_rect,
       const DisplayItemListSettings& settings);
+
+  // Creates a DisplayItemList from a Protobuf.
+  // TODO(dtrainor): Pass in a list of possible DisplayItems to reuse
+  // (crbug.com/548434).
+  static scoped_refptr<DisplayItemList> CreateFromProto(
+      const proto::DisplayItemList& proto);
+
+  // Creates a Protobuf representing the state of this DisplayItemList.
+  // TODO(dtrainor): Don't resend DisplayItems that were already serialized
+  // (crbug.com/548434).
+  void ToProtobuf(proto::DisplayItemList* proto);
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback,
@@ -103,7 +117,7 @@ class CC_EXPORT DisplayItemList
 
   scoped_ptr<SkPictureRecorder> recorder_;
   skia::RefPtr<SkCanvas> canvas_;
-  const bool use_cached_picture_;
+  const DisplayItemListSettings settings_;
   bool retain_individual_display_items_;
 
   gfx::Rect layer_rect_;
