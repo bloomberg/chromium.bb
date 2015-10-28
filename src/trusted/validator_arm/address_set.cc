@@ -32,7 +32,7 @@ bool AddressSet::contains(uint32_t address) const {
   if ((address - base_) < size_) {
     uint32_t word_address = (address - base_) / sizeof(uint32_t);
 
-    return bits_[word_address / 32] & (1 << (word_address % 32));
+    return (bits_[word_address / 32] & (1 << (word_address % 32))) != 0;
   } else {
     return false;
   }
@@ -91,4 +91,4 @@ void AddressSet::Iterator::advance() {
   }
 }
 
-}  // namespace
+}  // namespace nacl_arm_val
