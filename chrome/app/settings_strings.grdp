@@ -82,8 +82,8 @@
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
     Set wallpaper
   </message>
-  <message name="IDS_SETTINGS_GET_THEMES" desc="Name of the control which allows the user to get themes for the browser.">
-    Get themes
+  <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get themes for the browser.">
+    Themes
   </message>
   <message name="IDS_SETTINGS_RESET_TO_DEFAULT_THEME" desc="Name of the control which resets the browser theme back to the default theme.">
     Reset to default theme
@@ -103,6 +103,10 @@
   <message name="IDS_SETTINGS_CHANGE_HOME_PAGE" desc="Label of the control to change the home page.">
     Change
   </message>
+  <message name="IDS_SETTINGS_WEB_STORE" desc="Sub-label about choosing something from the Chrome Web Store.">
+    Choose from the Chrome Web Store
+  </message>
+
 
   <!-- Basic Page -->
   <message name="IDS_SETTINGS_BASIC" desc="Name of the settings page which displays advanced preferences.">

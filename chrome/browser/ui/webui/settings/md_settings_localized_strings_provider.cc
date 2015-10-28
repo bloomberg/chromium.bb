@@ -103,7 +103,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "setWallpaper", IDS_SETTINGS_SET_WALLPAPER);
   html_source->AddLocalizedString(
-      "getThemes", IDS_SETTINGS_GET_THEMES);
+      "getThemes", IDS_SETTINGS_THEMES);
   html_source->AddLocalizedString(
       "resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME);
   html_source->AddLocalizedString(
@@ -118,6 +118,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       "changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE);
   html_source->AddLocalizedString(
       "themesGalleryUrl", IDS_THEMES_GALLERY_URL);
+  html_source->AddLocalizedString(
+      "chooseFromWebStore", IDS_SETTINGS_WEB_STORE);
 }
 
 void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
