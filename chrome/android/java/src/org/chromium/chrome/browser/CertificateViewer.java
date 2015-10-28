@@ -70,7 +70,16 @@ class CertificateViewer implements OnItemSelectedListener {
         }
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(mContext,
                 android.R.layout.simple_spinner_item,
-                mTitles);
+                mTitles) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView view = (TextView) super.getView(position, convertView, parent);
+                // Add extra padding on the end side to avoid overlapping the dropdown arrow.
+                ApiCompatibilityUtils.setPaddingRelative(view, mPadding, mPadding, mPadding * 2,
+                        mPadding);
+                return view;
+            }
+        };
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         LinearLayout dialogContainer = new LinearLayout(mContext);
@@ -78,16 +87,19 @@ class CertificateViewer implements OnItemSelectedListener {
 
         TextView title = new TextView(mContext);
         title.setText(R.string.certtitle);
+        ApiCompatibilityUtils.setTextAlignment(title, View.TEXT_ALIGNMENT_VIEW_START);
         ApiCompatibilityUtils.setTextAppearance(title, android.R.style.TextAppearance_Large);
         title.setTypeface(title.getTypeface(), Typeface.BOLD);
         title.setPadding(mPadding, mPadding, mPadding, mPadding / 2);
         dialogContainer.addView(title);
 
         Spinner spinner = new Spinner(mContext);
+        ApiCompatibilityUtils.setTextAlignment(spinner, View.TEXT_ALIGNMENT_VIEW_START);
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(this);
         spinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        spinner.setPadding(0, 0, 0, mPadding);
+        // Remove padding so that dropdown has same width as the spinner.
+        spinner.setPadding(0, 0, 0, 0);
         dialogContainer.addView(spinner);
 
         LinearLayout certContainer = new LinearLayout(mContext);
@@ -185,6 +197,7 @@ class CertificateViewer implements OnItemSelectedListener {
 
     private TextView addLabel(LinearLayout certificateView, String label) {
         TextView t = new TextView(mContext);
+        ApiCompatibilityUtils.setTextAlignment(t, View.TEXT_ALIGNMENT_VIEW_START);
         t.setPadding(mPadding, mPadding / 2, mPadding, 0);
         t.setText(label);
         t.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
@@ -196,6 +209,7 @@ class CertificateViewer implements OnItemSelectedListener {
 
     private void addValue(LinearLayout certificateView, String value) {
         TextView t = new TextView(mContext);
+        ApiCompatibilityUtils.setTextAlignment(t, View.TEXT_ALIGNMENT_VIEW_START);
         t.setText(value);
         t.setPadding(mPadding, 0, mPadding, mPadding / 2);
         t.setTextColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
