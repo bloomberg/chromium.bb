@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/err.h"
+#include "tools/gn/escape.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/ninja_binary_target_writer.h"
@@ -18,7 +19,6 @@
 #include "tools/gn/output_file.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/string_utils.h"
-#include "tools/gn/substitution_type.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"
@@ -52,7 +52,7 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
 
   base::CreateDirectory(ninja_file.DirName());
 
-  // It's rediculously faster to write to a string and then write that to
+  // It's ridiculously faster to write to a string and then write that to
   // disk in one operation than to use an fstream here.
   std::stringstream file;
 
@@ -83,60 +83,53 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
                   static_cast<int>(contents.size()));
 }
 
+void NinjaTargetWriter::WriteEscapedSubstitution(SubstitutionType type) {
+  EscapeOptions opts;
+  opts.mode = ESCAPE_NINJA;
+
+  out_ << kSubstitutionNinjaNames[type] << " = ";
+  EscapeStringToStream(out_,
+      SubstitutionWriter::GetTargetSubstitution(target_, type),
+      opts);
+  out_ << std::endl;
+}
+
 void NinjaTargetWriter::WriteSharedVars(const SubstitutionBits& bits) {
   bool written_anything = false;
 
   // Target label.
   if (bits.used[SUBSTITUTION_LABEL]) {
-    out_ << kSubstitutionNinjaNames[SUBSTITUTION_LABEL] << " = "
-         << SubstitutionWriter::GetTargetSubstitution(
-                target_, SUBSTITUTION_LABEL)
-         << std::endl;
+    WriteEscapedSubstitution(SUBSTITUTION_LABEL);
     written_anything = true;
   }
 
   // Root gen dir.
   if (bits.used[SUBSTITUTION_ROOT_GEN_DIR]) {
-    out_ << kSubstitutionNinjaNames[SUBSTITUTION_ROOT_GEN_DIR] << " = "
-         << SubstitutionWriter::GetTargetSubstitution(
-                target_, SUBSTITUTION_ROOT_GEN_DIR)
-         << std::endl;
+    WriteEscapedSubstitution(SUBSTITUTION_ROOT_GEN_DIR);
     written_anything = true;
   }
 
   // Root out dir.
   if (bits.used[SUBSTITUTION_ROOT_OUT_DIR]) {
-    out_ << kSubstitutionNinjaNames[SUBSTITUTION_ROOT_OUT_DIR] << " = "
-         << SubstitutionWriter::GetTargetSubstitution(
-                target_, SUBSTITUTION_ROOT_OUT_DIR)
-         << std::endl;
+    WriteEscapedSubstitution(SUBSTITUTION_ROOT_OUT_DIR);
     written_anything = true;
   }
 
   // Target gen dir.
   if (bits.used[SUBSTITUTION_TARGET_GEN_DIR]) {
-    out_ << kSubstitutionNinjaNames[SUBSTITUTION_TARGET_GEN_DIR] << " = "
-         << SubstitutionWriter::GetTargetSubstitution(
-                target_, SUBSTITUTION_TARGET_GEN_DIR)
-         << std::endl;
+    WriteEscapedSubstitution(SUBSTITUTION_TARGET_GEN_DIR);
     written_anything = true;
   }
 
   // Target out dir.
   if (bits.used[SUBSTITUTION_TARGET_OUT_DIR]) {
-    out_ << kSubstitutionNinjaNames[SUBSTITUTION_TARGET_OUT_DIR] << " = "
-         << SubstitutionWriter::GetTargetSubstitution(
-                target_, SUBSTITUTION_TARGET_OUT_DIR)
-         << std::endl;
+    WriteEscapedSubstitution(SUBSTITUTION_TARGET_OUT_DIR);
     written_anything = true;
   }
 
   // Target output name.
   if (bits.used[SUBSTITUTION_TARGET_OUTPUT_NAME]) {
-    out_ << kSubstitutionNinjaNames[SUBSTITUTION_TARGET_OUTPUT_NAME] << " = "
-         << SubstitutionWriter::GetTargetSubstitution(
-                target_, SUBSTITUTION_TARGET_OUTPUT_NAME)
-         << std::endl;
+    WriteEscapedSubstitution(SUBSTITUTION_TARGET_OUTPUT_NAME);
     written_anything = true;
   }
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "tools/gn/path_output.h"
+#include "tools/gn/substitution_type.h"
 
 class FileTemplate;
 class OutputFile;
@@ -54,6 +55,7 @@ class NinjaTargetWriter {
 
  private:
   void WriteCopyRules();
+  void WriteEscapedSubstitution(SubstitutionType type);
 
   DISALLOW_COPY_AND_ASSIGN(NinjaTargetWriter);
 };
