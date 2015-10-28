@@ -39,6 +39,7 @@
 
 namespace blink {
 
+class LocalDOMWindow;
 class ExceptionState;
 class Node;
 
@@ -50,9 +51,9 @@ enum SecurityReportingOption {
 class BindingSecurity {
     STATIC_ONLY(BindingSecurity);
 public:
-    static bool shouldAllowAccessToNode(v8::Isolate*, Node*, ExceptionState&);
-    CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);
-    CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, ExceptionState&);
+    static bool shouldAllowAccessToNode(v8::Isolate*, LocalDOMWindow* accessingWindow, Node*, ExceptionState&);
+    CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, LocalDOMWindow* accessingWindow, Frame*, SecurityReportingOption = ReportSecurityError);
+    CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, LocalDOMWindow* accessingWindow, Frame*, ExceptionState&);
 };
 
 }

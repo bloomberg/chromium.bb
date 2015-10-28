@@ -941,7 +941,7 @@ v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
 
 bool WebFrame::scriptCanAccess(WebFrame* target)
 {
-    return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), toCoreFrame(target), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), callingDOMWindow(mainThreadIsolate()), toCoreFrame(target), DoNotReportSecurityError);
 }
 
 void WebLocalFrameImpl::reload(bool ignoreCache)

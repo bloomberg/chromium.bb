@@ -91,7 +91,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
         return false;
     LocalFrame* frame = toLocalDOMWindow(V8Window::toImpl(holder))->frame();
 
-    return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), callingDOMWindow(scriptState->isolate()), frame, DoNotReportSecurityError);
 }
 
 } // namespace blink

@@ -29,19 +29,19 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {# Security checks #}
     {% if method.is_check_security_for_window %}
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
             {{propagate_error_with_exception_state(method) | indent(12)}}
         }
         if (!window->document())
             return;
     }
     {% elif method.is_check_security_for_frame %}
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
         {{propagate_error_with_exception_state(method) | indent(8)}}
     }
     {% endif %}
     {% if method.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->{{method.name}}(exceptionState), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
         {{propagate_error_with_exception_state(method) | indent(8)}}
     }
@@ -536,7 +536,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         return;
     }
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), DoNotReportSecurityError)) {
         v8SetReturnValue(info, domTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
         return;
     }

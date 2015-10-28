@@ -41,50 +41,48 @@
 
 namespace blink {
 
-static bool isOriginAccessibleFromDOMWindow(SecurityOrigin* targetOrigin, LocalDOMWindow* callingWindow)
+static bool isOriginAccessibleFromDOMWindow(SecurityOrigin* targetOrigin, LocalDOMWindow* accessingWindow)
 {
-    return callingWindow && callingWindow->document()->securityOrigin()->canAccessCheckSuborigins(targetOrigin);
+    return accessingWindow && accessingWindow->document()->securityOrigin()->canAccessCheckSuborigins(targetOrigin);
 }
 
-static bool canAccessFrame(v8::Isolate* isolate, SecurityOrigin* targetFrameOrigin, DOMWindow* targetWindow, ExceptionState& exceptionState)
+static bool canAccessFrame(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, SecurityOrigin* targetFrameOrigin, DOMWindow* targetWindow, ExceptionState& exceptionState)
 {
-    LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
-    if (isOriginAccessibleFromDOMWindow(targetFrameOrigin, callingWindow))
+    if (isOriginAccessibleFromDOMWindow(targetFrameOrigin, accessingWindow))
         return true;
 
     if (targetWindow)
-        exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingWindow), targetWindow->crossDomainAccessErrorMessage(callingWindow));
+        exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(accessingWindow), targetWindow->crossDomainAccessErrorMessage(accessingWindow));
     return false;
 }
 
-static bool canAccessFrame(v8::Isolate* isolate, SecurityOrigin* targetFrameOrigin, DOMWindow* targetWindow, SecurityReportingOption reportingOption = ReportSecurityError)
+static bool canAccessFrame(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, SecurityOrigin* targetFrameOrigin, DOMWindow* targetWindow, SecurityReportingOption reportingOption = ReportSecurityError)
 {
-    LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
-    if (isOriginAccessibleFromDOMWindow(targetFrameOrigin, callingWindow))
+    if (isOriginAccessibleFromDOMWindow(targetFrameOrigin, accessingWindow))
         return true;
 
     if (reportingOption == ReportSecurityError && targetWindow)
-        callingWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(callingWindow));
+        accessingWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(accessingWindow));
     return false;
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, Frame* target, SecurityReportingOption reportingOption)
 {
     if (!target || !target->securityContext())
         return false;
-    return canAccessFrame(isolate, target->securityContext()->securityOrigin(), target->domWindow(), reportingOption);
+    return canAccessFrame(isolate, accessingWindow, target->securityContext()->securityOrigin(), target->domWindow(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, Frame* target, ExceptionState& exceptionState)
 {
     if (!target || !target->securityContext())
         return false;
-    return canAccessFrame(isolate, target->securityContext()->securityOrigin(), target->domWindow(), exceptionState);
+    return canAccessFrame(isolate, accessingWindow, target->securityContext()->securityOrigin(), target->domWindow(), exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessToNode(v8::Isolate* isolate, Node* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessToNode(v8::Isolate* isolate, LocalDOMWindow* accessingWindow, Node* target, ExceptionState& exceptionState)
 {
-    return target && canAccessFrame(isolate, target->document().securityOrigin(), target->document().domWindow(), exceptionState);
+    return target && canAccessFrame(isolate, accessingWindow, target->document().securityOrigin(), target->document().domWindow(), exceptionState);
 }
 
 }

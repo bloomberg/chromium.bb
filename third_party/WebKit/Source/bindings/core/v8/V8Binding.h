@@ -955,7 +955,7 @@ DOMWindow* toDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
 DOMWindow* toDOMWindow(v8::Local<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);
-LocalDOMWindow* callingDOMWindow(v8::Isolate*);
+CORE_EXPORT LocalDOMWindow* callingDOMWindow(v8::Isolate*);
 CORE_EXPORT ExecutionContext* toExecutionContext(v8::Local<v8::Context>);
 CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
 CORE_EXPORT ExecutionContext* callingExecutionContext(v8::Isolate*);

@@ -450,7 +450,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Lo
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }

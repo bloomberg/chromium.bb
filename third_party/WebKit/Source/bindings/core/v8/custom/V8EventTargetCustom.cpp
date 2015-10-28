@@ -82,7 +82,7 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "EventTarget", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8EventTarget::toImpl(info.Holder());
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -128,7 +128,7 @@ void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackIn
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "EventTarget", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8EventTarget::toImpl(info.Holder());
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }

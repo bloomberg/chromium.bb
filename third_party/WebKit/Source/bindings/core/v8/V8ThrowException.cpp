@@ -69,7 +69,7 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, 
 
     // FIXME: Is the current context always the right choice?
     Frame* frame = toFrameIfNotDetached(creationContext->CreationContext());
-    if (!frame || !BindingSecurity::shouldAllowAccessToFrame(isolate, frame, DoNotReportSecurityError))
+    if (!frame || !BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), frame, DoNotReportSecurityError))
         sanitizedCreationContext = isolate->GetCurrentContext()->Global();
 
     v8::TryCatch tryCatch;

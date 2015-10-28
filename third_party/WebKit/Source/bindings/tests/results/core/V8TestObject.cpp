@@ -2508,7 +2508,7 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     ExceptionState exceptionState(ExceptionState::GetterContext, "checkSecurityForNodeReadonlyDocumentAttribute", "TestObject", holder, info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -10227,7 +10227,7 @@ static void callWithThisValueMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void checkSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->checkSecurityForNodeVoidMethod(exceptionState), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeVoidMethod(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;

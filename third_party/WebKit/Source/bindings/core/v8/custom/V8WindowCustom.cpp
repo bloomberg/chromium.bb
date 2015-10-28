@@ -70,7 +70,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
 {
     LocalFrame* frame = toLocalDOMWindow(V8Window::toImpl(info.Holder()))->frame();
     ExceptionState exceptionState(ExceptionState::GetterContext, "event", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), frame, exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -91,7 +91,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
 {
     LocalFrame* frame = toLocalDOMWindow(V8Window::toImpl(info.Holder()))->frame();
     ExceptionState exceptionState(ExceptionState::SetterContext, "event", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), frame, exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -115,7 +115,7 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
     // properly. In that case, there's no frameElement(), yet we should still
     // throw a proper exception and deny access.
     Frame* target = impl->frame() ? impl->frame()->tree().parent() : nullptr;
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), target, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), target, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -134,7 +134,7 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     v8::Isolate* isolate = info.GetIsolate();
     DOMWindow* impl = V8Window::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::SetterContext, "opener", "Window", info.Holder(), isolate);
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -240,7 +240,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -336,7 +336,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
         return;
 
     // This is an AllCanRead interceptor.  Check that the caller has access to the named results.
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, DoNotReportSecurityError))
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), frame, DoNotReportSecurityError))
         return;
 
     bool hasNamedItem = toHTMLDocument(doc)->hasNamedItem(propName);
@@ -384,7 +384,7 @@ static bool securityCheck(v8::Local<v8::Object> host)
     if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         target->loader().didAccessInitialDocument();
 
-    return BindingSecurity::shouldAllowAccessToFrame(isolate, target, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), target, DoNotReportSecurityError);
 }
 
 bool V8Window::securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject)
