@@ -57,13 +57,6 @@ class MandolineUIServicesApp
       ws::ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
       ConnectionSpecificId creator_id,
-      mojo::URLRequestPtr request,
-      const ws::WindowId& root_id,
-      uint32_t policy_bitmask) override;
-  ws::ClientConnection* CreateClientConnectionForEmbedAtWindow(
-      ws::ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojom::WindowTree> tree_request,
-      ConnectionSpecificId creator_id,
       const ws::WindowId& root_id,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) override;

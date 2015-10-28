@@ -43,8 +43,6 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                  uint32_t policy_bitmask);
   ~WindowTreeImpl() override;
 
-  // |services| and |exposed_services| are the ServiceProviders to pass to the
-  // client via OnEmbed().
   void Init(mojom::WindowTreeClient* client, mojom::WindowTreePtr tree);
 
   ConnectionSpecificId id() const { return id_; }
@@ -84,7 +82,6 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
              mojom::WindowTreeClientPtr client,
              uint32_t policy_bitmask,
              ConnectionSpecificId* connection_id);
-  void Embed(const WindowId& window_id, mojo::URLRequestPtr request);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as

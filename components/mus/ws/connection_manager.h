@@ -97,10 +97,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
-  void EmbedAtWindow(ConnectionSpecificId creator_id,
-                     const WindowId& window_id,
-                     uint32_t policy_bitmask,
-                     mojo::URLRequestPtr request);
   WindowTreeImpl* EmbedAtWindow(ConnectionSpecificId creator_id,
                                 const WindowId& window_id,
                                 uint32_t policy_bitmask,

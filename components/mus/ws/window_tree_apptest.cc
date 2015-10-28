@@ -21,8 +21,6 @@ using mojo::Callback;
 using mojo::EventPtr;
 using mojo::InterfaceRequest;
 using mojo::RectPtr;
-using mojo::ServiceProvider;
-using mojo::ServiceProviderPtr;
 using mojo::String;
 using mus::mojom::ERROR_CODE_NONE;
 using mus::mojom::ErrorCode;

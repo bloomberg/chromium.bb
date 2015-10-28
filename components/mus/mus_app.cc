@@ -87,23 +87,6 @@ MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
     ws::ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     ConnectionSpecificId creator_id,
-    mojo::URLRequestPtr request,
-    const ws::WindowId& root_id,
-    uint32_t policy_bitmask) {
-  mojom::WindowTreeClientPtr client;
-  app_impl_->ConnectToService(request.Pass(), &client);
-
-  scoped_ptr<ws::WindowTreeImpl> service(new ws::WindowTreeImpl(
-      connection_manager, creator_id, root_id, policy_bitmask));
-  return new ws::DefaultClientConnection(service.Pass(), connection_manager,
-                                         tree_request.Pass(), client.Pass());
-}
-
-ws::ClientConnection*
-MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
-    ws::ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojom::WindowTree> tree_request,
-    ConnectionSpecificId creator_id,
     const ws::WindowId& root_id,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {

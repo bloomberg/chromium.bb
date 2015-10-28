@@ -22,8 +22,6 @@ using mojo::Array;
 using mojo::Callback;
 using mojo::InterfaceRequest;
 using mojo::Rect;
-using mojo::ServiceProvider;
-using mojo::ServiceProviderPtr;
 using mojo::String;
 
 namespace mus {
@@ -171,15 +169,6 @@ bool WindowTreeImpl::Embed(const WindowId& window_id,
   if (is_embed_root_)
     *connection_id = new_connection->id();
   return true;
-}
-
-void WindowTreeImpl::Embed(const WindowId& window_id,
-                           mojo::URLRequestPtr request) {
-  if (!CanEmbed(window_id, WindowTree::ACCESS_POLICY_DEFAULT))
-    return;
-  PrepareForEmbed(window_id);
-  connection_manager_->EmbedAtWindow(
-      id_, window_id, mojom::WindowTree::ACCESS_POLICY_DEFAULT, request.Pass());
 }
 
 void WindowTreeImpl::ProcessWindowBoundsChanged(const ServerWindow* window,

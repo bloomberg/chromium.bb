@@ -8,8 +8,6 @@ import "components/mus/public/interfaces/compositor_frame.mojom";
 import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/surface_id.mojom";
 import "components/mus/public/interfaces/window_manager_constants.mojom";
-import "mojo/application/public/interfaces/service_provider.mojom";
-import "network/public/interfaces/url_loader.mojom";
 import "ui/mojo/events/input_events.mojom";
 import "ui/mojo/ime/text_input_state.mojom";
 import "ui/mojo/geometry/geometry.mojom";

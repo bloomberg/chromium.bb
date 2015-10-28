@@ -22,13 +22,12 @@
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
 using mojo::Array;
 using mojo::InterfaceRequest;
-using mojo::ServiceProvider;
-using mojo::ServiceProviderPtr;
 using mojo::String;
 using mus::mojom::ERROR_CODE_NONE;
 using mus::mojom::WindowDataPtr;
@@ -44,10 +43,14 @@ namespace {
 // TODO(sky): refactor so both this and WindowTreeAppTest share code.
 class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
  public:
-  TestWindowTreeClient() {}
+  TestWindowTreeClient() : binding_(this) {}
   ~TestWindowTreeClient() override {}
 
   TestChangeTracker* tracker() { return &tracker_; }
+
+  void Bind(mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
+    binding_.Bind(request.Pass());
+  }
 
  private:
   // WindowTreeClient:
@@ -115,6 +118,8 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 
   TestChangeTracker tracker_;
 
+  mojo::Binding<mojom::WindowTreeClient> binding_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
 };
 
@@ -154,18 +159,6 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   // ConnectionManagerDelegate:
   void OnNoMoreRootConnections() override {}
 
-  ClientConnection* CreateClientConnectionForEmbedAtWindow(
-      ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
-      ConnectionSpecificId creator_id,
-      mojo::URLRequestPtr request,
-      const WindowId& root_id,
-      uint32_t policy_bitmask) override {
-    scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
-        connection_manager, creator_id, root_id, policy_bitmask));
-    last_connection_ = new TestClientConnection(service.Pass());
-    return last_connection_;
-  }
   ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
@@ -348,8 +341,15 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
       wm_connection()->AddWindow(*(wm_connection()->root()), embed_window_id));
   host_connection()->window_tree_host()->root_window()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->Embed(embed_window_id, request.Pass());
+  mojom::WindowTreeClientPtr client;
+  mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
+      GetProxy(&client);
+  wm_client()->Bind(client_request.Pass());
+  ConnectionSpecificId connection_id = 0;
+  wm_connection()->Embed(embed_window_id,
+                         client.Pass(),
+                         mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+                         &connection_id);
   WindowTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_window_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -423,8 +423,15 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
       wm_connection()->AddWindow(*(wm_connection()->root()), embed_window_id));
   host_connection()->window_tree_host()->root_window()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->Embed(embed_window_id, request.Pass());
+  mojom::WindowTreeClientPtr client;
+  mojo::InterfaceRequest<mojom::WindowTreeClient> client_request =
+      GetProxy(&client);
+  wm_client()->Bind(client_request.Pass());
+  ConnectionSpecificId connection_id = 0;
+  wm_connection()->Embed(embed_window_id,
+                         client.Pass(),
+                         mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+                         &connection_id);
   WindowTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_window_id);
   ASSERT_TRUE(connection1 != nullptr);

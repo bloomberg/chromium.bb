@@ -128,21 +128,6 @@ void ConnectionManager::OnHostConnectionClosed(
     delegate_->OnNoMoreRootConnections();
 }
 
-void ConnectionManager::EmbedAtWindow(ConnectionSpecificId creator_id,
-                                      const WindowId& window_id,
-                                      uint32_t policy_bitmask,
-                                      mojo::URLRequestPtr request) {
-  mojom::WindowTreePtr service_ptr;
-  ClientConnection* client_connection =
-      delegate_->CreateClientConnectionForEmbedAtWindow(
-          this, GetProxy(&service_ptr), creator_id, request.Pass(), window_id,
-          policy_bitmask);
-  AddConnection(client_connection);
-  client_connection->service()->Init(client_connection->client(),
-                                     service_ptr.Pass());
-  OnConnectionMessagedClient(client_connection->service()->id());
-}
-
 WindowTreeImpl* ConnectionManager::EmbedAtWindow(
     ConnectionSpecificId creator_id,
     const WindowId& window_id,
