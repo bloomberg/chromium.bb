@@ -9,6 +9,7 @@ This test suite containss various tests for the C++ -> Java enum generator.
 """
 
 import collections
+from datetime import date
 import optparse
 import os
 import sys
@@ -28,7 +29,7 @@ class TestPreprocess(unittest.TestCase):
                                 entries=[('E1', 1), ('E2', '2 << 2')])
     output = GenerateOutput('path/to/file', definition)
     expected = """
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright %d The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +45,7 @@ public class ClassName {
   public static final int E2 = 2 << 2;
 }
 """
-    self.assertEqual(expected % GetScriptName(), output)
+    self.assertEqual(expected % (date.today().year, GetScriptName()), output)
 
   def testParseSimpleEnum(self):
     test_data = """

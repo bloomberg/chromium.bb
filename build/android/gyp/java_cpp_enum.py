@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import collections
+from datetime import date
 import re
 import optparse
 import os
@@ -259,7 +260,7 @@ def DoParseHeaderFile(path):
 
 def GenerateOutput(source_path, enum_definition):
   template = Template("""
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright ${YEAR} The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -291,6 +292,7 @@ ${ENUM_ENTRIES}
       'PACKAGE': enum_definition.enum_package,
       'SCRIPT_NAME': GetScriptName(),
       'SOURCE_PATH': source_path,
+      'YEAR': str(date.today().year)
   }
   return template.substitute(values)
 
