@@ -4,8 +4,11 @@
 
 package org.chromium.net;
 
+import android.support.annotation.IntDef;
 import android.util.Pair;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
@@ -123,6 +126,14 @@ public interface UrlRequest {
             return this;
         }
 
+        /** @deprecated not really deprecated but hidden. */
+        @IntDef({
+                REQUEST_PRIORITY_IDLE, REQUEST_PRIORITY_LOWEST, REQUEST_PRIORITY_LOW,
+                REQUEST_PRIORITY_MEDIUM, REQUEST_PRIORITY_HIGHEST,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface RequestPriority {}
+
         /**
          * Lowest request priority. Passed to {@link #setPriority}.
          */
@@ -153,7 +164,7 @@ public interface UrlRequest {
          *         {@link #REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*} values.
          * @return the builder to facilitate chaining.
          */
-        public Builder setPriority(int priority) {
+        public Builder setPriority(@RequestPriority int priority) {
             mPriority = priority;
             return this;
         }
@@ -316,6 +327,17 @@ public interface UrlRequest {
      * Request status values returned by {@link #getStatus}.
      */
     public static class Status {
+        /** @deprecated not really deprecated but hidden. */
+        @IntDef({
+                INVALID, IDLE, WAITING_FOR_STALLED_SOCKET_POOL, WAITING_FOR_AVAILABLE_SOCKET,
+                WAITING_FOR_DELEGATE, WAITING_FOR_CACHE, DOWNLOADING_PROXY_SCRIPT,
+                RESOLVING_PROXY_FOR_URL, RESOLVING_HOST_IN_PROXY_SCRIPT, ESTABLISHING_PROXY_TUNNEL,
+                RESOLVING_HOST, CONNECTING, SSL_HANDSHAKE, SENDING_REQUEST, WAITING_FOR_RESPONSE,
+                READING_RESPONSE,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface StatusValues {}
+
         /**
          * This state indicates that the request is completed, canceled, or is not
          * started.
@@ -423,6 +445,7 @@ public interface UrlRequest {
         /**
          * Convert a {@link LoadState} static int to one of values listed above.
          */
+        @StatusValues
         static int convertLoadState(int loadState) {
             assert loadState >= LoadState.IDLE && loadState <= LoadState.READING_RESPONSE;
             switch (loadState) {
@@ -491,7 +514,7 @@ public interface UrlRequest {
          * @param status integer representing the status of the request. It is
          *         one of the values defined in {@link Status}.
          */
-        public abstract void onStatus(int status);
+        public abstract void onStatus(@Status.StatusValues int status);
     }
 
     /**

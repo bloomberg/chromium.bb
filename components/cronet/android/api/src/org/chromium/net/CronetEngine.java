@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.content.Context;
+import android.support.annotation.IntDef;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -12,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
 import java.net.Proxy;
 import java.net.URL;
@@ -205,6 +208,13 @@ public abstract class CronetEngine {
             return this;
         }
 
+        /** @deprecated not really deprecated but hidden. */
+        @IntDef({
+                HTTP_CACHE_DISABLED, HTTP_CACHE_IN_MEMORY, HTTP_CACHE_DISK_NO_HTTP, HTTP_CACHE_DISK,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface HttpCacheSetting {}
+
         /**
          * Setting to disable HTTP cache. Some data may still be temporarily stored in memory.
          * Passed to {@link #enableHttpCache}.
@@ -234,12 +244,13 @@ public abstract class CronetEngine {
         /**
          * Enables or disables caching of HTTP data and other information like QUIC
          * server information.
-         * @param cacheMode control location and type of cached data.
+         * @param cacheMode control location and type of cached data. Must be one of
+         *         {@link #HTTP_CACHE_DISABLED HTTP_CACHE_*}.
          * @param maxSize maximum size in bytes used to cache data (advisory and maybe
          * exceeded at times).
          * @return the builder to facilitate chaining.
          */
-        public Builder enableHttpCache(int cacheMode, long maxSize) {
+        public Builder enableHttpCache(@HttpCacheSetting int cacheMode, long maxSize) {
             if (cacheMode == HTTP_CACHE_DISK || cacheMode == HTTP_CACHE_DISK_NO_HTTP) {
                 if (storagePath().isEmpty()) {
                     throw new IllegalArgumentException("Storage path must be set");
