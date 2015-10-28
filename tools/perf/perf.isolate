@@ -2,16 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'includes': [
+    './chrome_telemetry_build/telemetry_chrome_test.isolate',
+  ],
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
-          '../../build/android/pylib/',
-          '../../build/android/devil/',
-          '../../third_party/catapult/',
           './',
-          # For Telemetry's screenshot support.
-          '<(PRODUCT_DIR)/bitmaptools<(EXECUTABLE_SUFFIX)',
+          # Field trial configs
+          '../variations/',
         ],
       },
     }],
