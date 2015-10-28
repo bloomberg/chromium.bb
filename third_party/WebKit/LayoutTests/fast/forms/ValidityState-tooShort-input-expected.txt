@@ -33,6 +33,11 @@ PASS input.disabled = false; input.validity.tooShort is true
 Change the type with a too long value
 PASS input.validity.tooShort is true
 PASS input.type = "number"; input.validity.tooShort is false
+
+Grapheme length is shorter than minLength though character length is greater
+PASS input.validity.tooShort is false
+PASS input.value.length is 3
+PASS input.validity.tooShort is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

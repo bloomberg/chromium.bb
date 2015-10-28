@@ -39,6 +39,11 @@ A value set by a child node change doesn't make tooShort true.
 PASS textarea.validity.tooShort is false
 PASS textarea.value is "a"
 PASS textarea.validity.tooShort is false
+
+Grapheme length is shorter than minLength though character length is greater
+PASS textarea.validity.tooShort is false
+PASS textarea.value.length is 3
+PASS textarea.validity.tooShort is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

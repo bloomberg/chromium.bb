@@ -27,6 +27,8 @@ PASS input.disabled = false; input.validity.tooLong is true
 
 Grapheme length is not greater than maxLength though character length is greater
 PASS input.validity.tooLong is false
+PASS input.value.length is 3
+PASS input.validity.tooLong is true
 
 Change the type with a too long value
 PASS input.validity.tooLong is true

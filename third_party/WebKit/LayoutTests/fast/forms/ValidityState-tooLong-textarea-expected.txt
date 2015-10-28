@@ -27,6 +27,8 @@ PASS textarea.disabled = false; textarea.validity.tooLong is true
 
 Grapheme length is not greater than maxLength though character length is greater
 PASS textarea.validity.tooLong is false
+PASS textarea.value.length is 3
+PASS textarea.validity.tooLong is true
 
 A value set by resetting a form doesn't make tooLong true.
 PASS textarea.validity.tooLong is true

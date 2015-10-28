@@ -58,12 +58,6 @@ shouldBeTrue('textarea.validity.tooLong');
 shouldBeFalse('textarea.disabled = true; textarea.validity.tooLong');
 shouldBeTrue('textarea.disabled = false; textarea.validity.tooLong');
 
-// FIXME: The grapheme test below doesn't do its job because initial value is
-// always valid. After making a modificaton to trigger validity check, one can
-// see that the test would fail, which possibly reveals a code issue.
-// https://code.google.com/p/chromium/issues/detail?id=421727
-// Once this is figured out, implement a similar test in
-// ValidityState-tooShort-textarea.html
 debug('');
 debug('Grapheme length is not greater than maxLength though character length is greater');
 // fancyX should be treated as 1 grapheme.
@@ -72,9 +66,14 @@ debug('Grapheme length is not greater than maxLength though character length is 
 var fancyX = "x\u0305\u0332";
 textarea = document.createElement('textarea');
 document.body.appendChild(textarea);
-textarea.value = fancyX; // 3 characters, 1 grapheme cluster.
+textarea.value = fancyX + 'A'; // 4 characters, 2 grapheme cluster.
 textarea.maxLength = 1;
+textarea.focus();
 shouldBeFalse('textarea.validity.tooLong');
+document.execCommand('delete'); // Make the value dirty, 1 grapheme remains.
+// Too long because there are three characters.
+shouldBe('textarea.value.length', '3');
+shouldBeTrue('textarea.validity.tooLong');
 
 debug('');
 debug('A value set by resetting a form doesn\'t make tooLong true.');
