@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.partnercustomizations;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.widget.Button;
@@ -26,7 +27,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.widget.ChromeSwitchCompat;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -107,8 +107,8 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
         // Disable homepage.
         Preferences homepagePreferenceActivity =
                 startPreferences(HomepagePreferences.class.getName());
-        ChromeSwitchCompat homepageSwitch =
-                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
+        SwitchCompat homepageSwitch =
+                (SwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
         assertNotNull(homepageSwitch);
         TouchCommon.singleClickView(homepageSwitch);
         waitForCheckedState(homepageSwitch, false);
@@ -126,8 +126,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
 
         // Enable homepage.
         homepagePreferenceActivity = startPreferences(HomepagePreferences.class.getName());
-        homepageSwitch =
-                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
+        homepageSwitch = (SwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
         assertNotNull(homepageSwitch);
         TouchCommon.singleClickView(homepageSwitch);
         waitForCheckedState(homepageSwitch, true);
