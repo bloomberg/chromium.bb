@@ -9,33 +9,6 @@ namespace protocol {
 
 const char kTestJid[] = "host1@gmail.com/chromoting123";
 
-FakeTransportSession::FakeTransportSession() {}
-FakeTransportSession::~FakeTransportSession() {}
-
-void FakeTransportSession::Start(EventHandler* event_handler,
-                                 Authenticator* authenticator) {
-  NOTREACHED();
-}
-
-bool FakeTransportSession::ProcessTransportInfo(
-    buzz::XmlElement* transport_info) {
-  NOTREACHED();
-  return true;
-}
-
-DatagramChannelFactory* FakeTransportSession::GetDatagramChannelFactory() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-FakeStreamChannelFactory* FakeTransportSession::GetStreamChannelFactory() {
-  return &channel_factory_;
-}
-
-FakeStreamChannelFactory* FakeTransportSession::GetMultiplexedChannelFactory() {
-  return &channel_factory_;
-}
-
 FakeSession::FakeSession()
     : event_handler_(nullptr),
       config_(SessionConfig::ForTest()),
@@ -61,12 +34,16 @@ const SessionConfig& FakeSession::config() {
   return *config_;
 }
 
-FakeTransportSession* FakeSession::GetTransportSession() {
-  return &transport_session_;
+StreamChannelFactory* FakeSession::GetTransportChannelFactory() {
+  return &channel_factory_;
 }
 
-FakeStreamChannelFactory* FakeSession::GetQuicChannelFactory() {
-  return transport_session_.GetStreamChannelFactory();
+StreamChannelFactory* FakeSession::GetMultiplexedChannelFactory() {
+  return &channel_factory_;
+}
+
+StreamChannelFactory* FakeSession::GetQuicChannelFactory() {
+  return &channel_factory_;
 }
 
 void FakeSession::Close() {

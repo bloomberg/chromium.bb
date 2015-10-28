@@ -10,11 +10,14 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/session_config.h"
 
+namespace net {
+class IPEndPoint;
+}  // namespace net
+
 namespace remoting {
 namespace protocol {
 
 class StreamChannelFactory;
-class TransportSession;
 struct TransportRoute;
 
 // Generic interface for Chromotocol connection used by both client and host.
@@ -82,11 +85,11 @@ class Session {
   // Returned pointer is valid until connection is closed.
   virtual const SessionConfig& config() = 0;
 
-  // Returns TransportSession that can be used to create transport channels.
-  virtual TransportSession* GetTransportSession() = 0;
-
-  // Channel factory for QUIC-based channels. Returns nullptr when QUIC is
-  // disabled for the session.
+  // GetTransportChannelFactory() returns a factory that creates a new transport
+  // channel for each logical channel. GetMultiplexedChannelFactory() channels
+  // share a single underlying transport channel
+  virtual StreamChannelFactory* GetTransportChannelFactory() = 0;
+  virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
   virtual StreamChannelFactory* GetQuicChannelFactory() = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called

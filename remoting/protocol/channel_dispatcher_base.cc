@@ -9,7 +9,6 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/stream_channel_factory.h"
-#include "remoting/protocol/transport.h"
 
 namespace remoting {
 namespace protocol {
@@ -31,8 +30,7 @@ void ChannelDispatcherBase::Init(Session* session,
   DCHECK(session);
   switch (config.transport) {
     case ChannelConfig::TRANSPORT_MUX_STREAM:
-      channel_factory_ =
-          session->GetTransportSession()->GetMultiplexedChannelFactory();
+      channel_factory_ = session->GetMultiplexedChannelFactory();
       break;
 
     case ChannelConfig::TRANSPORT_QUIC_STREAM:
@@ -40,8 +38,7 @@ void ChannelDispatcherBase::Init(Session* session,
       break;
 
     case ChannelConfig::TRANSPORT_STREAM:
-      channel_factory_ =
-          session->GetTransportSession()->GetStreamChannelFactory();
+      channel_factory_ = session->GetTransportChannelFactory();
       break;
 
     default:

@@ -19,8 +19,8 @@
 #include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
-#include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
@@ -147,7 +147,7 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
 
-    scoped_ptr<TransportFactory> host_transport(new IceTransportFactory(
+    scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
         nullptr,
         ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
         network_settings_, TransportRole::SERVER));
@@ -161,7 +161,7 @@ class JingleSessionTest : public testing::Test {
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
-    scoped_ptr<TransportFactory> client_transport(new IceTransportFactory(
+    scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
         nullptr,
         ChromiumPortAllocator::Create(nullptr, network_settings_).Pass(),
         network_settings_, TransportRole::CLIENT));
@@ -255,16 +255,12 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CreateChannel() {
-    client_session_->GetTransportSession()
-        ->GetStreamChannelFactory()
-        ->CreateChannel(kChannelName,
-                        base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                   base::Unretained(this)));
-    host_session_->GetTransportSession()
-        ->GetStreamChannelFactory()
-        ->CreateChannel(kChannelName,
-                        base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                                   base::Unretained(this)));
+    client_session_->GetTransportChannelFactory()->CreateChannel(
+        kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                                 base::Unretained(this)));
+    host_session_->GetTransportChannelFactory()->CreateChannel(
+        kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                                 base::Unretained(this)));
 
     int counter = 2;
     ExpectRouteChange(kChannelName);
@@ -500,16 +496,12 @@ TEST_F(JingleSessionTest, TestMuxStreamChannel) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  client_session_->GetTransportSession()
-      ->GetMultiplexedChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-  host_session_->GetTransportSession()
-      ->GetMultiplexedChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                                 base::Unretained(this)));
+  client_session_->GetMultiplexedChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  host_session_->GetMultiplexedChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                               base::Unretained(this)));
 
   int counter = 2;
   ExpectRouteChange("mux");
@@ -624,16 +616,12 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  client_session_->GetTransportSession()
-      ->GetStreamChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-  host_session_->GetTransportSession()
-      ->GetStreamChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnHostChannelCreated,
-                                 base::Unretained(this)));
+  client_session_->GetTransportChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  host_session_->GetTransportChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                               base::Unretained(this)));
 
   // Terminate the message loop when we get rejection notification
   // from the host.
@@ -643,9 +631,8 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
 
   message_loop_->Run();
 
-  client_session_->GetTransportSession()
-      ->GetStreamChannelFactory()
-      ->CancelChannelCreation(kChannelName);
+  client_session_->GetTransportChannelFactory()->CancelChannelCreation(
+      kChannelName);
 
   EXPECT_TRUE(!host_socket_.get());
 }
@@ -655,14 +642,11 @@ TEST_F(JingleSessionTest, TestCancelChannelCreation) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  client_session_->GetTransportSession()
-      ->GetStreamChannelFactory()
-      ->CreateChannel(kChannelName,
-                      base::Bind(&JingleSessionTest::OnClientChannelCreated,
-                                 base::Unretained(this)));
-  client_session_->GetTransportSession()
-      ->GetStreamChannelFactory()
-      ->CancelChannelCreation(kChannelName);
+  client_session_->GetTransportChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  client_session_->GetTransportChannelFactory()->CancelChannelCreation(
+      kChannelName);
 
   EXPECT_TRUE(!client_socket_.get());
 }

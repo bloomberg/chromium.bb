@@ -13,9 +13,16 @@
 
 namespace cricket {
 class HttpPortAllocatorBase;
+class PortAllocator;
 }  // namespace cricket
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace rtc {
+class NetworkManager;
+class PacketSocketFactory;
 class SocketAddress;
 }  // namespace rtc
 
@@ -26,8 +33,7 @@ class JingleInfoRequest;
 
 namespace protocol {
 
-// TODO(sergeyu): Remove this class and move all code to IceTransportFactory.
-class LibjingleTransportFactory {
+class LibjingleTransportFactory : public TransportFactory {
  public:
   // |signal_strategy| must outlive LibjingleTransportFactory. Need to use
   // cricket::HttpPortAllocatorBase pointer for the |port_allocator|, so that it
@@ -37,10 +43,12 @@ class LibjingleTransportFactory {
       scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
       const NetworkSettings& network_settings,
       TransportRole role);
-  ~LibjingleTransportFactory();
 
-  void PrepareTokens();
-  scoped_ptr<Transport> CreateTransport();
+  ~LibjingleTransportFactory() override;
+
+  // TransportFactory interface.
+  void PrepareTokens() override;
+  scoped_ptr<Transport> CreateTransport() override;
 
  private:
   void EnsureFreshJingleInfo();
