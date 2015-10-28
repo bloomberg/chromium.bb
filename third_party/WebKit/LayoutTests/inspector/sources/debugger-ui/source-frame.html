@@ -4,9 +4,7 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../../http/tests/inspector/network-test.js"></script>
 <script src="../../../http/tests/inspector/resources-test.js"></script>
-
 <script>
-
 function addErrorToConsole()
 {
     console.error("test error message");
@@ -48,8 +46,8 @@ function test()
             {
                 InspectorTest.addResult("Script source was shown.");
                 shownSourceFrame = sourceFrame;
-                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "addMessageToSource", didAddMessage);
-                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "clearMessages", clearMessages);
+                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
+                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
                 InspectorTest.evaluateInPage("addErrorToConsole()");
             }
 
@@ -58,14 +56,14 @@ function test()
                 if (this !== shownSourceFrame)
                     return;
                 InspectorTest.addResult("Message added to source frame: " + message.text());
-                InspectorTest.consoleModel.requestClearMessages();
+                setImmediate(function() { InspectorTest.consoleModel.requestClearMessages(); });
             }
 
-            function clearMessages()
+            function didRemoveMessage(message)
             {
                 if (this !== shownSourceFrame)
                     return;
-                InspectorTest.addResult("Messages cleared in source frame.");
+                InspectorTest.addResult("Message removed from source frame: " + message.text());
                 next();
             }
         },
