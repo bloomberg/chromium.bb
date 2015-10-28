@@ -33,7 +33,7 @@ using std::string;
 
 namespace {
 
-const char kUploadURL[] = "https://clients2.google.com/cr/staging_report";
+const char kUploadURL[] = "https://clients2.google.com/cr/report";
 const char kUploadContentType[] = "multipart/form-data";
 const char kMultipartBoundary[] =
     "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
