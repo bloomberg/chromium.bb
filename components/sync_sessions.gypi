@@ -28,6 +28,8 @@
         'sync_sessions/revisit/bookmarks_page_revisit_observer.h',
         'sync_sessions/synced_tab_delegate.cc',
         'sync_sessions/synced_tab_delegate.h',
+        'sync_sessions/synced_session_tracker.cc',
+        'sync_sessions/synced_session_tracker.h',
         'sync_sessions/sync_sessions_client.cc',
         'sync_sessions/sync_sessions_client.h',
         'sync_sessions/revisit/current_tab_matcher.cc',

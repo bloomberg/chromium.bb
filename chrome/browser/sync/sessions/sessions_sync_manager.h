@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/sessions/page_revisit_broadcaster.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
@@ -24,6 +23,7 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/tab_node_pool.h"
 #include "components/sync_sessions/favicon_cache.h"
+#include "components/sync_sessions/synced_session_tracker.h"
 #include "components/variations/variations_associated_data.h"
 #include "sync/api/syncable_service.h"
 

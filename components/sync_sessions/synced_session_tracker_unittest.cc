@@ -9,10 +9,10 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/synced_session_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -124,7 +124,7 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   const std::string tag1 = "tag";
   const std::string tag2 = "tag2";
   const std::string tag3 = "tag3";
-  std::vector<sessions::SessionTab*> tabs1, tabs2;
+  std::vector<sessions::SessionTab *> tabs1, tabs2;
   sessions::SessionTab* temp_tab;
   ASSERT_TRUE(GetTracker()->Empty());
   ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
@@ -160,7 +160,7 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   GetTracker()->PutTabInWindow(tag1, 0, 2, 0);         // No longer unmapped.
   ASSERT_EQ(3U, GetTracker()->num_synced_tabs(tag1));  // Has not changed.
 
-  const sessions::SessionTab *tab_ptr;
+  const sessions::SessionTab* tab_ptr;
   ASSERT_TRUE(GetTracker()->LookupSessionTab(tag1, 0, &tab_ptr));
   ASSERT_EQ(tab_ptr, tabs1[0]);
   ASSERT_TRUE(GetTracker()->LookupSessionTab(tag1, 2, &tab_ptr));
@@ -189,9 +189,9 @@ TEST_F(SyncedSessionTrackerTest, ManyGetTabs) {
   const int kMaxSessions = 10;
   const int kMaxTabs = 1000;
   const int kMaxAttempts = 10000;
-  for (int j=0; j<kMaxSessions; ++j) {
+  for (int j = 0; j < kMaxSessions; ++j) {
     std::string tag = base::StringPrintf("tag%d", j);
-    for (int i=0; i<kMaxAttempts; ++i) {
+    for (int i = 0; i < kMaxAttempts; ++i) {
       // More attempts than tabs means we'll sometimes get the same tabs,
       // sometimes have to allocate new tabs.
       int rand_tab_num = base::RandInt(0, kMaxTabs);

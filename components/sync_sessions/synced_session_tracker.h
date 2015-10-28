@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_TRACKER_H_
-#define CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_TRACKER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_TRACKER_H_
+#define COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_TRACKER_H_
 
 #include <map>
 #include <set>
@@ -140,9 +140,7 @@ class SyncedSessionTracker {
   }
 
   // Includes both foreign sessions and the local session.
-  size_t num_synced_sessions() const {
-    return synced_session_map_.size();
-  }
+  size_t num_synced_sessions() const { return synced_session_map_.size(); }
 
   // Returns the number of tabs associated with the specified session tag.
   size_t num_synced_tabs(const std::string& session_tag) const {
@@ -153,6 +151,7 @@ class SyncedSessionTracker {
       return 0;
     }
   }
+
  private:
   // This enum is only used as a named input param for wrapper constructors. The
   // name of this enum and the wrapper's |owned| member variable are a bit
@@ -180,9 +179,10 @@ class SyncedSessionTracker {
   // SessionTab for sync purposes, such as |tab_node_id|.
   // IsOwned is used as a wrapper constructor parameter for readability.
   struct SessionTabWrapper {
-    SessionTabWrapper() : tab_ptr(NULL),
-                          owned(false),
-                          tab_node_id(TabNodePool::kInvalidTabNodeID) {}
+    SessionTabWrapper()
+        : tab_ptr(NULL),
+          owned(false),
+          tab_node_id(TabNodePool::kInvalidTabNodeID) {}
     SessionTabWrapper(sessions::SessionTab* tab_ptr,
                       OwnedState owned,
                       int tab_node_id)
@@ -208,8 +208,7 @@ class SyncedSessionTracker {
   struct SessionWindowWrapper {
     SessionWindowWrapper() : window_ptr(NULL), owned(false) {}
     SessionWindowWrapper(sessions::SessionWindow* window_ptr, OwnedState owned)
-        : window_ptr(window_ptr),
-          owned(owned == IS_OWNED) {}
+        : window_ptr(window_ptr), owned(owned == IS_OWNED) {}
     sessions::SessionWindow* window_ptr;
     bool owned;
   };
@@ -261,4 +260,4 @@ class SyncedSessionTracker {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_TRACKER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_TRACKER_H_

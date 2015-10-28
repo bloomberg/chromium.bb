@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/synced_session_tracker.h"
+#include "components/sync_sessions/synced_session_tracker.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -48,8 +48,8 @@ bool SyncedSessionTracker::LookupAllForeignSessions(
   DCHECK(sessions);
   sessions->clear();
   // Fill vector of sessions from our synced session map.
-  for (SyncedSessionMap::const_iterator i =
-    synced_session_map_.begin(); i != synced_session_map_.end(); ++i) {
+  for (SyncedSessionMap::const_iterator i = synced_session_map_.begin();
+       i != synced_session_map_.end(); ++i) {
     // Only include foreign sessions with open tabs.
     sync_driver::SyncedSession* foreign_session = i->second;
     if (i->first != local_session_tag_ && !foreign_session->windows.empty()) {
@@ -109,11 +109,10 @@ bool SyncedSessionTracker::LookupSessionTab(
   return true;
 }
 
-bool SyncedSessionTracker::LookupTabNodeIds(
-    const std::string& session_tag, std::set<int>* tab_node_ids) {
+bool SyncedSessionTracker::LookupTabNodeIds(const std::string& session_tag,
+                                            std::set<int>* tab_node_ids) {
   tab_node_ids->clear();
-  SyncedTabMap::const_iterator tab_map_iter =
-      synced_tab_map_.find(session_tag);
+  SyncedTabMap::const_iterator tab_map_iter = synced_tab_map_.find(session_tag);
   if (tab_map_iter == synced_tab_map_.end())
     return false;
 
@@ -140,8 +139,7 @@ bool SyncedSessionTracker::LookupLocalSession(
 sync_driver::SyncedSession* SyncedSessionTracker::GetSession(
     const std::string& session_tag) {
   sync_driver::SyncedSession* synced_session = NULL;
-  if (synced_session_map_.find(session_tag) !=
-      synced_session_map_.end()) {
+  if (synced_session_map_.find(session_tag) != synced_session_map_.end()) {
     synced_session = synced_session_map_[session_tag];
   } else {
     synced_session = new sync_driver::SyncedSession;
@@ -193,8 +191,7 @@ void SyncedSessionTracker::ResetSessionTracking(
   // Reset tab tracking.
   SyncedTabMap::iterator tab_iter = synced_tab_map_.find(session_tag);
   if (tab_iter != synced_tab_map_.end()) {
-    for (IDToSessionTabMap::iterator tab_map_iter =
-             tab_iter->second.begin();
+    for (IDToSessionTabMap::iterator tab_map_iter = tab_iter->second.begin();
          tab_map_iter != tab_iter->second.end(); ++tab_map_iter) {
       tab_map_iter->second.owned = false;
     }
@@ -222,8 +219,11 @@ bool SyncedSessionTracker::DeleteOldSessionTabIfNecessary(
       sessions::SessionTab* tab_ptr = tab_wrapper.tab_ptr;
       std::string title;
       if (tab_ptr->navigations.size() > 0) {
-        title = " (" + base::UTF16ToUTF8(
-            tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
+        title =
+            " (" +
+            base::UTF16ToUTF8(
+                tab_ptr->navigations[tab_ptr->navigations.size() - 1].title()) +
+            ")";
       }
       DVLOG(1) << "Deleting closed tab " << tab_ptr->tab_id.id() << title
                << " from window " << tab_ptr->window_id.id();
@@ -271,18 +271,18 @@ void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
   if (iter != synced_window_map_[session_tag].end()) {
     iter->second.owned = true;
     window_ptr = iter->second.window_ptr;
-    DVLOG(1) << "Putting seen window " << window_id  << " at " << window_ptr
-             << "in " << (session_tag == local_session_tag_ ?
-                          "local session" : session_tag);
+    DVLOG(1) << "Putting seen window " << window_id << " at " << window_ptr
+             << "in " << (session_tag == local_session_tag_ ? "local session"
+                                                            : session_tag);
   } else {
     // Create the window.
     window_ptr = new sessions::SessionWindow();
     window_ptr->window_id.set_id(window_id);
     synced_window_map_[session_tag][window_id] =
         SessionWindowWrapper(window_ptr, IS_OWNED);
-    DVLOG(1) << "Putting new window " << window_id  << " at " << window_ptr
-             << "in " << (session_tag == local_session_tag_ ?
-                          "local session" : session_tag);
+    DVLOG(1) << "Putting new window " << window_id << " at " << window_ptr
+             << "in " << (session_tag == local_session_tag_ ? "local session"
+                                                            : session_tag);
   }
   DCHECK(window_ptr);
   DCHECK_EQ(window_ptr->window_id.id(), window_id);
@@ -310,8 +310,8 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
   // mention that in the meantime, the only ill effect is that we may not be
   // able to fully clean up a stale foreign session, but it will get garbage
   // collected eventually.
-  sessions::SessionTab* tab_ptr = GetTabImpl(
-      session_tag, tab_id, TabNodePool::kInvalidTabNodeID);
+  sessions::SessionTab* tab_ptr =
+      GetTabImpl(session_tag, tab_id, TabNodePool::kInvalidTabNodeID);
 
   // It's up to the caller to ensure this never happens.  Tabs should not
   // belong to more than one window or appear twice within the same window.
@@ -332,13 +332,13 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
   synced_tab_map_[session_tag][tab_id].owned = true;
 
   tab_ptr->window_id.set_id(window_id);
-  DVLOG(1) << "  - tab " << tab_id << " added to window "<< window_id;
+  DVLOG(1) << "  - tab " << tab_id << " added to window " << window_id;
   DCHECK(GetSession(session_tag)->windows.find(window_id) !=
          GetSession(session_tag)->windows.end());
   std::vector<sessions::SessionTab*>& window_tabs =
       GetSession(session_tag)->windows[window_id]->tabs;
   if (window_tabs.size() <= tab_index) {
-    window_tabs.resize(tab_index+1, NULL);
+    window_tabs.resize(tab_index + 1, NULL);
   }
   DCHECK(!window_tabs[tab_index]);
   window_tabs[tab_index] = tab_ptr;
@@ -357,8 +357,7 @@ sessions::SessionTab* SyncedSessionTracker::GetTabImpl(
     SessionID::id_type tab_id,
     int tab_node_id) {
   sessions::SessionTab* tab_ptr = NULL;
-  IDToSessionTabMap::iterator iter =
-      synced_tab_map_[session_tag].find(tab_id);
+  IDToSessionTabMap::iterator iter = synced_tab_map_[session_tag].find(tab_id);
   if (iter != synced_tab_map_[session_tag].end()) {
     tab_ptr = iter->second.tab_ptr;
     if (tab_node_id != TabNodePool::kInvalidTabNodeID &&
@@ -389,25 +388,27 @@ sessions::SessionTab* SyncedSessionTracker::GetTabImpl(
     if (VLOG_IS_ON(1)) {
       std::string title;
       if (tab_ptr->navigations.size() > 0) {
-        title = " (" + base::UTF16ToUTF8(
-            tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
+        title =
+            " (" +
+            base::UTF16ToUTF8(
+                tab_ptr->navigations[tab_ptr->navigations.size() - 1].title()) +
+            ")";
       }
       DVLOG(1) << "Getting "
-               << (session_tag == local_session_tag_ ?
-                   "local session" : session_tag)
-               << "'s seen tab " << tab_id  << " at " << tab_ptr << title;
+               << (session_tag == local_session_tag_ ? "local session"
+                                                     : session_tag)
+               << "'s seen tab " << tab_id << " at " << tab_ptr << title;
     }
   } else {
     tab_ptr = new sessions::SessionTab();
     tab_ptr->tab_id.set_id(tab_id);
-    synced_tab_map_[session_tag][tab_id] = SessionTabWrapper(tab_ptr,
-                                                             NOT_OWNED,
-                                                             tab_node_id);
+    synced_tab_map_[session_tag][tab_id] =
+        SessionTabWrapper(tab_ptr, NOT_OWNED, tab_node_id);
     unmapped_tabs_.insert(tab_ptr);
     DVLOG(1) << "Getting "
-             << (session_tag == local_session_tag_ ?
-                 "local session" : session_tag)
-             << "'s new tab " << tab_id  << " at " << tab_ptr;
+             << (session_tag == local_session_tag_ ? "local session"
+                                                   : session_tag)
+             << "'s new tab " << tab_id << " at " << tab_ptr;
   }
   DCHECK(tab_ptr);
   DCHECK_EQ(tab_ptr->tab_id.id(), tab_id);

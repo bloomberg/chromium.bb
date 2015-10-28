@@ -2872,8 +2872,6 @@
       'browser/sync/glue/sync_backend_host_impl.h',
       'browser/sync/glue/sync_start_util.cc',
       'browser/sync/glue/sync_start_util.h',
-      'browser/sync/glue/synced_session_tracker.cc',
-      'browser/sync/glue/synced_session_tracker.h',
       'browser/sync/glue/synced_tab_delegate_android.cc',
       'browser/sync/glue/synced_tab_delegate_android.h',
       'browser/sync/glue/synced_window_delegate_android.cc',
