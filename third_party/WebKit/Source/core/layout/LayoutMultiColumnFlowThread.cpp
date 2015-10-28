@@ -590,29 +590,17 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
         return false;
     }
 
-    // This looks like a spanner, but if we're inside something unbreakable, it's not to be treated as one.
+    // This looks like a spanner, but if we're inside something unbreakable or something that
+    // establishes a new formatting context, it's not to be treated as one.
     for (LayoutBox* ancestor = toLayoutBox(descendant)->parentBox(); ancestor; ancestor = ancestor->containingBlock()) {
         if (ancestor->isLayoutFlowThread()) {
             ASSERT(ancestor == this);
             return true;
         }
-        if (ancestor->spannerPlaceholder()) {
-            // FIXME: do we want to support nested spanners in a different way? The outer spanner
-            // has already broken out from the columns to become sized by the multicol container,
-            // which may be good enough for the inner spanner. But margins, borders, padding and
-            // explicit widths on the outer spanner, or on any children between the outer and inner
-            // spanner, will affect the width of the inner spanner this way, which might be
-            // undesirable. The spec has nothing to say on the matter.
-            return false; // Ignore nested spanners.
-        }
-        if (ancestor->isFloatingOrOutOfFlowPositioned()) {
-            // TODO(mstensho): It could actually be nice to support this (although the usefulness is
-            // probably very limited), but currently our column balancing algorithm gets confused
-            // when a spanner is inside a float, because a float's position isn't always known until
-            // after layout. Similarly for absolutely positioned boxes.
+        if (!ancestor->isLayoutBlockFlow())
             return false;
-        }
-        if (ancestor->isUnsplittableForPagination())
+        const LayoutBlockFlow& ancestorBlockFlow = *toLayoutBlockFlow(ancestor);
+        if (ancestorBlockFlow.createsNewFormattingContext() || ancestorBlockFlow.isUnsplittableForPagination())
             return false;
     }
     ASSERT_NOT_REACHED();

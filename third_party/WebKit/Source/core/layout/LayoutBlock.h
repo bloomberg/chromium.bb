@@ -132,6 +132,8 @@ public:
 
     LayoutUnit minLineHeightForReplacedObject(bool isFirstLine, LayoutUnit replacedHeight) const;
 
+    bool createsNewFormattingContext() const;
+
     const LineBoxList& lineBoxes() const { return m_lineBoxes; }
     LineBoxList* lineBoxes() { return &m_lineBoxes; }
 
@@ -447,8 +449,6 @@ protected:
     // For a page height of 800px, AssociateWithLatterPage will return 1600 if the value passed in
     // is 800. AssociateWithFormerPage will simply return 800.
     LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule) const;
-
-    bool createsNewFormattingContext() const;
 
     // Paginated content inside this block was laid out.
     // |logicalTopOffsetAfterPagination| is the logical top offset of the child content after
