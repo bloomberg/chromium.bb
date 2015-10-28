@@ -168,39 +168,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  false);
   }
 
-  void AddRenderPass(DelegatedFrameData* frame,
-                     RenderPassId id,
-                     const gfx::Rect& output_rect,
-                     const gfx::Rect& damage_rect,
-                     const FilterOperations& filters,
-                     const FilterOperations& background_filters) {
-    for (size_t i = 0; i < frame->render_pass_list.size(); ++i)
-      DCHECK(id != frame->render_pass_list[i]->id);
-
-    scoped_ptr<RenderPass> pass(RenderPass::Create());
-    pass->SetNew(id,
-                 output_rect,
-                 damage_rect,
-                 gfx::Transform());
-    frame->render_pass_list.push_back(pass.Pass());
-
-    RenderPass* render_pass = frame->render_pass_list[0];
-    SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
-    RenderPassDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-
-    quad->SetNew(sqs,
-                 output_rect,
-                 output_rect,
-                 id,
-                 0,
-                 gfx::Vector2dF(),
-                 gfx::Size(),
-                 filters,
-                 gfx::Vector2dF(),
-                 background_filters);
-  }
-
   static ResourceId AppendResourceId(
       std::vector<ResourceId>* resources_in_last_sent_frame,
       ResourceId resource_id) {

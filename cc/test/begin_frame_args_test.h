@@ -31,15 +31,10 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     int64 deadline,
     int64 interval,
     BeginFrameArgs::BeginFrameArgsType type);
-BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
-    BeginFrameArgs::CreationLocation location);
 
 // Creates a BeginFrameArgs using the fake Now value stored on the
 // OrderSimpleTaskRunner.
 BeginFrameArgs CreateBeginFrameArgsForTesting(
-    BeginFrameArgs::CreationLocation location,
-    base::SimpleTestTickClock* now_src);
-BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     base::SimpleTestTickClock* now_src);
 

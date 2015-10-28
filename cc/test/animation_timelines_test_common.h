@@ -128,10 +128,6 @@ class TestHostClient : public MutatorHostClient {
                                       LayerTreeType tree_type,
                                       int transform_x,
                                       int transform_y) const;
-  void ExpectScrollOffsetPropertyMutated(
-      int layer_id,
-      LayerTreeType tree_type,
-      const gfx::ScrollOffset& scroll_offset) const;
 
   TestLayer* FindTestLayer(int layer_id, LayerTreeType tree_type) const;
 

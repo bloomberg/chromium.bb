@@ -29,12 +29,6 @@ TEST(BeginFrameArgsTest, Helpers) {
   EXPECT_EQ(3, args2.interval.ToInternalValue());
   EXPECT_EQ(BeginFrameArgs::NORMAL, args2.type);
 
-  BeginFrameArgs args3 =
-      CreateExpiredBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
-  EXPECT_TRUE(args3.IsValid()) << args3;
-  EXPECT_GT(base::TimeTicks::Now(), args3.deadline);
-  EXPECT_EQ(BeginFrameArgs::NORMAL, args3.type);
-
   BeginFrameArgs args4 = CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, 1, 2, 3, BeginFrameArgs::MISSED);
   EXPECT_TRUE(args4.IsValid()) << args4;

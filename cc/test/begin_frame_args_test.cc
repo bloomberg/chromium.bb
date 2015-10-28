@@ -47,14 +47,6 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
       base::TimeDelta::FromInternalValue(interval), type);
 }
 
-BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
-    BeginFrameArgs::CreationLocation location) {
-  base::TimeTicks now = base::TimeTicks::Now();
-  return BeginFrameArgs::Create(
-      location, now, now - BeginFrameArgs::DefaultInterval(),
-      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
-}
-
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
     base::SimpleTestTickClock* now_src) {
@@ -62,15 +54,6 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
   return BeginFrameArgs::Create(
       location, now, now + BeginFrameArgs::DefaultInterval() -
                          BeginFrameArgs::DefaultEstimatedParentDrawTime(),
-      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
-}
-
-BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
-    BeginFrameArgs::CreationLocation location,
-    base::SimpleTestTickClock* now_src) {
-  base::TimeTicks now = now_src->NowTicks();
-  return BeginFrameArgs::Create(
-      location, now, now - BeginFrameArgs::DefaultInterval(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
 }
 

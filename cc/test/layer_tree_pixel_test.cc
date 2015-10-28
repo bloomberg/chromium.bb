@@ -174,25 +174,6 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
   return layer;
 }
 
-scoped_refptr<TextureLayer> LayerTreePixelTest::CreateTextureLayer(
-    const gfx::Rect& rect, const SkBitmap& bitmap) {
-  scoped_refptr<TextureLayer> layer =
-      TextureLayer::CreateForMailbox(layer_settings(), NULL);
-  layer->SetIsDrawable(true);
-  layer->SetBounds(rect.size());
-  layer->SetPosition(gfx::PointF(rect.origin()));
-
-  TextureMailbox texture_mailbox;
-  scoped_ptr<SingleReleaseCallback> release_callback;
-  CopyBitmapToTextureMailboxAsTexture(
-      bitmap, &texture_mailbox, &release_callback);
-  layer->SetTextureMailbox(texture_mailbox, release_callback.Pass());
-
-  texture_layers_.push_back(layer);
-  pending_texture_mailbox_callbacks_++;
-  return layer;
-}
-
 void LayerTreePixelTest::RunPixelTest(
     PixelTestType test_type,
     scoped_refptr<Layer> content_root,
@@ -300,85 +281,6 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
   }
 
   return bitmap.Pass();
-}
-
-void LayerTreePixelTest::ReleaseTextureMailbox(
-    scoped_ptr<gpu::GLInProcessContext> context,
-    uint32 texture,
-    uint32 sync_point,
-    bool lost_resource) {
-  GLES2Interface* gl = context->GetImplementation();
-  if (sync_point)
-    gl->WaitSyncPointCHROMIUM(sync_point);
-  gl->DeleteTextures(1, &texture);
-  pending_texture_mailbox_callbacks_--;
-  TryEndTest();
-}
-
-void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
-    const SkBitmap& bitmap,
-    TextureMailbox* texture_mailbox,
-    scoped_ptr<SingleReleaseCallback>* release_callback) {
-  DCHECK_GT(bitmap.width(), 0);
-  DCHECK_GT(bitmap.height(), 0);
-
-  scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
-  GLES2Interface* gl = context->GetImplementation();
-
-  GLuint texture_id = 0;
-  gl->GenTextures(1, &texture_id);
-  gl->BindTexture(GL_TEXTURE_2D, texture_id);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  DCHECK_EQ(kN32_SkColorType, bitmap.colorType());
-
-  {
-    SkAutoLockPixels lock(bitmap);
-
-    size_t row_bytes = bitmap.width() * 4;
-    size_t total_bytes = bitmap.height() * row_bytes;
-
-    scoped_ptr<uint8[]> gl_pixels(new uint8[total_bytes]);
-    uint8* bitmap_pixels = static_cast<uint8*>(bitmap.getPixels());
-
-    for (size_t y = 0; y < total_bytes; y += row_bytes) {
-      // Flip Y axis.
-      size_t src_y = total_bytes - y - row_bytes;
-      // Swizzle Skia -> OpenGL byte order.
-      for (size_t x = 0; x < row_bytes; x += 4) {
-        gl_pixels.get()[y + x + 0] = bitmap_pixels[src_y + x + SK_R32_SHIFT/8];
-        gl_pixels.get()[y + x + 1] = bitmap_pixels[src_y + x + SK_G32_SHIFT/8];
-        gl_pixels.get()[y + x + 2] = bitmap_pixels[src_y + x + SK_B32_SHIFT/8];
-        gl_pixels.get()[y + x + 3] = bitmap_pixels[src_y + x + SK_A32_SHIFT/8];
-      }
-    }
-
-    gl->TexImage2D(GL_TEXTURE_2D,
-                   0,
-                   GL_RGBA,
-                   bitmap.width(),
-                   bitmap.height(),
-                   0,
-                   GL_RGBA,
-                   GL_UNSIGNED_BYTE,
-                   gl_pixels.get());
-  }
-
-  gpu::Mailbox mailbox;
-  gl->GenMailboxCHROMIUM(mailbox.name);
-  gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-  gl->BindTexture(GL_TEXTURE_2D, 0);
-  uint32 sync_point = gl->InsertSyncPointCHROMIUM();
-
-  *texture_mailbox = TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point);
-  *release_callback = SingleReleaseCallback::Create(
-      base::Bind(&LayerTreePixelTest::ReleaseTextureMailbox,
-                 base::Unretained(this),
-                 base::Passed(&context),
-                 texture_id));
 }
 
 void LayerTreePixelTest::Finish() {

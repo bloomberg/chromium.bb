@@ -61,8 +61,6 @@ class LayerTreePixelTest : public LayerTreeTest {
       SkColor color,
       int border_width,
       SkColor border_color);
-  scoped_refptr<TextureLayer> CreateTextureLayer(const gfx::Rect& rect,
-                                                 const SkBitmap& bitmap);
 
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,
@@ -80,16 +78,6 @@ class LayerTreePixelTest : public LayerTreeTest {
   scoped_ptr<SkBitmap> CopyTextureMailboxToBitmap(
       const gfx::Size& size,
       const TextureMailbox& texture_mailbox);
-
-  void CopyBitmapToTextureMailboxAsTexture(
-      const SkBitmap& bitmap,
-      TextureMailbox* texture_mailbox,
-      scoped_ptr<SingleReleaseCallback>* release_callback);
-
-  void ReleaseTextureMailbox(scoped_ptr<gpu::GLInProcessContext> context,
-                             uint32 texture,
-                             uint32 sync_point,
-                             bool lost_resource);
 
   void Finish();
 
