@@ -23,7 +23,7 @@ class TestNode(object):
   Arg = collections.namedtuple('Arg', ('name',))
 
   def __init__(self, doc='', fromlineno=0, path='foo.py', args=(), vararg='',
-               kwarg='', names=None, lineno=0):
+               kwarg='', names=None, lineno=0, name='module'):
     if names is None:
       names = [('name', None)]
     self.doc = doc
@@ -34,6 +34,7 @@ class TestNode(object):
     self.args = self.Args(args=[self.Arg(name=x) for x in args],
                           vararg=vararg, kwarg=kwarg)
     self.names = names
+    self.name = name
 
   def argnames(self):
     return self.args
@@ -396,3 +397,25 @@ class SourceCheckerTest(CheckerTestCase):
     )
     with open('/bin/sh') as f:
       self._testShebang(shebangs, 0, f.fileno())
+
+  def testGoodUnittestName(self):
+    """Verify _check_module_name accepts good unittest names"""
+    module_names = (
+        'lint_unittest',
+    )
+    for name in module_names:
+      node = TestNode(name=name)
+      self.results = []
+      self.checker._check_module_name(node)
+      self.assertEqual(len(self.results), 0)
+
+  def testBadUnittestName(self):
+    """Verify _check_module_name accepts good unittest names"""
+    module_names = (
+        'lint_unittests',
+    )
+    for name in module_names:
+      node = TestNode(name=name)
+      self.results = []
+      self.checker._check_module_name(node)
+      self.assertEqual(len(self.results), 1)
