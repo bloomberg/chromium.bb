@@ -44,10 +44,9 @@ namespace {
 // Space between the site info label and the buttons / link.
 const int kMiddlePaddingPx = 30;
 
-// Gets the opacity of the bubble when not animating.
-int GetMaximumOpacity() {
-  return ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 180 : 255;
-}
+// Opacity of the background (out of 255). Only used with
+// IsSimplifiedFullscreenUIEnabled.
+const unsigned char kBackgroundOpacity = 180;
 
 class ButtonView : public views::View {
  public:
@@ -145,12 +144,12 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   shadow_type = views::BubbleBorder::SMALL_SHADOW;
 #endif
   if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    shadow_type = views::BubbleBorder::NO_SHADOW;
+    shadow_type = views::BubbleBorder::NO_ASSETS;
 
   ui::NativeTheme* theme = ui::NativeTheme::instance();
   SkColor background_color =
       ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
-          ? SK_ColorBLACK
+          ? SkColorSetA(SK_ColorBLACK, kBackgroundOpacity)
           : theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
   SkColor foreground_color =
       ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
@@ -341,7 +340,6 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   popup_->SetContentsView(view_);
   gfx::Size size = GetPopupRect(true).size();
   popup_->SetBounds(GetPopupRect(false));
-  popup_->SetOpacity(GetMaximumOpacity());
   // We set layout manager to nullptr to prevent the widget from sizing its
   // contents to the same size as itself. This prevents the widget contents from
   // shrinking while we animate the height of the popup to give the impression
@@ -445,7 +443,7 @@ void ExclusiveAccessBubbleViews::UpdateForImmersiveState() {
     // assumes |popup_| has the opacity when it is fully shown and the opacity
     // animation assumes |popup_| has the bounds when |popup_| is fully shown.
     if (animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS)
-      popup_->SetOpacity(GetMaximumOpacity());
+      popup_->SetOpacity(255);
     else
       UpdateBounds();
   }
@@ -468,7 +466,7 @@ views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {
 void ExclusiveAccessBubbleViews::AnimationProgressed(
     const gfx::Animation* animation) {
   if (animated_attribute_ == ANIMATED_ATTRIBUTE_OPACITY) {
-    int opacity = animation_->CurrentValueBetween(0, GetMaximumOpacity());
+    int opacity = animation_->CurrentValueBetween(0, 255);
     if (opacity == 0) {
       popup_->Hide();
     } else {
