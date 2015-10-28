@@ -196,18 +196,8 @@ Polymer({
   },
 
   /**
-   * Event triggered when a network-list-item is the network list is selected.
-   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
-   * @private
-   */
-  onListItemSelected_: function(event) {
-    var state = event.detail;
-    this.fire('selected', state);
-  },
-
-  /**
    * Event triggered when the enable button is toggled.
-   * @param {!Object} event The enable button event.
+   * @param {!Event} event
    * @private
    */
   onDeviceEnabledTap_: function(event) {
