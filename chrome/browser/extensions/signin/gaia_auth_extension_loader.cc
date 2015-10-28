@@ -57,20 +57,6 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
 
 void UnloadGaiaAuthExtension(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  content::StoragePartition* partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          context, signin::GetSigninPartitionURL());
-  if (partition) {
-    partition->ClearData(
-        content::StoragePartition::REMOVE_DATA_MASK_ALL,
-        content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-        GURL(),
-        content::StoragePartition::OriginMatcherFunction(),
-        base::Time(),
-        base::Time::Max(),
-        base::Bind(&base::DoNothing));
-  }
   GetComponentLoader(context)->Remove(extensions::kGaiaAuthExtensionId);
 }
 

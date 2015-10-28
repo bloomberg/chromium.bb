@@ -18,12 +18,13 @@
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 
-InlineLoginHandler::InlineLoginHandler() {}
+InlineLoginHandler::InlineLoginHandler() : weak_ptr_factory_(this) {}
 
 InlineLoginHandler::~InlineLoginHandler() {}
 
@@ -41,6 +42,24 @@ void InlineLoginHandler::RegisterMessages() {
 }
 
 void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
+  content::WebContents* contents = web_ui()->GetWebContents();
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          contents->GetBrowserContext(), signin::GetSigninPartitionURL());
+  if (partition) {
+    partition->ClearData(
+        content::StoragePartition::REMOVE_DATA_MASK_ALL,
+        content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+        GURL(),
+        content::StoragePartition::OriginMatcherFunction(),
+        base::Time(),
+        base::Time::Max(),
+        base::Bind(&InlineLoginHandler::ContinueHandleInitializeMessage,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void InlineLoginHandler::ContinueHandleInitializeMessage() {
   base::DictionaryValue params;
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
