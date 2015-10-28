@@ -36,22 +36,22 @@ namespace chromeos {
 
 namespace {
 
-const char kWakeOnNone[] = "none";
-const char kWakeOnPacket[] = "packet";
-const char kWakeOnSsid[] = "ssid";
-const char kWakeOnPacketAndSsid[] = "packet_and_ssid";
+const char kWakeOnWifiNone[] = "none";
+const char kWakeOnWifiPacket[] = "packet";
+const char kWakeOnWifiDarkConnect[] = "darkconnect";
+const char kWakeOnWifiPacketAndDarkConnect[] = "packet_and_darkconnect";
 
 std::string WakeOnWifiFeatureToString(
     WakeOnWifiManager::WakeOnWifiFeature feature) {
   switch (feature) {
-    case WakeOnWifiManager::WAKE_ON_NONE:
-      return kWakeOnNone;
-    case WakeOnWifiManager::WAKE_ON_PACKET:
-      return kWakeOnPacket;
-    case WakeOnWifiManager::WAKE_ON_SSID:
-      return kWakeOnSsid;
-    case WakeOnWifiManager::WAKE_ON_PACKET_AND_SSID:
-      return kWakeOnPacketAndSsid;
+    case WakeOnWifiManager::WAKE_ON_WIFI_NONE:
+      return kWakeOnWifiNone;
+    case WakeOnWifiManager::WAKE_ON_WIFI_PACKET:
+      return kWakeOnWifiPacket;
+    case WakeOnWifiManager::WAKE_ON_WIFI_DARKCONNECT:
+      return kWakeOnWifiDarkConnect;
+    case WakeOnWifiManager::WAKE_ON_WIFI_PACKET_AND_DARKCONNECT:
+      return kWakeOnWifiPacketAndDarkConnect;
     case WakeOnWifiManager::INVALID:
       return std::string();
     case WakeOnWifiManager::NOT_SUPPORTED:
@@ -64,7 +64,7 @@ std::string WakeOnWifiFeatureToString(
 }
 
 bool IsWakeOnPacketEnabled(WakeOnWifiManager::WakeOnWifiFeature feature) {
-  return feature & WakeOnWifiManager::WAKE_ON_PACKET;
+  return feature & WakeOnWifiManager::WAKE_ON_WIFI_PACKET;
 }
 
 // Weak pointer.  This class is owned by ChromeBrowserMainPartsChromeos.
@@ -204,7 +204,7 @@ void WakeOnWifiManager::OnPreferenceChanged(
   if (current_feature_ == NOT_SUPPORTED)
     return;
   if (!switches::WakeOnWifiEnabled())
-    feature = WAKE_ON_NONE;
+    feature = WAKE_ON_WIFI_NONE;
   if (feature == current_feature_)
     return;
 

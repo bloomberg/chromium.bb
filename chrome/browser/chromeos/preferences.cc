@@ -248,7 +248,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
-  registry->RegisterBooleanPref(prefs::kWakeOnWifiSsid, true);
+  registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
 
   // 3G first-time usage promo will be shown at least once.
   registry->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
@@ -323,7 +323,8 @@ void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
   xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 
-  wake_on_wifi_ssid_.Init(prefs::kWakeOnWifiSsid, prefs, callback);
+  wake_on_wifi_darkconnect_.Init(prefs::kWakeOnWifiDarkConnect, prefs,
+                                 callback);
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
@@ -585,13 +586,15 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   }
 
   if (user_is_primary_ && (reason != REASON_PREF_CHANGED ||
-                           pref_name == prefs::kWakeOnWifiSsid)) {
-    int features = wake_on_wifi_ssid_.GetValue() ?
-        WakeOnWifiManager::WAKE_ON_SSID : WakeOnWifiManager::WAKE_ON_NONE;
-    // The flag enables wake on packets but doesn't update a preference.
+                           pref_name == prefs::kWakeOnWifiDarkConnect)) {
+    int features = wake_on_wifi_darkconnect_.GetValue()
+                       ? WakeOnWifiManager::WAKE_ON_WIFI_DARKCONNECT
+                       : WakeOnWifiManager::WAKE_ON_WIFI_NONE;
+    // The flag enables wake on WiFi packet feature but doesn't update a
+    // preference.
     if (base::CommandLine::ForCurrentProcess()->
-            HasSwitch(switches::kWakeOnPackets)) {
-      features |= WakeOnWifiManager::WAKE_ON_PACKET;
+            HasSwitch(switches::kWakeOnWifiPacket)) {
+      features |= WakeOnWifiManager::WAKE_ON_WIFI_PACKET;
     }
     WakeOnWifiManager::Get()->OnPreferenceChanged(
         static_cast<WakeOnWifiManager::WakeOnWifiFeature>(features));

@@ -1692,11 +1692,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_DESCRIPTION,
      kOsCrOS,
      MULTI_VALUE_TYPE(kMemoryPressureThresholdChoices)},
-    {"wake-on-packets",
+    {"wake-on-wifi-packet",
      IDS_FLAGS_WAKE_ON_PACKETS_NAME,
      IDS_FLAGS_WAKE_ON_PACKETS_DESCRIPTION,
      kOsCrOSOwnerOnly,
-     SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnPackets)},
+     SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnWifiPacket)},
 #endif  // OS_CHROMEOS
     {"enable-tab-audio-muting",
      IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_NAME,

@@ -172,7 +172,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["cros.device.attestation_for_content_protection_enabled"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)["settings.internet.wake_on_wifi_ssid"] =
+  (*s_whitelist)["settings.internet.wake_on_wifi_darkconnect"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #else
   (*s_whitelist)["intl.accept_languages"] =
@@ -462,7 +462,7 @@ bool PrefsUtil::IsPrefOwnerControlled(const std::string& pref_name) {
 }
 
 bool PrefsUtil::IsPrefPrimaryUserControlled(const std::string& pref_name) {
-  if (pref_name == prefs::kWakeOnWifiSsid) {
+  if (pref_name == prefs::kWakeOnWifiDarkConnect) {
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);

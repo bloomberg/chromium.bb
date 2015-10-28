@@ -46,7 +46,7 @@ const char* kNonPrivilegedSettings[] = {
 
 // List of settings that should only be changeable by the primary user.
 const char* kPrimaryUserSettings[] = {
-  prefs::kWakeOnWifiSsid,
+    prefs::kWakeOnWifiDarkConnect,
 };
 
 // Returns true if |pref| can be controlled (e.g. by policy or owner).

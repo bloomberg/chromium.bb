@@ -32,12 +32,12 @@ class WakeOnWifiManager : public content::NotificationObserver,
                           public NetworkStateHandlerObserver {
  public:
   enum WakeOnWifiFeature {
-    WAKE_ON_NONE            = 0x00,
-    WAKE_ON_PACKET          = 0x01,
-    WAKE_ON_SSID            = 0x02,
-    WAKE_ON_PACKET_AND_SSID = 0x03,
-    NOT_SUPPORTED           = 0x04,
-    INVALID                 = 0x08,
+    WAKE_ON_WIFI_NONE                    = 0x00,
+    WAKE_ON_WIFI_PACKET                  = 0x01,
+    WAKE_ON_WIFI_DARKCONNECT             = 0x02,
+    WAKE_ON_WIFI_PACKET_AND_DARKCONNECT  = 0x03,
+    NOT_SUPPORTED                        = 0x04,
+    INVALID                              = 0x08,
   };
 
   static WakeOnWifiManager* Get();
