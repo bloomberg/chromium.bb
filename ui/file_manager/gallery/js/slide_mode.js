@@ -1441,10 +1441,11 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
         SlideMode.FULLSCREEN_TOGGLE_DELAY;
   }
 
-  // This is a workaround. Mouseout event is not dispatched when window becomes
+  // These are workarounds. Mouseout event is not dispatched when window becomes
   // fullscreen and cursor gets out of the element
   // TODO(yawano): Find better implementation.
   this.dimmableUIController_.setCursorOutOfTools();
+  document.querySelector('files-tooltip').hideTooltip();
 
   this.resumeSlideshow_(opt_interval);
 

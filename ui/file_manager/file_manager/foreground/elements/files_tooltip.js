@@ -90,6 +90,15 @@ var FilesTooltip = Polymer({
   },
 
   /**
+   * Hides currently visible tooltip if there is. In some cases, mouseout event
+   * is not dispatched. This method is used to handle these cases manually.
+   */
+  hideTooltip: function() {
+    if (this.visibleTooltipTarget_)
+      this.initHidingTooltip_(this.visibleTooltipTarget_);
+  },
+
+  /**
    * @param {!HTMLElement} target
    * @private
    */
