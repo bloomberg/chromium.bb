@@ -201,6 +201,11 @@
           'dependencies': [
             'printing_jni_headers',
           ],
+        }, {
+          'sources': [
+            'pdf_transform.cc',
+            'pdf_transform.h',
+          ],
         }],
       ],
     },
@@ -232,6 +237,9 @@
       'conditions': [
         ['OS!="mac"', {'sources/': [['exclude', '_mac_unittest\\.(cc|mm?)$']]}],
         ['OS!="win"', {'sources/': [['exclude', '_win_unittest\\.cc$']]}],
+        ['OS!="android"', {
+          'sources': ['pdf_transform_unittest.cc']
+        }],
         ['use_cups==1', {
           'defines': [
             'USE_CUPS',

@@ -36,6 +36,7 @@
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
+#include "printing/pdf_transform.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/fpdf_edit.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
@@ -46,6 +47,7 @@
 #include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "third_party/pdfium/public/fpdf_transformpage.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
 
 using printing::ConvertUnit;
@@ -320,163 +322,6 @@ void SetPageSizeAndContentRect(bool rotated,
     page_size->SetSize(page_size->height(), page_size->width());
     content_rect->SetRect(content_rect->y(), content_rect->x(),
                           content_rect->height(), content_rect->width());
-  }
-}
-
-// Calculate the scale factor between |content_rect| and a page of size
-// |src_width| x |src_height|.
-//
-// |content_rect| specifies the printable area of the destination page, with
-// origin at left-bottom. Values are in points.
-// |src_width| specifies the source page width in points.
-// |src_height| specifies the source page height in points.
-// |rotated| True if source page is rotated 90 degree or 270 degree.
-double CalculateScaleFactor(const pp::Rect& content_rect,
-                            double src_width,
-                            double src_height,
-                            bool rotated) {
-  if (src_width == 0 || src_height == 0)
-    return 1.0;
-
-  double actual_source_page_width = rotated ? src_height : src_width;
-  double actual_source_page_height = rotated ? src_width : src_height;
-  double ratio_x = static_cast<double>(content_rect.width()) /
-                   actual_source_page_width;
-  double ratio_y = static_cast<double>(content_rect.height()) /
-                   actual_source_page_height;
-  return std::min(ratio_x, ratio_y);
-}
-
-// A rect struct for use with FPDF bounding box functions.
-// Remember with PDFs, origin is bottom-left.
-struct ClipBox {
-  float left;
-  float right;
-  float top;
-  float bottom;
-};
-
-// Make the default size to be letter size (8.5" X 11"). We are just following
-// the PDFium way of handling these corner cases. PDFium always consider
-// US-Letter as the default page size.
-void SetDefaultClipBox(bool rotated, ClipBox* clip_box) {
-  const int kDpi = 72;
-  const float kPaperWidth = 8.5 * kDpi;
-  const float kPaperHeight = 11 * kDpi;
-  clip_box->left = 0;
-  clip_box->bottom = 0;
-  clip_box->right = rotated ? kPaperHeight : kPaperWidth;
-  clip_box->top = rotated ? kPaperWidth : kPaperHeight;
-}
-
-// Set the media box and/or crop box as needed. If both boxes are there, then
-// nothing needs to be done. If one box is missing, then fill it with the value
-// from the other box. If both boxes are missing, then they both get the default
-// value from SetDefaultClipBox(), based on |rotated|.
-void CalculateMediaBoxAndCropBox(bool rotated,
-                                 bool has_media_box,
-                                 bool has_crop_box,
-                                 ClipBox* media_box,
-                                 ClipBox* crop_box) {
-  if (!has_media_box && !has_crop_box) {
-    SetDefaultClipBox(rotated, crop_box);
-    SetDefaultClipBox(rotated, media_box);
-  } else if (has_crop_box && !has_media_box) {
-    *media_box = *crop_box;
-  } else if (has_media_box && !has_crop_box) {
-    *crop_box = *media_box;
-  }
-}
-
-// Compute source clip box boundaries based on the crop box / media box of
-// source page.
-//
-// |media_box| The PDF's media box.
-// |crop_box| The PDF's crop box.
-ClipBox CalculateClipBoxBoundary(const ClipBox& media_box,
-                                 const ClipBox& crop_box) {
-  ClipBox clip_box;
-
-  // Clip |media_box| to the size of |crop_box|, but ignore |crop_box| if it is
-  // bigger than |media_box|.
-  clip_box.left =
-      (crop_box.left < media_box.left) ? media_box.left : crop_box.left;
-  clip_box.right =
-      (crop_box.right > media_box.right) ? media_box.right : crop_box.right;
-  clip_box.top = (crop_box.top > media_box.top) ? media_box.top : crop_box.top;
-  clip_box.bottom =
-      (crop_box.bottom < media_box.bottom) ? media_box.bottom : crop_box.bottom;
-  return clip_box;
-}
-
-// Scale |box| by |scale_factor|.
-void ScaleClipBox(double scale_factor, ClipBox* box) {
-  box->left *= scale_factor;
-  box->right *= scale_factor;
-  box->bottom *= scale_factor;
-  box->top *= scale_factor;
-}
-
-// Calculate the clip box translation offset for a page that does need to be
-// scaled. All parameters are in points.
-//
-// |content_rect| specifies the printable area of the destination page, with
-// origin at left-bottom.
-// |source_clip_box| specifies the source clip box positions, relative to
-// origin at left-bottom.
-// |offset_x| and |offset_y| will contain the final translation offsets for the
-// source clip box, relative to origin at left-bottom.
-void CalculateScaledClipBoxOffset(const pp::Rect& content_rect,
-                                  const ClipBox& source_clip_box,
-                                  double* offset_x, double* offset_y) {
-  const float clip_box_width = source_clip_box.right - source_clip_box.left;
-  const float clip_box_height = source_clip_box.top - source_clip_box.bottom;
-
-  // Center the intended clip region to real clip region.
-  *offset_x = (content_rect.width() - clip_box_width) / 2 + content_rect.x() -
-              source_clip_box.left;
-  *offset_y = (content_rect.height() - clip_box_height) / 2 + content_rect.y() -
-              source_clip_box.bottom;
-}
-
-// Calculate the clip box offset for a page that does not need to be scaled.
-// All parameters are in points.
-//
-// |content_rect| specifies the printable area of the destination page, with
-// origin at left-bottom.
-// |rotation| specifies the source page rotation values which are N / 90
-// degrees.
-// |page_width| specifies the screen destination page width.
-// |page_height| specifies the screen destination page height.
-// |source_clip_box| specifies the source clip box positions, relative to origin
-// at left-bottom.
-// |offset_x| and |offset_y| will contain the final translation offsets for the
-// source clip box, relative to origin at left-bottom.
-void CalculateNonScaledClipBoxOffset(const pp::Rect& content_rect, int rotation,
-                                     int page_width, int page_height,
-                                     const ClipBox& source_clip_box,
-                                     double* offset_x, double* offset_y) {
-  // Align the intended clip region to left-top corner of real clip region.
-  switch (rotation) {
-    case 0:
-      *offset_x = -1 * source_clip_box.left;
-      *offset_y = page_height - source_clip_box.top;
-      break;
-    case 1:
-      *offset_x = 0;
-      *offset_y = -1 * source_clip_box.bottom;
-      break;
-    case 2:
-      *offset_x = page_width - source_clip_box.right;
-      *offset_y = 0;
-      break;
-    case 3:
-      *offset_x = page_height - source_clip_box.right;
-      *offset_y = page_width - source_clip_box.top;
-      break;
-    default:
-      NOTREACHED();
-      break;
   }
 }
 
@@ -3419,13 +3264,17 @@ void PDFiumEngine::TransformPDFPageForPrinting(
   const int actual_page_height =
       rotated ? page_size.width() : page_size.height();
 
+  const gfx::Rect gfx_content_rect(content_rect.x(),
+                                   content_rect.y(),
+                                   content_rect.width(),
+                                   content_rect.height());
   const double scale_factor = fit_to_page ?
-      CalculateScaleFactor(
-          content_rect, src_page_width, src_page_height, rotated) : 1.0;
+      printing::CalculateScaleFactor(
+          gfx_content_rect, src_page_width, src_page_height, rotated) : 1.0;
 
   // Calculate positions for the clip box.
-  ClipBox media_box;
-  ClipBox crop_box;
+  printing::ClipBox media_box;
+  printing::ClipBox crop_box;
   bool has_media_box = !!FPDFPage_GetMediaBox(page,
                                               &media_box.left,
                                               &media_box.bottom,
@@ -3436,21 +3285,23 @@ void PDFiumEngine::TransformPDFPageForPrinting(
                                             &crop_box.bottom,
                                             &crop_box.right,
                                             &crop_box.top);
-  CalculateMediaBoxAndCropBox(
+  printing::CalculateMediaBoxAndCropBox(
       rotated, has_media_box, has_crop_box, &media_box, &crop_box);
-  ClipBox source_clip_box = CalculateClipBoxBoundary(media_box, crop_box);
-  ScaleClipBox(scale_factor, &source_clip_box);
+  printing::ClipBox source_clip_box =
+      printing::CalculateClipBoxBoundary(media_box, crop_box);
+  printing::ScaleClipBox(scale_factor, &source_clip_box);
 
   // Calculate the translation offset values.
   double offset_x = 0;
   double offset_y = 0;
   if (fit_to_page) {
-    CalculateScaledClipBoxOffset(content_rect, source_clip_box, &offset_x,
-                                 &offset_y);
+    printing::CalculateScaledClipBoxOffset(
+        gfx_content_rect, source_clip_box, &offset_x, &offset_y);
   } else {
-    CalculateNonScaledClipBoxOffset(content_rect, src_page_rotation,
-                                    actual_page_width, actual_page_height,
-                                    source_clip_box, &offset_x, &offset_y);
+    printing::CalculateNonScaledClipBoxOffset(
+        gfx_content_rect, src_page_rotation,
+        actual_page_width, actual_page_height,
+        source_clip_box, &offset_x, &offset_y);
   }
 
   // Reset the media box and crop box. When the page has crop box and media box,

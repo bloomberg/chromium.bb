@@ -184,6 +184,11 @@ component("printing") {
     ]
 
     deps += [ ":printing_jni_headers" ]
+  } else {
+    sources += [
+      "pdf_transform.cc",
+      "pdf_transform.h",
+    ]
   }
 }
 
@@ -212,11 +217,6 @@ test("printing_unittests") {
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  if (use_cups) {
-    configs += [ ":cups" ]
-    sources += [ "backend/cups_helper_unittest.cc" ]
-  }
-
   deps = [
     ":printing",
     "//base/allocator",
@@ -228,6 +228,15 @@ test("printing_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
+
+  if (!is_android) {
+    sources += [ "pdf_transform_unittest.cc" ]
+  }
+
+  if (use_cups) {
+    configs += [ ":cups" ]
+    sources += [ "backend/cups_helper_unittest.cc" ]
+  }
 }
 
 if (use_cups) {
