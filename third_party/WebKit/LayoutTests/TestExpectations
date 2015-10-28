@@ -970,10 +970,6 @@ crbug.com/463358 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xh
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
-crbug.com/547390 [ Win10 ] fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
-crbug.com/547390 [ Win10 ] fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
-crbug.com/547390 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ NeedsRebaseline ]
-
 crbug.com/548630 [ XP ] fast/text/justify-vertical.html [ Failure ]
 
 crbug.com/471824 imported/web-platform-tests/pointerevents/ [ Skip ]
