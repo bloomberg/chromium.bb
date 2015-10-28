@@ -4,7 +4,9 @@
 
 #include "chrome/browser/media/media_browsertest.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,6 +36,8 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
   std::string query = media::GetURLQueryString(query_params);
   scoped_ptr<net::SpawnedTestServer> http_test_server;
   if (http) {
+    DVLOG(0) << base::TimeFormatTimeOfDayWithMilliseconds(base::Time::Now())
+             << " Starting HTTP server";
     http_test_server.reset(
         new net::SpawnedTestServer(net::SpawnedTestServer::TYPE_HTTP,
                                    net::SpawnedTestServer::kLocalhost,
@@ -50,7 +54,8 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
 
 std::string MediaBrowserTest::RunTest(const GURL& gurl,
                                       const std::string& expected_title) {
-  DVLOG(0) << "Running test URL: " << gurl;
+  DVLOG(0) << base::TimeFormatTimeOfDayWithMilliseconds(base::Time::Now())
+           << " Running test URL: " << gurl;
   // Observe the web contents for plugin crashes.
   Observe(browser()->tab_strip_model()->GetActiveWebContents());
   content::TitleWatcher title_watcher(
