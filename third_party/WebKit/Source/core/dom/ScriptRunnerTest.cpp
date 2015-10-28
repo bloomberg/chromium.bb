@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
+#include "platform/heap/Handle.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
 #include <gmock/gmock.h>
@@ -196,7 +197,7 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
     OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
     OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
 
-    WTF::Vector<MockScriptLoader*> scriptLoaders;
+    WillBeHeapVector<RawPtrWillBeMember<MockScriptLoader>> scriptLoaders;
     scriptLoaders.append(scriptLoader1.get());
     scriptLoaders.append(scriptLoader2.get());
     scriptLoaders.append(scriptLoader3.get());
