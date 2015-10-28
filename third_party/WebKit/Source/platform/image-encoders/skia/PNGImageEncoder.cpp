@@ -30,30 +30,31 @@
 
 #include "config.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
-
-#include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
-extern "C" {
-#include "png.h"
-}
+#include "wtf/OwnPtr.h"
 
 namespace blink {
+
+PNGImageEncoderState::~PNGImageEncoderState()
+{
+    png_destroy_write_struct(&m_png, &m_pngInfo);
+}
 
 static void writeOutput(png_structp png, png_bytep data, png_size_t size)
 {
     static_cast<Vector<unsigned char>*>(png_get_io_ptr(png))->append(data, size);
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, Vector<unsigned char>* output)
+PassOwnPtr<PNGImageEncoderState> PNGImageEncoderState::create(const IntSize& imageSize, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.height() <= 0)
-        return false;
+        return nullptr;
 
     png_struct* png = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
     png_info* info = png_create_info_struct(png);
     if (!png || !info || setjmp(png_jmpbuf(png))) {
         png_destroy_write_struct(png ? &png : 0, info ? &info : 0);
-        return false;
+        return nullptr;
     }
 
     // Optimize compression for speed.
@@ -64,7 +65,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, Ve
     //
     // Avoid the zlib strategies Z_HUFFMAN_ONLY or Z_RLE.
     // Although they are the fastest for poorly-compressible images (e.g. photographs),
-    // they are very slow for highly-compressible images (e.g. text, drawings or business graphics).
+    // they are very slow for highly-compressible images (e.g. text, drawings or business graphics)
     png_set_compression_level(png, 3);
     png_set_filter(png, PNG_FILTER_TYPE_BASE, PNG_FILTER_SUB);
 
@@ -73,15 +74,33 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, Ve
                  8, PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
     png_write_info(png, info);
 
+    return adoptPtr(new PNGImageEncoderState(png, info));
+}
+
+void PNGImageEncoder::writeOneRowToPng(unsigned char* pixels, PNGImageEncoderState* encoderState)
+{
+    png_write_row(encoderState->png(), pixels);
+}
+
+void PNGImageEncoder::finalizePng(PNGImageEncoderState* encoderState)
+{
+    png_write_end(encoderState->png(), encoderState->pngInfo());
+}
+
+static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, Vector<unsigned char>* output)
+{
+    OwnPtr<PNGImageEncoderState> encoderState = PNGImageEncoderState::create(imageSize, output);
+    if (!encoderState.get())
+        return false;
+
     unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
     const size_t pixelRowStride = imageSize.width() * 4;
     for (int y = 0; y < imageSize.height(); ++y) {
-        png_write_row(png, pixels);
+        PNGImageEncoder::writeOneRowToPng(pixels, encoderState.get());
         pixels += pixelRowStride;
     }
 
-    png_write_end(png, info);
-    png_destroy_write_struct(&png, &info);
+    PNGImageEncoder::finalizePng(encoderState.get());
     return true;
 }
 

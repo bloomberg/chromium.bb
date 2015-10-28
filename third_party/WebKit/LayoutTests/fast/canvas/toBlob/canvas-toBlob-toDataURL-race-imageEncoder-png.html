@@ -1,7 +1,7 @@
-<script src = "../../resources/js-test.js"></script>
-<script src = "./script-tests/canvas-toBlob-toDataURL-race.js"></script>
+<script src = "../../../resources/js-test.js"></script>
+<script src = "../script-tests/canvas-toBlob-toDataURL-race.js"></script>
 <script type = 'text/javascript'>
-description("Verifies if PNG image encoding on main thread (toDataURL) conflicts with image encoding on async thread (toBlob)");
+description("Verifies if synchronous PNG image encoding (toDataURL) conflicts with asynchronous image encoding (toBlob)");
 
 //Fire a bunch of toBlob operations of canvas to keep the async thread busy
 var j = 0; // due to async nature of toBlob we need a separate counter

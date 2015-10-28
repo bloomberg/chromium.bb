@@ -1264,7 +1264,7 @@ crbug.com/521730 [ Win10 ] virtual/gpu/fast/canvas/canvas-lose-restore-max-int-s
 crbug.com/521730 [ Win10 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/trustedeventsdefaultaction/fast/events/message-port-multi.html [ Failure ]
 crbug.com/521730 [ Win10 ] css3/filters/direct-image-dynamic-filter.html [ Pass Timeout ]
-crbug.com/521730 [ Win10 ] fast/canvas/canvas-toBlob-defaultpng.html [ Failure Pass ]
+crbug.com/521730 [ Win10 ] fast/canvas/toBlob/canvas-toBlob-defaultpng.html [ Failure Pass ]
 crbug.com/521730 [ Win10 ] fast/css-generated-content/first-letter-in-nested-before.html [ Failure Pass Timeout ]
 crbug.com/521730 [ Win10 ] fast/css/font-face-unicode-range-overlap-load.html [ Failure Pass ]
 crbug.com/521730 [ Win10 ] fast/css/fontface-arraybuffer.html [ Pass Timeout ]

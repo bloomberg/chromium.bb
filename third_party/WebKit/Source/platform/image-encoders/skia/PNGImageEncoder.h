@@ -31,16 +31,38 @@
 #ifndef PNGImageEncoder_h
 #define PNGImageEncoder_h
 
+#include "platform/geometry/IntSize.h"
+extern "C" {
+#include "png.h"
+}
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 struct ImageDataBuffer;
 
-class PNGImageEncoder {
+class PLATFORM_EXPORT PNGImageEncoderState {
+public:
+    static PassOwnPtr<PNGImageEncoderState> create(const IntSize& imageSize, Vector<unsigned char>* output);
+    ~PNGImageEncoderState();
+    png_struct* png() { ASSERT(m_png); return m_png; }
+    png_info* pngInfo() { ASSERT(m_pngInfo); return m_pngInfo; }
+private:
+    PNGImageEncoderState(png_struct* png_ptr, png_info* png_info_ptr) : m_png(png_ptr), m_pngInfo(png_info_ptr) {}
+    png_struct* m_png;
+    png_info* m_pngInfo;
+};
+
+
+class PLATFORM_EXPORT PNGImageEncoder {
 public:
     // Encode the input data with default compression quality. See also https://crbug.com/179289
     static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
+
+    // Functions for progressive image encoding
+    static void writeOneRowToPng(unsigned char* pixels, PNGImageEncoderState*);
+    static void finalizePng(PNGImageEncoderState*);
 };
 
 } // namespace blink

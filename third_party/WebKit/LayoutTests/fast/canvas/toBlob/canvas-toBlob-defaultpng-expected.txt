@@ -1,0 +1,10 @@
+Test that verifies whether the image data survives the toBlob process after async image encoding
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS image data survives through the toBlob and PNG Image encoder
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

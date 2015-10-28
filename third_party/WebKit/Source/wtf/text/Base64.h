@@ -49,6 +49,7 @@ WTF_EXPORT void base64Encode(const Vector<char>&, Vector<char>&, Base64EncodePol
 WTF_EXPORT void base64Encode(const CString&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
 WTF_EXPORT String base64Encode(const char*, unsigned, Base64EncodePolicy = Base64DoNotInsertLFs);
 WTF_EXPORT String base64Encode(const Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT String base64Encode(const Vector<unsigned char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
 WTF_EXPORT String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotInsertLFs);
 
 WTF_EXPORT bool base64Decode(const String&, Vector<char>&, CharacterMatchFunctionPtr shouldIgnoreCharacter = 0, Base64DecodePolicy = Base64DoNotValidatePadding);
@@ -75,6 +76,11 @@ inline void base64Encode(const CString& in, Vector<char>& out, Base64EncodePolic
 inline String base64Encode(const Vector<char>& in, Base64EncodePolicy policy)
 {
     return base64Encode(in.data(), in.size(), policy);
+}
+
+inline String base64Encode(const Vector<unsigned char>& in, Base64EncodePolicy policy)
+{
+    return base64Encode(reinterpret_cast<const char*>(in.data()), in.size(), policy);
 }
 
 inline String base64Encode(const CString& in, Base64EncodePolicy policy)

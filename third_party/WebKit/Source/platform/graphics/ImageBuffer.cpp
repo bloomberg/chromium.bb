@@ -346,10 +346,8 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
-bool ImageDataBuffer::encodeImage(const String& mimeType, const double& quality, Vector<char>* output) const
+bool ImageDataBuffer::encodeImage(const String& mimeType, const double& quality, Vector<unsigned char>* encodedImage) const
 {
-    Vector<unsigned char>* encodedImage = reinterpret_cast<Vector<unsigned char>*>(output);
-
     if (mimeType == "image/jpeg") {
         int compressionQuality = JPEGImageEncoder::DefaultCompressionQuality;
         if (quality >= 0.0 && quality <= 1.0)
@@ -375,11 +373,11 @@ String ImageDataBuffer::toDataURL(const String& mimeType, const double& quality)
 {
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 
-    Vector<char> encodedImage;
-    if (!encodeImage(mimeType, quality, &encodedImage))
+    Vector<unsigned char> result;
+    if (!encodeImage(mimeType, quality, &result))
         return "data:,";
 
-    return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
+    return "data:" + mimeType + ";base64," + base64Encode(result);
 }
 
 } // namespace blink

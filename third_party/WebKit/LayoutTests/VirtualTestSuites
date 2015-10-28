@@ -12,6 +12,11 @@
   },
   {
     "prefix": "threaded",
+    "base": "fast/canvas/toBlob",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
     "base": "compositing/visibility",
     "args": ["--enable-threaded-compositing"]
   },

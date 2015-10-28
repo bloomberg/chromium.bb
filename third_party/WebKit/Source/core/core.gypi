@@ -2866,6 +2866,8 @@
             'html/ValidityState.h',
             'html/WindowNameCollection.cpp',
             'html/WindowNameCollection.h',
+            'html/canvas/CanvasAsyncBlobCreator.cpp',
+            'html/canvas/CanvasAsyncBlobCreator.h',
             'html/canvas/CanvasFontCache.cpp',
             'html/canvas/CanvasFontCache.h',
             'html/canvas/CanvasImageSource.h',

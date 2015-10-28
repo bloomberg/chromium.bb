@@ -1,5 +1,5 @@
+jsTestIsAsync = true;
 if (window.testRunner) {
-    testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
@@ -37,6 +37,7 @@ function testIfAllImagesAreCorrect()
         testPassed("All images encoded by both async and main threads match one another");
     else 
         testFailed("Not all images encoded by async and main threads match one another");
+     finishJSTest();
 }
 
 var counter = numToBlobCalls + numToDataURLCalls;

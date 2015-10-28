@@ -43,7 +43,6 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebThread.h"
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
@@ -67,8 +66,6 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentV
 public:
     DECLARE_NODE_FACTORY(HTMLCanvasElement);
     ~HTMLCanvasElement() override;
-
-    static WebThread* getToBlobThreadInstance();
 
     // Attributes and functions exposed to script
     int width() const { return size().width(); }
@@ -198,9 +195,6 @@ private:
 
     ImageData* toImageData(SourceDrawingBuffer) const;
     String toDataURLInternal(const String& mimeType, const double& quality, SourceDrawingBuffer) const;
-
-    static void encodeImageAsync(DOMUint8ClampedArray* imagedata, IntSize imageSize, FileCallback*, const String& mimeType, double quality);
-    static void createBlobAndCall(PassOwnPtr<Vector<char>> encodedImage, const String& mimeType, FileCallback*);
 
     IntSize m_size;
 
