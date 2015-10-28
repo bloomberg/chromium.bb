@@ -21,3 +21,10 @@ MessageLoopTestTypeDefault.RecursivePosts
 
 # Check-fails on Valgrind/Mac, see https://crbug.com/481290
 MessagePumpLibeventTest.QuitWatcher
+
+# Takes too long to run. crbug.com/542535.
+AllocationRegisterTest.OverflowDeathTest
+MemoryAllocatorDumpTest.ForbidDuplicatesDeathTest
+ProcessUtilTest.GetAppOutputRestrictedNoZombies
+TraceEventCallbackTest.TraceEventCallbackWhileFull
+TraceEventTestFixture.TestTraceFlush

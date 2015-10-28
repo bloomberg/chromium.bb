@@ -7,3 +7,10 @@ VideoFrameSchedulerImplTest.EventualDisplay
 
 # Times out under Valgrind, http://crbug.com/444578
 PipelineIntegrationTest.*
+
+# Takes too long to run. crbug.com/542535.
+SingleVersusMultithreaded/VirtualAudioInputStreamTest.MultipleOutputs/1
+SingleVersusMultithreaded/VirtualAudioInputStreamTest.MultipleOutputs/0
+SingleVersusMultithreaded/VirtualAudioInputStreamTest.ComprehensiveTest/1
+SingleVersusMultithreaded/VirtualAudioInputStreamTest.ComprehensiveTest/0
+VideoRendererAlgorithmTest.CadenceBasedTest
