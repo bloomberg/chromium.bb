@@ -51,17 +51,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
   ~ThreadProxy() override;
 
-  struct BeginMainFrameAndCommitState {
-    BeginMainFrameAndCommitState();
-    ~BeginMainFrameAndCommitState();
-
-    unsigned int begin_frame_id;
-    BeginFrameArgs begin_frame_args;
-    scoped_ptr<ScrollAndScaleSet> scroll_info;
-    size_t memory_allocation_limit_bytes;
-    bool evicted_ui_resources;
-  };
-
   // Commits between the main and impl threads are processed through a pipeline
   // with the following stages. For efficiency we can early out at any stage if
   // we decide that no further processing is necessary.
@@ -250,16 +239,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SendBeginMainFrameNotExpectedSoon() override;
 
   // ProxyMain implementation
-  base::WeakPtr<ProxyMain> GetMainWeakPtr() override;
   void SetChannel(scoped_ptr<ThreadedChannel> threaded_channel) override;
-  void DidCompleteSwapBuffers() override;
-
-  // ProxyImpl implementation
-  base::WeakPtr<ProxyImpl> GetImplWeakPtr() override;
-  void SetThrottleFrameProductionOnImpl(bool throttle) override;
-  void UpdateTopControlsStateOnImpl(TopControlsState constraints,
-                                    TopControlsState current,
-                                    bool animate) override;
 
  protected:
   ThreadProxy(
@@ -269,50 +249,62 @@ class CC_EXPORT ThreadProxy : public Proxy,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
-  // Called on main thread.
-  void SetRendererCapabilitiesMainThreadCopy(
-      const RendererCapabilities& capabilities);
+  friend class ThreadProxyForTest;
+
+  // ProxyMain implementation.
+  base::WeakPtr<ProxyMain> GetMainWeakPtr() override;
+  void DidCompleteSwapBuffers() override;
+  void SetRendererCapabilitiesMainCopy(
+      const RendererCapabilities& capabilities) override;
+  void BeginMainFrameNotExpectedSoon() override;
+  void DidCommitAndDrawFrame() override;
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue) override;
+  void DidLoseOutputSurface() override;
+  void RequestNewOutputSurface() override;
+  void DidInitializeOutputSurface(
+      bool success,
+      const RendererCapabilities& capabilities) override;
+  void DidCompletePageScaleAnimation() override;
+  void PostFrameTimingEventsOnMain(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override;
   void BeginMainFrame(
-      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
-  void BeginMainFrameNotExpectedSoon();
-  void DidCommitAndDrawFrame();
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue);
-  void DidLoseOutputSurface();
-  void RequestNewOutputSurface();
-  void DidInitializeOutputSurface(bool success,
-                                  const RendererCapabilities& capabilities);
+      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
+
+  // ProxyImpl implementation
+  base::WeakPtr<ProxyImpl> GetImplWeakPtr() override;
+  void SetThrottleFrameProductionOnImpl(bool throttle) override;
+  void UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                    TopControlsState current,
+                                    bool animate) override;
+  void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) override;
+  void MainThreadHasStoppedFlingingOnImpl() override;
+  void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
+  void SetDeferCommitsOnImpl(bool defer_commits) const override;
+  void FinishAllRenderingOnImpl(CompletionEvent* completion) override;
+  void SetVisibleOnImpl(CompletionEvent* completion, bool visible) override;
+  void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
+  void FinishGLOnImpl(CompletionEvent* completion) override;
+  void MainFrameWillHappenOnImplForTesting(
+      CompletionEvent* completion,
+      bool* main_frame_will_happen) override;
+  void SetNeedsCommitOnImpl() override;
+  void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
+  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override;
+  void StartCommitOnImpl(CompletionEvent* completion) override;
+
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.
   bool SendCommitRequestToImplThreadIfNeeded(
       CommitPipelineStage required_stage);
-  void DidCompletePageScaleAnimation();
 
   // Called on impl thread.
   struct SchedulerStateRequest;
 
-  void StartCommitOnImplThread(CompletionEvent* completion);
-  void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
-  void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
-  void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
-  void HasInitializedOutputSurfaceOnImplThread(
-      CompletionEvent* completion,
-      bool* has_initialized_output_surface);
-  void DeleteContentsTexturesOnImplThread(CompletionEvent* completion);
-  void InitializeOutputSurfaceOnImplThread(OutputSurface* output_surface);
-  void ReleaseOutputSurfaceOnImplThread(CompletionEvent* completion);
-  void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);
-  void MainFrameWillHappenOnImplThreadForTesting(CompletionEvent* completion,
-                                                 bool* main_frame_will_happen);
-  void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);
-  void MainThreadHasStoppedFlingingOnImplThread();
-  void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
-  void SetDeferCommitsOnImplThread(bool defer_commits) const;
-  void PostFrameTimingEvents(
-      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
 
   LayerTreeHost* layer_tree_host();
   const LayerTreeHost* layer_tree_host() const;

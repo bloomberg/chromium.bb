@@ -6,7 +6,11 @@
 #define CC_TREES_PROXY_MAIN_H_
 
 #include "base/memory/weak_ptr.h"
+#include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
+#include "cc/debug/frame_timing_tracker.h"
+#include "cc/output/renderer_capabilities.h"
+#include "cc/trees/proxy_common.h"
 
 namespace cc {
 class ThreadedChannel;
@@ -25,14 +29,32 @@ class CC_EXPORT ProxyMain {
   // when the impl side is initialized.
   virtual void SetChannel(scoped_ptr<ThreadedChannel> threaded_channel) = 0;
 
+ protected:
+  virtual ~ProxyMain() {}
+
+ private:
+  friend class ThreadedChannel;
   // Callback for main side commands received from the Channel.
   virtual void DidCompleteSwapBuffers() = 0;
+  virtual void SetRendererCapabilitiesMainCopy(
+      const RendererCapabilities& capabilities) = 0;
+  virtual void BeginMainFrameNotExpectedSoon() = 0;
+  virtual void DidCommitAndDrawFrame() = 0;
+  virtual void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue) = 0;
+  virtual void DidLoseOutputSurface() = 0;
+  virtual void RequestNewOutputSurface() = 0;
+  virtual void DidInitializeOutputSurface(
+      bool success,
+      const RendererCapabilities& capabilities) = 0;
+  virtual void DidCompletePageScaleAnimation() = 0;
+  virtual void PostFrameTimingEventsOnMain(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) = 0;
+  virtual void BeginMainFrame(
+      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) = 0;
 
   // TODO(khushalsagar): Rename as GetWeakPtr() once ThreadProxy is split.
   virtual base::WeakPtr<ProxyMain> GetMainWeakPtr() = 0;
-
- protected:
-  virtual ~ProxyMain() {}
 };
 
 }  // namespace cc

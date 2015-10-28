@@ -137,6 +137,7 @@
       'trees/occlusion_tracker_unittest.cc',
       'trees/occlusion_unittest.cc',
       'trees/property_tree_unittest.cc',
+      'trees/threaded_channel_unittest.cc',
       'trees/tree_synchronizer_unittest.cc',
     ],
     'cc_surfaces_unit_tests_source_files': [

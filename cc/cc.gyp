@@ -546,6 +546,8 @@
         'trees/property_tree_builder.h',
         'trees/proxy.cc',
         'trees/proxy.h',
+        'trees/proxy_common.cc',
+        'trees/proxy_common.h',
         'trees/proxy_impl.h',
         'trees/proxy_main.h',
         'trees/scoped_abort_remaining_swap_promises.h',

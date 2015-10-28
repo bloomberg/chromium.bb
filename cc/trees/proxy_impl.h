@@ -7,10 +7,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/completion_event.h"
 #include "cc/input/top_controls_state.h"
+#include "cc/output/output_surface.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
+#include "cc/trees/proxy_common.h"
 
 namespace cc {
-
 // TODO(khushalsagar): The impl side of ThreadProxy. It is currently defined as
 // an interface with the implementation provided by ThreadProxy and will be
 // made an independent class.
@@ -18,12 +21,29 @@ namespace cc {
 // variables from ThreadProxy.
 // See crbug/527200
 class CC_EXPORT ProxyImpl {
- public:
+ private:
+  friend class ThreadedChannel;
+
   // Callback for impl side commands received from the channel.
   virtual void SetThrottleFrameProductionOnImpl(bool throttle) = 0;
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) = 0;
+  virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) = 0;
+  virtual void MainThreadHasStoppedFlingingOnImpl() = 0;
+  virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) = 0;
+  virtual void SetDeferCommitsOnImpl(bool defer_commits) const = 0;
+  virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) = 0;
+  virtual void SetNeedsCommitOnImpl() = 0;
+  virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) = 0;
+  virtual void FinishAllRenderingOnImpl(CompletionEvent* completion) = 0;
+  virtual void SetVisibleOnImpl(CompletionEvent* completion, bool visible) = 0;
+  virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
+  virtual void FinishGLOnImpl(CompletionEvent* completion) = 0;
+  virtual void MainFrameWillHappenOnImplForTesting(
+      CompletionEvent* completion,
+      bool* main_frame_will_happen) = 0;
+  virtual void StartCommitOnImpl(CompletionEvent* completion) = 0;
 
   // TODO(khushalsagar): Rename as GetWeakPtr() once ThreadProxy is split.
   virtual base::WeakPtr<ProxyImpl> GetImplWeakPtr() = 0;

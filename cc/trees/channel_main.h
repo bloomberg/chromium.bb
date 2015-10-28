@@ -6,10 +6,13 @@
 #define CC_TREES_CHANNEL_MAIN_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/base/completion_event.h"
 #include "cc/input/top_controls_state.h"
+#include "cc/output/output_surface.h"
+#include "cc/scheduler/commit_earlyout_reason.h"
+#include "cc/trees/proxy_common.h"
 
 namespace cc {
-
 // ChannelMain and ChannelImpl provide an abstract communication layer for
 // the main and impl side of the compositor.
 //
@@ -27,6 +30,21 @@ class CC_EXPORT ChannelMain {
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) = 0;
+  virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) = 0;
+  virtual void MainThreadHasStoppedFlingingOnImpl() = 0;
+  virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) = 0;
+  virtual void SetDeferCommitsOnImpl(bool defer_commits) = 0;
+  virtual void FinishAllRenderingOnImpl(CompletionEvent* completion) = 0;
+  virtual void SetVisibleOnImpl(CompletionEvent* completion, bool visible) = 0;
+  virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
+  virtual void FinishGLOnImpl(CompletionEvent* completion) = 0;
+  virtual void MainFrameWillHappenOnImplForTesting(
+      CompletionEvent* completion,
+      bool* main_frame_will_happen) = 0;
+  virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) = 0;
+  virtual void SetNeedsCommitOnImpl() = 0;
+  virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) = 0;
+  virtual void StartCommitOnImpl(CompletionEvent* completion) = 0;
 
   virtual ~ChannelMain() {}
 };

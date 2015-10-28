@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 
 namespace cc {
 
@@ -40,6 +41,16 @@ class CompletionEvent {
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     event_.Wait();
   }
+
+  void TimedWait(const base::TimeDelta& max_time) {
+#if DCHECK_IS_ON()
+    DCHECK(!waited_);
+    waited_ = true;
+#endif
+    event_.TimedWait(max_time);
+  }
+
+  bool IsSignaled() { return event_.IsSignaled(); }
 
   void Signal() {
 #if DCHECK_IS_ON()

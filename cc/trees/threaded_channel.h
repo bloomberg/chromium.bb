@@ -10,6 +10,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/trees/channel_impl.h"
 #include "cc/trees/channel_main.h"
+#include "cc/trees/proxy_common.h"
 #include "cc/trees/proxy_impl.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/thread_proxy.h"
@@ -79,9 +80,43 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                     TopControlsState current,
                                     bool animate) override;
+  void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) override;
+  void MainThreadHasStoppedFlingingOnImpl() override;
+  void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
+  void SetDeferCommitsOnImpl(bool defer_commits) override;
+  void SetNeedsCommitOnImpl() override;
+  void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override;
+  void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
+
+  // Blocking calls to ProxyImpl
+  void FinishAllRenderingOnImpl(CompletionEvent* completion) override;
+  void SetVisibleOnImpl(CompletionEvent* completion, bool visible) override;
+  void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
+  void FinishGLOnImpl(CompletionEvent* completion) override;
+  void MainFrameWillHappenOnImplForTesting(
+      CompletionEvent* completion,
+      bool* main_frame_will_happen) override;
+  void StartCommitOnImpl(CompletionEvent* completion) override;
 
   // ChannelImpl Implementation
   void DidCompleteSwapBuffers() override;
+  void SetRendererCapabilitiesMainCopy(
+      const RendererCapabilities& capabilities) override;
+  void BeginMainFrameNotExpectedSoon() override;
+  void DidCommitAndDrawFrame() override;
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue) override;
+  void DidLoseOutputSurface() override;
+  void RequestNewOutputSurface() override;
+  void DidInitializeOutputSurface(
+      bool success,
+      const RendererCapabilities& capabilities) override;
+  void DidCompletePageScaleAnimation() override;
+  void PostFrameTimingEventsOnMain(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override;
+  void BeginMainFrame(
+      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
 
  protected:
   ThreadedChannel(ThreadProxy* thread_proxy,
@@ -95,6 +130,12 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   ProxyMain* proxy_main_;
 
   ProxyImpl* proxy_impl_;
+
+  // TODO(khushalsagar): Temporary variable to access proxy for assertion checks
+  // Remove this once the proxy class is split and the complete
+  // implementation for controlling communication across threads is moved to
+  // ThreadedChannel.
+  Proxy* proxy_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 

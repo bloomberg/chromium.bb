@@ -121,6 +121,40 @@ class TestHooks : public AnimationDelegate {
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) {}
   virtual void SendBeginMainFrameNotExpectedSoon() {}
 
+  // Hooks for ProxyImpl
+  virtual void SetThrottleFrameProductionOnImpl(bool throttle) {}
+  virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
+                                            TopControlsState current,
+                                            bool animate) {}
+  virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) {}
+  virtual void MainThreadHasStoppedFlingingOnImpl() {}
+  virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) {}
+  virtual void SetDeferCommitsOnImpl(bool defer_commits) {}
+  virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) {}
+  virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {}
+  virtual void SetNeedsCommitOnImpl() {}
+  virtual void FinishAllRenderingOnImpl() {}
+  virtual void SetVisibleOnImpl(bool visible) {}
+  virtual void ReleaseOutputSurfaceOnImpl() {}
+  virtual void FinishGLOnImpl() {}
+  virtual void StartCommitOnImpl() {}
+
+  // Hooks for ProxyMain
+  virtual void ReceivedDidCompleteSwapBuffers() {}
+  virtual void ReceivedSetRendererCapabilitiesMainCopy(
+      const RendererCapabilities& capabilities) {}
+  virtual void ReceivedBeginMainFrameNotExpectedSoon() {}
+  virtual void ReceivedDidCommitAndDrawFrame() {}
+  virtual void ReceivedSetAnimationEvents() {}
+  virtual void ReceivedDidLoseOutputSurface() {}
+  virtual void ReceivedRequestNewOutputSurface() {}
+  virtual void ReceivedDidInitializeOutputSurface(
+      bool success,
+      const RendererCapabilities& capabilities) {}
+  virtual void ReceivedDidCompletePageScaleAnimation() {}
+  virtual void ReceivedPostFrameTimingEventsOnMain() {}
+  virtual void ReceivedBeginMainFrame() {}
+
   // Implementation of AnimationDelegate:
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                               Animation::TargetProperty target_property,
