@@ -54,6 +54,10 @@ class PushMessagingAppIdentifier {
   // given |profile|.
   static std::vector<PushMessagingAppIdentifier> GetAll(Profile* profile);
 
+  // Returns the number of PushMessagingAppIdentifiers currently registered for
+  // the given |profile|.
+  static size_t GetCount(Profile* profile);
+
   ~PushMessagingAppIdentifier();
 
   // Persist this app identifier to prefs.

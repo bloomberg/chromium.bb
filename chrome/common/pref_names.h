@@ -390,7 +390,6 @@ extern const char kFullscreenAllowed[];
 
 extern const char kLocalDiscoveryNotificationsEnabled[];
 
-extern const char kPushMessagingRegistrationCount[];
 extern const char kPushMessagingAppIdentifierMap[];
 
 extern const char kEasyUnlockAllowed[];

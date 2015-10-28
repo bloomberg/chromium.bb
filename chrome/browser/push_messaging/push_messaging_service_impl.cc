@@ -101,25 +101,12 @@ bool UseBackgroundMode() {
 }  // namespace
 
 // static
-void PushMessagingServiceImpl::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kPushMessagingRegistrationCount, 0);
-  PushMessagingAppIdentifier::RegisterProfilePrefs(registry);
-}
-
-// static
 void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
   // TODO(johnme): Consider whether push should be enabled in incognito.
   if (!profile || profile->IsOffTheRecord())
     return;
 
-  // TODO(johnme): If push becomes enabled in incognito (and this still uses a
-  // pref), be careful that this pref is read from the right profile, as prefs
-  // defined in a regular profile are visible in the corresponding incognito
-  // profile unless overridden.
-  // TODO(johnme): Make sure this pref doesn't get out of sync after crashes.
-  int count = profile->GetPrefs()->GetInteger(
-      prefs::kPushMessagingRegistrationCount);
+  int count = PushMessagingAppIdentifier::GetCount(profile);
   if (count <= 0)
     return;
 
@@ -161,8 +148,6 @@ void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
     }
 #endif  // defined(ENABLE_BACKGROUND)
     push_subscription_count_ += add;
-    profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                     push_subscription_count_);
   }
 }
 
@@ -175,8 +160,6 @@ void PushMessagingServiceImpl::DecreasePushSubscriptionCount(int subtract,
   } else {
     push_subscription_count_ -= subtract;
     DCHECK(push_subscription_count_ >= 0);
-    profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                     push_subscription_count_);
   }
   if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
@@ -390,8 +373,8 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
       PushMessagingAppIdentifier::Generate(requesting_origin,
                                            service_worker_registration_id);
 
-  if (profile_->GetPrefs()->GetInteger(
-          prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
+  if (push_subscription_count_ + pending_push_subscription_count_ >=
+      kMaxRegistrations) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
     return;

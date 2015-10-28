@@ -1159,10 +1159,6 @@ const char kFullscreenAllowed[] = "fullscreen.allowed";
 const char kLocalDiscoveryNotificationsEnabled[] =
     "local_discovery.notifications_enabled";
 
-// How many Service Workers are registered with the Push API (could be zero).
-const char kPushMessagingRegistrationCount[] =
-    "gcm.push_messaging_registration_count";
-
 // Maps from app ids to origin + Service Worker registration ID.
 const char kPushMessagingAppIdentifierMap[] =
     "gcm.push_messaging_application_id_map";

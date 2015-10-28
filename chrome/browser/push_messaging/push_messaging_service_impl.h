@@ -46,9 +46,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                                  public KeyedService,
                                  public BackgroundTrigger {
  public:
-  // Register profile-specific prefs for GCM.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
   // If any Service Workers are using push, starts GCM and adds an app handler.
   static void InitializeForProfile(Profile* profile);
 

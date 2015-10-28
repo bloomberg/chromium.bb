@@ -55,6 +55,10 @@ bool GetOriginAndSWRFromPrefValue(
 // static
 void PushMessagingAppIdentifier::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // TODO(johnme): If push becomes enabled in incognito, be careful that this
+  // pref is read from the right profile, as prefs defined in a regular profile
+  // are visible in the corresponding incognito profile unless overridden.
+  // TODO(johnme): Make sure this pref doesn't get out of sync after crashes.
   registry->RegisterDictionaryPref(prefs::kPushMessagingAppIdentifierMap);
 }
 
@@ -140,6 +144,12 @@ std::vector<PushMessagingAppIdentifier> PushMessagingAppIdentifier::GetAll(
   }
 
   return result;
+}
+
+// static
+size_t PushMessagingAppIdentifier::GetCount(Profile* profile) {
+  return profile->GetPrefs()
+                ->GetDictionary(prefs::kPushMessagingAppIdentifierMap)->size();
 }
 
 PushMessagingAppIdentifier::PushMessagingAppIdentifier()
