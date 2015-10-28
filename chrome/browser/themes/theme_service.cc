@@ -228,8 +228,8 @@ SkColor ThemeService::GetColor(int id) const {
       return color_utils::HSLShift(gfx::kChromeIconGrey,
                                    GetTint(Properties::TINT_BUTTONS));
     case Properties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
-      return color_utils::HSLShift(SkColorSetA(gfx::kChromeIconGrey, 0x33),
-                                   GetTint(Properties::TINT_BUTTONS));
+      // The active color is overridden in Gtk2UI.
+      return SkColorSetA(GetColor(Properties::COLOR_TOOLBAR_BUTTON_ICON), 0x33);
     case Properties::COLOR_NTP_SECTION_HEADER_TEXT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.30);
     case Properties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:

@@ -133,8 +133,8 @@ class Gtk2UI : public views::LinuxUI {
   // or generates them per our fallback algorithm.
   SkColor BuildFrameColors();
 
-  // Sets the underlying theme tints.
-  void SetThemeTint(int id, SkColor color);
+  // Gets a tint which depends on the default for |id| as well as |color|.
+  color_utils::HSL ColorToTint(int id, SkColor color);
 
   // Lazily generates each image used in the gtk theme.
   gfx::Image GenerateGtkThemeImage(int id) const;
@@ -174,10 +174,9 @@ class Gtk2UI : public views::LinuxUI {
   // Updates |default_font_*|.
   void UpdateDefaultFont();
 
-  // Tints and colors calculated by LoadGtkValues() that are given to the
+  // Colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
   ColorMap colors_;
-  TintMap tints_;
 
   // Colors used to tint certain icons.
   color_utils::HSL button_tint_;

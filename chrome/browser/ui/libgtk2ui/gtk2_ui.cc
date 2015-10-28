@@ -908,15 +908,14 @@ void Gtk2UI::LoadGtkValues() {
 
   SkColor toolbar_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelBackgroundColor);
-  SkColor button_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHighlightColor);
   SkColor label_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
 
   colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
   colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
 
-  SetThemeTint(ThemeProperties::TINT_BUTTONS, button_color);
+  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] =
+      color_utils::DeriveDefaultIconColor(label_color);
 
   colors_[ThemeProperties::COLOR_TAB_TEXT] = label_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = label_color;
@@ -935,8 +934,9 @@ void Gtk2UI::LoadGtkValues() {
   // background tab color, with the lightness and saturation moved in the
   // opposite direction. (We don't touch the hue, since there should be subtle
   // hints of the color in the text.)
-  color_utils::HSL inactive_tab_text_hsl =
-      tints_[ThemeProperties::TINT_BACKGROUND_TAB];
+  color_utils::HSL inactive_tab_text_hsl = ColorToTint(
+      ThemeProperties::TINT_BACKGROUND_TAB,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground));
   if (inactive_tab_text_hsl.l < 0.5)
     inactive_tab_text_hsl.l = kDarkInactiveLuminance;
   else
@@ -1014,7 +1014,6 @@ SkColor Gtk2UI::BuildFrameColors() {
   SkColor frame_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
   SkColor temp_color;
-  SetThemeTint(ThemeProperties::TINT_BACKGROUND_TAB, frame_color);
 
 #if GTK_MAJOR_VERSION == 2
   color_utils::HSL kDefaultFrameShift = { -1, -1, 0.4 };
@@ -1025,28 +1024,24 @@ SkColor Gtk2UI::BuildFrameColors() {
 
   temp_color = frame_color;
   colors_[ThemeProperties::COLOR_FRAME] = temp_color;
-  SetThemeTint(ThemeProperties::TINT_FRAME, temp_color);
 
   temp_color = color_utils::HSLShift(
       GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]),
       kDefaultFrameShift);
   theme->GetChromeStyleColor("inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
-  SetThemeTint(ThemeProperties::TINT_FRAME_INACTIVE, temp_color);
 
   temp_color = color_utils::HSLShift(
       frame_color,
       GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO));
   theme->GetChromeStyleColor("incognito-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
-  SetThemeTint(ThemeProperties::TINT_FRAME_INCOGNITO, temp_color);
 
   temp_color = color_utils::HSLShift(
       frame_color,
       GetDefaultTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE));
   theme->GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
-  SetThemeTint(ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE, temp_color);
 #else
   const SkBitmap* bitmap;
 
@@ -1078,7 +1073,7 @@ SkColor Gtk2UI::BuildFrameColors() {
   return frame_color;
 }
 
-void Gtk2UI::SetThemeTint(int id, SkColor color) {
+color_utils::HSL Gtk2UI::ColorToTint(int id, SkColor color) {
   color_utils::HSL default_tint = GetDefaultTint(id);
   color_utils::HSL hsl;
   color_utils::SkColorToHSL(color, &hsl);
@@ -1089,7 +1084,7 @@ void Gtk2UI::SetThemeTint(int id, SkColor color) {
   if (default_tint.l != -1)
     hsl.l = default_tint.l;
 
-  tints_[id] = hsl;
+  return hsl;
 }
 
 gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
