@@ -241,7 +241,7 @@
 
           The home page type can either be set to a URL you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
 
-          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.
+          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still choose the New Tab Page as their home page.
 
           Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.
 
