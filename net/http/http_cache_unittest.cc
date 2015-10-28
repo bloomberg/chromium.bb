@@ -702,11 +702,10 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
 
 TEST(HttpCache, SimpleGETNoDiskCache2) {
   // This will initialize a cache object with NULL backend.
-  scoped_ptr<MockBlockingBackendFactory> factory(
-      new MockBlockingBackendFactory());
+  MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   factory->set_fail(true);
   factory->FinishCreation();  // We'll complete synchronously.
-  MockHttpCache cache(factory.Pass());
+  MockHttpCache cache(factory);
 
   // Read from the network, and don't use the cache.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -1745,8 +1744,8 @@ TEST(HttpCache, SimpleGET_AbandonedCacheRead) {
 // Tests that we can delete the HttpCache and deal with queued transactions
 // ("waiting for the backend" as opposed to Active or Doomed entries).
 TEST(HttpCache, SimpleGET_ManyWriters_DeleteCache) {
-  scoped_ptr<MockHttpCache> cache(
-      new MockHttpCache(make_scoped_ptr(new MockBackendNoCbFactory())));
+  scoped_ptr<MockHttpCache> cache(new MockHttpCache(
+                                      new MockBackendNoCbFactory()));
 
   MockHttpRequest request(kSimpleGET_Transaction);
 
@@ -1783,7 +1782,7 @@ TEST(HttpCache, SimpleGET_ManyWriters_DeleteCache) {
 // Tests that we queue requests when initializing the backend.
 TEST(HttpCache, SimpleGET_WaitForBackend) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(factory);
 
   MockHttpRequest request0(kSimpleGET_Transaction);
   MockHttpRequest request1(kTypicalGET_Transaction);
@@ -1829,7 +1828,7 @@ TEST(HttpCache, SimpleGET_WaitForBackend) {
 // to be initialized.
 TEST(HttpCache, SimpleGET_WaitForBackend_CancelCreate) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(factory);
 
   MockHttpRequest request0(kSimpleGET_Transaction);
   MockHttpRequest request1(kTypicalGET_Transaction);
@@ -1883,7 +1882,7 @@ TEST(HttpCache, SimpleGET_WaitForBackend_CancelCreate) {
 // Tests that we can delete the cache while creating the backend.
 TEST(HttpCache, DeleteCacheWaitingForBackend) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  scoped_ptr<MockHttpCache> cache(new MockHttpCache(make_scoped_ptr(factory)));
+  scoped_ptr<MockHttpCache> cache(new MockHttpCache(factory));
 
   MockHttpRequest request(kSimpleGET_Transaction);
 
@@ -1915,7 +1914,7 @@ TEST(HttpCache, DeleteCacheWaitingForBackend) {
 // one of the callbacks.
 TEST(HttpCache, DeleteCacheWaitingForBackend2) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache* cache = new MockHttpCache(make_scoped_ptr(factory));
+  MockHttpCache* cache = new MockHttpCache(factory);
 
   DeleteCacheCompletionCallback cb(cache);
   disk_cache::Backend* backend;
@@ -3082,11 +3081,10 @@ TEST(HttpCache, SimplePOST_NoUploadId_Invalidate_205) {
 // Tests that processing a POST before creating the backend doesn't crash.
 TEST(HttpCache, SimplePOST_NoUploadId_NoBackend) {
   // This will initialize a cache object with NULL backend.
-  scoped_ptr<MockBlockingBackendFactory> factory(
-      new MockBlockingBackendFactory());
+  MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   factory->set_fail(true);
   factory->FinishCreation();
-  MockHttpCache cache(factory.Pass());
+  MockHttpCache cache(factory);
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(new UploadBytesElementReader("hello", 5));
@@ -5419,11 +5417,10 @@ TEST(HttpCache, RangeGET_LargeValues) {
 // Tests that we don't crash with a range request if the disk cache was not
 // initialized properly.
 TEST(HttpCache, RangeGET_NoDiskCache) {
-  scoped_ptr<MockBlockingBackendFactory> factory(
-      new MockBlockingBackendFactory());
+  MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   factory->set_fail(true);
   factory->FinishCreation();  // We'll complete synchronously.
-  MockHttpCache cache(factory.Pass());
+  MockHttpCache cache(factory);
 
   AddMockTransaction(&kRangeGET_TransactionOK);
 

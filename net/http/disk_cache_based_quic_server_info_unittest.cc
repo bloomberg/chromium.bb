@@ -85,7 +85,7 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteInCallback) {
   // Use the blocking mock backend factory to force asynchronous completion
   // of quic_server_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(factory);
   QuicServerId server_id("www.verisign.com", 443, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
@@ -390,7 +390,7 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
 
 TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReady) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(factory);
   TestCompletionCallback callback;
   QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info(
@@ -508,7 +508,7 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
 // persists the data when Start() finishes.
 TEST(DiskCacheBasedQuicServerInfo, PersistWhenNotReadyToPersist) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(factory);
   AddMockTransaction(&kHostInfoTransaction1);
   TestCompletionCallback callback;
 
@@ -639,7 +639,7 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteServerInfoInCallback) {
   // Use the blocking mock backend factory to force asynchronous completion
   // of quic_server_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
-  MockHttpCache cache(make_scoped_ptr(factory));
+  MockHttpCache cache(factory);
   QuicServerId server_id("www.verisign.com", 443, PRIVACY_MODE_DISABLED);
   QuicServerInfo* quic_server_info =
       new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache());

@@ -245,9 +245,11 @@ void OffTheRecordProfileIOData::InitializeInternal(
           NULL,
           profile_params->cookie_monster_delegate.get())));
 
+  net::HttpCache::BackendFactory* main_backend =
+      net::HttpCache::DefaultBackend::InMemory(0);
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
-  main_http_factory_ = CreateMainHttpFactory(
-      http_network_session_.get(), net::HttpCache::DefaultBackend::InMemory(0));
+  main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
+                                             main_backend);
 
   main_context->set_http_transaction_factory(main_http_factory_.get());
 #if !defined(DISABLE_FTP_SUPPORT)
@@ -343,9 +345,10 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
       content::CreateCookieStore(content::CookieStoreConfig()));
 
   // Use a separate in-memory cache for the app.
+  net::HttpCache::BackendFactory* app_backend =
+      net::HttpCache::DefaultBackend::InMemory(0);
   scoped_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session_.get(),
-                        net::HttpCache::DefaultBackend::InMemory(0));
+      CreateHttpFactory(http_network_session_.get(), app_backend);
 
   context->SetHttpTransactionFactory(app_http_cache.Pass());
 

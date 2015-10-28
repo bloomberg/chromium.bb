@@ -539,7 +539,7 @@ void ProfileImplIOData::InitializeInternal(
     // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 HttpCache construction"));
-    scoped_ptr<net::HttpCache::BackendFactory> main_backend(
+    net::HttpCache::BackendFactory* main_backend(
         new net::HttpCache::DefaultBackend(
             net::DISK_CACHE,
             ChooseCacheBackendType(),
@@ -548,7 +548,7 @@ void ProfileImplIOData::InitializeInternal(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
     http_network_session_ = CreateHttpNetworkSession(*profile_params);
     main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
-                                               main_backend.Pass());
+                                               main_backend);
   }
 
   main_context->set_http_transaction_factory(main_http_factory_.get());
@@ -660,19 +660,19 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
       partition_descriptor.path.Append(chrome::kCacheDirname);
 
   // Use a separate HTTP disk cache for isolated apps.
-  scoped_ptr<net::HttpCache::BackendFactory> app_backend;
+  net::HttpCache::BackendFactory* app_backend;
   if (partition_descriptor.in_memory) {
     app_backend = net::HttpCache::DefaultBackend::InMemory(0);
   } else {
-    app_backend.reset(new net::HttpCache::DefaultBackend(
+    app_backend = new net::HttpCache::DefaultBackend(
         net::DISK_CACHE,
         ChooseCacheBackendType(),
         cache_path,
         app_cache_max_size_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   }
   scoped_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session_.get(), app_backend.Pass());
+      CreateHttpFactory(http_network_session_.get(), app_backend);
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   if (partition_descriptor.in_memory) {
@@ -744,15 +744,15 @@ ProfileImplIOData::InitializeMediaRequestContext(
   }
 
   // Use a separate HTTP disk cache for isolated apps.
-  scoped_ptr<net::HttpCache::BackendFactory> media_backend(
+  net::HttpCache::BackendFactory* media_backend =
       new net::HttpCache::DefaultBackend(
           net::MEDIA_CACHE,
           ChooseCacheBackendType(),
           cache_path,
           cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   scoped_ptr<net::HttpCache> media_http_cache =
-      CreateHttpFactory(http_network_session_.get(), media_backend.Pass());
+      CreateHttpFactory(http_network_session_.get(), media_backend);
 
   // Transfer ownership of the cache to MediaRequestContext.
   context->SetHttpTransactionFactory(media_http_cache.Pass());

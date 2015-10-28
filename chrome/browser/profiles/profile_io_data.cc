@@ -1331,20 +1331,23 @@ scoped_ptr<net::HttpNetworkSession> ProfileIOData::CreateHttpNetworkSession(
 
 scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
     net::HttpNetworkSession* session,
-    scoped_ptr<net::HttpCache::BackendFactory> main_backend) const {
-  return make_scoped_ptr(new net::HttpCache(
-      make_scoped_ptr(new DevToolsNetworkTransactionFactory(
-          network_controller_handle_.GetController(), session)),
-      main_backend.Pass(), true /* set_up_quic_server_info */));
+    net::HttpCache::BackendFactory* main_backend) const {
+  net::URLRequestContext* context = main_request_context();
+  return scoped_ptr<net::HttpCache>(new net::HttpCache(
+      new DevToolsNetworkTransactionFactory(
+          network_controller_handle_.GetController(), session),
+      context->net_log(), main_backend,
+      true /* set_up_quic_server_info */));
 }
 
 scoped_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
     net::HttpNetworkSession* shared_session,
-    scoped_ptr<net::HttpCache::BackendFactory> backend) const {
-  return make_scoped_ptr(new net::HttpCache(
-      make_scoped_ptr(new DevToolsNetworkTransactionFactory(
-          network_controller_handle_.GetController(), shared_session)),
-      backend.Pass(), true /* set_up_quic_server_info */));
+    net::HttpCache::BackendFactory* backend) const {
+  return scoped_ptr<net::HttpCache>(new net::HttpCache(
+      new DevToolsNetworkTransactionFactory(
+          network_controller_handle_.GetController(), shared_session),
+      shared_session->net_log(), backend,
+      true /* set_up_quic_server_info */));
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(
