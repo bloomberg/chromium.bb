@@ -69,10 +69,10 @@ DevToolsProtocol::CreateSuccessResponse(
 }
 
 // static
-bool DevToolsProtocol::ParseCommand(const base::DictionaryValue* command,
+bool DevToolsProtocol::ParseCommand(base::DictionaryValue* command,
                                     int* command_id,
                                     std::string* method,
-                                    const base::DictionaryValue** params) {
+                                    base::DictionaryValue** params) {
   if (!command)
     return false;
 

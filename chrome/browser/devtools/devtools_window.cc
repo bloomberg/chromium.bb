@@ -542,15 +542,8 @@ content::DevToolsExternalAgentProxyDelegate*
 DevToolsWindow::CreateWebSocketAPIChannel(const std::string& path) {
   if (path.find("/devtools/frontend_api") != 0)
     return nullptr;
-  DevToolsWindows* instances = g_instances.Pointer();
-  if (g_instances == nullptr)
-    return nullptr;
-  for (DevToolsWindow* window : *instances) {
-    auto result = window->bindings_->CreateWebSocketAPIChannel();
-    if (result)
-      return result;
-  }
-  return nullptr;
+
+  return DevToolsUIBindings::CreateWebSocketAPIChannel();
 }
 
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {

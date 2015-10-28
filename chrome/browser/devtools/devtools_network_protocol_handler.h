@@ -32,12 +32,12 @@ class DevToolsNetworkProtocolHandler {
   scoped_ptr<base::DictionaryValue> CanEmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       int command_id,
-      const base::DictionaryValue* params);
+      base::DictionaryValue* params);
 
   scoped_ptr<base::DictionaryValue> EmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       int command_id,
-      const base::DictionaryValue* params);
+      base::DictionaryValue* params);
 
   void UpdateNetworkState(
       content::DevToolsAgentHost* agent_host,

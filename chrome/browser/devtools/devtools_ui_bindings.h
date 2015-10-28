@@ -42,6 +42,8 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
  public:
   static DevToolsUIBindings* ForWebContents(
       content::WebContents* web_contents);
+  static content::DevToolsExternalAgentProxyDelegate*
+      CreateWebSocketAPIChannel();
 
   class Delegate {
    public:
@@ -77,9 +79,9 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   void Reattach();
   void Detach();
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
-  content::DevToolsExternalAgentProxyDelegate* CreateWebSocketAPIChannel();
 
  private:
+  friend class WebSocketAPIChannel;
 
   // content::DevToolsFrontendHost::Delegate implementation.
   void HandleMessageFromDevToolsFrontend(const std::string& message) override;
@@ -197,7 +199,6 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   void AddDevToolsExtensionsToClient();
 
   class FrontendWebContentsObserver;
-  class WebSocketAPIChannel;
   scoped_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
   Profile* profile_;
@@ -222,7 +223,6 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   GURL url_;
   using PendingRequestsMap = std::map<const net::URLFetcher*, DispatchCallback>;
   PendingRequestsMap pending_requests_;
-  WebSocketAPIChannel* open_api_channel_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);
