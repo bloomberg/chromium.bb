@@ -544,10 +544,11 @@ FileTasks.prototype.executeInternal_ = function(taskId) {
 };
 
 /**
- * Checks whether the remote files are available right now.
+ * Ensures that the all files are available right now.
  *
  * Must not call before initialization.
- * @param {function()} callback The callback.
+ * @param {function()} callback Called when checking is completed and all files
+ *     are available. Otherwise not called.
  * @private
  */
 FileTasks.prototype.checkAvailability_ = function(callback) {
@@ -558,6 +559,21 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
     };
     return props.filter(isOne).length === props.length;
   };
+
+  var containsDriveEntries =
+      this.entries_.some(function(entry) {
+        var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+        return volumeInfo && volumeInfo.volumeType ===
+            VolumeManagerCommon.VolumeType.DRIVE;
+      }.bind(this));
+
+  // Availability is not checked for non-Drive files, as availableOffline, nor
+  // availableWhenMetered are not exposed for other types of volumes at this
+  // moment.
+  if (!containsDriveEntries) {
+    callback();
+    return;
+  }
 
   var isDriveOffline = this.volumeManager_.getDriveConnectionState().type ===
       VolumeManagerCommon.DriveConnectionType.OFFLINE;

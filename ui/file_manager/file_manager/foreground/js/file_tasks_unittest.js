@@ -42,6 +42,11 @@ function getMockFileManager() {
     volumeManager: {
       getDriveConnectionState: function() {
         return VolumeManagerCommon.DriveConnectionType.ONLINE;
+      },
+      getVolumeInfo: function() {
+        return {
+          volumeType: VolumeManagerCommon.VolumeType.DRIVE
+        }
       }
     },
     ui: {

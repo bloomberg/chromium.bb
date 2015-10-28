@@ -45,6 +45,11 @@ function testExecuteEntryTask(callback) {
       {
         getDriveConnectionState: function() {
           return VolumeManagerCommon.DriveConnectionType.ONLINE;
+        },
+        getVolumeInfo: function() {
+          return {
+            volumeType: VolumeManagerCommon.VolumeType.DRIVE
+          }
         }
       },
       {
