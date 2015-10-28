@@ -431,7 +431,18 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
   DCHECK(delegate_);  // At this point we must have a delegate.
 
-  session_state_ = new MemoryDumpSessionState();
+  scoped_refptr<StackFrameDeduplicator> stack_frame_deduplicator = nullptr;
+
+  if (heap_profiling_enabled_) {
+    // If heap profiling is enabled, the stack frame deduplicator will be in
+    // use. Add a metadata event to write its frames.
+    stack_frame_deduplicator = new StackFrameDeduplicator;
+    TRACE_EVENT_API_ADD_METADATA_EVENT("stackFrames", "stackFrames",
+                                       stack_frame_deduplicator);
+  }
+
+  session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator);
+
   for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
     it->disabled = false;
     it->consecutive_failures = 0;

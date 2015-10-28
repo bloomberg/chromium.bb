@@ -9,20 +9,34 @@
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/memory_profiler_allocation_context.h"
 
 namespace base {
 namespace trace_event {
+
+class StackFrameDeduplicator;
 
 // Container for state variables that should be shared across all the memory
 // dumps in a tracing session.
 class BASE_EXPORT MemoryDumpSessionState
     : public RefCountedThreadSafe<MemoryDumpSessionState> {
  public:
-  MemoryDumpSessionState();
+  MemoryDumpSessionState(
+      const scoped_refptr<StackFrameDeduplicator>& stack_frame_deduplicator);
+
+  // Returns the stack frame deduplicator that should be used by memory dump
+  // providers when doing a heap dump.
+  StackFrameDeduplicator* stack_frame_deduplicator() {
+    return stack_frame_deduplicator_.get();
+  }
 
  private:
   friend class RefCountedThreadSafe<MemoryDumpSessionState>;
   ~MemoryDumpSessionState();
+
+  // Deduplicates backtraces in heap dumps so they can be written once when the
+  // trace is finalized.
+  scoped_refptr<StackFrameDeduplicator> stack_frame_deduplicator_;
 };
 
 }  // namespace trace_event

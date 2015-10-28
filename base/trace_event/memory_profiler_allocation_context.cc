@@ -8,7 +8,9 @@
 #include <cstring>
 
 #include "base/hash.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_local_storage.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace base {
 namespace trace_event {
@@ -16,8 +18,16 @@ namespace trace_event {
 subtle::Atomic32 AllocationContextTracker::capture_enabled_ = 0;
 
 namespace {
+
 ThreadLocalStorage::StaticSlot g_tls_alloc_ctx_tracker = TLS_INITIALIZER;
+
+// This function is added to the TLS slot to clean up the instance when the
+// thread exits.
+void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
+  delete static_cast<AllocationContextTracker*>(alloc_ctx_tracker);
 }
+
+}  // namespace
 
 AllocationStack::AllocationStack() {}
 AllocationStack::~AllocationStack() {}
@@ -71,10 +81,37 @@ int StackFrameDeduplicator::Insert(const Backtrace& bt) {
   return frame_index;
 }
 
-// This function is added to the TLS slot to clean up the instance when the
-// thread exits.
-void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
-  delete static_cast<AllocationContextTracker*>(alloc_ctx_tracker);
+void StackFrameDeduplicator::AppendAsTraceFormat(std::string* out) const {
+  out->append("{");  // Begin the |stackFrames| dictionary.
+
+  int i = 0;
+  auto frame_node = begin();
+  auto it_end = end();
+  std::string stringify_buffer;
+  while (frame_node != it_end) {
+    // The |stackFrames| format is a dictionary, not an array, so the
+    // keys are stringified indices. Write the index manually, then use
+    // |TracedValue| to format the object. This is to avoid building the
+    // entire dictionary as a |TracedValue| in memory.
+    SStringPrintf(&stringify_buffer, "\"%d\":", i);
+    out->append(stringify_buffer);
+
+    scoped_refptr<TracedValue> frame_node_value = new TracedValue;
+    frame_node_value->SetString("name", frame_node->frame);
+    if (frame_node->parent_frame_index >= 0) {
+      SStringPrintf(&stringify_buffer, "%d", frame_node->parent_frame_index);
+      frame_node_value->SetString("parent", stringify_buffer);
+    }
+    frame_node_value->AppendAsTraceFormat(out);
+
+    i++;
+    frame_node++;
+
+    if (frame_node != it_end)
+      out->append(",");
+  }
+
+  out->append("}");  // End the |stackFrames| dictionary.
 }
 
 AllocationContextTracker* AllocationContextTracker::GetThreadLocalTracker() {

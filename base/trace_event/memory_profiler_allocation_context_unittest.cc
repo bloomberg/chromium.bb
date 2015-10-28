@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ref_counted.h"
 #include "base/trace_event/memory_profiler_allocation_context.h"
 #include "base/trace_event/trace_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -240,10 +241,10 @@ TEST_F(StackFrameDeduplicatorTest, SingleBacktrace) {
   // + CreateWidget [1]
   //   + malloc [2]
 
-  StackFrameDeduplicator dedup;
-  ASSERT_EQ(2, dedup.Insert(bt));
+  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  ASSERT_EQ(2, dedup->Insert(bt));
 
-  auto iter = dedup.begin();
+  auto iter = dedup->begin();
   ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
   ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
 
@@ -253,7 +254,7 @@ TEST_F(StackFrameDeduplicatorTest, SingleBacktrace) {
   ASSERT_EQ(kMalloc, (iter + 2)->frame);
   ASSERT_EQ(1, (iter + 2)->parent_frame_index);
 
-  ASSERT_EQ(iter + 3, dedup.end());
+  ASSERT_EQ(iter + 3, dedup->end());
 }
 
 // Test that there can be different call trees (there can be multiple bottom
@@ -272,11 +273,11 @@ TEST_F(StackFrameDeduplicatorTest, MultipleRoots) {
   //
   // Note that there will be two instances of Donut, with different parents.
 
-  StackFrameDeduplicator dedup;
-  ASSERT_EQ(1, dedup.Insert(bt0));
-  ASSERT_EQ(3, dedup.Insert(bt1));
+  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  ASSERT_EQ(1, dedup->Insert(bt0));
+  ASSERT_EQ(3, dedup->Insert(bt1));
 
-  auto iter = dedup.begin();
+  auto iter = dedup->begin();
   ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
   ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
 
@@ -289,7 +290,7 @@ TEST_F(StackFrameDeduplicatorTest, MultipleRoots) {
   ASSERT_EQ(kCreateWidget, (iter + 3)->frame);
   ASSERT_EQ(2, (iter + 3)->parent_frame_index);
 
-  ASSERT_EQ(iter + 4, dedup.end());
+  ASSERT_EQ(iter + 4, dedup->end());
 }
 
 TEST_F(StackFrameDeduplicatorTest, Deduplication) {
@@ -304,11 +305,11 @@ TEST_F(StackFrameDeduplicatorTest, Deduplication) {
   //
   // Note that Cupcake will be re-used.
 
-  StackFrameDeduplicator dedup;
-  ASSERT_EQ(1, dedup.Insert(bt0));
-  ASSERT_EQ(2, dedup.Insert(bt1));
+  scoped_refptr<StackFrameDeduplicator> dedup = new StackFrameDeduplicator;
+  ASSERT_EQ(1, dedup->Insert(bt0));
+  ASSERT_EQ(2, dedup->Insert(bt1));
 
-  auto iter = dedup.begin();
+  auto iter = dedup->begin();
   ASSERT_EQ(kBrowserMain, (iter + 0)->frame);
   ASSERT_EQ(-1, (iter + 0)->parent_frame_index);
 
@@ -318,13 +319,13 @@ TEST_F(StackFrameDeduplicatorTest, Deduplication) {
   ASSERT_EQ(kInitialize, (iter + 2)->frame);
   ASSERT_EQ(0, (iter + 2)->parent_frame_index);
 
-  ASSERT_EQ(iter + 3, dedup.end());
+  ASSERT_EQ(iter + 3, dedup->end());
 
   // Inserting the same backtrace again should return the index of the existing
   // node.
-  ASSERT_EQ(1, dedup.Insert(bt0));
-  ASSERT_EQ(2, dedup.Insert(bt1));
-  ASSERT_EQ(dedup.begin() + 3, dedup.end());
+  ASSERT_EQ(1, dedup->Insert(bt0));
+  ASSERT_EQ(2, dedup->Insert(bt1));
+  ASSERT_EQ(dedup->begin() + 3, dedup->end());
 }
 
 }  // namespace trace_event

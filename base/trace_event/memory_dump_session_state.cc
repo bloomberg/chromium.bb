@@ -7,8 +7,9 @@
 namespace base {
 namespace trace_event {
 
-MemoryDumpSessionState::MemoryDumpSessionState() {
-}
+MemoryDumpSessionState::MemoryDumpSessionState(
+    const scoped_refptr<StackFrameDeduplicator>& stack_frame_deduplicator)
+    : stack_frame_deduplicator_(stack_frame_deduplicator) {}
 
 MemoryDumpSessionState::~MemoryDumpSessionState() {
 }

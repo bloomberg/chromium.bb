@@ -5,11 +5,13 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_CONTEXT_H_
 #define BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_CONTEXT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/containers/small_map.h"
+#include "base/trace_event/trace_event_impl.h"
 
 namespace base {
 namespace trace_event {
@@ -86,7 +88,7 @@ bool BASE_EXPORT operator==(const Backtrace& lhs, const Backtrace& rhs);
 // of |StackFrame|s to index into |frames_|. So there is a trie for bottum-up
 // lookup of a backtrace for deduplication, and a tree for compact storage in
 // the trace log.
-class BASE_EXPORT StackFrameDeduplicator {
+class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
  public:
   // A node in the call tree.
   struct FrameNode {
@@ -106,7 +108,6 @@ class BASE_EXPORT StackFrameDeduplicator {
   using ConstIterator = std::vector<FrameNode>::const_iterator;
 
   StackFrameDeduplicator();
-  ~StackFrameDeduplicator();
 
   // Inserts a backtrace and returns the index of its leaf node in |frames_|.
   // Returns -1 if the backtrace is empty.
@@ -116,7 +117,13 @@ class BASE_EXPORT StackFrameDeduplicator {
   ConstIterator begin() const { return frames_.begin(); }
   ConstIterator end() const { return frames_.end(); }
 
+  // Writes the |stackFrames| dictionary as defined in https://goo.gl/GerkV8 to
+  // the trace log.
+  void AppendAsTraceFormat(std::string* out) const override;
+
  private:
+  ~StackFrameDeduplicator() override;
+
   std::map<StackFrame, int> roots_;
   std::vector<FrameNode> frames_;
 
