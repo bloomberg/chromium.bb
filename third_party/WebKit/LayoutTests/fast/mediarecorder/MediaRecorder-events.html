@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script>
+
+var test = async_test('exercises the MediaRecorder API event chain: onstart->onpaused->onresumed->onstopped in sequence.');
+var recorder;
+
+recorderOnUnexpectedEvent = test.step_func(function() {
+    assert_unreached('Unexpected event.');
+});
+
+recorderOnDataAvailable = test.step_func(function(event) {
+    // TODO(mcasas): ondataavailable might never be pinged with an empty Blob
+    // data on recorder.stop(), see http://crbug.com/54428
+    assert_equals(recorder.state, "inactive");
+    assert_equals(event.data.size, 0, 'We should have gotten an empty Blob');
+});
+
+recorderOnStop = test.step_func(function() {
+    assert_equals(recorder.state, "inactive");
+    recorder.onstop = recorderOnUnexpectedEvent;
+    test.done();
+});
+
+recorderOnResume = test.step_func(function() {
+    assert_equals(recorder.state, "recording");
+    recorder.onresume = recorderOnUnexpectedEvent;
+    recorder.onstop = recorderOnStop;
+    recorder.stop();
+});
+
+recorderOnPause = test.step_func(function() {
+    assert_equals(recorder.state, "paused");
+    recorder.onpause = recorderOnUnexpectedEvent;
+    recorder.onresume = recorderOnResume;
+    recorder.resume();
+});
+
+recorderOnStart = test.step_func(function() {
+    assert_equals(recorder.state, "recording");
+    recorder.onstart = recorderOnUnexpectedEvent;
+    recorder.onpause = recorderOnPause;
+    recorder.pause();
+});
+
+
+gotStream = test.step_func(function(stream) {
+    assert_equals(stream.getAudioTracks().length, 0);
+    assert_equals(stream.getVideoTracks().length, 1);
+    assert_equals(stream.getVideoTracks()[0].readyState, 'live');
+
+    try {
+        recorder = new MediaRecorder(stream);
+    } catch (e) {
+        assert_unreached('Exception while creating MediaRecorder: ' + e);
+    }
+    assert_equals(recorder.state, "inactive");
+
+    recorder.onstop = recorderOnUnexpectedEvent;
+    recorder.onpause = recorderOnUnexpectedEvent;
+    recorder.onresume = recorderOnUnexpectedEvent;
+    recorder.onerror = recorderOnUnexpectedEvent;
+    recorder.ondataavailable = recorderOnDataAvailable;
+    recorder.onstart = recorderOnStart;
+
+    recorder.start();
+    assert_equals(recorder.state, "recording");
+});
+
+try {
+    navigator.webkitGetUserMedia({video:true}, gotStream, recorderOnUnexpectedEvent);
+} catch(e) {
+    assert_unreached('Exception launching getUserMedia(): ' + e);
+}
+
+</script>
