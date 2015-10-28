@@ -13,9 +13,18 @@ class WebMainRunner;
 
 // Contains parameters passed to WebMain.
 struct WebMainParams {
-  explicit WebMainParams(WebMainDelegate* delegate) : delegate(delegate) {}
+  explicit WebMainParams(WebMainDelegate* delegate)
+      : delegate(delegate),
+        register_exit_manager(true),
+        argc(0),
+        argv(nullptr) {}
 
   WebMainDelegate* delegate;
+
+  bool register_exit_manager;
+
+  int argc;
+  const char** argv;
 };
 
 // Encapsulates any setup and initialization that is needed by common

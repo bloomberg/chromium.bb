@@ -36,15 +36,11 @@ class WebMainRunnerImpl : public WebMainRunner {
     is_initialized_ = true;
     delegate_ = params.delegate;
 
-    // TODO(rohitrao): Chrome for iOS initializes this in main(), because it's
-    // needed for breakpad.  Are we really going to require that all embedders
-    // initialize an AtExitManager in main()?
-    exit_manager_.reset(new base::AtExitManager);
+    if (params.register_exit_manager) {
+      exit_manager_.reset(new base::AtExitManager);
+    }
 
-    // There is no way to pass commandline flags to process on iOS, so the
-    // CommandLine is always initialized empty.  Embedders can add switches in
-    // |BasicStartupComplete|.
-    base::CommandLine::Init(0, nullptr);
+    base::CommandLine::Init(params.argc, params.argv);
     if (delegate_) {
       delegate_->BasicStartupComplete();
     }
