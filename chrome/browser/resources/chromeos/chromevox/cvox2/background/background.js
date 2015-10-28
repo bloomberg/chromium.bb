@@ -361,6 +361,25 @@ Background.prototype = {
         var optionsPage = {url: 'chromevox/background/options.html'};
         chrome.tabs.create(optionsPage);
         break;
+      case 'toggleChromeVoxVersion':
+        var newMode;
+        if (this.mode_ == ChromeVoxMode.FORCE_NEXT) {
+          var inViews =
+              this.currentRange_.start.node.root.role == RoleType.desktop;
+          newMode = inViews ? ChromeVoxMode.COMPAT : ChromeVoxMode.CLASSIC;
+        } else {
+          newMode = ChromeVoxMode.FORCE_NEXT;
+        }
+        this.setChromeVoxMode(newMode, true);
+
+        var isClassic =
+            newMode == ChromeVoxMode.CLASSIC || newMode == ChromeVoxMode.COMPAT;
+
+
+        // Leaving unlocalized as 'next' isn't an official name.
+        cvox.ChromeVox.tts.speak(isClassic ?
+            'classic' : 'next', cvox.QueueMode.FLUSH, {doNotInterrupt: true});
+        break;
     }
 
     if (pred) {
@@ -742,8 +761,10 @@ Background.prototype = {
   /**
    * Sets the current ChromeVox mode.
    * @param {ChromeVoxMode} mode
+   * @param {boolean=} opt_injectClassic Injects ChromeVox classic into tabs;
+   *                                     defaults to false.
    */
-  setChromeVoxMode: function(mode) {
+  setChromeVoxMode: function(mode, opt_injectClassic) {
     if (mode === ChromeVoxMode.NEXT ||
         mode === ChromeVoxMode.COMPAT ||
         mode === ChromeVoxMode.FORCE_NEXT) {
@@ -758,10 +779,11 @@ Background.prototype = {
 
     chrome.tabs.query({active: true}, function(tabs) {
       if (mode === ChromeVoxMode.CLASSIC) {
-        // This case should do nothing because Classic gets injected by the
-        // extension system via our manifest. Once ChromeVox Next is enabled
-        // for tabs, re-enable.
-        // cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
+        // Generally, we don't want to inject classic content scripts as it is
+        // done by the extension system at document load. The exception is when
+        // we toggle classic on manually as part of a user command.
+        if (opt_injectClassic)
+          cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
       } else {
         // When in compat mode, if the focus is within the desktop tree proper,
         // then do not disable content scripts.

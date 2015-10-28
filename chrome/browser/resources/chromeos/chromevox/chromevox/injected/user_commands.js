@@ -44,16 +44,6 @@ goog.require('goog.object');
  * @private
  */
 cvox.ChromeVoxUserCommands.init_ = function() {
-  if (cvox.ChromeVoxUserCommands.commands) {
-    return;
-  } else {
-    cvox.ChromeVoxUserCommands.commands = {};
-  }
-  for (var cmd in cvox.CommandStore.CMD_WHITELIST) {
-    cvox.ChromeVoxUserCommands.commands[cmd] =
-        cvox.ChromeVoxUserCommands.createCommand_(cmd);
-  }
-
   cvox.ChromeVoxKbHandler.commandHandler = function(commandName) {
     var command = cvox.ChromeVoxUserCommands.commands[commandName];
     if (!command)
@@ -64,6 +54,16 @@ cvox.ChromeVoxUserCommands.init_ = function() {
     history.exitUserCommand(commandName);
     return ret;
   };
+
+  if (cvox.ChromeVoxUserCommands.commands) {
+    return;
+  } else {
+    cvox.ChromeVoxUserCommands.commands = {};
+  }
+  for (var cmd in cvox.CommandStore.CMD_WHITELIST) {
+    cvox.ChromeVoxUserCommands.commands[cmd] =
+        cvox.ChromeVoxUserCommands.createCommand_(cmd);
+  }
 };
 
 
@@ -555,6 +555,11 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
         'action': 'setPref',
         'pref': 'active',
         'value': !cvox.ChromeVox.isActive
+      });
+      break;
+    case 'toggleChromeVoxVersion':
+      cvox.ChromeVox.host.sendToBackgroundPage({
+        'target': 'toggleChromeVoxVersion'
       });
       break;
     case 'fullyDescribe':

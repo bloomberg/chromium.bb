@@ -604,6 +604,11 @@
                "keys": {"keyCode": [115]}
               }},
 
+ {"command": "toggleChromeVoxVersion",
+  "sequence": {"cvoxModifier": true,
+               "keys": {"keyCode": [81, 81]}
+              }},
+
  {"command": "enableConsoleTts",
   "sequence": {"cvoxModifier": true,
                "keys": {"keyCode": [68, 67]}

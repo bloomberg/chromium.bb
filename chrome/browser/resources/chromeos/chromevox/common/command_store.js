@@ -154,6 +154,7 @@ cvox.CommandStore.CMD_WHITELIST = {
                       platformFilter: cvox.PlatformFilter.WML,
                       msgId: 'toggle_chromevox_active',
                       category: 'controlling_speech'},
+  'toggleChromeVoxVersion': {announce: false},
   'decreaseTtsRate': {announce: false,
                       msgId: 'decrease_tts_rate',
                       category: 'controlling_speech'},

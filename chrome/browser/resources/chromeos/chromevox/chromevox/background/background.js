@@ -401,6 +401,11 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
         console.log(err);
       }
       break;
+    case 'toggleChromeVoxVersion':
+      if (global.backgroundObj) {
+        global.backgroundObj.onGotCommand('toggleChromeVoxVersion');
+      }
+      break;
     }
   }, this));
 };

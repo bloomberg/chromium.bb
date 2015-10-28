@@ -190,6 +190,11 @@
                "keys": {"keyCode": [65, 65]}
               }},
 
+ {"command": "toggleChromeVoxVersion",
+  "sequence": {"cvoxModifier": true,
+               "keys": {"keyCode": [81, 81]}
+              }},
+
  {"command": "readCurrentTitle",
   "sequence": {"cvoxModifier": true,
                "keys": {"keyCode": [67, 84]}
