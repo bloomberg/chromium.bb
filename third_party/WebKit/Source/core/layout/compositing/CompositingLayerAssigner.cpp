@@ -142,7 +142,7 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
         return CompositingReasonSquashingSparsityExceeded;
 
-    if (layer->layoutObject()->style()->hasBlendMode())
+    if (layer->layoutObject()->style()->hasBlendMode() || squashingLayer.layoutObject()->style()->hasBlendMode())
         return CompositingReasonSquashingBlendingIsDisallowed;
 
     // FIXME: this is not efficient, since it walks up the tree. We should store these values on the CompositingInputsCache.
