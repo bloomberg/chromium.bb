@@ -3203,19 +3203,6 @@
           ],
         },
         {
-         'target_name': 'telemetry_perf_unittests',
-         'type': 'none',
-         'dependencies': [
-            '../content/content_shell_and_tests.gyp:telemetry_base',
-         ],
-         'includes': [
-           '../build/isolate.gypi',
-          ],
-          'sources': [
-            'telemetry_perf_unittests.isolate',
-          ],
-        },
-        {
          'target_name': 'telemetry_gpu_unittests',
          'type': 'none',
          'dependencies': [
