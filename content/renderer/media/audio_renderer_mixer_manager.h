@@ -46,15 +46,6 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
   // |source_render_frame_id| refers to the RenderFrame containing the entity
   // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
-  // the returned input. The default output device is used.
-  // TODO(guidou): Remove this method once upper layers make use of the
-  // output device functionality. See http://crbug.com/534306
-  media::AudioRendererMixerInput* CreateInput(int source_render_frame_id);
-
-  // Creates an AudioRendererMixerInput with the proper callbacks necessary to
-  // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
-  // |source_render_frame_id| refers to the RenderFrame containing the entity
-  // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
   // the returned input. |device_id| and |security_origin| identify the output
   // device to use
   media::AudioRendererMixerInput* CreateInput(

@@ -26,11 +26,6 @@ AudioRendererMixerManager::~AudioRendererMixerManager() {
 }
 
 media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
-    int source_render_frame_id) {
-  return CreateInput(source_render_frame_id, std::string(), url::Origin());
-}
-
-media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
     int source_render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin) {

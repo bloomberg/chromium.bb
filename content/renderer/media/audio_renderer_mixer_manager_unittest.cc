@@ -188,12 +188,13 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   EXPECT_EQ(mixer_count(), 0);
   media::FakeAudioRenderCallback callback(0);
   scoped_refptr<media::AudioRendererMixerInput> input(
-      manager_->CreateInput(kRenderFrameId));
+      manager_->CreateInput(kRenderFrameId, kDefaultDeviceId, kSecurityOrigin));
   input->Initialize(params, &callback);
   EXPECT_EQ(mixer_count(), 0);
   media::FakeAudioRenderCallback another_callback(1);
   scoped_refptr<media::AudioRendererMixerInput> another_input(
-      manager_->CreateInput(kAnotherRenderFrameId));
+      manager_->CreateInput(kAnotherRenderFrameId, kDefaultDeviceId,
+                            kSecurityOrigin));
   another_input->Initialize(params, &another_callback);
   EXPECT_EQ(mixer_count(), 0);
 
