@@ -19,6 +19,7 @@ namespace password_bubble_experiment {
 
 extern const char kBrandingExperimentName[];
 extern const char kSmartLockBrandingGroupName[];
+extern const char kSmartLockBrandingSavePromptOnlyGroupName[];
 
 // Should be called when user dismisses the "Save Password?" dialog. It stores
 // the statistics about interactions with the bubble.
@@ -34,8 +35,19 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 // A Smart Lock user is a sync user without a custom passphrase.
 bool IsSmartLockUser(const sync_driver::SyncService* sync_service);
 
-// Returns true if the password manager should be referred to as Smart Lock.
-// This is only true for signed-in users.
+enum class SmartLockBranding { NONE, FULL, SAVE_BUBBLE_ONLY };
+
+// If the user is not a Smart Lock user, returns NONE. For Smart Lock users:
+// * returns NONE if the password manager should not be referred to as Smart
+//   Lock anywhere;
+// * returns FULL, if it should be referred to as Smart Lock everywhere;
+// * returns SAVE_BUBBLE_ONLY if it only should be referred to as Smart Lock in
+//   the save password bubble.
+SmartLockBranding GetSmartLockBrandingState(
+    const sync_driver::SyncService* sync_service);
+
+// Convenience function for checking whether the result of
+// GetSmartLockBrandingState is SmartLockBranding::FULL.
 bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service);
 
 // Returns true if save prompt should contain first run experience.

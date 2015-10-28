@@ -107,11 +107,13 @@ class ManagePasswordsUIController
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
 
-  // Open a new tab, pointing to passwords.google.com.
-  void NavigateToExternalPasswordManager();
+  // Two different ways to open a new tab pointing to passwords.google.com.
+  // TODO(crbug.com/548259) eliminate one of them.
+  virtual void NavigateToExternalPasswordManager();
+  virtual void NavigateToSmartLockPage();
 
   // Open a new tab, pointing to the Smart Lock help article.
-  void NavigateToSmartLockPage();
+  virtual void NavigateToSmartLockHelpPage();
 
   virtual const autofill::PasswordForm& PendingPassword() const;
 

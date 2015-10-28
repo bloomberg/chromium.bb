@@ -78,12 +78,11 @@ ScopedVector<const autofill::PasswordForm> DeepCopyForms(
   return result.Pass();
 }
 
-// A wrapper around password_bubble_experiment::IsSmartLockBrandingEnabled
-// extracting the sync_service from the profile.
-bool IsSmartLockBrandingEnabled(Profile* profile) {
+password_bubble_experiment::SmartLockBranding GetSmartLockBrandingState(
+    Profile* profile) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  return password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
+  return password_bubble_experiment::GetSmartLockBrandingState(sync_service);
 }
 
 }  // namespace
@@ -134,7 +133,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     base::string16 save_confirmation_link =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
     int confirmation_text_id = IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT;
-    if (IsSmartLockBrandingEnabled(GetProfile())) {
+    if (GetSmartLockBrandingState(GetProfile()) ==
+        password_bubble_experiment::SmartLockBranding::FULL) {
       std::string management_hostname =
           GURL(chrome::kPasswordManagerAccountDashboardURL).host();
       save_confirmation_link = base::UTF8ToUTF16(management_hostname);
@@ -199,7 +199,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     Profile* profile = GetProfile();
-    if (profile && IsSmartLockBrandingEnabled(profile)) {
+    if (profile && (GetSmartLockBrandingState(profile) ==
+                    password_bubble_experiment::SmartLockBranding::FULL)) {
       profile->GetPrefs()->SetBoolean(
           password_manager::prefs::kWasSavePrompFirstRunExperienceShown, true);
     }
@@ -279,7 +280,8 @@ void ManagePasswordsBubbleModel::OnOKClicked() {
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_MANAGE;
-  if (IsSmartLockBrandingEnabled(GetProfile())) {
+  if (GetSmartLockBrandingState(GetProfile()) ==
+      password_bubble_experiment::SmartLockBranding::FULL) {
     ManagePasswordsUIController::FromWebContents(web_contents())
         ->NavigateToExternalPasswordManager();
   } else {
@@ -290,8 +292,19 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
 
 void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_BRAND_NAME;
-  ManagePasswordsUIController::FromWebContents(web_contents())
-      ->NavigateToSmartLockPage();
+  switch (GetSmartLockBrandingState(GetProfile())) {
+    case password_bubble_experiment::SmartLockBranding::FULL:
+      ManagePasswordsUIController::FromWebContents(web_contents())
+          ->NavigateToSmartLockPage();
+      break;
+    case password_bubble_experiment::SmartLockBranding::SAVE_BUBBLE_ONLY:
+      ManagePasswordsUIController::FromWebContents(web_contents())
+          ->NavigateToSmartLockHelpPage();
+      break;
+    case password_bubble_experiment::SmartLockBranding::NONE:
+      NOTREACHED();
+      break;
+  }
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
@@ -344,7 +357,8 @@ bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
 
 bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
   Profile* profile = GetProfile();
-  if (IsSmartLockBrandingEnabled(profile)) {
+  if (GetSmartLockBrandingState(profile) ==
+      password_bubble_experiment::SmartLockBranding::FULL) {
     PrefService* prefs = profile->GetPrefs();
     return !prefs->GetBoolean(
         password_manager::prefs::kWasSavePrompFirstRunExperienceShown);
@@ -366,7 +380,8 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   title_brand_link_range_ = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents()->GetVisibleURL(), origin(),
-      IsSmartLockBrandingEnabled(GetProfile()),
+      GetSmartLockBrandingState(GetProfile()) !=
+          password_bubble_experiment::SmartLockBranding::NONE,
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, &title_,
       &title_brand_link_range_);
 }

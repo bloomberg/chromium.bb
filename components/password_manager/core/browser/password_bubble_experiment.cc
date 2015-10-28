@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 
+#include <string>
+
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -14,6 +16,8 @@ namespace password_bubble_experiment {
 
 const char kBrandingExperimentName[] = "PasswordBranding";
 const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
+const char kSmartLockBrandingSavePromptOnlyGroupName[] =
+    "SmartLockBrandingSavePromptOnly";
 
 void RecordBubbleClosed(
     PrefService* prefs,
@@ -35,10 +39,22 @@ bool IsSmartLockUser(const sync_driver::SyncService* sync_service) {
          password_manager::SYNCING_NORMAL_ENCRYPTION;
 }
 
+SmartLockBranding GetSmartLockBrandingState(
+    const sync_driver::SyncService* sync_service) {
+  // Query the group first for correct UMA reporting.
+  std::string group_name =
+      base::FieldTrialList::FindFullName(kBrandingExperimentName);
+  if (!IsSmartLockUser(sync_service))
+    return SmartLockBranding::NONE;
+  if (group_name == kSmartLockBrandingGroupName)
+    return SmartLockBranding::FULL;
+  if (group_name == kSmartLockBrandingSavePromptOnlyGroupName)
+    return SmartLockBranding::SAVE_BUBBLE_ONLY;
+  return SmartLockBranding::NONE;
+}
+
 bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service) {
-  return IsSmartLockUser(sync_service) &&
-         base::FieldTrialList::FindFullName(kBrandingExperimentName) ==
-             kSmartLockBrandingGroupName;
+  return GetSmartLockBrandingState(sync_service) == SmartLockBranding::FULL;
 }
 
 bool ShouldShowSavePromptFirstRunExperience(

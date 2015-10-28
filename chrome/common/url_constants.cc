@@ -383,6 +383,9 @@ const char kUpgradeHelpCenterBaseURL[] =
 const char kPasswordManagerAccountDashboardURL[] =
     "https://passwords.google.com/settings/passwords";
 
+const char kSmartLockHelpPage[] =
+    "https://support.google.com/accounts/answer/6197437";
+
 const char kExtensionControlledSettingLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_settings_api_extension";
 

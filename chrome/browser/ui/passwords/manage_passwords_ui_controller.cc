@@ -216,6 +216,18 @@ void ManagePasswordsUIController::NavigateToSmartLockPage() {
 #endif
 }
 
+void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  chrome::NavigateParams params(
+      chrome::FindBrowserWithWebContents(web_contents()),
+      GURL(chrome::kSmartLockHelpPage), ui::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+#endif
+}
+
 void ManagePasswordsUIController::SavePassword() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state());
   SavePasswordInternal();

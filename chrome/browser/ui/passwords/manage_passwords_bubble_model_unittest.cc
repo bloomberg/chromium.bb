@@ -18,7 +18,12 @@
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using password_bubble_experiment::kBrandingExperimentName;
+using password_bubble_experiment::kSmartLockBrandingGroupName;
+using password_bubble_experiment::kSmartLockBrandingSavePromptOnlyGroupName;
 
 namespace {
 
@@ -57,15 +62,32 @@ scoped_ptr<KeyedService> TestingSyncFactoryFunction(
   return make_scoped_ptr(new TestSyncService(static_cast<Profile*>(context)));
 }
 
+// TODO(vabr): Merge the two mocks together. http://crbug.com/546604
+class ManagePasswordsUIControllerMockWithMockNavigation
+    : public ManagePasswordsUIControllerMock {
+ public:
+  explicit ManagePasswordsUIControllerMockWithMockNavigation(
+      content::WebContents* contents)
+      : ManagePasswordsUIControllerMock(contents) {}
+
+  ~ManagePasswordsUIControllerMockWithMockNavigation() override {}
+
+  MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
+  MOCK_METHOD0(NavigateToExternalPasswordManager, void());
+  MOCK_METHOD0(NavigateToSmartLockPage, void());
+  MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
+};
+
 }  // namespace
 
-class ManagePasswordsBubbleModelTest : public testing::Test {
+class ManagePasswordsBubbleModelTest : public ::testing::Test {
  public:
   ManagePasswordsBubbleModelTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_web_contents_(
             content::WebContentsTester::CreateTestWebContents(&profile_,
-                                                              nullptr)) {}
+                                                              nullptr)),
+        field_trials_(nullptr) {}
 
   void TearDown() override { model_.reset(); }
 
@@ -78,8 +100,10 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
                       ManagePasswordsBubbleModel::DisplayReason reason) {
     // Create the test UIController here so that it's bound to
     // |test_web_contents_| and therefore accessible to the model.
-    ManagePasswordsUIControllerMock* mock =
-        new ManagePasswordsUIControllerMock(test_web_contents_.get());
+    ManagePasswordsUIControllerMockWithMockNavigation* mock =
+        new testing::StrictMock<
+            ManagePasswordsUIControllerMockWithMockNavigation>(
+            test_web_contents_.get());
     mock->SetState(state);
     model_.reset(
         new ManagePasswordsBubbleModel(test_web_contents_.get(), reason));
@@ -111,10 +135,9 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
                    ManagePasswordsBubbleModel::USER_ACTION);
   }
 
-  ManagePasswordsUIControllerMock* controller() {
-    return static_cast<ManagePasswordsUIControllerMock*>(
-        ManagePasswordsUIController::FromWebContents(
-            test_web_contents_.get()));
+  ManagePasswordsUIControllerMockWithMockNavigation* controller() {
+    return static_cast<ManagePasswordsUIControllerMockWithMockNavigation*>(
+        ManagePasswordsUIController::FromWebContents(test_web_contents_.get()));
   }
 
   content::WebContents* test_web_contents() { return test_web_contents_.get(); }
@@ -126,6 +149,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   scoped_ptr<content::WebContents> test_web_contents_;
+  base::FieldTrialList field_trials_;
 };
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
@@ -181,6 +205,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
 TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   base::HistogramTester histogram_tester;
   PretendManagingPasswords();
+
+  EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
   model_->OnManageLinkClicked();
 
   EXPECT_EQ(model_->dismissal_reason(),
@@ -311,10 +337,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ShowSmartLockWarmWelcome) {
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(), &TestingSyncFactoryFunction));
   sync_service->set_smartlock_enabled(true);
-  base::FieldTrialList field_trials(nullptr);
-  base::FieldTrialList::CreateFieldTrial(
-      password_bubble_experiment::kBrandingExperimentName,
-      password_bubble_experiment::kSmartLockBrandingGroupName);
+  base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
+                                         kSmartLockBrandingGroupName);
 
   PretendPasswordWaiting();
   EXPECT_TRUE(model_->ShouldShowGoogleSmartLockWelcome());
@@ -331,10 +355,8 @@ TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(), &TestingSyncFactoryFunction));
   sync_service->set_smartlock_enabled(false);
-  base::FieldTrialList field_trials(nullptr);
-  base::FieldTrialList::CreateFieldTrial(
-      password_bubble_experiment::kBrandingExperimentName,
-      password_bubble_experiment::kSmartLockBrandingGroupName);
+  base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
+                                         kSmartLockBrandingGroupName);
 
   PretendPasswordWaiting();
   EXPECT_FALSE(model_->ShouldShowGoogleSmartLockWelcome());
@@ -345,3 +367,178 @@ TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
 }
+
+namespace {
+
+enum class SmartLockStatus { ENABLE, DISABLE };
+
+struct TitleTestCase {
+  const char* experiment_group;
+  SmartLockStatus smartlock_status;
+  const char* expected_title;
+};
+
+}  // namespace
+
+class ManagePasswordsBubbleModelTitleTest
+    : public ManagePasswordsBubbleModelTest,
+      public ::testing::WithParamInterface<TitleTestCase> {};
+
+TEST_P(ManagePasswordsBubbleModelTitleTest, BrandedTitleOnSaving) {
+  TitleTestCase test_case = GetParam();
+  TestSyncService* sync_service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &TestingSyncFactoryFunction));
+  sync_service->set_smartlock_enabled(test_case.smartlock_status ==
+                                      SmartLockStatus::ENABLE);
+  if (test_case.experiment_group) {
+    base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
+                                           test_case.experiment_group);
+  }
+
+  PretendPasswordWaiting();
+  EXPECT_THAT(base::UTF16ToUTF8(model_->title()),
+              testing::HasSubstr(test_case.expected_title));
+}
+
+namespace {
+
+// Below, "Chrom" is the common prefix of Chromium and Google Chrome. Ideally,
+// we would use the localised strings, but ResourceBundle does not get
+// initialised for this unittest.
+const TitleTestCase kTitleTestCases[] = {
+    {kSmartLockBrandingGroupName, SmartLockStatus::ENABLE, "Google Smart Lock"},
+    {kSmartLockBrandingSavePromptOnlyGroupName, SmartLockStatus::ENABLE,
+     "Google Smart Lock"},
+    {nullptr, SmartLockStatus::ENABLE, "Chrom"},
+    {"Default", SmartLockStatus::ENABLE, "Chrom"},
+    {kSmartLockBrandingGroupName, SmartLockStatus::DISABLE, "Chrom"},
+    {kSmartLockBrandingSavePromptOnlyGroupName, SmartLockStatus::DISABLE,
+     "Chrom"},
+    {"Default", SmartLockStatus::DISABLE, "Chrom"},
+    {nullptr, SmartLockStatus::DISABLE, "Chrom"},
+};
+
+}  // namespace
+
+INSTANTIATE_TEST_CASE_P(Default,
+                        ManagePasswordsBubbleModelTitleTest,
+                        ::testing::ValuesIn(kTitleTestCases));
+
+namespace {
+
+enum class ManageLinkTarget { EXTERNAL_PASSWORD_MANAGER, SETTINGS_PAGE };
+
+struct ManageLinkTestCase {
+  const char* experiment_group;
+  SmartLockStatus smartlock_status;
+  ManageLinkTarget expected_target;
+};
+
+}  // namespace
+
+class ManagePasswordsBubbleModelManageLinkTest
+    : public ManagePasswordsBubbleModelTest,
+      public ::testing::WithParamInterface<ManageLinkTestCase> {};
+
+TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageLinkClicked) {
+  ManageLinkTestCase test_case = GetParam();
+  TestSyncService* sync_service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &TestingSyncFactoryFunction));
+  sync_service->set_smartlock_enabled(test_case.smartlock_status ==
+                                      SmartLockStatus::ENABLE);
+  if (test_case.experiment_group) {
+    base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
+                                           test_case.experiment_group);
+  }
+
+  PretendManagingPasswords();
+
+  switch (test_case.expected_target) {
+    case ManageLinkTarget::EXTERNAL_PASSWORD_MANAGER:
+      EXPECT_CALL(*controller(), NavigateToExternalPasswordManager());
+      break;
+    case ManageLinkTarget::SETTINGS_PAGE:
+      EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
+      break;
+  }
+
+  model_->OnManageLinkClicked();
+}
+
+namespace {
+
+const ManageLinkTestCase kManageLinkTestCases[] = {
+    {kSmartLockBrandingGroupName, SmartLockStatus::ENABLE,
+     ManageLinkTarget::EXTERNAL_PASSWORD_MANAGER},
+    {kSmartLockBrandingSavePromptOnlyGroupName, SmartLockStatus::ENABLE,
+     ManageLinkTarget::SETTINGS_PAGE},
+    {nullptr, SmartLockStatus::ENABLE, ManageLinkTarget::SETTINGS_PAGE},
+    {"Default", SmartLockStatus::ENABLE, ManageLinkTarget::SETTINGS_PAGE},
+    {kSmartLockBrandingGroupName, SmartLockStatus::DISABLE,
+     ManageLinkTarget::SETTINGS_PAGE},
+    {kSmartLockBrandingSavePromptOnlyGroupName, SmartLockStatus::DISABLE,
+     ManageLinkTarget::SETTINGS_PAGE},
+    {nullptr, SmartLockStatus::DISABLE, ManageLinkTarget::SETTINGS_PAGE},
+    {"Default", SmartLockStatus::DISABLE, ManageLinkTarget::SETTINGS_PAGE},
+};
+
+}  // namespace
+
+INSTANTIATE_TEST_CASE_P(Default,
+                        ManagePasswordsBubbleModelManageLinkTest,
+                        ::testing::ValuesIn(kManageLinkTestCases));
+
+enum class BrandLinkTarget { SMART_LOCK_HOME, SMART_LOCK_HELP };
+
+struct BrandLinkTestCase {
+  const char* experiment_group;
+  SmartLockStatus smartlock_status;
+  BrandLinkTarget expected_target;
+};
+
+class ManagePasswordsBubbleModelBrandLinkTest
+    : public ManagePasswordsBubbleModelTest,
+      public ::testing::WithParamInterface<BrandLinkTestCase> {};
+
+TEST_P(ManagePasswordsBubbleModelBrandLinkTest, OnBrandLinkClicked) {
+  BrandLinkTestCase test_case = GetParam();
+  TestSyncService* sync_service = static_cast<TestSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &TestingSyncFactoryFunction));
+  sync_service->set_smartlock_enabled(test_case.smartlock_status ==
+                                      SmartLockStatus::ENABLE);
+  if (test_case.experiment_group) {
+    base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
+                                           test_case.experiment_group);
+  }
+
+  PretendManagingPasswords();
+
+  switch (test_case.expected_target) {
+    case BrandLinkTarget::SMART_LOCK_HOME:
+      EXPECT_CALL(*controller(), NavigateToSmartLockPage());
+      break;
+    case BrandLinkTarget::SMART_LOCK_HELP:
+      EXPECT_CALL(*controller(), NavigateToSmartLockHelpPage());
+      break;
+  }
+
+  model_->OnBrandLinkClicked();
+}
+
+namespace {
+
+const BrandLinkTestCase kBrandLinkTestCases[] = {
+    {kSmartLockBrandingGroupName, SmartLockStatus::ENABLE,
+     BrandLinkTarget::SMART_LOCK_HOME},
+    {kSmartLockBrandingSavePromptOnlyGroupName, SmartLockStatus::ENABLE,
+     BrandLinkTarget::SMART_LOCK_HELP},
+};
+
+}  // namespace
+
+INSTANTIATE_TEST_CASE_P(Default,
+                        ManagePasswordsBubbleModelBrandLinkTest,
+                        ::testing::ValuesIn(kBrandLinkTestCases));
