@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/http/http_chunked_decoder.h"
+#include "url/gurl.h"
 
 namespace net {
 namespace test_server {
@@ -33,6 +34,11 @@ HttpRequest::HttpRequest() : method(METHOD_UNKNOWN),
 }
 
 HttpRequest::~HttpRequest() {
+}
+
+GURL HttpRequest::GetURL() const {
+  // TODO(svaldez): Use real URL from the EmbeddedTestServer.
+  return GURL("http://localhost" + relative_url);
 }
 
 HttpRequestParser::HttpRequestParser()
@@ -98,7 +104,15 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
     // Address.
     // Don't build an absolute URL as the parser does not know (should not
     // know) anything about the server address.
-    http_request_->relative_url = header_line_tokens[1];
+    GURL url(header_line_tokens[1]);
+    if (url.is_valid()) {
+      http_request_->relative_url = url.path();
+    } else if (header_line_tokens[1][0] == '/') {
+      http_request_->relative_url = header_line_tokens[1];
+    } else {
+      http_request_->relative_url = "/" + header_line_tokens[1];
+    }
+
     // Protocol.
     const std::string protocol = base::ToLowerASCII(header_line_tokens[2]);
     CHECK(protocol == "http/1.0" || protocol == "http/1.1") <<
@@ -139,7 +153,10 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
     const bool success = base::StringToSizeT(
         http_request_->headers["Content-Length"],
         &declared_content_length_);
-    DCHECK(success) << "Malformed Content-Length header's value.";
+    if (!success) {
+      declared_content_length_ = 0;
+      LOG(WARNING) << "Malformed Content-Length header's value.";
+    }
   } else if (http_request_->headers.count("Transfer-Encoding") > 0) {
     if (http_request_->headers["Transfer-Encoding"] == "chunked") {
       http_request_->has_content = true;
@@ -224,9 +241,11 @@ HttpMethod HttpRequestParser::GetMethodType(const std::string& token) const {
     return METHOD_DELETE;
   } else if (token == "patch") {
     return METHOD_PATCH;
+  } else if (token == "connect") {
+    return METHOD_CONNECT;
   }
-  NOTREACHED() << "Method not implemented: " << token;
-  return METHOD_UNKNOWN;
+  LOG(WARNING) << "Method not implemented: " << token;
+  return METHOD_GET;
 }
 
 }  // namespace test_server

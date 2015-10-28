@@ -12,7 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/log/net_log.h"
 #include "net/socket/ssl_server_socket.h"
-#include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_server_config.h"
 
 // Avoid including misc OpenSSL headers, i.e.:
 // <openssl/bio.h>
@@ -31,7 +31,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   SSLServerSocketOpenSSL(scoped_ptr<StreamSocket> socket,
                          scoped_refptr<X509Certificate> certificate,
                          crypto::RSAPrivateKey* key,
-                         const SSLConfig& ssl_config);
+                         const SSLServerConfig& ssl_config);
   ~SSLServerSocketOpenSSL() override;
 
   // SSLServerSocket interface.
@@ -139,7 +139,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   scoped_ptr<StreamSocket> transport_socket_;
 
   // Options for the SSL socket.
-  SSLConfig ssl_config_;
+  SSLServerConfig ssl_config_;
 
   // Certificate for the server.
   scoped_refptr<X509Certificate> cert_;

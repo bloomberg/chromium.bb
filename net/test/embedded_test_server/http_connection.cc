@@ -6,7 +6,6 @@
 
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
-#include "net/test/embedded_test_server/http_response.h"
 
 namespace net {
 namespace test_server {
@@ -15,14 +14,15 @@ HttpConnection::HttpConnection(scoped_ptr<StreamSocket> socket,
                                const HandleRequestCallback& callback)
     : socket_(socket.Pass()),
       callback_(callback),
-      read_buf_(new IOBufferWithSize(4096)) {}
+      read_buf_(new IOBufferWithSize(4096)),
+      weak_factory_(this) {}
 
 HttpConnection::~HttpConnection() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
-void HttpConnection::SendResponse(scoped_ptr<HttpResponse> response,
-                                  const base::Closure& callback) {
-  const std::string response_string = response->ToResponseString();
+void HttpConnection::SendResponseBytes(const std::string& response_string,
+                                       const SendCompleteCallback& callback) {
   if (response_string.length() > 0) {
     scoped_refptr<DrainableIOBuffer> write_buf(new DrainableIOBuffer(
         new StringIOBuffer(response_string), response_string.length()));
@@ -31,30 +31,6 @@ void HttpConnection::SendResponse(scoped_ptr<HttpResponse> response,
   } else {
     callback.Run();
   }
-}
-
-void HttpConnection::SendInternal(const base::Closure& callback,
-                                  scoped_refptr<DrainableIOBuffer> buf) {
-  while (buf->BytesRemaining() > 0) {
-    int rv = socket_->Write(buf.get(), buf->BytesRemaining(),
-                            base::Bind(&HttpConnection::OnSendInternalDone,
-                                       base::Unretained(this), callback, buf));
-    if (rv == ERR_IO_PENDING)
-      return;
-
-    buf->DidConsume(rv);
-  }
-
-  // The HttpConnection will be deleted by the callback since we only need to
-  // serve a single request.
-  callback.Run();
-}
-
-void HttpConnection::OnSendInternalDone(const base::Closure& callback,
-                                        scoped_refptr<DrainableIOBuffer> buf,
-                                        int rv) {
-  buf->DidConsume(rv);
-  SendInternal(callback, buf);
 }
 
 int HttpConnection::ReadData(const CompletionCallback& callback) {
@@ -68,6 +44,40 @@ bool HttpConnection::ConsumeData(int size) {
     return true;
   }
   return false;
+}
+
+void HttpConnection::SendInternal(const base::Closure& callback,
+                                  scoped_refptr<DrainableIOBuffer> buf) {
+  while (buf->BytesRemaining() > 0) {
+    int rv = socket_->Write(buf.get(), buf->BytesRemaining(),
+                            base::Bind(&HttpConnection::OnSendInternalDone,
+                                       base::Unretained(this), callback, buf));
+    if (rv == ERR_IO_PENDING)
+      return;
+
+    if (rv < 0)
+      break;
+    buf->DidConsume(rv);
+  }
+
+  // The HttpConnection will be deleted by the callback since we only need to
+  // serve a single request.
+  callback.Run();
+}
+
+void HttpConnection::OnSendInternalDone(const base::Closure& callback,
+                                        scoped_refptr<DrainableIOBuffer> buf,
+                                        int rv) {
+  if (rv < 0) {
+    callback.Run();
+    return;
+  }
+  buf->DidConsume(rv);
+  SendInternal(callback, buf);
+}
+
+base::WeakPtr<HttpConnection> HttpConnection::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace test_server

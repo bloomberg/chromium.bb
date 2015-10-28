@@ -19,7 +19,6 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/test/test_content_client.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_ANDROID)
 #include "content/shell/app/shell_main_delegate.h"
@@ -47,11 +46,6 @@ ContentBrowserTest::ContentBrowserTest() {
 #endif
   base::FilePath content_test_data(FILE_PATH_LITERAL("content/test/data"));
   CreateTestServer(content_test_data);
-  base::FilePath content_test_data_absolute;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &content_test_data_absolute));
-  content_test_data_absolute =
-      content_test_data_absolute.Append(content_test_data);
-  embedded_test_server()->ServeFilesFromDirectory(content_test_data_absolute);
 }
 
 ContentBrowserTest::~ContentBrowserTest() {

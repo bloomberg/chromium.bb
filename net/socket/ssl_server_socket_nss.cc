@@ -83,7 +83,7 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
     X509Certificate* cert,
     crypto::RSAPrivateKey* key,
-    const SSLConfig& ssl_config) {
+    const SSLServerConfig& ssl_config) {
   DCHECK(g_nss_server_sockets_init) << "EnableSSLServerSockets() has not been"
                                     << " called yet!";
 
@@ -95,7 +95,7 @@ SSLServerSocketNSS::SSLServerSocketNSS(
     scoped_ptr<StreamSocket> transport_socket,
     scoped_refptr<X509Certificate> cert,
     crypto::RSAPrivateKey* key,
-    const SSLConfig& ssl_config)
+    const SSLServerConfig& ssl_config)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
       user_read_buf_len_(0),
@@ -337,6 +337,15 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
   // TODO(port): set more ssl options!  Check errors!
 
   int rv;
+
+  if (ssl_config_.require_client_cert) {
+    rv = SSL_OptionSet(nss_fd_, SSL_REQUEST_CERTIFICATE, PR_TRUE);
+    if (rv != SECSuccess) {
+      LogFailedNSSFunction(net_log_, "SSL_OptionSet",
+                           "SSL_REQUEST_CERTIFICATE");
+      return ERR_UNEXPECTED;
+    }
+  }
 
   rv = SSL_OptionSet(nss_fd_, SSL_SECURITY, PR_TRUE);
   if (rv != SECSuccess) {

@@ -29,7 +29,7 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
     X509Certificate* certificate,
     crypto::RSAPrivateKey* key,
-    const SSLConfig& ssl_config) {
+    const SSLServerConfig& ssl_config) {
   crypto::EnsureOpenSSLInit();
   return scoped_ptr<SSLServerSocket>(
       new SSLServerSocketOpenSSL(socket.Pass(), certificate, key, ssl_config));
@@ -39,7 +39,7 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
     scoped_ptr<StreamSocket> transport_socket,
     scoped_refptr<X509Certificate> certificate,
     crypto::RSAPrivateKey* key,
-    const SSLConfig& ssl_config)
+    const SSLServerConfig& ssl_config)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
       transport_recv_eof_(false),
@@ -618,6 +618,10 @@ int SSLServerSocketOpenSSL::Init() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   ScopedSSL_CTX ssl_ctx(SSL_CTX_new(SSLv23_server_method()));
+
+  if (ssl_config_.require_client_cert)
+    SSL_CTX_set_verify(ssl_ctx.get(), SSL_VERIFY_PEER, NULL);
+
   ssl_ = SSL_new(ssl_ctx.get());
   if (!ssl_)
     return ERR_UNEXPECTED;
@@ -685,7 +689,7 @@ int SSLServerSocketOpenSSL::Init() {
   SSL_set_mode(ssl_, mode.set_mask);
   SSL_clear_mode(ssl_, mode.clear_mask);
 
-  // See SSLConfig::disabled_cipher_suites for description of the suites
+  // See SSLServerConfig::disabled_cipher_suites for description of the suites
   // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
   // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
   // as the handshake hash.

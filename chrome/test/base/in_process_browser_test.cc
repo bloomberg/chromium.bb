@@ -188,7 +188,6 @@ InProcessBrowserTest::InProcessBrowserTest()
   base::FilePath src_dir;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
   base::FilePath test_data_dir = src_dir.AppendASCII("chrome/test/data");
-  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
   // chrome::DIR_TEST_DATA isn't going to be setup until after we call
   // ContentMain. However that is after tests' constructors or SetUp methods,

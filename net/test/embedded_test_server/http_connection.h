@@ -9,10 +9,12 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 namespace net {
 
@@ -37,9 +39,9 @@ class HttpConnection {
                  const HandleRequestCallback& callback);
   ~HttpConnection();
 
-  // Sends the HTTP response to the client.
-  void SendResponse(scoped_ptr<HttpResponse> response,
-                    const base::Closure& callback);
+  // Sends the |response_string| to the client and calls |callback| once done.
+  void SendResponseBytes(const std::string& response_string,
+                         const SendCompleteCallback& callback);
 
   // Accepts raw chunk of data from the client. Internally, passes it to the
   // HttpRequestParser class. If a request is parsed, then |callback_| is
@@ -57,10 +59,14 @@ class HttpConnection {
                           scoped_refptr<DrainableIOBuffer> buffer,
                           int rv);
 
+  base::WeakPtr<HttpConnection> GetWeakPtr();
+
   scoped_ptr<StreamSocket> socket_;
   const HandleRequestCallback callback_;
   HttpRequestParser request_parser_;
   scoped_refptr<IOBufferWithSize> read_buf_;
+
+  base::WeakPtrFactory<HttpConnection> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpConnection);
 };

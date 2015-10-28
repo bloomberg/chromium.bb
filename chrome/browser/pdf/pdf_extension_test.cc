@@ -74,11 +74,11 @@ class PDFExtensionTest : public ExtensionApiTest,
 
   bool PdfIsExpectedToFailLoad(const std::string& pdf_file) {
     const char* const kFailingPdfs[] = {
-        "pdf_private/cfuzz5.pdf",
-        "pdf_private/cfuzz6.pdf",
-        "pdf_private/crash-11-14-44.pdf",
-        "pdf_private/js.pdf",
-        "pdf_private/segv-ecx.pdf",
+        // TODO(thestig): Investigate why this file doesn't fail when served by
+        // EmbeddedTestServer or another webserver.
+        // "pdf_private/cfuzz5.pdf",
+        "pdf_private/cfuzz6.pdf", "pdf_private/crash-11-14-44.pdf",
+        "pdf_private/js.pdf",     "pdf_private/segv-ecx.pdf",
         "pdf_private/tests.pdf",
     };
     for (size_t i = 0; i < arraysize(kFailingPdfs); ++i) {
