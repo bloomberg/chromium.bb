@@ -143,7 +143,7 @@ void PluginInstanceThrottlerImpl::Initialize(
     float zoom_factor = GetWebPlugin()->container()->pageZoomFactor();
     if (!frame->ShouldThrottleContent(
             frame->GetWebFrame()->top()->securityOrigin(), content_origin,
-            plugin_module_name, roundf(unobscured_size.width() / zoom_factor),
+            roundf(unobscured_size.width() / zoom_factor),
             roundf(unobscured_size.height() / zoom_factor),
             &cross_origin_main_content)) {
       DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);

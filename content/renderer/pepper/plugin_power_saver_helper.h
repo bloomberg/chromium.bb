@@ -37,19 +37,11 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
     base::Closure unthrottle_callback;
   };
 
-  enum OverrideForTesting {
-    Normal,
-    Never,
-    IgnoreList,
-    Always
-  };
-
   // See RenderFrame for documentation.
   void RegisterPeripheralPlugin(const url::Origin& content_origin,
                                 const base::Closure& unthrottle_callback);
   bool ShouldThrottleContent(const url::Origin& main_frame_origin,
                              const url::Origin& content_origin,
-                             const std::string& plugin_module_name,
                              int width,
                              int height,
                              bool* cross_origin_main_content) const;
@@ -62,8 +54,6 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
 
   void OnUpdatePluginContentOriginWhitelist(
       const std::set<url::Origin>& origin_whitelist);
-
-  OverrideForTesting override_for_testing_;
 
   // Local copy of the whitelist for the entire tab.
   std::set<url::Origin> origin_whitelist_;

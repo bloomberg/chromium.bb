@@ -10,7 +10,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/frame_messages.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/peripheral_content_heuristic.h"
@@ -36,18 +35,7 @@ PluginPowerSaverHelper::PeripheralPlugin::~PeripheralPlugin() {
 }
 
 PluginPowerSaverHelper::PluginPowerSaverHelper(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame)
-    , override_for_testing_(Normal) {
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  std::string override_for_testing = command_line.GetSwitchValueASCII(
-      switches::kOverridePluginPowerSaverForTesting);
-  if (override_for_testing == "never")
-    override_for_testing_ = Never;
-  else if (override_for_testing == "ignore-list")
-    override_for_testing_ = IgnoreList;
-  else if (override_for_testing == "always")
-    override_for_testing_ = Always;
-}
+    : RenderFrameObserver(render_frame) {}
 
 PluginPowerSaverHelper::~PluginPowerSaverHelper() {
 }
@@ -99,22 +87,15 @@ void PluginPowerSaverHelper::RegisterPeripheralPlugin(
 bool PluginPowerSaverHelper::ShouldThrottleContent(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
-    const std::string& plugin_module_name,
     int width,
     int height,
     bool* cross_origin_main_content) const {
   if (cross_origin_main_content)
     *cross_origin_main_content = false;
 
-  // This feature has only been tested throughly with Flash thus far.
-  // It is also enabled for the Power Saver test plugin for browser tests.
-  if (override_for_testing_ == Always) {
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kOverridePluginPowerSaverForTesting) == "always") {
     return true;
-  } else if (override_for_testing_ == Never) {
-    return false;
-  } else if (override_for_testing_ == Normal &&
-             plugin_module_name != content::kFlashPluginName) {
-    return false;
   }
 
   auto decision = PeripheralContentHeuristic::GetPeripheralStatus(

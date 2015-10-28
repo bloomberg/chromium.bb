@@ -600,7 +600,6 @@ const char kNumRasterThreads[]              = "num-raster-threads";
 
 // Override the behavior of plugin throttling for testing.
 // By default the throttler is only enabled for a hard-coded list of plugins.
-// Set the value to 'never' to disable throttling.
 // Set the value to 'ignore-list' to ignore the hard-coded list.
 // Set the value to 'always' to always throttle every plugin instance.
 const char kOverridePluginPowerSaverForTesting[] =

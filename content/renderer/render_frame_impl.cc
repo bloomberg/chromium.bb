@@ -2018,12 +2018,11 @@ void RenderFrameImpl::RegisterPeripheralPlugin(
 bool RenderFrameImpl::ShouldThrottleContent(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
-    const std::string& plugin_module_name,
     int width,
     int height,
     bool* cross_origin_main_content) const {
   return plugin_power_saver_helper_->ShouldThrottleContent(
-      main_frame_origin, content_origin, plugin_module_name, width, height,
+      main_frame_origin, content_origin, width, height,
       cross_origin_main_content);
 }
 

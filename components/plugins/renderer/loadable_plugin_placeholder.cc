@@ -349,11 +349,9 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
     // On a size update check if we now qualify as a essential plugin.
     url::Origin content_origin = url::Origin(GetPluginParams().url);
     bool cross_origin_main_content = false;
-    std::string plugin_module_name = base::UTF16ToUTF8(GetPluginInfo().name);
     if (!render_frame()->ShouldThrottleContent(
             render_frame()->GetWebFrame()->top()->securityOrigin(),
-            content_origin, plugin_module_name, width, height,
-            &cross_origin_main_content)) {
+            content_origin, width, height, &cross_origin_main_content)) {
       MarkPluginEssential(
           heuristic_run_before_
               ? PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE

@@ -64,28 +64,26 @@ class PluginPowerSaverHelperTest : public RenderViewTest {
 };
 
 TEST_F(PluginPowerSaverHelperTest, AllowSameOrigin) {
-  EXPECT_FALSE(
-      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
-                                     url::Origin(GURL("http://same.com")),
-                                     kFlashPluginName, 100, 100, nullptr));
-  EXPECT_FALSE(
-      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
-                                     url::Origin(GURL("http://same.com")),
-                                     kFlashPluginName, 1000, 1000, nullptr));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      url::Origin(GURL("http://same.com")),
+      url::Origin(GURL("http://same.com")), 100, 100, nullptr));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      url::Origin(GURL("http://same.com")),
+      url::Origin(GURL("http://same.com")), 1000, 1000, nullptr));
 }
 
 TEST_F(PluginPowerSaverHelperTest, DisallowCrossOriginUnlessLarge) {
   bool cross_origin_main_content = false;
-  EXPECT_TRUE(frame()->ShouldThrottleContent(
-      url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 100, 100,
-      &cross_origin_main_content));
+  EXPECT_TRUE(
+      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
+                                     url::Origin(GURL("http://other.com")), 100,
+                                     100, &cross_origin_main_content));
   EXPECT_FALSE(cross_origin_main_content);
 
-  EXPECT_FALSE(frame()->ShouldThrottleContent(
-      url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 1000, 1000,
-      &cross_origin_main_content));
+  EXPECT_FALSE(
+      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
+                                     url::Origin(GURL("http://other.com")),
+                                     1000, 1000, &cross_origin_main_content));
   EXPECT_TRUE(cross_origin_main_content);
 }
 
@@ -93,44 +91,42 @@ TEST_F(PluginPowerSaverHelperTest, AlwaysAllowTinyContent) {
   bool cross_origin_main_content = false;
   EXPECT_FALSE(frame()->ShouldThrottleContent(
       url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://same.com")), kFlashPluginName, 1, 1, nullptr));
+      url::Origin(GURL("http://same.com")), 1, 1, nullptr));
   EXPECT_FALSE(cross_origin_main_content);
 
   EXPECT_FALSE(frame()->ShouldThrottleContent(
       url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 1, 1,
-      &cross_origin_main_content));
+      url::Origin(GURL("http://other.com")), 1, 1, &cross_origin_main_content));
   EXPECT_FALSE(cross_origin_main_content);
 
   EXPECT_FALSE(frame()->ShouldThrottleContent(
       url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 5, 5,
-      &cross_origin_main_content));
+      url::Origin(GURL("http://other.com")), 5, 5, &cross_origin_main_content));
   EXPECT_FALSE(cross_origin_main_content);
 
-  EXPECT_TRUE(frame()->ShouldThrottleContent(
-      url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 10, 10,
-      &cross_origin_main_content));
+  EXPECT_TRUE(
+      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
+                                     url::Origin(GURL("http://other.com")), 10,
+                                     10, &cross_origin_main_content));
   EXPECT_FALSE(cross_origin_main_content);
 }
 
 TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
   bool cross_origin_main_content = false;
-  EXPECT_TRUE(frame()->ShouldThrottleContent(
-      url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 100, 100,
-      &cross_origin_main_content));
+  EXPECT_TRUE(
+      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
+                                     url::Origin(GURL("http://other.com")), 100,
+                                     100, &cross_origin_main_content));
   EXPECT_FALSE(cross_origin_main_content);
 
   // Clear out other messages so we find just the plugin power saver IPCs.
   sink_->ClearMessages();
 
   frame()->WhitelistContentOrigin(url::Origin(GURL("http://other.com")));
-  EXPECT_FALSE(frame()->ShouldThrottleContent(
-      url::Origin(GURL("http://same.com")),
-      url::Origin(GURL("http://other.com")), kFlashPluginName, 100, 100,
-      &cross_origin_main_content));
+  EXPECT_FALSE(
+      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
+                                     url::Origin(GURL("http://other.com")), 100,
+                                     100, &cross_origin_main_content));
   EXPECT_FALSE(cross_origin_main_content);
 
   // Test that we've sent an IPC to the browser.
@@ -160,17 +156,15 @@ TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {
 TEST_F(PluginPowerSaverHelperTest, ClearWhitelistOnNavigate) {
   frame()->WhitelistContentOrigin(url::Origin(GURL("http://other.com")));
 
-  EXPECT_FALSE(
-      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
-                                     url::Origin(GURL("http://other.com")),
-                                     kFlashPluginName, 100, 100, nullptr));
+  EXPECT_FALSE(frame()->ShouldThrottleContent(
+      url::Origin(GURL("http://same.com")),
+      url::Origin(GURL("http://other.com")), 100, 100, nullptr));
 
   LoadHTML("<html></html>");
 
-  EXPECT_TRUE(
-      frame()->ShouldThrottleContent(url::Origin(GURL("http://same.com")),
-                                     url::Origin(GURL("http://other.com")),
-                                     kFlashPluginName, 100, 100, nullptr));
+  EXPECT_TRUE(frame()->ShouldThrottleContent(
+      url::Origin(GURL("http://same.com")),
+      url::Origin(GURL("http://other.com")), 100, 100, nullptr));
 }
 
 }  // namespace content

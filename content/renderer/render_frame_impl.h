@@ -368,7 +368,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::Closure& unthrottle_callback) override;
   bool ShouldThrottleContent(const url::Origin& main_frame_origin,
                              const url::Origin& content_origin,
-                             const std::string& plugin_module_name,
                              int width,
                              int height,
                              bool* cross_origin_main_content) const override;

@@ -711,6 +711,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     }
 #endif
 
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     auto create_blocked_plugin =
         [&render_frame, &frame, &params, &info, &identifier, &group_name](
             int template_id, const base::string16& message) {
@@ -736,8 +737,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           bool is_nacl_unrestricted = false;
           if (is_nacl_mime_type) {
             is_nacl_unrestricted =
-                base::CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kEnableNaCl);
+                command_line->HasSwitch(switches::kEnableNaCl);
           } else if (is_pnacl_mime_type) {
             is_nacl_unrestricted = true;
           }
@@ -792,14 +792,26 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         bool is_prerendering =
             prerender::PrerenderHelper::IsPrerendering(render_frame);
-        bool power_saver_enabled =
-            status ==
-                ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
-        bool blocked_for_background_tab =
-            render_frame->IsHidden() && power_saver_enabled;
 
-        if (info.name == ASCIIToUTF16(content::kFlashPluginName))
-          TrackPosterParamPresence(params, power_saver_enabled);
+        bool is_flash = info.name == ASCIIToUTF16(content::kFlashPluginName);
+
+        std::string override_for_testing = command_line->GetSwitchValueASCII(
+            switches::kOverridePluginPowerSaverForTesting);
+
+        // This feature has only been tested throughly with Flash thus far.
+        // It is also enabled for the Power Saver test plugin for browser tests.
+        bool can_throttle_plugin_type =
+            is_flash || override_for_testing == "ignore-list";
+
+        bool power_saver_setting_on =
+            status ==
+            ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
+
+        bool power_saver_enabled =
+            override_for_testing == "always" ||
+            (power_saver_setting_on && can_throttle_plugin_type);
+        bool blocked_for_background_tab =
+            power_saver_enabled && render_frame->IsHidden();
 
         PlaceholderPosterInfo poster_info;
         if (power_saver_enabled) {
@@ -807,6 +819,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               GetPluginInstancePosterAttribute(params);
           poster_info.base_url = frame->document().url();
         }
+
+        if (is_flash)
+          TrackPosterParamPresence(params, power_saver_enabled);
 
         if (blocked_for_background_tab || is_prerendering ||
             !poster_info.poster_attribute.empty()) {

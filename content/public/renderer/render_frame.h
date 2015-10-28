@@ -152,7 +152,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // plugin content is cross-origin but still the "main attraction" of the page.
   virtual bool ShouldThrottleContent(const url::Origin& main_frame_origin,
                                      const url::Origin& content_origin,
-                                     const std::string& plugin_module_name,
                                      int width,
                                      int height,
                                      bool* cross_origin_main_content) const = 0;
