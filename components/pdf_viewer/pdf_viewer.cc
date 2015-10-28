@@ -408,14 +408,16 @@ class PDFView : public mus::WindowTreeDelegate,
     // responsive to gesture events.
     if ((event->key_data &&
          event->key_data->windows_key_code == mojo::KEYBOARD_CODE_DOWN) ||
-        (event->wheel_data && event->wheel_data->delta_y < 0)) {
+        (event->pointer_data && event->pointer_data->wheel_data &&
+         event->pointer_data->wheel_data->delta_y < 0)) {
       if (current_page_ < (page_count_ - 1)) {
         current_page_++;
         DrawBitmap();
       }
     } else if ((event->key_data &&
                 event->key_data->windows_key_code == mojo::KEYBOARD_CODE_UP) ||
-               (event->wheel_data && event->wheel_data->delta_y > 0)) {
+               (event->pointer_data && event->pointer_data->wheel_data &&
+                event->pointer_data->wheel_data->delta_y > 0)) {
       if (current_page_ > 0) {
         current_page_--;
         DrawBitmap();

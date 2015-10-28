@@ -69,7 +69,7 @@ ui::EventType MojoTouchEventTypeToUIEvent(const EventPtr& event) {
 }
 
 ui::EventType MojoWheelEventTypeToUIEvent(const EventPtr& event) {
-  DCHECK(event->wheel_data);
+  DCHECK(event->pointer_data && event->pointer_data->wheel_data);
   return ui::ET_MOUSEWHEEL;
 }
 
@@ -170,35 +170,7 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
   event->flags = EventFlags(input.flags());
   event->time_stamp = input.time_stamp().ToInternalValue();
 
-  if (input.IsMouseWheelEvent()) {
-    const ui::MouseWheelEvent* wheel_event =
-        static_cast<const ui::MouseWheelEvent*>(&input);
-
-    WheelDataPtr wheel_data(WheelData::New());
-    LocationDataPtr location_data(LocationData::New());
-    const ui::LocatedEvent* located_event =
-        static_cast<const ui::LocatedEvent*>(&input);
-    SetPointerDataLocationFromEvent(*located_event, location_data.get());
-    wheel_data->location = location_data.Pass();
-
-    // TODO(rjkroege): Support page scrolling on windows by directly
-    // cracking into a mojo event when the native event is available.
-    wheel_data->mode = WHEEL_MODE_LINE;
-    // TODO(rjkroege): Support precise scrolling deltas.
-
-    if ((input.flags() & ui::EF_SHIFT_DOWN) != 0 &&
-        wheel_event->x_offset() == 0) {
-      wheel_data->delta_x = wheel_event->y_offset();
-      wheel_data->delta_y = 0;
-      wheel_data->delta_z = 0;
-    } else {
-      // TODO(rjkroege): support z in ui::Events.
-      wheel_data->delta_x = wheel_event->x_offset();
-      wheel_data->delta_y = wheel_event->y_offset();
-      wheel_data->delta_z = 0;
-    }
-    event->wheel_data = wheel_data.Pass();
-  } else if (input.IsMouseEvent()) {
+  if (input.IsMouseEvent()) {
     const ui::LocatedEvent* located_event =
         static_cast<const ui::LocatedEvent*>(&input);
     PointerDataPtr pointer_data(PointerData::New());
@@ -209,6 +181,30 @@ EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
     SetPointerDataLocationFromEvent(*located_event, location_data.get());
     pointer_data->location = location_data.Pass();
 
+    if (input.IsMouseWheelEvent()) {
+      const ui::MouseWheelEvent* wheel_event =
+          static_cast<const ui::MouseWheelEvent*>(&input);
+
+      WheelDataPtr wheel_data(WheelData::New());
+
+      // TODO(rjkroege): Support page scrolling on windows by directly
+      // cracking into a mojo event when the native event is available.
+      wheel_data->mode = WHEEL_MODE_LINE;
+      // TODO(rjkroege): Support precise scrolling deltas.
+
+      if ((input.flags() & ui::EF_SHIFT_DOWN) != 0 &&
+          wheel_event->x_offset() == 0) {
+        wheel_data->delta_x = wheel_event->y_offset();
+        wheel_data->delta_y = 0;
+        wheel_data->delta_z = 0;
+      } else {
+        // TODO(rjkroege): support z in ui::Events.
+        wheel_data->delta_x = wheel_event->x_offset();
+        wheel_data->delta_y = wheel_event->y_offset();
+        wheel_data->delta_z = 0;
+      }
+      pointer_data->wheel_data = wheel_data.Pass();
+    }
     event->pointer_data = pointer_data.Pass();
   } else if (input.IsTouchEvent()) {
     const ui::TouchEvent* touch_event =
@@ -338,14 +334,15 @@ scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
       }
     } break;
     case EVENT_TYPE_WHEEL: {
-      DCHECK(input->wheel_data);
+      DCHECK(input->pointer_data && input->pointer_data->wheel_data);
       scoped_ptr<ui::MouseEvent> pre_wheel_event(new ui::MouseEvent(
           MojoWheelEventTypeToUIEvent(input), location, screen_location,
           ui::EventTimeForNow(), ui::EventFlags(input->flags),
           ui::EventFlags(input->flags)));
       scoped_ptr<ui::MouseEvent> wheel_event(new ui::MouseWheelEvent(
-          *pre_wheel_event, static_cast<int>(input->wheel_data->delta_x),
-          static_cast<int>(input->wheel_data->delta_y)));
+          *pre_wheel_event,
+          static_cast<int>(input->pointer_data->wheel_data->delta_x),
+          static_cast<int>(input->pointer_data->wheel_data->delta_y)));
       return wheel_event.Pass();
     } break;
 

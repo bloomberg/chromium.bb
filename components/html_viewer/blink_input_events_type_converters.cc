@@ -137,6 +137,8 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
 
 scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
     const EventPtr& event) {
+  DCHECK(event->pointer_data && event->pointer_data->wheel_data);
+  const mojo::WheelData& wheel_data = *event->pointer_data->wheel_data;
   scoped_ptr<blink::WebMouseWheelEvent> web_event(
       new blink::WebMouseWheelEvent);
   web_event->type = blink::WebInputEvent::MouseWheel;
@@ -144,46 +146,41 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
   web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
-  if (event->wheel_data) {
-    if (event->wheel_data->location)
-      SetWebMouseEventLocation(*(event->wheel_data->location), web_event.get());
+  SetWebMouseEventLocation(*(event->pointer_data->location), web_event.get());
 
-    // TODO(rjkroege): Update the following code once Blink supports
-    // DOM Level 3 wheel events
-    // (http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents)
-    web_event->deltaX = event->wheel_data->delta_x;
-    web_event->deltaY = event->wheel_data->delta_y;
+  // TODO(rjkroege): Update the following code once Blink supports
+  // DOM Level 3 wheel events
+  // (http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents)
+  web_event->deltaX = wheel_data.delta_x;
+  web_event->deltaY = wheel_data.delta_y;
 
-    web_event->wheelTicksX =
-        web_event->deltaX / ui::MouseWheelEvent::kWheelDelta;
-    web_event->wheelTicksY =
-        web_event->deltaY / ui::MouseWheelEvent::kWheelDelta;
+  web_event->wheelTicksX = web_event->deltaX / ui::MouseWheelEvent::kWheelDelta;
+  web_event->wheelTicksY = web_event->deltaY / ui::MouseWheelEvent::kWheelDelta;
 
-    // TODO(rjkroege): Mandoline currently only generates WHEEL_MODE_LINE
-    // wheel events so the other modes are not yet tested. Verify that
-    // the implementation is correct.
-    switch (event->wheel_data->mode) {
-      case mojo::WHEEL_MODE_PIXEL:
-        web_event->hasPreciseScrollingDeltas = true;
-        web_event->scrollByPage = false;
-        web_event->canScroll = true;
-        break;
-      case mojo::WHEEL_MODE_LINE:
-        web_event->hasPreciseScrollingDeltas = false;
-        web_event->scrollByPage = false;
-        web_event->canScroll = true;
-        break;
-      case mojo::WHEEL_MODE_PAGE:
-        web_event->hasPreciseScrollingDeltas = false;
-        web_event->scrollByPage = true;
-        web_event->canScroll = true;
-        break;
-      case mojo::WHEEL_MODE_SCALING:
-        web_event->hasPreciseScrollingDeltas = false;
-        web_event->scrollByPage = false;
-        web_event->canScroll = false;
-        break;
-    }
+  // TODO(rjkroege): Mandoline currently only generates WHEEL_MODE_LINE
+  // wheel events so the other modes are not yet tested. Verify that
+  // the implementation is correct.
+  switch (wheel_data.mode) {
+    case mojo::WHEEL_MODE_PIXEL:
+      web_event->hasPreciseScrollingDeltas = true;
+      web_event->scrollByPage = false;
+      web_event->canScroll = true;
+      break;
+    case mojo::WHEEL_MODE_LINE:
+      web_event->hasPreciseScrollingDeltas = false;
+      web_event->scrollByPage = false;
+      web_event->canScroll = true;
+      break;
+    case mojo::WHEEL_MODE_PAGE:
+      web_event->hasPreciseScrollingDeltas = false;
+      web_event->scrollByPage = true;
+      web_event->canScroll = true;
+      break;
+    case mojo::WHEEL_MODE_SCALING:
+      web_event->hasPreciseScrollingDeltas = false;
+      web_event->scrollByPage = false;
+      web_event->canScroll = false;
+      break;
   }
 
   return web_event.Pass();

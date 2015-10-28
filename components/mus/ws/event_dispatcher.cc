@@ -226,14 +226,8 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
   if (event->key_data)
     return focused_window;
 
-  DCHECK(event->pointer_data || event->wheel_data) << "Unknown event type: "
-                                                   << event->action;
-
-  mojo::LocationData* event_location = nullptr;
-  if (event->pointer_data)
-    event_location = event->pointer_data->location.get();
-  else if (event->wheel_data)
-    event_location = event->wheel_data->location.get();
+  DCHECK(event->pointer_data) << "Unknown event type: " << event->action;
+  mojo::LocationData* event_location = event->pointer_data->location.get();
   DCHECK(event_location);
   gfx::Point location(static_cast<int>(event_location->x),
                       static_cast<int>(event_location->y));
