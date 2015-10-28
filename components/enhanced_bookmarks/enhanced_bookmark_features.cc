@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/variations/variations_associated_data.h"
 
 #if defined(OS_IOS) || defined(OS_ANDROID)
@@ -18,6 +19,13 @@ const char kFieldTrialName[] = "EnhancedBookmarks";
 }  // namespace
 
 bool IsEnhancedBookmarksEnabled() {
+#if defined(OS_ANDROID)
+  // If offline pages feature is enabled, also enable enhanced bookmarks feature
+  // regardless its state.
+  if (offline_pages::IsOfflinePagesEnabled())
+    return true;
+#endif
+
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".  "" -
   // default, "0" - user opted out, "1" - user opted in.  Tests also use the
   // command line flag to force enhanced bookmark to be on.

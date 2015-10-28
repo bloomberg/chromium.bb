@@ -47,6 +47,7 @@ source_set("enhanced_bookmarks") {
     "//components/enhanced_bookmarks/proto",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/offline_pages",
     "//components/pref_registry",
     "//components/signin/core/browser",
     "//components/sync_driver",
