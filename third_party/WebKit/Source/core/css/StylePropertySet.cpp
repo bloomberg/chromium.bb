@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::cre
 #if ENABLE(OILPAN)
     void* slot = Heap::allocate<StylePropertySet>(sizeForImmutableStylePropertySetWithPropertyCount(count));
 #else
-    void* slot = WTF::fastMalloc(sizeForImmutableStylePropertySetWithPropertyCount(count));
+    void* slot = WTF::Partitions::fastMalloc(sizeForImmutableStylePropertySetWithPropertyCount(count));
 #endif // ENABLE(OILPAN)
     return adoptRefWillBeNoop(new (slot) ImmutableStylePropertySet(properties, count, cssParserMode));
 }

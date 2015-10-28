@@ -27,7 +27,6 @@
 #include "platform/PODFreeListArena.h"
 
 #include "platform/testing/ArenaTestHelpers.h"
-#include "wtf/FastMalloc.h"
 #include "wtf/RefPtr.h"
 
 #include <gtest/gtest.h>

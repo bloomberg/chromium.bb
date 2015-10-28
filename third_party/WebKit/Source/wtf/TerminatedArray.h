@@ -6,6 +6,7 @@
 
 #include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Partitions.h"
 
 namespace WTF {
 
@@ -64,7 +65,7 @@ public:
     }
 
     // Match Allocator semantics to be able to use OwnPtr<TerminatedArray>.
-    void operator delete(void* p) { ::WTF::fastFree(p); }
+    void operator delete(void* p) { ::WTF::Partitions::fastFree(p); }
 
 private:
     // Allocator describes how TerminatedArrayBuilder should create new instances
@@ -75,12 +76,12 @@ private:
 
         static PassPtr create(size_t capacity)
         {
-            return adoptPtr(static_cast<TerminatedArray*>(fastMalloc(capacity * sizeof(T))));
+            return adoptPtr(static_cast<TerminatedArray*>(WTF::Partitions::fastMalloc(capacity * sizeof(T))));
         }
 
         static PassPtr resize(PassPtr ptr, size_t capacity)
         {
-            return adoptPtr(static_cast<TerminatedArray*>(fastRealloc(ptr.leakPtr(), capacity * sizeof(T))));
+            return adoptPtr(static_cast<TerminatedArray*>(WTF::Partitions::fastRealloc(ptr.leakPtr(), capacity * sizeof(T))));
         }
     };
 

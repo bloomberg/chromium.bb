@@ -316,16 +316,16 @@ static hb_blob_t* harfBuzzSkiaGetTable(hb_face_t* face, hb_tag_t tag, void* user
         return nullptr;
     }
 
-    char* buffer = reinterpret_cast<char*>(fastMalloc(tableSize));
+    char* buffer = reinterpret_cast<char*>(WTF::Partitions::fastMalloc(tableSize));
     if (!buffer)
         return nullptr;
     size_t actualSize = typeface->getTableData(tag, 0, tableSize, buffer);
     if (tableSize != actualSize) {
-        fastFree(buffer);
+        WTF::Partitions::fastFree(buffer);
         return nullptr;
     }
 
-    return hb_blob_create(const_cast<char*>(buffer), tableSize, HB_MEMORY_MODE_WRITABLE, buffer, fastFree);
+    return hb_blob_create(const_cast<char*>(buffer), tableSize, HB_MEMORY_MODE_WRITABLE, buffer, WTF::Partitions::fastFree);
 }
 #endif
 

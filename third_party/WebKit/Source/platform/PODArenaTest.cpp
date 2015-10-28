@@ -27,7 +27,6 @@
 #include "platform/PODArena.h"
 
 #include "platform/testing/ArenaTestHelpers.h"
-#include "wtf/FastMalloc.h"
 #include "wtf/RefPtr.h"
 #include <algorithm>
 #include <gtest/gtest.h>

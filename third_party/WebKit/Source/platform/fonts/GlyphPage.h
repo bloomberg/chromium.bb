@@ -33,6 +33,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/Glyph.h"
+#include "wtf/Partitions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -73,7 +74,7 @@ class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
 public:
     static PassRefPtr<GlyphPage> createForMixedFontData(GlyphPageTreeNodeBase* owner)
     {
-        void* slot = fastMalloc(sizeof(GlyphPage) + sizeof(SimpleFontData*) * GlyphPage::size);
+        void* slot = WTF::Partitions::fastMalloc(sizeof(GlyphPage) + sizeof(SimpleFontData*) * GlyphPage::size);
         return adoptRef(new (slot) GlyphPage(owner));
     }
 

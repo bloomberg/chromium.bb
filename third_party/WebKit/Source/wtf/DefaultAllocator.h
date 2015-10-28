@@ -101,7 +101,7 @@ public:
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)
     {
-        return reinterpret_cast<Return>(fastMalloc(size));
+        return reinterpret_cast<Return>(Partitions::fastMalloc(size));
     }
 
     static inline bool expandHashTableBacking(void*, size_t)
@@ -110,7 +110,7 @@ public:
     }
     static void free(void* address)
     {
-        fastFree(address);
+        Partitions::fastFree(address);
     }
     template<typename T>
     static void* newArray(size_t bytes)

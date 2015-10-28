@@ -29,9 +29,9 @@
 #ifndef AudioArray_h
 #define AudioArray_h
 
-#include <string.h>
-#include "wtf/FastMalloc.h"
+#include "wtf/Partitions.h"
 #include "wtf/Vector.h"
+#include <string.h>
 
 namespace blink {
 
@@ -46,7 +46,7 @@ public:
 
     ~AudioArray()
     {
-        fastFree(m_allocation);
+        WTF::Partitions::fastFree(m_allocation);
     }
 
     // It's OK to call allocate() multiple times, but data will *not* be copied from an initial allocation
@@ -66,7 +66,7 @@ public:
 #endif
 
         if (m_allocation)
-            fastFree(m_allocation);
+            WTF::Partitions::fastFree(m_allocation);
 
         bool isAllocationGood = false;
 
@@ -78,7 +78,7 @@ public:
             // Again, check for integer overflow.
             RELEASE_ASSERT(initialSize + extraAllocationBytes >= initialSize);
 
-            T* allocation = static_cast<T*>(fastMalloc(initialSize + extraAllocationBytes));
+            T* allocation = static_cast<T*>(WTF::Partitions::fastMalloc(initialSize + extraAllocationBytes));
             RELEASE_ASSERT(allocation);
 
             T* alignedData = alignedAddress(allocation, alignment);
@@ -91,7 +91,7 @@ public:
                 zero();
             } else {
                 extraAllocationBytes = alignment; // always allocate extra after the first alignment failure.
-                fastFree(allocation);
+                WTF::Partitions::fastFree(allocation);
             }
         }
     }

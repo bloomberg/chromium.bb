@@ -36,10 +36,10 @@
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
 #include "core/xml/XPathVariableReference.h"
-#include "wtf/FastMalloc.h"
+#include "wtf/Partitions.h"
 
-#define YYMALLOC fastMalloc
-#define YYFREE fastFree
+#define YYMALLOC WTF::Partitions::fastMalloc
+#define YYFREE WTF::Partitions::fastFree
 
 #define YYENABLE_NLS 0
 #define YYLTYPE_IS_TRIVIAL 1

@@ -281,7 +281,7 @@ struct ListHashSetAllocator : public DefaultAllocator {
         Node* result = m_freeList;
 
         if (!result)
-            return static_cast<Node*>(fastMalloc(sizeof(NodeBase)));
+            return static_cast<Node*>(WTF::Partitions::fastMalloc(sizeof(NodeBase)));
 
         ASSERT(!result->m_isAllocated);
 
@@ -313,7 +313,7 @@ struct ListHashSetAllocator : public DefaultAllocator {
             return;
         }
 
-        fastFree(node);
+        WTF::Partitions::fastFree(node);
     }
 
     bool inPool(Node* node)

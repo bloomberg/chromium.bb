@@ -39,6 +39,7 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
+#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/dtoa/utils.h"
 
@@ -320,7 +321,7 @@ public:
         jpeg_create_decompress(&m_info);
 
         ASSERT(!m_info.src);
-        decoder_source_mgr* src = static_cast<decoder_source_mgr*>(fastZeroedMalloc(sizeof(decoder_source_mgr)));
+        decoder_source_mgr* src = static_cast<decoder_source_mgr*>(WTF::Partitions::fastZeroedMalloc(sizeof(decoder_source_mgr)));
         if (!src) {
             m_state = JPEG_ERROR;
             return;
@@ -353,7 +354,7 @@ public:
     {
         decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(m_info.src);
         if (src)
-            fastFree(src);
+            WTF::Partitions::fastFree(src);
         m_info.src = 0;
 
 #if USE(QCMSLIB)

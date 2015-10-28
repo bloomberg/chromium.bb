@@ -48,7 +48,7 @@
 //
 
 #include "wtf/Assertions.h"
-#include "wtf/FastMalloc.h"
+#include "wtf/Partitions.h"
 #include "wtf/StdLibExtras.h"
 
 #define WTF_MAKE_FAST_ALLOCATED(type) \
@@ -58,22 +58,22 @@ public: \
     \
     void* operator new(size_t size) \
     { \
-        return ::WTF::fastMalloc(size); \
+        return ::WTF::Partitions::fastMalloc(size);     \
     } \
     \
     void operator delete(void* p) \
     { \
-        ::WTF::fastFree(p); \
+        ::WTF::Partitions::fastFree(p);         \
     } \
     \
     void* operator new[](size_t size) \
     { \
-        return ::WTF::fastMalloc(size); \
+        return ::WTF::Partitions::fastMalloc(size);       \
     } \
     \
     void operator delete[](void* p) \
     { \
-        ::WTF::fastFree(p); \
+        ::WTF::Partitions::fastFree(p);                   \
     } \
     void* operator new(size_t, NotNullTag, void* location) \
     { \

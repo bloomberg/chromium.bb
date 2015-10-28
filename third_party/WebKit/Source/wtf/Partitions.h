@@ -34,6 +34,7 @@
 #include "wtf/PartitionAlloc.h"
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
+#include <string.h>
 
 namespace WTF {
 
@@ -94,15 +95,38 @@ public:
     {
         return partitionAllocGeneric(bufferPartition(), n);
     }
-
     ALWAYS_INLINE static void bufferFree(void* p)
     {
         partitionFreeGeneric(bufferPartition(), p);
     }
-
     ALWAYS_INLINE static size_t bufferActualSize(size_t n)
     {
         return partitionAllocActualSize(bufferPartition(), n);
+    }
+    static void* fastMalloc(size_t n)
+    {
+        return partitionAllocGeneric(Partitions::fastMallocPartition(), n);
+    }
+    static void* fastZeroedMalloc(size_t n)
+    {
+        void* result = fastMalloc(n);
+        memset(result, 0, n);
+        return result;
+    }
+    static void* fastRealloc(void* p, size_t n)
+    {
+        return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n);
+    }
+    static char* fastStrDup(const char* src)
+    {
+        size_t len = strlen(src) + 1;
+        char* dup = static_cast<char*>(fastMalloc(len));
+        memcpy(dup, src, len);
+        return dup;
+    }
+    static void fastFree(void* p)
+    {
+        partitionFreeGeneric(Partitions::fastMallocPartition(), p);
     }
 
     static void handleOutOfMemory();

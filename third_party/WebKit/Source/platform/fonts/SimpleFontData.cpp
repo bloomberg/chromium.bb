@@ -40,6 +40,7 @@
 #include "platform/fonts/VDMXParser.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/MathExtras.h"
+#include "wtf/Partitions.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
 #include <unicode/normlzr.h>
@@ -115,12 +116,12 @@ void SimpleFontData::platformInit()
     {
         size_t vdmxSize = face->getTableSize(vdmxTag);
         if (vdmxSize && vdmxSize < maxVDMXTableSize) {
-            uint8_t* vdmxTable = (uint8_t*) fastMalloc(vdmxSize);
+            uint8_t* vdmxTable = (uint8_t*) WTF::Partitions::fastMalloc(vdmxSize);
             if (vdmxTable
                 && face->getTableData(vdmxTag, 0, vdmxSize, vdmxTable) == vdmxSize
                 && parseVDMX(&vdmxAscent, &vdmxDescent, vdmxTable, vdmxSize, pixelSize))
                 isVDMXValid = true;
-            fastFree(vdmxTable);
+            WTF::Partitions::fastFree(vdmxTable);
         }
     }
 #endif

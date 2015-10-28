@@ -33,7 +33,6 @@
 
 #include "wtf/Alias.h"
 #include "wtf/DefaultAllocator.h"
-#include "wtf/FastMalloc.h"
 #include "wtf/MainThread.h"
 
 namespace WTF {

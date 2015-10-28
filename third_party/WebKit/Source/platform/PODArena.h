@@ -28,9 +28,9 @@
 
 #include <stdint.h>
 #include "wtf/Assertions.h"
-#include "wtf/FastMalloc.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -64,8 +64,8 @@ public:
             return adoptRef(new FastMallocAllocator);
         }
 
-        void* allocate(size_t size) override { return fastMalloc(size); }
-        void free(void* ptr) override { fastFree(ptr); }
+        void* allocate(size_t size) override { return WTF::Partitions::fastMalloc(size); }
+        void free(void* ptr) override { WTF::Partitions::fastFree(ptr); }
 
     protected:
         FastMallocAllocator() { }

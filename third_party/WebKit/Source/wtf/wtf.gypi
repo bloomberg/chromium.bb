@@ -51,8 +51,6 @@
             'DynamicAnnotations.cpp',
             'DynamicAnnotations.h',
             'FastAllocBase.h',
-            'FastMalloc.cpp',
-            'FastMalloc.h',
             'FilePrintStream.cpp',
             'FilePrintStream.h',
             'Float32Array.h',

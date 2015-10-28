@@ -33,7 +33,6 @@
 
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/Assertions.h"
-#include "wtf/FastMalloc.h"
 #include "wtf/Partitions.h"
 
 namespace WTF {
