@@ -2034,15 +2034,3 @@ v8.dll!v8::internal::`anonymous namespace'::Invoke
 v8.dll!v8::internal::Execution::Call
 ...
 net_with_v8.dll!net::ProxyResolverV8::Context::*
-
-HANDLE LEAK
-name=bug_548039
-system call NtCreateSection
-KERNELBASE.dll!CreateFileMappingW
-base.dll!base::SharedMemory::Create
-content.dll!content::ChildThreadImpl::AllocateSharedMemory
-content.dll!content::RenderThreadImpl::HostAllocateSharedMemoryBuffer
-content.dll!content::RenderThreadImpl::AllocateSharedMemory
-...
-content.dll!content::WebGraphicsContext3DCommandBufferImpl::CreateContext
-content.dll!content::WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL
