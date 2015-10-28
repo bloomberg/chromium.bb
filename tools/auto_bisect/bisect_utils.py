@@ -124,8 +124,8 @@ DEPOT_DEPS_NAME = {
         'viewvc': 'https://chromium.googlesource.com/v8/v8.git/+/',
         'deps_var': 'v8_revision'
     },
-    'skia/src': {
-        'src': 'src/third_party/skia/src',
+    'skia': {
+        'src': 'src/third_party/skia',
         'recurse': True,
         'from': ['chromium'],
         'viewvc': 'https://chromium.googlesource.com/skia/+/',

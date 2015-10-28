@@ -398,13 +398,6 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self.assertEqual(
         23634, source_control.GetCommitPosition(v8_rev, depot_path))
 
-  def testGetCommitPositionForWebKit(self):
-    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
-    wk_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
-    depot_path = os.path.join(bisect_instance.src_cwd, 'third_party', 'WebKit')
-    self.assertEqual(
-        181660, source_control.GetCommitPosition(wk_rev, depot_path))
-
   def testGetCommitPositionForSkia(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
     skia_rev = 'a94d028eCheckAbortsEarly0f2c77f159b3dac95eb90c3b4cf48c61'
