@@ -446,7 +446,16 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
         // forced layout on the child.
         return child.computeContentLogicalHeight(sizeType, size, child.contentLogicalHeight()) + child.scrollbarLogicalHeight();
     }
-    return child.computeLogicalWidthUsing(sizeType, size, contentLogicalWidth(), this) - child.borderAndPaddingLogicalWidth();
+    // computeLogicalWidth always re-computes the intrinsic widths. However, when our logical width is auto,
+    // we can just use our cached value. So let's do that here. (Compare code in LayoutBlock::computePreferredLogicalWidths)
+    LayoutUnit borderAndPadding = child.borderAndPaddingLogicalWidth();
+    if (styleRef().logicalWidth().isAuto()) {
+        if (size.type() == MinContent)
+            return child.minPreferredLogicalWidth() - borderAndPadding;
+        if (size.type() == MaxContent)
+            return child.maxPreferredLogicalWidth() - borderAndPadding;
+    }
+    return child.computeLogicalWidthUsing(sizeType, size, contentLogicalWidth(), this) - borderAndPadding;
 }
 
 WritingMode LayoutFlexibleBox::transformedWritingMode() const
@@ -870,7 +879,7 @@ void LayoutFlexibleBox::prepareOrderIteratorAndMargins()
     }
 }
 
-LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize, bool childShrunk)
+LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child, LayoutUnit childSize)
 {
     Length max = isHorizontalFlow() ? child.style()->maxWidth() : child.style()->maxHeight();
     LayoutUnit maxExtent = -1;
@@ -888,7 +897,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
         // computeMainAxisExtentForChild can return -1 when the child has a percentage
         // min size, but we have an indefinite size in that axis.
         minExtent = std::max(LayoutUnit(), minExtent);
-    } else if (childShrunk && min.isAuto() && mainAxisOverflowForChild(child) == OVISIBLE) {
+    } else if (min.isAuto() && mainAxisOverflowForChild(child) == OVISIBLE) {
         // css-flexbox section 4.5
         LayoutUnit contentSize = computeMainAxisExtentForChild(child, MinSize, Length(MinContent));
         ASSERT(contentSize >= 0);
@@ -994,7 +1003,6 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
             LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child);
             LayoutUnit childSize = childInnerFlexBaseSize;
             double extraSpace = 0;
-            bool childShrunk = false;
             if (availableFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow)) {
                 if (totalFlexGrow < 1)
                     extraSpace = availableFreeSpace * child->style()->flexGrow();
@@ -1002,12 +1010,11 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
                     extraSpace = availableFreeSpace * child->style()->flexGrow() / totalFlexGrow;
             } else if (availableFreeSpace < 0 && totalWeightedFlexShrink > 0 && flexSign == NegativeFlexibility && std::isfinite(totalWeightedFlexShrink) && child->style()->flexShrink()) {
                 extraSpace = availableFreeSpace * child->style()->flexShrink() * childInnerFlexBaseSize / totalWeightedFlexShrink;
-                childShrunk = true;
             }
             if (std::isfinite(extraSpace))
                 childSize += LayoutUnit::fromFloatRound(extraSpace);
 
-            LayoutUnit adjustedChildSize = adjustChildSizeForMinAndMax(*child, childSize, childShrunk);
+            LayoutUnit adjustedChildSize = adjustChildSizeForMinAndMax(*child, childSize);
             ASSERT(adjustedChildSize >= 0);
             childSizes.append(adjustedChildSize);
             usedFreeSpace += adjustedChildSize - childInnerFlexBaseSize;
@@ -1147,7 +1154,7 @@ bool LayoutFlexibleBox::childHasIntrinsicMainAxisSize(const LayoutBox& child) co
         Length childFlexBasis = flexBasisForChild(child);
         Length childMinSize = isHorizontalFlow() ? child.style()->minWidth() : child.style()->minHeight();
         Length childMaxSize = isHorizontalFlow() ? child.style()->maxWidth() : child.style()->maxHeight();
-        if (childFlexBasis.isIntrinsic() || childMinSize.isIntrinsic() || childMaxSize.isIntrinsic())
+        if (childFlexBasis.isIntrinsic() || childMinSize.isIntrinsicOrAuto() || childMaxSize.isIntrinsic())
             result = true;
     }
     return result;

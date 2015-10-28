@@ -32,7 +32,7 @@
 
 </style>
 
-<body onload="checkLayout('.flexbox')">
+<body onload="checkLayout('.flexbox'); checkLayout('.inline-flexbox');">
 
 <div class="flexbox" data-expected-width="10">
     <div class="item" data-expected-width="100">
@@ -46,6 +46,12 @@
     </div>
 </div>
 
+<div class="inline-flexbox column" data-expected-height="110">
+    <div class="item flex-basis-20" data-expected-height="100">
+        <div class="child" data-expected-height="100"></div>
+    </div>
+</div>
+
 <div class="flexbox" data-expected-width="10">
     <div class="item width-20" data-expected-width="20">
         <div class="child" data-expected-width="100"></div>
@@ -53,6 +59,12 @@
 </div>
 
 <div class="flexbox" data-expected-width="10">
+    <div class="item flex-basis-20" data-expected-width="100">
+        <div class="child" data-expected-width="100"></div>
+    </div>
+</div>
+
+<div class="inline-flexbox" data-expected-width="110">
     <div class="item flex-basis-20" data-expected-width="100">
         <div class="child" data-expected-width="100"></div>
     </div>
