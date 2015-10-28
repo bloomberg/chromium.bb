@@ -22,15 +22,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from devil.utils import cmd_helper
 from play_services import utils
 from pylib import constants
+from pylib.utils import logging_utils
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build'))
 import find_depot_tools  # pylint: disable=import-error,unused-import
 import breakpad
 import download_from_google_storage
 import upload_to_google_storage
-
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'tools'))
-import yes_no  # pylint: disable=import-error
 
 
 # Directory where the SHA1 files for the zip and the license are stored
@@ -110,6 +108,7 @@ def Main():
   args = parser.parse_args()
   if args.verbose:
     logging.basicConfig(level=logging.DEBUG)
+  logging_utils.ColorStreamHandler.MakeDefault()
   return args.func(args)
 
 
@@ -392,9 +391,21 @@ def _CheckLicenseAgreement(expected_license_path, actual_license_path):
     return True
 
   with open(expected_license_path) as license_file:
-    print license_file.read().replace('\\n', os.linesep)
+    # The output is buffered when running as part of gclient hooks. We split
+    # the text here and flush is explicitly to avoid having part of it dropped
+    # out.
+    # Note: text contains *escaped* new lines, so we split by '\\n', not '\n'.
+    for license_part in license_file.read().split('\\n'):
+      # Uses plain print rather than logging to make sure this is not formatted
+      # by the logger.
+      print license_part
+      sys.stdout.flush()
 
-  return yes_no.YesNo('Do you accept the license? [y/n]: ')
+  # Need to put the prompt on a separate line otherwise the gclient hook buffer
+  # only prints it after we received an input.
+  print 'Do you accept the license? [y/n]: '
+  sys.stdout.flush()
+  return raw_input('> ') in ('Y', 'y')
 
 
 def _VerifyBucketPathFormat(bucket_name, version_number, is_dry_run):
