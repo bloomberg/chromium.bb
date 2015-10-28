@@ -19,7 +19,7 @@ def _CommonChecks(input_api, output_api):
   old_sys_path = sys.path
   try:
     # Modules in tools/perf depend on telemetry.
-    sys.path = [os.path.join(os.pardir, 'telemetry')] + sys.path
+    sys.path = [os.path.join('..', 'telemetry')] + sys.path
     results.extend(input_api.canned_checks.RunPylint(
         input_api, output_api, black_list=[], pylintrc='pylintrc',
         extra_paths_list=_GetPathsToPrepend(input_api)))

@@ -8,8 +8,8 @@ import sys
 from telemetry import benchmark
 from telemetry.internal.browser import browser_finder
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir,
-    os.pardir, 'variations'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..',
+    '..', 'variations'))
 import fieldtrial_util # pylint: disable=import-error
 
 
@@ -52,8 +52,8 @@ class PerfBenchmark(benchmark.Benchmark):
     return target_os
 
   def _GetVariationsBrowserArgs(self, finder_options):
-    variations_dir = os.path.join(os.path.dirname(__file__), os.pardir,
-        os.pardir, os.pardir, 'testing', 'variations')
+    variations_dir = os.path.join(os.path.dirname(__file__), '..',
+        '..', '..', 'testing', 'variations')
     possible_browser = browser_finder.FindBrowser(finder_options)
     if not possible_browser:
       return []

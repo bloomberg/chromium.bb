@@ -8,7 +8,7 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'telemetry'))
 
 from catapult_base import cloud_storage
 from telemetry import benchmark_runner

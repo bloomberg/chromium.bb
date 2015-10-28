@@ -8,7 +8,7 @@ import sys
 # Add telemetry to sys.path so that it can be imported below
 # Relative path from this file is ../telemetry
 _perf_dir = os.path.dirname(__file__)
-_telemetry_path = os.path.join(_perf_dir, os.pardir, 'telemetry')
+_telemetry_path = os.path.join(_perf_dir, '..', 'telemetry')
 sys.path.append(_telemetry_path)
 
 from telemetry import record_wpr

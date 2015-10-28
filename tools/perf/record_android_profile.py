@@ -7,7 +7,7 @@ import os
 import sys
 import tempfile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'telemetry'))
 
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options

@@ -22,8 +22,8 @@ from telemetry.internal import story_runner
 
 def _DiscoverProfileExtenderClasses():
   profile_extenders_dir = os.path.abspath(os.path.join(util.GetBaseDir(),
-      os.pardir, 'perf', 'profile_creators'))
-  base_dir = os.path.abspath(os.path.join(profile_extenders_dir, os.pardir))
+      '..', 'perf', 'profile_creators'))
+  base_dir = os.path.abspath(os.path.join(profile_extenders_dir, '..'))
 
   profile_extenders_unfiltered = discover.DiscoverClasses(
       profile_extenders_dir, base_dir, profile_extender.ProfileExtender)

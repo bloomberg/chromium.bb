@@ -13,7 +13,7 @@ import tempfile
 import urllib2
 import zipfile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
     'telemetry'))
 
 from catapult_base import cloud_storage
