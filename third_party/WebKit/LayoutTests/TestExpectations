@@ -1037,8 +1037,21 @@ crbug.com/321237 [ Win ] fast/text/international/complex-text-leading-space-wrap
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 
-# This new test will need a Chrome-side change before it passes.
-crbug.com/240827 css3/filters/filterRegions.html [ Failure ]
+crbug.com/240827 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
+crbug.com/240827 css3/filters/effect-reference.html [ NeedsRebaseline ]
+crbug.com/240827 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/custom/feComponentTransfer-Discrete.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/custom/feComponentTransfer-Gamma.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/custom/feComponentTransfer-Linear.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/custom/feComponentTransfer-Table.svg [ NeedsRebaseline ]
+crbug.com/240827 svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ NeedsRebaseline ]
+crbug.com/240827 svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ NeedsRebaseline ]
+crbug.com/240827 fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/240827 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
