@@ -143,6 +143,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
+    @SuppressWarnings("deprecation")
     public void testDataReductionProxyEnabled() throws Exception {
         mTestFramework = startCronetTestFrameworkAndSkipFactoryInit();
 
@@ -185,6 +187,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
+    @SuppressWarnings("deprecation")
     public void testRealTimeNetworkQualityObservationsNotEnabled() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestNetworkQualityListener networkQualityListener = new TestNetworkQualityListener();
@@ -210,6 +214,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
+    @SuppressWarnings("deprecation")
     public void testRealTimeNetworkQualityObservationsListenerRemoved() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestExecutor testExecutor = new TestExecutor();
@@ -233,6 +239,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
+    @SuppressWarnings("deprecation")
     public void testRealTimeNetworkQualityObservations() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestExecutor testExecutor = new TestExecutor();

@@ -52,6 +52,7 @@ public class QuicTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
     public void testQuicLoadUrl_LegacyAPI() throws Exception {
         long urlRequestContextAdapter = ((ChromiumUrlRequestFactory) mTestFramework.mRequestFactory)
                                                 .getRequestContext()

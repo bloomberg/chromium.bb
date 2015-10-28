@@ -34,6 +34,7 @@ public class SdchTest extends CronetTestBase {
         ASYNC,
     }
 
+    @SuppressWarnings("deprecation")
     private void setUp(Sdch setting, Api api) {
         List<String> commandLineArgs = new ArrayList<String>();
         commandLineArgs.add(CronetTestFramework.CACHE_KEY);
@@ -62,6 +63,7 @@ public class SdchTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
     public void testSdchEnabled_LegacyApi() throws Exception {
         setUp(Sdch.ENABLED, Api.LEGACY);
         String targetUrl = NativeTestServer.getSdchURL() + "/sdch/test";
@@ -90,6 +92,7 @@ public class SdchTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
     public void testSdchDisabled_LegacyApi() throws Exception {
         setUp(Sdch.DISABLED, Api.LEGACY);
         // Make a request to /sdch/index.
@@ -104,6 +107,7 @@ public class SdchTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
     public void testDictionaryNotFound_LegacyApi() throws Exception {
         setUp(Sdch.ENABLED, Api.LEGACY);
         // Make a request to /sdch/index which advertises a bad dictionary that
@@ -229,6 +233,7 @@ public class SdchTest extends CronetTestBase {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private long getContextAdapter(ChromiumUrlRequestFactory factory) {
         return factory.getRequestContext().getUrlRequestContextAdapter();
     }
@@ -237,6 +242,7 @@ public class SdchTest extends CronetTestBase {
         return requestContext.getUrlRequestContextAdapter();
     }
 
+    @SuppressWarnings("deprecation")
     private TestHttpUrlRequestListener startAndWaitForComplete_LegacyApi(
             HttpUrlRequestFactory factory, String url) throws Exception {
         Map<String, String> headers = new HashMap<String, String>();

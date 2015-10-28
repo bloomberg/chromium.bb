@@ -576,6 +576,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
     public void testLegacySimpleGetBufferUpdates() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.mLegacyReadByteBufferAdjustment = true;

@@ -12,6 +12,7 @@ import org.chromium.net.CronetTestBase;
 /**
  * Test for CronetURLStreamHandlerFactory.
  */
+@SuppressWarnings("deprecation")
 public class CronetURLStreamHandlerFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})

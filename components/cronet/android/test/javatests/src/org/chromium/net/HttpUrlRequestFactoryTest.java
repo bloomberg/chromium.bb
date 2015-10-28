@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 /**
  * Tests for {@link HttpUrlRequestFactory}
  */
+@SuppressWarnings("deprecation")
 public class HttpUrlRequestFactoryTest extends CronetTestBase {
     // URL used for base tests.
     private static final String URL = "http://127.0.0.1:8000";

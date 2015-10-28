@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 /**
  * Test fixture to test upload APIs.  Uses an in-process test server.
  */
+@SuppressWarnings("deprecation")
 public class UploadTest extends CronetTestBase {
     private static final String UPLOAD_DATA = "Nifty upload data!";
     private static final String UPLOAD_CHANNEL_DATA = "Upload channel data";

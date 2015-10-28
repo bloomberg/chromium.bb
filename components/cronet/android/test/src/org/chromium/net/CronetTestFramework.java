@@ -15,12 +15,11 @@ import static junit.framework.Assert.fail;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-
+import java.net.URLStreamHandlerFactory;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
@@ -66,9 +65,9 @@ public class CronetTestFramework {
       */
     public static final String LIBRARY_INIT_WRAPPER = "wrapperOnly";
 
-    public CronetURLStreamHandlerFactory mStreamHandlerFactory;
+    public URLStreamHandlerFactory mStreamHandlerFactory;
     public CronetEngine mCronetEngine;
-    HttpUrlRequestFactory mRequestFactory;
+    @SuppressWarnings("deprecation") HttpUrlRequestFactory mRequestFactory;
     @SuppressFBWarnings("URF_UNREAD_FIELD") HistogramManager mHistogramManager;
 
     private final String[] mCommandLine;
@@ -81,6 +80,7 @@ public class CronetTestFramework {
     // CronetEngine.Builder used for this activity.
     private CronetEngine.Builder mCronetEngineBuilder;
 
+    @SuppressWarnings("deprecation")
     private class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         private final ConditionVariable mComplete = new ConditionVariable();
 
@@ -130,7 +130,7 @@ public class CronetTestFramework {
         mCronetEngine = initCronetEngine();
 
         if (LIBRARY_INIT_WRAPPER.equals(initString)) {
-            mStreamHandlerFactory = new CronetURLStreamHandlerFactory(mCronetEngine);
+            mStreamHandlerFactory = mCronetEngine.createURLStreamHandlerFactory();
         }
 
         mHistogramManager = HistogramManager.createHistogramManager();
@@ -224,6 +224,7 @@ public class CronetTestFramework {
     }
 
     // Helper function to initialize request factory. Also used in testing.
+    @SuppressWarnings("deprecation")
     public HttpUrlRequestFactory initRequestFactory() {
         return HttpUrlRequestFactory.createFactory(mContext, mCronetEngineBuilder);
     }
@@ -239,6 +240,7 @@ public class CronetTestFramework {
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     private void applyCommandLineToHttpUrlRequest(HttpUrlRequest request) {
         String postData = getCommandLineArg(POST_DATA_KEY);
         if (postData != null) {
@@ -249,6 +251,7 @@ public class CronetTestFramework {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public void startWithURL(String url) {
         Log.i(TAG, "Cronet started: " + url);
         mUrl = url;

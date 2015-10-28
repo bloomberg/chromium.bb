@@ -14,7 +14,7 @@ import java.util.Map;
  * A HttpUrlRequestListener that saves the response from a HttpUrlRequest.
  * This class is used in testing.
  */
-
+@SuppressWarnings("deprecation")
 public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
     public static final String TAG = "TestHttpUrlRequestListener";
 

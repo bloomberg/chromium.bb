@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 /**
  * Tests making requests using {@link ChromiumUrlRequest}.
  */
+@SuppressWarnings("deprecation")
 public class ChromiumUrlRequestTest extends CronetTestBase {
     private CronetTestFramework mTestFramework;
     private TestHttpUrlRequestListener mListener;

@@ -15,6 +15,7 @@ import java.util.HashMap;
  * Tests that make sure ChromiumUrlRequestContext initialization will not
  * affect embedders' ability to make requests.
  */
+@SuppressWarnings("deprecation")
 public class ContextInitTest extends CronetTestBase {
     // URL used for base tests.
     private static final String URL = "http://127.0.0.1:8000";

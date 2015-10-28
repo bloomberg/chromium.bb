@@ -18,6 +18,7 @@ import java.util.Arrays;
 /**
  * Tests for {@link ChunkedWritableByteChannel}
  */
+@SuppressWarnings("deprecation")
 public class ChunkedWritableByteChannelTest extends InstrumentationTestCase {
     private ChunkedWritableByteChannel mChannel;
 

@@ -16,6 +16,7 @@ import java.util.HashMap;
 /**
  * Test for deprecated {@link HttpUrlRequest} API.
  */
+@SuppressWarnings("deprecation")
 public class CronetUrlTest extends CronetTestBase {
     // URL used for base tests.
     private static final String URL = "http://127.0.0.1:8000";
