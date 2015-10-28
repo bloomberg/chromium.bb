@@ -68,6 +68,7 @@ test("es_parser_adts_fuzzer") {
   ]
   deps = [
     ":libfuzzer_main",
+    "//base",
     "//media",
   ]
 }
@@ -78,6 +79,7 @@ test("es_parser_h264_fuzzer") {
   ]
   deps = [
     ":libfuzzer_main",
+    "//base",
     "//media",
   ]
 }
@@ -88,6 +90,7 @@ test("es_parser_mpeg1audio_fuzzer") {
   ]
   deps = [
     ":libfuzzer_main",
+    "//base",
     "//media",
   ]
 }
@@ -120,6 +123,7 @@ test("language_detection_fuzzer") {
   ]
   deps = [
     ":libfuzzer_main",
+    "//base",
     "//components/translate/core/language_detection:language_detection",
   ]
 }
