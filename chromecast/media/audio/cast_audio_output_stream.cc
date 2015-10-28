@@ -24,6 +24,8 @@ namespace chromecast {
 namespace media {
 namespace {
 
+const int kMaxQueuedDataMs = 1000;
+
 MediaPipelineBackend::AudioDecoder* InitializeBackend(
     const ::media::AudioParameters& audio_params,
     MediaPipelineBackend* backend,
@@ -313,7 +315,11 @@ void CastAudioOutputStream::PushBuffer() {
     return;
   }
 
-  uint32_t bytes_delay = 0;
+  const base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta queue_delay =
+      std::max(base::TimeDelta(), next_push_time_ - now);
+  uint32_t bytes_delay = queue_delay.InMicroseconds() *
+                         audio_params_.GetBytesPerSecond() / 1000000;
   int frame_count = source_callback_->OnMoreData(audio_bus_.get(), bytes_delay);
   VLOG(3) << "frames_filled=" << frame_count << " with latency=" << bytes_delay;
 
@@ -339,21 +345,21 @@ void CastAudioOutputStream::OnPushBufferComplete(bool success) {
 
   push_in_progress_ = false;
 
-  if (!source_callback_) {
+  if (!source_callback_)
     return;
-  }
   if (!success) {
     source_callback_->OnError(this);
     return;
   }
 
-  // Schedule next push buffer.
-  // Need to account for time spent in pulling and pushing buffer as well
-  // as the imprecision of PostDelayedTask().
+  // Schedule next push buffer. We don't want to allow more than
+  // kMaxQueuedDataMs of queued audio.
   const base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta delay = next_push_time_ + buffer_duration_ - now;
+  next_push_time_ = std::max(now, next_push_time_ + buffer_duration_);
+
+  base::TimeDelta delay = (next_push_time_ - now) -
+                          base::TimeDelta::FromMilliseconds(kMaxQueuedDataMs);
   delay = std::max(delay, base::TimeDelta());
-  next_push_time_ = now + delay;
 
   audio_task_runner_->PostDelayedTask(
       FROM_HERE,
