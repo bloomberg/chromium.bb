@@ -2894,6 +2894,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BlinkGC.TimeForStoppingThreads" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    Duration of time taken to stop all Blink threads before starting a GC.
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.TotalAllocatedSpace" units="KB">
   <owner>haraken@chromium.org</owner>
   <summary>

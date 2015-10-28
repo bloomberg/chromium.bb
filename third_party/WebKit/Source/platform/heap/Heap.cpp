@@ -97,11 +97,14 @@ public:
 
         ASSERT(m_state->checkThread());
 
+        double timeStamp = WTF::currentTimeMS();
         // TODO(haraken): In an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in
         // a row.
         if (LIKELY(gcType != BlinkGC::ThreadTerminationGC && ThreadState::stopThreads()))
             m_parkedAllThreads = true;
+        double timeForStoppingThreads = WTF::currentTimeMS() - timeStamp;
+        Platform::current()->histogramCustomCounts("BlinkGC.TimeForStoppingThreads", timeForStoppingThreads, 1, 1000, 50);
 
         switch (gcType) {
         case BlinkGC::GCWithSweep:
