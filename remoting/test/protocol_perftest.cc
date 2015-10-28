@@ -23,8 +23,8 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
 #include "remoting/host/video_frame_pump.h"
+#include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
@@ -233,7 +233,7 @@ class ProtocolPerfTest
     port_allocator->socket_factory()->set_out_of_order_rate(
         GetParam().out_of_order_rate);
     scoped_ptr<protocol::TransportFactory> host_transport_factory(
-        new protocol::LibjingleTransportFactory(
+        new protocol::IceTransportFactory(
             host_signaling_.get(), port_allocator.Pass(), network_settings,
             protocol::TransportRole::SERVER));
 
@@ -303,7 +303,7 @@ class ProtocolPerfTest
     port_allocator->socket_factory()->set_out_of_order_rate(
         GetParam().out_of_order_rate);
     scoped_ptr<protocol::TransportFactory> client_transport_factory(
-        new protocol::LibjingleTransportFactory(
+        new protocol::IceTransportFactory(
             client_signaling_.get(), port_allocator.Pass(), network_settings,
             protocol::TransportRole::CLIENT));
 

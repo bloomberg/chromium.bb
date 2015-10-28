@@ -52,7 +52,7 @@
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/protocol/ice_transport_factory.h"
 #include "url/gurl.h"
 
 namespace remoting {
@@ -689,7 +689,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // Create TransportFactory.
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory(
+      new protocol::IceTransportFactory(
           signal_strategy_.get(), PepperPortAllocator::Create(this).Pass(),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),

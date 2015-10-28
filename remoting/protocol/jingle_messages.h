@@ -36,25 +36,6 @@ struct JingleMessage {
     INCOMPATIBLE_PARAMETERS,
   };
 
-  struct NamedCandidate {
-    NamedCandidate() =  default;
-    NamedCandidate(const std::string& name,
-                   const cricket::Candidate& candidate);
-
-    std::string name;
-    cricket::Candidate candidate;
-  };
-
-  struct IceCredentials {
-    IceCredentials() = default;
-    IceCredentials(std::string channel,
-                   std::string ufrag,
-                   std::string password);
-
-    std::string channel;
-    std::string ufrag;
-    std::string password;
-  };
 
   JingleMessage();
   JingleMessage(const std::string& to_value,
@@ -81,8 +62,7 @@ struct JingleMessage {
 
   scoped_ptr<ContentDescription> description;
 
-  std::list<IceCredentials> ice_credentials;
-  std::list<NamedCandidate> candidates;
+  scoped_ptr<buzz::XmlElement> transport_info;
 
   // Content of session-info messages.
   scoped_ptr<buzz::XmlElement> info;
@@ -121,6 +101,38 @@ struct JingleMessageReply {
   ReplyType type;
   ErrorType error_type;
   std::string text;
+};
+
+struct IceTransportInfo {
+  IceTransportInfo();
+  ~IceTransportInfo();
+  struct NamedCandidate {
+    NamedCandidate() = default;
+    NamedCandidate(const std::string& name,
+                   const cricket::Candidate& candidate);
+
+    std::string name;
+    cricket::Candidate candidate;
+  };
+
+  struct IceCredentials {
+    IceCredentials() = default;
+    IceCredentials(std::string channel,
+                   std::string ufrag,
+                   std::string password);
+
+    std::string channel;
+    std::string ufrag;
+    std::string password;
+  };
+
+  // Caller keeps ownership of |stanza|. |error| is set to debug error
+  // message when parsing fails.
+  bool ParseXml(const buzz::XmlElement* stanza);
+  scoped_ptr<buzz::XmlElement> ToXml() const;
+
+  std::list<IceCredentials> ice_credentials;
+  std::list<NamedCandidate> candidates;
 };
 
 }  // protocol
