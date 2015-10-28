@@ -148,9 +148,9 @@ private:
         , m_color(color)
     { }
 
-    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
     {
-        return m_color == ColorPropertyFunctions::getUnvisitedColor(m_property, *state.parentStyle());
+        return m_color == ColorPropertyFunctions::getUnvisitedColor(m_property, *environment.state().parentStyle());
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -169,7 +169,7 @@ PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertNeutral(const
 
 PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertInitial() const
 {
-    const StyleColor initialColor = ColorPropertyFunctions::getInitialColor(m_property);
+    const StyleColor initialColor = ColorPropertyFunctions::getInitialColor(cssProperty());
     return convertStyleColorPair(initialColor, initialColor);
 }
 
@@ -178,8 +178,8 @@ PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertInherit(const
     if (!state || !state->parentStyle())
         return nullptr;
     // Visited color can never explicitly inherit from parent visited color so only use the unvisited color.
-    const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(m_property, *state->parentStyle());
-    conversionCheckers.append(ParentColorChecker::create(*this, m_property, inheritedColor));
+    const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *state->parentStyle());
+    conversionCheckers.append(ParentColorChecker::create(*this, cssProperty(), inheritedColor));
     return convertStyleColorPair(inheritedColor, inheritedColor);
 }
 
@@ -191,7 +191,7 @@ enum InterpolableColorPairIndex {
 
 PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
-    if (m_property == CSSPropertyColor && value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
+    if (cssProperty() == CSSPropertyColor && value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
         return maybeConvertInherit(state, conversionCheckers);
 
     OwnPtr<InterpolableValue> interpolableColor = maybeCreateInterpolableColor(value);
@@ -211,21 +211,21 @@ PassOwnPtr<InterpolationValue> ColorInterpolationType::convertStyleColorPair(con
     return InterpolationValue::create(*this, colorPair.release());
 }
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     return convertStyleColorPair(
-        ColorPropertyFunctions::getUnvisitedColor(m_property, *state.style()),
-        ColorPropertyFunctions::getVisitedColor(m_property, *state.style()));
+        ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *environment.state().style()),
+        ColorPropertyFunctions::getVisitedColor(cssProperty(), *environment.state().style()));
 }
 
-void ColorInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, StyleResolverState& state) const
+void ColorInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
 {
     const InterpolableList& colorPair = toInterpolableList(interpolableValue);
     ASSERT(colorPair.length() == InterpolableColorPairIndexCount);
-    ColorPropertyFunctions::setUnvisitedColor(m_property, *state.style(),
-        resolveInterpolableColor(*colorPair.get(Unvisited), state, false, m_property == CSSPropertyTextDecorationColor));
-    ColorPropertyFunctions::setVisitedColor(m_property, *state.style(),
-        resolveInterpolableColor(*colorPair.get(Visited), state, true, m_property == CSSPropertyTextDecorationColor));
+    ColorPropertyFunctions::setUnvisitedColor(cssProperty(), *environment.state().style(),
+        resolveInterpolableColor(*colorPair.get(Unvisited), environment.state(), false, cssProperty() == CSSPropertyTextDecorationColor));
+    ColorPropertyFunctions::setVisitedColor(cssProperty(), *environment.state().style(),
+        resolveInterpolableColor(*colorPair.get(Visited), environment.state(), true, cssProperty() == CSSPropertyTextDecorationColor));
 }
 
 } // namespace blink

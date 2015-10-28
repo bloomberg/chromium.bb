@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/CSSValueInterpolationType.h"
 
+#include "core/animation/InterpolationEnvironment.h"
 #include "core/css/resolver/StyleBuilder.h"
 
 namespace blink {
@@ -35,17 +36,17 @@ private:
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSValueNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSValueNonInterpolableValue);
 
-PassOwnPtr<InterpolationValue> CSSValueInterpolationType::maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState*, const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSValueInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment*, const UnderlyingValue&, ConversionCheckers&) const
 {
     if (keyframe.isNeutral())
         return nullptr;
 
-    return InterpolationValue::create(*this, InterpolableList::create(0), CSSValueNonInterpolableValue::create(keyframe.value()));
+    return InterpolationValue::create(*this, InterpolableList::create(0), CSSValueNonInterpolableValue::create(toCSSPropertySpecificKeyframe(keyframe).value()));
 }
 
-void CSSValueInterpolationType::apply(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const
+void CSSValueInterpolationType::apply(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
-    StyleBuilder::applyProperty(m_property, state, toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue());
+    StyleBuilder::applyProperty(cssProperty(), environment.state(), toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue());
 }
 
 } // namespace blink

@@ -5,21 +5,21 @@
 #ifndef ShadowListInterpolationType_h
 #define ShadowListInterpolationType_h
 
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
 class ShadowList;
 
-class ShadowListInterpolationType : public InterpolationType {
+class ShadowListInterpolationType : public CSSInterpolationType {
 public:
     ShadowListInterpolationType(CSSPropertyID property)
-        : InterpolationType(property)
+        : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
     PassOwnPtr<InterpolationValue> convertShadowList(const ShadowList*, double zoom) const;

@@ -5,21 +5,21 @@
 #ifndef ImageInterpolationType_h
 #define ImageInterpolationType_h
 
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
 class StyleImage;
 
-class ImageInterpolationType : public InterpolationType {
+class ImageInterpolationType : public CSSInterpolationType {
 public:
     ImageInterpolationType(CSSPropertyID property)
-        : InterpolationType(property)
+        : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     static InterpolationComponent maybeConvertCSSValue(const CSSValue&, bool acceptGradients);
     static InterpolationComponent maybeConvertStyleImage(const StyleImage&, bool acceptGradients);

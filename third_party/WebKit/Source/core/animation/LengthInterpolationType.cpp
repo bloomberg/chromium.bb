@@ -44,7 +44,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(LengthNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(LengthNonInterpolableValue);
 
 LengthInterpolationType::LengthInterpolationType(CSSPropertyID property)
-    : InterpolationType(property)
+    : CSSInterpolationType(property)
     , m_valueRange(LengthPropertyFunctions::valueRange(property))
 { }
 
@@ -59,7 +59,7 @@ static PassOwnPtr<InterpolableList> createNeutralInterpolableValue()
 
 float LengthInterpolationType::effectiveZoom(const ComputedStyle& style) const
 {
-    return LengthPropertyFunctions::isZoomedLength(m_property) ? style.effectiveZoom() : 1;
+    return LengthPropertyFunctions::isZoomedLength(cssProperty()) ? style.effectiveZoom() : 1;
 }
 
 PassOwnPtr<InterpolableValue> LengthInterpolationType::createInterpolablePixels(double pixels)
@@ -122,10 +122,10 @@ private:
         , m_length(length)
     { }
 
-    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
     {
         Length parentLength;
-        if (!LengthPropertyFunctions::getLength(m_property, *state.parentStyle(), parentLength))
+        if (!LengthPropertyFunctions::getLength(m_property, *environment.state().parentStyle(), parentLength))
             return false;
         return parentLength == m_length;
     }
@@ -142,7 +142,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertNeutral(cons
 PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInitial() const
 {
     Length initialLength;
-    if (!LengthPropertyFunctions::getInitialLength(m_property, initialLength))
+    if (!LengthPropertyFunctions::getInitialLength(cssProperty(), initialLength))
         return nullptr;
     return maybeConvertLength(initialLength, 1);
 }
@@ -152,9 +152,9 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(cons
     if (!state || !state->parentStyle())
         return nullptr;
     Length inheritedLength;
-    if (!LengthPropertyFunctions::getLength(m_property, *state->parentStyle(), inheritedLength))
+    if (!LengthPropertyFunctions::getLength(cssProperty(), *state->parentStyle(), inheritedLength))
         return nullptr;
-    conversionCheckers.append(ParentLengthChecker::create(*this, m_property, inheritedLength));
+    conversionCheckers.append(ParentLengthChecker::create(*this, cssProperty(), inheritedLength));
     return maybeConvertLength(inheritedLength, effectiveZoom(*state->parentStyle()));
 }
 
@@ -163,7 +163,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const 
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
         CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
         double pixels;
-        if (!LengthPropertyFunctions::getPixelsForKeyword(m_property, valueID, pixels))
+        if (!LengthPropertyFunctions::getPixelsForKeyword(cssProperty(), valueID, pixels))
             return nullptr;
         return InterpolationValue::create(*this, createInterpolablePixels(pixels));
     }
@@ -174,12 +174,12 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const 
     return InterpolationValue::create(*this, component);
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     Length underlyingLength;
-    if (!LengthPropertyFunctions::getLength(m_property, *state.style(), underlyingLength))
+    if (!LengthPropertyFunctions::getLength(cssProperty(), *environment.state().style(), underlyingLength))
         return nullptr;
-    return maybeConvertLength(underlyingLength, effectiveZoom(*state.style()));
+    return maybeConvertLength(underlyingLength, effectiveZoom(*environment.state().style()));
 }
 
 PassOwnPtr<PairwisePrimitiveInterpolation> LengthInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
@@ -293,24 +293,25 @@ static PassRefPtrWillBeRawPtr<CSSValue> createCSSValue(const InterpolableList& v
     }
 }
 
-void LengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const
+void LengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
+    StyleResolverState& state = environment.state();
     const InterpolableList& values = toInterpolableList(interpolableValue);
     bool hasPercentage = LengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
     if (isPixelsOrPercentOnly(values)) {
         Length length = resolveInterpolablePixelsOrPercentageLength(values, hasPercentage, m_valueRange, effectiveZoom(*state.style()));
-        if (LengthPropertyFunctions::setLength(m_property, *state.style(), length)) {
+        if (LengthPropertyFunctions::setLength(cssProperty(), *state.style(), length)) {
 #if ENABLE(ASSERT)
             // Assert that setting the length on ComputedStyle directly is identical to the AnimatableValue code path.
-            RefPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(m_property, *state.style());
-            StyleBuilder::applyProperty(m_property, state, createCSSValue(values, hasPercentage, m_valueRange).get());
-            RefPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(m_property, *state.style());
+            RefPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(cssProperty(), *state.style());
+            StyleBuilder::applyProperty(cssProperty(), state, createCSSValue(values, hasPercentage, m_valueRange).get());
+            RefPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(cssProperty(), *state.style());
             ASSERT(before->equals(*after));
 #endif
             return;
         }
     }
-    StyleBuilder::applyProperty(m_property, state, createCSSValue(values, hasPercentage, m_valueRange).get());
+    StyleBuilder::applyProperty(cssProperty(), state, createCSSValue(values, hasPercentage, m_valueRange).get());
 }
 
 } // namespace blink

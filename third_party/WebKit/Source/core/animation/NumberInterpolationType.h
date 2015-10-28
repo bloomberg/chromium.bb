@@ -5,18 +5,18 @@
 #ifndef NumberInterpolationType_h
 #define NumberInterpolationType_h
 
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class NumberInterpolationType : public InterpolationType {
+class NumberInterpolationType : public CSSInterpolationType {
 public:
     NumberInterpolationType(CSSPropertyID property)
-        : InterpolationType(property)
+        : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
     PassOwnPtr<InterpolationValue> createNumberValue(double number) const;

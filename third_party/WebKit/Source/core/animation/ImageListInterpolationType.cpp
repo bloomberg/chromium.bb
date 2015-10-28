@@ -29,7 +29,7 @@ private:
         , m_underlyingValue(underlyingValue)
     { }
 
-    bool isValid(const StyleResolverState&, const UnderlyingValue& underlyingValue) const final
+    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
     {
         if (!underlyingValue && !m_underlyingValue)
             return true;
@@ -54,7 +54,7 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertNeutral(c
 PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertInitial() const
 {
     StyleImageList initialImageList;
-    ImageListPropertyFunctions::getInitialImageList(m_property, initialImageList);
+    ImageListPropertyFunctions::getInitialImageList(cssProperty(), initialImageList);
     return maybeConvertStyleImageList(initialImageList);
 }
 
@@ -87,10 +87,10 @@ private:
         , m_inheritedImageList(inheritedImageList)
     { }
 
-    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
     {
         StyleImageList inheritedImageList;
-        ImageListPropertyFunctions::getImageList(m_property, *state.parentStyle(), inheritedImageList);
+        ImageListPropertyFunctions::getImageList(m_property, *environment.state().parentStyle(), inheritedImageList);
         return m_inheritedImageList == inheritedImageList;
     }
 
@@ -104,8 +104,8 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertInherit(c
         return nullptr;
 
     StyleImageList inheritedImageList;
-    ImageListPropertyFunctions::getImageList(m_property, *state->parentStyle(), inheritedImageList);
-    conversionCheckers.append(ParentImageListChecker::create(*this, m_property, inheritedImageList));
+    ImageListPropertyFunctions::getImageList(cssProperty(), *state->parentStyle(), inheritedImageList);
+    conversionCheckers.append(ParentImageListChecker::create(*this, cssProperty(), inheritedImageList));
     return maybeConvertStyleImageList(inheritedImageList);
 }
 
@@ -144,10 +144,10 @@ PassOwnPtr<PairwisePrimitiveInterpolation> ImageListInterpolationType::mergeSing
     return PairwisePrimitiveInterpolation::create(*this, component);
 }
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     StyleImageList underlyingImageList;
-    ImageListPropertyFunctions::getImageList(m_property, *state.style(), underlyingImageList);
+    ImageListPropertyFunctions::getImageList(cssProperty(), *environment.state().style(), underlyingImageList);
     return maybeConvertStyleImageList(underlyingImageList);
 }
 
@@ -156,7 +156,7 @@ void ImageListInterpolationType::composite(UnderlyingValue& underlyingValue, dou
     underlyingValue.set(&value);
 }
 
-void ImageListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const
+void ImageListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     const size_t length = interpolableList.length();
@@ -165,8 +165,8 @@ void ImageListInterpolationType::apply(const InterpolableValue& interpolableValu
     ASSERT(nonInterpolableList.length() == length);
     StyleImageList imageList(length);
     for (size_t i = 0; i < length; i++)
-        imageList[i] = ImageInterpolationType::resolveStyleImage(m_property, *interpolableList.get(i), nonInterpolableList.get(i), state);
-    ImageListPropertyFunctions::setImageList(m_property, *state.style(), imageList);
+        imageList[i] = ImageInterpolationType::resolveStyleImage(cssProperty(), *interpolableList.get(i), nonInterpolableList.get(i), environment.state());
+    ImageListPropertyFunctions::setImageList(cssProperty(), *environment.state().style(), imageList);
 }
 
 } // namespace blink

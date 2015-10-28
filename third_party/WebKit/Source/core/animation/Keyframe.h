@@ -105,6 +105,8 @@ protected:
     RefPtr<TimingFunction> m_easing;
 };
 
+using PropertySpecificKeyframe = Keyframe::PropertySpecificKeyframe;
+
 } // namespace blink
 
 #endif // Keyframe_h

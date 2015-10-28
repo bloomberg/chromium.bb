@@ -14,30 +14,30 @@ namespace blink {
 
 // TODO(alancutter): This class will replace *StyleInterpolation, SVGInterpolation, Interpolation.
 // For now it needs to distinguish itself during the refactor and temporarily has an ugly name.
-// TODO(alancutter): Make this class generic for any animation environment so it can be reused for SVG animations.
-class CORE_EXPORT InvalidatableStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT InvalidatableStyleInterpolation : public Interpolation {
 public:
     static PassRefPtr<InvalidatableStyleInterpolation> create(
         const Vector<const InterpolationType*>& InterpolationTypes,
-        const CSSPropertySpecificKeyframe& startKeyframe,
-        const CSSPropertySpecificKeyframe& endKeyframe)
+        const PropertySpecificKeyframe& startKeyframe,
+        const PropertySpecificKeyframe& endKeyframe)
     {
         return adoptRef(new InvalidatableStyleInterpolation(InterpolationTypes, startKeyframe, endKeyframe));
     }
 
+    PropertyHandle property() const final { return m_interpolationTypes.first()->property(); }
     virtual void interpolate(int iteration, double fraction);
     bool dependsOnUnderlyingValue() const;
-    virtual void apply(StyleResolverState&) const { ASSERT_NOT_REACHED(); }
-    static void applyStack(const ActiveInterpolations&, StyleResolverState&);
+    virtual void apply(InterpolationEnvironment&) const { ASSERT_NOT_REACHED(); }
+    static void applyStack(const ActiveInterpolations&, InterpolationEnvironment&);
 
     virtual bool isInvalidatableStyleInterpolation() const { return true; }
 
 private:
     InvalidatableStyleInterpolation(
         const Vector<const InterpolationType*>& interpolationTypes,
-        const CSSPropertySpecificKeyframe& startKeyframe,
-        const CSSPropertySpecificKeyframe& endKeyframe)
-        : StyleInterpolation(nullptr, nullptr, interpolationTypes.first()->property())
+        const PropertySpecificKeyframe& startKeyframe,
+        const PropertySpecificKeyframe& endKeyframe)
+        : Interpolation(nullptr, nullptr)
         , m_interpolationTypes(interpolationTypes)
         , m_startKeyframe(&startKeyframe)
         , m_endKeyframe(&endKeyframe)
@@ -45,19 +45,19 @@ private:
         , m_isCached(false)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
-    const InterpolationValue* ensureValidInterpolation(const StyleResolverState&, const UnderlyingValue&) const;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const;
+    const InterpolationValue* ensureValidInterpolation(const InterpolationEnvironment&, const UnderlyingValue&) const;
     void clearCache() const;
-    bool isCacheValid(const StyleResolverState&, const UnderlyingValue&) const;
+    bool isCacheValid(const InterpolationEnvironment&, const UnderlyingValue&) const;
     bool isNeutralKeyframeActive() const;
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const StyleResolverState*, const UnderlyingValue&) const;
-    PassOwnPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const UnderlyingValue&) const;
-    void setFlagIfInheritUsed(StyleResolverState&) const;
+    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment*, const UnderlyingValue&) const;
+    PassOwnPtr<InterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&) const;
+    void setFlagIfInheritUsed(InterpolationEnvironment&) const;
     double underlyingFraction() const;
 
     const Vector<const InterpolationType*>& m_interpolationTypes;
-    const CSSPropertySpecificKeyframe* m_startKeyframe;
-    const CSSPropertySpecificKeyframe* m_endKeyframe;
+    const PropertySpecificKeyframe* m_startKeyframe;
+    const PropertySpecificKeyframe* m_endKeyframe;
     double m_currentFraction;
     mutable bool m_isCached;
     mutable OwnPtr<PrimitiveInterpolation> m_cachedPairConversion;

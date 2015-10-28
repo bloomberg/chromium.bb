@@ -125,7 +125,7 @@ private:
         , m_underlyingValue(underlyingValue)
     { }
 
-    bool isValid(const StyleResolverState&, const UnderlyingValue& underlyingValue) const final
+    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
     {
         if (!underlyingValue && !m_underlyingValue)
             return true;
@@ -150,7 +150,7 @@ PassOwnPtr<InterpolationValue> ImageInterpolationType::maybeConvertNeutral(const
 
 PassOwnPtr<InterpolationValue> ImageInterpolationType::maybeConvertInitial() const
 {
-    InterpolationComponent component = maybeConvertStyleImage(ImagePropertyFunctions::getInitialStyleImage(m_property), true);
+    InterpolationComponent component = maybeConvertStyleImage(ImagePropertyFunctions::getInitialStyleImage(cssProperty()), true);
     return component ? InterpolationValue::create(*this, component) : nullptr;
 }
 
@@ -170,9 +170,9 @@ private:
         , m_inheritedImage(inheritedImage)
     { }
 
-    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
     {
-        const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(m_property, *state.parentStyle());
+        const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(m_property, *environment.state().parentStyle());
         if (!m_inheritedImage && !inheritedImage)
             return true;
         if (!m_inheritedImage || !inheritedImage)
@@ -189,9 +189,9 @@ PassOwnPtr<InterpolationValue> ImageInterpolationType::maybeConvertInherit(const
     if (!state || !state->parentStyle())
         return nullptr;
 
-    const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(m_property, *state->parentStyle());
+    const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(cssProperty(), *state->parentStyle());
     StyleImage* refableImage = const_cast<StyleImage*>(inheritedImage);
-    conversionCheckers.append(ParentImageChecker::create(*this, m_property, refableImage));
+    conversionCheckers.append(ParentImageChecker::create(*this, cssProperty(), refableImage));
     InterpolationComponent component = maybeConvertStyleImage(inheritedImage, true);
     return component ? InterpolationValue::create(*this, component) : nullptr;
 }
@@ -208,9 +208,9 @@ PassOwnPtr<PairwisePrimitiveInterpolation> ImageInterpolationType::mergeSingleCo
     return pairwiseComponent ? PairwisePrimitiveInterpolation::create(*this, pairwiseComponent) : nullptr;
 }
 
-PassOwnPtr<InterpolationValue> ImageInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> ImageInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
-    InterpolationComponent component = maybeConvertStyleImage(ImagePropertyFunctions::getStyleImage(m_property, *state.style()), true);
+    InterpolationComponent component = maybeConvertStyleImage(ImagePropertyFunctions::getStyleImage(cssProperty(), *environment.state().style()), true);
     return component ? InterpolationValue::create(*this, component) : nullptr;
 }
 
@@ -219,9 +219,9 @@ void ImageInterpolationType::composite(UnderlyingValue& underlyingValue, double 
     underlyingValue.set(&value);
 }
 
-void ImageInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const
+void ImageInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
-    ImagePropertyFunctions::setStyleImage(m_property, *state.style(), resolveStyleImage(m_property, interpolableValue, nonInterpolableValue, state));
+    ImagePropertyFunctions::setStyleImage(cssProperty(), *environment.state().style(), resolveStyleImage(cssProperty(), interpolableValue, nonInterpolableValue, environment.state()));
 }
 
 } // namespace blink

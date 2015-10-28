@@ -25,10 +25,10 @@ private:
         , m_number(number)
     { }
 
-    bool isValid(const StyleResolverState& state, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
     {
         double parentNumber;
-        if (!NumberPropertyFunctions::getNumber(m_property, *state.parentStyle(), parentNumber))
+        if (!NumberPropertyFunctions::getNumber(m_property, *environment.state().parentStyle(), parentNumber))
             return false;
         return parentNumber == m_number;
     }
@@ -52,7 +52,7 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertNeutral(cons
 PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInitial() const
 {
     double initialNumber;
-    if (!NumberPropertyFunctions::getInitialNumber(m_property, initialNumber))
+    if (!NumberPropertyFunctions::getInitialNumber(cssProperty(), initialNumber))
         return nullptr;
     return createNumberValue(initialNumber);
 }
@@ -62,9 +62,9 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInherit(cons
     if (!state || !state->parentStyle())
         return nullptr;
     double inheritedNumber;
-    if (!NumberPropertyFunctions::getNumber(m_property, *state->parentStyle(), inheritedNumber))
+    if (!NumberPropertyFunctions::getNumber(cssProperty(), *state->parentStyle(), inheritedNumber))
         return nullptr;
-    conversionCheckers.append(ParentNumberChecker::create(*this, m_property, inheritedNumber));
+    conversionCheckers.append(ParentNumberChecker::create(*this, cssProperty(), inheritedNumber));
     return createNumberValue(inheritedNumber);
 }
 
@@ -75,19 +75,19 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertValue(const 
     return createNumberValue(toCSSPrimitiveValue(value).getDoubleValue());
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertUnderlyingValue(const StyleResolverState& state) const
+PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     double underlyingNumber;
-    if (!NumberPropertyFunctions::getNumber(m_property, *state.style(), underlyingNumber))
+    if (!NumberPropertyFunctions::getNumber(cssProperty(), *environment.state().style(), underlyingNumber))
         return nullptr;
     return createNumberValue(underlyingNumber);
 }
 
-void NumberInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, StyleResolverState& state) const
+void NumberInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
 {
-    double clampedNumber = NumberPropertyFunctions::clampNumber(m_property, toInterpolableNumber(interpolableValue).value());
-    if (!NumberPropertyFunctions::setNumber(m_property, *state.style(), clampedNumber))
-        StyleBuilder::applyProperty(m_property, state, CSSPrimitiveValue::create(clampedNumber, CSSPrimitiveValue::UnitType::Number).get());
+    double clampedNumber = NumberPropertyFunctions::clampNumber(cssProperty(), toInterpolableNumber(interpolableValue).value());
+    if (!NumberPropertyFunctions::setNumber(cssProperty(), *environment.state().style(), clampedNumber))
+        StyleBuilder::applyProperty(cssProperty(), environment.state(), CSSPrimitiveValue::create(clampedNumber, CSSPrimitiveValue::UnitType::Number).get());
 }
 
 } // namespace blink

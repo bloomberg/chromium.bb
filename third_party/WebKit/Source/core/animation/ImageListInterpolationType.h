@@ -5,20 +5,20 @@
 #ifndef ImageListInterpolationType_h
 #define ImageListInterpolationType_h
 
+#include "core/animation/CSSInterpolationType.h"
 #include "core/animation/ImageListPropertyFunctions.h"
-#include "core/animation/InterpolationType.h"
 
 namespace blink {
 
-class ImageListInterpolationType : public InterpolationType {
+class ImageListInterpolationType : public CSSInterpolationType {
 public:
     ImageListInterpolationType(CSSPropertyID property)
-        : InterpolationType(property)
+        : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
     PassOwnPtr<InterpolationValue> maybeConvertStyleImageList(const StyleImageList&) const;

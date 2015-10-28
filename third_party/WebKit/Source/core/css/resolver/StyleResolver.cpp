@@ -35,6 +35,7 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/ElementAnimations.h"
+#include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/StyleInterpolation.h"
@@ -967,7 +968,8 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Act
             continue;
         const Interpolation& interpolation = *interpolationsVectorEntry.value.first();
         if (interpolation.isInvalidatableStyleInterpolation()) {
-            InvalidatableStyleInterpolation::applyStack(interpolationsVectorEntry.value, state);
+            InterpolationEnvironment environment(state);
+            InvalidatableStyleInterpolation::applyStack(interpolationsVectorEntry.value, environment);
         } else {
             // TODO(alancutter): Remove this old code path once animations have completely migrated to InterpolationTypes.
             toStyleInterpolation(interpolation).apply(state);

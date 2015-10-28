@@ -6,21 +6,21 @@
 #define ColorInterpolationType_h
 
 #include "core/CSSValueKeywords.h"
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
 
 class StyleColor;
 
-class ColorInterpolationType : public InterpolationType {
+class ColorInterpolationType : public CSSInterpolationType {
 public:
     ColorInterpolationType(CSSPropertyID property)
-        : InterpolationType(property)
+        : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     static PassOwnPtr<InterpolableValue> createInterpolableColor(const Color&);
     static PassOwnPtr<InterpolableValue> createInterpolableColor(CSSValueID);

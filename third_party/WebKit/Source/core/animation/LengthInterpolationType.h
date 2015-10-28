@@ -5,20 +5,20 @@
 #ifndef LengthInterpolationType_h
 #define LengthInterpolationType_h
 
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 #include "core/animation/LengthPropertyFunctions.h"
 
 namespace blink {
 
 class ComputedStyle;
 
-class LengthInterpolationType : public InterpolationType {
+class LengthInterpolationType : public CSSInterpolationType {
 public:
     LengthInterpolationType(CSSPropertyID);
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final;
+    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
     static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);

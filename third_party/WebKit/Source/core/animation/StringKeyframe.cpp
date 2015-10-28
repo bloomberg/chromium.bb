@@ -282,7 +282,7 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
     CSSPropertyID property = propertyHandle.cssProperty();
     const Vector<const InterpolationType*>* applicableTypes = applicableTypesForProperty(property);
     if (applicableTypes)
-        return InvalidatableStyleInterpolation::create(*applicableTypes, *this, toCSSPropertySpecificKeyframe(end));
+        return InvalidatableStyleInterpolation::create(*applicableTypes, *this, end);
 
     // TODO(alancutter): Remove the remainder of this function.
 
