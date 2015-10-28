@@ -6,4 +6,4 @@
 # git_try.py - Commits a patch to the SVN try patch repo.
 #              It is highly recommended to use `git cl try` instead.
 
-. $(type -P python_runner.sh)
+. $(type -P python_git_runner.sh)
