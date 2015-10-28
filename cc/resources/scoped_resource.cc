@@ -29,14 +29,14 @@ void ScopedResource::Allocate(const gfx::Size& size,
 #endif
 }
 
-void ScopedResource::AllocateManaged(const gfx::Size& size,
-                                     GLenum target,
-                                     ResourceFormat format) {
+void ScopedResource::AllocateWithTextureTarget(const gfx::Size& size,
+                                               GLenum target,
+                                               ResourceFormat format) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
-  set_id(resource_provider_->CreateManagedResource(
+  set_id(resource_provider_->CreateResourceWithTextureTarget(
       size, target, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format));
 
 #if DCHECK_IS_ON()

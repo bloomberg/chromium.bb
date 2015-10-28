@@ -2591,7 +2591,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   int texture_id = 1;
 
   // Check that the texture gets created with the right sampler settings.
-  ResourceId id = resource_provider->CreateManagedResource(
+  ResourceId id = resource_provider->CreateResourceWithTextureTarget(
       size, GL_TEXTURE_2D, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
@@ -2634,8 +2634,8 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
 
   for (int texture_id = 1; texture_id <= 2; ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
-    ResourceId id = resource_provider->CreateGLTexture(
-        size, GL_TEXTURE_2D, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+    ResourceId id = resource_provider->CreateResource(
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -2684,8 +2684,8 @@ TEST_P(ResourceProviderTest, TextureHint) {
   };
   for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
-    ResourceId id = resource_provider->CreateGLTexture(
-        size, GL_TEXTURE_2D, hints[texture_id - 1], format);
+    ResourceId id =
+        resource_provider->CreateResource(size, hints[texture_id - 1], format);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));

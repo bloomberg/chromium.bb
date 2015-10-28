@@ -124,18 +124,11 @@ class CC_EXPORT ResourceProvider
 
   // Creates a resource for a particular texture target (the distinction between
   // texture targets has no effect in software mode).
-  ResourceId CreateManagedResource(const gfx::Size& size,
-                                   GLenum target,
-                                   TextureHint hint,
-                                   ResourceFormat format);
+  ResourceId CreateResourceWithTextureTarget(const gfx::Size& size,
+                                             GLenum target,
+                                             TextureHint hint,
+                                             ResourceFormat format);
 
-  // You can also explicitly create a specific resource type.
-  ResourceId CreateGLTexture(const gfx::Size& size,
-                             GLenum target,
-                             TextureHint hint,
-                             ResourceFormat format);
-
-  ResourceId CreateBitmap(const gfx::Size& size);
   // Wraps an IOSurface into a GL resource.
   ResourceId CreateResourceFromIOSurface(const gfx::Size& size,
                                          unsigned io_surface_id);
@@ -525,6 +518,11 @@ class CC_EXPORT ResourceProvider
            resource->read_lock_fence->HasPassed();
   }
 
+  ResourceId CreateGLTexture(const gfx::Size& size,
+                             GLenum target,
+                             TextureHint hint,
+                             ResourceFormat format);
+  ResourceId CreateBitmap(const gfx::Size& size);
   Resource* InsertResource(ResourceId id, const Resource& resource);
   Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);

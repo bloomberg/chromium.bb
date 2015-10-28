@@ -399,10 +399,11 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
   return 0;
 }
 
-ResourceId ResourceProvider::CreateManagedResource(const gfx::Size& size,
-                                                   GLenum target,
-                                                   TextureHint hint,
-                                                   ResourceFormat format) {
+ResourceId ResourceProvider::CreateResourceWithTextureTarget(
+    const gfx::Size& size,
+    GLenum target,
+    TextureHint hint,
+    ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GL_TEXTURE:
@@ -623,7 +624,6 @@ void ResourceProvider::CopyToResource(ResourceId id,
   DCHECK(resource->origin == Resource::INTERNAL);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(ReadLockFenceHasPassed(resource));
-  LazyAllocate(resource);
 
   DCHECK_EQ(image_size.width(), resource->size.width());
   DCHECK_EQ(image_size.height(), resource->size.height());
@@ -640,19 +640,19 @@ void ResourceProvider::CopyToResource(ResourceId id,
     SkCanvas dest(lock.sk_bitmap());
     dest.writePixels(source_info, image, image_stride, 0, 0);
   } else {
-    DCHECK(resource->gl_id);
-    DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
+    ScopedWriteLockGL lock(this, id);
+    DCHECK(lock.texture_id());
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
-
+    gl->BindTexture(resource->target, lock.texture_id());
     if (resource->format == ETC1) {
+      DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
       int image_bytes = ResourceUtil::CheckedSizeInBytes<int>(image_size, ETC1);
-      gl->CompressedTexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(ETC1),
+      gl->CompressedTexImage2D(resource->target, 0, GLInternalFormat(ETC1),
                                image_size.width(), image_size.height(), 0,
                                image_bytes, image);
     } else {
-      gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_size.width(),
+      gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
                         image_size.height(), GLDataFormat(resource->format),
                         GLDataType(resource->format), image);
     }

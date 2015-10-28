@@ -112,7 +112,7 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
       PoolResource::Create(resource_provider_);
   GLenum target =
       target_ ? target_ : resource_provider_->GetImageTextureTarget(format);
-  pool_resource->AllocateManaged(size, target, format);
+  pool_resource->AllocateWithTextureTarget(size, target, format);
 
   DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(pool_resource->size(),
                                                  pool_resource->format()));
