@@ -92,6 +92,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)["spellcheck.use_spelling_service"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["translate.enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["translate_blocked_languages"] =
+      settings_private::PrefType::PREF_TYPE_LIST;
+
+  // Clear browsing data settings.
   (*s_whitelist)["browser.clear_data.browsing_history"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.clear_data.download_history"] =
@@ -110,10 +116,22 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.clear_data.time_period"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["translate.enabled"] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)["translate_blocked_languages"] =
-      settings_private::PrefType::PREF_TYPE_LIST;
+
+  // Web content settings.
+  (*s_whitelist)["webkit.webprefs.default_font_size"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["webkit.webprefs.minimum_font_size"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["webkit.webprefs.fonts.fixed.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.fonts.sansserif.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.fonts.serif.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.fonts.standard.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["intl.charset_default"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
 
 #if defined(OS_CHROMEOS)
   (*s_whitelist)["cros.accounts.allowBWSI"] =
