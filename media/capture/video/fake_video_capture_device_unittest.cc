@@ -279,7 +279,7 @@ TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
 INSTANTIATE_TEST_CASE_P(,
                         FakeVideoCaptureDeviceCommandLineTest,
                         Values(CommandLineTestData{"fps=-1", 5},
-                               CommandLineTestData{"fps=29.97", 29.97},
+                               CommandLineTestData{"fps=29.97", 29.97f},
                                CommandLineTestData{"fps=60", 60},
                                CommandLineTestData{"fps=1000", 60}));
 };  // namespace media
