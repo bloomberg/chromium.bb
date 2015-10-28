@@ -44,5 +44,6 @@ source_set("unit_tests") {
   deps = [
     ":core",
     "//testing/gtest",
+    "//third_party/re2",
   ]
 }
