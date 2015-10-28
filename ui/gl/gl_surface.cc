@@ -28,7 +28,7 @@ base::LazyInstance<base::ThreadLocalPointer<GLSurface> >::Leaky
 bool GLSurface::InitializeOneOff() {
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
-  TRACE_EVENT0("gpu", "GLSurface::InitializeOneOff");
+  TRACE_EVENT0("gpu,startup", "GLSurface::InitializeOneOff");
 
   std::vector<GLImplementation> allowed_impls;
   GetAllowedGLImplementations(&allowed_impls);

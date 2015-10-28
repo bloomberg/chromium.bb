@@ -439,6 +439,8 @@ bool WarmUpSandbox(const base::CommandLine& command_line) {
 
 #if !defined(OS_MACOSX)
 bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
+  TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
+
   bool res = true;
   gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info);
   switch (result) {
@@ -513,7 +515,7 @@ void WarmUpSandboxNvidia(const gpu::GPUInfo& gpu_info,
 bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
                        GpuWatchdogThread* watchdog_thread,
                        bool should_initialize_gl_context) {
-  TRACE_EVENT0("gpu", "Initialize sandbox");
+  TRACE_EVENT0("gpu,startup", "Initialize sandbox");
 
   bool res = false;
 
@@ -550,7 +552,7 @@ bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
 
 #if defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo* sandbox_info) {
-  TRACE_EVENT0("gpu", "Lower token");
+  TRACE_EVENT0("gpu,startup", "Lower token");
 
   // For Windows, if the target_services interface is not zero, the process
   // is sandboxed and we must call LowerToken() before rendering untrusted
