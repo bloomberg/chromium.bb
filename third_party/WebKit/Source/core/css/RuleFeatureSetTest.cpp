@@ -101,6 +101,12 @@ public:
         EXPECT_TRUE(invalidationSets[0]->invalidatesSelf());
     }
 
+    void expectNoSelfInvalidation(InvalidationSetVector& invalidationSets)
+    {
+        EXPECT_EQ(1u, invalidationSets.size());
+        EXPECT_FALSE(invalidationSets[0]->invalidatesSelf());
+    }
+
     void expectClassInvalidation(const AtomicString& className, InvalidationSetVector& invalidationSets)
     {
         EXPECT_EQ(1u, invalidationSets.size());
@@ -201,10 +207,11 @@ TEST_F(RuleFeatureSetTest, interleavedDescendantSibling2)
 
 TEST_F(RuleFeatureSetTest, interleavedDescendantSibling3)
 {
-    updateInvalidationSets(".n .o + .p");
+    updateInvalidationSets(".m + .n .o + .p");
 
     InvalidationLists invalidationLists;
     collectInvalidationSetsForClass(invalidationLists, "n");
+    expectNoSelfInvalidation(invalidationLists.descendants);
     expectClassInvalidation("p", invalidationLists.descendants);
     expectNoInvalidation(invalidationLists.siblings);
 }

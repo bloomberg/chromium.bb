@@ -165,7 +165,8 @@ private:
 
     enum UseFeaturesType { UseFeatures, ForceSubtree };
 
-    std::pair<const CSSSelector*, UseFeaturesType> extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&, bool negated);
+    enum PositionType { Subject, Ancestor };
+    std::pair<const CSSSelector*, UseFeaturesType> extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&, PositionType, CSSSelector::PseudoType = CSSSelector::PseudoUnknown);
 
     void addFeaturesToInvalidationSet(InvalidationSet&, const InvalidationSetFeatures&);
     void addFeaturesToInvalidationSets(const CSSSelector*, InvalidationSetFeatures* siblingFeatures, InvalidationSetFeatures& descendantFeatures);

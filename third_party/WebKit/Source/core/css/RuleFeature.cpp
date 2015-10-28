@@ -319,7 +319,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
 void RuleFeatureSet::updateInvalidationSets(const RuleData& ruleData)
 {
     InvalidationSetFeatures features;
-    auto result = extractInvalidationSetFeatures(ruleData.selector(), features, false);
+    auto result = extractInvalidationSetFeatures(ruleData.selector(), features, Subject);
 
     if (result.first) {
         features.forceSubtree = result.second == ForceSubtree;
@@ -358,15 +358,16 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
 }
 
 std::pair<const CSSSelector*, RuleFeatureSet::UseFeaturesType>
-RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, InvalidationSetFeatures& features, bool negated)
+RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, InvalidationSetFeatures& features, PositionType position, CSSSelector::PseudoType pseudo)
 {
     bool foundFeatures = false;
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
-        if (!negated)
+        if (pseudo != CSSSelector::PseudoNot)
             foundFeatures |= extractInvalidationSetFeature(*current, features);
         // Initialize the entry in the invalidation set map, if supported.
         if (InvalidationSet* invalidationSet = invalidationSetForSelector(*current, InvalidateDescendants)) {
-            invalidationSet->setInvalidatesSelf();
+            if (position == Subject)
+                invalidationSet->setInvalidatesSelf();
         } else {
             if (requiresSubtreeInvalidation(*current)) {
                 // Fall back to use subtree invalidations, even for features in the
@@ -381,7 +382,7 @@ RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Inva
                 const CSSSelector* subSelector = selectorList->first();
                 bool allSubSelectorsHaveFeatures = !!subSelector;
                 for (; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
-                    auto result = extractInvalidationSetFeatures(*subSelector, features, current->pseudoType() == CSSSelector::PseudoNot);
+                    auto result = extractInvalidationSetFeatures(*subSelector, features, position, current->pseudoType());
                     if (result.first) {
                         // A non-null selector return means the sub-selector contained a
                         // selector which requiresSubtreeInvalidation(). Return the rightmost
@@ -498,7 +499,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
         }
 
         localFeatures = InvalidationSetFeatures();
-        auto result = extractInvalidationSetFeatures(*lastCompoundSelectorInAdjacentChain, localFeatures, false);
+        auto result = extractInvalidationSetFeatures(*lastCompoundSelectorInAdjacentChain, localFeatures, Ancestor);
         ASSERT(result.first);
         localFeatures.forceSubtree = result.second == ForceSubtree;
         siblingFeatures = &localFeatures;

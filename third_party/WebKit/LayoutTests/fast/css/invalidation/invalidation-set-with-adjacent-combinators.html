@@ -7,10 +7,10 @@
 Expected sets
 
 .c1 { }
-.c2 { subtree }
-.c3 { c1 }
-.c4 { subtree }
-.c5 { c1 }
+.c2 + { .c1 }
+.c3 { .c1 }
+.c4 ~ { .c3 } { .c1 }
+.c5 { .c1 }
 
 -->
 <div id="i5">
@@ -56,7 +56,7 @@ if (window.internals)
 document.body.offsetTop; // Force style recalc.
 i3.className = "c3";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 
 document.body.offsetTop; // Force style recalc.
 i4.className = "c4";
