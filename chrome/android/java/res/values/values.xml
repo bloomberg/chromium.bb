@@ -52,6 +52,9 @@
     <!-- Media playback notification -->
     <item type="id" name="media_playback_notification" />
 
+    <!-- Presentation API notification -->
+    <item type="id" name="presentation_notification" />
+
     <!-- Sync UI constants -->
     <item type="id" name="passphrase_type_list" />
 

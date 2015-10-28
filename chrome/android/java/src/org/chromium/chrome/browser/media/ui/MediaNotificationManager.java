@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tab.Tab;
  * There's one service started for a distinct notification id.
  */
 public class MediaNotificationManager {
+
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.
     private static final Object LOCK = new Object();
@@ -45,10 +46,10 @@ public class MediaNotificationManager {
 
     /**
      * Service used to transform intent requests triggered from the notification into
-     * {@code Listener} callbacks. Ideally this class should be private, but public is required to
-     * create as a service.
+     * {@code MediaNotificationListener} callbacks. We have to create a separate derived class for
+     * each type of notification since one class corresponds to one instance of the service only.
      */
-    public static class ListenerService extends Service {
+    private abstract static class ListenerService extends Service {
         private static final String ACTION_PLAY =
                 "MediaNotificationManager.ListenerService.PLAY";
         private static final String ACTION_PAUSE =
@@ -60,11 +61,6 @@ public class MediaNotificationManager {
 
         // The notification id this service instance corresponds to.
         private int mNotificationId = MediaNotificationInfo.INVALID_ID;
-
-        private static Intent getIntent(Context context, int notificationId) {
-            return new Intent(context, ListenerService.class)
-                    .putExtra(EXTRA_NOTIFICATION_ID, notificationId);
-        }
 
         private PendingIntent getPendingIntent(String action) {
             Intent intent = getIntent(this, mNotificationId).setAction(action);
@@ -155,6 +151,32 @@ public class MediaNotificationManager {
     }
 
     /**
+     * This class is used internally but have to be public to be able to launch the service.
+     */
+    public static final class PlaybackListenerService extends ListenerService {
+        private static final int NOTIFICATION_ID = R.id.media_playback_notification;
+    }
+
+    /**
+     * This class is used internally but have to be public to be able to launch the service.
+     */
+    public static final class PresentationListenerService extends ListenerService {
+        private static final int NOTIFICATION_ID = R.id.presentation_notification;
+    }
+
+    private static Intent getIntent(Context context, int notificationId) {
+        Intent intent = null;
+        if (notificationId == PlaybackListenerService.NOTIFICATION_ID) {
+            intent = new Intent(context, PlaybackListenerService.class);
+        } else if (notificationId == PresentationListenerService.NOTIFICATION_ID) {
+            intent = new Intent(context, PresentationListenerService.class);
+        } else {
+            return null;
+        }
+        return intent.putExtra(ListenerService.EXTRA_NOTIFICATION_ID, notificationId);
+    }
+
+    /**
      * Shows the notification with media controls with the specified media info. Replaces/updates
      * the current notification if already showing. Does nothing if |mediaNotificationInfo| hasn't
      * changed from the last one.
@@ -178,7 +200,7 @@ public class MediaNotificationManager {
         }
 
         manager.mNotificationInfoBuilder = notificationInfoBuilder;
-        manager.showNotification(notificationInfoBuilder.build());
+        manager.showNotification(notificationInfo);
     }
 
     /**
@@ -332,7 +354,7 @@ public class MediaNotificationManager {
     }
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
-        mContext.startService(ListenerService.getIntent(mContext, mediaNotificationInfo.id));
+        mContext.startService(getIntent(mContext, mediaNotificationInfo.id));
 
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
@@ -353,7 +375,7 @@ public class MediaNotificationManager {
             mMediaSession.release();
             mMediaSession = null;
         }
-        mContext.stopService(ListenerService.getIntent(mContext, notificationId));
+        mContext.stopService(getIntent(mContext, notificationId));
         mMediaNotificationInfo = null;
     }
 
